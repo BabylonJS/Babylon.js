@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*****************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -3915,7 +3915,6 @@ var MSFT_lod = /** @class */ (function () {
     }
     /** @hidden */
     MSFT_lod.prototype.dispose = function () {
-        this._disposeUnusedMaterials();
         delete this._loader;
         this._nodeIndexLOD = null;
         this._nodeSignalLODs.length = 0;
@@ -4003,9 +4002,8 @@ var MSFT_lod = /** @class */ (function () {
                         // TODO: should not rely on _babylonTransformNode
                         var previousNodeLOD = nodeLODs[indexLOD - 1];
                         if (previousNodeLOD._babylonTransformNode) {
-                            previousNodeLOD._babylonTransformNode.dispose();
+                            _this._disposeTransformNode(previousNodeLOD._babylonTransformNode);
                             delete previousNodeLOD._babylonTransformNode;
-                            _this._disposeUnusedMaterials();
                         }
                     }
                     babylonMesh.setEnabled(true);
@@ -4055,7 +4053,7 @@ var MSFT_lod = /** @class */ (function () {
                         // TODO: should not rely on _data
                         var previousDataLOD = materialLODs[indexLOD - 1]._data;
                         if (previousDataLOD[babylonDrawMode]) {
-                            previousDataLOD[babylonDrawMode].babylonMaterial.dispose();
+                            _this._disposeMaterials([previousDataLOD[babylonDrawMode].babylonMaterial]);
                             delete previousDataLOD[babylonDrawMode];
                         }
                     }
@@ -4150,26 +4148,43 @@ var MSFT_lod = /** @class */ (function () {
         properties.push(property);
         return properties;
     };
-    MSFT_lod.prototype._disposeUnusedMaterials = function () {
-        // TODO: should not rely on _data
-        var materials = this._loader.gltf.materials;
-        if (materials) {
-            for (var _i = 0, materials_1 = materials; _i < materials_1.length; _i++) {
-                var material = materials_1[_i];
-                if (material._data) {
-                    var _loop_5 = function (drawMode) {
-                        var data = material._data[drawMode];
-                        if (data.babylonMeshes.every(function (babylonMesh) { return babylonMesh.material !== data.babylonMaterial; })) {
-                            // TODO: check if texture is in use instead of force disposing textures
-                            data.babylonMaterial.dispose(false, true);
-                            delete material._data[drawMode];
-                        }
-                    };
-                    for (var drawMode in material._data) {
-                        _loop_5(drawMode);
-                    }
+    MSFT_lod.prototype._disposeTransformNode = function (babylonTransformNode) {
+        var _this = this;
+        var babylonMaterials = new Array();
+        var babylonMaterial = babylonTransformNode.material;
+        if (babylonMaterial) {
+            babylonMaterials.push(babylonMaterial);
+        }
+        for (var _i = 0, _a = babylonTransformNode.getChildMeshes(); _i < _a.length; _i++) {
+            var babylonMesh = _a[_i];
+            if (babylonMesh.material) {
+                babylonMaterials.push(babylonMesh.material);
+            }
+        }
+        babylonTransformNode.dispose();
+        var babylonMaterialsToDispose = babylonMaterials.filter(function (babylonMaterial) { return _this._loader.babylonScene.meshes.every(function (mesh) { return mesh.material != babylonMaterial; }); });
+        this._disposeMaterials(babylonMaterialsToDispose);
+    };
+    MSFT_lod.prototype._disposeMaterials = function (babylonMaterials) {
+        var babylonTextures = {};
+        for (var _i = 0, babylonMaterials_1 = babylonMaterials; _i < babylonMaterials_1.length; _i++) {
+            var babylonMaterial = babylonMaterials_1[_i];
+            for (var _a = 0, _b = babylonMaterial.getActiveTextures(); _a < _b.length; _a++) {
+                var babylonTexture = _b[_a];
+                babylonTextures[babylonTexture.uniqueId] = babylonTexture;
+            }
+            babylonMaterial.dispose();
+        }
+        for (var uniqueId in babylonTextures) {
+            for (var _c = 0, _d = this._loader.babylonScene.materials; _c < _d.length; _c++) {
+                var babylonMaterial = _d[_c];
+                if (babylonMaterial.hasTexture(babylonTextures[uniqueId])) {
+                    delete babylonTextures[uniqueId];
                 }
             }
+        }
+        for (var uniqueId in babylonTextures) {
+            babylonTextures[uniqueId].dispose();
         }
     };
     return MSFT_lod;

@@ -33830,6 +33830,9 @@ declare module BABYLON {
          * @param buffer defines the webGL buffer to delete
          */
         deleteInstancesBuffer(buffer: WebGLBuffer): void;
+        private _clientWaitAsync;
+        /** @hidden */
+        _readPixelsAsync(x: number, y: number, w: number, h: number, format: number, type: number, outputBuffer: ArrayBufferView): Promise<ArrayBufferView> | null;
         /** @hidden */
         _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>): ArrayBufferView;
         dispose(): void;
@@ -76201,7 +76204,8 @@ declare module BABYLON.GLTF2.Loader.Extensions {
          * Gets an array of LOD properties from lowest to highest.
          */
         private _getLODs;
-        private _disposeUnusedMaterials;
+        private _disposeTransformNode;
+        private _disposeMaterials;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {

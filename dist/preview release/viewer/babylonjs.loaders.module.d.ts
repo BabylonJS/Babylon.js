@@ -2121,7 +2121,8 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/MSFT_lod" {
          * Gets an array of LOD properties from lowest to highest.
          */
         private _getLODs;
-        private _disposeUnusedMaterials;
+        private _disposeTransformNode;
+        private _disposeMaterials;
     }
 }
 declare module "babylonjs-loaders/glTF/2.0/Extensions/MSFT_minecraftMesh" {
@@ -4556,7 +4557,8 @@ declare module BABYLON.GLTF2.Loader.Extensions {
          * Gets an array of LOD properties from lowest to highest.
          */
         private _getLODs;
-        private _disposeUnusedMaterials;
+        private _disposeTransformNode;
+        private _disposeMaterials;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
