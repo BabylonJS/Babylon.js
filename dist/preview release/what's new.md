@@ -193,7 +193,7 @@
 - UI Button has options to set different session mode and reference type ([RaananW](https://github.com/RaananW/))
 - Added option to change the teleportation duration in the VRExperienceHelper class ([https://github.com/LeoRodz](https://github.com/LeoRodz))
 - Added support to teleport the camera at constant speed in the VRExperienceHelper class ([https://github.com/LeoRodz](https://github.com/LeoRodz))
-- VRExperienceHelper has now an XR fallback to force XR usage (Beta) ([RaananW](https://github.com/RaananW/))
+- VRExperienceHelper has now an XR fallback to force XR usage (beta) ([RaananW](https://github.com/RaananW/))
 - Added option to change the teleportation easing function in the VRExperienceHelper class ([https://github.com/LeoRodz](https://github.com/LeoRodz))
 - Windows motion controller mapping corrected to XR (xr-standard) ([RaananW](https://github.com/RaananW/))
 - Pointer-Event simulation for screen target ray mode ([RaananW](https://github.com/RaananW/))
