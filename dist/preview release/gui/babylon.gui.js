@@ -6826,7 +6826,8 @@ var Image = /** @class */ (function (_super) {
                     var vb = svgDoc.documentElement.getAttribute("viewBox");
                     var docwidth = Number(svgDoc.documentElement.getAttribute("width"));
                     var docheight = Number(svgDoc.documentElement.getAttribute("height"));
-                    if (vb && docwidth && docheight) {
+                    var elem = svgDoc.getElementById(elemid);
+                    if (elem && vb && docwidth && docheight) {
                         this._getSVGAttribs(svgExist, elemid);
                         return value;
                     }
@@ -6871,7 +6872,7 @@ var Image = /** @class */ (function (_super) {
             var docheight = Number(svgDoc.documentElement.getAttribute("height"));
             // get element bbox and matrix transform
             var elem = svgDoc.getElementById(elemid);
-            if (vb && docwidth && docheight) {
+            if (vb && docwidth && docheight && elem) {
                 var vb_width = Number(vb.split(" ")[2]);
                 var vb_height = Number(vb.split(" ")[3]);
                 var elem_bbox = elem.getBBox();
