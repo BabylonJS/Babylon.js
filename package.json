@@ -92,6 +92,7 @@
         "sinon": "^6.1.4",
         "split.js": "^1.5.9",
         "style-loader": "^0.21.0",
+        "svg-url-loader": "^4.0.0",
         "through2": "~2.0.3",
         "ts-loader": "^5.2.1",
         "tslib": "^1.10.0",
