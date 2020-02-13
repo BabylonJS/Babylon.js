@@ -149,6 +149,7 @@
 - Use web workers to validate glTF to avoid blocking the main thread. ([bghgary](https://github.com/bghgary))
 - Update glTF validator to 2.0.0-dev.3.1. ([bghgary](https://github.com/bghgary))
 - Fix an issue with disposing materials and textures too aggressively in MSFT_lod loader extension. ([bghgary](https://github.com/bghgary))
+- Added experimental support for loading KTX2 files and `KHR_texture_basisu` glTF extension. ([bghgary](https://github.com/bghgary))
 
 ### Materials
 
@@ -350,3 +351,4 @@
 - Default culling strategy changed to CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY ([Deltakosh](https://github.com/deltakosh/))
 - `MaterialHelper.BindLight` and `MaterialHelper.BindLights` do not need the usePhysicalLight anymore ([Sebavan](https://github.com/sebavan/))
 - `Mesh.bakeTransformIntoVertices` now preserves child world-space transforms([drigax](https://github.com/drigax))
+- Removed `setTexturesToUse` and `setCompressedTextureExclusions` from Engine. ([bghgary](https://github.com/bghgary))

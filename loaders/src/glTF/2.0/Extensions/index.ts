@@ -7,6 +7,7 @@ export * from "./KHR_materials_clearcoat";
 export * from "./KHR_materials_sheen";
 export * from "./KHR_materials_specular";
 export * from "./KHR_mesh_quantization";
+export * from "./KHR_texture_basisu";
 export * from "./KHR_texture_transform";
 export * from "./MSFT_audio_emitter";
 export * from "./MSFT_lod";

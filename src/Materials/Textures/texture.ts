@@ -345,7 +345,7 @@ export class Texture extends BaseTexture {
 
         if (!this._texture) {
             if (!scene || !scene.useDelayedTextureLoading) {
-                this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format, null, undefined, mimeType);
+                this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format, null, mimeType);
                 if (deleteBuffer) {
                     delete this._buffer;
                 }
@@ -408,7 +408,7 @@ export class Texture extends BaseTexture {
         this._texture = this._getFromCache(this.url, this._noMipmap, this.samplingMode, this._invertY);
 
         if (!this._texture) {
-            this._texture = scene.getEngine().createTexture(this.url, this._noMipmap, this._invertY, scene, this.samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format, null, undefined, this._mimeType);
+            this._texture = scene.getEngine().createTexture(this.url, this._noMipmap, this._invertY, scene, this.samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format, null, this._mimeType);
             if (this._deleteBuffer) {
                 delete this._buffer;
             }
