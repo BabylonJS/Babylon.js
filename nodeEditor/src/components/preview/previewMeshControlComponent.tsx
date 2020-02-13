@@ -6,10 +6,10 @@ import { PreviewMeshType } from './previewMeshType';
 import { DataStorage } from '../../dataStorage';
 import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
 import * as ReactDOM from 'react-dom';
-import PopUpIcon from './svgs/popOut.svg'
+import PopUpIcon from './svgs/popOut.svg';
 import ColorPicker from './svgs/colorPicker.svg';
 import PauseIcon from './svgs/pauseIcon.svg';
-import PlayIcon from './svgs/playIcon.svg'
+import PlayIcon from './svgs/playIcon.svg';
 
 interface IPreviewMeshControlComponent {
     globalState: GlobalState;
