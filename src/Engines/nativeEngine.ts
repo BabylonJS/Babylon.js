@@ -21,7 +21,7 @@ import { WebRequest } from '../Misc/webRequest';
 import { NativeShaderProcessor } from './Native/nativeShaderProcessor';
 import { Logger } from "../Misc/logger";
 import { Constants } from './constants';
-import { ThinEngine } from './thinEngine';
+import { ThinEngine, ISceneLike } from './thinEngine';
 import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 
 interface INativeEngine {
@@ -840,40 +840,32 @@ export class NativeEngine extends Engine {
 
     // TODO: Refactor to share more logic with babylon.engine.ts version.
     /**
-     * Usually called from BABYLON.Texture.ts.
+     * Usually called from Texture.ts.
      * Passed information to create a WebGLTexture
      * @param urlArg defines a value which contains one of the following:
      * * A conventional http URL, e.g. 'http://...' or 'file://...'
      * * A base64 string of in-line texture data, e.g. 'data:image/jpg;base64,/...'
      * * An indicator that data being passed using the buffer parameter, e.g. 'data:mytexture.jpg'
      * @param noMipmap defines a boolean indicating that no mipmaps shall be generated.  Ignored for compressed textures.  They must be in the file
-     * @param invertY when true, image is flipped when loaded.  You probably want true. Ignored for compressed textures.  Must be flipped in the file
+     * @param invertY when true, image is flipped when loaded.  You probably want true. Certain compressed textures may invert this if their default is inverted (eg. ktx)
      * @param scene needed for loading to the correct scene
-     * @param samplingMode mode with should be used sample / access the texture (Default: BABYLON.Texture.TRILINEAR_SAMPLINGMODE)
+     * @param samplingMode mode with should be used sample / access the texture (Default: Texture.TRILINEAR_SAMPLINGMODE)
      * @param onLoad optional callback to be called upon successful completion
      * @param onError optional callback to be called upon failure
-     * @param buffer a source of a file previously fetched as either a base64 string, an ArrayBuffer (compressed or image format), or a Blob
+     * @param buffer a source of a file previously fetched as either a base64 string, an ArrayBuffer (compressed or image format), HTMLImageElement (image format), or a Blob
      * @param fallback an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
      * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
      * @param forcedExtension defines the extension to use to pick the right loader
+     * @param mimeType defines an optional mime type
      * @returns a InternalTexture for assignment back into BABYLON.Texture
      */
-    public createTexture(
-        urlArg: Nullable<string>,
-        noMipmap: boolean,
-        invertY: boolean,
-        scene: Nullable<Scene>,
-        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        onLoad: Nullable<() => void> = null,
-        onError: Nullable<(message: string, exception: any) => void> = null,
-        buffer: Nullable<string | ArrayBuffer | Blob> = null,
-        fallback: Nullable<InternalTexture> = null,
-        format: Nullable<number> = null,
-        forcedExtension: Nullable<string> = null): InternalTexture {
+    public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+        onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
+        buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
+        forcedExtension: Nullable<string> = null, mimeType?: string): InternalTexture {
         var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
         var fromData = url.substr(0, 5) === "data:";
         var fromBlob = url.substr(0, 5) === "blob:";
-        var isBase64 = fromData && url.indexOf("base64") !== -1;
 
         let texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Url);
 
@@ -881,19 +873,12 @@ export class NativeEngine extends Engine {
         var lastDot = url.lastIndexOf('.');
         var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? url.substring(lastDot).toLowerCase() : "");
 
-        // TODO: Add support for compressed texture formats.
-        var textureFormatInUse: Nullable<string> = null;
-
         let loader: Nullable<IInternalTextureLoader> = null;
         for (let availableLoader of Engine._TextureLoaders) {
-            if (availableLoader.canLoad(extension, textureFormatInUse, fallback, isBase64, buffer ? true : false)) {
+            if (availableLoader.canLoad(extension)) {
                 loader = availableLoader;
                 break;
             }
-        }
-
-        if (loader) {
-            url = loader.transformUrl(url, textureFormatInUse);
         }
 
         if (scene) {
@@ -921,23 +906,11 @@ export class NativeEngine extends Engine {
                 scene._removePendingData(texture);
             }
 
-            let customFallback = false;
-            if (loader) {
-                const fallbackUrl = loader.getFallbackTextureUrl(url, textureFormatInUse);
-                if (fallbackUrl) {
-                    // Add Back
-                    customFallback = true;
-                    this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
-                }
+            if (onLoadObserver) {
+                texture.onLoadedObservable.remove(onLoadObserver);
             }
-
-            if (!customFallback) {
-                if (onLoadObserver) {
-                    texture.onLoadedObservable.remove(onLoadObserver);
-                }
-                if (Tools.UseFallbackTexture) {
-                    this.createTexture(Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
-                }
+            if (Tools.UseFallbackTexture) {
+                this.createTexture(Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
             }
 
             if (onError) {

@@ -82,12 +82,7 @@ export class KhronosTextureContainer {
     public constructor(
         /** contents of the KTX container file */
         public data: ArrayBufferView, facesExpected: number, threeDExpected?: boolean, textureArrayExpected?: boolean) {
-        // Test that it is a ktx formatted file, based on the first 12 bytes, character representation is:
-        // '�', 'K', 'T', 'X', ' ', '1', '1', '�', '\r', '\n', '\x1A', '\n'
-        // 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A
-        var identifier = new Uint8Array(this.data.buffer, this.data.byteOffset, 12);
-        if (identifier[0] !== 0xAB || identifier[1] !== 0x4B || identifier[2] !== 0x54 || identifier[3] !== 0x58 || identifier[4] !== 0x20 || identifier[5] !== 0x31 ||
-            identifier[6] !== 0x31 || identifier[7] !== 0xBB || identifier[8] !== 0x0D || identifier[9] !== 0x0A || identifier[10] !== 0x1A || identifier[11] !== 0x0A) {
+        if (!KhronosTextureContainer.IsValid(data)) {
             this.isInvalid = true;
             Logger.Error("texture missing KTX identifier");
             return;
@@ -180,5 +175,24 @@ export class KhronosTextureContainer {
             width = Math.max(1.0, width * 0.5);
             height = Math.max(1.0, height * 0.5);
         }
+    }
+
+    /**
+     * Checks if the given data starts with a KTX file identifier.
+     * @param data the data to check
+     * @returns true if the data is a KTX file or false otherwise
+     */
+    public static IsValid(data: ArrayBufferView): boolean {
+        if (data.byteLength >= 12)
+        {
+            // '«', 'K', 'T', 'X', ' ', '1', '1', '»', '\r', '\n', '\x1A', '\n'
+            const identifier = new Uint8Array(data.buffer, data.byteOffset, 12);
+            if (identifier[0] === 0xAB && identifier[1] === 0x4B && identifier[2] === 0x54 && identifier[3] === 0x58 && identifier[4] === 0x20 && identifier[5] === 0x31 &&
+                identifier[6] === 0x31 && identifier[7] === 0xBB && identifier[8] === 0x0D && identifier[9] === 0x0A && identifier[10] === 0x1A && identifier[11] === 0x0A) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
