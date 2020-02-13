@@ -12,5 +12,7 @@ namespace Babylon
         explicit RuntimeAndroid(ANativeWindow* nativeWindowPtr, float width, float height);
         explicit RuntimeAndroid(ANativeWindow* nativeWindowPtr, const std::string& rootUrl, float width, float height);
         RuntimeAndroid(const RuntimeAndroid&) = delete;
+
+        void UpdateWindow(float width, float height, ANativeWindow* nativeWindowPtr);
     };
 }

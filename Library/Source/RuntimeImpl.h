@@ -24,6 +24,7 @@ namespace Babylon
         virtual ~RuntimeImpl();
 
         void UpdateSize(float width, float height);
+        void UpdateWindow(float width, float height, void* nativeWindowPtr);
         void Suspend();
         void Resume();
         void LoadScript(const std::string& url);
