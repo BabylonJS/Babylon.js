@@ -341,6 +341,7 @@ declare module NODEEDITOR {
         additionalClass?: string;
         step?: string;
         digits?: number;
+        globalState: GlobalState;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;

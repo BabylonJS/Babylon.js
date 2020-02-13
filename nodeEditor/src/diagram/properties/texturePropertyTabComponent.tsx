@@ -212,7 +212,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                     }        
                     {
                         texture && !isInReflectionMode &&
-                        <FloatLineComponent label="Offset U" target={texture} propertyName="uOffset" 
+                        <FloatLineComponent globalState={this.props.globalState} label="Offset U" target={texture} propertyName="uOffset" 
                         onChange={() => {
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         }}
@@ -220,7 +220,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                     }
                     {
                         texture && !isInReflectionMode &&
-                        <FloatLineComponent label="Offset V" target={texture} propertyName="vOffset"
+                        <FloatLineComponent globalState={this.props.globalState} label="Offset V" target={texture} propertyName="vOffset"
                         onChange={() => {
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         }}
@@ -228,14 +228,14 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                     }
                     {
                         texture && !isInReflectionMode &&
-                        <FloatLineComponent label="Scale U" target={texture} propertyName="uScale"
+                        <FloatLineComponent globalState={this.props.globalState} label="Scale U" target={texture} propertyName="uScale"
                         onChange={() => {
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         }} />
                     }
                     {
                         texture && !isInReflectionMode &&
-                        <FloatLineComponent label="Scale V" target={texture} propertyName="vScale"
+                        <FloatLineComponent globalState={this.props.globalState} label="Scale V" target={texture} propertyName="vScale"
                         onChange={() => {
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         }} />
