@@ -13,11 +13,20 @@ namespace Babylon
     RuntimeAndroid::RuntimeAndroid(ANativeWindow* nativeWindowPtr, const std::string& rootUrl, float width, float height)
         : Runtime{std::make_unique<RuntimeImpl>(nativeWindowPtr, rootUrl)}
     {
-        NativeEngine::InitializeWindow(nativeWindowPtr, static_cast<uint32_t>(width), static_cast<uint32_t>(height));
+        // OpenGL initialization must happen in the same thread as the rendering.
+        // GL context it associated to 1 thread.
+        m_impl->Dispatcher().queue([width, height, nativeWindowPtr] {
+            NativeEngine::InitializeWindow(nativeWindowPtr, static_cast<uint32_t>(width), static_cast<uint32_t>(height));
+        });
     }
 
     void RuntimeImpl::ThreadProcedure()
     {
         RuntimeImpl::BaseThreadProcedure();
+    }
+
+    void RuntimeAndroid::UpdateWindow(float width, float height, ANativeWindow* nativeWindowPtr)
+    {
+        m_impl->UpdateWindow(width, height, nativeWindowPtr);
     }
 }

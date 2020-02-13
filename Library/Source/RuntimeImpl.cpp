@@ -8,6 +8,12 @@
 #include <napi/env.h>
 #include <sstream>
 
+// TODO : this is a workaround for asset loading on Android. To remove when the plugin system is in place.
+#if (ANDROID)
+#include <android/asset_manager.h>
+extern AAssetManager* g_assetMgrNative;
+#endif
+
 namespace Babylon
 {
     namespace
@@ -54,6 +60,23 @@ namespace Babylon
     void RuntimeImpl::UpdateSize(float width, float height)
     {
         m_dispatcher->queue([width, height, this] {
+            auto& window = RuntimeImpl::GetNativeWindowFromJavaScript(*m_env);
+            window.Resize(static_cast<size_t>(width), static_cast<size_t>(height));
+        });
+    }
+
+    void RuntimeImpl::UpdateWindow(float width, float height, void* nativeWindowPtr)
+    {
+        m_dispatcher->queue([width, height, nativeWindowPtr, this]
+        {
+            bgfx::PlatformData pd;
+            pd.ndt          = NULL;
+            pd.nwh          = nativeWindowPtr;
+            pd.context      = NULL;
+            pd.backBuffer   = NULL;
+            pd.backBufferDS = NULL;
+            bgfx::setPlatformData(pd);
+            bgfx::reset(width, height);
             auto& window = RuntimeImpl::GetNativeWindowFromJavaScript(*m_env);
             window.Resize(static_cast<size_t>(width), static_cast<size_t>(height));
         });
@@ -107,6 +130,16 @@ namespace Babylon
 
     std::string RuntimeImpl::GetAbsoluteUrl(const std::string& url)
     {
+
+// TODO : this is a workaround for asset loading on Android. To remove when the plugin system is in place.
+#if (ANDROID)
+        AAsset *asset = AAssetManager_open(g_assetMgrNative, url.c_str(),
+                                            AASSET_MODE_UNKNOWN);
+        if (asset)
+        {
+            return url;
+        }
+#endif
         auto curl = curl_url();
 
         auto code = curl_url_set(curl, CURLUPART_URL, url.data(), 0);
@@ -144,6 +177,19 @@ namespace Babylon
         return arcana::make_task(*m_dispatcher, m_cancelSource, [url]() {
             T data{};
 
+// TODO : this is a workaround for asset loading on Android. To remove when the plugin system is in place.
+#if (ANDROID)
+            AAsset *asset = AAssetManager_open(g_assetMgrNative, url.c_str(),
+                                                AASSET_MODE_UNKNOWN);
+            if (asset)
+            {
+                size_t size = AAsset_getLength64(asset);
+                data.resize(size);
+                AAsset_read(asset, data.data(), size);
+                AAsset_close(asset);
+                return std::move(data);
+            }
+#endif
             auto curl = curl_easy_init();
             if (curl)
             {

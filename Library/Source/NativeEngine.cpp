@@ -281,7 +281,11 @@ namespace Babylon
         bgfx::Init init{};
         init.platformData.nwh = nativeWindowPtr;
         bgfx::setPlatformData(init.platformData);
+#if (ANDROID)
+        init.type = bgfx::RendererType::OpenGLES;
+#else
         init.type = bgfx::RendererType::Direct3D11;
+#endif
         init.resolution.width = width;
         init.resolution.height = height;
         init.resolution.reset = BGFX_RESET_FLAGS;
@@ -407,7 +411,7 @@ namespace Babylon
         {
             bgfx::reset(w, h, BGFX_RESET_FLAGS);
             bgfx::setViewRect(0, 0, 0, w, h);
-            bgfx::touch(0);
+            bgfx::frame();
         }
     }
 
