@@ -51,13 +51,13 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         }
                         {
                             !inputBlock.isBoolean &&
-                            <FloatLineComponent label="Min" target={inputBlock} propertyName="min" onChange={() => {
+                            <FloatLineComponent globalState={this.props.globalState} label="Min" target={inputBlock} propertyName="min" onChange={() => {
                                 this.forceUpdate();
                             }}></FloatLineComponent>
                         }
                         {
                             !inputBlock.isBoolean &&
-                            <FloatLineComponent label="Max" target={inputBlock} propertyName="max" onChange={() => {
+                            <FloatLineComponent globalState={this.props.globalState} label="Max" target={inputBlock} propertyName="max" onChange={() => {
                                     this.forceUpdate();
                                 }}></FloatLineComponent>      
                         }
