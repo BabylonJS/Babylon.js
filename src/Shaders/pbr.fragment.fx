@@ -97,7 +97,12 @@ void main(void) {
         alpha *= albedoTexture.a;
     #endif
 
-    surfaceAlbedo *= toLinearSpace(albedoTexture.rgb);
+    #ifdef GAMMAALBEDO
+        surfaceAlbedo *= toLinearSpace(albedoTexture.rgb);
+    #else
+        surfaceAlbedo *= albedoTexture.rgb;
+    #endif
+
     surfaceAlbedo *= vAlbedoInfos.y;
 #endif
 

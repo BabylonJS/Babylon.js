@@ -686,6 +686,24 @@ export class HighlightLayer extends EffectLayer {
     }
 
     /**
+     * Remove all the meshes currently referenced in the highlight layer
+     */
+    public removeAllMeshes(): void {
+        if (!this._meshes) {
+            return;
+        }
+
+        for (const uniqueId in this._meshes) {
+            if (this._meshes.hasOwnProperty(uniqueId)) {
+                const mesh = this._meshes[uniqueId];
+                if (mesh) {
+                    this.removeMesh(mesh.mesh);
+                }
+            }
+        }
+    }
+
+    /**
      * Force the stencil to the normal expected value for none glowing parts
      */
     private _defaultStencilReference(mesh: Mesh) {

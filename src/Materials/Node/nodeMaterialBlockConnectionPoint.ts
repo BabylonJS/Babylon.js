@@ -91,8 +91,11 @@ export class NodeMaterialConnectionPoint {
         this._associatedVariableName = value;
     }
 
-    /** Get the inner type (ie AutoDetect for isntance instead of the inferred one) */
+    /** Get the inner type (ie AutoDetect for instance instead of the inferred one) */
     public get innerType() {
+        if (this._linkedConnectionSource && this._linkedConnectionSource.isConnected) {
+            return this.type;
+        }
         return this._type;
     }
 
@@ -342,21 +345,25 @@ export class NodeMaterialConnectionPoint {
                     if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Color3) {
                         return NodeMaterialConnectionPointCompatibilityStates.Compatible;
                     }
+                    break;
                 }
                 case NodeMaterialBlockConnectionPointTypes.Vector4: {
                     if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Color4) {
                         return NodeMaterialConnectionPointCompatibilityStates.Compatible;
                     }
+                    break;
                 }
                 case NodeMaterialBlockConnectionPointTypes.Color3: {
                     if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Vector3) {
                         return NodeMaterialConnectionPointCompatibilityStates.Compatible;
                     }
+                    break;
                 }
                 case NodeMaterialBlockConnectionPointTypes.Color4: {
                     if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
                         return NodeMaterialConnectionPointCompatibilityStates.Compatible;
                     }
+                    break;
                 }
             }
 
