@@ -9957,12 +9957,12 @@ declare module BABYLON {
          */
         intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
         /**
-     * Intersects the sprites with a ray
-     * @param ray defines the ray to intersect with
-     * @param camera defines the current active camera
-     * @param predicate defines a predicate used to select candidate sprites
-     * @returns null if no hit or a PickingInfo array
-     */
+         * Intersects the sprites with a ray
+         * @param ray defines the ray to intersect with
+         * @param camera defines the current active camera
+         * @param predicate defines a predicate used to select candidate sprites
+         * @returns null if no hit or a PickingInfo array
+         */
         multiIntersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean): Nullable<PickingInfo[]>;
         /**
          * Renders the list of sprites on screen.
@@ -10021,6 +10021,14 @@ declare module BABYLON {
          */
         get texture(): Texture;
         set texture(value: Texture);
+        private _blendMode;
+        /**
+         * Blend mode use to render the particle, it can be any of
+         * the static Constants.ALPHA_x properties provided in this class.
+         * Default value is Constants.ALPHA_COMBINE
+         */
+        get blendMode(): number;
+        set blendMode(blendMode: number);
         /**
          * Creates a new sprite manager
          * @param name defines the manager's name
@@ -33822,6 +33830,9 @@ declare module BABYLON {
          * @param buffer defines the webGL buffer to delete
          */
         deleteInstancesBuffer(buffer: WebGLBuffer): void;
+        private _clientWaitAsync;
+        /** @hidden */
+        _readPixelsAsync(x: number, y: number, w: number, h: number, format: number, type: number, outputBuffer: ArrayBufferView): Promise<ArrayBufferView> | null;
         /** @hidden */
         _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>): ArrayBufferView;
         dispose(): void;
@@ -38086,8 +38097,6 @@ declare module BABYLON {
         /**
          * Targets the given mesh and updates zoom level accordingly.
          * @param mesh  The mesh to target.
-         * @param radius Optional. If a cached radius position already exists, overrides default.
-         * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
          * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
          * @param onAnimationEnd Callback triggered at the end of the framing animation
          */
@@ -38095,8 +38104,6 @@ declare module BABYLON {
         /**
          * Targets the given mesh with its children and updates zoom level accordingly.
          * @param mesh  The mesh to target.
-         * @param radius Optional. If a cached radius position already exists, overrides default.
-         * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
          * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
          * @param onAnimationEnd Callback triggered at the end of the framing animation
          */
@@ -38104,8 +38111,6 @@ declare module BABYLON {
         /**
          * Targets the given meshes with their children and updates zoom level accordingly.
          * @param meshes  The mesh to target.
-         * @param radius Optional. If a cached radius position already exists, overrides default.
-         * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
          * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
          * @param onAnimationEnd Callback triggered at the end of the framing animation
          */
@@ -76199,7 +76204,8 @@ declare module BABYLON.GLTF2.Loader.Extensions {
          * Gets an array of LOD properties from lowest to highest.
          */
         private _getLODs;
-        private _disposeUnusedMaterials;
+        private _disposeTransformNode;
+        private _disposeMaterials;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
@@ -76921,6 +76927,10 @@ declare module BABYLON {
          * Begin serialization without waiting for the scene to be ready
          */
         exportWithoutWaitingForScene?: boolean;
+        /**
+         * Indicates if coordinate system swapping root nodes should be included in export
+         */
+        includeCoordinateSystemConversionNodes?: boolean;
     }
     /**
      * Class for generating glTF data from a Babylon scene.
@@ -77120,9 +77130,16 @@ declare module BABYLON.GLTF2.Exporter {
          */
         private _nodeMap;
         /**
-         * Specifies if the Babylon scene should be converted to right-handed on export
+         * Specifies if the source Babylon scene was left handed, and needed conversion.
          */
         _convertToRightHandedSystem: boolean;
+        /**
+         * Specifies if a Babylon node should be converted to right-handed on export
+         */
+        _convertToRightHandedSystemMap: {
+            [nodeId: number]: boolean;
+        };
+        _includeCoordinateSystemConversionNodes: boolean;
         /**
          * Baked animation sample rate
          */
@@ -77181,6 +77198,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param meshAttributeArray The vertex attribute data
          * @param byteOffset The offset to the binary data
          * @param binaryWriter The binary data for the glTF file
+         * @param convertToRightHandedSystem Converts the values to right-handed
          */
         private reorderVertexAttributeDataBasedOnPrimitiveMode;
         /**
@@ -77193,6 +77211,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param meshAttributeArray The vertex attribute data
          * @param byteOffset The offset to the binary data
          * @param binaryWriter The binary data for the glTF file
+         * @param convertToRightHandedSystem Converts the values to right-handed
          */
         private reorderTriangleFillMode;
         /**
@@ -77205,6 +77224,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param meshAttributeArray The vertex attribute data
          * @param byteOffset The offset to the binary data
          * @param binaryWriter The binary data for the glTF file
+         * @param convertToRightHandedSystem Converts the values to right-handed
          */
         private reorderTriangleStripDrawMode;
         /**
@@ -77217,6 +77237,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param meshAttributeArray The vertex attribute data
          * @param byteOffset The offset to the binary data
          * @param binaryWriter The binary data for the glTF file
+         * @param convertToRightHandedSystem Converts the values to right-handed
          */
         private reorderTriangleFanMode;
         /**
@@ -77226,6 +77247,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param vertexAttributeKind The vertex attribute type
          * @param meshAttributeArray The vertex attribute data
          * @param binaryWriter The writer containing the binary data
+         * @param convertToRightHandedSystem Converts the values to right-handed
          */
         private writeVertexAttributeData;
         /**
@@ -77235,8 +77257,9 @@ declare module BABYLON.GLTF2.Exporter {
          * @param meshAttributeArray Array containing the attribute data
          * @param binaryWriter The buffer to write the binary data to
          * @param indices Used to specify the order of the vertex data
+         * @param convertToRightHandedSystem Converts the values to right-handed
          */
-        writeAttributeData(vertexBufferKind: string, meshAttributeArray: FloatArray, byteStride: number, binaryWriter: _BinaryWriter): void;
+        writeAttributeData(vertexBufferKind: string, meshAttributeArray: FloatArray, byteStride: number, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean): void;
         /**
          * Generates glTF json data
          * @param shouldUseGlb Indicates whether the json should be written for a glb file
@@ -77271,6 +77294,7 @@ declare module BABYLON.GLTF2.Exporter {
          * Sets the TRS for each node
          * @param node glTF Node for storing the transformation data
          * @param babylonTransformNode Babylon mesh used as the source for the transformation data
+         * @param convertToRightHandedSystem Converts the values to right-handed
          */
         private setNodeTransformation;
         private getVertexBufferFromMesh;
@@ -77279,6 +77303,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param kind Indicates the type of vertices data
          * @param babylonTransformNode The Babylon mesh to get the vertices data from
          * @param binaryWriter The buffer to write the bufferview data to
+         * @param convertToRightHandedSystem Converts the values to right-handed
          */
         private createBufferViewKind;
         /**
@@ -77304,8 +77329,15 @@ declare module BABYLON.GLTF2.Exporter {
          * @param mesh glTF Mesh object to store the primitive attribute information
          * @param babylonTransformNode Babylon mesh to get the primitive attribute data from
          * @param binaryWriter Buffer to write the attribute data to
+         * @param convertToRightHandedSystem Converts the values to right-handed
          */
         private setPrimitiveAttributesAsync;
+        /**
+         * Check if the node is used to convert its descendants from a right handed coordinate system to the Babylon scene's coordinate system.
+         * @param node The node to check
+         * @returns True if the node is used to convert its descendants from right-handed to left-handed. False otherwise
+         */
+        private isBabylonCoordinateSystemConvertingNode;
         /**
          * Creates a glTF scene based on the array of meshes
          * Returns the the total byte offset
@@ -77325,6 +77357,7 @@ declare module BABYLON.GLTF2.Exporter {
          * Creates a glTF node from a Babylon mesh
          * @param babylonMesh Source Babylon mesh
          * @param binaryWriter Buffer for storing geometry data
+         * @param convertToRightHandedSystem Converts the values to right-handed
          * @returns glTF node
          */
         private createNodeAsync;
@@ -77470,6 +77503,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param bufferViews
          * @param accessors
          * @param convertToRightHandedSystem
+         * @param animationSampleRate
          */
         static _CreateNodeAnimationFromNodeAnimations(babylonNode: Node, runtimeGLTFAnimation: IAnimation, idleGLTFAnimations: IAnimation[], nodeMap: {
             [key: number]: number;
@@ -77484,11 +77518,14 @@ declare module BABYLON.GLTF2.Exporter {
          * @param binaryWriter
          * @param bufferViews
          * @param accessors
-         * @param convertToRightHandedSystem
+         * @param convertToRightHandedSystemMap
+         * @param animationSampleRate
          */
         static _CreateNodeAnimationFromAnimationGroups(babylonScene: Scene, glTFAnimations: IAnimation[], nodeMap: {
             [key: number]: number;
-        }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number): void;
+        }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystemMap: {
+            [nodeId: number]: boolean;
+        }, animationSampleRate: number): void;
         private static AddAnimation;
         /**
          * Create a baked animation

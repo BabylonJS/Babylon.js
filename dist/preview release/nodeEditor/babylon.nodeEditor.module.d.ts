@@ -233,6 +233,11 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         private _controlledPorts;
         private _id;
         private _comments;
+        private _frameIsResizing;
+        private _resizingDirection;
+        private _minFrameHeight;
+        private _minFrameWidth;
+        private mouseXLimit;
         onExpandStateChanged: Observable<GraphFrame>;
         private readonly CloseSVG;
         private readonly ExpandSVG;
@@ -267,6 +272,24 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         private _onUp;
         private _moveFrame;
         private _onMove;
+        private initResizing;
+        private cleanUpResizing;
+        private _onRightHandlePointerDown;
+        private _onRightHandlePointerMove;
+        private _expandRight;
+        private _onRightHandlePointerUp;
+        private _onBottomHandlePointerDown;
+        private _onBottomHandlePointerMove;
+        private _expandBottom;
+        private _onBottomHandlePointerUp;
+        private _onLeftHandlePointerDown;
+        private _onLeftHandlePointerMove;
+        private _expandLeft;
+        private _onLeftHandlePointerUp;
+        private _onTopHandlePointerDown;
+        private _onTopHandlePointerMove;
+        private _expandTop;
+        private _onTopHandlePointerUp;
         dispose(): void;
         serialize(): IFrameData;
         export(): void;
@@ -366,6 +389,7 @@ declare module "babylonjs-node-editor/diagram/graphCanvas" {
         get selectedLink(): Nullable<NodeLink>;
         get selectedFrame(): Nullable<GraphFrame>;
         get canvasContainer(): HTMLDivElement;
+        get hostCanvas(): HTMLDivElement;
         get svgCanvas(): HTMLElement;
         get selectionContainer(): HTMLDivElement;
         get frameContainer(): HTMLDivElement;
@@ -403,6 +427,7 @@ declare module "babylonjs-node-editor/sharedComponents/floatLineComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
     interface IFloatLineComponentProps {
         label: string;
         target: any;
@@ -413,6 +438,7 @@ declare module "babylonjs-node-editor/sharedComponents/floatLineComponent" {
         additionalClass?: string;
         step?: string;
         digits?: number;
+        globalState: GlobalState;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
@@ -1773,6 +1799,11 @@ declare module NODEEDITOR {
         private _controlledPorts;
         private _id;
         private _comments;
+        private _frameIsResizing;
+        private _resizingDirection;
+        private _minFrameHeight;
+        private _minFrameWidth;
+        private mouseXLimit;
         onExpandStateChanged: BABYLON.Observable<GraphFrame>;
         private readonly CloseSVG;
         private readonly ExpandSVG;
@@ -1807,6 +1838,24 @@ declare module NODEEDITOR {
         private _onUp;
         private _moveFrame;
         private _onMove;
+        private initResizing;
+        private cleanUpResizing;
+        private _onRightHandlePointerDown;
+        private _onRightHandlePointerMove;
+        private _expandRight;
+        private _onRightHandlePointerUp;
+        private _onBottomHandlePointerDown;
+        private _onBottomHandlePointerMove;
+        private _expandBottom;
+        private _onBottomHandlePointerUp;
+        private _onLeftHandlePointerDown;
+        private _onLeftHandlePointerMove;
+        private _expandLeft;
+        private _onLeftHandlePointerUp;
+        private _onTopHandlePointerDown;
+        private _onTopHandlePointerMove;
+        private _expandTop;
+        private _onTopHandlePointerUp;
         dispose(): void;
         serialize(): IFrameData;
         export(): void;
@@ -1893,6 +1942,7 @@ declare module NODEEDITOR {
         get selectedLink(): BABYLON.Nullable<NodeLink>;
         get selectedFrame(): BABYLON.Nullable<GraphFrame>;
         get canvasContainer(): HTMLDivElement;
+        get hostCanvas(): HTMLDivElement;
         get svgCanvas(): HTMLElement;
         get selectionContainer(): HTMLDivElement;
         get frameContainer(): HTMLDivElement;
@@ -1937,6 +1987,7 @@ declare module NODEEDITOR {
         additionalClass?: string;
         step?: string;
         digits?: number;
+        globalState: GlobalState;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;

@@ -9957,12 +9957,12 @@ declare module BABYLON {
          */
         intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
         /**
-     * Intersects the sprites with a ray
-     * @param ray defines the ray to intersect with
-     * @param camera defines the current active camera
-     * @param predicate defines a predicate used to select candidate sprites
-     * @returns null if no hit or a PickingInfo array
-     */
+         * Intersects the sprites with a ray
+         * @param ray defines the ray to intersect with
+         * @param camera defines the current active camera
+         * @param predicate defines a predicate used to select candidate sprites
+         * @returns null if no hit or a PickingInfo array
+         */
         multiIntersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean): Nullable<PickingInfo[]>;
         /**
          * Renders the list of sprites on screen.
@@ -10021,6 +10021,14 @@ declare module BABYLON {
          */
         get texture(): Texture;
         set texture(value: Texture);
+        private _blendMode;
+        /**
+         * Blend mode use to render the particle, it can be any of
+         * the static Constants.ALPHA_x properties provided in this class.
+         * Default value is Constants.ALPHA_COMBINE
+         */
+        get blendMode(): number;
+        set blendMode(blendMode: number);
         /**
          * Creates a new sprite manager
          * @param name defines the manager's name
@@ -33822,6 +33830,9 @@ declare module BABYLON {
          * @param buffer defines the webGL buffer to delete
          */
         deleteInstancesBuffer(buffer: WebGLBuffer): void;
+        private _clientWaitAsync;
+        /** @hidden */
+        _readPixelsAsync(x: number, y: number, w: number, h: number, format: number, type: number, outputBuffer: ArrayBufferView): Promise<ArrayBufferView> | null;
         /** @hidden */
         _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>): ArrayBufferView;
         dispose(): void;
@@ -38086,8 +38097,6 @@ declare module BABYLON {
         /**
          * Targets the given mesh and updates zoom level accordingly.
          * @param mesh  The mesh to target.
-         * @param radius Optional. If a cached radius position already exists, overrides default.
-         * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
          * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
          * @param onAnimationEnd Callback triggered at the end of the framing animation
          */
@@ -38095,8 +38104,6 @@ declare module BABYLON {
         /**
          * Targets the given mesh with its children and updates zoom level accordingly.
          * @param mesh  The mesh to target.
-         * @param radius Optional. If a cached radius position already exists, overrides default.
-         * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
          * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
          * @param onAnimationEnd Callback triggered at the end of the framing animation
          */
@@ -38104,8 +38111,6 @@ declare module BABYLON {
         /**
          * Targets the given meshes with their children and updates zoom level accordingly.
          * @param meshes  The mesh to target.
-         * @param radius Optional. If a cached radius position already exists, overrides default.
-         * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
          * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
          * @param onAnimationEnd Callback triggered at the end of the framing animation
          */
