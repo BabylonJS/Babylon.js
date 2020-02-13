@@ -411,7 +411,11 @@ namespace Babylon
         {
             bgfx::reset(w, h, BGFX_RESET_FLAGS);
             bgfx::setViewRect(0, 0, 0, w, h);
+#ifdef __APPLE__
             bgfx::frame();
+#else
+            bgfx::touch(0);
+#endif
         }
     }
 
