@@ -737,6 +737,9 @@ $line-padding-left: 2px;
                             align-items: center;
                             justify-items: center;
                             cursor: pointer;
+                            img {
+                                height: 100%;
+                            }
                         }
 
                         .expand {

@@ -5,6 +5,7 @@ import { NumericInputComponent } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus, faCopy } from "@fortawesome/free-solid-svg-icons";
 import { PropertyChangedEvent } from '../../propertyChangedEvent';
+import CopyIcon from "./copy.svg";
 
 export interface IColor4LineComponentProps {
     label: string;
@@ -154,7 +155,7 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
                         <input type="color" value={colorAsColor3.toHexString()} onChange={(evt) => this.onChange(evt.target.value)} />
                     </div>
                     <div className="copy hoverIcon" onClick={() => this.copyToClipboard()} title="Copy to clipboard">
-                        <FontAwesomeIcon icon={faCopy} />
+                        <img src={CopyIcon} alt=""/>
                     </div>
                     <div className="expand hoverIcon" onClick={() => this.switchExpandState()} title="Expand">
                         {chevron}
