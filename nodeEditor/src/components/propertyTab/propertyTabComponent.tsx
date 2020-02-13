@@ -83,7 +83,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             }
                             {
                                 !block.isBoolean && cantDisplaySlider &&
-                                <FloatLineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value" 
+                                <FloatLineComponent globalState={this.props.globalState} key={block.uniqueId} label={block.name} target={block} propertyName="value" 
                                 onChange={() => this.processInputBlockUpdate(block)}/>
                             }        
                             {

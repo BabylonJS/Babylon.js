@@ -24,8 +24,8 @@ export class ClampPropertyTabComponent extends React.Component<IPropertyComponen
             <div>
                 <GenericPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
                 <LineContainerComponent title="PROPERTIES">
-                  <FloatLineComponent label="Minimum" propertyName="minimum" target={clampBlock} onChange={() => this.forceRebuild()} />
-                  <FloatLineComponent label="Maximum" propertyName="maximum" target={clampBlock} onChange={() => this.forceRebuild()} />
+                  <FloatLineComponent globalState={this.props.globalState} label="Minimum" propertyName="minimum" target={clampBlock} onChange={() => this.forceRebuild()} />
+                  <FloatLineComponent globalState={this.props.globalState} label="Maximum" propertyName="maximum" target={clampBlock} onChange={() => this.forceRebuild()} />
                 </LineContainerComponent>
             </div>
         );
