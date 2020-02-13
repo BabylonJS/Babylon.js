@@ -151,6 +151,12 @@ export class SpriteManager implements ISpriteManager {
         this._blendMode = blendMode;
     }
 
+    /** Disables writing to the depth buffer when rendering the sprites.
+     *  It can be handy to disable depth writing when using textures without alpha channel
+     *  and setting some specific blend modes.
+    */
+    public disableDepthWrite: boolean = false;
+
     /**
      * Creates a new sprite manager
      * @param name defines the manager's name
@@ -263,8 +269,6 @@ export class SpriteManager implements ISpriteManager {
                 }
 
                 let spritemap = (<string[]>(<any>Reflect).ownKeys(celldata.frames));
-
-                console.log(spritemap);
 
                 this._spriteMap = spritemap;
                 this._packedAndReady = true;
@@ -576,11 +580,13 @@ export class SpriteManager implements ISpriteManager {
 
         // Draw order
         engine.setDepthFunctionToLessOrEqual();
-        effect.setBool("alphaTest", true);
-        engine.setColorWrite(false);
-        engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
-        engine.setColorWrite(true);
-        effect.setBool("alphaTest", false);
+        if (!this.disableDepthWrite) {
+            effect.setBool("alphaTest", true);
+            engine.setColorWrite(false);
+            engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
+            engine.setColorWrite(true);
+            effect.setBool("alphaTest", false);
+        }
 
         engine.setAlphaMode(this._blendMode);
         engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
