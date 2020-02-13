@@ -8,7 +8,7 @@
         },           
         {
             "title": "Sprite maps",
-            "playgroundId": "#ARLADE#22",
+            "playgroundId": "#ARLADE#23",
             "referenceImage": "sprite-maps.png",            
             "excludeFromAutomaticTesting": true
         },              
@@ -19,14 +19,14 @@
         },             
         {
             "title": "Node material #0",
-            "playgroundId": "#M5VQE9#16",
+            "playgroundId": "#M5VQE9#20",
             "referenceImage": "node-material0.png",
             "renderCount": 5,
             "excludeFromAutomaticTesting": true
         },    
         {
             "title": "Node material #1",
-            "playgroundId": "#QJ71C6#0",
+            "playgroundId": "#QJ71C6#1",
             "referenceImage": "node-material1.png",
             "renderCount": 20
         },     
