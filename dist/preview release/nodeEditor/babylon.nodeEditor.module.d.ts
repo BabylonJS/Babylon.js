@@ -427,6 +427,7 @@ declare module "babylonjs-node-editor/sharedComponents/floatLineComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
     interface IFloatLineComponentProps {
         label: string;
         target: any;
@@ -437,6 +438,7 @@ declare module "babylonjs-node-editor/sharedComponents/floatLineComponent" {
         additionalClass?: string;
         step?: string;
         digits?: number;
+        globalState: GlobalState;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
@@ -1985,6 +1987,7 @@ declare module NODEEDITOR {
         additionalClass?: string;
         step?: string;
         digits?: number;
+        globalState: GlobalState;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
