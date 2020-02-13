@@ -112,8 +112,6 @@ var loadDetailLevels = (scene: Scene, mesh: AbstractMesh) => {
 var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void, addToScene = false): AssetContainer => {
     var container = new AssetContainer(scene);
 
-    scene._blockEntityCollection = !addToScene;
-
     // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
     // when SceneLoader.debugLogging = true (default), or exception encountered.
     // Everything stored in var log instead of writing separate lines to support only writing in exception,
@@ -437,10 +435,6 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
         if (parsedData.actions !== undefined && parsedData.actions !== null) {
             ActionManager.Parse(parsedData.actions, null, scene);
         }
-
-        if (!addToScene) {
-            container.removeAllFromScene();
-        }
     } catch (err) {
         let msg = logOperation("loadAssets", parsedData ? parsedData.producer : "Unknown") + log;
         if (onError) {
@@ -450,7 +444,9 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
             throw err;
         }
     } finally {
-        scene._blockEntityCollection = false;
+        if (!addToScene) {
+            container.removeAllFromScene();
+        }
         if (log !== null && SceneLoader.loggingLevel !== SceneLoader.NO_LOGGING) {
             Logger.Log(logOperation("loadAssets", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
         }
