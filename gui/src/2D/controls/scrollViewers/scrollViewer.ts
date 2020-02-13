@@ -652,7 +652,7 @@ export class ScrollViewer extends Rectangle {
             return;
         }
 
-        this._onPointerObserver = this.onSVWheelObservable.add((pi) => {
+        this._onPointerObserver = this.onWheelObservable.add((pi) => {
             if (!this._pointerIsOver) {
                 return;
             }
