@@ -264,8 +264,6 @@ export class SpriteManager implements ISpriteManager {
 
                 let spritemap = (<string[]>(<any>Reflect).ownKeys(celldata.frames));
 
-                console.log(spritemap);
-
                 this._spriteMap = spritemap;
                 this._packedAndReady = true;
                 this._cellData = celldata.frames;
