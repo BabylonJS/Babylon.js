@@ -139,10 +139,19 @@
             color: #ffffff;
             width: 40px;
             height: 40px;
+            transform-origin: 50% 50%;
+            
+            &:active {
+                transform: scale(0.90);
+            }
 
             &:hover {
-                background-color: #3f3461;
+                background: #3f3461;
             }
+            
+            &.selected {
+                background: #9379e6;
+            } 
 
             img{
                 height: 40px;
@@ -192,9 +201,19 @@
             width: 40px;
             grid-row: 1;
             height: 40px;
+            transform-origin: 50% 50%;
 
-            &.selected, &:hover {
+            &:hover {
+                background: #3f3461;
+            }
+
+            &.selected {
                 background: #9379e6;
+            } 
+            
+
+            &:active {
+                transform: scale(0.90);
             }
 
             img{
