@@ -337,6 +337,7 @@
 - Fix subSurface parameters not copied in the PBR clone methods ([Popov72](https://github.com/Popov72))
 - Fix for bug where round-tripped glTF imported scenes are encapsulated in a second root node ([#6349](https://github.com/BabylonJS/Babylon.js/issues/6349))([drigax](https://github.com/drigax) & [noalak](https://github.com/noalak))
 - Fix `HDRCubeTexture` construction, `generateHarmonics` was not properly taken into account ([Popov72](https://github.com/Popov72))
+- VideoTexture poster respects invertY ([Sebavan](https://github.com/sebavan/)
 
 ## Breaking changes
 
