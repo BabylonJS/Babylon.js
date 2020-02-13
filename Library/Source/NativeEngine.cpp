@@ -296,7 +296,7 @@ namespace Babylon
         bgfx::touch(0);
     }
 
-    Napi::FunctionReference NativeEngine::CreateConstructor(Napi::Env& env)
+    void NativeEngine::Initialize(Napi::Env env)
     {
         // Initialize the JavaScript side.
         Napi::HandleScope scope{env};
@@ -375,17 +375,17 @@ namespace Babylon
                 InstanceMethod("encodeImage", &NativeEngine::EncodeImage),
             });
 
-        return Napi::Persistent(func);
+        env.Global().Get(JsRuntime::JS_NATIVE_NAME).As<Napi::Object>().Set(JS_ENGINE_CONSTRUCTOR_NAME, func);
     }
 
     NativeEngine::NativeEngine(const Napi::CallbackInfo& info)
-        : NativeEngine(info, RuntimeImpl::GetNativeWindowFromJavaScript(info.Env()))
+        : NativeEngine(info, NativeWindow::GetFromJavaScript(info.Env()))
     {
     }
 
     NativeEngine::NativeEngine(const Napi::CallbackInfo& info, NativeWindow& nativeWindow)
         : Napi::ObjectWrap<NativeEngine>{info}
-        , m_runtimeImpl{RuntimeImpl::GetRuntimeImplFromJavaScript(info.Env())}
+        , m_runtime{JsRuntime::GetFromJavaScript(info.Env())}
         , m_currentProgram{nullptr}
         , m_engineState{BGFX_STATE_DEFAULT}
         , m_resizeCallbackTicket{nativeWindow.AddOnResizeCallback([this](size_t width, size_t height) { this->UpdateSize(width, height); })}
@@ -1415,7 +1415,7 @@ namespace Babylon
         // put into a kind of function which requires a copy constructor for all of its captured variables.  Because
         // the Napi::FunctionReference is not copyable, this breaks when trying to capture the callback directly, so we
         // wrap it in a std::shared_ptr to allow the capture to function correctly.
-        m_runtimeImpl.Dispatch([this, callbackPtr = std::make_shared<Napi::FunctionReference>(std::move(callback))](Napi::Env) {
+        m_runtime.Dispatch([this, callbackPtr = std::make_shared<Napi::FunctionReference>(std::move(callback))](Napi::Env) {
             callbackPtr->Call({});
             EndFrame();
         });
@@ -1430,7 +1430,7 @@ namespace Babylon
 
     void NativeEngine::Dispatch(std::function<void()> function)
     {
-        m_runtimeImpl.Dispatch([function = std::move(function)](Napi::Env) {
+        m_runtime.Dispatch([function = std::move(function)](Napi::Env) {
             function();
         });
     }

@@ -17,9 +17,6 @@ namespace Babylon
     class RuntimeImpl final
     {
     public:
-        static RuntimeImpl& GetRuntimeImplFromJavaScript(Napi::Env);
-        static NativeWindow& GetNativeWindowFromJavaScript(Napi::Env);
-
         RuntimeImpl(void* nativeWindowPtr, const std::string& rootUrl);
         virtual ~RuntimeImpl();
 
@@ -32,31 +29,13 @@ namespace Babylon
         void Dispatch(std::function<void(Napi::Env)> callback);
         const std::string& RootUrl() const;
 
-        std::string GetAbsoluteUrl(const std::string& url);
-        template<typename T>
-        arcana::task<T, std::exception_ptr> LoadUrlAsync(const std::string& url);
-
-        arcana::manual_dispatcher<babylon_dispatcher::work_size>& Dispatcher();
-        arcana::cancellation& Cancellation();
-
-        // TODO: Reduce exposure of Task and mutex once we decide on an effective alternative.
-        // Appending to the task chain is NOT thread-safe.  Before setting the RuntimeImpl's Task
-        // to a new value, AcquireTaskLock MUST be called.  Correct usage is something like the
-        // following:
-        //
-        //     auto lock = RuntimeImpl.AcquireTaskLock();
-        //     RuntimeImpl.Task = RuntimeImpl.Task.then(...);
-        //
-        arcana::task<void, std::exception_ptr> Task = arcana::task_from_result<std::exception_ptr>();
-        std::scoped_lock<std::mutex> AcquireTaskLock();
-
-        void* GetNativeWindow() const { return m_nativeWindowPtr; }
     private:
-        void InitializeJavaScriptVariables(size_t width, size_t height);
+        void InitializeJavaScriptVariables(Napi::Env);
         void RunJavaScript(Napi::Env);
         void BaseThreadProcedure();
         void ThreadProcedure();
 
+        arcana::task<void, std::exception_ptr> m_task = arcana::task_from_result<std::exception_ptr>();
         using DispatcherT = arcana::manual_dispatcher<babylon_dispatcher::work_size>;
         std::unique_ptr<DispatcherT> m_dispatcher{};
         arcana::cancellation_source m_cancelSource{};

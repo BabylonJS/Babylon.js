@@ -2,9 +2,10 @@
 
 #include "NativeWindow.h"
 #include "ShaderCompiler.h"
-#include "RuntimeImpl.h"
 #include "BgfxCallback.h"
 #include "ticketed_collection.h"
+
+#include <Babylon/JsRuntime.h>
 
 #include <napi/napi.h>
 
@@ -303,6 +304,7 @@ namespace Babylon
     class NativeEngine final : public Napi::ObjectWrap<NativeEngine>
     {
         static constexpr auto JS_CLASS_NAME = "_NativeEngine";
+        static constexpr auto JS_ENGINE_CONSTRUCTOR_NAME = "Engine";
 
     public:
         NativeEngine(const Napi::CallbackInfo& info);
@@ -310,7 +312,7 @@ namespace Babylon
         ~NativeEngine();
 
         static void InitializeWindow(void* nativeWindowPtr, uint32_t width, uint32_t height);
-        static Napi::FunctionReference CreateConstructor(Napi::Env&);
+        static void Initialize(Napi::Env);
 
         FrameBufferManager& GetFrameBufferManager();
         void Dispatch(std::function<void()>);
@@ -395,7 +397,7 @@ namespace Babylon
         ProgramData* m_currentProgram;
         ticketed_collection<std::unique_ptr<ProgramData>> m_programDataCollection{};
 
-        RuntimeImpl& m_runtimeImpl;
+        JsRuntime& m_runtime;
 
         bx::DefaultAllocator m_allocator;
         uint64_t m_engineState;

@@ -1,10 +1,12 @@
 #include "XMLHttpRequest.h"
-#include "RuntimeImpl.h"
-#include <curl/curl.h>
+
+#include "NetworkUtils.h"
+
+#include <Babylon/JsRuntime.h>
 
 namespace Babylon
 {
-    Napi::FunctionReference XMLHttpRequest::CreateConstructor(Napi::Env& env)
+    void XMLHttpRequest::Initialize(Napi::Env env, const char* rootUrl)
     {
         Napi::HandleScope scope{env};
 
@@ -27,14 +29,15 @@ namespace Babylon
                 InstanceMethod("removeEventListener", &XMLHttpRequest::RemoveEventListener),
                 InstanceMethod("open", &XMLHttpRequest::Open),
                 InstanceMethod("send", &XMLHttpRequest::Send),
-            });
+            }, const_cast<char*>(rootUrl));
 
-        return Napi::Persistent(func);
+        env.Global().Set(JS_XML_HTTP_REQUEST_CONSTRUCTOR_NAME, func);
     }
 
     XMLHttpRequest::XMLHttpRequest(const Napi::CallbackInfo& info)
         : Napi::ObjectWrap<XMLHttpRequest>{info}
-        , m_runtimeImpl{RuntimeImpl::GetRuntimeImplFromJavaScript(info.Env())}
+        , m_runtime{JsRuntime::GetFromJavaScript(info.Env())}
+        , m_rootUrl{static_cast<const char*>(info.Data())}
     {
     }
 
@@ -112,13 +115,13 @@ namespace Babylon
     void XMLHttpRequest::Open(const Napi::CallbackInfo& info)
     {
         m_method = info[0].As<Napi::String>().Utf8Value();
-        m_url = m_runtimeImpl.GetAbsoluteUrl(info[1].As<Napi::String>().Utf8Value());
+        m_url = GetAbsoluteUrl(info[1].As<Napi::String>().Utf8Value(), m_rootUrl);
         SetReadyState(ReadyState::Opened);
     }
 
     void XMLHttpRequest::Send(const Napi::CallbackInfo& info)
     {
-        m_runtimeImpl.Dispatch(std::function<arcana::task<void, std::exception_ptr>(Napi::Env)>{
+        m_runtime.Dispatch(std::function<arcana::task<void, std::exception_ptr>(Napi::Env)>{
             [this](Napi::Env) {
                 return SendAsync();
             }
@@ -130,30 +133,37 @@ namespace Babylon
     {
         if (m_responseType.empty() || m_responseType == XMLHttpRequestTypes::ResponseType::Text)
         {
-            return m_runtimeImpl.LoadUrlAsync<std::string>(m_url).then(arcana::inline_scheduler, m_runtimeImpl.Cancellation(), [this](const std::string& data)
+            return LoadTextAsync(m_url).then(arcana::inline_scheduler, arcana::cancellation::none(), [this](const std::string& data)
             {
-                // check UTF-8 BOM encoding
-                if (data.size() >= 3 && data[0] == '\xEF' && data[1] == '\xBB' && data[2] == '\xBF')
+                m_runtime.Dispatch([this, data = data](Napi::Env)
                 {
-                    m_responseText = data.substr(3);
-                }
-                else
-                {
-                    // UTF8 encoding
-                    m_responseText = std::move(data);
-                }
+                    // check UTF-8 BOM encoding
+                    if (data.size() >= 3 && data[0] == '\xEF' && data[1] == '\xBB' && data[2] == '\xBF')
+                    {
+                        m_responseText = data.substr(3);
+                    }
+                    else
+                    {
+                        // UTF8 encoding
+                        m_responseText = std::move(data);
+                    }
 
-                m_status = HTTPStatusCode::Ok;
-                SetReadyState(ReadyState::Done);
+                    m_status = HTTPStatusCode::Ok;
+                    SetReadyState(ReadyState::Done);
+                });
             });
         }
         else if (m_responseType == XMLHttpRequestTypes::ResponseType::ArrayBuffer)
         {
-            return m_runtimeImpl.LoadUrlAsync<std::vector<char>>(m_url).then(arcana::inline_scheduler, m_runtimeImpl.Cancellation(), [this](const std::vector<char>& data) {
-                m_response = Napi::Persistent(Napi::ArrayBuffer::New(Env(), data.size()));
-                memcpy(m_response.Value().Data(), data.data(), data.size());
-                m_status = HTTPStatusCode::Ok;
-                SetReadyState(ReadyState::Done);
+            return LoadBinaryAsync(m_url).then(arcana::inline_scheduler, arcana::cancellation::none(), [this](const std::vector<uint8_t>& data)
+            {
+                m_runtime.Dispatch([this, data = data](Napi::Env)
+                {
+                    m_response = Napi::Persistent(Napi::ArrayBuffer::New(Env(), data.size()));
+                    memcpy(m_response.Value().Data(), data.data(), data.size());
+                    m_status = HTTPStatusCode::Ok;
+                    SetReadyState(ReadyState::Done);
+                });
             });
         }
         else

@@ -2,19 +2,21 @@
 
 #include "ticketed_collection.h"
 
-#include "napi/napi.h"
-#include "RuntimeImpl.h"
+#include <Babylon/JsRuntime.h>
+
+#include <napi/napi.h>
+
+#include <chrono>
 
 namespace Babylon
 {
     class NativeWindow : public Napi::ObjectWrap<NativeWindow>
     {
+        static constexpr auto JS_NATIVE_WINDOW_NAME = "nativeWindow";
+
     public:
-        static Napi::ObjectReference Create(Napi::Env& env, void* windowPtr, size_t width, size_t height);
-        static Napi::FunctionReference GetSetTimeoutFunction(Napi::ObjectReference& nativeWindow);
-        static Napi::FunctionReference GetAToBFunction(Napi::ObjectReference& nativeWindow);
-        static Napi::FunctionReference GetAddEventListener(Napi::ObjectReference& nativeWindow);
-        static Napi::FunctionReference GetRemoveEventListener(Napi::ObjectReference& nativeWindow);
+        static void Initialize(Napi::Env env, void* windowPtr, size_t width, size_t height);
+        static NativeWindow& GetFromJavaScript(Napi::Env);
 
         NativeWindow(const Napi::CallbackInfo& info);
 
@@ -29,7 +31,7 @@ namespace Babylon
         size_t GetHeight() const;
 
     private:
-        RuntimeImpl& m_runtimeImpl;
+        JsRuntime& m_runtime;
         void* m_windowPtr{};
         size_t m_width{};
         size_t m_height{};

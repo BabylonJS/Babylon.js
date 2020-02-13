@@ -15,7 +15,7 @@ namespace Babylon
     {
         // OpenGL initialization must happen in the same thread as the rendering.
         // GL context it associated to 1 thread.
-        m_impl->Dispatcher().queue([width, height, nativeWindowPtr] {
+        m_impl->Dispatch([width, height, nativeWindowPtr](Napi::Env) {
             NativeEngine::InitializeWindow(nativeWindowPtr, static_cast<uint32_t>(width), static_cast<uint32_t>(height));
         });
     }

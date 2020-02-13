@@ -2,43 +2,14 @@
 
 #include "NativeEngine.h"
 #include "NativeWindow.h"
+#include "NetworkUtils.h"
 #include "XMLHttpRequest.h"
 
-#include <curl/curl.h>
 #include <napi/env.h>
 #include <sstream>
 
-// TODO : this is a workaround for asset loading on Android. To remove when the plugin system is in place.
-#if (ANDROID)
-#include <android/asset_manager.h>
-extern AAssetManager* g_assetMgrNative;
-#endif
-
 namespace Babylon
 {
-    namespace
-    {
-        static constexpr auto JS_WINDOW_NAME = "window";
-        static constexpr auto JS_NATIVE_NAME = "_native";
-        static constexpr auto JS_RUNTIME_NAME = "runtime";
-        static constexpr auto JS_NATIVE_WINDOW_NAME = "window";
-
-        static constexpr auto JS_ENGINE_CONSTRUCTOR_NAME = "Engine";
-        static constexpr auto JS_XML_HTTP_REQUEST_CONSTRUCTOR_NAME = "XMLHttpRequest";
-    }
-
-    RuntimeImpl& RuntimeImpl::GetRuntimeImplFromJavaScript(Napi::Env env)
-    {
-        const auto& _native{env.Global().Get(JS_NATIVE_NAME).ToObject()};
-        return *_native.Get(JS_RUNTIME_NAME).As<Napi::External<RuntimeImpl>>().Data();
-    }
-
-    NativeWindow& RuntimeImpl::GetNativeWindowFromJavaScript(Napi::Env env)
-    {
-        const auto& _native{env.Global().Get(JS_NATIVE_NAME).ToObject()};
-        return *NativeWindow::Unwrap(_native.Get(JS_WINDOW_NAME).ToObject());
-    }
-
     RuntimeImpl::RuntimeImpl(void* nativeWindowPtr, const std::string& rootUrl)
         : m_dispatcher{std::make_unique<DispatcherT>()}
         , m_nativeWindowPtr{nativeWindowPtr}
@@ -59,8 +30,9 @@ namespace Babylon
 
     void RuntimeImpl::UpdateSize(float width, float height)
     {
-        m_dispatcher->queue([width, height, this] {
-            auto& window = RuntimeImpl::GetNativeWindowFromJavaScript(*m_env);
+        Dispatch([width, height](Napi::Env env)
+        {
+            auto& window = NativeWindow::GetFromJavaScript(env);
             window.Resize(static_cast<size_t>(width), static_cast<size_t>(height));
         });
     }
@@ -77,7 +49,7 @@ namespace Babylon
             pd.backBufferDS = NULL;
             bgfx::setPlatformData(pd);
             bgfx::reset(width, height);
-            auto& window = RuntimeImpl::GetNativeWindowFromJavaScript(*m_env);
+            auto& window = NativeWindow::GetFromJavaScript(*m_env);
             window.Resize(static_cast<size_t>(width), static_cast<size_t>(height));
         });
     }
@@ -100,25 +72,27 @@ namespace Babylon
 
     void RuntimeImpl::LoadScript(const std::string& url)
     {
-        auto lock = AcquireTaskLock();
-        auto whenAllTask = arcana::when_all(LoadUrlAsync<std::string>(GetAbsoluteUrl(url).data()), Task);
-        Task = whenAllTask.then(*m_dispatcher, m_cancelSource, [this, url](const std::tuple<std::string, arcana::void_placeholder>& args) {
+        std::scoped_lock lock{m_taskMutex};
+        auto absoluteUrl = GetAbsoluteUrl(url, m_rootUrl);
+        auto loadUrlTask = LoadTextAsync(std::move(absoluteUrl));
+        auto whenAllTask = arcana::when_all(loadUrlTask, m_task);
+        m_task = whenAllTask.then(*m_dispatcher, m_cancelSource, [this, url](const std::tuple<std::string, arcana::void_placeholder>& args) {
             Napi::Eval(*m_env, std::get<0>(args).data(), url.data());
         });
     }
 
     void RuntimeImpl::Eval(const std::string& string, const std::string& sourceUrl)
     {
-        auto lock = AcquireTaskLock();
-        Task = Task.then(*m_dispatcher, m_cancelSource, [this, string, sourceUrl]() {
+        std::scoped_lock lock{m_taskMutex};
+        m_task = m_task.then(*m_dispatcher, m_cancelSource, [this, string, sourceUrl]() {
             Napi::Eval(*m_env, string.data(), sourceUrl.data());
         });
     }
 
     void RuntimeImpl::Dispatch(std::function<void(Napi::Env)> func)
     {
-        auto lock = AcquireTaskLock();
-        Task = Task.then(*m_dispatcher, m_cancelSource, [func = std::move(func), this]() {
+        std::scoped_lock lock{m_taskMutex};
+        m_task = m_task.then(*m_dispatcher, m_cancelSource, [func = std::move(func), this]() {
             func(*m_env);
         });
     }
@@ -128,145 +102,12 @@ namespace Babylon
         return m_rootUrl;
     }
 
-    std::string RuntimeImpl::GetAbsoluteUrl(const std::string& url)
+    void RuntimeImpl::InitializeJavaScriptVariables(Napi::Env env)
     {
-
-// TODO : this is a workaround for asset loading on Android. To remove when the plugin system is in place.
-#if (ANDROID)
-        AAsset *asset = AAssetManager_open(g_assetMgrNative, url.c_str(),
-                                            AASSET_MODE_UNKNOWN);
-        if (asset)
-        {
-            return url;
-        }
-#endif
-        auto curl = curl_url();
-
-        auto code = curl_url_set(curl, CURLUPART_URL, url.data(), 0);
-
-        // If input could not be turned into a valid URL, try using it as a regular URL.
-        if (code == CURLUE_MALFORMED_INPUT)
-        {
-            code = curl_url_set(curl, CURLUPART_URL, (m_rootUrl + "/" + url).data(), 0);
-        }
-
-        if (code != CURLUE_OK)
-        {
-            throw std::exception{};
-        }
-
-        char* buf;
-        code = curl_url_get(curl, CURLUPART_URL, &buf, 0);
-
-        if (code != CURLUE_OK)
-        {
-            throw std::exception{};
-        }
-
-        std::string absoluteUrl{buf};
-
-        curl_free(buf);
-        curl_url_cleanup(curl);
-
-        return std::move(absoluteUrl);
-    }
-
-    template<typename T>
-    arcana::task<T, std::exception_ptr> RuntimeImpl::LoadUrlAsync(const std::string& url)
-    {
-        return arcana::make_task(*m_dispatcher, m_cancelSource, [url]() {
-            T data{};
-
-// TODO : this is a workaround for asset loading on Android. To remove when the plugin system is in place.
-#if (ANDROID)
-            AAsset *asset = AAssetManager_open(g_assetMgrNative, url.c_str(),
-                                                AASSET_MODE_UNKNOWN);
-            if (asset)
-            {
-                size_t size = AAsset_getLength64(asset);
-                data.resize(size);
-                AAsset_read(asset, data.data(), size);
-                AAsset_close(asset);
-                return std::move(data);
-            }
-#endif
-            auto curl = curl_easy_init();
-            if (curl)
-            {
-                curl_easy_setopt(curl, CURLOPT_URL, url.data());
-                curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-
-                curl_write_callback callback = [](char* buffer, size_t size, size_t nitems, void* userData) {
-                    auto& data = *static_cast<T*>(userData);
-                    data.insert(data.end(), buffer, buffer + nitems);
-                    return nitems;
-                };
-
-                curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, callback);
-                curl_easy_setopt(curl, CURLOPT_WRITEDATA, &data);
-
-#if (ANDROID)
-                /*
-                 * /!\ warning! this is a security issue
-                 * https://github.com/BabylonJS/BabylonNative/issues/96
-                 */
-                curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0);
-                curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
-#endif
-
-                auto result = curl_easy_perform(curl);
-                if (result != CURLE_OK)
-                {
-                    throw std::exception();
-                }
-
-                curl_easy_cleanup(curl);
-            }
-
-            return std::move(data);
-        });
-    }
-
-    RuntimeImpl::DispatcherT& RuntimeImpl::Dispatcher()
-    {
-        return *m_dispatcher;
-    }
-
-    arcana::cancellation& RuntimeImpl::Cancellation()
-    {
-        return m_cancelSource;
-    }
-
-    std::scoped_lock<std::mutex> RuntimeImpl::AcquireTaskLock()
-    {
-        return std::scoped_lock{m_taskMutex};
-    }
-
-    void RuntimeImpl::InitializeJavaScriptVariables(size_t width, size_t height)
-    {
-        auto env = *m_env;
-        auto global = env.Global();
-
-        global.Set(JS_WINDOW_NAME, global);
-
-        auto jsNative = Napi::Object::New(env);
-        global.Set(JS_NATIVE_NAME, jsNative);
-
-        auto jsRuntime = Napi::External<RuntimeImpl>::New(env, this);
-        jsNative.Set(JS_RUNTIME_NAME, jsRuntime);
-
-        auto jsWindow = NativeWindow::Create(env, m_nativeWindowPtr, width, height);
-        jsNative.Set(JS_NATIVE_WINDOW_NAME, jsWindow.Value());
-        global.Set("setTimeout", NativeWindow::GetSetTimeoutFunction(jsWindow).Value());
-        global.Set("atob", NativeWindow::GetAToBFunction(jsWindow).Value());
-        global.Set("addEventListener", NativeWindow::GetAddEventListener(jsWindow).Value());
-        global.Set("removeEventListener", NativeWindow::GetRemoveEventListener(jsWindow).Value());
-
-        auto jsNativeEngineConstructor = NativeEngine::CreateConstructor(env);
-        jsNative.Set(JS_ENGINE_CONSTRUCTOR_NAME, jsNativeEngineConstructor.Value());
-
-        auto jsXmlHttpRequestConstructor = XMLHttpRequest::CreateConstructor(env);
-        global.Set(JS_XML_HTTP_REQUEST_CONSTRUCTOR_NAME, jsXmlHttpRequestConstructor.Value());
+        JsRuntime::Initialize(env, [this](std::function<void(Napi::Env)> func){ Dispatch(std::move(func)); });
+        NativeWindow::Initialize(env, m_nativeWindowPtr, 32, 32);
+        NativeEngine::Initialize(env);
+        XMLHttpRequest::Initialize(env, m_rootUrl.c_str());
     }
 
     void RuntimeImpl::RunJavaScript(Napi::Env env)
@@ -279,12 +120,12 @@ namespace Babylon
             // Because the dispatcher and task may take references to the N-API environment,
             // they must be cleared before the env itself is destroyed.
             m_dispatcher.reset();
-            Task = arcana::task_from_result<std::exception_ptr>();
+            m_task = arcana::task_from_result<std::exception_ptr>();
 
             m_env = nullptr;
         });
 
-        InitializeJavaScriptVariables(32, 32);
+        InitializeJavaScriptVariables(env);
 
         // TODO: Handle device lost/restored.
 
@@ -301,7 +142,4 @@ namespace Babylon
             }
         }
     }
-
-    template arcana::task<std::string, std::exception_ptr> RuntimeImpl::LoadUrlAsync(const std::string& url);
-    template arcana::task<std::vector<char>, std::exception_ptr> RuntimeImpl::LoadUrlAsync(const std::string& url);
 }
