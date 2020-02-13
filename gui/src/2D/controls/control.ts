@@ -233,7 +233,7 @@ export class Control {
     /**
     * An event triggered when pointer wheel is scrolled
     */
-    public onSVWheelObservable = new Observable<Vector2>();
+    public onWheelObservable = new Observable<Vector2>();
     /**
     * An event triggered when the pointer move over the control.
     */
@@ -1801,6 +1801,16 @@ export class Control {
     }
 
     /** @hidden */
+    public _onWheelScroll(deltaX?: number, deltaY?: number): void {
+        if (!this._isEnabled) {
+            return;
+        }
+        var canNotify: boolean = this.onWheelObservable.notifyObservers(new Vector2(deltaX, deltaY));
+
+        if (canNotify && this.parent != null) { this.parent._onWheelScroll(deltaX, deltaY); }
+    }
+
+    /** @hidden */
     public _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled) {
             return false;
@@ -1839,15 +1849,8 @@ export class Control {
 
         if (type === PointerEventTypes.POINTERWHEEL) {
             if (this._host._lastControlOver[pointerId]) {
-                var control = this._host._lastControlOver[pointerId];
-                while (control.parent && control.parent.getClassName() !== "ScrollViewer") {
-                    control = control.parent;
-                }
-                if (control.parent) {
-                    if (control.parent.getClassName() === "ScrollViewer") {
-                        control.parent.onSVWheelObservable.notifyObservers(new Vector2(deltaX, deltaY));
-                    }
-                }
+                this._host._lastControlOver[pointerId]._onWheelScroll(deltaX, deltaY);
+                return true;
             }
         }
 
