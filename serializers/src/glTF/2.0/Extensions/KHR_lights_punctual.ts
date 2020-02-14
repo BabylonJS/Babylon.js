@@ -82,11 +82,12 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
      * @param context The context when exporting the node
      * @param node glTF node
      * @param babylonNode BabylonJS node
+     * @param nodeMap Node mapping of unique id to glTF node index
      * @returns nullable INode promise
      */
     public postExportNodeAsync(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap?: {[key: number]: number}): Promise<Nullable<INode>> {
         return new Promise((resolve, reject) => {
-            if ( node && babylonNode instanceof ShadowLight) {
+            if (node && babylonNode instanceof ShadowLight) {
                 const babylonLight: ShadowLight = babylonNode;
                 let light: ILight;
 

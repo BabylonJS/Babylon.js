@@ -1,6 +1,6 @@
 import { ImageMimeType, IMeshPrimitive, INode, IMaterial, ITextureInfo } from "babylonjs-gltf2interface";
 import { Node } from "babylonjs/node";
-import { Nullable } from "babylonjs/types"
+import { Nullable } from "babylonjs/types";
 
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
@@ -53,7 +53,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * @param babylonNode BabylonJS node
      * @returns nullable INode promise
      */
-    postExportNodeAsync?(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap?:{[key: number]: number}): Promise<Nullable<INode>>;
+    postExportNodeAsync?(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap?: {[key: number]: number}): Promise<Nullable<INode>>;
 
     /**
      * Define this method to modify the default behavior when exporting a material
