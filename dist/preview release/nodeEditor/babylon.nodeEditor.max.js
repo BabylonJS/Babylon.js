@@ -5582,7 +5582,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "#graph-canvas {\n  width: 100%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  font: 14px \"acumin-pro\";\n  user-select: none;\n  overflow: hidden;\n  cursor: move;\n  background-image: linear-gradient(to right, #4F4E4F 1px, transparent 1px), linear-gradient(to bottom, #4F4E4F 1px, transparent 1px); }\n  #graph-canvas #selection-container {\n    pointer-events: none; }\n    #graph-canvas #selection-container .selection-box {\n      z-index: 10;\n      position: absolute;\n      background: rgba(72, 72, 196, 0.5);\n      border: blue solid 2px; }\n  #graph-canvas .port {\n    border-radius: 20px;\n    width: 20px;\n    height: 20px;\n    align-self: center; }\n    #graph-canvas .port .img {\n      width: 100%; }\n    #graph-canvas .port:hover, #graph-canvas .port.selected {\n      filter: brightness(2); }\n  #graph-canvas .portLine {\n    height: 24px;\n    display: grid;\n    grid-template-rows: 100%; }\n  #graph-canvas .port-label {\n    align-items: center; }\n  #graph-canvas .inputsContainer {\n    grid-row: 1;\n    grid-column: 1; }\n    #graph-canvas .inputsContainer .portLine {\n      grid-template-columns: 12px calc(100% - 15px); }\n      #graph-canvas .inputsContainer .portLine .port-label {\n        grid-row: 1;\n        grid-column: 2; }\n      #graph-canvas .inputsContainer .portLine .port {\n        grid-row: 1;\n        grid-column: 1;\n        transform: translateX(-12px); }\n  #graph-canvas .outputsContainer {\n    grid-row: 1;\n    grid-column: 2; }\n    #graph-canvas .outputsContainer .portLine {\n      grid-template-columns: calc(100% - 10px) 12px; }\n      #graph-canvas .outputsContainer .portLine .port-label {\n        grid-row: 1;\n        grid-column: 1;\n        text-align: right; }\n      #graph-canvas .outputsContainer .portLine .port {\n        grid-row: 1;\n        grid-column: 2;\n        transform: translateX(2px); }\n  #graph-canvas #graph-container {\n    width: 100%;\n    height: 100%;\n    left: 0;\n    top: 0;\n    transform-origin: left top;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #graph-canvas #graph-container #frame-container {\n      overflow: visible;\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n    #graph-canvas #graph-container .frame-box {\n      position: absolute;\n      background: rgba(72, 72, 72, 0.7);\n      display: grid;\n      grid-template-rows: 40px calc(100% - 40px);\n      grid-template-columns: 100%;\n      box-sizing: border-box; }\n      #graph-canvas #graph-container .frame-box.collapsed {\n        height: auto !important;\n        width: 200px !important; }\n        #graph-canvas #graph-container .frame-box.collapsed .frame-box-header {\n          font-size: 16px;\n          grid-template-columns: calc(100% - 37px) 30px 7px; }\n          #graph-canvas #graph-container .frame-box.collapsed .frame-box-header .frame-box-header-collapse {\n            margin-top: -2px; }\n          #graph-canvas #graph-container .frame-box.collapsed .frame-box-header .frame-box-header-close {\n            display: none; }\n      #graph-canvas #graph-container .frame-box .frame-box-border {\n        grid-row: 1 / span 2;\n        grid-column: 1;\n        width: 100%;\n        height: 100%;\n        border: transparent solid 4px;\n        pointer-events: none;\n        box-sizing: border-box; }\n      #graph-canvas #graph-container .frame-box .frame-box-header {\n        grid-row: 1;\n        grid-column: 1;\n        background: #484848;\n        color: white;\n        font-size: 24px;\n        text-align: center;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: calc(100% - 74px) 30px 7px 30px 7px;\n        align-content: center;\n        overflow: hidden; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-button {\n          cursor: pointer;\n          align-self: center;\n          transform-origin: 50% 50%;\n          transform: scale(1);\n          stroke: transparent;\n          fill: white;\n          display: grid; }\n          #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-button.down {\n            transform: scale(0.9); }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-collapse {\n          grid-column: 2;\n          grid-row: 1; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-close {\n          grid-column: 4;\n          grid-row: 1; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-title {\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          height: 100%;\n          width: 100%;\n          align-self: stretch;\n          align-items: center;\n          margin-top: -2px; }\n      #graph-canvas #graph-container .frame-box .port-container {\n        margin-top: 6px;\n        margin-bottom: 6px;\n        margin-left: 4px;\n        margin-right: 4px;\n        color: white;\n        grid-row: 2;\n        grid-column: 1;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: 50% 50%;\n        z-index: 2; }\n      #graph-canvas #graph-container .frame-box.selected .frame-box-border {\n        border-color: white; }\n      #graph-canvas #graph-container .frame-box .handle {\n        z-index: 20; }\n      #graph-canvas #graph-container .frame-box .right-handle {\n        grid-area: 1 / 2 / 3 / 2;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .right-handle::after {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px;\n          cursor: ew-resize; }\n      #graph-canvas #graph-container .frame-box .left-handle {\n        grid-area: 1 / 1 / 3 / 1;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .left-handle::before {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px; }\n      #graph-canvas #graph-container .frame-box .top-handle {\n        grid-area: 1 / 1 / 1 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #graph-canvas #graph-container .frame-box .top-handle::before {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: -4px;\n          bottom: 100%;\n          right: 0;\n          left: 0;\n          margin-bottom: -8px;\n          cursor: ns-resize;\n          height: 8px; }\n      #graph-canvas #graph-container .frame-box .bottom-handle {\n        grid-area: 3 / 1 / 3 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #graph-canvas #graph-container .frame-box .bottom-handle::after {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: 100%;\n          bottom: 0;\n          right: 0;\n          left: 0;\n          margin-top: -8px;\n          cursor: ns-resize;\n          height: 12px; }\n    #graph-canvas #graph-container #graph-svg-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%;\n      overflow: visible;\n      pointer-events: none;\n      z-index: 2; }\n      #graph-canvas #graph-container #graph-svg-container .link {\n        stroke-width: 4px; }\n        #graph-canvas #graph-container #graph-svg-container .link.selected {\n          stroke: white !important;\n          stroke-dasharray: 10, 2; }\n        #graph-canvas #graph-container #graph-svg-container .link.hidden {\n          display: none; }\n      #graph-canvas #graph-container #graph-svg-container .selection-link {\n        pointer-events: all;\n        stroke-width: 16px;\n        opacity: 0;\n        transition: opacity 75ms;\n        stroke: transparent;\n        cursor: pointer; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link.hidden {\n          display: none; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link:hover, #graph-canvas #graph-container #graph-svg-container .selection-link.selected {\n          stroke: white !important;\n          opacity: 0.4; }\n    #graph-canvas #graph-container #graph-canvas-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n      #graph-canvas #graph-container #graph-canvas-container .visual {\n        z-index: 3;\n        width: 200px;\n        position: absolute;\n        left: 0;\n        top: 0;\n        background: gray;\n        border: 4px solid black;\n        border-radius: 12px;\n        display: grid;\n        grid-template-rows: 30px auto;\n        grid-template-columns: 100%;\n        color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.hidden {\n          display: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .comments {\n          position: absolute;\n          top: -50px;\n          width: 200px;\n          height: 45px;\n          overflow: hidden;\n          font-style: italic;\n          opacity: 0.8;\n          display: grid;\n          align-items: flex-end;\n          pointer-events: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .selection-border {\n          grid-row: 1 / span 3;\n          grid-column: 1;\n          margin: -4px;\n          transition: border-color 100ms;\n          border: 4px solid black;\n          border-radius: 12px; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.selected .selection-border {\n          border-color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .header {\n          grid-row: 1;\n          grid-column: 1;\n          border: 4px solid black;\n          border-top-right-radius: 7px;\n          border-top-left-radius: 7px;\n          font-size: 16px;\n          text-align: center;\n          margin-top: -1px;\n          margin-left: -1px;\n          margin-right: -1px;\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden;\n          background: black;\n          color: white; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.constant {\n            border-color: #4E5C74;\n            background: #4E5C74; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.inspector {\n            border-color: #396437;\n            background: #396437; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .connections {\n          grid-row: 2;\n          grid-column: 1;\n          display: grid;\n          grid-template-columns: 50% 50%; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .content {\n          min-height: 20px;\n          grid-row: 3;\n          grid-column: 1; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block {\n            grid-row: 2;\n            min-height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px 5px;\n            display: grid;\n            align-content: center; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block.small-font {\n              font-size: 17px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.output-block {\n            min-height: 0px;\n            height: 5px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.clamp-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.gradient-block {\n            grid-row: 2;\n            height: 34px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block {\n            grid-row: 3;\n            height: 140px;\n            width: 140px;\n            overflow: hidden;\n            border-bottom-left-radius: 7px;\n            border: black 4px solid;\n            border-left: 0px;\n            border-bottom: 0px; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img {\n              width: 100%;\n              height: 100%;\n              pointer-events: none; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img.empty {\n                display: none; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.regular-texture-block {\n            margin-top: -115px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.remap-block {\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.trigonometry-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n", ""]);
+exports.push([module.i, "#graph-canvas {\n  width: 100%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  font: 14px \"acumin-pro\";\n  user-select: none;\n  overflow: hidden;\n  cursor: move;\n  background-image: linear-gradient(to right, #4F4E4F 1px, transparent 1px), linear-gradient(to bottom, #4F4E4F 1px, transparent 1px); }\n  #graph-canvas #selection-container {\n    pointer-events: none; }\n    #graph-canvas #selection-container .selection-box {\n      z-index: 10;\n      position: absolute;\n      background: rgba(72, 72, 196, 0.5);\n      border: blue solid 2px; }\n  #graph-canvas .port {\n    border-radius: 20px;\n    width: 20px;\n    height: 20px;\n    align-self: center; }\n    #graph-canvas .port .img {\n      width: 100%; }\n    #graph-canvas .port:hover, #graph-canvas .port.selected {\n      filter: brightness(2); }\n  #graph-canvas .portLine {\n    height: 24px;\n    display: grid;\n    grid-template-rows: 100%; }\n  #graph-canvas .port-label {\n    align-items: center; }\n  #graph-canvas .inputsContainer {\n    grid-row: 1;\n    grid-column: 1; }\n    #graph-canvas .inputsContainer .portLine {\n      grid-template-columns: 12px calc(100% - 15px); }\n      #graph-canvas .inputsContainer .portLine .port-label {\n        grid-row: 1;\n        grid-column: 2; }\n      #graph-canvas .inputsContainer .portLine .port {\n        grid-row: 1;\n        grid-column: 1;\n        transform: translateX(-12px); }\n  #graph-canvas .outputsContainer {\n    grid-row: 1;\n    grid-column: 2; }\n    #graph-canvas .outputsContainer .portLine {\n      grid-template-columns: calc(100% - 10px) 12px; }\n      #graph-canvas .outputsContainer .portLine .port-label {\n        grid-row: 1;\n        grid-column: 1;\n        text-align: right; }\n      #graph-canvas .outputsContainer .portLine .port {\n        grid-row: 1;\n        grid-column: 2;\n        transform: translateX(2px); }\n  #graph-canvas #graph-container {\n    width: 100%;\n    height: 100%;\n    left: 0;\n    top: 0;\n    transform-origin: left top;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #graph-canvas #graph-container #frame-container {\n      overflow: visible;\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n    #graph-canvas #graph-container .frame-box {\n      position: absolute;\n      background: rgba(72, 72, 72, 0.7);\n      display: grid;\n      grid-template-rows: 40px calc(100% - 40px);\n      grid-template-columns: 100%;\n      box-sizing: border-box; }\n      #graph-canvas #graph-container .frame-box.collapsed {\n        height: auto !important;\n        width: 200px !important; }\n        #graph-canvas #graph-container .frame-box.collapsed .frame-box-header {\n          font-size: 16px;\n          grid-template-columns: calc(100% - 37px) 30px 7px; }\n          #graph-canvas #graph-container .frame-box.collapsed .frame-box-header .frame-box-header-collapse {\n            margin-top: -2px; }\n          #graph-canvas #graph-container .frame-box.collapsed .frame-box-header .frame-box-header-close {\n            display: none; }\n      #graph-canvas #graph-container .frame-box .frame-box-border {\n        grid-row: 1 / span 2;\n        grid-column: 1;\n        width: 100%;\n        height: 100%;\n        border: transparent solid 4px;\n        pointer-events: none;\n        box-sizing: border-box; }\n      #graph-canvas #graph-container .frame-box .frame-box-header {\n        grid-row: 1;\n        grid-column: 1;\n        background: #484848;\n        color: white;\n        font-size: 24px;\n        text-align: center;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: calc(100% - 74px) 30px 7px 30px 7px;\n        align-content: center;\n        overflow: hidden; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-button {\n          cursor: pointer;\n          align-self: center;\n          transform-origin: 50% 50%;\n          transform: scale(1);\n          stroke: transparent;\n          fill: white;\n          display: grid; }\n          #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-button.down {\n            transform: scale(0.9); }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-collapse {\n          grid-column: 2;\n          grid-row: 1; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-close {\n          grid-column: 4;\n          grid-row: 1; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-title {\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          height: 100%;\n          width: 100%;\n          align-self: stretch;\n          align-items: center;\n          margin-top: -2px; }\n      #graph-canvas #graph-container .frame-box .port-container {\n        margin-top: 6px;\n        margin-bottom: 6px;\n        margin-left: 4px;\n        margin-right: 4px;\n        color: white;\n        grid-row: 2;\n        grid-column: 1;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: 50% 50%;\n        z-index: 2; }\n      #graph-canvas #graph-container .frame-box.selected .frame-box-border {\n        border-color: white; }\n      #graph-canvas #graph-container .frame-box .handle {\n        z-index: 20; }\n      #graph-canvas #graph-container .frame-box .right-handle {\n        grid-area: 1 / 2 / 3 / 2;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .right-handle::after {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px;\n          cursor: ew-resize; }\n      #graph-canvas #graph-container .frame-box .left-handle {\n        grid-area: 1 / 1 / 3 / 1;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .left-handle::before {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px; }\n      #graph-canvas #graph-container .frame-box .top-handle {\n        grid-area: 1 / 1 / 1 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #graph-canvas #graph-container .frame-box .top-handle::before {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: -4px;\n          bottom: 100%;\n          right: 0;\n          left: 0;\n          margin-bottom: -8px;\n          cursor: ns-resize;\n          height: 8px; }\n      #graph-canvas #graph-container .frame-box .bottom-handle {\n        grid-area: 3 / 1 / 3 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #graph-canvas #graph-container .frame-box .bottom-handle::after {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: 100%;\n          bottom: 0;\n          right: 0;\n          left: 0;\n          margin-top: -8px;\n          cursor: ns-resize;\n          height: 12px; }\n    #graph-canvas #graph-container #graph-svg-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%;\n      overflow: visible;\n      pointer-events: none;\n      z-index: 2; }\n      #graph-canvas #graph-container #graph-svg-container .link {\n        stroke-width: 4px; }\n        #graph-canvas #graph-container #graph-svg-container .link.selected {\n          stroke: white !important;\n          stroke-dasharray: 10, 2; }\n        #graph-canvas #graph-container #graph-svg-container .link.hidden {\n          display: none; }\n      #graph-canvas #graph-container #graph-svg-container .selection-link {\n        pointer-events: all;\n        stroke-width: 16px;\n        opacity: 0;\n        transition: opacity 75ms;\n        stroke: transparent;\n        cursor: pointer; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link.hidden {\n          display: none; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link:hover, #graph-canvas #graph-container #graph-svg-container .selection-link.selected {\n          stroke: white !important;\n          opacity: 0.4; }\n    #graph-canvas #graph-container #graph-canvas-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n      #graph-canvas #graph-container #graph-canvas-container .visual {\n        z-index: 3;\n        width: 200px;\n        position: absolute;\n        left: 0;\n        top: 0;\n        background: gray;\n        border: 4px solid black;\n        border-radius: 12px;\n        display: grid;\n        grid-template-rows: 30px auto;\n        grid-template-columns: 100%;\n        color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.hidden {\n          display: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .comments {\n          position: absolute;\n          top: -50px;\n          width: 200px;\n          height: 45px;\n          overflow: hidden;\n          font-style: italic;\n          opacity: 0.8;\n          display: grid;\n          align-items: flex-end;\n          pointer-events: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .selection-border {\n          grid-row: 1 / span 3;\n          grid-column: 1;\n          margin: -4px;\n          transition: border-color 100ms;\n          border: 4px solid black;\n          border-radius: 12px; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.selected .selection-border {\n          border-color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .header {\n          grid-row: 1;\n          grid-column: 1;\n          border: 4px solid black;\n          border-top-right-radius: 7px;\n          border-top-left-radius: 7px;\n          font-size: 16px;\n          text-align: center;\n          margin-top: -1px;\n          margin-left: -1px;\n          margin-right: -1px;\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden;\n          background: black;\n          color: white; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.constant {\n            border-color: #464348;\n            background: #464348; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.inspector {\n            border-color: #66491b;\n            background: #66491b; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .connections {\n          grid-row: 2;\n          grid-column: 1;\n          display: grid;\n          grid-template-columns: 50% 50%; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .content {\n          min-height: 20px;\n          grid-row: 3;\n          grid-column: 1; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block {\n            grid-row: 2;\n            min-height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px 5px;\n            display: grid;\n            align-content: center; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block.small-font {\n              font-size: 17px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.output-block {\n            min-height: 0px;\n            height: 5px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.clamp-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.gradient-block {\n            grid-row: 2;\n            height: 34px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block {\n            grid-row: 3;\n            height: 140px;\n            width: 140px;\n            overflow: hidden;\n            border-bottom-left-radius: 7px;\n            border: black 4px solid;\n            border-left: 0px;\n            border-bottom: 0px; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img {\n              width: 100%;\n              height: 100%;\n              pointer-events: none; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img.empty {\n                display: none; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.regular-texture-block {\n            margin-top: -115px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.remap-block {\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.trigonometry-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n", ""]);
 
 // exports
 
@@ -51948,24 +51948,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../dataStorage */ "./dataStorage.ts");
-/* harmony import */ var _svgs_doubleSided_svg__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./svgs/doubleSided.svg */ "./components/preview/svgs/doubleSided.svg");
-/* harmony import */ var _svgs_doubleSided_svg__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_svgs_doubleSided_svg__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _svgs_depthPass_svg__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./svgs/depthPass.svg */ "./components/preview/svgs/depthPass.svg");
-/* harmony import */ var _svgs_depthPass_svg__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_svgs_depthPass_svg__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _svgs_omni_svg__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./svgs/omni.svg */ "./components/preview/svgs/omni.svg");
-/* harmony import */ var _svgs_omni_svg__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_svgs_omni_svg__WEBPACK_IMPORTED_MODULE_5__);
-/* harmony import */ var _svgs_directionalRight_svg__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./svgs/directionalRight.svg */ "./components/preview/svgs/directionalRight.svg");
-/* harmony import */ var _svgs_directionalRight_svg__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_svgs_directionalRight_svg__WEBPACK_IMPORTED_MODULE_6__);
-/* harmony import */ var _svgs_directionalLeft_svg__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./svgs/directionalLeft.svg */ "./components/preview/svgs/directionalLeft.svg");
-/* harmony import */ var _svgs_directionalLeft_svg__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_svgs_directionalLeft_svg__WEBPACK_IMPORTED_MODULE_7__);
 
 
 
-
-
-
-
-
+var doubleSided = __webpack_require__(/*! ./svgs/doubleSided.svg */ "./components/preview/svgs/doubleSided.svg");
+var depthPass = __webpack_require__(/*! ./svgs/depthPass.svg */ "./components/preview/svgs/depthPass.svg");
+var omni = __webpack_require__(/*! ./svgs/omni.svg */ "./components/preview/svgs/omni.svg");
+var directionalRight = __webpack_require__(/*! ./svgs/directionalRight.svg */ "./components/preview/svgs/directionalRight.svg");
+var directionalLeft = __webpack_require__(/*! ./svgs/directionalLeft.svg */ "./components/preview/svgs/directionalLeft.svg");
 var PreviewAreaComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PreviewAreaComponent, _super);
     function PreviewAreaComponent(props) {
@@ -51994,30 +51984,30 @@ var PreviewAreaComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "waitPanel" + (this.state.isLoading ? "" : " hidden") }, "Please wait, loading...")),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-config-bar" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Render without back face culling", onClick: function () { return _this.changeBackFaceCulling(!_this.props.globalState.backFaceCulling); }, className: "button back-face" + (!this.props.globalState.backFaceCulling ? " selected" : "") },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: _svgs_doubleSided_svg__WEBPACK_IMPORTED_MODULE_3___default.a, alt: "" })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: doubleSided, alt: "" })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Render with depth pre-pass", onClick: function () { return _this.changeDepthPrePass(!_this.props.globalState.depthPrePass); }, className: "button depth-pass" + (this.props.globalState.depthPrePass ? " selected" : "") },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: _svgs_depthPass_svg__WEBPACK_IMPORTED_MODULE_4___default.a, alt: "" })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: depthPass, alt: "" })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn on/off hemispheric light", onClick: function () {
                         _this.props.globalState.hemisphericLight = !_this.props.globalState.hemisphericLight;
                         _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].StoreBoolean("HemisphericLight", _this.props.globalState.hemisphericLight);
                         _this.props.globalState.onLightUpdated.notifyObservers();
                         _this.forceUpdate();
                     }, className: "button hemispheric-light" + (this.props.globalState.hemisphericLight ? " selected" : "") },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: _svgs_omni_svg__WEBPACK_IMPORTED_MODULE_5___default.a, alt: "" })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: omni, alt: "" })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn on/off direction light #1", onClick: function () {
                         _this.props.globalState.directionalLight1 = !_this.props.globalState.directionalLight1;
                         _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].StoreBoolean("DirectionalLight1", _this.props.globalState.directionalLight1);
                         _this.props.globalState.onLightUpdated.notifyObservers();
                         _this.forceUpdate();
                     }, className: "button direction-light-1" + (this.props.globalState.directionalLight1 ? " selected" : "") },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: _svgs_directionalRight_svg__WEBPACK_IMPORTED_MODULE_6___default.a, alt: "" })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: directionalRight, alt: "" })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn on/off direction light #0", onClick: function () {
                         _this.props.globalState.directionalLight0 = !_this.props.globalState.directionalLight0;
                         _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].StoreBoolean("DirectionalLight0", _this.props.globalState.directionalLight0);
                         _this.props.globalState.onLightUpdated.notifyObservers();
                         _this.forceUpdate();
                     }, className: "button direction-light-0" + (this.props.globalState.directionalLight0 ? " selected" : "") },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: _svgs_directionalLeft_svg__WEBPACK_IMPORTED_MODULE_7___default.a, alt: "" })))));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: directionalLeft, alt: "" })))));
     };
     return PreviewAreaComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -52347,14 +52337,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
 /* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react-dom */ "../../node_modules/react-dom/index.js");
 /* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_6__);
-/* harmony import */ var _svgs_popOut_svg__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./svgs/popOut.svg */ "./components/preview/svgs/popOut.svg");
-/* harmony import */ var _svgs_popOut_svg__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_svgs_popOut_svg__WEBPACK_IMPORTED_MODULE_7__);
-/* harmony import */ var _svgs_colorPicker_svg__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./svgs/colorPicker.svg */ "./components/preview/svgs/colorPicker.svg");
-/* harmony import */ var _svgs_colorPicker_svg__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(_svgs_colorPicker_svg__WEBPACK_IMPORTED_MODULE_8__);
-/* harmony import */ var _svgs_pauseIcon_svg__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./svgs/pauseIcon.svg */ "./components/preview/svgs/pauseIcon.svg");
-/* harmony import */ var _svgs_pauseIcon_svg__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(_svgs_pauseIcon_svg__WEBPACK_IMPORTED_MODULE_9__);
-/* harmony import */ var _svgs_playIcon_svg__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./svgs/playIcon.svg */ "./components/preview/svgs/playIcon.svg");
-/* harmony import */ var _svgs_playIcon_svg__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(_svgs_playIcon_svg__WEBPACK_IMPORTED_MODULE_10__);
 
 
 
@@ -52362,10 +52344,10 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
-
-
-
+var popUpIcon = __webpack_require__(/*! ./svgs/popOut.svg */ "./components/preview/svgs/popOut.svg");
+var colorPicker = __webpack_require__(/*! ./svgs/colorPicker.svg */ "./components/preview/svgs/colorPicker.svg");
+var pauseIcon = __webpack_require__(/*! ./svgs/pauseIcon.svg */ "./components/preview/svgs/pauseIcon.svg");
+var playIcon = __webpack_require__(/*! ./svgs/playIcon.svg */ "./components/preview/svgs/playIcon.svg");
 var PreviewMeshControlComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PreviewMeshControlComponent, _super);
     function PreviewMeshControlComponent(props) {
@@ -52442,13 +52424,13 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
                     display: "none"
                 }, title: "Preview with a custom mesh" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: "file-picker", id: "file-picker", type: "file", onChange: function (evt) { return _this.useCustomMesh(evt); }, accept: ".gltf, .glb, .babylon, .obj" })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn-table animation", onClick: function () { return _this.changeAnimation(); }, className: "button", id: "play-button" }, this.props.globalState.rotatePreview ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: _svgs_pauseIcon_svg__WEBPACK_IMPORTED_MODULE_9___default.a, alt: "" }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: _svgs_playIcon_svg__WEBPACK_IMPORTED_MODULE_10___default.a, alt: "" })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn-table animation", onClick: function () { return _this.changeAnimation(); }, className: "button", id: "play-button" }, this.props.globalState.rotatePreview ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: pauseIcon, alt: "" }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: playIcon, alt: "" })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "color-picker-button", title: "Background color", className: "button align", onClick: function (_) { return _this.changeBackgroundClick(); } },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: _svgs_colorPicker_svg__WEBPACK_IMPORTED_MODULE_8___default.a, alt: "" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: colorPicker, alt: "" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "color-picker", id: "color-picker-label" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.colorInputRef, id: "color-picker", type: "color", onChange: function (evt) { return _this.changeBackground(evt.target.value); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Open preview in new window", id: "preview-new-window", onClick: function () { return _this.onPopUp(); }, className: "button" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: _svgs_popOut_svg__WEBPACK_IMPORTED_MODULE_7___default.a, alt: "" }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: popUpIcon, alt: "" }))));
     };
     return PreviewMeshControlComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -53677,14 +53659,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _graphNode__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./graphNode */ "./diagram/graphNode.ts");
-/* harmony import */ var dagre__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! dagre */ "../../node_modules/dagre/index.js");
-/* harmony import */ var dagre__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(dagre__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _nodeLink__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./nodeLink */ "./diagram/nodeLink.ts");
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _graphNode__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./graphNode */ "./diagram/graphNode.ts");
+/* harmony import */ var dagre__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! dagre */ "../../node_modules/dagre/index.js");
+/* harmony import */ var dagre__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(dagre__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _nodeLink__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./nodeLink */ "./diagram/nodeLink.ts");
 /* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../dataStorage */ "./dataStorage.ts");
 /* harmony import */ var _graphFrame__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./graphFrame */ "./diagram/graphFrame.ts");
+
 
 
 
@@ -53734,7 +53717,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                 _this._selectedFrame = null;
             }
             else {
-                if (selection instanceof _nodeLink__WEBPACK_IMPORTED_MODULE_4__["NodeLink"]) {
+                if (selection instanceof _nodeLink__WEBPACK_IMPORTED_MODULE_5__["NodeLink"]) {
                     _this._selectedNodes = [];
                     _this._selectedFrame = null;
                     _this._selectedLink = selection;
@@ -53989,7 +53972,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                 return;
             }
         }
-        var link = new _nodeLink__WEBPACK_IMPORTED_MODULE_4__["NodeLink"](this, portA, nodeA, portB, nodeB);
+        var link = new _nodeLink__WEBPACK_IMPORTED_MODULE_5__["NodeLink"](this, portA, nodeA, portB, nodeB);
         this._links.push(link);
         nodeA.links.push(link);
         nodeB.links.push(link);
@@ -54002,7 +53985,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         link.dispose();
     };
     GraphCanvasComponent.prototype.appendBlock = function (block) {
-        var newNode = new _graphNode__WEBPACK_IMPORTED_MODULE_2__["GraphNode"](block, this.props.globalState);
+        var newNode = new _graphNode__WEBPACK_IMPORTED_MODULE_3__["GraphNode"](block, this.props.globalState);
         newNode.appendVisual(this._graphCanvas, this);
         this._nodes.push(newNode);
         return newNode;
@@ -54012,7 +53995,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         this.x = 0;
         this.y = 0;
         this.zoom = 1;
-        var graph = new dagre__WEBPACK_IMPORTED_MODULE_3__["graphlib"].Graph();
+        var graph = new dagre__WEBPACK_IMPORTED_MODULE_4__["graphlib"].Graph();
         graph.setGraph({});
         graph.setDefaultEdgeLabel(function () { return ({}); });
         graph.graph().rankdir = "LR";
@@ -54051,7 +54034,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             });
         });
         // Distribute
-        dagre__WEBPACK_IMPORTED_MODULE_3__["layout"](graph);
+        dagre__WEBPACK_IMPORTED_MODULE_4__["layout"](graph);
         // Update graph
         var dagreNodes = graph.nodes().map(function (node) { return graph.node(node); });
         dagreNodes.forEach(function (dagreNode) {
@@ -54141,7 +54124,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         if (this._candidateLink) {
             var rootRect = this.canvasContainer.getBoundingClientRect();
             this._candidatePort = null;
-            this.props.globalState.onCandidateLinkMoved.notifyObservers(new babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__["Vector2"](evt.pageX, evt.pageY));
+            this.props.globalState.onCandidateLinkMoved.notifyObservers(new babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["Vector2"](evt.pageX, evt.pageY));
             this._dropPointX = (evt.pageX - rootRect.left) / this.zoom;
             this._dropPointY = (evt.pageY - rootRect.top) / this.zoom;
             this._candidateLink.update(this._dropPointX, this._dropPointY, true);
@@ -54210,7 +54193,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         if (evt.nativeEvent.srcElement && evt.nativeEvent.srcElement.nodeName === "IMG") {
             if (!this._candidateLink) {
                 var portElement = evt.nativeEvent.srcElement.parentElement.port;
-                this._candidateLink = new _nodeLink__WEBPACK_IMPORTED_MODULE_4__["NodeLink"](this, portElement, portElement.node);
+                this._candidateLink = new _nodeLink__WEBPACK_IMPORTED_MODULE_5__["NodeLink"](this, portElement, portElement.node);
             }
             return;
         }
@@ -54312,17 +54295,17 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             nodeA = this._candidatePort.node;
         }
         else {
-            if (pointB.direction === babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialConnectionPointDirection"].Output) {
+            if (pointB.direction === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialConnectionPointDirection"].Output) {
                 return;
             }
             // No destination so let's spin a new input block
-            var inputBlock = new babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__["InputBlock"]("", undefined, this._candidateLink.portA.connectionPoint.type);
+            var inputBlock = new babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["InputBlock"](babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"][this._candidateLink.portA.connectionPoint.type], undefined, this._candidateLink.portA.connectionPoint.type);
             pointA = inputBlock.output;
             nodeA = this.appendBlock(inputBlock);
             nodeA.x = this._dropPointX - 200;
             nodeA.y = this._dropPointY - 50;
         }
-        if (pointA.direction === babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialConnectionPointDirection"].Input) {
+        if (pointA.direction === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialConnectionPointDirection"].Input) {
             var temp = pointB;
             pointB = pointA;
             pointA = temp;
@@ -54345,7 +54328,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         // Check compatibility
         var isFragmentOutput = pointB.ownerBlock.getClassName() === "FragmentOutputBlock";
         var compatibilityState = pointA.checkCompatibilityState(pointB);
-        if (compatibilityState === babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialConnectionPointCompatibilityStates"].Compatible) {
+        if (compatibilityState === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialConnectionPointCompatibilityStates"].Compatible) {
             if (isFragmentOutput) {
                 var fragmentBlock = pointB.ownerBlock;
                 if (pointB.name === "rgb" && fragmentBlock.rgba.isConnected) {
@@ -54359,10 +54342,10 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         else {
             var message = "";
             switch (compatibilityState) {
-                case babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialConnectionPointCompatibilityStates"].TypeIncompatible:
+                case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialConnectionPointCompatibilityStates"].TypeIncompatible:
                     message = "Cannot connect two different connection types";
                     break;
-                case babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialConnectionPointCompatibilityStates"].TargetIncompatible:
+                case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialConnectionPointCompatibilityStates"].TargetIncompatible:
                     message = "Source block can only work in fragment shader whereas destination block is currently aimed for the vertex shader";
                     break;
             }
@@ -58155,20 +58138,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _numericInputComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./numericInputComponent */ "./sharedComponents/numericInputComponent.tsx");
 /* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
 /* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
-/* harmony import */ var _copy_svg__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./copy.svg */ "./sharedComponents/copy.svg");
-/* harmony import */ var _copy_svg__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_copy_svg__WEBPACK_IMPORTED_MODULE_6__);
 
 
 
 
 
 
-
+var copyIcon = __webpack_require__(/*! ./copy.svg */ "./sharedComponents/copy.svg");
 var Color3LineComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Color3LineComponent, _super);
     function Color3LineComponent(props) {
@@ -58188,7 +58169,7 @@ var Color3LineComponent = /** @class */ (function (_super) {
     };
     Color3LineComponent.prototype.onChange = function (newValue) {
         this._localChange = true;
-        var newColor = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromHexString(newValue);
+        var newColor = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromHexString(newValue);
         if (this.props.onPropertyChangedObservable) {
             this.props.onPropertyChangedObservable.notifyObservers({
                 object: this.props.target,
@@ -58198,7 +58179,7 @@ var Color3LineComponent = /** @class */ (function (_super) {
             });
         }
         if (this.props.target[this.props.propertyName].getClassName() === "Color4") {
-            this.props.target[this.props.propertyName] = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color4"](newColor.r, newColor.g, newColor.b, 1.0);
+            this.props.target[this.props.propertyName] = new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"](newColor.r, newColor.g, newColor.b, 1.0);
         }
         else {
             this.props.target[this.props.propertyName] = newColor;
@@ -58269,14 +58250,14 @@ var Color3LineComponent = /** @class */ (function (_super) {
     Color3LineComponent.prototype.render = function () {
         var _this = this;
         var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_5__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_5__["faPlus"] });
-        var colorAsColor3 = this.state.color.getClassName() === "Color3" ? this.state.color : new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color3"](this.state.color.r, this.state.color.g, this.state.color.b);
+        var colorAsColor3 = this.state.color.getClassName() === "Color3" ? this.state.color : new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"](this.state.color.r, this.state.color.g, this.state.color.b);
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "color", value: colorAsColor3.toHexString(), onChange: function (evt) { return _this.onChange(evt.target.value); } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "copy hoverIcon", onClick: function () { return _this.copyToClipboard(); }, title: "Copy to clipboard" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: _copy_svg__WEBPACK_IMPORTED_MODULE_6___default.a, alt: "" })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: copyIcon, alt: "" })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
             this.state.isExpanded &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
@@ -58304,33 +58285,31 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _numericInputComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./numericInputComponent */ "./sharedComponents/numericInputComponent.tsx");
 /* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
 /* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
-/* harmony import */ var _copy_svg__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./copy.svg */ "./sharedComponents/copy.svg");
-/* harmony import */ var _copy_svg__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_copy_svg__WEBPACK_IMPORTED_MODULE_6__);
 
 
 
 
 
 
-
+var copyIcon = __webpack_require__(/*! ./copy.svg */ "./sharedComponents/copy.svg");
 var Color4LineComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Color4LineComponent, _super);
     function Color4LineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
         var value = _this.props.target[_this.props.propertyName];
-        var currentColor = value.getClassName() === "Color4" ? value.clone() : new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color4"](value.r, value.g, value.b, 1.0);
+        var currentColor = value.getClassName() === "Color4" ? value.clone() : new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"](value.r, value.g, value.b, 1.0);
         _this.state = { isExpanded: false, color: currentColor };
         return _this;
     }
     Color4LineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
         var value = this.props.target[this.props.propertyName];
-        var currentColor = value.getClassName() === "Color4" ? value : new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color4"](value.r, value.g, value.b, 1.0);
+        var currentColor = value.getClassName() === "Color4" ? value : new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"](value.r, value.g, value.b, 1.0);
         if (!currentColor.equals(nextState.color) || this._localChange) {
             nextState.color = currentColor.clone();
             this._localChange = false;
@@ -58340,7 +58319,7 @@ var Color4LineComponent = /** @class */ (function (_super) {
     };
     Color4LineComponent.prototype.onChange = function (newValue) {
         this._localChange = true;
-        var newColor = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromHexString(newValue);
+        var newColor = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromHexString(newValue);
         if (this.props.onPropertyChangedObservable) {
             this.props.onPropertyChangedObservable.notifyObservers({
                 object: this.props.target,
@@ -58349,7 +58328,7 @@ var Color4LineComponent = /** @class */ (function (_super) {
                 initialValue: this.state.color
             });
         }
-        this.props.target[this.props.propertyName] = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color4"](newColor.r, newColor.g, newColor.b, this.props.target[this.props.propertyName].a);
+        this.props.target[this.props.propertyName] = new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"](newColor.r, newColor.g, newColor.b, this.props.target[this.props.propertyName].a);
         this.setState({ color: this.props.target[this.props.propertyName] });
         if (this.props.onChange) {
             this.props.onChange();
@@ -58425,14 +58404,14 @@ var Color4LineComponent = /** @class */ (function (_super) {
     Color4LineComponent.prototype.render = function () {
         var _this = this;
         var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_5__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_5__["faPlus"] });
-        var colorAsColor3 = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color3"](this.state.color.r, this.state.color.g, this.state.color.b);
+        var colorAsColor3 = new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"](this.state.color.r, this.state.color.g, this.state.color.b);
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "color", value: colorAsColor3.toHexString(), onChange: function (evt) { return _this.onChange(evt.target.value); } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "copy hoverIcon", onClick: function () { return _this.copyToClipboard(); }, title: "Copy to clipboard" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: _copy_svg__WEBPACK_IMPORTED_MODULE_6___default.a, alt: "" })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: copyIcon, alt: "" })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
             this.state.isExpanded &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
@@ -58693,8 +58672,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./vector4LineComponent */ "./sharedComponents/vector4LineComponent.tsx");
 /* harmony import */ var _optionsLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
 /* harmony import */ var _sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./sliderLineComponent */ "./sharedComponents/sliderLineComponent.tsx");
@@ -58712,7 +58691,7 @@ var MatrixLineComponent = /** @class */ (function (_super) {
         var matrix = _this.props.target[_this.props.propertyName].clone();
         var angle = 0;
         if (_this.props.mode) {
-            var quat = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Quaternion"]();
+            var quat = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Quaternion"]();
             matrix.decompose(undefined, quat);
             var euler = quat.toEulerAngles();
             switch (_this.props.mode) {
@@ -58767,15 +58746,15 @@ var MatrixLineComponent = /** @class */ (function (_super) {
     MatrixLineComponent.prototype.updateBasedOnMode = function (value) {
         switch (this.state.mode) {
             case 1: {
-                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Matrix"].RotationXToRef(this.state.angle, this.state.value);
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Matrix"].RotationXToRef(this.state.angle, this.state.value);
                 break;
             }
             case 2: {
-                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Matrix"].RotationYToRef(this.state.angle, this.state.value);
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Matrix"].RotationYToRef(this.state.angle, this.state.value);
                 break;
             }
             case 3: {
-                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Matrix"].RotationZToRef(this.state.angle, this.state.value);
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Matrix"].RotationZToRef(this.state.angle, this.state.value);
                 break;
             }
         }
@@ -58797,8 +58776,8 @@ var MatrixLineComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_optionsLineComponent__WEBPACK_IMPORTED_MODULE_4__["OptionsLineComponent"], { label: "Mode", className: "no-right-margin", options: modeOptions, target: this, noDirectUpdate: true, getSelection: function () {
                         return _this.state.mode;
                     }, onSelect: function (value) {
-                        _this.props.target[_this.props.propertyName] = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Matrix"].Identity();
-                        babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Matrix"].IdentityToRef(_this.state.value);
+                        _this.props.target[_this.props.propertyName] = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Matrix"].Identity();
+                        babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Matrix"].IdentityToRef(_this.state.value);
                         _this.setState({ mode: value, angle: 0 });
                         _this.updateMatrix();
                         if (_this.props.onModeChange) {

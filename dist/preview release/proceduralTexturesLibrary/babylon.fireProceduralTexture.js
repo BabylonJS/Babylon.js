@@ -398,6 +398,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var FireProceduralTexture = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FireProceduralTexture, _super);
     function FireProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {

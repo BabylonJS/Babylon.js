@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Vector3, Matrix, Vector4, Quaternion } from "babylonjs/Maths/math";
+import { Vector3, Matrix, Vector4, Quaternion } from "babylonjs/Maths/math.vector";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
 import { Vector4LineComponent } from './vector4LineComponent';

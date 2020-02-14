@@ -1,7 +1,8 @@
 import { ITextureInfo, ImageMimeType, IMaterial, IMaterialPbrMetallicRoughness, MaterialAlphaMode, IMaterialOcclusionTextureInfo, ISampler, TextureMagFilter, TextureMinFilter, TextureWrapMode, ITexture, IImage } from "babylonjs-gltf2interface";
 
 import { Nullable } from "babylonjs/types";
-import { Vector2, Color3 } from "babylonjs/Maths/math";
+import { Vector2 } from "babylonjs/Maths/math.vector";
+import { Color3 } from "babylonjs/Maths/math.color";
 import { Scalar } from "babylonjs/Maths/math.scalar";
 import { Tools } from "babylonjs/Misc/tools";
 import { TextureTools } from "babylonjs/Misc/textureTools";

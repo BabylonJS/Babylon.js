@@ -16,7 +16,7 @@ export interface IWebXRPlaneDetectorOptions {
 }
 
 /**
- * A babylon interface for a webxr plane.
+ * A babylon interface for a WebXR plane.
  * A Plane is actually a polygon, built from N points in space
  *
  * Supported in chrome 79, not supported in canary 81 ATM
@@ -27,10 +27,6 @@ export interface IWebXRPlane {
      */
     id: number;
     /**
-     * the native xr-plane object
-     */
-    xrPlane: XRPlane;
-    /**
      * an array of vector3 points in babylon space. right/left hand system is taken into account.
      */
     polygonDefinition: Array<Vector3>;
@@ -39,6 +35,10 @@ export interface IWebXRPlane {
      * Local vs. World are decided if worldParentNode was provided or not in the options when constructing the module
      */
     transformationMatrix: Matrix;
+    /**
+     * the native xr-plane object
+     */
+    xrPlane: XRPlane;
 }
 
 let planeIdProvider = 0;
@@ -48,6 +48,9 @@ let planeIdProvider = 0;
  * For more information see https://github.com/immersive-web/real-world-geometry/
  */
 export class WebXRPlaneDetector extends WebXRAbstractFeature {
+    private _detectedPlanes: Array<IWebXRPlane> = [];
+    private _enabled: boolean = false;
+    private _lastFrameDetected: XRPlaneSet = new Set();
 
     /**
      * The module's name
@@ -56,7 +59,7 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
     /**
      * The (Babylon) version of this module.
      * This is an integer representing the implementation version.
-     * This number does not correspond to the webxr specs version
+     * This number does not correspond to the WebXR specs version
      */
     public static readonly Version = 1;
 
@@ -74,10 +77,6 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
      */
     public onPlaneUpdatedObservable: Observable<IWebXRPlane> = new Observable();
 
-    private _enabled: boolean = false;
-    private _detectedPlanes: Array<IWebXRPlane> = [];
-    private _lastFrameDetected: XRPlaneSet = new Set();
-
     /**
      * construct a new Plane Detector
      * @param _xrSessionManager an instance of xr Session manager
@@ -94,16 +93,14 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
         }
     }
 
-    private _init() {
-        if (!this._xrSessionManager.session.updateWorldTrackingState) {
-            // fail silently
-            return;
-        }
-        this._xrSessionManager.session.updateWorldTrackingState({ planeDetectionState: { enabled: true } });
-        this._enabled = true;
-        if (this._detectedPlanes.length) {
-            this._detectedPlanes = [];
-        }
+    /**
+     * Dispose this feature and all of the resources attached
+     */
+    public dispose(): void {
+        super.dispose();
+        this.onPlaneAddedObservable.clear();
+        this.onPlaneRemovedObservable.clear();
+        this.onPlaneUpdatedObservable.clear();
     }
 
     protected _onXRFrame(frame: XRFrame) {
@@ -142,14 +139,16 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
         }
     }
 
-    /**
-     * Dispose this feature and all of the resources attached
-     */
-    dispose(): void {
-        super.dispose();
-        this.onPlaneAddedObservable.clear();
-        this.onPlaneRemovedObservable.clear();
-        this.onPlaneUpdatedObservable.clear();
+    private _init() {
+        if (!this._xrSessionManager.session.updateWorldTrackingState) {
+            // fail silently
+            return;
+        }
+        this._xrSessionManager.session.updateWorldTrackingState({ planeDetectionState: { enabled: true } });
+        this._enabled = true;
+        if (this._detectedPlanes.length) {
+            this._detectedPlanes = [];
+        }
     }
 
     private _updatePlaneWithXRPlane(xrPlane: XRPlane, plane: Partial<IWebXRPlane>, xrFrame: XRFrame): IWebXRPlane {

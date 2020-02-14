@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { Nullable } from "babylonjs/types";
-import { Color3 } from "babylonjs/Maths/math";
+import { Color3 } from 'babylonjs/Maths/math.color';
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Texture } from "babylonjs/Materials/Textures/texture";

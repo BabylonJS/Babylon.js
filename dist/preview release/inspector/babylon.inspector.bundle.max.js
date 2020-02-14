@@ -40940,20 +40940,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _numericInputComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./numericInputComponent */ "./components/actionTabs/lines/numericInputComponent.tsx");
-/* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
-/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
-/* harmony import */ var _copy_svg__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./copy.svg */ "./components/actionTabs/lines/copy.svg");
-/* harmony import */ var _copy_svg__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_copy_svg__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var _numericInputComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./numericInputComponent */ "./components/actionTabs/lines/numericInputComponent.tsx");
+/* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
+/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_5__);
 
 
 
 
 
 
-
+var copyIcon = __webpack_require__(/*! ./copy.svg */ "./components/actionTabs/lines/copy.svg");
 var Color3LineComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Color3LineComponent, _super);
     function Color3LineComponent(props) {
@@ -40973,7 +40971,7 @@ var Color3LineComponent = /** @class */ (function (_super) {
     };
     Color3LineComponent.prototype.onChange = function (newValue) {
         this._localChange = true;
-        var newColor = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromHexString(newValue);
+        var newColor = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_5__["Color3"].FromHexString(newValue);
         if (this.props.onPropertyChangedObservable) {
             this.props.onPropertyChangedObservable.notifyObservers({
                 object: this.props.target,
@@ -41042,21 +41040,21 @@ var Color3LineComponent = /** @class */ (function (_super) {
     };
     Color3LineComponent.prototype.render = function () {
         var _this = this;
-        var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_5__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_5__["faPlus"] });
-        var colorAsColor3 = this.state.color.getClassName() === "Color3" ? this.state.color : new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color3"](this.state.color.r, this.state.color.g, this.state.color.b);
+        var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faPlus"] });
+        var colorAsColor3 = this.state.color.getClassName() === "Color3" ? this.state.color : new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_5__["Color3"](this.state.color.r, this.state.color.g, this.state.color.b);
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "color", value: colorAsColor3.toHexString(), onChange: function (evt) { return _this.onChange(evt.target.value); } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "copy hoverIcon", onClick: function () { return _this.copyToClipboard(); }, title: "Copy to clipboard" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: _copy_svg__WEBPACK_IMPORTED_MODULE_6___default.a, alt: "" })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: copyIcon, alt: "" })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
             this.state.isExpanded &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { label: "r", value: this.state.color.r, onChange: function (value) { return _this.updateStateR(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { label: "g", value: this.state.color.g, onChange: function (value) { return _this.updateStateG(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { label: "b", value: this.state.color.b, onChange: function (value) { return _this.updateStateB(value); } }))));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "r", value: this.state.color.r, onChange: function (value) { return _this.updateStateR(value); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "g", value: this.state.color.g, onChange: function (value) { return _this.updateStateG(value); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "b", value: this.state.color.b, onChange: function (value) { return _this.updateStateB(value); } }))));
     };
     return Color3LineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -41078,33 +41076,31 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _numericInputComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./numericInputComponent */ "./components/actionTabs/lines/numericInputComponent.tsx");
 /* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
 /* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
-/* harmony import */ var _copy_svg__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./copy.svg */ "./components/actionTabs/lines/copy.svg");
-/* harmony import */ var _copy_svg__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_copy_svg__WEBPACK_IMPORTED_MODULE_6__);
 
 
 
 
 
 
-
+var copyIcon = __webpack_require__(/*! ./copy.svg */ "./components/actionTabs/lines/copy.svg");
 var Color4LineComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Color4LineComponent, _super);
     function Color4LineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
         var value = _this.props.target[_this.props.propertyName];
-        var currentColor = value.getClassName() === "Color4" ? value.clone() : new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color4"](value.r, value.g, value.b, 1.0);
+        var currentColor = value.getClassName() === "Color4" ? value.clone() : new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"](value.r, value.g, value.b, 1.0);
         _this.state = { isExpanded: false, color: currentColor };
         return _this;
     }
     Color4LineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
         var value = this.props.target[this.props.propertyName];
-        var currentColor = value.getClassName() === "Color4" ? value : new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color4"](value.r, value.g, value.b, 1.0);
+        var currentColor = value.getClassName() === "Color4" ? value : new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"](value.r, value.g, value.b, 1.0);
         if (!currentColor.equals(nextState.color) || this._localChange) {
             nextState.color = currentColor.clone();
             this._localChange = false;
@@ -41114,7 +41110,7 @@ var Color4LineComponent = /** @class */ (function (_super) {
     };
     Color4LineComponent.prototype.onChange = function (newValue) {
         this._localChange = true;
-        var newColor = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromHexString(newValue);
+        var newColor = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromHexString(newValue);
         if (this.props.onPropertyChangedObservable) {
             this.props.onPropertyChangedObservable.notifyObservers({
                 object: this.props.target,
@@ -41123,7 +41119,7 @@ var Color4LineComponent = /** @class */ (function (_super) {
                 initialValue: this.state.color
             });
         }
-        this.props.target[this.props.propertyName] = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color4"](newColor.r, newColor.g, newColor.b, this.props.target[this.props.propertyName].a);
+        this.props.target[this.props.propertyName] = new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"](newColor.r, newColor.g, newColor.b, this.props.target[this.props.propertyName].a);
         this.setState({ color: this.props.target[this.props.propertyName] });
         if (this.props.onChange) {
             this.props.onChange();
@@ -41196,14 +41192,14 @@ var Color4LineComponent = /** @class */ (function (_super) {
     Color4LineComponent.prototype.render = function () {
         var _this = this;
         var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_5__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_5__["faPlus"] });
-        var colorAsColor3 = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color3"](this.state.color.r, this.state.color.g, this.state.color.b);
+        var colorAsColor3 = new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"](this.state.color.r, this.state.color.g, this.state.color.b);
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "color", value: colorAsColor3.toHexString(), onChange: function (evt) { return _this.onChange(evt.target.value); } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "copy hoverIcon", onClick: function () { return _this.copyToClipboard(); }, title: "Copy to clipboard" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: _copy_svg__WEBPACK_IMPORTED_MODULE_6___default.a, alt: "" })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: copyIcon, alt: "" })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
             this.state.isExpanded &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
@@ -46324,6 +46320,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var MeshPropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MeshPropertyGridComponent, _super);
     function MeshPropertyGridComponent(props) {
@@ -47285,8 +47282,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var babylonjs_materials_grid_gridMaterial__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-materials/grid/gridMaterial */ "babylonjs-materials/grid/gridMaterial");
 /* harmony import */ var babylonjs_materials_grid_gridMaterial__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_materials_grid_gridMaterial__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
@@ -47306,7 +47303,7 @@ var RenderGridPropertyGridComponent = /** @class */ (function (_super) {
         return _this;
     }
     RenderGridPropertyGridComponent.prototype.componentDidMount = function () {
-        var scene = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["UtilityLayerRenderer"].DefaultKeepDepthUtilityLayer.utilityLayerScene;
+        var scene = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["UtilityLayerRenderer"].DefaultKeepDepthUtilityLayer.utilityLayerScene;
         for (var _i = 0, _a = scene.meshes; _i < _a.length; _i++) {
             var mesh = _a[_i];
             if (mesh.reservedDataStore && mesh.reservedDataStore.isInspectorGrid) {
@@ -47317,12 +47314,12 @@ var RenderGridPropertyGridComponent = /** @class */ (function (_super) {
         }
     };
     RenderGridPropertyGridComponent.prototype.addOrRemoveGrid = function () {
-        var scene = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["UtilityLayerRenderer"].DefaultKeepDepthUtilityLayer.utilityLayerScene;
+        var scene = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["UtilityLayerRenderer"].DefaultKeepDepthUtilityLayer.utilityLayerScene;
         if (!this._gridMesh) {
             var extend = this.props.scene.getWorldExtends();
             var width = (extend.max.x - extend.min.x) * 5.0;
             var depth = (extend.max.z - extend.min.z) * 5.0;
-            this._gridMesh = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Mesh"].CreateGround("grid", 1.0, 1.0, 1, scene);
+            this._gridMesh = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Mesh"].CreateGround("grid", 1.0, 1.0, 1, scene);
             if (!this._gridMesh.reservedDataStore) {
                 this._gridMesh.reservedDataStore = {};
             }
@@ -47335,11 +47332,11 @@ var RenderGridPropertyGridComponent = /** @class */ (function (_super) {
             groundMaterial.minorUnitVisibility = 0.3;
             groundMaterial.gridRatio = 0.01;
             groundMaterial.backFaceCulling = false;
-            groundMaterial.mainColor = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color3"](1, 1, 1);
-            groundMaterial.lineColor = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color3"](1.0, 1.0, 1.0);
+            groundMaterial.mainColor = new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"](1, 1, 1);
+            groundMaterial.lineColor = new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"](1.0, 1.0, 1.0);
             groundMaterial.opacity = 0.8;
             groundMaterial.zOffset = 1.0;
-            groundMaterial.opacityTexture = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Texture"]("https://assets.babylonjs.com/environments/backgroundGround.png", scene);
+            groundMaterial.opacityTexture = new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Texture"]("https://assets.babylonjs.com/environments/backgroundGround.png", scene);
             this._gridMesh.material = groundMaterial;
             this.setState({ isEnabled: true });
             return;

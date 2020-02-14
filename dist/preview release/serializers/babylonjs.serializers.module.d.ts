@@ -49,6 +49,7 @@ declare module "babylonjs-serializers/glTF/glTFFileExporter" {
 declare module "babylonjs-serializers/glTF/2.0/glTFExporterExtension" {
     import { ImageMimeType, IMeshPrimitive, INode, IMaterial, ITextureInfo } from "babylonjs-gltf2interface";
     import { Node } from "babylonjs/node";
+    import { Nullable } from "babylonjs/types";
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { SubMesh } from "babylonjs/Meshes/subMesh";
     import { IDisposable } from "babylonjs/scene";
@@ -70,7 +71,7 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporterExtension" {
          * @param mimeType The mime-type of the generated image
          * @returns A promise that resolves with the exported texture
          */
-        preExportTextureAsync?(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Texture>;
+        preExportTextureAsync?(context: string, babylonTexture: Nullable<Texture>, mimeType: ImageMimeType): Promise<Texture>;
         /**
          * Define this method to get notified when a texture info is created
          * @param context The context when loading the asset
@@ -86,7 +87,7 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporterExtension" {
          * @param binaryWriter glTF serializer binary writer instance
          * @returns nullable IMeshPrimitive promise
          */
-        postExportMeshPrimitiveAsync?(context: string, meshPrimitive: IMeshPrimitive, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Promise<IMeshPrimitive>;
+        postExportMeshPrimitiveAsync?(context: string, meshPrimitive: Nullable<IMeshPrimitive>, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Promise<IMeshPrimitive>;
         /**
          * Define this method to modify the default behavior when exporting a node
          * @param context The context when exporting the node
@@ -94,14 +95,16 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporterExtension" {
          * @param babylonNode BabylonJS node
          * @returns nullable INode promise
          */
-        postExportNodeAsync?(context: string, node: INode, babylonNode: Node): Promise<INode>;
+        postExportNodeAsync?(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap?: {
+            [key: number]: number;
+        }): Promise<Nullable<INode>>;
         /**
          * Define this method to modify the default behavior when exporting a material
          * @param material glTF material
          * @param babylonMaterial BabylonJS material
          * @returns nullable IMaterial promise
          */
-        postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial>;
+        postExportMaterialAsync?(context: string, node: Nullable<IMaterial>, babylonMaterial: Material): Promise<IMaterial>;
         /**
          * Define this method to return additional textures to export from a material
          * @param material glTF material
@@ -431,7 +434,7 @@ declare module "babylonjs-serializers/glTF/2.0/glTFSerializer" {
 declare module "babylonjs-serializers/glTF/2.0/glTFUtilities" {
     import { IBufferView, AccessorType, AccessorComponentType, IAccessor } from "babylonjs-gltf2interface";
     import { FloatArray, Nullable } from "babylonjs/types";
-    import { Vector3, Vector4, Quaternion } from "babylonjs/Maths/math";
+    import { Vector3, Vector4, Quaternion } from "babylonjs/Maths/math.vector";
     /**
      * @hidden
      */
@@ -528,7 +531,7 @@ declare module "babylonjs-serializers/glTF/2.0/glTFUtilities" {
 declare module "babylonjs-serializers/glTF/2.0/glTFExporter" {
     import { IBufferView, IAccessor, INode, IMaterial, ITexture, IImage, ISampler, ImageMimeType, IMeshPrimitive, IGLTF, ITextureInfo } from "babylonjs-gltf2interface";
     import { FloatArray, Nullable } from "babylonjs/types";
-    import { Vector3, Vector4 } from "babylonjs/Maths/math";
+    import { Vector3, Vector4 } from "babylonjs/Maths/math.vector";
     import { Node } from "babylonjs/node";
     import { SubMesh } from "babylonjs/Meshes/subMesh";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
@@ -560,7 +563,7 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporter" {
         /**
          * Stores all the generated nodes, which contains transform and/or mesh information per node
          */
-        private _nodes;
+        _nodes: INode[];
         /**
          * Stores all the generated glTF scenes, which stores multiple node hierarchies
          */
@@ -616,7 +619,9 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporter" {
         /**
          * Stores a map of the unique id of a node to its index in the node array
          */
-        private _nodeMap;
+        _nodeMap: {
+            [key: number]: number;
+        };
         /**
          * Specifies if the source Babylon scene was left handed, and needed conversion.
          */
@@ -640,10 +645,12 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporter" {
         private static _ExtensionFactories;
         private _applyExtension;
         private _applyExtensions;
-        _extensionsPreExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Nullable<BaseTexture>>;
+        _extensionsPreExportTextureAsync(context: string, babylonTexture: Nullable<Texture>, mimeType: ImageMimeType): Promise<Nullable<BaseTexture>>;
         _extensionsPostExportMeshPrimitiveAsync(context: string, meshPrimitive: IMeshPrimitive, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Promise<Nullable<IMeshPrimitive>>;
-        _extensionsPostExportNodeAsync(context: string, node: INode, babylonNode: Node): Promise<Nullable<INode>>;
-        _extensionsPostExportMaterialAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<Nullable<IMaterial>>;
+        _extensionsPostExportNodeAsync(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap?: {
+            [key: number]: number;
+        }): Promise<Nullable<INode>>;
+        _extensionsPostExportMaterialAsync(context: string, material: Nullable<IMaterial>, babylonMaterial: Material): Promise<Nullable<IMaterial>>;
         _extensionsPostExportMaterialAdditionalTextures(context: string, material: IMaterial, babylonMaterial: Material): BaseTexture[];
         _extensionsPostExportTextures(context: string, textureInfo: ITextureInfo, babylonTexture: BaseTexture): void;
         private _forEachExtensions;
@@ -846,6 +853,7 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporter" {
          * @param babylonMesh Source Babylon mesh
          * @param binaryWriter Buffer for storing geometry data
          * @param convertToRightHandedSystem Converts the values to right-handed
+         * @param nodeMap Node mapping of unique id to glTF node index
          * @returns glTF node
          */
         private createNodeAsync;
@@ -1146,6 +1154,7 @@ declare module "babylonjs-serializers/glTF/2.0/Extensions/KHR_texture_transform"
     }
 }
 declare module "babylonjs-serializers/glTF/2.0/Extensions/KHR_lights_punctual" {
+    import { Nullable } from "babylonjs/types";
     import { Node } from "babylonjs/node";
     import { INode } from "babylonjs-gltf2interface";
     import { IGLTFExporterExtensionV2 } from "babylonjs-serializers/glTF/2.0/glTFExporterExtension";
@@ -1176,9 +1185,12 @@ declare module "babylonjs-serializers/glTF/2.0/Extensions/KHR_lights_punctual" {
          * @param context The context when exporting the node
          * @param node glTF node
          * @param babylonNode BabylonJS node
+         * @param nodeMap Node mapping of unique id to glTF node index
          * @returns nullable INode promise
          */
-        postExportNodeAsync(context: string, node: INode, babylonNode: Node): Promise<INode>;
+        postExportNodeAsync(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap?: {
+            [key: number]: number;
+        }): Promise<Nullable<INode>>;
     }
 }
 declare module "babylonjs-serializers/glTF/2.0/Extensions/KHR_materials_sheen" {
@@ -1335,7 +1347,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param mimeType The mime-type of the generated image
          * @returns A promise that resolves with the exported texture
          */
-        preExportTextureAsync?(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Texture>;
+        preExportTextureAsync?(context: string, babylonTexture: Nullable<Texture>, mimeType: ImageMimeType): Promise<Texture>;
         /**
          * Define this method to get notified when a texture info is created
          * @param context The context when loading the asset
@@ -1351,7 +1363,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param binaryWriter glTF serializer binary writer instance
          * @returns nullable IMeshPrimitive promise
          */
-        postExportMeshPrimitiveAsync?(context: string, meshPrimitive: IMeshPrimitive, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Promise<IMeshPrimitive>;
+        postExportMeshPrimitiveAsync?(context: string, meshPrimitive: Nullable<IMeshPrimitive>, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Promise<IMeshPrimitive>;
         /**
          * Define this method to modify the default behavior when exporting a node
          * @param context The context when exporting the node
@@ -1359,14 +1371,16 @@ declare module BABYLON.GLTF2.Exporter {
          * @param babylonNode BabylonJS node
          * @returns nullable INode promise
          */
-        postExportNodeAsync?(context: string, node: INode, babylonNode: Node): Promise<INode>;
+        postExportNodeAsync?(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap?: {
+            [key: number]: number;
+        }): Promise<Nullable<INode>>;
         /**
          * Define this method to modify the default behavior when exporting a material
          * @param material glTF material
          * @param babylonMaterial BabylonJS material
          * @returns nullable IMaterial promise
          */
-        postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial>;
+        postExportMaterialAsync?(context: string, node: Nullable<IMaterial>, babylonMaterial: Material): Promise<IMaterial>;
         /**
          * Define this method to return additional textures to export from a material
          * @param material glTF material
@@ -1797,7 +1811,7 @@ declare module BABYLON.GLTF2.Exporter {
         /**
          * Stores all the generated nodes, which contains transform and/or mesh information per node
          */
-        private _nodes;
+        _nodes: INode[];
         /**
          * Stores all the generated glTF scenes, which stores multiple node hierarchies
          */
@@ -1853,7 +1867,9 @@ declare module BABYLON.GLTF2.Exporter {
         /**
          * Stores a map of the unique id of a node to its index in the node array
          */
-        private _nodeMap;
+        _nodeMap: {
+            [key: number]: number;
+        };
         /**
          * Specifies if the source Babylon scene was left handed, and needed conversion.
          */
@@ -1877,10 +1893,12 @@ declare module BABYLON.GLTF2.Exporter {
         private static _ExtensionFactories;
         private _applyExtension;
         private _applyExtensions;
-        _extensionsPreExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Nullable<BaseTexture>>;
+        _extensionsPreExportTextureAsync(context: string, babylonTexture: Nullable<Texture>, mimeType: ImageMimeType): Promise<Nullable<BaseTexture>>;
         _extensionsPostExportMeshPrimitiveAsync(context: string, meshPrimitive: IMeshPrimitive, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Promise<Nullable<IMeshPrimitive>>;
-        _extensionsPostExportNodeAsync(context: string, node: INode, babylonNode: Node): Promise<Nullable<INode>>;
-        _extensionsPostExportMaterialAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<Nullable<IMaterial>>;
+        _extensionsPostExportNodeAsync(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap?: {
+            [key: number]: number;
+        }): Promise<Nullable<INode>>;
+        _extensionsPostExportMaterialAsync(context: string, material: Nullable<IMaterial>, babylonMaterial: Material): Promise<Nullable<IMaterial>>;
         _extensionsPostExportMaterialAdditionalTextures(context: string, material: IMaterial, babylonMaterial: Material): BaseTexture[];
         _extensionsPostExportTextures(context: string, textureInfo: ITextureInfo, babylonTexture: BaseTexture): void;
         private _forEachExtensions;
@@ -2083,6 +2101,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param babylonMesh Source Babylon mesh
          * @param binaryWriter Buffer for storing geometry data
          * @param convertToRightHandedSystem Converts the values to right-handed
+         * @param nodeMap Node mapping of unique id to glTF node index
          * @returns glTF node
          */
         private createNodeAsync;
@@ -2397,9 +2416,12 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
          * @param context The context when exporting the node
          * @param node glTF node
          * @param babylonNode BabylonJS node
+         * @param nodeMap Node mapping of unique id to glTF node index
          * @returns nullable INode promise
          */
-        postExportNodeAsync(context: string, node: INode, babylonNode: Node): Promise<INode>;
+        postExportNodeAsync(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap?: {
+            [key: number]: number;
+        }): Promise<Nullable<INode>>;
     }
 }
 declare module BABYLON.GLTF2.Exporter.Extensions {

@@ -18,10 +18,11 @@
 //   ../../../../../Tools/Gulp/babylonjs/types
 //   ../../../../../Tools/Gulp/babylonjs/Materials/material
 //   ../../../../../Tools/Gulp/babylonjs-gltf2interface
-//   ../../../../../Tools/Gulp/babylonjs/Maths/math
+//   ../../../../../Tools/Gulp/babylonjs/Maths/math.vector
 //   ../../../../../Tools/Gulp/babylonjs-loaders/glTF/glTFFileLoader
 //   ../../../../../Tools/Gulp/babylonjs/Materials/Textures/baseTexture
 //   ../../../../../Tools/Gulp/babylonjs/Engines/thinEngine
+//   ../../../../../Tools/Gulp/babylonjs/Maths/math
 //   ../../../../../Tools/Gulp/babylonjs/Misc/sceneOptimizer
 //   ../../../../../Tools/Gulp/babylonjs/Cameras/arcRotateCamera
 //   ../../../../../Tools/Gulp/babylonjs/Lights/light
@@ -787,7 +788,7 @@ declare module 'babylonjs-viewer/model/viewerModel' {
 }
 
 declare module 'babylonjs-viewer/model/modelAnimation' {
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { AnimationGroup } from "babylonjs/Animations/index";
     /**
         * Animation play mode enum - is the animation looping or playing once
@@ -1860,7 +1861,7 @@ declare module 'babylonjs-viewer/configuration/loader' {
 declare module 'babylonjs-viewer/labs/viewerLabs' {
     import { PBREnvironment } from "babylonjs-viewer/labs/environmentSerializer";
     import { Scene } from "babylonjs/scene";
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { ShadowLight } from "babylonjs/Lights/shadowLight";
     /**
         * The ViewerLabs class will hold functions that are not (!) backwards compatible.
