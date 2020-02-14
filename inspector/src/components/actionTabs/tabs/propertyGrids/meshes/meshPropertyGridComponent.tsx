@@ -2,7 +2,8 @@ import * as React from "react";
 
 import { Observable } from "babylonjs/Misc/observable";
 import { Tools } from "babylonjs/Misc/tools";
-import { Color3, Vector3, TmpVectors } from "babylonjs/Maths/math";
+import { Vector3, TmpVectors } from "babylonjs/Maths/math.vector";
+import { Color3 } from 'babylonjs/Maths/math.color';
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { VertexBuffer } from "babylonjs/Meshes/buffer";
 import { LinesBuilder } from "babylonjs/Meshes/Builders/linesBuilder";
@@ -292,12 +293,12 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
             return {
                 label: m.name || "no name",
                 value: i
-            }});
+            };});
 
         materialOptions.splice(0, 0, {
             label: "None",
             value: -1
-        })
+        });
 
         return (
             <div className="pane">
@@ -314,7 +315,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     {
                         mesh.parent &&
                         <TextLineComponent label="Parent" value={mesh.parent.name} onLink={() => this.props.globalState.onSelectionChangedObservable.notifyObservers(mesh.parent)}/>
-                    }                      
+                    }
                     {
                         mesh.skeleton &&
                         <TextLineComponent label="Skeleton" value={mesh.skeleton.name} onLink={() => this.onSkeletonLink()}/>
@@ -326,8 +327,8 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                         <TextLineComponent label="Link to material" value={mesh.material.name} onLink={() => this.onMaterialLink()} />
                     }
                     {   !mesh.isAnInstance &&
-                        <OptionsLineComponent label="Active material" options={materialOptions} 
-                            target={mesh} propertyName="material" 
+                        <OptionsLineComponent label="Active material" options={materialOptions}
+                            target={mesh} propertyName="material"
                             noDirectUpdate={true}
                             onSelect={(value: number) => {
                                 if (value < 0) {
@@ -376,7 +377,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     {
                         mesh.isVerticesDataPresent(VertexBuffer.ColorKind) &&
                         <CheckBoxLineComponent label="Has vertex alpha" target={mesh} propertyName="hasVertexAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    }                    
+                    }
                     {
                         scene.fogMode !== Scene.FOGMODE_NONE &&
                         <CheckBoxLineComponent label="Apply fog" target={mesh} propertyName="applyFog" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -393,7 +394,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                             morphTargets.map((mt, i) => {
                                 return (
                                     <SliderLineComponent label={mt.name} target={mt} propertyName="influence" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                                )
+                                );
                             })
                         }
                     </LineContainerComponent>
@@ -430,7 +431,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     <OptionsLineComponent label="Algorithm" options={algorithmOptions} target={mesh} propertyName="occlusionQueryAlgorithmType" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="EDGE RENDERING" closed={true}>
-                    <CheckBoxLineComponent label="Enable" target={mesh} isSelected={() => mesh.edgesRenderer != null} onSelect={value => {
+                    <CheckBoxLineComponent label="Enable" target={mesh} isSelected={() => mesh.edgesRenderer != null} onSelect={(value) => {
                         if (value) {
                             mesh.enableEdgesRendering();
                         } else {

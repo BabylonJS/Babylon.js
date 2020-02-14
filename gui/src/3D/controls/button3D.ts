@@ -1,5 +1,5 @@
 import { int, Nullable } from "babylonjs/types";
-import { Color3, Vector4 } from "babylonjs/Maths/math";
+import { Vector4 } from "babylonjs/Maths/math.vector";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { BoxBuilder } from "babylonjs/Meshes/Builders/boxBuilder";
@@ -11,6 +11,7 @@ import { Scene } from "babylonjs/scene";
 import { AbstractButton3D } from "./abstractButton3D";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import { Control } from "../../2D/controls/control";
+import { Color3 } from 'babylonjs/Maths/math.color';
 
 /**
  * Class used to create a button in 3D
