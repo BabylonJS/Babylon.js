@@ -35,27 +35,44 @@ export interface IWebXRMotionControllerComponentChangesValues<T> {
  */
 export interface IWebXRMotionControllerComponentChanges {
     /**
-     * will be populated with previous and current values if touched changed
+     * will be populated with previous and current values if axes changed
      */
-    touched?: IWebXRMotionControllerComponentChangesValues<boolean>;
+    axes?: IWebXRMotionControllerComponentChangesValues<IWebXRMotionControllerAxesValue>;
     /**
      * will be populated with previous and current values if pressed changed
      */
     pressed?: IWebXRMotionControllerComponentChangesValues<boolean>;
     /**
+     * will be populated with previous and current values if touched changed
+     */
+    touched?: IWebXRMotionControllerComponentChangesValues<boolean>;
+    /**
      * will be populated with previous and current values if value changed
      */
     value?: IWebXRMotionControllerComponentChangesValues<number>;
-    /**
-     * will be populated with previous and current values if axes changed
-     */
-    axes?: IWebXRMotionControllerComponentChangesValues<IWebXRMotionControllerAxesValue>;
 }
 /**
  * This class represents a single component (for example button or thumbstick) of a motion controller
  */
 export class WebXRControllerComponent implements IDisposable {
+    private _axes: IWebXRMotionControllerAxesValue = {
+        x: 0,
+        y: 0
+    };
+    private _changes: IWebXRMotionControllerComponentChanges = {};
+    private _currentValue: number = 0;
+    private _hasChanges: boolean = false;
+    private _pressed: boolean = false;
+    private _touched: boolean = false;
 
+    /**
+     * button component type
+     */
+    public static BUTTON_TYPE: MotionControllerComponentType = "button";
+    /**
+     * squeeze component type
+     */
+    public static SQUEEZE_TYPE: MotionControllerComponentType = "squeeze";
     /**
      * Thumbstick component type
      */
@@ -68,40 +85,17 @@ export class WebXRControllerComponent implements IDisposable {
      * trigger component type
      */
     public static TRIGGER_TYPE: MotionControllerComponentType = "trigger";
-    /**
-     * squeeze component type
-     */
-    public static SQUEEZE_TYPE: MotionControllerComponentType = "squeeze";
-    /**
-     * button component type
-     */
-    public static BUTTON_TYPE: MotionControllerComponentType = "button";
-    /**
-     * Observers registered here will be triggered when the state of a button changes
-     * State change is either pressed / touched / value
-     */
-    public onButtonStateChangedObservable: Observable<WebXRControllerComponent> = new Observable();
+
     /**
      * If axes are available for this component (like a touchpad or thumbstick) the observers will be notified when
      * the axes data changes
      */
     public onAxisValueChangedObservable: Observable<{ x: number, y: number }> = new Observable();
-
-    private _currentValue: number = 0;
-    private _touched: boolean = false;
-    private _pressed: boolean = false;
-    private _axes: IWebXRMotionControllerAxesValue = {
-        x: 0,
-        y: 0
-    };
-    private _changes: IWebXRMotionControllerComponentChanges = {};
-    private _hasChanges: boolean = false;
     /**
-     * Return whether or not the component changed the last frame
+     * Observers registered here will be triggered when the state of a button changes
+     * State change is either pressed / touched / value
      */
-    public get hasChanges(): boolean {
-        return this._hasChanges;
-    }
+    public onButtonStateChangedObservable: Observable<WebXRControllerComponent> = new Observable();
 
     /**
      * Creates a new component for a motion controller.
@@ -123,28 +117,6 @@ export class WebXRControllerComponent implements IDisposable {
         public type: MotionControllerComponentType,
         private _buttonIndex: number = -1,
         private _axesIndices: number[] = []) {
-
-    }
-
-    /**
-     * Get the current value of this component
-     */
-    public get value(): number {
-        return this._currentValue;
-    }
-
-    /**
-     * is the button currently pressed
-     */
-    public get pressed(): boolean {
-        return this._pressed;
-    }
-
-    /**
-     * is the button currently touched
-     */
-    public get touched(): boolean {
-        return this._touched;
     }
 
     /**
@@ -162,11 +134,39 @@ export class WebXRControllerComponent implements IDisposable {
     }
 
     /**
-     * Is this component a button (hence - pressable)
-     * @returns true if can be pressed
+     * Return whether or not the component changed the last frame
      */
-    public isButton(): boolean {
-        return this._buttonIndex !== -1;
+    public get hasChanges(): boolean {
+        return this._hasChanges;
+    }
+
+    /**
+     * is the button currently pressed
+     */
+    public get pressed(): boolean {
+        return this._pressed;
+    }
+
+    /**
+     * is the button currently touched
+     */
+    public get touched(): boolean {
+        return this._touched;
+    }
+
+    /**
+     * Get the current value of this component
+     */
+    public get value(): number {
+        return this._currentValue;
+    }
+
+    /**
+     * Dispose this component
+     */
+    public dispose(): void {
+        this.onAxisValueChangedObservable.clear();
+        this.onButtonStateChangedObservable.clear();
     }
 
     /**
@@ -175,6 +175,14 @@ export class WebXRControllerComponent implements IDisposable {
      */
     public isAxes(): boolean {
         return this._axesIndices.length !== 0;
+    }
+
+    /**
+     * Is this component a button (hence - pressable)
+     * @returns true if can be pressed
+     */
+    public isButton(): boolean {
+        return this._buttonIndex !== -1;
     }
 
     /**
@@ -263,13 +271,5 @@ export class WebXRControllerComponent implements IDisposable {
             this._hasChanges = true;
             this.onAxisValueChangedObservable.notifyObservers(this._axes);
         }
-    }
-
-    /**
-     * Dispose this component
-     */
-    public dispose(): void {
-        this.onAxisValueChangedObservable.clear();
-        this.onButtonStateChangedObservable.clear();
     }
 }
