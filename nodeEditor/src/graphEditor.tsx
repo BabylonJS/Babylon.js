@@ -638,8 +638,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         parentControl.style.height = "100%";
         parentControl.style.margin = "0";
         parentControl.style.padding = "0";
-        parentControl.style.display = "block";
-        parentControl.style.gridTemplateRows = "unset";
+        parentControl.style.display = "grid";
+        parentControl.style.gridTemplateRows = "40px auto";
         parentControl.id = 'node-editor-graph-root';
         parentControl.className = 'right-panel';
 
@@ -671,9 +671,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     const newStyleEl = sourceDoc.createElement('style');
 
                     for (var cssRule of styleSheet.cssRules) {
-                        if (cssRule.selectorText !== '.right-panel #preview-config-bar .button') { // skip css grid layout rules
-                            newStyleEl.appendChild(sourceDoc.createTextNode(cssRule.cssText));
-                        }
+                        newStyleEl.appendChild(sourceDoc.createTextNode(cssRule.cssText));
                     }
 
                     targetDoc.head!.appendChild(newStyleEl);
@@ -688,12 +686,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     createPreviewMeshControlHost = (options: IInternalPreviewAreaOptions, parentControl: Nullable<HTMLElement>) => {
         // Prepare the preview control host
         if (parentControl) {
+
             const host = parentControl.ownerDocument!.createElement("div");
 
             host.id = "PreviewMeshControl-host";
             host.style.width = options.embedHostWidth || "auto";
-            host.style.display = "block";
-            host.style.height = "30px";
 
             parentControl.appendChild(host);
             const PreviewMeshControlComponentHost = React.createElement(PreviewMeshControlComponent, {
@@ -711,7 +708,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
             host.id = "PreviewAreaComponent-host";
             host.style.width = options.embedHostWidth || "auto";
-            host.style.display = "block";
+            host.style.display = "grid";
+            host.style.gridRow = '2';
+            host.style.gridTemplateRows = "auto 40px";
 
             parentControl.appendChild(host);
 
@@ -734,11 +733,20 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     fixPopUpStyles = (document: Document) => {
         const previewContainer = document.getElementById("preview");
         if (previewContainer) {
-            previewContainer.style.height = "calc(100% - 60px)";
+            previewContainer.style.height = "auto";
+            previewContainer.style.gridRow = "1";
+        }
+        const previewConfigBar = document.getElementById("preview-config-bar");
+        if (previewConfigBar) {
+            previewConfigBar.style.gridRow = "2";
         }
         const newWindowButton = document.getElementById('preview-new-window');
         if (newWindowButton) {
             newWindowButton.style.display = 'none';
+        }
+        const previewMeshBar = document.getElementById('preview-mesh-bar');
+        if (previewMeshBar) {
+            previewMeshBar.style.gridTemplateColumns = "auto 1fr 40px 40px";
         }
     }
 

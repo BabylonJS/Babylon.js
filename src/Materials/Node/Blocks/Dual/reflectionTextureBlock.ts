@@ -67,6 +67,8 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
         this.registerOutput("r", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("g", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("b", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
+
+        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector4);
     }
 
     /**
@@ -244,13 +246,13 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
 
         if (state._emitVaryingFromString(this._positionUVWName, "vec3", this._defineSkyboxName)) {
             state.compilationString += `#ifdef ${this._defineSkyboxName}\r\n`;
-            state.compilationString += `${this._positionUVWName} = ${this.position.associatedVariableName};\r\n`;
+            state.compilationString += `${this._positionUVWName} = ${this.position.associatedVariableName}.xyz;\r\n`;
             state.compilationString += `#endif\r\n`;
         }
 
         if (state._emitVaryingFromString(this._directionWName, "vec3", `defined(${this._defineEquirectangularFixedName}) || defined(${this._defineMirroredEquirectangularFixedName})`)) {
             state.compilationString += `#if defined(${this._defineEquirectangularFixedName}) || defined(${this._defineMirroredEquirectangularFixedName})\r\n`;
-            state.compilationString += `${this._directionWName} = normalize(vec3(${this.world.associatedVariableName} * vec4(${this.position.associatedVariableName}, 0.0)));\r\n`;
+            state.compilationString += `${this._directionWName} = normalize(vec3(${this.world.associatedVariableName} * vec4(${this.position.associatedVariableName}.xyz, 0.0)));\r\n`;
             state.compilationString += `#endif\r\n`;
         }
     }
