@@ -12,18 +12,18 @@ import { WebXRAbstractFeature } from './WebXRAbstractFeature';
  */
 export interface IWebXRAnchorSystemOptions {
     /**
-     * a node that will be used to convert local to world coordinates
+     * Should a new anchor be added every time a select event is triggered
      */
-    worldParentNode?: TransformNode;
+    addAnchorOnSelect?: boolean;
     /**
      * should the anchor system use plane detection.
      * If set to true, the plane-detection feature should be set using setPlaneDetector
      */
     usePlaneDetection?: boolean;
     /**
-     * Should a new anchor be added every time a select event is triggered
+     * a node that will be used to convert local to world coordinates
      */
-    addAnchorOnSelect?: boolean;
+    worldParentNode?: TransformNode;
 }
 
 /**
@@ -35,13 +35,13 @@ export interface IWebXRAnchor {
      */
     id: number;
     /**
-     * The native anchor object
-     */
-    xrAnchor: XRAnchor;
-    /**
      * Transformation matrix to apply to an object attached to this anchor
      */
     transformationMatrix: Matrix;
+    /**
+     * The native anchor object
+     */
+    xrAnchor: XRAnchor;
 }
 
 let anchorIdProvider = 0;
@@ -53,6 +53,34 @@ let anchorIdProvider = 0;
  * For further information see https://github.com/immersive-web/anchors/
  */
 export class WebXRAnchorSystem extends WebXRAbstractFeature {
+    private _enabled: boolean = false;
+    private _hitTestModule: WebXRHitTestLegacy;
+    private _lastFrameDetected: XRAnchorSet = new Set();
+    private _onSelect = (event: XRInputSourceEvent) => {
+        if (!this._options.addAnchorOnSelect) {
+            return;
+        }
+        const onResults = (results: XRHitResult[]) => {
+            if (results.length) {
+                const hitResult = results[0];
+                const transform = new XRRigidTransform(hitResult.hitMatrix);
+                // find the plane on which to add.
+                this.addAnchorAtRigidTransformation(transform);
+            }
+        };
+
+        // avoid the hit-test, if the hit-test module is defined
+        if (this._hitTestModule && !this._hitTestModule.options.testOnPointerDownOnly) {
+            onResults(this._hitTestModule.lastNativeXRHitResults);
+        }
+        WebXRHitTestLegacy.XRHitTestWithSelectEvent(event, this._xrSessionManager.referenceSpace).then(onResults);
+
+        // API will soon change, will need to use the plane
+        this._planeDetector;
+    }
+
+    private _planeDetector: WebXRPlaneDetector;
+    private _trackedAnchors: Array<IWebXRAnchor> = [];
 
     /**
      * The module's name
@@ -61,7 +89,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
     /**
      * The (Babylon) version of this module.
      * This is an integer representing the implementation version.
-     * This number does not correspond to the webxr specs version
+     * This number does not correspond to the WebXR specs version
      */
     public static readonly Version = 1;
 
@@ -70,21 +98,14 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
      */
     public onAnchorAddedObservable: Observable<IWebXRAnchor> = new Observable();
     /**
+     * Observers registered here will be executed when an anchor was removed from the session
+     */
+    public onAnchorRemovedObservable: Observable<IWebXRAnchor> = new Observable();
+    /**
      * Observers registered here will be executed when an existing anchor updates
      * This can execute N times every frame
      */
     public onAnchorUpdatedObservable: Observable<IWebXRAnchor> = new Observable();
-    /**
-     * Observers registered here will be executed when an anchor was removed from the session
-     */
-    public onAnchorRemovedObservable: Observable<IWebXRAnchor> = new Observable();
-
-    private _planeDetector: WebXRPlaneDetector;
-    private _hitTestModule: WebXRHitTestLegacy;
-
-    private _enabled: boolean = false;
-    private _trackedAnchors: Array<IWebXRAnchor> = [];
-    private _lastFrameDetected: XRAnchorSet = new Set();
 
     /**
      * constructs a new anchor system
@@ -96,21 +117,15 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
     }
 
     /**
-     * set the plane detector to use in order to create anchors from frames
-     * @param planeDetector the plane-detector module to use
-     * @param enable enable plane-anchors. default is true
+     * Add anchor at a specific XR point.
+     *
+     * @param xrRigidTransformation xr-coordinates where a new anchor should be added
+     * @param anchorCreator the object o use to create an anchor with. either a session or a plane
+     * @returns a promise the fulfills when the anchor was created
      */
-    public setPlaneDetector(planeDetector: WebXRPlaneDetector, enable: boolean = true) {
-        this._planeDetector = planeDetector;
-        this._options.usePlaneDetection = enable;
-    }
-
-    /**
-     * If set, it will improve performance by using the current hit-test results instead of executing a new hit-test
-     * @param hitTestModule the hit-test module to use.
-     */
-    public setHitTestModule(hitTestModule: WebXRHitTestLegacy) {
-        this._hitTestModule = hitTestModule;
+    public addAnchorAtRigidTransformation(xrRigidTransformation: XRRigidTransform, anchorCreator?: XRAnchorCreator): Promise<XRAnchor> {
+        const creator = anchorCreator || this._xrSessionManager.session;
+        return creator.createAnchor(xrRigidTransformation, this._xrSessionManager.referenceSpace);
     }
 
     /**
@@ -119,7 +134,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
      *
      * @returns true if successful.
      */
-    attach(): boolean {
+    public attach(): boolean {
         if (!super.attach()) {
             return false;
         }
@@ -135,7 +150,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
      *
      * @returns true if successful.
      */
-    detach(): boolean {
+    public detach(): boolean {
         if (!super.detach()) {
             return false;
         }
@@ -148,11 +163,29 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
     /**
      * Dispose this feature and all of the resources attached
      */
-    dispose(): void {
+    public dispose(): void {
         super.dispose();
         this.onAnchorAddedObservable.clear();
         this.onAnchorRemovedObservable.clear();
         this.onAnchorUpdatedObservable.clear();
+    }
+
+    /**
+     * If set, it will improve performance by using the current hit-test results instead of executing a new hit-test
+     * @param hitTestModule the hit-test module to use.
+     */
+    public setHitTestModule(hitTestModule: WebXRHitTestLegacy) {
+        this._hitTestModule = hitTestModule;
+    }
+
+    /**
+     * set the plane detector to use in order to create anchors from frames
+     * @param planeDetector the plane-detector module to use
+     * @param enable enable plane-anchors. default is true
+     */
+    public setPlaneDetector(planeDetector: WebXRPlaneDetector, enable: boolean = true) {
+        this._planeDetector = planeDetector;
+        this._options.usePlaneDetection = enable;
     }
 
     protected _onXRFrame(frame: XRFrame) {
@@ -189,39 +222,17 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
         }
     }
 
-    private _onSelect = (event: XRInputSourceEvent) => {
-        if (!this._options.addAnchorOnSelect) {
-            return;
-        }
-        const onResults = (results: XRHitResult[]) => {
-            if (results.length) {
-                const hitResult = results[0];
-                const transform = new XRRigidTransform(hitResult.hitMatrix);
-                // find the plane on which to add.
-                this.addAnchorAtRigidTransformation(transform);
-            }
-        };
-
-        // avoid the hit-test, if the hit-test module is defined
-        if (this._hitTestModule && !this._hitTestModule.options.testOnPointerDownOnly) {
-            onResults(this._hitTestModule.lastNativeXRHitResults);
-        }
-        WebXRHitTestLegacy.XRHitTestWithSelectEvent(event, this._xrSessionManager.referenceSpace).then(onResults);
-
-        // API will soon change, will need to use the plane
-        this._planeDetector;
-    }
-
     /**
-     * Add anchor at a specific XR point.
-     *
-     * @param xrRigidTransformation xr-coordinates where a new anchor should be added
-     * @param anchorCreator the object o use to create an anchor with. either a session or a plane
-     * @returns a promise the fulfills when the anchor was created
+     * avoiding using Array.find for global support.
+     * @param xrAnchor the plane to find in the array
      */
-    public addAnchorAtRigidTransformation(xrRigidTransformation: XRRigidTransform, anchorCreator?: XRAnchorCreator): Promise<XRAnchor> {
-        const creator = anchorCreator || this._xrSessionManager.session;
-        return creator.createAnchor(xrRigidTransformation, this._xrSessionManager.referenceSpace);
+    private _findIndexInAnchorArray(xrAnchor: XRAnchor) {
+        for (let i = 0; i < this._trackedAnchors.length; ++i) {
+            if (this._trackedAnchors[i].xrAnchor === xrAnchor) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private _updateAnchorWithXRFrame(xrAnchor: XRAnchor, anchor: Partial<IWebXRAnchor>, xrFrame: XRFrame): IWebXRAnchor {
@@ -243,23 +254,9 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
 
         return <IWebXRAnchor>anchor;
     }
-
-    /**
-     * avoiding using Array.find for global support.
-     * @param xrAnchor the plane to find in the array
-     */
-    private _findIndexInAnchorArray(xrAnchor: XRAnchor) {
-        for (let i = 0; i < this._trackedAnchors.length; ++i) {
-            if (this._trackedAnchors[i].xrAnchor === xrAnchor) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
 }
 
-//register the plugin
+// register the plugin
 // WebXRFeaturesManager.AddWebXRFeature(WebXRAnchorSystem.Name, (xrSessionManager, options) => {
 //     return () => new WebXRAnchorSystem(xrSessionManager, options);
 // }, WebXRAnchorSystem.Version);

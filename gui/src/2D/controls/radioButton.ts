@@ -1,5 +1,5 @@
 import { Observable } from "babylonjs/Misc/observable";
-import { Vector2 } from "babylonjs/Maths/math";
+import { Vector2 } from "babylonjs/Maths/math.vector";
 
 import { Control } from "./control";
 import { StackPanel } from "./stackPanel";

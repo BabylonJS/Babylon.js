@@ -20,31 +20,62 @@ export type MotionControllerConstructor = (xrInput: XRInputSource, scene: Scene)
  * When using a model try to stay as generic as possible. Eventually there will be no need in any of the controller classes
  */
 export class WebXRMotionControllerManager {
+    private static _AvailableControllers: { [type: string]: MotionControllerConstructor } = {};
+    private static _Fallbacks: { [profileId: string]: string[] } = {};
+    // cache for loading
+    private static _ProfileLoadingPromises: { [profileName: string]: Promise<IMotionControllerProfile> } = {};
+    private static _ProfilesList: Promise<{ [profile: string]: string }>;
+
     /**
      * The base URL of the online controller repository. Can be changed at any time.
      */
     public static BaseRepositoryUrl = "https://immersive-web.github.io/webxr-input-profiles/packages/viewer/dist";
     /**
-     * Use the online repository, or use only locally-defined controllers
-     */
-    public static UseOnlineRepository: boolean = true;
-    /**
      * Which repository gets priority - local or online
      */
     public static PrioritizeOnlineRepository: boolean = true;
-    private static _AvailableControllers: { [type: string]: MotionControllerConstructor } = {};
-    private static _Fallbacks: { [profileId: string]: string[] } = {};
+    /**
+     * Use the online repository, or use only locally-defined controllers
+     */
+    public static UseOnlineRepository: boolean = true;
 
     /**
-     * Register a new controller based on its profile. This function will be called by the controller classes themselves.
-     *
-     * If you are missing a profile, make sure it is imported in your source, otherwise it will not register.
-     *
-     * @param type the profile type to register
-     * @param constructFunction the function to be called when loading this profile
+     * Clear the cache used for profile loading and reload when requested again
      */
-    public static RegisterController(type: string, constructFunction: MotionControllerConstructor) {
-        this._AvailableControllers[type] = constructFunction;
+    public static ClearProfilesCache() {
+        delete this._ProfilesList;
+        this._ProfileLoadingPromises = {};
+    }
+
+    /**
+     * Register the default fallbacks.
+     * This function is called automatically when this file is imported.
+     */
+    public static DefaultFallbacks() {
+        this.RegisterFallbacksForProfileId("google-daydream", ["generic-touchpad"]);
+        this.RegisterFallbacksForProfileId("htc-vive-focus", ["generic-trigger-touchpad"]);
+        this.RegisterFallbacksForProfileId("htc-vive", ["generic-trigger-squeeze-touchpad"]);
+        this.RegisterFallbacksForProfileId("magicleap-one", ["generic-trigger-squeeze-touchpad"]);
+        this.RegisterFallbacksForProfileId("windows-mixed-reality", ["generic-trigger-squeeze-touchpad-thumbstick"]);
+        this.RegisterFallbacksForProfileId("microsoft-mixed-reality", ["windows-mixed-reality", "generic-trigger-squeeze-touchpad-thumbstick"]);
+        this.RegisterFallbacksForProfileId("oculus-go", ["generic-trigger-touchpad"]);
+        this.RegisterFallbacksForProfileId("oculus-touch-v2", ["oculus-touch", "generic-trigger-squeeze-thumbstick"]);
+        this.RegisterFallbacksForProfileId("oculus-touch", ["generic-trigger-squeeze-thumbstick"]);
+        this.RegisterFallbacksForProfileId("samsung-gearvr", ["windows-mixed-reality", "generic-trigger-squeeze-touchpad-thumbstick"]);
+        this.RegisterFallbacksForProfileId("samsung-odyssey", ["generic-touchpad"]);
+        this.RegisterFallbacksForProfileId("valve-index", ["generic-trigger-squeeze-touchpad-thumbstick"]);
+    }
+
+    /**
+     * Find a fallback profile if the profile was not found. There are a few predefined generic profiles.
+     * @param profileId the profile to which a fallback needs to be found
+     * @return an array with corresponding fallback profiles
+     */
+    public static FindFallbackWithProfileId(profileId: string): string[] {
+        const returnArray = this._Fallbacks[profileId] || [];
+
+        returnArray.unshift(profileId);
+        return returnArray;
     }
 
     /**
@@ -108,29 +139,41 @@ export class WebXRMotionControllerManager {
         }
     }
 
-    private static _LoadProfilesFromAvailableControllers(profileArray: string[], xrInput: XRInputSource, scene: Scene) {
-        // check fallbacks
-        for (let i = 0; i < profileArray.length; ++i) {
-            // defensive
-            if (!profileArray[i]) {
-                continue;
-            }
-            const fallbacks = this.FindFallbackWithProfileId(profileArray[i]);
-            for (let j = 0; j < fallbacks.length; ++j) {
-                const constructionFunction = this._AvailableControllers[fallbacks[j]];
-                if (constructionFunction) {
-                    return Promise.resolve(constructionFunction(xrInput, scene));
-                }
-            }
-        }
-
-        throw new Error(`no controller requested was found in the available controllers list`);
+    /**
+     * Register a new controller based on its profile. This function will be called by the controller classes themselves.
+     *
+     * If you are missing a profile, make sure it is imported in your source, otherwise it will not register.
+     *
+     * @param type the profile type to register
+     * @param constructFunction the function to be called when loading this profile
+     */
+    public static RegisterController(type: string, constructFunction: MotionControllerConstructor) {
+        this._AvailableControllers[type] = constructFunction;
     }
 
-    private static _ProfilesList: Promise<{ [profile: string]: string }>;
+    /**
+     * Register a fallback to a specific profile.
+     * @param profileId the profileId that will receive the fallbacks
+     * @param fallbacks A list of fallback profiles
+     */
+    public static RegisterFallbacksForProfileId(profileId: string, fallbacks: string[]): void {
+        if (this._Fallbacks[profileId]) {
+            this._Fallbacks[profileId].push(...fallbacks);
+        } else {
+            this._Fallbacks[profileId] = fallbacks;
+        }
+    }
 
-    // cache for loading
-    private static _ProfileLoadingPromises: { [profileName: string]: Promise<IMotionControllerProfile> } = {};
+    /**
+     * Will update the list of profiles available in the repository
+     * @return a promise that resolves to a map of profiles available online
+     */
+    public static UpdateProfilesList() {
+        this._ProfilesList = Tools.LoadFileAsync(this.BaseRepositoryUrl + '/profiles/profilesList.json', false).then((data) => {
+            return JSON.parse(data.toString());
+        });
+        return this._ProfilesList;
+    }
 
     private static _LoadProfileFromRepository(profileArray: string[], xrInput: XRInputSource, scene: Scene): Promise<WebXRAbstractMotionController> {
         return Promise.resolve().then(() => {
@@ -161,70 +204,25 @@ export class WebXRMotionControllerManager {
         }).then((profile: IMotionControllerProfile) => {
             return new WebXRProfiledMotionController(scene, xrInput, profile, this.BaseRepositoryUrl);
         });
-
     }
 
-    /**
-     * Clear the cache used for profile loading and reload when requested again
-     */
-    public static ClearProfilesCache() {
-        delete this._ProfilesList;
-        this._ProfileLoadingPromises = {};
-    }
-
-    /**
-     * Will update the list of profiles available in the repository
-     * @return a promise that resolves to a map of profiles available online
-     */
-    public static UpdateProfilesList() {
-        this._ProfilesList = Tools.LoadFileAsync(this.BaseRepositoryUrl + '/profiles/profilesList.json', false).then((data) => {
-            return JSON.parse(data.toString());
-        });
-        return this._ProfilesList;
-    }
-
-    /**
-     * Find a fallback profile if the profile was not found. There are a few predefined generic profiles.
-     * @param profileId the profile to which a fallback needs to be found
-     * @return an array with corresponding fallback profiles
-     */
-    public static FindFallbackWithProfileId(profileId: string): string[] {
-        const returnArray = this._Fallbacks[profileId] || [];
-
-        returnArray.unshift(profileId);
-        return returnArray;
-    }
-
-    /**
-     * Register a fallback to a specific profile.
-     * @param profileId the profileId that will receive the fallbacks
-     * @param fallbacks A list of fallback profiles
-     */
-    public static RegisterFallbacksForProfileId(profileId: string, fallbacks: string[]): void {
-        if (this._Fallbacks[profileId]) {
-            this._Fallbacks[profileId].push(...fallbacks);
-        } else {
-            this._Fallbacks[profileId] = fallbacks;
+    private static _LoadProfilesFromAvailableControllers(profileArray: string[], xrInput: XRInputSource, scene: Scene) {
+        // check fallbacks
+        for (let i = 0; i < profileArray.length; ++i) {
+            // defensive
+            if (!profileArray[i]) {
+                continue;
+            }
+            const fallbacks = this.FindFallbackWithProfileId(profileArray[i]);
+            for (let j = 0; j < fallbacks.length; ++j) {
+                const constructionFunction = this._AvailableControllers[fallbacks[j]];
+                if (constructionFunction) {
+                    return Promise.resolve(constructionFunction(xrInput, scene));
+                }
+            }
         }
-    }
 
-    /**
-     * Register the default fallbacks.
-     * This function is called automatically when this file is imported.
-     */
-    public static DefaultFallbacks() {
-        this.RegisterFallbacksForProfileId("google-daydream", ["generic-touchpad"]);
-        this.RegisterFallbacksForProfileId("htc-vive-focus", ["generic-trigger-touchpad"]);
-        this.RegisterFallbacksForProfileId("htc-vive", ["generic-trigger-squeeze-touchpad"]);
-        this.RegisterFallbacksForProfileId("magicleap-one", ["generic-trigger-squeeze-touchpad"]);
-        this.RegisterFallbacksForProfileId("windows-mixed-reality", ["generic-trigger-squeeze-touchpad-thumbstick"]);
-        this.RegisterFallbacksForProfileId("microsoft-mixed-reality", ["windows-mixed-reality", "generic-trigger-squeeze-touchpad-thumbstick"]);
-        this.RegisterFallbacksForProfileId("oculus-go", ["generic-trigger-touchpad"]);
-        this.RegisterFallbacksForProfileId("oculus-touch-v2", ["oculus-touch", "generic-trigger-squeeze-thumbstick"]);
-        this.RegisterFallbacksForProfileId("oculus-touch", ["generic-trigger-squeeze-thumbstick"]);
-        this.RegisterFallbacksForProfileId("samsung-gearvr", ["windows-mixed-reality", "generic-trigger-squeeze-touchpad-thumbstick"]);
-        this.RegisterFallbacksForProfileId("samsung-odyssey", ["generic-touchpad"]);
-        this.RegisterFallbacksForProfileId("valve-index", ["generic-trigger-squeeze-touchpad-thumbstick"]);
+        throw new Error(`no controller requested was found in the available controllers list`);
     }
 }
 
