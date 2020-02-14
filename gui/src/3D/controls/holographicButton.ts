@@ -2,7 +2,7 @@ import { Button3D } from "./button3D";
 
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
-import { Color3, Vector3 } from "babylonjs/Maths/math";
+import { Vector3 } from "babylonjs/Maths/math.vector";
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Mesh } from "babylonjs/Meshes/mesh";
@@ -17,6 +17,7 @@ import { Image } from "../../2D/controls/image";
 import { TextBlock } from "../../2D/controls/textBlock";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import { Control3D } from "./control3D";
+import { Color3 } from 'babylonjs/Maths/math.color';
 
 /**
  * Class used to create a holographic button in 3D

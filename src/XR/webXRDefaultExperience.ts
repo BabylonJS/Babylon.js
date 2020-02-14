@@ -14,42 +14,35 @@ import { Logger } from '../Misc/logger';
  */
 export class WebXRDefaultExperienceOptions {
     /**
-     * Floor meshes that will be used for teleporting
-     */
-    public floorMeshes?: Array<AbstractMesh>;
-
-    /**
      * Enable or disable default UI to enter XR
      */
     public disableDefaultUI?: boolean;
-
-    /**
-     * optional configuration for the output canvas
-     */
-    public outputCanvasOptions?: WebXRManagedOutputCanvasOptions;
-
-    /**
-     * optional UI options. This can be used among other to change session mode and reference space type
-     */
-    public uiOptions?: WebXREnterExitUIOptions;
-
-    /**
-     * Disable the controller mesh-loading. Can be used if you want to load your own meshes
-     */
-    public inputOptions?: IWebXRInputOptions;
-
     /**
      * Should teleportation not initialize. defaults to false.
      */
     public disableTeleportation?: boolean;
-
+    /**
+     * Floor meshes that will be used for teleport
+     */
+    public floorMeshes?: Array<AbstractMesh>;
     /**
      * If set to true, the first frame will not be used to reset position
      * The first frame is mainly used when copying transformation from the old camera
      * Mainly used in AR
      */
     public ignoreNativeCameraTransformation?: boolean;
-
+    /**
+     * Disable the controller mesh-loading. Can be used if you want to load your own meshes
+     */
+    public inputOptions?: IWebXRInputOptions;
+    /**
+     * optional configuration for the output canvas
+     */
+    public outputCanvasOptions?: WebXRManagedOutputCanvasOptions;
+    /**
+     * optional UI options. This can be used among other to change session mode and reference space type
+     */
+    public uiOptions?: WebXREnterExitUIOptions;
     /**
      * When loading teleportation and pointer select, use stable versions instead of latest.
      */
@@ -65,6 +58,10 @@ export class WebXRDefaultExperience {
      */
     public baseExperience: WebXRExperienceHelper;
     /**
+     * Enables ui for entering/exiting xr
+     */
+    public enterExitUI: WebXREnterExitUI;
+    /**
      * Input experience extension
      */
     public input: WebXRInput;
@@ -73,17 +70,16 @@ export class WebXRDefaultExperience {
      */
     public pointerSelection: WebXRControllerPointerSelection;
     /**
-     * Enables teleportation
-     */
-    public teleportation: WebXRMotionControllerTeleportation;
-    /**
-     * Enables ui for entering/exiting xr
-     */
-    public enterExitUI: WebXREnterExitUI;
-    /**
      * Default target xr should render to
      */
     public renderTarget: WebXRRenderTarget;
+    /**
+     * Enables teleportation
+     */
+    public teleportation: WebXRMotionControllerTeleportation;
+
+    private constructor() {
+    }
 
     /**
      * Creates the default xr experience
@@ -138,10 +134,6 @@ export class WebXRDefaultExperience {
             Logger.Error(error);
             return result;
         });
-    }
-
-    private constructor() {
-
     }
 
     /**

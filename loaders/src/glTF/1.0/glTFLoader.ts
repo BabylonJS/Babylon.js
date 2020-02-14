@@ -1,7 +1,8 @@
 import { IGLTFRuntime, IGLTFTechniqueParameter, IGLTFAnimation, IGLTFAnimationSampler, IGLTFNode, IGLTFSkins, INodeToRoot, IJointNode, IGLTFMesh, IGLTFAccessor, IGLTFLight, IGLTFAmbienLight, IGLTFDirectionalLight, IGLTFPointLight, IGLTFSpotLight, IGLTFCamera, IGLTFCameraPerspective, IGLTFScene, IGLTFTechnique, IGLTFMaterial, EParameterType, IGLTFProgram, IGLTFBuffer, IGLTFTexture, IGLTFImage, IGLTFSampler, ETextureFilterType, IGLTFShader, IGLTFTechniqueStates, ECullingType, EBlendingFunction, EShaderType } from "./glTFLoaderInterfaces";
 
 import { FloatArray, Nullable } from "babylonjs/types";
-import { Quaternion, Color3, Vector3, Matrix } from "babylonjs/Maths/math";
+import { Quaternion, Vector3, Matrix } from "babylonjs/Maths/math.vector";
+import { Color3 } from 'babylonjs/Maths/math.color';
 import { Tools } from "babylonjs/Misc/tools";
 import { Camera } from "babylonjs/Cameras/camera";
 import { FreeCamera } from "babylonjs/Cameras/freeCamera";
