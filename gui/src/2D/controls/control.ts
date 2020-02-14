@@ -1882,6 +1882,7 @@ export class Control {
         this.onPointerOutObservable.clear();
         this.onPointerUpObservable.clear();
         this.onPointerClickObservable.clear();
+        this.onWheelObservable.clear();
 
         if (this._styleObserver && this._style) {
             this._style.onChangedObservable.remove(this._styleObserver);
