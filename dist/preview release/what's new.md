@@ -234,6 +234,8 @@
 - Scroll Viewer extended to include the use of images in the scroll bars([JohnK](https://github.com/BabylonJSGuide/))
 - Added `ScrollViewer.freezeControls` property to speed up rendering ([Popov72](https://github.com/Popov72))
 - Added `ImageScrollBar.num90RotationInVerticalMode` property to let the user rotate the pictures when in vertical mode ([Popov72](https://github.com/Popov72))
+- Modified isPointerBlocker to block mouse wheel scroll events. ScrollViewer mouse scroll no longer dependent on scene. ([lockphase](https://github.com/lockphase/))
+
 
 ### Particles
 

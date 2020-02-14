@@ -635,7 +635,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._lastControlDown[pointerId] = control;
         this.onControlPickedObservable.notifyObservers(control);
     }
-    private _doPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): void {
+    private _doPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): void {
         var scene = this.getScene();
         if (!scene) {
             return;
@@ -654,7 +654,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
 
         this._cursorChanged = false;
-        if (!this._rootContainer._processPicking(x, y, type, pointerId, buttonIndex)) {
+        if (!this._rootContainer._processPicking(x, y, type, pointerId, buttonIndex, deltaX, deltaY)) {
             this._changeCursor("");
             if (type === PointerEventTypes.POINTERMOVE) {
                 if (this._lastControlOver[pointerId]) {
@@ -701,7 +701,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             }
             if (pi.type !== PointerEventTypes.POINTERMOVE
                 && pi.type !== PointerEventTypes.POINTERUP
-                && pi.type !== PointerEventTypes.POINTERDOWN) {
+                && pi.type !== PointerEventTypes.POINTERDOWN
+                && pi.type !== PointerEventTypes.POINTERWHEEL) {
                 return;
             }
             if (!scene) {
@@ -723,7 +724,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             let y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - tempViewport.y - tempViewport.height);
             this._shouldBlockPointer = false;
             // Do picking modifies _shouldBlockPointer
-            this._doPicking(x, y, pi.type, (pi.event as PointerEvent).pointerId || 0, pi.event.button);
+            this._doPicking(x, y, pi.type, (pi.event as PointerEvent).pointerId || 0, pi.event.button, (<MouseWheelEvent>pi.event).deltaX, (<MouseWheelEvent>pi.event).deltaY);
             // Avoid overwriting a true skipOnPointerObservable to false
             if (this._shouldBlockPointer) {
                 pi.skipOnPointerObservable = this._shouldBlockPointer;
