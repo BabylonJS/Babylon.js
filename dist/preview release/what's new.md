@@ -212,7 +212,7 @@
 - It is now possible to force a certain profile type for the controllers ([#7348](https://github.com/BabylonJS/Babylon.js/issues/7375)) ([RaananW](https://github.com/RaananW/))
 - WebXR camera is initialized on the first frame, including copying transformation from native camera (except for in AR) ([#7389](https://github.com/BabylonJS/Babylon.js/issues/7389)) ([RaananW](https://github.com/RaananW/))
 - Selection has gaze mode (which can be forced) and touch-screen support ([#7395](https://github.com/BabylonJS/Babylon.js/issues/7395)) ([RaananW](https://github.com/RaananW/))
-- Laser pointers can be excluded from lighting influence so that they are always visible in both WebXR and WebVR ([#7323](https://github.com/BabylonJS/Babylon.js/issues/7323)) ([RaananW](https://github.com/RaananW/))
+- Laser pointers can be excluded from lighting influence so that they are always visible in WebXR / WebVR ([#7323](https://github.com/BabylonJS/Babylon.js/issues/7323)) ([RaananW](https://github.com/RaananW/))
 - Full support for the online motion controller repository ([#7323](https://github.com/BabylonJS/Babylon.js/issues/7323)) ([RaananW](https://github.com/RaananW/))
 - New XR feature - XR Controller physics impostor for motion controllers / XR Input sources ([RaananW](https://github.com/RaananW/))
 - Teleportation between different ground levels in WebXR is enabled ([RaananW](https://github.com/RaananW/))
@@ -234,6 +234,8 @@
 - Scroll Viewer extended to include the use of images in the scroll bars([JohnK](https://github.com/BabylonJSGuide/))
 - Added `ScrollViewer.freezeControls` property to speed up rendering ([Popov72](https://github.com/Popov72))
 - Added `ImageScrollBar.num90RotationInVerticalMode` property to let the user rotate the pictures when in vertical mode ([Popov72](https://github.com/Popov72))
+- Modified isPointerBlocker to block mouse wheel scroll events. ScrollViewer mouse scroll no longer dependent on scene. ([lockphase](https://github.com/lockphase/))
+
 
 ### Particles
 
@@ -341,6 +343,7 @@
 - Fix for bug where round-tripped glTF imported scenes are encapsulated in a second root node ([#6349](https://github.com/BabylonJS/Babylon.js/issues/6349))([drigax](https://github.com/drigax) & [noalak](https://github.com/noalak))
 - Fix `HDRCubeTexture` construction, `generateHarmonics` was not properly taken into account ([Popov72](https://github.com/Popov72))
 - VideoTexture poster respects invertY ([Sebavan](https://github.com/sebavan/)
+- Fix for bug where round-tripped glTF imported scenes have incorrect light orientation, and duplicated parent nodes ([#7377](https://github.com/BabylonJS/Babylon.js/issues/7377))([drigax](https://github.com/drigax))
 
 ## Breaking changes
 

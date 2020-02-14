@@ -1,5 +1,6 @@
 import { FloatArray, IndicesArray } from "babylonjs/types";
-import { Vector3, Vector2, Color4 } from "babylonjs/Maths/math";
+import { Vector3, Vector2 } from "babylonjs/Maths/math.vector";
+import { Color4 } from 'babylonjs/Maths/math.color';
 import { Tools } from "babylonjs/Misc/tools";
 import { VertexData } from "babylonjs/Meshes/mesh.vertexData";
 import { Geometry } from "babylonjs/Meshes/geometry";
