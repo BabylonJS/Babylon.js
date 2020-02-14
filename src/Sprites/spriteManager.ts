@@ -56,7 +56,7 @@ export interface ISpriteManager extends IDisposable {
      */
     intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
 
-        /**
+    /**
      * Intersects the sprites with a ray
      * @param ray defines the ray to intersect with
      * @param camera defines the current active camera
@@ -139,6 +139,23 @@ export class SpriteManager implements ISpriteManager {
     public set texture(value: Texture) {
         this._spriteTexture = value;
     }
+
+    private _blendMode = Constants.ALPHA_COMBINE;
+    /**
+     * Blend mode use to render the particle, it can be any of
+     * the static Constants.ALPHA_x properties provided in this class.
+     * Default value is Constants.ALPHA_COMBINE
+     */
+    public get blendMode() { return this._blendMode; }
+    public set blendMode(blendMode: number) {
+        this._blendMode = blendMode;
+    }
+
+    /** Disables writing to the depth buffer when rendering the sprites.
+     *  It can be handy to disable depth writing when using textures without alpha channel
+     *  and setting some specific blend modes.
+    */
+    public disableDepthWrite: boolean = false;
 
     /**
      * Creates a new sprite manager
@@ -252,8 +269,6 @@ export class SpriteManager implements ISpriteManager {
                 }
 
                 let spritemap = (<string[]>(<any>Reflect).ownKeys(celldata.frames));
-
-                console.log(spritemap);
 
                 this._spriteMap = spritemap;
                 this._packedAndReady = true;
@@ -565,13 +580,15 @@ export class SpriteManager implements ISpriteManager {
 
         // Draw order
         engine.setDepthFunctionToLessOrEqual();
-        effect.setBool("alphaTest", true);
-        engine.setColorWrite(false);
-        engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
-        engine.setColorWrite(true);
-        effect.setBool("alphaTest", false);
+        if (!this.disableDepthWrite) {
+            effect.setBool("alphaTest", true);
+            engine.setColorWrite(false);
+            engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
+            engine.setColorWrite(true);
+            effect.setBool("alphaTest", false);
+        }
 
-        engine.setAlphaMode(Constants.ALPHA_COMBINE);
+        engine.setAlphaMode(this._blendMode);
         engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
         engine.setAlphaMode(Constants.ALPHA_DISABLE);
     }

@@ -3,6 +3,9 @@
 var BABYLONDEVTOOLS;
 (function(BABYLONDEVTOOLS) {
 
+    var ua = window.navigator.userAgent;
+    var isIE = ua.indexOf("Trident") > 0;
+
     var getJson = function(url, callback, errorCallback) {
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url);
@@ -145,9 +148,15 @@ var BABYLONDEVTOOLS;
             }
 
             var self = this;
-            script.onload = function() {
-                self.dequeue();
-            };
+            if (isIE) { // I love you IE
+                setTimeout(function() {
+                    self.dequeue();
+                }, 500);
+            } else {
+                script.onload = function() {
+                    self.dequeue();
+                };
+            }
             head.appendChild(script);
         }
 
@@ -209,7 +218,7 @@ var BABYLONDEVTOOLS;
         }
 
         Loader.prototype.loadCoreDev = function() {
-            if (typeof document === "undefined") {                
+            if (typeof document === "undefined" || isIE) {                
                 this.loadScript(babylonJSPath + "/dist/preview release/babylon.max.js");
                 return;
             }

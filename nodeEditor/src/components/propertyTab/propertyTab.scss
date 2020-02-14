@@ -524,6 +524,10 @@
                 align-items: center;
                 justify-items: center;
                 cursor: pointer;
+                
+                img {
+                    height: 100%;
+                }
             }
 
             .expand {

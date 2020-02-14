@@ -1339,50 +1339,6 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Set the compressed texture format to use, based on the formats you have, and the formats
-     * supported by the hardware / browser.
-     *
-     * Khronos Texture Container (.ktx) files are used to support this.  This format has the
-     * advantage of being specifically designed for OpenGL.  Header elements directly correspond
-     * to API arguments needed to compressed textures.  This puts the burden on the container
-     * generator to house the arcane code for determining these for current & future formats.
-     *
-     * for description see https://www.khronos.org/opengles/sdk/tools/KTX/
-     * for file layout see https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
-     *
-     * Note: The result of this call is not taken into account when a texture is base64.
-     *
-     * @param formatsAvailable defines the list of those format families you have created
-     * on your server.  Syntax: '-' + format family + '.ktx'.  (Case and order do not matter.)
-     *
-     * Current families are astc, dxt, pvrtc, etc2, & etc1.
-     * @returns The extension selected.
-     */
-    public setTextureFormatToUse(formatsAvailable: Array<string>): Nullable<string> {
-        for (var i = 0, len1 = this.texturesSupported.length; i < len1; i++) {
-            for (var j = 0, len2 = formatsAvailable.length; j < len2; j++) {
-                if (this._texturesSupported[i] === formatsAvailable[j].toLowerCase()) {
-                    return this._textureFormatInUse = this._texturesSupported[i];
-                }
-            }
-        }
-        // actively set format to nothing, to allow this to be called more than once
-        // and possibly fail the 2nd time
-        this._textureFormatInUse = null;
-        return null;
-    }
-
-    /**
-     * Set the compressed texture extensions or file names to skip.
-     *
-     * @param skippedFiles defines the list of those texture files you want to skip
-     * Example: [".dds", ".env", "myfile.png"]
-     */
-    public setCompressedTextureExclusions(skippedFiles: Array<string>): void {
-        this._excludedCompressedTextures = skippedFiles;
-    }
-
-    /**
      * Force a specific size of the canvas
      * @param width defines the new canvas' width
      * @param height defines the new canvas' height
@@ -1796,6 +1752,58 @@ export class Engine extends ThinEngine {
      */
     public deleteInstancesBuffer(buffer: WebGLBuffer): void {
         this._gl.deleteBuffer(buffer);
+    }
+
+    private _clientWaitAsync(sync: WebGLSync, flags = 0, interval_ms = 10) {
+        let gl = <WebGL2RenderingContext>(this._gl as any);
+        return new Promise((resolve, reject) => {
+            let check = () => {
+                const res = gl.clientWaitSync(sync, flags, 0);
+                if (res == gl.WAIT_FAILED) {
+                reject();
+                return;
+                }
+                if (res == gl.TIMEOUT_EXPIRED) {
+                setTimeout(check, interval_ms);
+                return;
+                }
+                resolve();
+            };
+
+            check();
+        });
+    }
+
+    /** @hidden */
+    public _readPixelsAsync(x: number, y: number, w: number, h: number, format: number, type: number, outputBuffer: ArrayBufferView) {
+        if (this._webGLVersion < 2) {
+            throw new Error("_readPixelsAsync only work on WebGL2+");
+        }
+
+        let gl = <WebGL2RenderingContext>(this._gl as any);
+        const buf = gl.createBuffer();
+        gl.bindBuffer(gl.PIXEL_PACK_BUFFER, buf);
+        gl.bufferData(gl.PIXEL_PACK_BUFFER, outputBuffer.byteLength, gl.STREAM_READ);
+        gl.readPixels(x, y, w, h, format, type, 0);
+        gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
+
+        const sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
+        if (!sync) {
+            return null;
+        }
+
+        gl.flush();
+
+        return this._clientWaitAsync(sync, 0, 10).then(() => {
+            gl.deleteSync(sync);
+
+            gl.bindBuffer(gl.PIXEL_PACK_BUFFER, buf);
+            gl.getBufferSubData(gl.PIXEL_PACK_BUFFER, 0, outputBuffer);
+            gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
+            gl.deleteBuffer(buf);
+
+            return outputBuffer;
+        });
     }
 
     /** @hidden */
