@@ -688,6 +688,14 @@ void main(void) {
         // The order 1886 page 3.
         float clearCoatNdotV = absEps(clearCoatNdotVUnclamped);
 
+        #ifdef CLEARCOAT_TINT
+            // Used later on in the light fragment and ibl.
+            vec3 clearCoatVRefract = -refract(vPositionW, clearCoatNormalW, vClearCoatRefractionParams.y);
+            // The order 1886 page 3.
+            float clearCoatNdotVRefract = absEps(dot(clearCoatNormalW, clearCoatVRefract));
+            vec3 absorption = vec3(0.);
+        #endif
+
         // Clear Coat Reflection
         #if defined(REFLECTION)
             float clearCoatAlphaG = convertRoughnessToAverageSlope(clearCoatRoughness);
@@ -755,14 +763,6 @@ void main(void) {
 
             #ifdef GAMMAREFLECTION
                 environmentClearCoatRadiance.rgb = toLinearSpace(environmentClearCoatRadiance.rgb);
-            #endif
-
-            #ifdef CLEARCOAT_TINT
-                // Used later on in the light fragment and ibl.
-                vec3 clearCoatVRefract = -refract(vPositionW, clearCoatNormalW, vClearCoatRefractionParams.y);
-                // The order 1886 page 3.
-                float clearCoatNdotVRefract = absEps(dot(clearCoatNormalW, clearCoatVRefract));
-                vec3 absorption = vec3(0.);
             #endif
 
             // _____________________________ Levels _____________________________________
@@ -929,7 +929,7 @@ void main(void) {
 
         clearCoatEnvironmentReflectance *= clearCoatIntensity;
 
-        #if defined(REFLECTION) && defined(CLEARCOAT_TINT)
+        #if defined(CLEARCOAT_TINT)
             // NdotL = NdotV in IBL
             absorption = computeClearCoatAbsorption(clearCoatNdotVRefract, clearCoatNdotVRefract, clearCoatColor, clearCoatThickness, clearCoatIntensity);
 
