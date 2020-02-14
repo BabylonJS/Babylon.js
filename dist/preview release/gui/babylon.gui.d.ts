@@ -780,6 +780,10 @@ declare module BABYLON.GUI {
          */
         getClassName(): string;
         /**
+        * An event triggered when pointer wheel is scrolled
+        */
+        onWheelObservable: BABYLON.Observable<BABYLON.Vector2>;
+        /**
         * An event triggered when the pointer move over the control.
         */
         onPointerMoveObservable: BABYLON.Observable<BABYLON.Vector2>;
@@ -1172,7 +1176,7 @@ declare module BABYLON.GUI {
          */
         contains(x: number, y: number): boolean;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
+        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;
         /** @hidden */
@@ -1186,7 +1190,9 @@ declare module BABYLON.GUI {
         /** @hidden */
         _forcePointerUp(pointerId?: BABYLON.Nullable<number>): void;
         /** @hidden */
-        _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number): boolean;
+        _onWheelScroll(deltaX?: number, deltaY?: number): void;
+        /** @hidden */
+        _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         private _prepareFont;
         /** Releases associated resources */
         dispose(): void;
@@ -1335,7 +1341,7 @@ declare module BABYLON.GUI {
         _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
         getDescendantsToRef(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
+        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         /** Releases associated resources */
@@ -1731,7 +1737,7 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
+        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         _onPointerEnter(target: Control): boolean;
         /** @hidden */
@@ -3036,7 +3042,7 @@ declare module BABYLON.GUI {
         private _window;
         private _pointerIsOver;
         private _wheelPrecision;
-        private _onPointerObserver;
+        private _onWheelObserver;
         private _clientWidth;
         private _clientHeight;
         private _useImageBar;

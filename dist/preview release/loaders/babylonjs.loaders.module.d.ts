@@ -2308,7 +2308,7 @@ declare module "babylonjs-loaders/OBJ/mtlFileLoader" {
     }
 }
 declare module "babylonjs-loaders/OBJ/objFileLoader" {
-    import { Vector2 } from "babylonjs/Maths/math";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
     import { AnimationGroup } from "babylonjs/Animations/animationGroup";
     import { Skeleton } from "babylonjs/Bones/skeleton";
     import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";

@@ -124,7 +124,7 @@ declare module "babylonjs-gui/2D/style" {
 }
 declare module "babylonjs-gui/2D/math2D" {
     import { Nullable } from "babylonjs/types";
-    import { Vector2 } from "babylonjs/Maths/math";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
     /**
      * Class used to transport Vector2 information for pointer events
      */
@@ -308,7 +308,7 @@ declare module "babylonjs-gui/2D/measure" {
 declare module "babylonjs-gui/2D/advancedDynamicTexture" {
     import { Nullable } from "babylonjs/types";
     import { Observable } from "babylonjs/Misc/observable";
-    import { Viewport, Vector2, Vector3, Matrix } from "babylonjs/Maths/math";
+    import { Vector2, Vector3, Matrix } from "babylonjs/Maths/math.vector";
     import { ClipboardInfo } from "babylonjs/Events/clipboardEvents";
     import { DynamicTexture } from "babylonjs/Materials/Textures/dynamicTexture";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -317,6 +317,7 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
     import { Container } from "babylonjs-gui/2D/controls/container";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Style } from "babylonjs-gui/2D/style";
+    import { Viewport } from 'babylonjs/Maths/math.viewport';
     /**
     * Interface used to define a control that can receive focus
     */
@@ -646,7 +647,7 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
 declare module "babylonjs-gui/2D/controls/control" {
     import { Nullable } from "babylonjs/types";
     import { Observable } from "babylonjs/Misc/observable";
-    import { Vector2, Vector3 } from "babylonjs/Maths/math";
+    import { Vector2, Vector3 } from "babylonjs/Maths/math.vector";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     import { Scene } from "babylonjs/scene";
     import { Container } from "babylonjs-gui/2D/controls/container";
@@ -809,6 +810,10 @@ declare module "babylonjs-gui/2D/controls/control" {
          * @returns current class name
          */
         getClassName(): string;
+        /**
+        * An event triggered when pointer wheel is scrolled
+        */
+        onWheelObservable: Observable<Vector2>;
         /**
         * An event triggered when the pointer move over the control.
         */
@@ -1202,7 +1207,7 @@ declare module "babylonjs-gui/2D/controls/control" {
          */
         contains(x: number, y: number): boolean;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
+        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         _onPointerMove(target: Control, coordinates: Vector2, pointerId: number): void;
         /** @hidden */
@@ -1216,7 +1221,9 @@ declare module "babylonjs-gui/2D/controls/control" {
         /** @hidden */
         _forcePointerUp(pointerId?: Nullable<number>): void;
         /** @hidden */
-        _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number): boolean;
+        _onWheelScroll(deltaX?: number, deltaY?: number): void;
+        /** @hidden */
+        _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         private _prepareFont;
         /** Releases associated resources */
         dispose(): void;
@@ -1369,7 +1376,7 @@ declare module "babylonjs-gui/2D/controls/container" {
         _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
         getDescendantsToRef(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
+        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         /** Releases associated resources */
@@ -1734,7 +1741,7 @@ declare module "babylonjs-gui/2D/controls/image" {
 }
 declare module "babylonjs-gui/2D/controls/button" {
     import { Nullable } from "babylonjs/types";
-    import { Vector2 } from "babylonjs/Maths/math";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
     import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
@@ -1781,7 +1788,7 @@ declare module "babylonjs-gui/2D/controls/button" {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
+        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         _onPointerEnter(target: Control): boolean;
         /** @hidden */
@@ -1867,7 +1874,7 @@ declare module "babylonjs-gui/2D/controls/stackPanel" {
 }
 declare module "babylonjs-gui/2D/controls/checkbox" {
     import { Observable } from "babylonjs/Misc/observable";
-    import { Vector2 } from "babylonjs/Maths/math";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
     import { Nullable } from 'babylonjs/types';
@@ -2017,7 +2024,7 @@ declare module "babylonjs-gui/2D/controls/virtualKeyboard" {
 declare module "babylonjs-gui/2D/controls/inputText" {
     import { Nullable } from "babylonjs/types";
     import { Observable } from "babylonjs/Misc/observable";
-    import { Vector2 } from "babylonjs/Maths/math";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { IFocusableControl } from "babylonjs-gui/2D/advancedDynamicTexture";
     import { VirtualKeyboard } from "babylonjs-gui/2D/controls/virtualKeyboard";
@@ -2311,10 +2318,11 @@ declare module "babylonjs-gui/2D/controls/grid" {
 }
 declare module "babylonjs-gui/2D/controls/colorpicker" {
     import { Observable } from "babylonjs/Misc/observable";
-    import { Color3, Vector2 } from "babylonjs/Maths/math";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Measure } from "babylonjs-gui/2D/measure";
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
+    import { Color3 } from 'babylonjs/Maths/math.color';
     /** Class used to create color pickers */
     export class ColorPicker extends Control {
         name?: string | undefined;
@@ -2428,7 +2436,7 @@ declare module "babylonjs-gui/2D/controls/inputPassword" {
     }
 }
 declare module "babylonjs-gui/2D/controls/line" {
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { Scene } from "babylonjs/scene";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Measure } from "babylonjs-gui/2D/measure";
@@ -2496,7 +2504,7 @@ declare module "babylonjs-gui/2D/controls/line" {
 }
 declare module "babylonjs-gui/2D/multiLinePoint" {
     import { Nullable } from "babylonjs/types";
-    import { Vector2 } from "babylonjs/Maths/math";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     import { MultiLine } from "babylonjs-gui/2D/controls/multiLine";
     import { Control } from "babylonjs-gui/2D/controls/control";
@@ -2623,7 +2631,7 @@ declare module "babylonjs-gui/2D/controls/multiLine" {
 }
 declare module "babylonjs-gui/2D/controls/radioButton" {
     import { Observable } from "babylonjs/Misc/observable";
-    import { Vector2 } from "babylonjs/Maths/math";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
     /**
@@ -2672,7 +2680,7 @@ declare module "babylonjs-gui/2D/controls/radioButton" {
 }
 declare module "babylonjs-gui/2D/controls/sliders/baseSlider" {
     import { Observable } from "babylonjs/Misc/observable";
-    import { Vector2 } from "babylonjs/Maths/math";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { ValueAndUnit } from "babylonjs-gui/2D/valueAndUnit";
     /**
@@ -3037,7 +3045,7 @@ declare module "babylonjs-gui/2D/controls/scrollViewers/scrollViewerWindow" {
     }
 }
 declare module "babylonjs-gui/2D/controls/sliders/scrollBar" {
-    import { Vector2 } from "babylonjs/Maths/math";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
     import { BaseSlider } from "babylonjs-gui/2D/controls/sliders/baseSlider";
     import { Control } from "babylonjs-gui/2D/controls/control";
     /**
@@ -3071,7 +3079,7 @@ declare module "babylonjs-gui/2D/controls/sliders/scrollBar" {
     }
 }
 declare module "babylonjs-gui/2D/controls/sliders/imageScrollBar" {
-    import { Vector2 } from "babylonjs/Maths/math";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
     import { BaseSlider } from "babylonjs-gui/2D/controls/sliders/baseSlider";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Image } from "babylonjs-gui/2D/controls/image";
@@ -3163,7 +3171,7 @@ declare module "babylonjs-gui/2D/controls/scrollViewers/scrollViewer" {
         private _window;
         private _pointerIsOver;
         private _wheelPrecision;
-        private _onPointerObserver;
+        private _onWheelObserver;
         private _clientWidth;
         private _clientHeight;
         private _useImageBar;
@@ -3627,7 +3635,7 @@ declare module "babylonjs-gui/3D/controls/container3D" {
 declare module "babylonjs-gui/3D/gui3DManager" {
     import { Nullable } from "babylonjs/types";
     import { Observable } from "babylonjs/Misc/observable";
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { Material } from "babylonjs/Materials/material";
     import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
     import { IDisposable, Scene } from "babylonjs/scene";
@@ -3702,7 +3710,7 @@ declare module "babylonjs-gui/3D/gui3DManager" {
     }
 }
 declare module "babylonjs-gui/3D/vector3WithInfo" {
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     /**
      * Class used to transport Vector3 information for pointer events
      */
@@ -3722,7 +3730,7 @@ declare module "babylonjs-gui/3D/vector3WithInfo" {
 declare module "babylonjs-gui/3D/controls/control3D" {
     import { Nullable } from "babylonjs/types";
     import { Observable } from "babylonjs/Misc/observable";
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { TransformNode } from "babylonjs/Meshes/transformNode";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     import { IBehaviorAware, Behavior } from "babylonjs/Behaviors/behavior";
@@ -4044,7 +4052,7 @@ declare module "babylonjs-gui/3D/materials/shaders/fluent.fragment" {
 }
 declare module "babylonjs-gui/3D/materials/fluentMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Color3, Vector3, Color4, Matrix } from "babylonjs/Maths/math";
+    import { Vector3, Matrix } from "babylonjs/Maths/math.vector";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { MaterialDefines } from "babylonjs/Materials/materialDefines";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
@@ -4052,6 +4060,7 @@ declare module "babylonjs-gui/3D/materials/fluentMaterial" {
     import { SubMesh } from "babylonjs/Meshes/subMesh";
     import { Mesh } from "babylonjs/Meshes/mesh";
     import { Scene } from "babylonjs/scene";
+    import { Color3, Color4 } from 'babylonjs/Maths/math.color';
     import "babylonjs-gui/3D/materials/shaders/fluent.vertex";
     import "babylonjs-gui/3D/materials/shaders/fluent.fragment";
     /** @hidden */
@@ -4246,7 +4255,7 @@ declare module "babylonjs-gui/3D/controls/meshButton3D" {
     }
 }
 declare module "babylonjs-gui/3D/controls/planePanel" {
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { Control3D } from "babylonjs-gui/3D/controls/control3D";
     import { VolumeBasedPanel } from "babylonjs-gui/3D/controls/volumeBasedPanel";
     /**
@@ -4257,7 +4266,7 @@ declare module "babylonjs-gui/3D/controls/planePanel" {
     }
 }
 declare module "babylonjs-gui/3D/controls/scatterPanel" {
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { float } from "babylonjs/types";
     import { VolumeBasedPanel } from "babylonjs-gui/3D/controls/volumeBasedPanel";
     import { Control3D } from "babylonjs-gui/3D/controls/control3D";
@@ -4277,7 +4286,7 @@ declare module "babylonjs-gui/3D/controls/scatterPanel" {
     }
 }
 declare module "babylonjs-gui/3D/controls/spherePanel" {
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { float } from "babylonjs/types";
     import { VolumeBasedPanel } from "babylonjs-gui/3D/controls/volumeBasedPanel";
     import { Control3D } from "babylonjs-gui/3D/controls/control3D";
@@ -5134,6 +5143,10 @@ declare module BABYLON.GUI {
          */
         getClassName(): string;
         /**
+        * An event triggered when pointer wheel is scrolled
+        */
+        onWheelObservable: BABYLON.Observable<BABYLON.Vector2>;
+        /**
         * An event triggered when the pointer move over the control.
         */
         onPointerMoveObservable: BABYLON.Observable<BABYLON.Vector2>;
@@ -5526,7 +5539,7 @@ declare module BABYLON.GUI {
          */
         contains(x: number, y: number): boolean;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
+        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;
         /** @hidden */
@@ -5540,7 +5553,9 @@ declare module BABYLON.GUI {
         /** @hidden */
         _forcePointerUp(pointerId?: BABYLON.Nullable<number>): void;
         /** @hidden */
-        _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number): boolean;
+        _onWheelScroll(deltaX?: number, deltaY?: number): void;
+        /** @hidden */
+        _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         private _prepareFont;
         /** Releases associated resources */
         dispose(): void;
@@ -5689,7 +5704,7 @@ declare module BABYLON.GUI {
         _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
         getDescendantsToRef(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
+        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         /** Releases associated resources */
@@ -6085,7 +6100,7 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
+        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         _onPointerEnter(target: Control): boolean;
         /** @hidden */
@@ -7390,7 +7405,7 @@ declare module BABYLON.GUI {
         private _window;
         private _pointerIsOver;
         private _wheelPrecision;
-        private _onPointerObserver;
+        private _onWheelObserver;
         private _clientWidth;
         private _clientHeight;
         private _useImageBar;
