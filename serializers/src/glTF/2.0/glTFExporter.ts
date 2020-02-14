@@ -1528,6 +1528,7 @@ export class _Exporter {
      * @param babylonMesh Source Babylon mesh
      * @param binaryWriter Buffer for storing geometry data
      * @param convertToRightHandedSystem Converts the values to right-handed
+     * @param nodeMap Node mapping of unique id to glTF node index
      * @returns glTF node
      */
     private createNodeAsync(babylonNode: Node, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean, nodeMap?: {[key: number]: number}): Promise<INode> {
