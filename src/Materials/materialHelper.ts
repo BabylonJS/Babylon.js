@@ -348,6 +348,7 @@ export class MaterialHelper {
         defines["SHADOWCSMNUM_CASCADES" + lightIndex] = false;
         defines["SHADOWCSMUSESHADOWMAXZ" + lightIndex] = false;
         defines["SHADOWCSMNOBLEND" + lightIndex] = false;
+        defines["SHADOWCSM_RIGHTHANDED" + lightIndex] = false;
         defines["SHADOWPCF" + lightIndex] = false;
         defines["SHADOWPCSS" + lightIndex] = false;
         defines["SHADOWPOISSON" + lightIndex] = false;
@@ -431,6 +432,7 @@ export class MaterialHelper {
                 defines["SHADOWCSMNUM_CASCADES" + index] = false;
                 defines["SHADOWCSMUSESHADOWMAXZ" + index] = false;
                 defines["SHADOWCSMNOBLEND" + index] = false;
+                defines["SHADOWCSM_RIGHTHANDED" + index] = false;
                 defines["SHADOWPCF" + index] = false;
                 defines["SHADOWPCSS" + index] = false;
                 defines["SHADOWPOISSON" + index] = false;
