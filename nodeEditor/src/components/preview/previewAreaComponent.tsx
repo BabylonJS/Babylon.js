@@ -2,11 +2,12 @@
 import * as React from "react";
 import { GlobalState } from '../../globalState';
 import { DataStorage } from '../../dataStorage';
-import DoubleSided from './svgs/doubleSided.svg'
-import DepthPass from './svgs/depthPass.svg'
-import Omni from './svgs/omni.svg'
-import DirectionalRight from './svgs/directionalRight.svg'
-import DirectionalLeft from './svgs/directionalLeft.svg'
+
+const doubleSided: string = require("./svgs/doubleSided.svg");
+const depthPass: string = require("./svgs/depthPass.svg");
+const omni: string = require("./svgs/omni.svg");
+const directionalRight: string = require("./svgs/directionalRight.svg");
+const directionalLeft: string = require("./svgs/directionalLeft.svg");
 
 interface IPreviewAreaComponentProps {
     globalState: GlobalState;
@@ -52,12 +53,12 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                     <div
                         title="Render without back face culling"
                         onClick={() => this.changeBackFaceCulling(!this.props.globalState.backFaceCulling)} className={"button back-face" + (!this.props.globalState.backFaceCulling ? " selected" : "")}>
-                        <img src={DoubleSided} alt=""/>
+                        <img src={doubleSided} alt=""/>
                     </div>
                     <div
                         title="Render with depth pre-pass"
                         onClick={() => this.changeDepthPrePass(!this.props.globalState.depthPrePass)} className={"button depth-pass" + (this.props.globalState.depthPrePass ? " selected" : "")}>
-                            <img src={DepthPass} alt=""/>
+                            <img src={depthPass} alt=""/>
                     </div>
                     <div
                         title="Turn on/off hemispheric light"  
@@ -67,7 +68,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                             this.props.globalState.onLightUpdated.notifyObservers();
                             this.forceUpdate();
                         }} className={"button hemispheric-light" + (this.props.globalState.hemisphericLight ? " selected" : "")}>
-                        <img src={Omni} alt=""/>
+                        <img src={omni} alt=""/>
                     </div>
                     <div
                         title="Turn on/off direction light #1"  
@@ -77,7 +78,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                             this.props.globalState.onLightUpdated.notifyObservers();
                             this.forceUpdate();
                         }} className={"button direction-light-1" + (this.props.globalState.directionalLight1 ? " selected" : "")}>
-                        <img src={DirectionalRight} alt=""/>
+                        <img src={directionalRight} alt=""/>
 
                     </div>
                     <div
@@ -88,7 +89,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                             this.props.globalState.onLightUpdated.notifyObservers();
                             this.forceUpdate();
                         }} className={"button direction-light-0" + (this.props.globalState.directionalLight0 ? " selected" : "")}>
-                        <img src={DirectionalLeft} alt=""/>
+                        <img src={directionalLeft} alt=""/>
                     </div>
                 </div>
             </>
