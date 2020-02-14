@@ -9,14 +9,6 @@ import { WebXRSessionManager } from '../webXRSessionManager';
  * Note that since the features manager is using the `IWebXRFeature` you are in no way obligated to use this class
  */
 export abstract class WebXRAbstractFeature implements IWebXRFeature {
-
-    /**
-     * Construct a new (abstract) webxr feature
-     * @param _xrSessionManager the xr session manager for this feature
-     */
-    constructor(protected _xrSessionManager: WebXRSessionManager) {
-    }
-
     private _attached: boolean = false;
     private _removeOnDetach: {
         observer: Nullable<Observer<any>>;
@@ -24,16 +16,23 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
     }[] = [];
 
     /**
+     * Should auto-attach be disabled?
+     */
+    public disableAutoAttach: boolean = false;
+
+    /**
+     * Construct a new (abstract) WebXR feature
+     * @param _xrSessionManager the xr session manager for this feature
+     */
+    constructor(protected _xrSessionManager: WebXRSessionManager) {
+    }
+
+    /**
      * Is this feature attached
      */
     public get attached() {
         return this._attached;
     }
-
-    /**
-     * Should auto-attach be disabled?
-     */
-    public disableAutoAttach: boolean = false;
 
     /**
      * attach this feature
@@ -74,19 +73,13 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
         });
         return true;
     }
+
     /**
      * Dispose this feature and all of the resources attached
      */
     public dispose(): void {
         this.detach();
     }
-
-    /**
-     * Code in this function will be executed on each xrFrame received from the browser.
-     * This function will not execute after the feature is detached.
-     * @param _xrFrame the current frame
-     */
-    protected abstract _onXRFrame(_xrFrame: XRFrame): void;
 
     /**
      * This is used to register callbacks that will automatically be removed when detach is called.
@@ -99,4 +92,11 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
             observer: observable.add(callback)
         });
     }
+
+    /**
+     * Code in this function will be executed on each xrFrame received from the browser.
+     * This function will not execute after the feature is detached.
+     * @param _xrFrame the current frame
+     */
+    protected abstract _onXRFrame(_xrFrame: XRFrame): void;
 }

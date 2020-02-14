@@ -8,17 +8,13 @@ import { Color3 } from '../../Maths/math.color';
 import { WebXRControllerComponent } from './webXRControllerComponent';
 import { SphereBuilder } from '../../Meshes/Builders/sphereBuilder';
 import { StandardMaterial } from '../../Materials/standardMaterial';
+import { Logger } from '../../Misc/logger';
 
 /**
  * A profiled motion controller has its profile loaded from an online repository.
  * The class is responsible of loading the model, mapping the keys and enabling model-animations
  */
 export class WebXRProfiledMotionController extends WebXRAbstractMotionController {
-    /**
-     * The profile ID of this controller. Will be populated when the controller initializes.
-     */
-    public profileId: string;
-
     private _buttonMeshMapping: {
         [buttonName: string]: {
             mainMesh: AbstractMesh;
@@ -27,9 +23,23 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
             }
         }
     } = {};
+    private _touchDots: { [visKey: string]: AbstractMesh } = {};
+
+    /**
+     * The profile ID of this controller. Will be populated when the controller initializes.
+     */
+    public profileId: string;
+
     constructor(scene: Scene, xrInput: XRInputSource, _profile: IMotionControllerProfile, private _repositoryUrl: string) {
         super(scene, _profile.layouts[xrInput.handedness || "none"], xrInput.gamepad as any, xrInput.handedness);
         this.profileId = _profile.profileId;
+    }
+
+    public dispose() {
+        super.dispose();
+        Object.keys(this._touchDots).forEach((visResKey) => {
+            this._touchDots[visResKey].dispose();
+        });
     }
 
     protected _getFilenameAndPath(): { filename: string; path: string; } {
@@ -38,7 +48,14 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
             path: `${this._repositoryUrl}/profiles/${this.profileId}/`
         };
     }
-    private _touchDots: { [visKey: string]: AbstractMesh } = {};
+
+    protected _getModelLoadingConstraints(): boolean {
+        const glbLoaded = SceneLoader.IsPluginForExtensionAvailable(".glb");
+        if (!glbLoaded) {
+            Logger.Warn('glTF / glb loaded was not registered, using generic controller instead');
+        }
+        return glbLoaded;
+    }
 
     protected _processLoadedModel(_meshes: AbstractMesh[]): void {
         this.getComponentIds().forEach((type) => {
@@ -100,6 +117,7 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
 
         this.rootMesh.rotate(Axis.Y, Math.PI, Space.WORLD);
     }
+
     protected _updateModel(_xrFrame: XRFrame): void {
         if (this.disableAnimation) {
             return;
@@ -129,15 +147,4 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
             });
         });
     }
-    protected _getModelLoadingConstraints(): boolean {
-        return SceneLoader.IsPluginForExtensionAvailable(".glb");
-    }
-
-    public dispose() {
-        super.dispose();
-        Object.keys(this._touchDots).forEach((visResKey) => {
-            this._touchDots[visResKey].dispose();
-        });
-    }
-
 }
