@@ -118,8 +118,8 @@ run = function () {
                 if (scene.activeCamera || scene.activeCameras.length > 0) {
                     scene.render();
                 }
-
-                fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
+                if (fpsLabel)
+                    fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
             }.bind(this));
 
         } catch (e) {
