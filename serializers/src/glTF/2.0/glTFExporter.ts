@@ -67,7 +67,7 @@ export class _Exporter {
     /**
      * Stores all the generated nodes, which contains transform and/or mesh information per node
      */
-    private _nodes: INode[];
+    public _nodes: INode[];
     /**
      * Stores all the generated glTF scenes, which stores multiple node hierarchies
      */
@@ -119,7 +119,7 @@ export class _Exporter {
     /**
      * Stores a map of the unique id of a node to its index in the node array
      */
-    private _nodeMap: { [key: number]: number };
+    public _nodeMap: { [key: number]: number };
 
     /**
      * Specifies if the source Babylon scene was left handed, and needed conversion.
@@ -152,7 +152,7 @@ export class _Exporter {
     private static _ExtensionNames = new Array<string>();
     private static _ExtensionFactories: { [name: string]: (exporter: _Exporter) => IGLTFExporterExtensionV2 } = {};
 
-    private _applyExtension<T>(node: T, extensions: IGLTFExporterExtensionV2[], index: number, actionAsync: (extension: IGLTFExporterExtensionV2, node: T) => Promise<Nullable<T>> | undefined): Promise<Nullable<T>> {
+    private _applyExtension<T>(node: Nullable<T>, extensions: IGLTFExporterExtensionV2[], index: number, actionAsync: (extension: IGLTFExporterExtensionV2, node: Nullable<T>) => Promise<Nullable<T>> | undefined): Promise<Nullable<T>> {
         if (index >= extensions.length) {
             return Promise.resolve(node);
         }
@@ -163,10 +163,10 @@ export class _Exporter {
             return this._applyExtension(node, extensions, index + 1, actionAsync);
         }
 
-        return currentPromise.then((newNode) => this._applyExtension(newNode || node, extensions, index + 1, actionAsync));
+        return currentPromise.then((newNode) => this._applyExtension(newNode, extensions, index + 1, actionAsync));
     }
 
-    private _applyExtensions<T>(node: T, actionAsync: (extension: IGLTFExporterExtensionV2, node: T) => Promise<Nullable<T>> | undefined): Promise<Nullable<T>> {
+    private _applyExtensions<T>(node: Nullable<T>, actionAsync: (extension: IGLTFExporterExtensionV2, node: Nullable<T>) => Promise<Nullable<T>> | undefined): Promise<Nullable<T>> {
         var extensions: IGLTFExporterExtensionV2[] = [];
         for (const name of _Exporter._ExtensionNames) {
             extensions.push(this._extensions[name]);
@@ -175,7 +175,7 @@ export class _Exporter {
         return this._applyExtension(node, extensions, 0, actionAsync);
     }
 
-    public _extensionsPreExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Nullable<BaseTexture>> {
+    public _extensionsPreExportTextureAsync(context: string, babylonTexture: Nullable<Texture>, mimeType: ImageMimeType): Promise<Nullable<BaseTexture>> {
         return this._applyExtensions(babylonTexture, (extension, node) => extension.preExportTextureAsync && extension.preExportTextureAsync(context, node, mimeType));
     }
 
@@ -183,11 +183,11 @@ export class _Exporter {
         return this._applyExtensions(meshPrimitive, (extension, node) => extension.postExportMeshPrimitiveAsync && extension.postExportMeshPrimitiveAsync(context, node, babylonSubMesh, binaryWriter));
     }
 
-    public _extensionsPostExportNodeAsync(context: string, node: INode, babylonNode: Node): Promise<Nullable<INode>> {
-        return this._applyExtensions(node, (extension, node) => extension.postExportNodeAsync && extension.postExportNodeAsync(context, node, babylonNode));
+    public _extensionsPostExportNodeAsync(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap?: {[key: number]: number}): Promise<Nullable<INode>> {
+        return this._applyExtensions(node, (extension, node) => extension.postExportNodeAsync && extension.postExportNodeAsync(context, node, babylonNode, nodeMap));
     }
 
-    public _extensionsPostExportMaterialAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<Nullable<IMaterial>> {
+    public _extensionsPostExportMaterialAsync(context: string, material: Nullable<IMaterial>, babylonMaterial: Material): Promise<Nullable<IMaterial>> {
         return this._applyExtensions(material, (extension, node) => extension.postExportMaterialAsync && extension.postExportMaterialAsync(context, node, babylonMaterial));
     }
 
@@ -1477,8 +1477,8 @@ export class _Exporter {
             if (!this._options.shouldExportNode || this._options.shouldExportNode(babylonNode)) {
                 promiseChain = promiseChain.then(() => {
                     let convertToRightHandedSystem = this._convertToRightHandedSystemMap[babylonNode.uniqueId];
-                    return this.createNodeAsync(babylonNode, binaryWriter, convertToRightHandedSystem).then((node) => {
-                        const promise = this._extensionsPostExportNodeAsync("createNodeAsync", node, babylonNode);
+                    return this.createNodeAsync(babylonNode, binaryWriter, convertToRightHandedSystem, nodeMap).then((node) => {
+                        const promise = this._extensionsPostExportNodeAsync("createNodeAsync", node, babylonNode, nodeMap);
                         if (promise == null) {
                             Tools.Warn(`Not exporting node ${babylonNode.name}`);
                             return Promise.resolve();
@@ -1530,7 +1530,7 @@ export class _Exporter {
      * @param convertToRightHandedSystem Converts the values to right-handed
      * @returns glTF node
      */
-    private createNodeAsync(babylonNode: Node, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean): Promise<INode> {
+    private createNodeAsync(babylonNode: Node, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean, nodeMap?: {[key: number]: number}): Promise<INode> {
         return Promise.resolve().then(() => {
             // create node to hold translation/rotation/scale and the mesh
             const node: INode = {};
