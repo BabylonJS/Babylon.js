@@ -1,8 +1,8 @@
 import { SpotLight } from "babylonjs/Lights/spotLight";
-
 import { Nullable } from "babylonjs/types";
 import { Vector3, Color3, Quaternion, Matrix, TmpVectors } from "babylonjs/Maths/math";
 import { Light } from "babylonjs/Lights/light";
+import { DirectionalLight } from "babylonjs/Lights/directionalLight"
 import { Node } from "babylonjs/node";
 import { ShadowLight } from "babylonjs/Lights/shadowLight";
 import { IChildRootProperty } from "babylonjs-gltf2interface";
@@ -11,7 +11,6 @@ import { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
 import { Logger } from "babylonjs/Misc/logger";
 import { _GLTFUtilities } from "../glTFUtilities";
-import { DirectionalLight } from 'babylonjs';
 
 const NAME = "KHR_lights_punctual";
 
