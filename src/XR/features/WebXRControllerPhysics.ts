@@ -15,9 +15,30 @@ import { Nullable } from '../../types';
  */
 export class IWebXRControllerPhysicsOptions {
     /**
-     * the xr input to use with this pointer selection
+     * Should the headset get its own impostor
      */
-    xrInput: WebXRInput;
+    enableHeadsetImpostor?: boolean;
+    /**
+     * Optional parameters for the headset impostor
+     */
+    headsetImpostorParams?: {
+        /**
+         * The type of impostor to create. Default is sphere
+         */
+        impostorType: number;
+        /**
+         * the size of the impostor. Defaults to 10cm
+         */
+        impostorSize?: number | { width: number, height: number, depth: number };
+        /**
+         * Friction definitions
+         */
+        friction?: number;
+        /**
+         * Restitution
+         */
+        restitution?: number;
+    };
     /**
      * The physics properties of the future impostors
      */
@@ -44,33 +65,10 @@ export class IWebXRControllerPhysicsOptions {
          */
         restitution?: number;
     };
-
     /**
-     * Should the headset get its own impostor
+     * the xr input to use with this pointer selection
      */
-    enableHeadsetImpostor?: boolean;
-
-    /**
-     * Optional parameters for the headset impostor
-     */
-    headsetImpostorParams?: {
-        /**
-         * The type of impostor to create. Default is sphere
-         */
-        impostorType: number;
-        /**
-         * the size of the impostor. Defaults to 10cm
-         */
-        impostorSize?: number | { width: number, height: number, depth: number };
-        /**
-         * Friction definitions
-         */
-        friction?: number;
-        /**
-         * Restitution
-         */
-        restitution?: number;
-    };
+    public xrInput: WebXRInput;
 }
 
 /**
@@ -78,178 +76,6 @@ export class IWebXRControllerPhysicsOptions {
  * including naive calculation of their linear and angular velocity
  */
 export class WebXRControllerPhysics extends WebXRAbstractFeature {
-
-    /**
-     * The module's name
-     */
-    public static readonly Name = WebXRFeatureName.PHYSICS_CONTROLLERS;
-    /**
-     * The (Babylon) version of this module.
-     * This is an integer representing the implementation version.
-     * This number does not correspond to the webxr specs version
-     */
-    public static readonly Version = 1;
-
-    private _lastTimestamp: number = 0;
-    private _delta: number = 0;
-
-    private _controllers: {
-        [id: string]: {
-            xrController: WebXRInputSource;
-            impostorMesh?: AbstractMesh,
-            impostor: PhysicsImpostor
-            oldPos?: Vector3;
-            oldSpeed?: Vector3,
-            oldRotation?: Quaternion;
-        }
-    } = {};
-
-    private _headsetImpostor?: PhysicsImpostor;
-    private _headsetMesh?: AbstractMesh;
-
-    private _tmpVector: Vector3 = new Vector3();
-    private _tmpQuaternion: Quaternion = new Quaternion();
-
-    /**
-     * Construct a new Controller Physics Feature
-     * @param _xrSessionManager the corresponding xr session manager
-     * @param _options options to create this feature with
-     */
-    constructor(_xrSessionManager: WebXRSessionManager, private readonly _options: IWebXRControllerPhysicsOptions) {
-        super(_xrSessionManager);
-        if (!this._options.physicsProperties) {
-            this._options.physicsProperties = {
-            };
-        }
-    }
-
-    /**
-     * Update the physics properties provided in the constructor
-     * @param newProperties the new properties object
-     */
-    public setPhysicsProperties(newProperties: {
-        impostorType?: number,
-        impostorSize?: number | { width: number, height: number, depth: number },
-        friction?: number,
-        restitution?: number
-    }) {
-        this._options.physicsProperties = {
-            ...this._options.physicsProperties,
-            ...newProperties
-        };
-    }
-
-    /**
-     * Get the physics impostor of a specific controller.
-     * The impostor is not attached to a mesh because a mesh for each controller is not obligatory
-     * @param controller the controller or the controller id of which to get the impostor
-     * @returns the impostor or null
-     */
-    public getImpostorForController(controller: WebXRInputSource | string): Nullable<PhysicsImpostor> {
-        let id = typeof controller === "string" ? controller : controller.uniqueId;
-        if (this._controllers[id]) {
-            return this._controllers[id].impostor;
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Get the headset impostor, if enabled
-     * @returns the impostor
-     */
-    public getHeadsetImpostor() {
-        return this._headsetImpostor;
-    }
-
-    /**
-     * attach this feature
-     * Will usually be called by the features manager
-     *
-     * @returns true if successful.
-     */
-    attach(): boolean {
-        if (!super.attach()) {
-            return false;
-        }
-
-        if (!this._options.xrInput) {
-            return true;
-        }
-
-        this._options.xrInput.controllers.forEach(this._attachController);
-        this._addNewAttachObserver(this._options.xrInput.onControllerAddedObservable, this._attachController);
-        this._addNewAttachObserver(this._options.xrInput.onControllerRemovedObservable, (controller) => {
-            // REMOVE the controller
-            this._detachController(controller.uniqueId);
-        });
-
-        if (this._options.enableHeadsetImpostor) {
-            const params = this._options.headsetImpostorParams || {
-                impostorType: PhysicsImpostor.SphereImpostor,
-                restitution: 0.8,
-                impostorSize: 0.3
-            };
-            const impostorSize = params.impostorSize || 0.3;
-            this._headsetMesh = SphereBuilder.CreateSphere('headset-mesh', {
-                diameterX: typeof impostorSize === 'number' ? impostorSize : impostorSize.width,
-                diameterY: typeof impostorSize === 'number' ? impostorSize : impostorSize.height,
-                diameterZ: typeof impostorSize === 'number' ? impostorSize : impostorSize.depth
-            });
-            this._headsetMesh.rotationQuaternion = new Quaternion();
-            this._headsetMesh.isVisible = false;
-            this._headsetImpostor = new PhysicsImpostor(this._headsetMesh, params.impostorType, { mass: 0, ...params });
-        }
-
-        return true;
-    }
-
-    /**
-     * detach this feature.
-     * Will usually be called by the features manager
-     *
-     * @returns true if successful.
-     */
-    detach(): boolean {
-        if (!super.detach()) {
-            return false;
-        }
-
-        Object.keys(this._controllers).forEach((controllerId) => {
-            this._detachController(controllerId);
-        });
-
-        if (this._headsetMesh) {
-            this._headsetMesh.dispose();
-        }
-
-        return true;
-    }
-
-    /**
-     * Manually add a controller (if no xrInput was provided or physics engine was not enabled)
-     * @param xrController the controller to add
-     */
-    public addController(xrController: WebXRInputSource) {
-        this._attachController(xrController);
-    }
-
-    private _debugMode = false;
-
-    /**
-     * @hidden
-     * enable debugging - will show console outputs and the impostor mesh
-     */
-    public _enablePhysicsDebug() {
-        this._debugMode = true;
-        Object.keys(this._controllers).forEach((controllerId) => {
-            const controllerData = this._controllers[controllerId];
-            if (controllerData.impostorMesh) {
-                controllerData.impostorMesh.isVisible = true;
-            }
-        });
-    }
-
     private _attachController = (xrController: WebXRInputSource
     ) => {
         if (this._controllers[xrController.uniqueId]) {
@@ -301,14 +127,171 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
         }
     }
 
-    private _detachController(xrControllerUniqueId: string) {
-        const controllerData = this._controllers[xrControllerUniqueId];
-        if (!controllerData) { return; }
-        if (controllerData.impostorMesh) {
-            controllerData.impostorMesh.dispose();
+    private _controllers: {
+        [id: string]: {
+            xrController: WebXRInputSource;
+            impostorMesh?: AbstractMesh,
+            impostor: PhysicsImpostor
+            oldPos?: Vector3;
+            oldSpeed?: Vector3,
+            oldRotation?: Quaternion;
         }
-        // remove from the map
-        delete this._controllers[xrControllerUniqueId];
+    } = {};
+    private _debugMode = false;
+    private _delta: number = 0;
+    private _headsetImpostor?: PhysicsImpostor;
+    private _headsetMesh?: AbstractMesh;
+    private _lastTimestamp: number = 0;
+    private _tmpQuaternion: Quaternion = new Quaternion();
+    private _tmpVector: Vector3 = new Vector3();
+
+    /**
+     * The module's name
+     */
+    public static readonly Name = WebXRFeatureName.PHYSICS_CONTROLLERS;
+    /**
+     * The (Babylon) version of this module.
+     * This is an integer representing the implementation version.
+     * This number does not correspond to the webxr specs version
+     */
+    public static readonly Version = 1;
+
+    /**
+     * Construct a new Controller Physics Feature
+     * @param _xrSessionManager the corresponding xr session manager
+     * @param _options options to create this feature with
+     */
+    constructor(_xrSessionManager: WebXRSessionManager, private readonly _options: IWebXRControllerPhysicsOptions) {
+        super(_xrSessionManager);
+        if (!this._options.physicsProperties) {
+            this._options.physicsProperties = {
+            };
+        }
+    }
+
+    /**
+     * @hidden
+     * enable debugging - will show console outputs and the impostor mesh
+     */
+    public _enablePhysicsDebug() {
+        this._debugMode = true;
+        Object.keys(this._controllers).forEach((controllerId) => {
+            const controllerData = this._controllers[controllerId];
+            if (controllerData.impostorMesh) {
+                controllerData.impostorMesh.isVisible = true;
+            }
+        });
+    }
+
+    /**
+     * Manually add a controller (if no xrInput was provided or physics engine was not enabled)
+     * @param xrController the controller to add
+     */
+    public addController(xrController: WebXRInputSource) {
+        this._attachController(xrController);
+    }
+
+    /**
+     * attach this feature
+     * Will usually be called by the features manager
+     *
+     * @returns true if successful.
+     */
+    public attach(): boolean {
+        if (!super.attach()) {
+            return false;
+        }
+
+        if (!this._options.xrInput) {
+            return true;
+        }
+
+        this._options.xrInput.controllers.forEach(this._attachController);
+        this._addNewAttachObserver(this._options.xrInput.onControllerAddedObservable, this._attachController);
+        this._addNewAttachObserver(this._options.xrInput.onControllerRemovedObservable, (controller) => {
+            // REMOVE the controller
+            this._detachController(controller.uniqueId);
+        });
+
+        if (this._options.enableHeadsetImpostor) {
+            const params = this._options.headsetImpostorParams || {
+                impostorType: PhysicsImpostor.SphereImpostor,
+                restitution: 0.8,
+                impostorSize: 0.3
+            };
+            const impostorSize = params.impostorSize || 0.3;
+            this._headsetMesh = SphereBuilder.CreateSphere('headset-mesh', {
+                diameterX: typeof impostorSize === 'number' ? impostorSize : impostorSize.width,
+                diameterY: typeof impostorSize === 'number' ? impostorSize : impostorSize.height,
+                diameterZ: typeof impostorSize === 'number' ? impostorSize : impostorSize.depth
+            });
+            this._headsetMesh.rotationQuaternion = new Quaternion();
+            this._headsetMesh.isVisible = false;
+            this._headsetImpostor = new PhysicsImpostor(this._headsetMesh, params.impostorType, { mass: 0, ...params });
+        }
+
+        return true;
+    }
+
+    /**
+     * detach this feature.
+     * Will usually be called by the features manager
+     *
+     * @returns true if successful.
+     */
+    public detach(): boolean {
+        if (!super.detach()) {
+            return false;
+        }
+
+        Object.keys(this._controllers).forEach((controllerId) => {
+            this._detachController(controllerId);
+        });
+
+        if (this._headsetMesh) {
+            this._headsetMesh.dispose();
+        }
+
+        return true;
+    }
+
+    /**
+     * Get the headset impostor, if enabled
+     * @returns the impostor
+     */
+    public getHeadsetImpostor() {
+        return this._headsetImpostor;
+    }
+
+    /**
+     * Get the physics impostor of a specific controller.
+     * The impostor is not attached to a mesh because a mesh for each controller is not obligatory
+     * @param controller the controller or the controller id of which to get the impostor
+     * @returns the impostor or null
+     */
+    public getImpostorForController(controller: WebXRInputSource | string): Nullable<PhysicsImpostor> {
+        let id = typeof controller === "string" ? controller : controller.uniqueId;
+        if (this._controllers[id]) {
+            return this._controllers[id].impostor;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Update the physics properties provided in the constructor
+     * @param newProperties the new properties object
+     */
+    public setPhysicsProperties(newProperties: {
+        impostorType?: number,
+        impostorSize?: number | { width: number, height: number, depth: number },
+        friction?: number,
+        restitution?: number
+    }) {
+        this._options.physicsProperties = {
+            ...this._options.physicsProperties,
+            ...newProperties
+        };
     }
 
     protected _onXRFrame(_xrFrame: any): void {
@@ -354,6 +337,15 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
         });
     }
 
+    private _detachController(xrControllerUniqueId: string) {
+        const controllerData = this._controllers[xrControllerUniqueId];
+        if (!controllerData) { return; }
+        if (controllerData.impostorMesh) {
+            controllerData.impostorMesh.dispose();
+        }
+        // remove from the map
+        delete this._controllers[xrControllerUniqueId];
+    }
 }
 
 //register the plugin

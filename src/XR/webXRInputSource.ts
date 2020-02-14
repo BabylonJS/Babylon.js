@@ -13,65 +13,60 @@ let idCount = 0;
  */
 export interface IWebXRControllerOptions {
     /**
-     * Force a specific controller type for this controller.
-     * This can be used when creating your own profile or when testing different controllers
-     */
-    forceControllerProfile?: string;
-
-    /**
-     * Do not load the controller mesh, in case a different mesh needs to be loaded.
-     */
-    doNotLoadControllerMesh?: boolean;
-
-    /**
      * Should the controller mesh be animated when a user interacts with it
      * The pressed buttons / thumbstick and touchpad animations will be disabled
      */
     disableMotionControllerAnimation?: boolean;
+    /**
+     * Do not load the controller mesh, in case a different mesh needs to be loaded.
+     */
+    doNotLoadControllerMesh?: boolean;
+    /**
+     * Force a specific controller type for this controller.
+     * This can be used when creating your own profile or when testing different controllers
+     */
+    forceControllerProfile?: string;
 }
 
 /**
  * Represents an XR controller
  */
 export class WebXRInputSource {
+    private _tmpQuaternion = new Quaternion();
+    private _tmpVector = new Vector3();
+    private _uniqueId: string;
+
     /**
      * Represents the part of the controller that is held. This may not exist if the controller is the head mounted display itself, if thats the case only the pointer from the head will be availible
      */
     public grip?: AbstractMesh;
-    /**
-     * Pointer which can be used to select objects or attach a visible laser to
-     */
-    public pointer: AbstractMesh;
     /**
      * If available, this is the gamepad object related to this controller.
      * Using this object it is possible to get click events and trackpad changes of the
      * webxr controller that is currently being used.
      */
     public motionController?: WebXRAbstractMotionController;
-
-    /**
-     * Observers registered here will trigger when a motion controller profile was assigned to this xr controller
-     */
-    public onMotionControllerInitObservable = new Observable<WebXRAbstractMotionController>();
-
-    /**
-     * Will be triggered when the mesh associated with the motion controller is done loading.
-     * It is also possible that this will never trigger (!) if no mesh was loaded, or if the developer decides to load a different mesh
-     * A shortened version of controller -> motion controller -> on mesh loaded.
-     */
-    public onMeshLoadedObservable = new Observable<AbstractMesh>();
-
     /**
      * Event that fires when the controller is removed/disposed.
      * The object provided as event data is this controller, after associated assets were disposed.
      * uniqueId is still available.
      */
     public onDisposeObservable = new Observable<WebXRInputSource>();
+    /**
+     * Will be triggered when the mesh associated with the motion controller is done loading.
+     * It is also possible that this will never trigger (!) if no mesh was loaded, or if the developer decides to load a different mesh
+     * A shortened version of controller -> motion controller -> on mesh loaded.
+     */
+    public onMeshLoadedObservable = new Observable<AbstractMesh>();
+    /**
+     * Observers registered here will trigger when a motion controller profile was assigned to this xr controller
+     */
+    public onMotionControllerInitObservable = new Observable<WebXRAbstractMotionController>();
+    /**
+     * Pointer which can be used to select objects or attach a visible laser to
+     */
+    public pointer: AbstractMesh;
 
-    private _tmpQuaternion = new Quaternion();
-    private _tmpVector = new Vector3();
-
-    private _uniqueId: string;
     /**
      * Creates the controller
      * @see https://doc.babylonjs.com/how_to/webxr
@@ -121,6 +116,39 @@ export class WebXRInputSource {
     }
 
     /**
+     * Disposes of the object
+     */
+    public dispose() {
+        if (this.grip) {
+            this.grip.dispose();
+        }
+        if (this.motionController) {
+            this.motionController.dispose();
+        }
+        this.pointer.dispose();
+        this.onMotionControllerInitObservable.clear();
+        this.onMeshLoadedObservable.clear();
+        this.onDisposeObservable.notifyObservers(this);
+        this.onDisposeObservable.clear();
+    }
+
+    /**
+     * Gets a world space ray coming from the pointer or grip
+     * @param result the resulting ray
+     * @param gripIfAvailable use the grip mesh instead of the pointer, if available
+     */
+    public getWorldPointerRayToRef(result: Ray, gripIfAvailable: boolean = false) {
+        const object = gripIfAvailable && this.grip ? this.grip : this.pointer;
+        let worldMatrix = object.computeWorldMatrix();
+        worldMatrix.decompose(undefined, this._tmpQuaternion, undefined);
+        this._tmpVector.set(0, 0, 1);
+        this._tmpVector.rotateByQuaternionToRef(this._tmpQuaternion, this._tmpVector);
+        result.origin.copyFrom(object.absolutePosition);
+        result.direction.copyFrom(this._tmpVector);
+        result.length = 1000;
+    }
+
+    /**
      * Updates the controller pose based on the given XRFrame
      * @param xrFrame xr frame to update the pose with
      * @param referenceSpace reference space to use
@@ -156,38 +184,5 @@ export class WebXRInputSource {
             // either update buttons only or also position, if in gamepad mode
             this.motionController.updateFromXRFrame(xrFrame);
         }
-    }
-
-    /**
-     * Gets a world space ray coming from the pointer or grip
-     * @param result the resulting ray
-     * @param gripIfAvailable use the grip mesh instead of the pointer, if available
-     */
-    public getWorldPointerRayToRef(result: Ray, gripIfAvailable: boolean = false) {
-        const object = gripIfAvailable && this.grip ? this.grip : this.pointer;
-        let worldMatrix = object.computeWorldMatrix();
-        worldMatrix.decompose(undefined, this._tmpQuaternion, undefined);
-        this._tmpVector.set(0, 0, 1);
-        this._tmpVector.rotateByQuaternionToRef(this._tmpQuaternion, this._tmpVector);
-        result.origin.copyFrom(object.absolutePosition);
-        result.direction.copyFrom(this._tmpVector);
-        result.length = 1000;
-    }
-
-    /**
-     * Disposes of the object
-     */
-    dispose() {
-        if (this.grip) {
-            this.grip.dispose();
-        }
-        if (this.motionController) {
-            this.motionController.dispose();
-        }
-        this.pointer.dispose();
-        this.onMotionControllerInitObservable.clear();
-        this.onMeshLoadedObservable.clear();
-        this.onDisposeObservable.notifyObservers(this);
-        this.onDisposeObservable.clear();
     }
 }

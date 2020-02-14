@@ -9,9 +9,9 @@ import { WebXRAbstractFeature } from './WebXRAbstractFeature';
  */
 export interface IWebXRBackgroundRemoverOptions {
     /**
-     * don't disable the environment helper
+     * Further background meshes to disable when entering AR
      */
-    ignoreEnvironmentHelper?: boolean;
+    backgroundMeshes?: AbstractMesh[];
     /**
      * flags to configure the removal of the environment helper.
      * If not set, the entire background will be removed. If set, flags should be set as well.
@@ -27,16 +27,15 @@ export interface IWebXRBackgroundRemoverOptions {
         ground?: boolean;
     };
     /**
-     * Further background meshes to disable when entering AR
+     * don't disable the environment helper
      */
-    backgroundMeshes?: AbstractMesh[];
+    ignoreEnvironmentHelper?: boolean;
 }
 
 /**
  * A module that will automatically disable background meshes when entering AR and will enable them when leaving AR.
  */
 export class WebXRBackgroundRemover extends WebXRAbstractFeature {
-
     /**
      * The module's name
      */
@@ -44,7 +43,7 @@ export class WebXRBackgroundRemover extends WebXRAbstractFeature {
     /**
      * The (Babylon) version of this module.
      * This is an integer representing the implementation version.
-     * This number does not correspond to the webxr specs version
+     * This number does not correspond to the WebXR specs version
      */
     public static readonly Version = 1;
 
@@ -72,7 +71,7 @@ export class WebXRBackgroundRemover extends WebXRAbstractFeature {
      *
      * @returns true if successful.
      */
-    attach(): boolean {
+    public attach(): boolean {
         this._setBackgroundState(false);
         return super.attach();
     }
@@ -83,9 +82,21 @@ export class WebXRBackgroundRemover extends WebXRAbstractFeature {
      *
      * @returns true if successful.
      */
-    detach(): boolean {
+    public detach(): boolean {
         this._setBackgroundState(true);
         return super.detach();
+    }
+
+    /**
+     * Dispose this feature and all of the resources attached
+     */
+    public dispose(): void {
+        super.dispose();
+        this.onBackgroundStateChangedObservable.clear();
+    }
+
+    protected _onXRFrame(_xrFrame: XRFrame) {
+        // no-op
     }
 
     private _setBackgroundState(newState: boolean) {
@@ -117,18 +128,6 @@ export class WebXRBackgroundRemover extends WebXRAbstractFeature {
         }
 
         this.onBackgroundStateChangedObservable.notifyObservers(newState);
-    }
-
-    /**
-     * Dispose this feature and all of the resources attached
-     */
-    dispose(): void {
-        super.dispose();
-        this.onBackgroundStateChangedObservable.clear();
-    }
-
-    protected _onXRFrame(_xrFrame: XRFrame) {
-        // no-op
     }
 }
 

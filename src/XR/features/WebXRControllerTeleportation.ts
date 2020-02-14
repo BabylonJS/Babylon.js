@@ -30,38 +30,9 @@ import { UtilityLayerRenderer } from '../../Rendering/utilityLayerRenderer';
  */
 export interface IWebXRTeleportationOptions {
     /**
-     * Babylon XR Input class for controller
+     * if provided, this scene will be used to render meshes.
      */
-    xrInput: WebXRInput;
-    /**
-     * A list of meshes to use as floor meshes.
-     * Meshes can be added and removed after initializing the feature using the
-     * addFloorMesh and removeFloorMesh functions
-     * If empty, rotation will still work
-     */
-    floorMeshes?: AbstractMesh[];
-    /**
-     * Provide your own teleportation mesh instead of babylon's wonderful doughnut.
-     * If you want to support rotation, make sure your mesh has a direction indicator.
-     *
-     * When left untouched, the default mesh will be initialized.
-     */
-    teleportationTargetMesh?: AbstractMesh;
-
-    /**
-     * An array of points to which the teleportation will snap to.
-     * If the teleportation ray is in the proximity of one of those points, it will be corrected to this point.
-     */
-    snapPositions?: Vector3[];
-    /**
-     * How close should the teleportation ray be in order to snap to position.
-     * Default to 0.8 units (meters)
-     */
-    snapToPositionRadius?: number;
-    /**
-     * Should teleportation move only to snap points
-     */
-    snapPointsOnly?: boolean;
+    customUtilityLayerScene?: Scene;
     /**
      * Values to configure the default target mesh
      */
@@ -87,118 +58,63 @@ export interface IWebXRTeleportationOptions {
          */
         torusArrowMaterial?: Material;
     };
-
     /**
-     * Disable using the thumbstick and use the main component (usuallly trigger) on long press.
-     * This will be automatically true if the controller doesnt have a thumbstick or touchpad.
+     * A list of meshes to use as floor meshes.
+     * Meshes can be added and removed after initializing the feature using the
+     * addFloorMesh and removeFloorMesh functions
+     * If empty, rotation will still work
      */
-    useMainComponentOnly?: boolean;
-
-    /**
-     * If main component is used (no thumbstick), how long should the "long press" take before teleporting
-     */
-    timeToTeleport?: number;
-    /**
-     * Should meshes created here be added to a utility layer or the main scene
-     */
-    useUtilityLayer?: boolean;
-
-    /**
-     * if provided, this scene will be used to render meshes.
-     */
-    customUtilityLayerScene?: Scene;
-
+    floorMeshes?: AbstractMesh[];
     /**
      *  use this rendering group id for the meshes (optional)
      */
     renderingGroupId?: number;
+    /**
+     * Should teleportation move only to snap points
+     */
+    snapPointsOnly?: boolean;
+    /**
+     * An array of points to which the teleportation will snap to.
+     * If the teleportation ray is in the proximity of one of those points, it will be corrected to this point.
+     */
+    snapPositions?: Vector3[];
+    /**
+     * How close should the teleportation ray be in order to snap to position.
+     * Default to 0.8 units (meters)
+     */
+    snapToPositionRadius?: number;
+    /**
+     * Provide your own teleportation mesh instead of babylon's wonderful doughnut.
+     * If you want to support rotation, make sure your mesh has a direction indicator.
+     *
+     * When left untouched, the default mesh will be initialized.
+     */
+    teleportationTargetMesh?: AbstractMesh;
+    /**
+     * If main component is used (no thumbstick), how long should the "long press" take before teleport
+     */
+    timeToTeleport?: number;
+    /**
+     * Disable using the thumbstick and use the main component (usually trigger) on long press.
+     * This will be automatically true if the controller doesn't have a thumbstick or touchpad.
+     */
+    useMainComponentOnly?: boolean;
+    /**
+     * Should meshes created here be added to a utility layer or the main scene
+     */
+    useUtilityLayer?: boolean;
+    /**
+     * Babylon XR Input class for controller
+     */
+    xrInput: WebXRInput;
 }
 
 /**
- * This is a teleportation feature to be used with webxr-enabled motion controllers.
+ * This is a teleportation feature to be used with WebXR-enabled motion controllers.
  * When enabled and attached, the feature will allow a user to move around and rotate in the scene using
  * the input of the attached controllers.
  */
 export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
-    /**
-     * The module's name
-     */
-    public static readonly Name = WebXRFeatureName.TELEPORTATION;
-    /**
-     * The (Babylon) version of this module.
-     * This is an integer representing the implementation version.
-     * This number does not correspond to the webxr specs version
-     */
-    public static readonly Version = 1;
-
-    /**
-     * Is rotation enabled when moving forward?
-     * Disabling this feature will prevent the user from deciding the direction when teleporting
-     */
-    public rotationEnabled: boolean = true;
-    /**
-     * Should the module support parabolic ray on top of direct ray
-     * If enabled, the user will be able to point "at the sky" and move according to predefined radius distance
-     * Very helpful when moving between floors / different heights
-     */
-    public parabolicRayEnabled: boolean = true;
-    /**
-     * The distance from the user to the inspection point in the direction of the controller
-     * A higher number will allow the user to move further
-     * defaults to 5 (meters, in xr units)
-     */
-    public parabolicCheckRadius: number = 5;
-    /**
-     * How much rotation should be applied when rotating right and left
-     */
-    public rotationAngle: number = Math.PI / 8;
-
-    /**
-     * Is movement backwards enabled
-     */
-    public backwardsMovementEnabled = true;
-
-    /**
-     * Distance to travel when moving backwards
-     */
-    public backwardsTeleportationDistance: number = 0.7;
-
-    /**
-     * Add a new mesh to the floor meshes array
-     * @param mesh the mesh to use as floor mesh
-     */
-    public addFloorMesh(mesh: AbstractMesh) {
-        this._floorMeshes.push(mesh);
-    }
-
-    /**
-     * Remove a mesh from the floor meshes array
-     * @param mesh the mesh to remove
-     */
-    public removeFloorMesh(mesh: AbstractMesh) {
-        const index = this._floorMeshes.indexOf(mesh);
-        if (index !== -1) {
-            this._floorMeshes.splice(index, 1);
-        }
-    }
-
-    /**
-     * Remove a mesh from the floor meshes array using its name
-     * @param name the mesh name to remove
-     */
-    public removeFloorMeshByName(name: string) {
-        const mesh = this._xrSessionManager.scene.getMeshByName(name);
-        if (mesh) {
-            this.removeFloorMesh(mesh);
-        }
-    }
-
-    private _tmpRay = new Ray(new Vector3(), new Vector3());
-    private _tmpVector = new Vector3();
-
-    private _floorMeshes: AbstractMesh[];
-    private _snapToPositions: Vector3[];
-
     private _controllers: {
         [controllerUniqueId: string]: {
             xrController: WebXRInputSource;
@@ -214,6 +130,56 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             onButtonChangedObserver?: Nullable<Observer<WebXRControllerComponent>>;
         };
     } = {};
+    private _currentTeleportationControllerId: string;
+    private _floorMeshes: AbstractMesh[];
+    private _quadraticBezierCurve: AbstractMesh;
+    private _selectionFeature: IWebXRFeature;
+    private _snapToPositions: Vector3[];
+    private _snappedToPoint: boolean = false;
+    private _teleportationRingMaterial?: StandardMaterial;
+    private _tmpRay = new Ray(new Vector3(), new Vector3());
+    private _tmpVector = new Vector3();
+
+    /**
+     * The module's name
+     */
+    public static readonly Name = WebXRFeatureName.TELEPORTATION;
+    /**
+     * The (Babylon) version of this module.
+     * This is an integer representing the implementation version.
+     * This number does not correspond to the webxr specs version
+     */
+    public static readonly Version = 1;
+
+    /**
+     * Is movement backwards enabled
+     */
+    public backwardsMovementEnabled = true;
+    /**
+     * Distance to travel when moving backwards
+     */
+    public backwardsTeleportationDistance: number = 0.7;
+    /**
+     * The distance from the user to the inspection point in the direction of the controller
+     * A higher number will allow the user to move further
+     * defaults to 5 (meters, in xr units)
+     */
+    public parabolicCheckRadius: number = 5;
+    /**
+     * Should the module support parabolic ray on top of direct ray
+     * If enabled, the user will be able to point "at the sky" and move according to predefined radius distance
+     * Very helpful when moving between floors / different heights
+     */
+    public parabolicRayEnabled: boolean = true;
+    /**
+     * How much rotation should be applied when rotating right and left
+     */
+    public rotationAngle: number = Math.PI / 8;
+    /**
+     * Is rotation enabled when moving forward?
+     * Disabling this feature will prevent the user from deciding the direction when teleporting
+     */
+    public rotationEnabled: boolean = true;
 
     /**
      * constructs a new anchor system
@@ -233,10 +199,6 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         this._setTargetMeshVisibility(false);
     }
 
-    private _selectionFeature: IWebXRFeature;
-    private _snappedToPoint: boolean = false;
-    private _teleportationRingMaterial?: StandardMaterial;
-
     /**
      * Get the snapPointsOnly flag
      */
@@ -253,46 +215,19 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
     }
 
     /**
+     * Add a new mesh to the floor meshes array
+     * @param mesh the mesh to use as floor mesh
+     */
+    public addFloorMesh(mesh: AbstractMesh) {
+        this._floorMeshes.push(mesh);
+    }
+
+    /**
      * Add a new snap-to point to fix teleportation to this position
      * @param newSnapPoint The new Snap-To point
      */
     public addSnapPoint(newSnapPoint: Vector3) {
         this._snapToPositions.push(newSnapPoint);
-    }
-
-    /**
-     * This function will iterate through the array, searching for this point or equal to it. It will then remove it from the snap-to array
-     * @param snapPointToRemove the point (or a clone of it) to be removed from the array
-     * @returns was the point found and removed or not
-     */
-    public removeSnapPoint(snapPointToRemove: Vector3): boolean {
-        // check if the object is in the array
-        let index = this._snapToPositions.indexOf(snapPointToRemove);
-        // if not found as an object, compare to the points
-        if (index === -1) {
-            for (let i = 0; i < this._snapToPositions.length; ++i) {
-                // equals? index is i, break the loop
-                if (this._snapToPositions[i].equals(snapPointToRemove)) {
-                    index = i;
-                    break;
-                }
-            }
-        }
-        // index is not -1? remove the object
-        if (index !== -1) {
-            this._snapToPositions.splice(index, 1);
-            return true;
-        }
-        return false;
-    }
-    /**
-     * This function sets a selection feature that will be disabled when
-     * the forward ray is shown and will be reattached when hidden.
-     * This is used to remove the selection rays when moving.
-     * @param selectionFeature the feature to disable when forward movement is enabled
-     */
-    public setSelectionFeature(selectionFeature: IWebXRFeature) {
-        this._selectionFeature = selectionFeature;
     }
 
     public attach(): boolean {
@@ -327,6 +262,64 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
     public dispose(): void {
         super.dispose();
         this._options.teleportationTargetMesh && this._options.teleportationTargetMesh.dispose(false, true);
+    }
+
+    /**
+     * Remove a mesh from the floor meshes array
+     * @param mesh the mesh to remove
+     */
+    public removeFloorMesh(mesh: AbstractMesh) {
+        const index = this._floorMeshes.indexOf(mesh);
+        if (index !== -1) {
+            this._floorMeshes.splice(index, 1);
+        }
+    }
+
+    /**
+     * Remove a mesh from the floor meshes array using its name
+     * @param name the mesh name to remove
+     */
+    public removeFloorMeshByName(name: string) {
+        const mesh = this._xrSessionManager.scene.getMeshByName(name);
+        if (mesh) {
+            this.removeFloorMesh(mesh);
+        }
+    }
+
+    /**
+     * This function will iterate through the array, searching for this point or equal to it. It will then remove it from the snap-to array
+     * @param snapPointToRemove the point (or a clone of it) to be removed from the array
+     * @returns was the point found and removed or not
+     */
+    public removeSnapPoint(snapPointToRemove: Vector3): boolean {
+        // check if the object is in the array
+        let index = this._snapToPositions.indexOf(snapPointToRemove);
+        // if not found as an object, compare to the points
+        if (index === -1) {
+            for (let i = 0; i < this._snapToPositions.length; ++i) {
+                // equals? index is i, break the loop
+                if (this._snapToPositions[i].equals(snapPointToRemove)) {
+                    index = i;
+                    break;
+                }
+            }
+        }
+        // index is not -1? remove the object
+        if (index !== -1) {
+            this._snapToPositions.splice(index, 1);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * This function sets a selection feature that will be disabled when
+     * the forward ray is shown and will be reattached when hidden.
+     * This is used to remove the selection rays when moving.
+     * @param selectionFeature the feature to disable when forward movement is enabled
+     */
+    public setSelectionFeature(selectionFeature: IWebXRFeature) {
+        this._selectionFeature = selectionFeature;
     }
 
     protected _onXRFrame(_xrFrame: XRFrame) {
@@ -395,8 +388,6 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             this._setTargetMeshVisibility(false);
         }
     }
-
-    private _currentTeleportationControllerId: string;
 
     private _attachController = (xrController: WebXRInputSource) => {
         if (this._controllers[xrController.uniqueId]) {
@@ -490,7 +481,6 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                                     // Teleport the users feet to where they targeted
                                     this._options.xrInput.xrCamera.position.addInPlace(pick.pickedPoint);
                                 }
-
                             }
                         }
                         if (axesData.y < -0.7 && !this._currentTeleportationControllerId && !controllerData.teleportationState.rotating) {
@@ -525,37 +515,6 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                 }
             }
         });
-    }
-
-    private _teleportForward(controllerId: string) {
-        const controllerData = this._controllers[controllerId];
-        controllerData.teleportationState.forward = false;
-        this._currentTeleportationControllerId = "";
-        if (this.snapPointsOnly && !this._snappedToPoint) {
-            return;
-        }
-        // do the movement forward here
-        if (this._options.teleportationTargetMesh && this._options.teleportationTargetMesh.isVisible) {
-            const height = this._options.xrInput.xrCamera.realWorldHeight;
-            this._options.xrInput.xrCamera.position.copyFrom(this._options.teleportationTargetMesh.position);
-            this._options.xrInput.xrCamera.position.y += height;
-            this._options.xrInput.xrCamera.rotationQuaternion.multiplyInPlace(Quaternion.FromEulerAngles(0, controllerData.teleportationState.currentRotation, 0));
-        }
-    }
-
-    private _detachController(xrControllerUniqueId: string) {
-        const controllerData = this._controllers[xrControllerUniqueId];
-        if (!controllerData) { return; }
-        if (controllerData.teleportationComponent) {
-            if (controllerData.onAxisChangedObserver) {
-                controllerData.teleportationComponent.onAxisValueChangedObservable.remove(controllerData.onAxisChangedObserver);
-            }
-            if (controllerData.onButtonChangedObserver) {
-                controllerData.teleportationComponent.onButtonStateChangedObservable.remove(controllerData.onButtonChangedObserver);
-            }
-        }
-        // remove from the map
-        delete this._controllers[xrControllerUniqueId];
     }
 
     private _createDefaultTargetMesh() {
@@ -649,6 +608,50 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         this._options.teleportationTargetMesh = teleportationTarget;
     }
 
+    private _detachController(xrControllerUniqueId: string) {
+        const controllerData = this._controllers[xrControllerUniqueId];
+        if (!controllerData) { return; }
+        if (controllerData.teleportationComponent) {
+            if (controllerData.onAxisChangedObserver) {
+                controllerData.teleportationComponent.onAxisValueChangedObservable.remove(controllerData.onAxisChangedObserver);
+            }
+            if (controllerData.onButtonChangedObserver) {
+                controllerData.teleportationComponent.onButtonStateChangedObservable.remove(controllerData.onButtonChangedObserver);
+            }
+        }
+        // remove from the map
+        delete this._controllers[xrControllerUniqueId];
+    }
+
+    private _findClosestSnapPointWithRadius(realPosition: Vector3, radius: number = this._options.snapToPositionRadius || 0.8) {
+        let closestPoint: Nullable<Vector3> = null;
+        let closestDistance = Number.MAX_VALUE;
+        if (this._snapToPositions.length) {
+            const radiusSquared = radius * radius;
+            this._snapToPositions.forEach((position) => {
+                const dist = Vector3.DistanceSquared(position, realPosition);
+                if (dist <= radiusSquared && dist < closestDistance) {
+                    closestDistance = dist;
+                    closestPoint = position;
+                }
+            });
+        }
+        return closestPoint;
+    }
+
+    private _setTargetMeshPosition(newPosition: Vector3) {
+        if (!this._options.teleportationTargetMesh) { return; }
+        const snapPosition = this._findClosestSnapPointWithRadius(newPosition);
+        this._snappedToPoint = !!snapPosition;
+        if (this.snapPointsOnly && !this._snappedToPoint && this._teleportationRingMaterial) {
+            this._teleportationRingMaterial.diffuseColor.set(1.0, 0.3, 0.3);
+        } else if (this.snapPointsOnly && this._snappedToPoint && this._teleportationRingMaterial) {
+            this._teleportationRingMaterial.diffuseColor.set(0.3, 0.3, 1.0);
+        }
+        this._options.teleportationTargetMesh.position.copyFrom(snapPosition || newPosition);
+        this._options.teleportationTargetMesh.position.y += 0.01;
+    }
+
     private _setTargetMeshVisibility(visible: boolean) {
         if (!this._options.teleportationTargetMesh) { return; }
         if (this._options.teleportationTargetMesh.isVisible === visible) { return; }
@@ -669,21 +672,6 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         }
     }
 
-    private _setTargetMeshPosition(newPosition: Vector3) {
-        if (!this._options.teleportationTargetMesh) { return; }
-        const snapPosition = this._findClosestSnapPointWithRadius(newPosition);
-        this._snappedToPoint = !!snapPosition;
-        if (this.snapPointsOnly && !this._snappedToPoint && this._teleportationRingMaterial) {
-            this._teleportationRingMaterial.diffuseColor.set(1.0, 0.3, 0.3);
-        } else if (this.snapPointsOnly && this._snappedToPoint && this._teleportationRingMaterial) {
-            this._teleportationRingMaterial.diffuseColor.set(0.3, 0.3, 1.0);
-        }
-        this._options.teleportationTargetMesh.position.copyFrom(snapPosition || newPosition);
-        this._options.teleportationTargetMesh.position.y += 0.01;
-    }
-
-    private _quadraticBezierCurve: AbstractMesh;
-
     private _showParabolicPath(pickInfo: PickingInfo) {
         if (!pickInfo.pickedPoint) { return; }
 
@@ -703,20 +691,20 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         this._quadraticBezierCurve.isPickable = false;
     }
 
-    private _findClosestSnapPointWithRadius(realPosition: Vector3, radius: number = this._options.snapToPositionRadius || 0.8) {
-        let closestPoint: Nullable<Vector3> = null;
-        let closestDistance = Number.MAX_VALUE;
-        if (this._snapToPositions.length) {
-            const radiusSquared = radius * radius;
-            this._snapToPositions.forEach((position) => {
-                const dist = Vector3.DistanceSquared(position, realPosition);
-                if (dist <= radiusSquared && dist < closestDistance) {
-                    closestDistance = dist;
-                    closestPoint = position;
-                }
-            });
+    private _teleportForward(controllerId: string) {
+        const controllerData = this._controllers[controllerId];
+        controllerData.teleportationState.forward = false;
+        this._currentTeleportationControllerId = "";
+        if (this.snapPointsOnly && !this._snappedToPoint) {
+            return;
         }
-        return closestPoint;
+        // do the movement forward here
+        if (this._options.teleportationTargetMesh && this._options.teleportationTargetMesh.isVisible) {
+            const height = this._options.xrInput.xrCamera.realWorldHeight;
+            this._options.xrInput.xrCamera.position.copyFrom(this._options.teleportationTargetMesh.position);
+            this._options.xrInput.xrCamera.position.y += height;
+            this._options.xrInput.xrCamera.rotationQuaternion.multiplyInPlace(Quaternion.FromEulerAngles(0, controllerData.teleportationState.currentRotation, 0));
+        }
     }
 }
 

@@ -24,19 +24,19 @@ export class WebXRGenericTriggerMotionController extends WebXRAbstractMotionCont
         super(scene, GenericTriggerLayout[handness], gamepadObject, handness);
     }
 
-    protected _processLoadedModel(meshes: AbstractMesh[]): void {
-        // nothing to do
-    }
-
-    protected _updateModel(): void {
-        // no-op
-    }
-
     protected _getFilenameAndPath(): { filename: string; path: string; } {
         return {
             filename: "generic.babylon",
             path: "https://controllers.babylonjs.com/generic/"
         };
+    }
+
+    protected _getModelLoadingConstraints(): boolean {
+        return true;
+    }
+
+    protected _processLoadedModel(meshes: AbstractMesh[]): void {
+        // nothing to do
     }
 
     protected _setRootMesh(meshes: AbstractMesh[]): void {
@@ -52,10 +52,9 @@ export class WebXRGenericTriggerMotionController extends WebXRAbstractMotionCont
         this.rootMesh.rotationQuaternion = Quaternion.FromEulerAngles(0, Math.PI, 0);
     }
 
-    protected _getModelLoadingConstraints(): boolean {
-        return true;
+    protected _updateModel(): void {
+        // no-op
     }
-
 }
 
 // https://github.com/immersive-web/webxr-input-profiles/blob/master/packages/registry/profiles/generic/generic-trigger-touchpad-thumbstick.json
