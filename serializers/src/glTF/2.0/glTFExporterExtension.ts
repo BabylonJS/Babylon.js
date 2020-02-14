@@ -1,5 +1,6 @@
 import { ImageMimeType, IMeshPrimitive, INode, IMaterial, ITextureInfo } from "babylonjs-gltf2interface";
 import { Node } from "babylonjs/node";
+import { Nullable } from "babylonjs/types";
 
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
@@ -25,7 +26,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * @param mimeType The mime-type of the generated image
      * @returns A promise that resolves with the exported texture
      */
-    preExportTextureAsync?(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Texture>;
+    preExportTextureAsync?(context: string, babylonTexture: Nullable<Texture>, mimeType: ImageMimeType): Promise<Texture>;
 
     /**
      * Define this method to get notified when a texture info is created
@@ -43,7 +44,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * @param binaryWriter glTF serializer binary writer instance
      * @returns nullable IMeshPrimitive promise
      */
-    postExportMeshPrimitiveAsync?(context: string, meshPrimitive: IMeshPrimitive, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Promise<IMeshPrimitive>;
+    postExportMeshPrimitiveAsync?(context: string, meshPrimitive: Nullable<IMeshPrimitive>, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Promise<IMeshPrimitive>;
 
     /**
      * Define this method to modify the default behavior when exporting a node
@@ -52,7 +53,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * @param babylonNode BabylonJS node
      * @returns nullable INode promise
      */
-    postExportNodeAsync?(context: string, node: INode, babylonNode: Node): Promise<INode>;
+    postExportNodeAsync?(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap?: {[key: number]: number}): Promise<Nullable<INode>>;
 
     /**
      * Define this method to modify the default behavior when exporting a material
@@ -60,7 +61,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * @param babylonMaterial BabylonJS material
      * @returns nullable IMaterial promise
      */
-    postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial>;
+    postExportMaterialAsync?(context: string, node: Nullable<IMaterial>, babylonMaterial: Material): Promise<IMaterial>;
 
     /**
      * Define this method to return additional textures to export from a material
