@@ -1,7 +1,7 @@
 import { AnimationSamplerInterpolation, AnimationChannelTargetPath, AccessorType, IAnimation, INode, IBufferView, IAccessor, IAnimationSampler, IAnimationChannel, AccessorComponentType } from "babylonjs-gltf2interface";
 import { Node } from "babylonjs/node";
 import { Nullable } from "babylonjs/types";
-import { Vector3, Quaternion } from "babylonjs/Maths/math";
+import { Vector3, Quaternion } from "babylonjs/Maths/math.vector";
 import { Tools } from "babylonjs/Misc/tools";
 import { Animation } from "babylonjs/Animations/animation";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
