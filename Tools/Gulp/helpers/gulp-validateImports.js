@@ -17,6 +17,12 @@ config.modules.forEach(moduleName => {
 
 var validatePath = function(fileLocation, directory, module, lineNumber, errors, isExport) {
     let expressionType = isExport ? "Export" : "Import";
+
+    //Not checking svg files
+    if(module.endsWith(".svg")){
+        return;
+    }
+
     let internalModulePath = path.join(directory, module + ".ts");
 
     // Check .ts path.

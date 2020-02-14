@@ -1,6 +1,7 @@
 import * as React from "react";
 import { GlobalState } from '../globalState';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
+import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
 import { GraphNode } from './graphNode';
 import * as dagre from 'dagre';
 import { Nullable } from 'babylonjs/types';
@@ -687,7 +688,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             }
 
             // No destination so let's spin a new input block
-            let inputBlock = new InputBlock("", undefined, this._candidateLink!.portA.connectionPoint.type);
+            let inputBlock = new InputBlock(NodeMaterialBlockConnectionPointTypes[this._candidateLink!.portA.connectionPoint.type], undefined, this._candidateLink!.portA.connectionPoint.type);
             pointA = inputBlock.output;
             nodeA = this.appendBlock(inputBlock);
             
