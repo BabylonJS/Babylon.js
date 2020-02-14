@@ -63,9 +63,9 @@ export class GlobalState {
         this.directionalLight1 = DataStorage.ReadBoolean("DirectionalLight1", false);
         this.controlCamera = DataStorage.ReadBoolean("ControlCamera", true);
 
-        let r = DataStorage.ReadNumber("BackgroundColorR", 0.37);
-        let g = DataStorage.ReadNumber("BackgroundColorG", 0.37);
-        let b = DataStorage.ReadNumber("BackgroundColorB", 0.37);
+        let r = DataStorage.ReadNumber("BackgroundColorR", 32);
+        let g = DataStorage.ReadNumber("BackgroundColorG", 25);
+        let b = DataStorage.ReadNumber("BackgroundColorB", 64);
         this.backgroundColor = new Color4(r, g, b, 1.0);
     }
 }

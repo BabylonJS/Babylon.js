@@ -367,6 +367,11 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     /** @hidden */
+    public _preActivateForIntermediateRendering(renderId: number): Mesh {
+        return <Mesh>this.sourceMesh._preActivateForIntermediateRendering(renderId);
+    }
+
+    /** @hidden */
     public _syncSubMeshes(): InstancedMesh {
         this.releaseSubMeshes();
         if (this._sourceMesh.subMeshes) {
