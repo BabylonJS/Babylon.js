@@ -1,9 +1,9 @@
 import { SpotLight } from "babylonjs/Lights/spotLight";
 import { Nullable } from "babylonjs/types";
-import { Vector3, Quaternion } from "babylonjs/Maths/math.vector";
+import { Vector3, Quaternion, TmpVectors, Matrix } from "babylonjs/Maths/math.vector";
 import { Color3 } from "babylonjs/Maths/math.color";
 import { Light } from "babylonjs/Lights/light";
-import { DirectionalLight } from "babylonjs/Lights/directionalLight"
+import { DirectionalLight } from "babylonjs/Lights/directionalLight";
 import { Node } from "babylonjs/node";
 import { ShadowLight } from "babylonjs/Lights/shadowLight";
 import { IChildRootProperty } from "babylonjs-gltf2interface";
