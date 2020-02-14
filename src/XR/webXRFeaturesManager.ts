@@ -13,6 +13,7 @@ export interface IWebXRFeature extends IDisposable {
      * Should auto-attach be disabled?
      */
     disableAutoAttach: boolean;
+
     /**
      * Attach the feature to the session
      * Will usually be called by the features manager
@@ -35,10 +36,6 @@ export interface IWebXRFeature extends IDisposable {
  */
 export class WebXRFeatureName {
     /**
-     * The name of the hit test feature
-     */
-    public static HIT_TEST = "xr-hit-test";
-    /**
      * The name of the anchor system feature
      */
     public static ANCHOR_SYSTEM = "xr-anchor-system";
@@ -47,6 +44,18 @@ export class WebXRFeatureName {
      */
     public static BACKGROUND_REMOVER = "xr-background-remover";
     /**
+     * The name of the hit test feature
+     */
+    public static HIT_TEST = "xr-hit-test";
+    /**
+     * physics impostors for xr controllers feature
+     */
+    public static PHYSICS_CONTROLLERS = "xr-physics-controller";
+    /**
+     * The name of the plane detection feature
+     */
+    public static PLANE_DETECTION = "xr-plane-detection";
+    /**
      * The name of the pointer selection feature
      */
     public static POINTER_SELECTION = "xr-controller-pointer-selection";
@@ -54,15 +63,6 @@ export class WebXRFeatureName {
      * The name of the teleportation feature
      */
     public static TELEPORTATION = "xr-controller-teleportation";
-    /**
-     * The name of the plane detection feature
-     */
-    public static PLANE_DETECTION = "xr-plane-detection";
-
-    /**
-     * physics impostors for xr controllers feature
-     */
-    public static PHYSICS_CONTROLLERS = "xr-physics-controller";
 }
 
 /**
@@ -77,7 +77,6 @@ export type WebXRFeatureConstructor = (xrSessionManager: WebXRSessionManager, op
  * A feature can have a version that is defined by Babylon (and does not correspond with the webxr version).
  */
 export class WebXRFeaturesManager implements IDisposable {
-
     private static readonly _AvailableFeatures: {
         [name: string]: {
             stable: number;
@@ -85,6 +84,42 @@ export class WebXRFeaturesManager implements IDisposable {
             [version: number]: WebXRFeatureConstructor;
         }
     } = {};
+
+    private _features: {
+        [name: string]: {
+            featureImplementation: IWebXRFeature,
+            version: number,
+            enabled: boolean
+        }
+    } = {};
+
+    /**
+     * constructs a new features manages.
+     *
+     * @param _xrSessionManager an instance of WebXRSessionManager
+     */
+    constructor(private _xrSessionManager: WebXRSessionManager) {
+        // when session starts / initialized - attach
+        this._xrSessionManager.onXRSessionInit.add(() => {
+            this.getEnabledFeatures().forEach((featureName) => {
+                const feature = this._features[featureName];
+                if (feature.enabled && !feature.featureImplementation.attached && !feature.featureImplementation.disableAutoAttach) {
+                    this.attachFeature(featureName);
+                }
+            });
+        });
+
+        // when session ends - detach
+        this._xrSessionManager.onXRSessionEnded.add(() => {
+            this.getEnabledFeatures().forEach((featureName) => {
+                const feature = this._features[featureName];
+                if (feature.enabled && feature.featureImplementation.attached) {
+                    // detach, but don't disable!
+                    this.detachFeature(featureName);
+                }
+            });
+        });
+    }
 
     /**
      * Used to register a module. After calling this function a developer can use this feature in the scene.
@@ -126,6 +161,24 @@ export class WebXRFeaturesManager implements IDisposable {
     }
 
     /**
+     * Can be used to return the list of features currently registered
+     *
+     * @returns an Array of available features
+     */
+    public static GetAvailableFeatures() {
+        return Object.keys(this._AvailableFeatures);
+    }
+
+    /**
+     * Gets the versions available for a specific feature
+     * @param featureName the name of the feature
+     * @returns an array with the available versions
+     */
+    public static GetAvailableVersions(featureName: string) {
+        return Object.keys(this._AvailableFeatures[featureName]);
+    }
+
+    /**
      * Return the latest unstable version of this feature
      * @param featureName the name of the feature to search
      * @returns the version number. if not found will return -1
@@ -144,56 +197,53 @@ export class WebXRFeaturesManager implements IDisposable {
     }
 
     /**
-     * Can be used to return the list of features currently registered
-     *
-     * @returns an Array of available features
+     * Attach a feature to the current session. Mainly used when session started to start the feature effect.
+     * Can be used during a session to start a feature
+     * @param featureName the name of feature to attach
      */
-    public static GetAvailableFeatures() {
-        return Object.keys(this._AvailableFeatures);
-    }
-
-    /**
-     * Gets the versions available for a specific feature
-     * @param featureName the name of the feature
-     * @returns an array with the available versions
-     */
-    public static GetAvailableVersions(featureName: string) {
-        return Object.keys(this._AvailableFeatures[featureName]);
-    }
-
-    private _features: {
-        [name: string]: {
-            featureImplementation: IWebXRFeature,
-            version: number,
-            enabled: boolean
+    public attachFeature(featureName: string) {
+        const feature = this._features[featureName];
+        if (feature && feature.enabled && !feature.featureImplementation.attached) {
+            feature.featureImplementation.attach();
         }
-    } = {};
+    }
 
     /**
-     * constructs a new features manages.
-     *
-     * @param _xrSessionManager an instance of WebXRSessionManager
+     * Can be used inside a session or when the session ends to detach a specific feature
+     * @param featureName the name of the feature to detach
      */
-    constructor(private _xrSessionManager: WebXRSessionManager) {
-        // when session starts / initialized - attach
-        this._xrSessionManager.onXRSessionInit.add(() => {
-            this.getEnabledFeatures().forEach((featureName) => {
-                const feature = this._features[featureName];
-                if (feature.enabled && !feature.featureImplementation.attached && !feature.featureImplementation.disableAutoAttach) {
-                    this.attachFeature(featureName);
-                }
-            });
-        });
+    public detachFeature(featureName: string) {
+        const feature = this._features[featureName];
+        if (feature && feature.featureImplementation.attached) {
+            feature.featureImplementation.detach();
+        }
+    }
 
-        // when session ends - detach
-        this._xrSessionManager.onXRSessionEnded.add(() => {
-            this.getEnabledFeatures().forEach((featureName) => {
-                const feature = this._features[featureName];
-                if (feature.enabled && feature.featureImplementation.attached) {
-                    // detach, but don't disable!
-                    this.detachFeature(featureName);
-                }
-            });
+    /**
+     * Used to disable an already-enabled feature
+     * The feature will be disposed and will be recreated once enabled.
+     * @param featureName the feature to disable
+     * @returns true if disable was successful
+     */
+    public disableFeature(featureName: string | { Name: string }): boolean {
+        const name = typeof featureName === 'string' ? featureName : featureName.Name;
+        const feature = this._features[name];
+        if (feature && feature.enabled) {
+            feature.enabled = false;
+            this.detachFeature(name);
+            feature.featureImplementation.dispose();
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * dispose this features manager
+     */
+    public dispose(): void {
+        this.getEnabledFeatures().forEach((feature) => {
+            this.disableFeature(feature);
+            this._features[feature].featureImplementation.dispose();
         });
     }
 
@@ -262,55 +312,6 @@ export class WebXRFeaturesManager implements IDisposable {
     }
 
     /**
-     * Used to disable an already-enabled feature
-     * The feature will be disposed and will be recreated once enabled.
-     * @param featureName the feature to disable
-     * @returns true if disable was successful
-     */
-    public disableFeature(featureName: string | { Name: string }): boolean {
-        const name = typeof featureName === 'string' ? featureName : featureName.Name;
-        const feature = this._features[name];
-        if (feature && feature.enabled) {
-            feature.enabled = false;
-            this.detachFeature(name);
-            feature.featureImplementation.dispose();
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Attach a feature to the current session. Mainly used when session started to start the feature effect.
-     * Can be used during a session to start a feature
-     * @param featureName the name of feature to attach
-     */
-    public attachFeature(featureName: string) {
-        const feature = this._features[featureName];
-        if (feature && feature.enabled && !feature.featureImplementation.attached) {
-            feature.featureImplementation.attach();
-        }
-    }
-
-    /**
-     * Can be used inside a session or when the session ends to detach a specific feature
-     * @param featureName the name of the feature to detach
-     */
-    public detachFeature(featureName: string) {
-        const feature = this._features[featureName];
-        if (feature && feature.featureImplementation.attached) {
-            feature.featureImplementation.detach();
-        }
-    }
-
-    /**
-     * Get the list of enabled features
-     * @returns an array of enabled features
-     */
-    public getEnabledFeatures() {
-        return Object.keys(this._features);
-    }
-
-    /**
      * get the implementation of an enabled feature.
      * @param featureName the name of the feature to load
      * @returns the feature class, if found
@@ -320,13 +321,10 @@ export class WebXRFeaturesManager implements IDisposable {
     }
 
     /**
-     * dispose this features manager
+     * Get the list of enabled features
+     * @returns an array of enabled features
      */
-    dispose(): void {
-        this.getEnabledFeatures().forEach((feature) => {
-            this.disableFeature(feature);
-            this._features[feature].featureImplementation.dispose();
-        });
+    public getEnabledFeatures() {
+        return Object.keys(this._features);
     }
-
 }

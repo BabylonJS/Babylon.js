@@ -1,5 +1,5 @@
 import { Matrix2D } from "./math2D";
-import { Vector2 } from "babylonjs/Maths/math";
+import { Vector2 } from "babylonjs/Maths/math.vector";
 
 let tmpRect = [
     new Vector2(0, 0),

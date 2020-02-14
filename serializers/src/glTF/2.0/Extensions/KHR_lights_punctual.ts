@@ -1,6 +1,7 @@
 import { SpotLight } from "babylonjs/Lights/spotLight";
 import { Nullable } from "babylonjs/types";
-import { Vector3, Color3, Quaternion, Matrix, TmpVectors } from "babylonjs/Maths/math";
+import { Vector3, Quaternion } from "babylonjs/Maths/math.vector";
+import { Color3 } from "babylonjs/Maths/math.color";
 import { Light } from "babylonjs/Lights/light";
 import { DirectionalLight } from "babylonjs/Lights/directionalLight"
 import { Node } from "babylonjs/node";

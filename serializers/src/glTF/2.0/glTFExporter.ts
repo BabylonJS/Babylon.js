@@ -1,7 +1,8 @@
 import { AccessorType, IBufferView, IAccessor, INode, IScene, IMesh, IMaterial, ITexture, IImage, ISampler, IAnimation, ImageMimeType, IMeshPrimitive, IBuffer, IGLTF, MeshPrimitiveMode, AccessorComponentType, ITextureInfo } from "babylonjs-gltf2interface";
 
 import { FloatArray, Nullable, IndicesArray } from "babylonjs/types";
-import { Viewport, Color3, Vector2, Vector3, Vector4, Quaternion, Epsilon, Matrix } from "babylonjs/Maths/math";
+import { Vector2, Vector3, Vector4, Quaternion, Matrix } from "babylonjs/Maths/math.vector";
+import { Color3 } from "babylonjs/Maths/math.color";
 import { Tools } from "babylonjs/Misc/tools";
 import { VertexBuffer } from "babylonjs/Meshes/buffer";
 import { Node } from "babylonjs/node";
@@ -24,6 +25,8 @@ import { IExportOptions } from "./glTFSerializer";
 import { _GLTFUtilities } from "./glTFUtilities";
 import { GLTFData } from "./glTFData";
 import { _GLTFAnimation } from "./glTFAnimation";
+import { Viewport } from 'babylonjs/Maths/math.viewport';
+import { Epsilon } from 'babylonjs/Maths/math.constants';
 
 /**
  * Utility interface for storing vertex attribute data

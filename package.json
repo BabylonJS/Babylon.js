@@ -80,7 +80,7 @@
         "mini-css-extract-plugin": "^0.4.1",
         "minimist": "^1.2.0",
         "mocha": "^5.2.0",
-        "node-sass": "^4.10.0",
+        "node-sass": "^4.13.1",
         "plugin-error": "^1.0.1",
         "prompt": "^1.0.0",
         "re-resizable": "~4.9.1",

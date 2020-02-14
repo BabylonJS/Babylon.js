@@ -23,7 +23,7 @@ export interface IWebXRInputOptions {
     forceInputProfile?: string;
 
     /**
-     * Do not send a request to the controlle repository to load the profile.
+     * Do not send a request to the controller repository to load the profile.
      *
      * Instead, use the controllers available in babylon itself.
      */

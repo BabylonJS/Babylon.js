@@ -15,6 +15,8 @@ import { Quaternion } from '../../Maths/math.vector';
  * This class supports legacy mapping as well the standard xr mapping
  */
 export class WebXROculusTouchMotionController extends WebXRAbstractMotionController {
+    private _modelRootNode: AbstractMesh;
+
     /**
      * The base url used to load the left and right controller models
      */
@@ -27,7 +29,6 @@ export class WebXROculusTouchMotionController extends WebXRAbstractMotionControl
      * The name of the right controller model file
      */
     public static MODEL_RIGHT_FILENAME: string = 'right.babylon';
-
     /**
      * Base Url for the Quest controller model.
      */
@@ -35,18 +36,35 @@ export class WebXROculusTouchMotionController extends WebXRAbstractMotionControl
 
     public profileId = "oculus-touch";
 
-    private _modelRootNode: AbstractMesh;
-
     constructor(scene: Scene,
         gamepadObject: IMinimalMotionControllerObject,
         handness: MotionControllerHandness,
         legacyMapping: boolean = false,
         private _forceLegacyControllers: boolean = false) {
-        super(scene, legacyMapping ? OculusTouchLegacyLayouts[handness] : OculusTouchLayouts[handness], gamepadObject, handness);
+        super(scene, OculusTouchLayouts[handness], gamepadObject, handness);
+    }
+
+    protected _getFilenameAndPath(): { filename: string; path: string; } {
+        let filename = "";
+        if (this.handness === 'left') {
+            filename = WebXROculusTouchMotionController.MODEL_LEFT_FILENAME;
+        }
+        else { // Right is the default if no hand is specified
+            filename = WebXROculusTouchMotionController.MODEL_RIGHT_FILENAME;
+        }
+
+        let path = this._isQuest() ? WebXROculusTouchMotionController.QUEST_MODEL_BASE_URL : WebXROculusTouchMotionController.MODEL_BASE_URL;
+        return {
+            filename,
+            path
+        };
+    }
+
+    protected _getModelLoadingConstraints(): boolean {
+        return true;
     }
 
     protected _processLoadedModel(_meshes: AbstractMesh[]): void {
-
         const isQuest = this._isQuest();
         const triggerDirection = this.handness === 'right' ? -1 : 1;
 
@@ -54,7 +72,6 @@ export class WebXROculusTouchMotionController extends WebXRAbstractMotionControl
             const comp = id && this.getComponent(id);
             if (comp) {
                 comp.onButtonStateChangedObservable.add((component) => {
-
                     if (!this.rootMesh || this.disableAnimation) { return; }
 
                     switch (id) {
@@ -100,39 +117,6 @@ export class WebXROculusTouchMotionController extends WebXRAbstractMotionControl
         });
     }
 
-    protected _getFilenameAndPath(): { filename: string; path: string; } {
-        let filename = "";
-        if (this.handness === 'left') {
-            filename = WebXROculusTouchMotionController.MODEL_LEFT_FILENAME;
-        }
-        else { // Right is the default if no hand is specified
-            filename = WebXROculusTouchMotionController.MODEL_RIGHT_FILENAME;
-        }
-
-        let path = this._isQuest() ? WebXROculusTouchMotionController.QUEST_MODEL_BASE_URL : WebXROculusTouchMotionController.MODEL_BASE_URL;
-        return {
-            filename,
-            path
-        };
-    }
-
-    /**
-     * Is this the new type of oculus touch. At the moment both have the same profile and it is impossible to differentiate
-     * between the touch and touch 2.
-     */
-    private _isQuest() {
-        // this is SADLY the only way to currently check. Until proper profiles will be available.
-        return !!navigator.userAgent.match(/Quest/gi) && !this._forceLegacyControllers;
-    }
-
-    protected _updateModel(): void {
-        // no-op. model is updated using observables.
-    }
-
-    protected _getModelLoadingConstraints(): boolean {
-        return true;
-    }
-
     protected _setRootMesh(meshes: AbstractMesh[]): void {
         this.rootMesh = new Mesh(this.profileId + " " + this.handness, this.scene);
         this.rootMesh.rotationQuaternion = Quaternion.FromEulerAngles(0, Math.PI, 0);
@@ -148,6 +132,18 @@ export class WebXROculusTouchMotionController extends WebXRAbstractMotionControl
         this._modelRootNode.parent = this.rootMesh;
     }
 
+    protected _updateModel(): void {
+        // no-op. model is updated using observables.
+    }
+
+    /**
+     * Is this the new type of oculus touch. At the moment both have the same profile and it is impossible to differentiate
+     * between the touch and touch 2.
+     */
+    private _isQuest() {
+        // this is SADLY the only way to currently check. Until proper profiles will be available.
+        return !!navigator.userAgent.match(/Quest/gi) && !this._forceLegacyControllers;
+    }
 }
 
 // register the profile
@@ -170,7 +166,6 @@ const OculusTouchLayouts: IMotionControllerLayoutMap = {
                 },
                 "rootNodeName": "xr_standard_trigger",
                 "visualResponses": {
-
                 }
             },
             "xr-standard-squeeze": {
@@ -180,7 +175,6 @@ const OculusTouchLayouts: IMotionControllerLayoutMap = {
                 },
                 "rootNodeName": "xr_standard_squeeze",
                 "visualResponses": {
-
                 }
             },
             "xr-standard-thumbstick": {
@@ -192,7 +186,6 @@ const OculusTouchLayouts: IMotionControllerLayoutMap = {
                 },
                 "rootNodeName": "xr_standard_thumbstick",
                 "visualResponses": {
-
                 }
             },
             "x-button": {
@@ -202,7 +195,6 @@ const OculusTouchLayouts: IMotionControllerLayoutMap = {
                 },
                 "rootNodeName": "x_button",
                 "visualResponses": {
-
                 }
             },
             "y-button": {
@@ -212,7 +204,6 @@ const OculusTouchLayouts: IMotionControllerLayoutMap = {
                 },
                 "rootNodeName": "y_button",
                 "visualResponses": {
-
                 }
             },
             "thumbrest": {
@@ -222,7 +213,6 @@ const OculusTouchLayouts: IMotionControllerLayoutMap = {
                 },
                 "rootNodeName": "thumbrest",
                 "visualResponses": {
-
                 }
             }
         },
@@ -240,7 +230,6 @@ const OculusTouchLayouts: IMotionControllerLayoutMap = {
                 },
                 "rootNodeName": "xr_standard_trigger",
                 "visualResponses": {
-
                 }
             },
             "xr-standard-squeeze": {
@@ -250,7 +239,6 @@ const OculusTouchLayouts: IMotionControllerLayoutMap = {
                 },
                 "rootNodeName": "xr_standard_squeeze",
                 "visualResponses": {
-
                 }
             },
             "xr-standard-thumbstick": {
@@ -262,7 +250,6 @@ const OculusTouchLayouts: IMotionControllerLayoutMap = {
                 },
                 "rootNodeName": "xr_standard_thumbstick",
                 "visualResponses": {
-
                 }
             },
             "a-button": {
@@ -272,7 +259,6 @@ const OculusTouchLayouts: IMotionControllerLayoutMap = {
                 },
                 "rootNodeName": "a_button",
                 "visualResponses": {
-
                 }
             },
             "b-button": {
@@ -282,7 +268,6 @@ const OculusTouchLayouts: IMotionControllerLayoutMap = {
                 },
                 "rootNodeName": "b_button",
                 "visualResponses": {
-
                 }
             },
             "thumbrest": {
@@ -292,150 +277,6 @@ const OculusTouchLayouts: IMotionControllerLayoutMap = {
                 },
                 "rootNodeName": "thumbrest",
                 "visualResponses": {
-
-                }
-            }
-        },
-        "gamepadMapping": "xr-standard",
-        "rootNodeName": "oculus-touch-v2-right",
-        "assetPath": "right.glb"
-    }
-};
-
-const OculusTouchLegacyLayouts: IMotionControllerLayoutMap = {
-    "left": {
-        "selectComponentId": "xr-standard-trigger",
-        "components": {
-            "xr-standard-trigger": {
-                "type": "trigger",
-                "gamepadIndices": {
-                    "button": 1
-                },
-                "rootNodeName": "xr_standard_trigger",
-                "visualResponses": {
-
-                }
-            },
-            "xr-standard-squeeze": {
-                "type": "squeeze",
-                "gamepadIndices": {
-                    "button": 2
-                },
-                "rootNodeName": "xr_standard_squeeze",
-                "visualResponses": {
-
-                }
-            },
-            "xr-standard-thumbstick": {
-                "type": "thumbstick",
-                "gamepadIndices": {
-                    "button": 0,
-                    "xAxis": 0,
-                    "yAxis": 1
-                },
-                "rootNodeName": "xr_standard_thumbstick",
-                "visualResponses": {
-
-                }
-            },
-            "x-button": {
-                "type": "button",
-                "gamepadIndices": {
-                    "button": 3
-                },
-                "rootNodeName": "x_button",
-                "visualResponses": {
-
-                }
-            },
-            "y-button": {
-                "type": "button",
-                "gamepadIndices": {
-                    "button": 4
-                },
-                "rootNodeName": "y_button",
-                "visualResponses": {
-
-                }
-            },
-            "thumbrest": {
-                "type": "button",
-                "gamepadIndices": {
-                    "button": 5
-                },
-                "rootNodeName": "thumbrest",
-                "visualResponses": {
-
-                }
-            }
-        },
-        "gamepadMapping": "xr-standard",
-        "rootNodeName": "oculus-touch-v2-left",
-        "assetPath": "left.glb"
-    },
-    "right": {
-        "selectComponentId": "xr-standard-trigger",
-        "components": {
-            "xr-standard-trigger": {
-                "type": "trigger",
-                "gamepadIndices": {
-                    "button": 1
-                },
-                "rootNodeName": "xr_standard_trigger",
-                "visualResponses": {
-
-                }
-            },
-            "xr-standard-squeeze": {
-                "type": "squeeze",
-                "gamepadIndices": {
-                    "button": 2
-                },
-                "rootNodeName": "xr_standard_squeeze",
-                "visualResponses": {
-
-                }
-            },
-            "xr-standard-thumbstick": {
-                "type": "thumbstick",
-                "gamepadIndices": {
-                    "button": 0,
-                    "xAxis": 0,
-                    "yAxis": 1
-                },
-                "rootNodeName": "xr_standard_thumbstick",
-                "visualResponses": {
-
-                }
-            },
-            "a-button": {
-                "type": "button",
-                "gamepadIndices": {
-                    "button": 3
-                },
-                "rootNodeName": "a_button",
-                "visualResponses": {
-
-                }
-            },
-            "b-button": {
-                "type": "button",
-                "gamepadIndices": {
-                    "button": 4
-                },
-                "rootNodeName": "b_button",
-                "visualResponses": {
-
-                }
-            },
-            "thumbrest": {
-                "type": "button",
-                "gamepadIndices": {
-                    "button": 5
-                },
-                "rootNodeName": "thumbrest",
-                "visualResponses": {
-
                 }
             }
         },

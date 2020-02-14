@@ -14,6 +14,8 @@ import { WebXRMotionControllerManager } from './webXRMotionControllerManager';
  * The motion controller class for the standard HTC-Vive controllers
  */
 export class WebXRHTCViveMotionController extends WebXRAbstractMotionController {
+    private _modelRootNode: AbstractMesh;
+
     /**
      * The base url used to load the left and right controller models
      */
@@ -24,8 +26,6 @@ export class WebXRHTCViveMotionController extends WebXRAbstractMotionController 
     public static MODEL_FILENAME: string = 'wand.babylon';
 
     public profileId = "htc-vive";
-
-    private _modelRootNode: AbstractMesh;
 
     /**
      * Create a new Vive motion controller object
@@ -39,12 +39,25 @@ export class WebXRHTCViveMotionController extends WebXRAbstractMotionController 
         super(scene, HTCViveLayout[handness], gamepadObject, handness);
     }
 
+    protected _getFilenameAndPath(): { filename: string; path: string; } {
+        let filename = WebXRHTCViveMotionController.MODEL_FILENAME;
+        let path = WebXRHTCViveMotionController.MODEL_BASE_URL;
+
+        return {
+            filename,
+            path
+        };
+    }
+
+    protected _getModelLoadingConstraints(): boolean {
+        return true;
+    }
+
     protected _processLoadedModel(_meshes: AbstractMesh[]): void {
         this.getComponentIds().forEach((id) => {
             const comp = id && this.getComponent(id);
             if (comp) {
                 comp.onButtonStateChangedObservable.add((component) => {
-
                     if (!this.rootMesh || this.disableAnimation) { return; }
 
                     switch (id) {
@@ -61,24 +74,6 @@ export class WebXRHTCViveMotionController extends WebXRAbstractMotionController 
         });
     }
 
-    protected _getFilenameAndPath(): { filename: string; path: string; } {
-        let filename = WebXRHTCViveMotionController.MODEL_FILENAME;
-        let path = WebXRHTCViveMotionController.MODEL_BASE_URL;
-
-        return {
-            filename,
-            path
-        };
-    }
-
-    protected _updateModel(): void {
-        // no-op. model is updated using observables.
-    }
-
-    protected _getModelLoadingConstraints(): boolean {
-        return true;
-    }
-
     protected _setRootMesh(meshes: AbstractMesh[]): void {
         this.rootMesh = new Mesh(this.profileId + " " + this.handness, this.scene);
 
@@ -88,6 +83,9 @@ export class WebXRHTCViveMotionController extends WebXRAbstractMotionController 
         this.rootMesh.rotationQuaternion = Quaternion.FromEulerAngles(0, Math.PI, 0);
     }
 
+    protected _updateModel(): void {
+        // no-op. model is updated using observables.
+    }
 }
 
 // register the profile
@@ -110,7 +108,6 @@ const HTCViveLayout: IMotionControllerLayoutMap = {
                 },
                 "rootNodeName": "xr_standard_trigger",
                 "visualResponses": {
-
                 }
             },
             "xr-standard-squeeze": {
@@ -120,7 +117,6 @@ const HTCViveLayout: IMotionControllerLayoutMap = {
                 },
                 "rootNodeName": "xr_standard_squeeze",
                 "visualResponses": {
-
                 }
             },
             "xr-standard-touchpad": {
@@ -132,7 +128,6 @@ const HTCViveLayout: IMotionControllerLayoutMap = {
                 },
                 "rootNodeName": "xr_standard_touchpad",
                 "visualResponses": {
-
                 },
             },
             "menu": {
@@ -142,7 +137,6 @@ const HTCViveLayout: IMotionControllerLayoutMap = {
                 },
                 "rootNodeName": "menu",
                 "visualResponses": {
-
                 }
             }
         },
@@ -160,7 +154,6 @@ const HTCViveLayout: IMotionControllerLayoutMap = {
                 },
                 "rootNodeName": "xr_standard_trigger",
                 "visualResponses": {
-
                 }
             },
             "xr-standard-squeeze": {
@@ -170,7 +163,6 @@ const HTCViveLayout: IMotionControllerLayoutMap = {
                 },
                 "rootNodeName": "xr_standard_squeeze",
                 "visualResponses": {
-
                 }
             },
             "xr-standard-touchpad": {
@@ -182,7 +174,6 @@ const HTCViveLayout: IMotionControllerLayoutMap = {
                 },
                 "rootNodeName": "xr_standard_touchpad",
                 "visualResponses": {
-
                 },
             },
             "menu": {
@@ -192,7 +183,6 @@ const HTCViveLayout: IMotionControllerLayoutMap = {
                 },
                 "rootNodeName": "menu",
                 "visualResponses": {
-
                 }
             }
         },
@@ -210,7 +200,6 @@ const HTCViveLayout: IMotionControllerLayoutMap = {
                 },
                 "rootNodeName": "xr_standard_trigger",
                 "visualResponses": {
-
                 }
             },
             "xr-standard-squeeze": {
@@ -220,7 +209,6 @@ const HTCViveLayout: IMotionControllerLayoutMap = {
                 },
                 "rootNodeName": "xr_standard_squeeze",
                 "visualResponses": {
-
                 }
             },
             "xr-standard-touchpad": {
@@ -232,7 +220,6 @@ const HTCViveLayout: IMotionControllerLayoutMap = {
                 },
                 "rootNodeName": "xr_standard_touchpad",
                 "visualResponses": {
-
                 },
             },
             "menu": {
@@ -242,7 +229,6 @@ const HTCViveLayout: IMotionControllerLayoutMap = {
                 },
                 "rootNodeName": "menu",
                 "visualResponses": {
-
                 }
             }
         },
