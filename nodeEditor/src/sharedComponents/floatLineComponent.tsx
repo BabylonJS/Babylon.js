@@ -2,6 +2,7 @@ import * as React from "react";
 
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
+import { GlobalState } from '../globalState';
 
 interface IFloatLineComponentProps {
     label: string;
@@ -13,6 +14,7 @@ interface IFloatLineComponentProps {
     additionalClass?: string;
     step?: string,
     digits?: number;
+    globalState: GlobalState
 }
 
 export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string }> {
@@ -98,7 +100,12 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                             {this.props.label}
                         </div>
                         <div className="value">
-                            <input type="number" step={this.props.step || "0.01"} className="numeric-input" value={this.state.value} onChange={evt => this.updateValue(evt.target.value)} />
+                            <input type="number" step={this.props.step || "0.01"} className="numeric-input" 
+                            onBlur={evt => {
+                                this.props.globalState.blockKeyboardEvents = false;
+                            }}
+                            onFocus={() => this.props.globalState.blockKeyboardEvents = true}
+                            value={this.state.value} onChange={evt => this.updateValue(evt.target.value)} />
                         </div>
                     </div>
                 }

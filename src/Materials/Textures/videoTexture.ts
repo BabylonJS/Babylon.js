@@ -131,7 +131,7 @@ export class VideoTexture extends Texture {
         const videoHasEnoughData = (this.video.readyState >= this.video.HAVE_CURRENT_DATA);
         if (settings.poster &&
             (!settings.autoPlay || !videoHasEnoughData)) {
-            this._texture = this._engine.createTexture(settings.poster!, false, true, scene);
+            this._texture = this._engine.createTexture(settings.poster!, false, !this.invertY, scene);
             this._displayingPosterTexture = true;
         }
         else if (videoHasEnoughData) {

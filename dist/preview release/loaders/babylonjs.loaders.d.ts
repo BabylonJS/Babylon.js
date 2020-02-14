@@ -1195,14 +1195,16 @@ declare module BABYLON.GLTF2 {
          */
         loadCameraAsync?(context: string, camera: ICamera, assign: (babylonCamera: Camera) => void): Nullable<Promise<Camera>>;
         /**
-         * @hidden Define this method to modify the default behavior when loading vertex data for mesh primitives.
+         * @hidden
+         * Define this method to modify the default behavior when loading vertex data for mesh primitives.
          * @param context The context when loading the asset
          * @param primitive The glTF mesh primitive property
          * @returns A promise that resolves with the loaded geometry when the load is complete or null if not handled
          */
         _loadVertexDataAsync?(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>>;
         /**
-         * @hidden Define this method to modify the default behavior when loading data for mesh primitives.
+         * @hidden
+         * Define this method to modify the default behavior when loading data for mesh primitives.
          * @param context The context when loading the asset
          * @param name The mesh name when loading the asset
          * @param node The glTF node when loading the asset
@@ -1213,7 +1215,8 @@ declare module BABYLON.GLTF2 {
          */
         _loadMeshPrimitiveAsync?(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Promise<AbstractMesh>;
         /**
-         * @hidden Define this method to modify the default behavior when loading materials. Load material creates the material and then loads material properties.
+         * @hidden
+         * Define this method to modify the default behavior when loading materials. Load material creates the material and then loads material properties.
          * @param context The context when loading the asset
          * @param material The glTF material property
          * @param assign A function called synchronously after parsing the glTF properties
@@ -1245,6 +1248,15 @@ declare module BABYLON.GLTF2 {
          */
         loadTextureInfoAsync?(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
         /**
+         * @hidden
+         * Define this method to modify the default behavior when loading textures.
+         * @param context The context when loading the asset
+         * @param texture The glTF texture property
+         * @param assign A function called synchronously after parsing the glTF properties
+         * @returns A promise that resolves with the loaded Babylon texture when the load is complete or null if not handled
+         */
+        _loadTextureAsync?(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
+        /**
          * Define this method to modify the default behavior when loading animations.
          * @param context The context when loading the asset
          * @param animation The glTF animation property
@@ -1252,7 +1264,8 @@ declare module BABYLON.GLTF2 {
          */
         loadAnimationAsync?(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>>;
         /**
-         * @hidden Define this method to modify the default behavior when loading skins.
+         * @hidden
+         * Define this method to modify the default behavior when loading skins.
          * @param context The context when loading the asset
          * @param node The glTF node property
          * @param skin The glTF skin property
@@ -1260,7 +1273,8 @@ declare module BABYLON.GLTF2 {
          */
         _loadSkinAsync?(context: string, node: INode, skin: ISkin): Nullable<Promise<void>>;
         /**
-         * @hidden Define this method to modify the default behavior when loading uris.
+         * @hidden
+         * Define this method to modify the default behavior when loading uris.
          * @param context The context when loading the asset
          * @param property The glTF property associated with the uri
          * @param uri The uri to load
@@ -1328,8 +1342,11 @@ declare module BABYLON.GLTF2 {
         private _defaultBabylonMaterialData;
         private _progressCallback?;
         private _requests;
-        private static readonly _DefaultSampler;
         private static _RegisteredExtensions;
+        /**
+         * The default glTF sampler.
+         */
+        static readonly DefaultSampler: ISampler;
         /**
          * Registers a loader extension.
          * @param name The name of the loader extension.
@@ -1343,7 +1360,7 @@ declare module BABYLON.GLTF2 {
          */
         static UnregisterExtension(name: string): boolean;
         /**
-         * Gets the loader state.
+         * The loader state.
          */
         get state(): Nullable<GLTFLoaderState>;
         /**
@@ -1510,7 +1527,10 @@ declare module BABYLON.GLTF2 {
          * @returns A promise that resolves with the loaded Babylon texture when the load is complete
          */
         loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign?: (babylonTexture: BaseTexture) => void): Promise<BaseTexture>;
-        private _loadTextureAsync;
+        /** @hidden */
+        _loadTextureAsync(context: string, texture: ITexture, assign?: (babylonTexture: BaseTexture) => void): Promise<BaseTexture>;
+        /** @hidden */
+        _createTextureAsync(context: string, sampler: ISampler, image: IImage, assign?: (babylonTexture: BaseTexture) => void): Promise<BaseTexture>;
         private _loadSampler;
         /**
          * Loads a glTF image.
@@ -1558,6 +1578,7 @@ declare module BABYLON.GLTF2 {
         private _extensionsCreateMaterial;
         private _extensionsLoadMaterialPropertiesAsync;
         private _extensionsLoadTextureInfoAsync;
+        private _extensionsLoadTextureAsync;
         private _extensionsLoadAnimationAsync;
         private _extensionsLoadSkinAsync;
         private _extensionsLoadUriAsync;
@@ -1667,7 +1688,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
-     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md)
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual)
      */
     export class KHR_lights implements IGLTFLoaderExtension {
         /**
@@ -1852,7 +1873,26 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
-     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_texture_transform/README.md)
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1751)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_texture_basisu implements IGLTFLoaderExtension {
+        /** The name of this extension. */
+        readonly name: string;
+        /** Defines whether this extension is enabled. */
+        enabled: boolean;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_texture_transform)
      */
     export class KHR_texture_transform implements IGLTFLoaderExtension {
         /**
@@ -1969,7 +2009,8 @@ declare module BABYLON.GLTF2.Loader.Extensions {
          * Gets an array of LOD properties from lowest to highest.
          */
         private _getLODs;
-        private _disposeUnusedMaterials;
+        private _disposeTransformNode;
+        private _disposeMaterials;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {

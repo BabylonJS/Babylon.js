@@ -40,7 +40,7 @@ declare type Texture = import("../Materials/Textures/texture").Texture;
  * Defines the interface used by objects working like Scene
  * @hidden
  */
-interface ISceneLike {
+export interface ISceneLike {
     _addPendingData(data: any): void;
     _removePendingData(data: any): void;
     offlineProvider: IOfflineProvider;
@@ -132,14 +132,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-beta.25";
+        return "babylonjs@4.1.0-beta.27";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-beta.25";
+        return "4.1.0-beta.27";
     }
 
     /**
@@ -170,29 +170,6 @@ export class ThinEngine {
     }
     public static set ShadersRepository(value: string) {
         Effect.ShadersRepository = value;
-    }
-
-    /**
-    * Gets or sets the textures that the engine should not attempt to load as compressed
-    */
-    protected _excludedCompressedTextures: string[] = [];
-
-    /**
-     * Filters the compressed texture formats to only include
-     * files that are not included in the skippable list
-     *
-     * @param url the current extension
-     * @param textureFormatInUse the current compressed texture format
-     * @returns "format" string
-     */
-    public excludedCompressedTextureFormats(url: Nullable<string>, textureFormatInUse: Nullable<string>): Nullable<string> {
-        const skipCompression = (): boolean => {
-            return this._excludedCompressedTextures.some((entry) => {
-                const strRegExPattern: string = '\\b' + entry + '\\b';
-                return (url && (url === entry || url.match(new RegExp(strRegExPattern, 'g'))));
-            });
-        };
-        return skipCompression() ? null : textureFormatInUse;
     }
 
     // Public members
@@ -255,9 +232,10 @@ export class ThinEngine {
 
     /** @hidden */
     public _gl: WebGLRenderingContext;
+    /** @hidden */
+    public _webGLVersion = 1.0;
     protected _renderingCanvas: Nullable<HTMLCanvasElement>;
     protected _windowIsBackground = false;
-    protected _webGLVersion = 1.0;
     protected _creationOptions: EngineOptions;
 
     protected _highPrecisionShadersAllowed = true;
@@ -2788,14 +2766,13 @@ export class ThinEngine {
      * @param fallback an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
      * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
      * @param forcedExtension defines the extension to use to pick the right loader
-     * @param excludeLoaders array of texture loaders that should be excluded when picking a loader for the texture (default: empty array)
      * @param mimeType defines an optional mime type
      * @returns a InternalTexture for assignment back into BABYLON.Texture
      */
     public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
-        forcedExtension: Nullable<string> = null, excludeLoaders: Array<IInternalTextureLoader> = [], mimeType?: string): InternalTexture {
+        forcedExtension: Nullable<string> = null, mimeType?: string): InternalTexture {
         var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
         var fromData = url.substr(0, 5) === "data:";
         var fromBlob = url.substr(0, 5) === "blob:";
@@ -2806,18 +2783,13 @@ export class ThinEngine {
         // establish the file extension, if possible
         var lastDot = url.lastIndexOf('.');
         var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? url.substring(lastDot).toLowerCase() : "");
-        const filteredFormat: Nullable<string> = this.excludedCompressedTextureFormats(url, this._textureFormatInUse);
         let loader: Nullable<IInternalTextureLoader> = null;
 
         for (let availableLoader of ThinEngine._TextureLoaders) {
-            if (excludeLoaders.indexOf(availableLoader) === -1 && availableLoader.canLoad(extension, filteredFormat, fallback, isBase64, buffer ? true : false)) {
+            if (availableLoader.canLoad(extension)) {
                 loader = availableLoader;
                 break;
             }
-        }
-
-        if (loader) {
-            url = loader.transformUrl(url, filteredFormat);
         }
 
         if (scene) {
@@ -2845,26 +2817,13 @@ export class ThinEngine {
                 scene._removePendingData(texture);
             }
 
-            let customFallback = false;
-            if (loader) {
-                const fallbackUrl = loader.getFallbackTextureUrl(url, this._textureFormatInUse);
-                if (fallbackUrl) {
-                    // Add Back
-                    customFallback = true;
-                    excludeLoaders.push(loader);
-                    this.createTexture(urlArg, noMipmap, texture.invertY, scene, samplingMode, null, onError, buffer, texture, undefined, undefined, excludeLoaders);
-                    return;
-                }
+            if (onLoadObserver) {
+                texture.onLoadedObservable.remove(onLoadObserver);
             }
 
-            if (!customFallback) {
-                if (onLoadObserver) {
-                    texture.onLoadedObservable.remove(onLoadObserver);
-                }
-                if (EngineStore.UseFallbackTexture) {
-                    this.createTexture(EngineStore.FallbackTexture, noMipmap, texture.invertY, scene, samplingMode, null, onError, buffer, texture);
-                    return;
-                }
+            if (EngineStore.UseFallbackTexture) {
+                this.createTexture(EngineStore.FallbackTexture, noMipmap, texture.invertY, scene, samplingMode, null, onError, buffer, texture);
+                return;
             }
 
             if (onError) {
@@ -2969,7 +2928,7 @@ export class ThinEngine {
                 ThinEngine._FileToolsLoadImage(buffer, onload, onInternalError, scene ? scene.offlineProvider : null, mimeType);
             }
             else if (buffer) {
-                onload(<HTMLImageElement>buffer);
+                onload(buffer);
             }
         }
 
@@ -3136,15 +3095,15 @@ export class ThinEngine {
     public updateTextureWrappingMode(texture: InternalTexture, wrapU: Nullable<number>, wrapV: Nullable<number> = null, wrapR: Nullable<number> = null): void {
         const target = this._getTextureTarget(texture);
 
-        if (wrapU) {
+        if (wrapU !== null) {
             this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_S, this._getTextureWrapMode(wrapU), texture);
             texture._cachedWrapU = wrapU;
         }
-        if (wrapV) {
+        if (wrapV !== null) {
             this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_T, this._getTextureWrapMode(wrapV), texture);
             texture._cachedWrapV = wrapV;
         }
-        if ((texture.is2DArray || texture.is3D) && wrapR) {
+        if ((texture.is2DArray || texture.is3D) && (wrapR !== null)) {
             this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_R, this._getTextureWrapMode(wrapR), texture);
             texture._cachedWrapR = wrapR;
         }

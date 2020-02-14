@@ -1043,29 +1043,11 @@ declare module BABYLON {
         /**
          * This returns if the loader support the current file information.
          * @param extension defines the file extension of the file being loaded
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @param fallback defines the fallback internal texture if any
-         * @param isBase64 defines whether the texture is encoded as a base64
-         * @param isBuffer defines whether the texture data are stored as a buffer
          * @returns true if the loader can load the specified file
          */
-        canLoad(extension: string, textureFormatInUse: Nullable<string>, fallback: Nullable<InternalTexture>, isBase64: boolean, isBuffer: boolean): boolean;
+        canLoad(extension: string): boolean;
         /**
-         * Transform the url before loading if required.
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the transformed texture
-         */
-        transformUrl(rootUrl: string, textureFormatInUse: Nullable<string>): string;
-        /**
-         * Gets the fallback url in case the load fail. This can return null to allow the default fallback mecanism to work
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the fallback texture
-         */
-        getFallbackTextureUrl(rootUrl: string, textureFormatInUse: Nullable<string>): Nullable<string>;
-        /**
-         * Uploads the cube texture data to the WebGl Texture. It has alreday been bound.
+         * Uploads the cube texture data to the WebGL texture. It has already been bound.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param createPolynomials will be true if polynomials have been requested
@@ -1074,7 +1056,7 @@ declare module BABYLON {
          */
         loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
         /**
-         * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
+         * Uploads the 2D texture data to the WebGL texture. It has already been bound once in the callback.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param callback defines the method to call once ready to upload
@@ -7618,10 +7600,9 @@ declare module BABYLON {
              * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
              * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
              * @param fallback defines texture to use while falling back when (compressed) texture file not found.
-             * @param excludeLoaders array of texture loaders that should be excluded when picking a loader for the texture (defualt: empty array)
              * @returns the cube texture as an InternalTexture
              */
-            createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean | undefined, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number, fallback: Nullable<InternalTexture>, excludeLoaders: Array<IInternalTextureLoader>): InternalTexture;
+            createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean | undefined, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number, fallback: Nullable<InternalTexture>): InternalTexture;
             /**
              * Creates a cube texture
              * @param rootUrl defines the url where the files to load is located
@@ -9957,12 +9938,12 @@ declare module BABYLON {
          */
         intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
         /**
-     * Intersects the sprites with a ray
-     * @param ray defines the ray to intersect with
-     * @param camera defines the current active camera
-     * @param predicate defines a predicate used to select candidate sprites
-     * @returns null if no hit or a PickingInfo array
-     */
+         * Intersects the sprites with a ray
+         * @param ray defines the ray to intersect with
+         * @param camera defines the current active camera
+         * @param predicate defines a predicate used to select candidate sprites
+         * @returns null if no hit or a PickingInfo array
+         */
         multiIntersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean): Nullable<PickingInfo[]>;
         /**
          * Renders the list of sprites on screen.
@@ -10021,6 +10002,19 @@ declare module BABYLON {
          */
         get texture(): Texture;
         set texture(value: Texture);
+        private _blendMode;
+        /**
+         * Blend mode use to render the particle, it can be any of
+         * the static Constants.ALPHA_x properties provided in this class.
+         * Default value is Constants.ALPHA_COMBINE
+         */
+        get blendMode(): number;
+        set blendMode(blendMode: number);
+        /** Disables writing to the depth buffer when rendering the sprites.
+         *  It can be handy to disable depth writing when using textures without alpha channel
+         *  and setting some specific blend modes.
+        */
+        disableDepthWrite: boolean;
         /**
          * Creates a new sprite manager
          * @param name defines the manager's name
@@ -15162,6 +15156,8 @@ declare module BABYLON {
          * Returns the current associated LOD AbstractMesh.
          */
         getLOD(camera: Camera): AbstractMesh;
+        /** @hidden */
+        _preActivateForIntermediateRendering(renderId: number): Mesh;
         /** @hidden */
         _syncSubMeshes(): InstancedMesh;
         /** @hidden */
@@ -30853,7 +30849,7 @@ declare module BABYLON {
      * Defines the interface used by objects working like Scene
      * @hidden
      */
-    interface ISceneLike {
+    export interface ISceneLike {
         _addPendingData(data: any): void;
         _removePendingData(data: any): void;
         offlineProvider: IOfflineProvider;
@@ -30943,19 +30939,6 @@ declare module BABYLON {
          */
         static get ShadersRepository(): string;
         static set ShadersRepository(value: string);
-        /**
-        * Gets or sets the textures that the engine should not attempt to load as compressed
-        */
-        protected _excludedCompressedTextures: string[];
-        /**
-         * Filters the compressed texture formats to only include
-         * files that are not included in the skippable list
-         *
-         * @param url the current extension
-         * @param textureFormatInUse the current compressed texture format
-         * @returns "format" string
-         */
-        excludedCompressedTextureFormats(url: Nullable<string>, textureFormatInUse: Nullable<string>): Nullable<string>;
         /** @hidden */
         _shaderProcessor: IShaderProcessor;
         /**
@@ -30998,9 +30981,10 @@ declare module BABYLON {
         get supportsUniformBuffers(): boolean;
         /** @hidden */
         _gl: WebGLRenderingContext;
+        /** @hidden */
+        _webGLVersion: number;
         protected _renderingCanvas: Nullable<HTMLCanvasElement>;
         protected _windowIsBackground: boolean;
-        protected _webGLVersion: number;
         protected _creationOptions: EngineOptions;
         protected _highPrecisionShadersAllowed: boolean;
         /** @hidden */
@@ -31722,11 +31706,10 @@ declare module BABYLON {
          * @param fallback an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
          * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
          * @param forcedExtension defines the extension to use to pick the right loader
-         * @param excludeLoaders array of texture loaders that should be excluded when picking a loader for the texture (default: empty array)
          * @param mimeType defines an optional mime type
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, excludeLoaders?: Array<IInternalTextureLoader>, mimeType?: string): InternalTexture;
+        createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string): InternalTexture;
         /**
          * Loads an image as an HTMLImageElement.
          * @param input url string, ArrayBuffer, or Blob to load
@@ -33720,34 +33703,6 @@ declare module BABYLON {
         endFrame(): void;
         resize(): void;
         /**
-         * Set the compressed texture format to use, based on the formats you have, and the formats
-         * supported by the hardware / browser.
-         *
-         * Khronos Texture Container (.ktx) files are used to support this.  This format has the
-         * advantage of being specifically designed for OpenGL.  Header elements directly correspond
-         * to API arguments needed to compressed textures.  This puts the burden on the container
-         * generator to house the arcane code for determining these for current & future formats.
-         *
-         * for description see https://www.khronos.org/opengles/sdk/tools/KTX/
-         * for file layout see https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
-         *
-         * Note: The result of this call is not taken into account when a texture is base64.
-         *
-         * @param formatsAvailable defines the list of those format families you have created
-         * on your server.  Syntax: '-' + format family + '.ktx'.  (Case and order do not matter.)
-         *
-         * Current families are astc, dxt, pvrtc, etc2, & etc1.
-         * @returns The extension selected.
-         */
-        setTextureFormatToUse(formatsAvailable: Array<string>): Nullable<string>;
-        /**
-         * Set the compressed texture extensions or file names to skip.
-         *
-         * @param skippedFiles defines the list of those texture files you want to skip
-         * Example: [".dds", ".env", "myfile.png"]
-         */
-        setCompressedTextureExclusions(skippedFiles: Array<string>): void;
-        /**
          * Force a specific size of the canvas
          * @param width defines the new canvas' width
          * @param height defines the new canvas' height
@@ -33822,6 +33777,9 @@ declare module BABYLON {
          * @param buffer defines the webGL buffer to delete
          */
         deleteInstancesBuffer(buffer: WebGLBuffer): void;
+        private _clientWaitAsync;
+        /** @hidden */
+        _readPixelsAsync(x: number, y: number, w: number, h: number, format: number, type: number, outputBuffer: ArrayBufferView): Promise<ArrayBufferView> | null;
         /** @hidden */
         _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>): ArrayBufferView;
         dispose(): void;
@@ -46756,13 +46714,13 @@ declare module BABYLON {
          * @param onLoad optional callback to be called upon successful completion
          * @param onError optional callback to be called upon failure
          * @param buffer a source of a file previously fetched as either a base64 string, an ArrayBuffer (compressed or image format), HTMLImageElement (image format), or a Blob
-         * @param fallBack an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
+         * @param fallback an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
          * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
          * @param forcedExtension defines the extension to use to pick the right loader
-         * @param excludeLoaders array of texture loaders that should be excluded when picking a loader for the texture (default: empty array)
+         * @param mimeType defines an optional mime type
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<ArrayBuffer | HTMLImageElement>, fallBack?: InternalTexture, format?: number): InternalTexture;
+        createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string): InternalTexture;
         /**
          * Creates a new render target texture
          * @param size defines the size of the texture
@@ -47705,25 +47663,26 @@ declare module BABYLON {
         _createTexture(): WebGLTexture;
         protected _deleteTexture(texture: Nullable<WebGLTexture>): void;
         /**
-         * Usually called from BABYLON.Texture.ts.
+         * Usually called from Texture.ts.
          * Passed information to create a WebGLTexture
          * @param urlArg defines a value which contains one of the following:
          * * A conventional http URL, e.g. 'http://...' or 'file://...'
          * * A base64 string of in-line texture data, e.g. 'data:image/jpg;base64,/...'
          * * An indicator that data being passed using the buffer parameter, e.g. 'data:mytexture.jpg'
          * @param noMipmap defines a boolean indicating that no mipmaps shall be generated.  Ignored for compressed textures.  They must be in the file
-         * @param invertY when true, image is flipped when loaded.  You probably want true. Ignored for compressed textures.  Must be flipped in the file
+         * @param invertY when true, image is flipped when loaded.  You probably want true. Certain compressed textures may invert this if their default is inverted (eg. ktx)
          * @param scene needed for loading to the correct scene
-         * @param samplingMode mode with should be used sample / access the texture (Default: BABYLON.Texture.TRILINEAR_SAMPLINGMODE)
+         * @param samplingMode mode with should be used sample / access the texture (Default: Texture.TRILINEAR_SAMPLINGMODE)
          * @param onLoad optional callback to be called upon successful completion
          * @param onError optional callback to be called upon failure
-         * @param buffer a source of a file previously fetched as either a base64 string, an ArrayBuffer (compressed or image format), or a Blob
+         * @param buffer a source of a file previously fetched as either a base64 string, an ArrayBuffer (compressed or image format), HTMLImageElement (image format), or a Blob
          * @param fallback an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
          * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
          * @param forcedExtension defines the extension to use to pick the right loader
+         * @param mimeType defines an optional mime type
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | Blob>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>): InternalTexture;
+        createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string): InternalTexture;
         /**
          * Creates a cube texture
          * @param rootUrl defines the url where the files to load is located
@@ -50795,6 +50754,7 @@ declare module BABYLON {
         UV1: boolean;
         UV2: boolean;
         ALBEDO: boolean;
+        GAMMAALBEDO: boolean;
         ALBEDODIRECTUV: number;
         VERTEXCOLOR: boolean;
         AMBIENT: boolean;
@@ -52027,29 +51987,11 @@ declare module BABYLON {
         /**
          * This returns if the loader support the current file information.
          * @param extension defines the file extension of the file being loaded
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @param fallback defines the fallback internal texture if any
-         * @param isBase64 defines whether the texture is encoded as a base64
-         * @param isBuffer defines whether the texture data are stored as a buffer
          * @returns true if the loader can load the specified file
          */
-        canLoad(extension: string, textureFormatInUse: Nullable<string>, fallback: Nullable<InternalTexture>, isBase64: boolean, isBuffer: boolean): boolean;
+        canLoad(extension: string): boolean;
         /**
-         * Transform the url before loading if required.
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the transformed texture
-         */
-        transformUrl(rootUrl: string, textureFormatInUse: Nullable<string>): string;
-        /**
-         * Gets the fallback url in case the load fail. This can return null to allow the default fallback mecanism to work
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the fallback texture
-         */
-        getFallbackTextureUrl(rootUrl: string, textureFormatInUse: Nullable<string>): Nullable<string>;
-        /**
-         * Uploads the cube texture data to the WebGl Texture. It has alreday been bound.
+         * Uploads the cube texture data to the WebGL texture. It has already been bound.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param createPolynomials will be true if polynomials have been requested
@@ -52058,7 +52000,7 @@ declare module BABYLON {
          */
         loadCubeData(imgs: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
         /**
-         * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
+         * Uploads the 2D texture data to the WebGL texture. It has already been bound once in the callback.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param callback defines the method to call once ready to upload
@@ -52079,29 +52021,11 @@ declare module BABYLON {
         /**
          * This returns if the loader support the current file information.
          * @param extension defines the file extension of the file being loaded
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @param fallback defines the fallback internal texture if any
-         * @param isBase64 defines whether the texture is encoded as a base64
-         * @param isBuffer defines whether the texture data are stored as a buffer
          * @returns true if the loader can load the specified file
          */
-        canLoad(extension: string, textureFormatInUse: Nullable<string>, fallback: Nullable<InternalTexture>, isBase64: boolean, isBuffer: boolean): boolean;
+        canLoad(extension: string): boolean;
         /**
-         * Transform the url before loading if required.
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the transformed texture
-         */
-        transformUrl(rootUrl: string, textureFormatInUse: Nullable<string>): string;
-        /**
-         * Gets the fallback url in case the load fail. This can return null to allow the default fallback mecanism to work
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the fallback texture
-         */
-        getFallbackTextureUrl(rootUrl: string, textureFormatInUse: Nullable<string>): Nullable<string>;
-        /**
-         * Uploads the cube texture data to the WebGl Texture. It has alreday been bound.
+         * Uploads the cube texture data to the WebGL texture. It has already been bound.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param createPolynomials will be true if polynomials have been requested
@@ -52110,7 +52034,7 @@ declare module BABYLON {
          */
         loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
         /**
-         * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
+         * Uploads the 2D texture data to the WebGL texture. It has already been bound once in the callback.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param callback defines the method to call once ready to upload
@@ -52204,6 +52128,32 @@ declare module BABYLON {
          */
         uploadLevels(texture: InternalTexture, loadMipmaps: boolean): void;
         private _upload2DCompressedLevels;
+        /**
+         * Checks if the given data starts with a KTX file identifier.
+         * @param data the data to check
+         * @returns true if the data is a KTX file or false otherwise
+         */
+        static IsValid(data: ArrayBufferView): boolean;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class for loading KTX2 files
+     * !!! Experimental Extension Subject to Changes !!!
+     * @hidden
+     */
+    export class KhronosTextureContainer2 {
+        private static _ModulePromise;
+        private static _TranscodeFormat;
+        constructor(engine: ThinEngine);
+        uploadAsync(data: ArrayBufferView, internalTexture: InternalTexture): Promise<void>;
+        private _determineTranscodeFormat;
+        /**
+         * Checks if the given data starts with a KTX2 file identifier.
+         * @param data the data to check
+         * @returns true if the data is a KTX2 file or false otherwise
+         */
+        static IsValid(data: ArrayBufferView): boolean;
     }
 }
 declare module BABYLON {
@@ -52219,29 +52169,11 @@ declare module BABYLON {
         /**
          * This returns if the loader support the current file information.
          * @param extension defines the file extension of the file being loaded
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @param fallback defines the fallback internal texture if any
-         * @param isBase64 defines whether the texture is encoded as a base64
-         * @param isBuffer defines whether the texture data are stored as a buffer
          * @returns true if the loader can load the specified file
          */
-        canLoad(extension: string, textureFormatInUse: Nullable<string>, fallback: Nullable<InternalTexture>, isBase64: boolean, isBuffer: boolean): boolean;
+        canLoad(extension: string): boolean;
         /**
-         * Transform the url before loading if required.
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the transformed texture
-         */
-        transformUrl(rootUrl: string, textureFormatInUse: Nullable<string>): string;
-        /**
-         * Gets the fallback url in case the load fail. This can return null to allow the default fallback mecanism to work
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the fallback texture
-         */
-        getFallbackTextureUrl(rootUrl: string, textureFormatInUse: Nullable<string>): Nullable<string>;
-        /**
-         * Uploads the cube texture data to the WebGl Texture. It has alreday been bound.
+         * Uploads the cube texture data to the WebGL texture. It has already been bound.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param createPolynomials will be true if polynomials have been requested
@@ -52250,7 +52182,7 @@ declare module BABYLON {
          */
         loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
         /**
-         * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
+         * Uploads the 2D texture data to the WebGL texture. It has already been bound once in the callback.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param callback defines the method to call once ready to upload
@@ -53469,6 +53401,10 @@ declare module BABYLON {
          * @param mesh The mesh to highlight
          */
         removeMesh(mesh: Mesh): void;
+        /**
+         * Remove all the meshes currently referenced in the highlight layer
+         */
+        removeAllMeshes(): void;
         /**
          * Force the stencil to the normal expected value for none glowing parts
          */
@@ -55977,29 +55913,11 @@ declare module BABYLON {
         /**
          * This returns if the loader support the current file information.
          * @param extension defines the file extension of the file being loaded
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @param fallback defines the fallback internal texture if any
-         * @param isBase64 defines whether the texture is encoded as a base64
-         * @param isBuffer defines whether the texture data are stored as a buffer
          * @returns true if the loader can load the specified file
          */
-        canLoad(extension: string, textureFormatInUse: Nullable<string>, fallback: Nullable<InternalTexture>, isBase64: boolean, isBuffer: boolean): boolean;
+        canLoad(extension: string): boolean;
         /**
-         * Transform the url before loading if required.
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the transformed texture
-         */
-        transformUrl(rootUrl: string, textureFormatInUse: Nullable<string>): string;
-        /**
-         * Gets the fallback url in case the load fail. This can return null to allow the default fallback mecanism to work
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the fallback texture
-         */
-        getFallbackTextureUrl(rootUrl: string, textureFormatInUse: Nullable<string>): Nullable<string>;
-        /**
-         * Uploads the cube texture data to the WebGl Texture. It has alreday been bound.
+         * Uploads the cube texture data to the WebGL texture. It has already been bound.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param createPolynomials will be true if polynomials have been requested
@@ -56008,7 +55926,7 @@ declare module BABYLON {
          */
         loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
         /**
-         * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
+         * Uploads the 2D texture data to the WebGL texture. It has already been bound once in the callback.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param callback defines the method to call once ready to upload
@@ -56134,29 +56052,11 @@ declare module BABYLON {
         /**
          * This returns if the loader support the current file information.
          * @param extension defines the file extension of the file being loaded
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @param fallback defines the fallback internal texture if any
-         * @param isBase64 defines whether the texture is encoded as a base64
-         * @param isBuffer defines whether the texture data are stored as a buffer
          * @returns true if the loader can load the specified file
          */
-        canLoad(extension: string, textureFormatInUse: Nullable<string>, fallback: Nullable<InternalTexture>, isBase64: boolean, isBuffer: boolean): boolean;
+        canLoad(extension: string): boolean;
         /**
-         * Transform the url before loading if required.
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the transformed texture
-         */
-        transformUrl(rootUrl: string, textureFormatInUse: Nullable<string>): string;
-        /**
-         * Gets the fallback url in case the load fail. This can return null to allow the default fallback mecanism to work
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the fallback texture
-         */
-        getFallbackTextureUrl(rootUrl: string, textureFormatInUse: Nullable<string>): Nullable<string>;
-        /**
-         * Uploads the cube texture data to the WebGl Texture. It has already been bound.
+         * Uploads the cube texture data to the WebGL texture. It has already been bound.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param createPolynomials will be true if polynomials have been requested
@@ -56165,7 +56065,7 @@ declare module BABYLON {
          */
         loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
         /**
-         * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
+         * Uploads the 2D texture data to the WebGL texture. It has already been bound once in the callback.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param callback defines the method to call once ready to upload
@@ -58064,7 +57964,7 @@ declare module BABYLON {
          */
         get associatedVariableName(): string;
         set associatedVariableName(value: string);
-        /** Get the inner type (ie AutoDetect for isntance instead of the inferred one) */
+        /** Get the inner type (ie AutoDetect for instance instead of the inferred one) */
         get innerType(): NodeMaterialBlockConnectionPointTypes;
         /**
          * Gets or sets the connection point type (default is float)

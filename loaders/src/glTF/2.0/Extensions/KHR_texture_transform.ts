@@ -16,7 +16,7 @@ interface IKHRTextureTransform {
 }
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_texture_transform/README.md)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_texture_transform)
  */
 export class KHR_texture_transform implements IGLTFLoaderExtension {
     /**
