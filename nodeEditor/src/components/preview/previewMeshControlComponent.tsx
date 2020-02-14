@@ -6,10 +6,11 @@ import { PreviewMeshType } from './previewMeshType';
 import { DataStorage } from '../../dataStorage';
 import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
 import * as ReactDOM from 'react-dom';
-import PopUpIcon from './svgs/popOut.svg';
-import ColorPicker from './svgs/colorPicker.svg';
-import PauseIcon from './svgs/pauseIcon.svg';
-import PlayIcon from './svgs/playIcon.svg';
+
+const popUpIcon: string = require("./svgs/popOut.svg");
+const colorPicker: string = require("./svgs/colorPicker.svg");
+const pauseIcon: string = require("./svgs/pauseIcon.svg");
+const playIcon: string = require("./svgs/playIcon.svg");
 
 interface IPreviewMeshControlComponent {
     globalState: GlobalState;
@@ -113,7 +114,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
                 <div
                     title="Turn-table animation"
                     onClick={() => this.changeAnimation()} className="button" id="play-button">
-                    {this.props.globalState.rotatePreview ? <img src={PauseIcon} alt=""/> : <img src={PlayIcon} alt=""/>}
+                    {this.props.globalState.rotatePreview ? <img src={pauseIcon} alt=""/> : <img src={playIcon} alt=""/>}
                 </div>
                 <div 
                 id="color-picker-button"
@@ -121,7 +122,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
                     className={"button align"}
                     onClick={_ => this.changeBackgroundClick()}
                     >
-                    <img src={ColorPicker} alt=""/>
+                    <img src={colorPicker} alt=""/>
                     <label htmlFor="color-picker" id="color-picker-label">
                     </label>
                     <input ref={this.colorInputRef} id="color-picker" type="color" onChange={evt => this.changeBackground(evt.target.value)} />
@@ -129,7 +130,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
                 <div
                     title="Open preview in new window" id="preview-new-window"
                     onClick={() => this.onPopUp()} className="button">
-                    <img src={PopUpIcon} alt=""/>
+                    <img src={popUpIcon} alt=""/>
                 </div>
             </div>
         );
