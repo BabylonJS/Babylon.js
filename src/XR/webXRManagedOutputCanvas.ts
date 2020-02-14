@@ -8,20 +8,18 @@ import { WebXRSessionManager } from './webXRSessionManager';
  */
 export class WebXRManagedOutputCanvasOptions {
     /**
-     * Options for this XR Layer output
-     */
-    public canvasOptions?: XRWebGLLayerOptions;
-
-    /**
-     * CSS styling for a newly created canvas (if not provided)
-     */
-    public newCanvasCssStyle?: string;
-
-    /**
      * An optional canvas in case you wish to create it yourself and provide it here.
      * If not provided, a new canvas will be created
      */
     public canvasElement?: HTMLCanvasElement;
+    /**
+     * Options for this XR Layer output
+     */
+    public canvasOptions?: XRWebGLLayerOptions;
+    /**
+     * CSS styling for a newly created canvas (if not provided)
+     */
+    public newCanvasCssStyle?: string;
 
     /**
      * Get the default values of the configuration object
@@ -47,9 +45,8 @@ export class WebXRManagedOutputCanvasOptions {
  * Creates a canvas that is added/removed from the webpage when entering/exiting XR
  */
 export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
-
-    private _engine: ThinEngine;
     private _canvas: Nullable<HTMLCanvasElement> = null;
+    private _engine: ThinEngine;
 
     /**
      * Rendering context of the canvas which can be used to display/mirror xr content
@@ -59,29 +56,6 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
      * xr layer for the canvas
      */
     public xrLayer: Nullable<XRWebGLLayer> = null;
-
-    /**
-     * Initializes the xr layer for the session
-     * @param xrSession xr session
-     * @returns a promise that will resolve once the XR Layer has been created
-     */
-    public initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer> {
-
-        const createLayer = () => {
-            return new XRWebGLLayer(xrSession, this.canvasContext, this._options.canvasOptions);
-        };
-
-        // support canvases without makeXRCompatible
-        if (!(this.canvasContext as any).makeXRCompatible) {
-            this.xrLayer = createLayer();
-            return Promise.resolve(this.xrLayer);
-        }
-
-        return (this.canvasContext as any).makeXRCompatible().then(() => {
-            this.xrLayer = createLayer();
-            return this.xrLayer;
-        });
-    }
 
     /**
      * Initializes the canvas to be added/removed upon entering/exiting xr
@@ -106,12 +80,47 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
             this._removeCanvas();
         });
     }
+
     /**
      * Disposes of the object
      */
     public dispose() {
         this._removeCanvas();
         this._setManagedOutputCanvas(null);
+    }
+
+    /**
+     * Initializes the xr layer for the session
+     * @param xrSession xr session
+     * @returns a promise that will resolve once the XR Layer has been created
+     */
+    public initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer> {
+        const createLayer = () => {
+            return new XRWebGLLayer(xrSession, this.canvasContext, this._options.canvasOptions);
+        };
+
+        // support canvases without makeXRCompatible
+        if (!(this.canvasContext as any).makeXRCompatible) {
+            this.xrLayer = createLayer();
+            return Promise.resolve(this.xrLayer);
+        }
+
+        return (this.canvasContext as any).makeXRCompatible().then(() => {
+            this.xrLayer = createLayer();
+            return this.xrLayer;
+        });
+    }
+
+    private _addCanvas() {
+        if (this._canvas && this._canvas !== this._engine.getRenderingCanvas()) {
+            document.body.appendChild(this._canvas);
+        }
+    }
+
+    private _removeCanvas() {
+        if (this._canvas && document.body.contains(this._canvas) && this._canvas !== this._engine.getRenderingCanvas()) {
+            document.body.removeChild(this._canvas);
+        }
     }
 
     private _setManagedOutputCanvas(canvas: Nullable<HTMLCanvasElement>) {
@@ -125,18 +134,6 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
             if (!this.canvasContext) {
                 this.canvasContext = <any>this._canvas.getContext('webgl');
             }
-        }
-    }
-
-    private _addCanvas() {
-        if (this._canvas && this._canvas !== this._engine.getRenderingCanvas()) {
-            document.body.appendChild(this._canvas);
-        }
-    }
-
-    private _removeCanvas() {
-        if (this._canvas && document.body.contains(this._canvas) && this._canvas !== this._engine.getRenderingCanvas()) {
-            document.body.removeChild(this._canvas);
         }
     }
 }
