@@ -1,6 +1,6 @@
 import { Nullable } from "babylonjs/types";
 import { Observable, Observer } from "babylonjs/Misc/observable";
-import { Vector2, Vector3, Matrix } from "babylonjs/Maths/math";
+import { Vector2, Vector3, Matrix } from "babylonjs/Maths/math.vector";
 import { PointerEventTypes } from 'babylonjs/Events/pointerEvents';
 import { Logger } from "babylonjs/Misc/logger";
 import { Tools } from "babylonjs/Misc/tools";

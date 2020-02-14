@@ -1,6 +1,7 @@
 import { IndicesArray, Nullable } from "babylonjs/types";
 import { Deferred } from "babylonjs/Misc/deferred";
-import { Quaternion, Color3, Vector3, Matrix } from "babylonjs/Maths/math";
+import { Quaternion, Vector3, Matrix } from "babylonjs/Maths/math.vector";
+import { Color3 } from 'babylonjs/Maths/math.color';
 import { Tools } from "babylonjs/Misc/tools";
 import { IFileRequest } from "babylonjs/Misc/fileRequest";
 import { Camera } from "babylonjs/Cameras/camera";
