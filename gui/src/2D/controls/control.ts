@@ -231,6 +231,10 @@ export class Control {
     }
 
     /**
+    * An event triggered when pointer wheel is scrolled
+    */
+    public onWheelObservable = new Observable<Vector2>();
+    /**
     * An event triggered when the pointer move over the control.
     */
     public onPointerMoveObservable = new Observable<Vector2>();
@@ -1683,7 +1687,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean {
+    public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled) {
             return false;
         }
@@ -1695,7 +1699,7 @@ export class Control {
             return false;
         }
 
-        this._processObservables(type, x, y, pointerId, buttonIndex);
+        this._processObservables(type, x, y, pointerId, buttonIndex, deltaX, deltaY);
 
         return true;
     }
@@ -1797,7 +1801,17 @@ export class Control {
     }
 
     /** @hidden */
-    public _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number): boolean {
+    public _onWheelScroll(deltaX?: number, deltaY?: number): void {
+        if (!this._isEnabled) {
+            return;
+        }
+        var canNotify: boolean = this.onWheelObservable.notifyObservers(new Vector2(deltaX, deltaY));
+
+        if (canNotify && this.parent != null) { this.parent._onWheelScroll(deltaX, deltaY); }
+    }
+
+    /** @hidden */
+    public _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled) {
             return false;
         }
@@ -1833,6 +1847,13 @@ export class Control {
             return true;
         }
 
+        if (type === PointerEventTypes.POINTERWHEEL) {
+            if (this._host._lastControlOver[pointerId]) {
+                this._host._lastControlOver[pointerId]._onWheelScroll(deltaX, deltaY);
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -1861,6 +1882,7 @@ export class Control {
         this.onPointerOutObservable.clear();
         this.onPointerUpObservable.clear();
         this.onPointerClickObservable.clear();
+        this.onWheelObservable.clear();
 
         if (this._styleObserver && this._style) {
             this._style.onChangedObservable.remove(this._styleObserver);
