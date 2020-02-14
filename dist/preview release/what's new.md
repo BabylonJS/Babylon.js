@@ -111,6 +111,7 @@
 - Added preview area pop up for NME ([Kyle Belfort](https://github.com/belfortk))
 - Added comments to frames in NME ([Kyle Belfort](https://github.com/belfortk))
 - Make frames resizable in NME ([Kyle Belfort](https://github.com/belfortk))
+- Implement NME Preview Area Redesign ([Kyle Belfort](https://github.com/belfortk))
 
 ### Meshes
 
