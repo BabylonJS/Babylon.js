@@ -1,10 +1,10 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
-import { Color3 } from "babylonjs/Maths/math";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
 import { NumericInputComponent } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { Color3 } from 'babylonjs/Maths/math.color';
 
 const copyIcon: string = require("./copy.svg");
 
@@ -124,7 +124,7 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
 
     render() {
 
-        const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />
+        const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
         const colorAsColor3 = this.state.color.getClassName() === "Color3" ? this.state.color : new Color3(this.state.color.r, this.state.color.g, this.state.color.b);
 
         return (
@@ -146,9 +146,9 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
                 {
                     this.state.isExpanded &&
                     <div className="secondLine">
-                        <NumericInputComponent label="r" value={this.state.color.r} onChange={value => this.updateStateR(value)} />
-                        <NumericInputComponent label="g" value={this.state.color.g} onChange={value => this.updateStateG(value)} />
-                        <NumericInputComponent label="b" value={this.state.color.b} onChange={value => this.updateStateB(value)} />
+                        <NumericInputComponent label="r" value={this.state.color.r} onChange={(value) => this.updateStateR(value)} />
+                        <NumericInputComponent label="g" value={this.state.color.g} onChange={(value) => this.updateStateG(value)} />
+                        <NumericInputComponent label="b" value={this.state.color.b} onChange={(value) => this.updateStateB(value)} />
                     </div>
                 }
             </div>

@@ -1,6 +1,6 @@
 import { Nullable } from "babylonjs/types";
 import { Observable, Observer } from "babylonjs/Misc/observable";
-import { Viewport, Color3, Vector2, Vector3, Matrix } from "babylonjs/Maths/math";
+import { Vector2, Vector3, Matrix } from "babylonjs/Maths/math.vector";
 import { Tools } from "babylonjs/Misc/tools";
 import { PointerInfoPre, PointerInfo, PointerEventTypes } from 'babylonjs/Events/pointerEvents';
 import { ClipboardEventTypes, ClipboardInfo } from "babylonjs/Events/clipboardEvents";
@@ -19,6 +19,8 @@ import { Control } from "./controls/control";
 import { Style } from "./style";
 import { Measure } from "./measure";
 import { Constants } from 'babylonjs/Engines/constants';
+import { Viewport } from 'babylonjs/Maths/math.viewport';
+import { Color3 } from 'babylonjs/Maths/math.color';
 /**
 * Interface used to define a control that can receive focus
 */

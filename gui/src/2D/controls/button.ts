@@ -1,5 +1,5 @@
 import { Nullable } from "babylonjs/types";
-import { Vector2 } from "babylonjs/Maths/math";
+import { Vector2 } from "babylonjs/Maths/math.vector";
 
 import { Rectangle } from "./rectangle";
 import { Control } from "./control";

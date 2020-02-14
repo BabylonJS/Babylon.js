@@ -1,6 +1,6 @@
 
 import { Nullable } from "babylonjs/types";
-import { Matrix } from "babylonjs/Maths/math";
+import { Matrix } from "babylonjs/Maths/math.vector";
 import { Tools } from "babylonjs/Misc/tools";
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { Geometry } from "babylonjs/Meshes/geometry";

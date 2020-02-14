@@ -1,5 +1,6 @@
 import { SpotLight } from "babylonjs/Lights/spotLight";
-import { Vector3, Color3, Quaternion } from "babylonjs/Maths/math";
+import { Vector3, Quaternion } from "babylonjs/Maths/math.vector";
+import { Color3 } from "babylonjs/Maths/math.color";
 import { Light } from "babylonjs/Lights/light";
 import { Node } from "babylonjs/node";
 import { ShadowLight } from "babylonjs/Lights/shadowLight";
