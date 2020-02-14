@@ -169,7 +169,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                     let parentBabylonNode = babylonNode.parent;
                     if (parentBabylonNode && parentBabylonNode.getChildren().length == 1) {
                         let parentNode = this._exporter._nodes[nodeMap![parentBabylonNode.uniqueId]];
-                        if (parentNode){
+                        if (parentNode) {
                             let parentNodeLocalMatrix = TmpVectors.Matrix[0];
                             let parentInvertNodeLocalMatrix = TmpVectors.Matrix[1];
                             let parentNodeLocalTranslation = parentNode.translation ? new Vector3(parentNode.translation[0], parentNode.translation[1], parentNode.translation[2]) : Vector3.Zero();
@@ -184,11 +184,11 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                             let nodeLocalTranslation = node.translation ? new Vector3(node.translation[0], node.translation[1], node.translation[2]) : Vector3.Zero();
 
                             // Undo directional light positional offset
-                            if (babylonLight instanceof DirectionalLight){
+                            if (babylonLight instanceof DirectionalLight) {
                                 nodeLocalTranslation.subtractInPlace(this._exporter._babylonScene.useRightHandedSystem ? babylonLight.direction : _GLTFUtilities._GetRightHandedPositionVector3(babylonLight.direction));
                             }
                             let nodeLocalRotation = this._exporter._babylonScene.useRightHandedSystem ? Quaternion.Identity() : new Quaternion(0, 1, 0, 0);
-                            if (node.rotation){
+                            if (node.rotation) {
                                 nodeLocalRotation.multiplyInPlace(new Quaternion(node.rotation[0], node.rotation[1], node.rotation[2], node.rotation[3]));
                             }
                             let nodeLocalScale = node.scale ? new Vector3(node.scale[0], node.scale[1], node.scale[2]) : Vector3.One();
