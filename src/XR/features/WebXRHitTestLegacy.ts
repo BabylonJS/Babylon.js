@@ -26,21 +26,26 @@ export interface IWebXRHitTestOptions {
  */
 export interface IWebXRHitResult {
     /**
-     * The native hit test result
-     */
-    xrHitResult: XRHitResult;
-    /**
      * Transformation matrix that can be applied to a node that will put it in the hit point location
      */
     transformationMatrix: Matrix;
+    /**
+     * The native hit test result
+     */
+    xrHitResult: XRHitResult;
 }
 
 /**
  * The currently-working hit-test module.
- * Hit test (or raycasting) is used to interact with the real world.
+ * Hit test (or Ray-casting) is used to interact with the real world.
  * For further information read here - https://github.com/immersive-web/hit-test
  */
 export class WebXRHitTestLegacy extends WebXRAbstractFeature {
+    // in XR space z-forward is negative
+    private _direction = new Vector3(0, 0, -1);
+    private _mat = new Matrix();
+    private _onSelectEnabled = false;
+    private _origin = new Vector3(0, 0, 0);
 
     /**
      * The module's name
@@ -49,9 +54,47 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature {
     /**
      * The (Babylon) version of this module.
      * This is an integer representing the implementation version.
-     * This number does not correspond to the webxr specs version
+     * This number does not correspond to the WebXR specs version
      */
     public static readonly Version = 1;
+
+    /**
+     * Populated with the last native XR Hit Results
+     */
+    public lastNativeXRHitResults: XRHitResult[] = [];
+    /**
+     * Triggered when new babylon (transformed) hit test results are available
+     */
+    public onHitTestResultObservable: Observable<IWebXRHitResult[]> = new Observable();
+
+    /**
+     * Creates a new instance of the (legacy version) hit test feature
+     * @param _xrSessionManager an instance of WebXRSessionManager
+     * @param options options to use when constructing this feature
+     */
+    constructor(_xrSessionManager: WebXRSessionManager,
+        /**
+         * options to use when constructing this feature
+         */
+        public readonly options: IWebXRHitTestOptions = {}) {
+        super(_xrSessionManager);
+    }
+
+    /**
+     * execute a hit test with an XR Ray
+     *
+     * @param xrSession a native xrSession that will execute this hit test
+     * @param xrRay the ray (position and direction) to use for ray-casting
+     * @param referenceSpace native XR reference space to use for the hit-test
+     * @param filter filter function that will filter the results
+     * @returns a promise that resolves with an array of native XR hit result in xr coordinates system
+     */
+    public static XRHitTestWithRay(xrSession: XRSession, xrRay: XRRay, referenceSpace: XRReferenceSpace, filter?: (result: XRHitResult) => boolean): Promise<XRHitResult[]> {
+        return xrSession.requestHitTest(xrRay, referenceSpace).then((results) => {
+            const filterFunction = filter || ((result) => !!result.hitMatrix);
+            return results.filter(filterFunction);
+        });
+    }
 
     /**
      * Execute a hit test on the current running session using a select event returned from a transient input (such as touch)
@@ -70,52 +113,12 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature {
     }
 
     /**
-     * execute a hit test with an XR Ray
-     *
-     * @param xrSession a native xrSession that will execute this hit test
-     * @param xrRay the ray (position and direction) to use for raycasting
-     * @param referenceSpace native XR reference space to use for the hit-test
-     * @param filter filter function that will filter the results
-     * @returns a promise that resolves with an array of native XR hit result in xr coordinates system
-     */
-    public static XRHitTestWithRay(xrSession: XRSession, xrRay: XRRay, referenceSpace: XRReferenceSpace, filter?: (result: XRHitResult) => boolean): Promise<XRHitResult[]> {
-        return xrSession.requestHitTest(xrRay, referenceSpace).then((results) => {
-            const filterFunction = filter || ((result) => !!result.hitMatrix);
-            return results.filter(filterFunction);
-        });
-    }
-
-    /**
-     * Triggered when new babylon (transformed) hit test results are available
-     */
-    public onHitTestResultObservable: Observable<IWebXRHitResult[]> = new Observable();
-
-    private _onSelectEnabled = false;
-    /**
-     * Creates a new instance of the (legacy version) hit test feature
-     * @param _xrSessionManager an instance of WebXRSessionManager
-     * @param options options to use when constructing this feature
-     */
-    constructor(_xrSessionManager: WebXRSessionManager,
-        /**
-         * options to use when constructing this feature
-         */
-        public readonly options: IWebXRHitTestOptions = {}) {
-        super(_xrSessionManager);
-    }
-
-    /**
-     * Populated with the last native XR Hit Results
-     */
-    public lastNativeXRHitResults: XRHitResult[] = [];
-
-    /**
      * attach this feature
      * Will usually be called by the features manager
      *
      * @returns true if successful.
      */
-    attach(): boolean {
+    public attach(): boolean {
         if (!super.attach()) {
             return false;
         }
@@ -132,7 +135,7 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature {
      *
      * @returns true if successful.
      */
-    detach(): boolean {
+    public detach(): boolean {
         if (!super.detach()) {
             return false;
         }
@@ -140,6 +143,33 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature {
         this._onSelectEnabled = false;
         this._xrSessionManager.session.removeEventListener('select', this._onSelect);
         return true;
+    }
+
+    /**
+     * Dispose this feature and all of the resources attached
+     */
+    public dispose(): void {
+        super.dispose();
+        this.onHitTestResultObservable.clear();
+    }
+
+    protected _onXRFrame(frame: XRFrame) {
+        // make sure we do nothing if (async) not attached
+        if (!this.attached || this.options.testOnPointerDownOnly) {
+            return;
+        }
+        let pose = frame.getViewerPose(this._xrSessionManager.referenceSpace);
+        if (!pose) {
+            return;
+        }
+        Matrix.FromArrayToRef(pose.transform.matrix, 0, this._mat);
+        Vector3.TransformCoordinatesFromFloatsToRef(0, 0, 0, this._mat, this._origin);
+        Vector3.TransformCoordinatesFromFloatsToRef(0, 0, -1, this._mat, this._direction);
+        this._direction.subtractInPlace(this._origin);
+        this._direction.normalize();
+        let ray = new XRRay((<DOMPointReadOnly>{ x: this._origin.x, y: this._origin.y, z: this._origin.z, w: 0 }),
+            (<DOMPointReadOnly>{ x: this._direction.x, y: this._direction.y, z: this._direction.z, w: 0 }));
+        WebXRHitTestLegacy.XRHitTestWithRay(this._xrSessionManager.session, ray, this._xrSessionManager.referenceSpace).then(this._onHitTestResults);
     }
 
     private _onHitTestResults = (xrResults: XRHitResult[]) => {
@@ -162,44 +192,12 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature {
         this.onHitTestResultObservable.notifyObservers(mats);
     }
 
-    private _origin = new Vector3(0, 0, 0);
-    // in XR space z-forward is negative
-    private _direction = new Vector3(0, 0, -1);
-    private _mat = new Matrix();
-
-    protected _onXRFrame(frame: XRFrame) {
-        // make sure we do nothing if (async) not attached
-        if (!this.attached || this.options.testOnPointerDownOnly) {
-            return;
-        }
-        let pose = frame.getViewerPose(this._xrSessionManager.referenceSpace);
-        if (!pose) {
-            return;
-        }
-        Matrix.FromArrayToRef(pose.transform.matrix, 0, this._mat);
-        Vector3.TransformCoordinatesFromFloatsToRef(0, 0, 0, this._mat, this._origin);
-        Vector3.TransformCoordinatesFromFloatsToRef(0, 0, -1, this._mat, this._direction);
-        this._direction.subtractInPlace(this._origin);
-        this._direction.normalize();
-        let ray = new XRRay((<DOMPointReadOnly>{ x: this._origin.x, y: this._origin.y, z: this._origin.z, w: 0 }),
-            (<DOMPointReadOnly>{ x: this._direction.x, y: this._direction.y, z: this._direction.z, w: 0 }));
-        WebXRHitTestLegacy.XRHitTestWithRay(this._xrSessionManager.session, ray, this._xrSessionManager.referenceSpace).then(this._onHitTestResults);
-    }
-
     // can be done using pointerdown event, and xrSessionManager.currentFrame
     private _onSelect = (event: XRInputSourceEvent) => {
         if (!this._onSelectEnabled) {
             return;
         }
         WebXRHitTestLegacy.XRHitTestWithSelectEvent(event, this._xrSessionManager.referenceSpace);
-    }
-
-    /**
-     * Dispose this feature and all of the resources attached
-     */
-    dispose(): void {
-        super.dispose();
-        this.onHitTestResultObservable.clear();
     }
 }
 

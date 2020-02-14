@@ -16,21 +16,6 @@ import { Logger } from '../../Misc/logger';
  * The motion controller class for all microsoft mixed reality controllers
  */
 export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionController {
-    /**
-     * The base url used to load the left and right controller models
-     */
-    public static MODEL_BASE_URL: string = 'https://controllers.babylonjs.com/microsoft/';
-    /**
-     * The name of the left controller model file
-     */
-    public static MODEL_LEFT_FILENAME: string = 'left.glb';
-    /**
-     * The name of the right controller model file
-     */
-    public static MODEL_RIGHT_FILENAME: string = 'right.glb';
-
-    public profileId = "microsoft-mixed-reality";
-
     // use this in the future - https://github.com/immersive-web/webxr-input-profiles/tree/master/packages/assets/profiles/microsoft
     protected readonly _mapping = {
         defaultButton: {
@@ -85,8 +70,48 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
         }
     };
 
+    /**
+     * The base url used to load the left and right controller models
+     */
+    public static MODEL_BASE_URL: string = 'https://controllers.babylonjs.com/microsoft/';
+    /**
+     * The name of the left controller model file
+     */
+    public static MODEL_LEFT_FILENAME: string = 'left.glb';
+    /**
+     * The name of the right controller model file
+     */
+    public static MODEL_RIGHT_FILENAME: string = 'right.glb';
+
+    public profileId = "microsoft-mixed-reality";
+
     constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness) {
         super(scene, MixedRealityProfile["left-right"], gamepadObject, handness);
+    }
+
+    protected _getFilenameAndPath(): { filename: string; path: string; } {
+        let filename = "";
+        if (this.handness === 'left') {
+            filename = WebXRMicrosoftMixedRealityController.MODEL_LEFT_FILENAME;
+        }
+        else { // Right is the default if no hand is specified
+            filename = WebXRMicrosoftMixedRealityController.MODEL_RIGHT_FILENAME;
+        }
+
+        const device = 'default';
+        let path = WebXRMicrosoftMixedRealityController.MODEL_BASE_URL + device + '/';
+        return {
+            filename,
+            path
+        };
+    }
+
+    protected _getModelLoadingConstraints(): boolean {
+        const glbLoaded = SceneLoader.IsPluginForExtensionAvailable(".glb");
+        if (!glbLoaded) {
+            Logger.Warn('glTF / glb loaded was not registered, using generic controller instead');
+        }
+        return glbLoaded;
     }
 
     protected _processLoadedModel(_meshes: AbstractMesh[]): void {
@@ -168,31 +193,6 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
         });
     }
 
-    protected _getFilenameAndPath(): { filename: string; path: string; } {
-        let filename = "";
-        if (this.handness === 'left') {
-            filename = WebXRMicrosoftMixedRealityController.MODEL_LEFT_FILENAME;
-        }
-        else { // Right is the default if no hand is specified
-            filename = WebXRMicrosoftMixedRealityController.MODEL_RIGHT_FILENAME;
-        }
-
-        const device = 'default';
-        let path = WebXRMicrosoftMixedRealityController.MODEL_BASE_URL + device + '/';
-        return {
-            filename,
-            path
-        };
-    }
-
-    protected _updateModel(): void {
-        // no-op. model is updated using observables.
-    }
-
-    protected _getModelLoadingConstraints(): boolean {
-        return SceneLoader.IsPluginForExtensionAvailable(".glb");
-    }
-
     protected _setRootMesh(meshes: AbstractMesh[]): void {
         this.rootMesh = new Mesh(this.profileId + " " + this.handness, this.scene);
         this.rootMesh.isPickable = false;
@@ -216,6 +216,9 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
         this.rootMesh.rotationQuaternion = Quaternion.FromEulerAngles(0, Math.PI, 0);
     }
 
+    protected _updateModel(): void {
+        // no-op. model is updated using observables.
+    }
 }
 
 // register the profile

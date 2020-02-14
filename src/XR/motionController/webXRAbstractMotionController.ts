@@ -30,9 +30,9 @@ export type MotionControllerComponentStateType = "default" | "touched" | "presse
  */
 export interface IMotionControllerLayout {
     /**
-     * Defines the main button component id
+     * Path to load the assets. Usually relative to the base path
      */
-    selectComponentId: string;
+    assetPath: string;
     /**
      * Available components (unsorted)
      */
@@ -76,7 +76,7 @@ export interface IMotionControllerLayout {
                      */
                     componentProperty: "xAxis" | "yAxis" | "button" | "state";
                     /**
-                     * What states influence this visual reponse
+                     * What states influence this visual response
                      */
                     states: MotionControllerComponentStateType[];
                     /**
@@ -112,9 +112,9 @@ export interface IMotionControllerLayout {
      */
     rootNodeName: string;
     /**
-     * Path to load the assets. Usually relative to the base path
+     * Defines the main button component id
      */
-    assetPath: string;
+    selectComponentId: string;
 }
 
 /**
@@ -134,11 +134,6 @@ export interface IMotionControllerLayoutMap {
  */
 export interface IMotionControllerProfile {
     /**
-     * The id of this profile
-     * correlates to the profile(s) in the xrInput.profiles array
-     */
-    profileId: string;
-    /**
      * fallback profiles for this profileId
      */
     fallbackProfileIds: string[];
@@ -146,6 +141,11 @@ export interface IMotionControllerProfile {
      * The layout map, with handness as key
      */
     layouts: IMotionControllerLayoutMap;
+    /**
+     * The id of this profile
+     * correlates to the profile(s) in the xrInput.profiles array
+     */
+    profileId: string;
 }
 
 /**
@@ -153,10 +153,6 @@ export interface IMotionControllerProfile {
  * The meshes are provided to the _lerpButtonTransform function to calculate the current position of the value mesh
  */
 export interface IMotionControllerButtonMeshMap {
-    /**
-     * The mesh that will be changed when value changes
-     */
-    valueMesh: AbstractMesh;
     /**
      * the mesh that defines the pressed value mesh position.
      * This is used to find the max-position of this button
@@ -167,6 +163,10 @@ export interface IMotionControllerButtonMeshMap {
      * This is used to find the min (or initial) position of this button
      */
     unpressedMesh: AbstractMesh;
+    /**
+     * The mesh that will be changed when value changes
+     */
+    valueMesh: AbstractMesh;
 }
 
 /**
@@ -176,23 +176,27 @@ export interface IMotionControllerButtonMeshMap {
  */
 export interface IMotionControllerMeshMap {
     /**
-     * The mesh that will be changed when axis value changes
+     * the mesh that defines the maximum value mesh position.
      */
-    valueMesh: AbstractMesh;
+    maxMesh?: AbstractMesh;
     /**
      * the mesh that defines the minimum value mesh position.
      */
     minMesh?: AbstractMesh;
     /**
-     * the mesh that defines the maximum value mesh position.
+     * The mesh that will be changed when axis value changes
      */
-    maxMesh?: AbstractMesh;
+    valueMesh: AbstractMesh;
 }
 
 /**
  * The elements needed for change-detection of the gamepad objects in motion controllers
  */
 export interface IMinimalMotionControllerObject {
+    /**
+     * Available axes of this controller
+     */
+    axes: number[];
     /**
      * An array of available buttons
      */
@@ -210,10 +214,6 @@ export interface IMinimalMotionControllerObject {
          */
         pressed: boolean;
     }>;
-    /**
-     * Available axes of this controller
-     */
-    axes: number[];
 }
 
 /**
@@ -222,11 +222,21 @@ export interface IMinimalMotionControllerObject {
  * Each component has an observable to check for changes in value and state
  */
 export abstract class WebXRAbstractMotionController implements IDisposable {
+    private _initComponent = (id: string) => {
+        if (!id) { return; }
+        const componentDef = this.layout.components[id];
+        const type = componentDef.type;
+        const buttonIndex = componentDef.gamepadIndices.button;
+        // search for axes
+        let axes: number[] = [];
+        if (componentDef.gamepadIndices.xAxis !== undefined && componentDef.gamepadIndices.yAxis !== undefined) {
+            axes.push(componentDef.gamepadIndices.xAxis, componentDef.gamepadIndices.yAxis);
+        }
 
-    /**
-     * The profile id of this motion controller
-     */
-    public abstract profileId: string;
+        this.components[id] = new WebXRControllerComponent(id, type, buttonIndex, axes);
+    }
+
+    private _modelReady: boolean = false;
 
     /**
      * A map of components (WebXRControllerComponent) in this motion controller
@@ -237,21 +247,21 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
     } = {};
 
     /**
+     * Disable the model's animation. Can be set at any time.
+     */
+    public disableAnimation: boolean = false;
+    /**
      * Observers registered here will be triggered when the model of this controller is done loading
      */
     public onModelLoadedObservable: Observable<WebXRAbstractMotionController> = new Observable();
-
+    /**
+     * The profile id of this motion controller
+     */
+    public abstract profileId: string;
     /**
      * The root mesh of the model. It is null if the model was not yet initialized
      */
     public rootMesh: Nullable<AbstractMesh>;
-
-    /**
-     * Disable the model's animation. Can be set at any time.
-     */
-    public disableAnimation: boolean = false;
-
-    private _modelReady: boolean = false;
 
     /**
      * constructs a new abstract motion controller
@@ -278,61 +288,14 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
         // Model is loaded in WebXRInput
     }
 
-    private _initComponent = (id: string) => {
-        if (!id) { return; }
-        const componentDef = this.layout.components[id];
-        const type = componentDef.type;
-        const buttonIndex = componentDef.gamepadIndices.button;
-        // search for axes
-        let axes: number[] = [];
-        if (componentDef.gamepadIndices.xAxis !== undefined && componentDef.gamepadIndices.yAxis !== undefined) {
-            axes.push(componentDef.gamepadIndices.xAxis, componentDef.gamepadIndices.yAxis);
+    /**
+     * Dispose this controller, the model mesh and all its components
+     */
+    public dispose(): void {
+        this.getComponentIds().forEach((id) => this.getComponent(id).dispose());
+        if (this.rootMesh) {
+            this.rootMesh.dispose();
         }
-
-        this.components[id] = new WebXRControllerComponent(id, type, buttonIndex, axes);
-    }
-
-    /**
-     * Update this model using the current XRFrame
-     * @param xrFrame the current xr frame to use and update the model
-     */
-    public updateFromXRFrame(xrFrame: XRFrame): void {
-        this.getComponentIds().forEach((id) => this.getComponent(id).update(this.gamepadObject));
-        this.updateModel(xrFrame);
-    }
-
-    /**
-     * Get the list of components available in this motion controller
-     * @returns an array of strings correlating to available components
-     */
-    public getComponentIds(): string[] {
-        return Object.keys(this.components);
-    }
-
-    /**
-     * Get the main (Select) component of this controller as defined in the layout
-     * @returns the main component of this controller
-     */
-    public getMainComponent(): WebXRControllerComponent {
-        return this.getComponent(this.layout.selectComponentId);
-    }
-
-    /**
-     * get a component based an its component id as defined in layout.components
-     * @param id the id of the component
-     * @returns the component correlates to the id or undefined if not found
-     */
-    public getComponent(id: string): WebXRControllerComponent {
-        return this.components[id];
-    }
-
-    /**
-     * Get the first component of specific type
-     * @param type type of component to find
-     * @return a controller component or null if not found
-     */
-    public getComponentOfType(type: MotionControllerComponentType): Nullable<WebXRControllerComponent> {
-        return this.getAllComponentsOfType(type)[0] || null;
     }
 
     /**
@@ -345,6 +308,40 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
     }
 
     /**
+     * get a component based an its component id as defined in layout.components
+     * @param id the id of the component
+     * @returns the component correlates to the id or undefined if not found
+     */
+    public getComponent(id: string): WebXRControllerComponent {
+        return this.components[id];
+    }
+
+    /**
+     * Get the list of components available in this motion controller
+     * @returns an array of strings correlating to available components
+     */
+    public getComponentIds(): string[] {
+        return Object.keys(this.components);
+    }
+
+    /**
+     * Get the first component of specific type
+     * @param type type of component to find
+     * @return a controller component or null if not found
+     */
+    public getComponentOfType(type: MotionControllerComponentType): Nullable<WebXRControllerComponent> {
+        return this.getAllComponentsOfType(type)[0] || null;
+    }
+
+    /**
+     * Get the main (Select) component of this controller as defined in the layout
+     * @returns the main component of this controller
+     */
+    public getMainComponent(): WebXRControllerComponent {
+        return this.getComponent(this.layout.selectComponentId);
+    }
+
+    /**
      * Loads the model correlating to this controller
      * When the mesh is loaded, the onModelLoadedObservable will be triggered
      * @returns A promise fulfilled with the result of the model loading
@@ -354,7 +351,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
         let loadingParams = this._getGenericFilenameAndPath();
         // Checking if GLB loader is present
         if (useGeneric) {
-            Logger.Warn("You need to reference GLTF loader to load Windows Motion Controllers model. Falling back to generic models");
+            Logger.Warn("Falling back to generic models");
         } else {
             loadingParams = this._getFilenameAndPath();
         }
@@ -378,14 +375,22 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
     }
 
     /**
-     * Update the model itself with the current frame data
-     * @param xrFrame the frame to use for updating the model mesh
+     * Update this model using the current XRFrame
+     * @param xrFrame the current xr frame to use and update the model
      */
-    protected updateModel(xrFrame: XRFrame): void {
-        if (!this._modelReady) {
-            return;
-        }
-        this._updateModel(xrFrame);
+    public updateFromXRFrame(xrFrame: XRFrame): void {
+        this.getComponentIds().forEach((id) => this.getComponent(id).update(this.gamepadObject));
+        this.updateModel(xrFrame);
+    }
+
+    // Look through all children recursively. This will return null if no mesh exists with the given name.
+    protected _getChildByName(node: AbstractMesh, name: string): AbstractMesh {
+        return <AbstractMesh>node.getChildren((n) => n.name === name, false)[0];
+    }
+
+    // Look through only immediate children. This will return null if no mesh exists with the given name.
+    protected _getImmediateChildByName(node: AbstractMesh, name: string): AbstractMesh {
+        return <AbstractMesh>node.getChildren((n) => n.name == name, true)[0];
     }
 
     /**
@@ -417,14 +422,45 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
             axisMap.valueMesh.position);
     }
 
-    // Look through all children recursively. This will return null if no mesh exists with the given name.
-    protected _getChildByName(node: AbstractMesh, name: string): AbstractMesh {
-        return <AbstractMesh>node.getChildren((n) => n.name === name, false)[0];
+    /**
+     * Update the model itself with the current frame data
+     * @param xrFrame the frame to use for updating the model mesh
+     */
+    protected updateModel(xrFrame: XRFrame): void {
+        if (!this._modelReady) {
+            return;
+        }
+        this._updateModel(xrFrame);
     }
-    // Look through only immediate children. This will return null if no mesh exists with the given name.
-    protected _getImmediateChildByName(node: AbstractMesh, name: string): AbstractMesh {
-        return <AbstractMesh>node.getChildren((n) => n.name == name, true)[0];
-    }
+
+    /**
+     * Get the filename and path for this controller's model
+     * @returns a map of filename and path
+     */
+    protected abstract _getFilenameAndPath(): { filename: string, path: string };
+    /**
+     * This function is called before the mesh is loaded. It checks for loading constraints.
+     * For example, this function can check if the GLB loader is available
+     * If this function returns false, the generic controller will be loaded instead
+     * @returns Is the client ready to load the mesh
+     */
+    protected abstract _getModelLoadingConstraints(): boolean;
+    /**
+     * This function will be called after the model was successfully loaded and can be used
+     * for mesh transformations before it is available for the user
+     * @param meshes the loaded meshes
+     */
+    protected abstract _processLoadedModel(meshes: AbstractMesh[]): void;
+    /**
+     * Set the root mesh for this controller. Important for the WebXR controller class
+     * @param meshes the loaded meshes
+     */
+    protected abstract _setRootMesh(meshes: AbstractMesh[]): void;
+    /**
+     * A function executed each frame that updates the mesh (if needed)
+     * @param xrFrame the current xrFrame
+     */
+    protected abstract _updateModel(xrFrame: XRFrame): void;
 
     private _getGenericFilenameAndPath(): { filename: string, path: string } {
         return {
@@ -444,44 +480,5 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
         });
 
         this.rootMesh.rotationQuaternion = Quaternion.FromEulerAngles(0, Math.PI, 0);
-    }
-
-    /**
-     * Get the filename and path for this controller's model
-     * @returns a map of filename and path
-     */
-    protected abstract _getFilenameAndPath(): { filename: string, path: string };
-    /**
-     * This function will be called after the model was successfully loaded and can be used
-     * for mesh transformations before it is available for the user
-     * @param meshes the loaded meshes
-     */
-    protected abstract _processLoadedModel(meshes: AbstractMesh[]): void;
-    /**
-     * Set the root mesh for this controller. Important for the WebXR controller class
-     * @param meshes the loaded meshes
-     */
-    protected abstract _setRootMesh(meshes: AbstractMesh[]): void;
-    /**
-     * A function executed each frame that updates the mesh (if needed)
-     * @param xrFrame the current xrFrame
-     */
-    protected abstract _updateModel(xrFrame: XRFrame): void;
-    /**
-     * This function is called before the mesh is loaded. It checks for loading constraints.
-     * For example, this function can check if the GLB loader is available
-     * If this function returns false, the generic controller will be loaded instead
-     * @returns Is the client ready to load the mesh
-     */
-    protected abstract _getModelLoadingConstraints(): boolean;
-
-    /**
-     * Dispose this controller, the model mesh and all its components
-     */
-    public dispose(): void {
-        this.getComponentIds().forEach((id) => this.getComponent(id).dispose());
-        if (this.rootMesh) {
-            this.rootMesh.dispose();
-        }
     }
 }
