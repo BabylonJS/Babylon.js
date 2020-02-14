@@ -24,8 +24,5 @@
     },
     "exclude": [
         "../../inspector"
-    ],
-    "files": [ 
-        "./custom.d.ts" 
-      ]  
+    ]
 }
