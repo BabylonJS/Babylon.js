@@ -35,7 +35,7 @@ export class ScrollViewer extends Rectangle {
     private _window: _ScrollViewerWindow;
     private _pointerIsOver: Boolean = false;
     private _wheelPrecision: number = 0.05;
-    private _onPointerObserver: Nullable<Observer<Vector2>>;
+    private _onWheelObserver: Nullable<Observer<Vector2>>;
     private _clientWidth: number;
     private _clientHeight: number;
     private _useImageBar: Boolean;
@@ -648,11 +648,11 @@ export class ScrollViewer extends Rectangle {
 
     /** @hidden */
     private _attachWheel() {
-        if (!this._host || this._onPointerObserver) {
+        if (!this._host || this._onWheelObserver) {
             return;
         }
 
-        this._onPointerObserver = this.onWheelObservable.add((pi) => {
+        this._onWheelObserver = this.onWheelObservable.add((pi) => {
             if (!this._pointerIsOver) {
                 return;
             }
@@ -687,7 +687,8 @@ export class ScrollViewer extends Rectangle {
 
     /** Releases associated resources */
     public dispose() {
-        this._onPointerObserver = null;
+        this.onWheelObservable.remove(this._onWheelObserver);
+        this._onWheelObserver = null;
         super.dispose();
     }
 }
