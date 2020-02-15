@@ -779,7 +779,10 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        private onValueChangedObserver;
         constructor(props: IPropertyComponentProps);
+        componentDidMount(): void;
+        componentWillUnmount(): void;
         renderValue(globalState: GlobalState): JSX.Element | null;
         setDefaultValue(): void;
         render(): JSX.Element;

@@ -57798,6 +57798,8 @@ declare module BABYLON {
         isConstant: boolean;
         /** Gets or sets the group to use to display this block in the Inspector */
         groupInInspector: string;
+        /** Gets an observable raised when the value is changed */
+        onValueChangedObservable: Observable<InputBlock>;
         /**
          * Gets or sets the connection point type (default is float)
          */
@@ -57902,6 +57904,7 @@ declare module BABYLON {
         _transmit(effect: Effect, scene: Scene): void;
         protected _buildBlock(state: NodeMaterialBuildState): void;
         protected _dumpPropertiesCode(): string;
+        dispose(): void;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }

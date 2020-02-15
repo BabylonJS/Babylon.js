@@ -20,11 +20,30 @@ import { GenericPropertyTabComponent } from './genericNodePropertyComponent';
 import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
 import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
 import { Color4PropertyTabComponent } from '../../components/propertyTab/properties/color4PropertyTabComponent';
+import { Nullable } from 'babylonjs/types';
+import { Observer } from 'babylonjs/Misc/observable';
 
 export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+    
+    private onValueChangedObserver: Nullable<Observer<InputBlock>>;
+
     constructor(props: IPropertyComponentProps) {
         super(props)
     }
+
+    componentDidMount() {        
+        let inputBlock = this.props.block as InputBlock;
+        this.onValueChangedObserver = inputBlock.onValueChangedObservable.add(() => this.forceUpdate());
+    }
+
+    componentWillUnmount() {
+        
+        let inputBlock = this.props.block as InputBlock;
+        if (this.onValueChangedObserver) {
+            inputBlock.onValueChangedObservable.remove(this.onValueChangedObserver);
+            this.onValueChangedObserver = null;
+        }
+    }    
 
     renderValue(globalState: GlobalState) {
         let inputBlock = this.props.block as InputBlock;

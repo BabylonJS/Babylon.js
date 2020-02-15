@@ -56186,6 +56186,18 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
     function InputPropertyTabComponent(props) {
         return _super.call(this, props) || this;
     }
+    InputPropertyTabComponent.prototype.componentDidMount = function () {
+        var _this = this;
+        var inputBlock = this.props.block;
+        this.onValueChangedObserver = inputBlock.onValueChangedObservable.add(function () { return _this.forceUpdate(); });
+    };
+    InputPropertyTabComponent.prototype.componentWillUnmount = function () {
+        var inputBlock = this.props.block;
+        if (this.onValueChangedObserver) {
+            inputBlock.onValueChangedObservable.remove(this.onValueChangedObserver);
+            this.onValueChangedObserver = null;
+        }
+    };
     InputPropertyTabComponent.prototype.renderValue = function (globalState) {
         var _this = this;
         var inputBlock = this.props.block;

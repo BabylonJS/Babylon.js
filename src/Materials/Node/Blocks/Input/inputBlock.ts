@@ -12,6 +12,7 @@ import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../../Misc/typeStore';
 import { Color3, Color4 } from '../../../../Maths/math';
 import { AnimatedInputBlockTypes } from './animatedInputBlockTypes';
+import { Observable } from '../../../../Misc/observable';
 
 /**
  * Block used to expose an input value
@@ -47,6 +48,9 @@ export class InputBlock extends NodeMaterialBlock {
 
     /** Gets or sets the group to use to display this block in the Inspector */
     public groupInInspector = "";
+
+    /** Gets an observable raised when the value is changed */
+    public onValueChangedObservable = new Observable<InputBlock>();
 
     /**
      * Gets or sets the connection point type (default is float)
@@ -199,6 +203,8 @@ export class InputBlock extends NodeMaterialBlock {
 
         this._storedValue = value;
         this._mode = NodeMaterialBlockConnectionPointMode.Uniform;
+
+        this.onValueChangedObservable.notifyObservers(this);
     }
 
     /**
@@ -604,6 +610,12 @@ export class InputBlock extends NodeMaterialBlock {
             return finalOutput;
         }
         return "";
+    }
+
+    public dispose() {
+        this.onValueChangedObservable.clear();
+
+        super.dispose();
     }
 
     public serialize(): any {
