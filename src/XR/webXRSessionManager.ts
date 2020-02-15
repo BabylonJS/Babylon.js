@@ -11,18 +11,6 @@ interface IRenderTargetProvider {
     getRenderTargetForEye(eye: XREye): RenderTargetTexture;
 }
 
-class RenderTargetProvider implements IRenderTargetProvider {
-    private _texture: RenderTargetTexture;
-
-    public constructor(texture: RenderTargetTexture) {
-        this._texture = texture;
-    }
-
-    public getRenderTargetForEye(eye: XREye): RenderTargetTexture {
-        return this._texture;
-    }
-}
-
 /**
  * Manages an XRSession to work with Babylon's engine
  * @see https://doc.babylonjs.com/how_to/webxr
@@ -241,12 +229,11 @@ export class WebXRSessionManager implements IDisposable {
         };
 
         if (this._xrNavigator.xr.native) {
-            this._rttProvider = this._xrNavigator.xr.getNativeRenderTargetProvider(this.session, (width: number, height: number) => {
-                return engine.createRenderTargetTexture({ width: width, height: height }, false);
-            });
+            this._rttProvider = this._xrNavigator.xr.getNativeRenderTargetProvider(this.session, this._createRenderTargetTexture.bind(this));
         } else {
-            // Create render target texture from WebXR's webgl render target
-            this._rttProvider = new RenderTargetProvider(WebXRSessionManager._CreateRenderTargetTextureFromSession(this.session, this.scene, this.baseLayer!));
+            // Create render target texture from xr's webgl render target
+            const rtt = this._createRenderTargetTexture(this.baseLayer!.framebufferWidth, this.baseLayer!.framebufferHeight, this.baseLayer!.framebuffer);
+            this._rttProvider = { getRenderTargetForEye: () => rtt };
         }
 
         // Stop window's animation frame and trigger sessions animation frame
@@ -321,25 +308,16 @@ export class WebXRSessionManager implements IDisposable {
         }
     }
 
-    /**
-     * @hidden
-     * Converts the render layer of xrSession to a render target
-     * @param session session to create render target for
-     * @param scene scene the new render target should be created for
-     * @param baseLayer the webgl layer to create the render target for
-     */
-    public static _CreateRenderTargetTextureFromSession(_session: XRSession, scene: Scene, baseLayer: XRWebGLLayer) {
-        if (!baseLayer) {
-            throw "no layer";
-        }
+    private _createRenderTargetTexture(width: number, height: number, framebuffer: Nullable<WebGLFramebuffer> = null) {
         // Create internal texture
-        var internalTexture = new InternalTexture(scene.getEngine(), InternalTextureSource.Unknown, true);
-        internalTexture.width = baseLayer.framebufferWidth;
-        internalTexture.height = baseLayer.framebufferHeight;
-        internalTexture._framebuffer = baseLayer.framebuffer;
+        var internalTexture = new InternalTexture(this.scene.getEngine(), InternalTextureSource.Unknown, true);
+        internalTexture.width = width;
+        internalTexture.height = height;
+        internalTexture._framebuffer = framebuffer;
 
         // Create render target texture from the internal texture
-        var renderTargetTexture = new RenderTargetTexture("XR renderTargetTexture", { width: internalTexture.width, height: internalTexture.height }, scene, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true);
+        var renderTargetTexture = new RenderTargetTexture("XR renderTargetTexture", { width: width, height: height }, this.scene,
+            undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true);
         renderTargetTexture._texture = internalTexture;
 
         return renderTargetTexture;
