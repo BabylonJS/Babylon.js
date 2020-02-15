@@ -583,11 +583,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
                 minZ = Math.max(minZ, boundingInfo.boundingBox.minimumWorld.z);
             }
 
-            if (this._scene.useRightHandedSystem) {
-                Matrix.OrthoOffCenterRHToRef(this._cascadeMinExtents[cascadeIndex].x, this._cascadeMaxExtents[cascadeIndex].x, this._cascadeMinExtents[cascadeIndex].y, this._cascadeMaxExtents[cascadeIndex].y, minZ, maxZ, this._projectionMatrices[cascadeIndex]);
-            } else {
-                Matrix.OrthoOffCenterLHToRef(this._cascadeMinExtents[cascadeIndex].x, this._cascadeMaxExtents[cascadeIndex].x, this._cascadeMinExtents[cascadeIndex].y, this._cascadeMaxExtents[cascadeIndex].y, minZ, maxZ, this._projectionMatrices[cascadeIndex]);
-            }
+            Matrix.OrthoOffCenterLHToRef(this._cascadeMinExtents[cascadeIndex].x, this._cascadeMaxExtents[cascadeIndex].x, this._cascadeMinExtents[cascadeIndex].y, this._cascadeMaxExtents[cascadeIndex].y, minZ, maxZ, this._projectionMatrices[cascadeIndex]);
 
             this._cascadeMinExtents[cascadeIndex].z = minZ;
             this._cascadeMaxExtents[cascadeIndex].z = maxZ;
@@ -826,6 +822,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         defines["SHADOWCSM" + lightIndex] = true;
         defines["SHADOWCSMDEBUG" + lightIndex] = this.debug;
         defines["SHADOWCSMNUM_CASCADES" + lightIndex] = this.numCascades;
+        defines["SHADOWCSM_RIGHTHANDED" + lightIndex] = scene.useRightHandedSystem;
 
         const camera = scene.activeCamera;
 
