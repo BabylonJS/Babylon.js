@@ -951,7 +951,10 @@ declare module "babylonjs-node-editor/diagram/properties/inputNodePropertyCompon
     import { GlobalState } from "babylonjs-node-editor/globalState";
     import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
     export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        private onValueChangedObserver;
         constructor(props: IPropertyComponentProps);
+        componentDidMount(): void;
+        componentWillUnmount(): void;
         renderValue(globalState: GlobalState): JSX.Element | null;
         setDefaultValue(): void;
         render(): JSX.Element;
@@ -2428,7 +2431,10 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        private onValueChangedObserver;
         constructor(props: IPropertyComponentProps);
+        componentDidMount(): void;
+        componentWillUnmount(): void;
         renderValue(globalState: GlobalState): JSX.Element | null;
         setDefaultValue(): void;
         render(): JSX.Element;

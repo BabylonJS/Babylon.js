@@ -52,14 +52,14 @@ export class InstancedMesh extends AbstractMesh {
         if (source.rotationQuaternion) {
             this.rotationQuaternion = source.rotationQuaternion.clone();
         }
-        
+
         this.animations = source.animations;
         for (var range of source.getAnimationRanges()) {
             if (range != null) {
                 this.createAnimationRange(range.name, range.from, range.to);
             }
         }
-        
+
         this.infiniteDistance = source.infiniteDistance;
 
         this.setPivotMatrix(source.getPivotMatrix());
