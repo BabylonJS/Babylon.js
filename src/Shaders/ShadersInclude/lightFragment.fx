@@ -128,7 +128,11 @@
         #ifdef SHADOWCSM{X}
             for (int i = 0; i < SHADOWCSMNUM_CASCADES{X}; i++) 
             {
-                diff{X} = viewFrustumZ{X}[i] - vPositionFromCamera{X}.z;
+                #ifdef SHADOWCSM_RIGHTHANDED{X}
+                    diff{X} = viewFrustumZ{X}[i] + vPositionFromCamera{X}.z;
+                #else
+                    diff{X} = viewFrustumZ{X}[i] - vPositionFromCamera{X}.z;
+                #endif
                 if (diff{X} >= 0.) {
                     index{X} = i;
                     break;
