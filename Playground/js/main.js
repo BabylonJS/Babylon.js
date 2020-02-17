@@ -1155,7 +1155,6 @@ class Main {
         }
     }
     updateMetadata() {
-        console.log('updating meta data');
         var selection;
 
         if (this.currentSnippetTitle) {
