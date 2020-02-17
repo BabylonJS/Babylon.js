@@ -513,7 +513,7 @@ body {
 .navbar .category .buttonJStoTS {
     display: inline-block;
     vertical-align: top;
-    width: 140px;
+    width: 70px;
     height: 55px;
     border-top-left-radius: 14px;
     margin-left: -15px;
@@ -523,8 +523,13 @@ body {
     cursor: pointer;
 }
 
+.navbar .category .buttonJStoTS.selectedLanguage {
+    width: 140px;
+    cursor: unset;
+}
+
 .navbar .category .buttonJStoTS.floatLeft {
-    float: left;
+    float: left;    
 }
 
 .button,
