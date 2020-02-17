@@ -427,17 +427,18 @@
         <script src="/js/index.js"></script>
 
         <script>
+            // when loading the following resources, use the global scope and not AMD
             window.def = window.define;
             window.define = undefined;
         </script>
 
         <!-- Dependencies -->
-        <script src="https://preview.babylonjs.com/ammo.js"></script>
+        <script src="https://rawcdn.githack.com/BabylonJS/Babylon.js/991ff1bafc4d8ad6d501e9354d70a5e2b2bd3ea2/dist/preview%20release/ammo.js"></script>
+        <script src="https://rawcdn.githack.com/BabylonJS/Babylon.js/54684912728536933561b5cf61ddb2aa9735d9f2/dist/preview%20release/earcut.min.js"></script>
         <script src="https://preview.babylonjs.com/recast.js"></script>
-        <script src="https://preview.babylonjs.com/cannon.js"></script>
-        <script src="https://preview.babylonjs.com/Oimo.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/oimo/1.0.9/oimo.min.js"></script>
         <script src="https://preview.babylonjs.com/libktx.js"></script>
-        <script src="https://preview.babylonjs.com/earcut.min.js"></script>
 
         <!-- Extensions -->
         <script
@@ -456,6 +457,7 @@
             src="https://rawcdn.githack.com/MackeyK24/MackeyK24.github.io/14fda491c50cfca6d3e2f6cbc5e6afe22cc455d6/toolkit/babylon.navmesh.js">
         </script>
         <script>
+            // bring me back my AMD!
             window.define = window.def;
         </script>
     </body>
