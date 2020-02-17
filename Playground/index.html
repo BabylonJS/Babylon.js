@@ -10,8 +10,8 @@
         <meta name="google-site-verification" content="wcRjktXhF6DAjmhneKS7UatweBIkEF6QfqsNhAYbUgg" />
         <link rel="shortcut icon" href="https://www.babylonjs.com/favicon.ico">
 
-        <link rel="stylesheet" href="https://use.typekit.net/cta4xsb.css" />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" />
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" />
         <link rel="stylesheet" href="/css/index.css" />
         <link rel="stylesheet" href="/css/index_mobile.css" />
 
@@ -309,8 +309,7 @@
             </div>
             <div class="horizontalSeparator"></div>
             <input id="filterBar" type="text" placeholder="Filter examples...">
-            <img id="filterBarClear"
-                src="/css/img/clear_button.png">
+            <img id="filterBarClear" src="/css/img/clear_button.png">
         </div>
 
         <div class="fpsLabel languageJS" id="fpsLabel"></div>
@@ -396,13 +395,6 @@
         <script src="/js/libs/jszip.min.js"></script>
         <script src="/js/libs/fileSaver.js"></script>
 
-        <!-- Dependencies -->
-        <script src="https://preview.babylonjs.com/ammo.js"></script>
-        <script src="https://preview.babylonjs.com/recast.js"></script>
-        <script src="https://preview.babylonjs.com/cannon.js"></script>
-        <script src="https://preview.babylonjs.com/Oimo.js"></script>
-        <script src="https://preview.babylonjs.com/libktx.js"></script>
-        <script src="https://preview.babylonjs.com/earcut.min.js"></script>
         <!-- Babylon.js -->
         <script src="https://preview.babylonjs.com/babylon.js"></script>
         <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
@@ -414,23 +406,6 @@
         <script src="https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
         <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
         <script src="https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
-
-        <!-- Extensions -->
-        <script
-            src="https://rawcdn.githack.com/BabylonJS/Extensions/f43ab677b4bca0a6ab77132d3f785be300382760/ClonerSystem/src/babylonx.cloner.js"
-            async>
-        </script>
-        <script
-            src="https://rawcdn.githack.com/BabylonJS/Extensions/785013ec55b210d12263c91f3f0a2ae70cf0bc8a/CompoundShader/src/babylonx.CompoundShader.js"
-            async></script>
-
-        <!-- Scene Manager -->
-        <script
-            src="https://rawcdn.githack.com/MackeyK24/MackeyK24.github.io/14fda491c50cfca6d3e2f6cbc5e6afe22cc455d6/toolkit/babylon.manager.js">
-        </script>
-        <script
-            src="https://rawcdn.githack.com/MackeyK24/MackeyK24.github.io/14fda491c50cfca6d3e2f6cbc5e6afe22cc455d6/toolkit/babylon.navmesh.js">
-        </script>
 
         <!-- Monaco -->
         <script src="/node_modules/monaco-editor/dev/vs/loader.js"></script>
@@ -450,6 +425,39 @@
         <script src="/js/utils.js"></script>
         <script src="/js/zipTool.js"></script>
         <script src="/js/index.js"></script>
+
+        <script>
+            window.def = window.define;
+            window.define = undefined;
+        </script>
+
+        <!-- Dependencies -->
+        <script src="https://preview.babylonjs.com/ammo.js"></script>
+        <script src="https://preview.babylonjs.com/recast.js"></script>
+        <script src="https://preview.babylonjs.com/cannon.js"></script>
+        <script src="https://preview.babylonjs.com/Oimo.js"></script>
+        <script src="https://preview.babylonjs.com/libktx.js"></script>
+        <script src="https://preview.babylonjs.com/earcut.min.js"></script>
+
+        <!-- Extensions -->
+        <script
+            src="https://rawcdn.githack.com/BabylonJS/Extensions/f43ab677b4bca0a6ab77132d3f785be300382760/ClonerSystem/src/babylonx.cloner.js"
+            async>
+        </script>
+        <script
+            src="https://rawcdn.githack.com/BabylonJS/Extensions/785013ec55b210d12263c91f3f0a2ae70cf0bc8a/CompoundShader/src/babylonx.CompoundShader.js"
+            async></script>
+
+        <!-- Scene Manager -->
+        <script
+            src="https://rawcdn.githack.com/MackeyK24/MackeyK24.github.io/14fda491c50cfca6d3e2f6cbc5e6afe22cc455d6/toolkit/babylon.manager.js">
+        </script>
+        <script
+            src="https://rawcdn.githack.com/MackeyK24/MackeyK24.github.io/14fda491c50cfca6d3e2f6cbc5e6afe22cc455d6/toolkit/babylon.navmesh.js">
+        </script>
+        <script>
+            window.define = window.def;
+        </script>
     </body>
 
 </html>
