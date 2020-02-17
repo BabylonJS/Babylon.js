@@ -229,6 +229,17 @@ class Main {
         this.fpsLabel = document.getElementById("fpsLabel");
         this.scripts;
         this.previousHash = "";
+
+        // Restore BJS version if needed
+        var restoreVersionResult = true;
+        if (this.parent.settingsPG.restoreVersion() == false) {
+            // Check if there a hash in the URL
+            this.checkHash();
+            restoreVersionResult = false;
+        }
+
+        // Load scripts list
+        this.loadScriptsList(restoreVersionResult);
     }
 
     /**
@@ -265,17 +276,6 @@ class Main {
                 }
             }.bind(this)
         );
-
-        // Restore BJS version if needed
-        var restoreVersionResult = true;
-        if (this.parent.settingsPG.restoreVersion() == false) {
-            // Check if there a hash in the URL
-            this.checkHash();
-            restoreVersionResult = false;
-        }
-
-        // Load scripts list
-        this.loadScriptsList(restoreVersionResult);
 
         // -------------------- UI --------------------
         var handleRun = () => compileAndRun(this.parent, this.fpsLabel);
@@ -497,14 +497,16 @@ class Main {
                     if (!this.checkTypescriptSupport(xhr)) return;
 
                     xhr.onreadystatechange = null;
-                    this.parent.monacoCreator.BlockEditorChange = true;
-                    this.parent.monacoCreator.JsEditor.setValue(xhr.responseText);
-                    this.parent.monacoCreator.JsEditor.setPosition({
-                        lineNumber: 0,
-                        column: 0
-                    });
-                    this.parent.monacoCreator.BlockEditorChange = false;
-                    compileAndRun(this.parent, this.fpsLabel);
+                    this.parent.monacoCreator.addOnMoncaoLoadedCallback(function () {
+                        this.parent.monacoCreator.BlockEditorChange = true;
+                        this.parent.monacoCreator.JsEditor.setValue(xhr.responseText);
+                        this.parent.monacoCreator.JsEditor.setPosition({
+                            lineNumber: 0,
+                            column: 0
+                        });
+                        this.parent.monacoCreator.BlockEditorChange = false;
+                        compileAndRun(this.parent, this.fpsLabel);
+                    }, this);
 
                     this.currentSnippetToken = null;
                 }
@@ -1074,8 +1076,8 @@ class Main {
         }
         if (pgHash) {
             var match = pgHash.match(/^(#[A-Za-z\d]*)(%23)([\d]+)$/);
-            if (match){
-                pgHash = match[1]+'#'+match[3];
+            if (match) {
+                pgHash = match[1] + '#' + match[3];
                 parent.location.hash = pgHash;
             }
             this.previousHash = pgHash;
@@ -1095,9 +1097,6 @@ class Main {
                         }
 
                         var snippet = JSON.parse(xmlHttp.responseText);
-
-                        this.parent.monacoCreator.BlockEditorChange = true;
-                        this.parent.monacoCreator.JsEditor.setValue(JSON.parse(snippet.jsonPayload).code.toString());
 
                         // Check if title / descr / tags are already set
                         if (snippet.name != null && snippet.name != "") {
@@ -1127,12 +1126,18 @@ class Main {
 
                         this.updateMetadata();
 
-                        this.parent.monacoCreator.JsEditor.setPosition({
-                            lineNumber: 0,
-                            column: 0
-                        });
-                        this.parent.monacoCreator.BlockEditorChange = false;
-                        compileAndRun(this.parent, this.fpsLabel);
+                        this.parent.monacoCreator.addOnMoncaoLoadedCallback(function () {
+                            this.parent.monacoCreator.BlockEditorChange = true;
+                            this.parent.monacoCreator.JsEditor.setValue(JSON.parse(snippet.jsonPayload).code.toString());
+
+                            this.parent.monacoCreator.JsEditor.setPosition({
+                                lineNumber: 0,
+                                column: 0
+                            });
+                            this.parent.monacoCreator.BlockEditorChange = false;
+                            compileAndRun(this.parent, this.fpsLabel);
+                        }, this);
+
                     }
                 }
             }.bind(this);
@@ -1147,25 +1152,26 @@ class Main {
         }
     }
     updateMetadata() {
+        console.log('updating meta data');
         var selection;
 
         if (this.currentSnippetTitle) {
             selection = document.querySelector('title');
-            if(selection){
+            if (selection) {
                 selection.innerText = (this.currentSnippetTitle + " | Babylon.js Playground");
             }
         }
 
         if (this.currentSnippetDescription) {
             selection = document.querySelector('meta[name="description"]');
-            if(selection){
+            if (selection) {
                 selection.setAttribute("content", this.currentSnippetDescription + " - Babylon.js Playground");
             }
         }
 
         if (this.currentSnippetTags) {
             selection = document.querySelector('meta[name="keywords"]');
-            if(selection){
+            if (selection) {
                 selection.setAttribute("content", "babylon.js, game engine, webgl, 3d," + this.currentSnippetTags);
             }
         }
