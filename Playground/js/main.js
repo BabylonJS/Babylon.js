@@ -336,53 +336,56 @@ class Main {
             }
         }
         // Language (JS / TS)
-        this.parent.utils.setToMultipleID("toTSbutton", "click", function () {
-            if (location.hash != null && location.hash != "") {
-                this.parent.settingsPG.ScriptLanguage = "TS";
-                window.location = "./";
-            } else {
-                if (this.parent.settingsPG.ScriptLanguage == "JS") {
-                    //revert in case the reload is cancel due to safe mode
-                    if (document.getElementById("safemodeToggle" + this.parent.utils.getCurrentSize()).classList.contains('checked')) {
-                        // Message before unload
-                        var languageTSswapper = function () {
+        if (this.parent.settingsPG.ScriptLanguage === "JS") {
+            this.parent.utils.setToMultipleID("toTSbutton", "click", function () {
+                if (location.hash != null && location.hash != "") {
+                    this.parent.settingsPG.ScriptLanguage = "TS";
+                    window.location = "./";
+                } else {
+                    if (this.parent.settingsPG.ScriptLanguage == "JS") {
+                        //revert in case the reload is cancel due to safe mode
+                        if (document.getElementById("safemodeToggle" + this.parent.utils.getCurrentSize()).classList.contains('checked')) {
+                            // Message before unload
+                            var languageTSswapper = function () {
+                                this.parent.settingsPG.ScriptLanguage = "TS";
+                                window.removeEventListener('unload', languageTSswapper.bind(this));
+                            };
+                            window.addEventListener('unload', languageTSswapper.bind(this));
+
+                            location.reload();
+                        } else {
                             this.parent.settingsPG.ScriptLanguage = "TS";
-                            window.removeEventListener('unload', languageTSswapper.bind(this));
-                        };
-                        window.addEventListener('unload', languageTSswapper.bind(this));
-
-                        location.reload();
-                    } else {
-                        this.parent.settingsPG.ScriptLanguage = "TS";
-                        location.reload();
+                            location.reload();
+                        }
                     }
                 }
-            }
 
-        }.bind(this));
-        this.parent.utils.setToMultipleID("toJSbutton", "click", function () {
-            if (location.hash != null && location.hash != "") {
-                this.parent.settingsPG.ScriptLanguage = "JS";
-                window.location = "./";
-            } else {
-                if (this.parent.settingsPG.ScriptLanguage == "TS") {
-                    //revert in case the reload is cancel due to safe mode
-                    if (document.getElementById("safemodeToggle" + this.parent.utils.getCurrentSize()).classList.contains('checked')) {
-                        // Message before unload
-                        var LanguageJSswapper = function () {
+            }.bind(this));
+        } else {
+            this.parent.utils.setToMultipleID("toJSbutton", "click", function () {
+                if (location.hash != null && location.hash != "") {
+                    this.parent.settingsPG.ScriptLanguage = "JS";
+                    window.location = "./";
+                } else {
+                    if (this.parent.settingsPG.ScriptLanguage == "TS") {
+                        //revert in case the reload is cancel due to safe mode
+                        if (document.getElementById("safemodeToggle" + this.parent.utils.getCurrentSize()).classList.contains('checked')) {
+                            // Message before unload
+                            var LanguageJSswapper = function () {
+                                this.parent.settingsPG.ScriptLanguage = "JS";
+                                window.removeEventListener('unload', LanguageJSswapper.bind(this));
+                            };
+                            window.addEventListener('unload', LanguageJSswapper.bind(this));
+
+                            location.reload();
+                        } else {
                             this.parent.settingsPG.ScriptLanguage = "JS";
-                            window.removeEventListener('unload', LanguageJSswapper.bind(this));
-                        };
-                        window.addEventListener('unload', LanguageJSswapper.bind(this));
-
-                        location.reload();
-                    } else {
-                        this.parent.settingsPG.ScriptLanguage = "JS";
-                        location.reload();
+                            location.reload();
+                        }
                     }
                 }
-            }
-        }.bind(this));
+            }.bind(this));
+        }
         // Safe mode
         this.parent.utils.setToMultipleID("safemodeToggle", 'click', function () {
             document.getElementById("safemodeToggle1280").classList.toggle('checked');
