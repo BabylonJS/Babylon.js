@@ -59,13 +59,20 @@ namespace Babylon
             {
                 const auto& uniform = program.getUniform(i);
                 std::string uniformString = "uniform highp ";
-                if (uniform.glDefineType == 0x8B5C) //GL_FLOAT_MAT4
+                switch (uniform.glDefineType)
                 {
-                    uniformString += "mat4 ";
-                }
-                else
-                {
-                    uniformString += "vec4 ";
+                    case 0x8B5C: //GL_FLOAT_MAT4
+                        uniformString += "mat4 ";
+                        break;
+                    case 0: // no type : skip
+                    case 0x8B5D: // GL_SAMPLER_1D
+                    case 0x8B5E: // GL_SAMPLER_2D
+                    case 0x8B5F: // GL_SAMPLER_3D
+                    case 0x8B60: // GL_SAMPLER_CUBE
+                        continue;
+                    default:
+                        uniformString += "vec4 ";
+                        break;
                 }
                 uniformString += uniform.name;
                 uniformString += ";";
@@ -94,6 +101,28 @@ namespace Babylon
                 {
                     compiled.replace(pos, rep.size(), "");
                     pos = compiled.find(rep);
+                }
+            }
+
+            auto combined = compiler->get_combined_image_samplers();
+            for (auto resource : resources.separate_samplers)
+            {
+                auto& samplerName = resource.name;
+                auto id = resource.id;
+                for (auto combine : combined)
+                {
+                    if (combine.sampler_id == id)
+                    {
+                        id = combine.combined_id;
+                        break;
+                    }
+                }
+                auto& fbn = compiler->get_fallback_name(id);
+                size_t pos = compiled.find(fbn);
+                while (pos != std::string::npos)
+                {
+                    compiled.replace(pos, fbn.size(), samplerName);
+                    pos = compiled.find(fbn);
                 }
             }
 
