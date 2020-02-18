@@ -99,7 +99,7 @@ float fresnelSchlickGGX(float VdotH, float reflectance0, float reflectance90)
 
 #ifdef CLEARCOAT
     // Knowing ior clear coat is fix for the material
-    // Solving iorbase = 1 + sqrt(fo) / (1 - sqrt(fo)) and f0base = square((iorbase - iorclearcoat) / (iorbase - iorclearcoat))
+    // Solving iorbase = 1 + sqrt(fo) / (1 - sqrt(fo)) and f0base = square((iorbase - iorclearcoat) / (iorbase + iorclearcoat))
     // provide f0base = square(A + B * sqrt(fo)) / (B + A * sqrt(fo))
     // where A = 1 - iorclearcoat
     // and   B = 1 + iorclearcoat
