@@ -118,6 +118,7 @@
             &.collapsed {
                 height: auto !important;
                 width: 200px !important;
+                z-index: 3;
 
                 .frame-box-header {
                     font-size: 16px;
@@ -341,7 +342,7 @@
             height: 100%;                  
 
             .visual {
-                z-index: 3;
+                z-index: 4;
                 width: 200px;
                 position: absolute;
                 left: 0;
