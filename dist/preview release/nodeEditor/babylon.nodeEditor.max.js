@@ -56205,9 +56205,7 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Float: {
                 var cantDisplaySlider = (isNaN(inputBlock.min) || isNaN(inputBlock.max) || inputBlock.min === inputBlock.max);
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_15__["CheckBoxLineComponent"], { label: "Is boolean", target: inputBlock, propertyName: "isBoolean", onValueChanged: function () {
-                            _this.forceUpdate();
-                        } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_15__["CheckBoxLineComponent"], { label: "Is boolean", target: inputBlock, propertyName: "isBoolean" }),
                     inputBlock.isBoolean &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_15__["CheckBoxLineComponent"], { label: "Value", isSelected: function () {
                                 return inputBlock.value === 1;
@@ -56217,16 +56215,11 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                                     _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                                 }
                                 _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-                                _this.forceUpdate();
                             } }),
                     !inputBlock.isBoolean &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { globalState: this.props.globalState, label: "Min", target: inputBlock, propertyName: "min", onChange: function () {
-                                _this.forceUpdate();
-                            } }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { globalState: this.props.globalState, label: "Min", target: inputBlock, propertyName: "min" }),
                     !inputBlock.isBoolean &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { globalState: this.props.globalState, label: "Max", target: inputBlock, propertyName: "max", onChange: function () {
-                                _this.forceUpdate();
-                            } }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { globalState: this.props.globalState, label: "Max", target: inputBlock, propertyName: "max" }),
                     !inputBlock.isBoolean && cantDisplaySlider &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_floatPropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["FloatPropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }),
                     !inputBlock.isBoolean && !cantDisplaySlider &&

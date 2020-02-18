@@ -742,6 +742,7 @@ declare module "babylonjs-gui/2D/controls/control" {
         private _downPointerIds;
         protected _isEnabled: boolean;
         protected _disabledColor: string;
+        protected _disabledColorItem: string;
         /** @hidden */
         protected _rebuildLayout: boolean;
         /** @hidden */
@@ -1081,6 +1082,9 @@ declare module "babylonjs-gui/2D/controls/control" {
         /** Gets or sets background color of control if it's disabled*/
         get disabledColor(): string;
         set disabledColor(value: string);
+        /** Gets or sets front color of control if it's disabled*/
+        get disabledColorItem(): string;
+        set disabledColorItem(value: string);
         /**
          * Creates a new control
          * @param name defines the name of the control
@@ -5074,6 +5078,7 @@ declare module BABYLON.GUI {
         private _downPointerIds;
         protected _isEnabled: boolean;
         protected _disabledColor: string;
+        protected _disabledColorItem: string;
         /** @hidden */
         protected _rebuildLayout: boolean;
         /** @hidden */
@@ -5413,6 +5418,9 @@ declare module BABYLON.GUI {
         /** Gets or sets background color of control if it's disabled*/
         get disabledColor(): string;
         set disabledColor(value: string);
+        /** Gets or sets front color of control if it's disabled*/
+        get disabledColorItem(): string;
+        set disabledColorItem(value: string);
         /**
          * Creates a new control
          * @param name defines the name of the control

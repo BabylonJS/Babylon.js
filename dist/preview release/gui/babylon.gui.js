@@ -1823,7 +1823,7 @@ var Checkbox = /** @class */ (function (_super) {
             context.shadowOffsetY = 0;
         }
         if (this._isChecked) {
-            context.fillStyle = this._isEnabled ? this.color : this._disabledColor;
+            context.fillStyle = this._isEnabled ? this.color : this._disabledColorItem;
             var offsetWidth = actualWidth * this._checkSizeRatio;
             var offseHeight = actualHeight * this._checkSizeRatio;
             context.fillRect(this._currentMeasure.left + this._thickness / 2 + (actualWidth - offsetWidth) / 2, this._currentMeasure.top + this._thickness / 2 + (actualHeight - offseHeight) / 2, offsetWidth, offseHeight);
@@ -3778,6 +3778,7 @@ var Control = /** @class */ (function () {
         this._downPointerIds = {};
         this._isEnabled = true;
         this._disabledColor = "#9a9a9a";
+        this._disabledColorItem = "#6a6a6a";
         /** @hidden */
         this._rebuildLayout = false;
         /** @hidden */
@@ -4693,6 +4694,21 @@ var Control = /** @class */ (function () {
                 return;
             }
             this._disabledColor = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Control.prototype, "disabledColorItem", {
+        /** Gets or sets front color of control if it's disabled*/
+        get: function () {
+            return this._disabledColorItem;
+        },
+        set: function (value) {
+            if (this._disabledColorItem === value) {
+                return;
+            }
+            this._disabledColorItem = value;
             this._markAsDirty();
         },
         enumerable: true,
