@@ -33,7 +33,7 @@ compileAndRun = function (parent, fpsLabel) {
         parent.menuPG.hideWaitDiv();
         globalParent = parent;
 
-        if (!BABYLON.Engine.isSupported()) {
+        if (typeof BABYLON === 'undefined' || !BABYLON.Engine || !BABYLON.Engine.isSupported()) {
             parent.utils.showError("Your browser does not support WebGL. Please, try to update it, or install a compatible one.", null);
             return;
         }
@@ -44,7 +44,7 @@ compileAndRun = function (parent, fpsLabel) {
             readOnly: false
         });
 
-        if (BABYLON.Engine.LastCreatedScene && BABYLON.Engine.LastCreatedScene.debugLayer && BABYLON.Engine.LastCreatedScene.debugLayer.isVisible()) {
+        if (typeof BABYLON !== 'undefined' && BABYLON.Engine && BABYLON.Engine.LastCreatedScene && BABYLON.Engine.LastCreatedScene.debugLayer && BABYLON.Engine.LastCreatedScene.debugLayer.isVisible()) {
             showInspector = true;
         }
 
@@ -220,7 +220,9 @@ class Main {
     constructor(parent) {
         this.parent = parent;
 
-        BABYLON.Engine.ShadersRepository = "/src/Shaders/";
+        if (typeof BABYLON !== 'undefined') {
+            BABYLON.Engine.ShadersRepository = "/src/Shaders/";
+        }
         this.snippetV3Url = "https://snippet.babylonjs.com"
         this.currentSnippetToken;
         this.currentSnippetTitle = null;
@@ -283,7 +285,9 @@ class Main {
         var handleGetZip = () => this.parent.zipTool.getZip(engine);
 
         // Display BJS version
-        if (BABYLON) this.parent.utils.setToMultipleID("mainTitle", "innerHTML", "v" + BABYLON.Engine.Version);
+        if (typeof BABYLON !== 'undefined' && BABYLON.Engine) {
+            this.parent.utils.setToMultipleID("mainTitle", "innerHTML", "v" + BABYLON.Engine.Version);
+        }
         // Run
         this.parent.utils.setToMultipleID("runButton", "click", handleRun);
         // New
