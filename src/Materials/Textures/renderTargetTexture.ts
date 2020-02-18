@@ -68,9 +68,11 @@ export class RenderTargetTexture extends Texture {
      * Return null to render with the curent renderList, else return the list of meshes to use for rendering.
      * For 2DArray RTT, layerOrFace is the index of the layer that is going to be rendered, else it is the faceIndex of
      * the cube (if the RTT is a cube, else layerOrFace=0).
-     * The renderList passed to the function is the current render list (the one that will be used if the function returns null)
+     * The renderList passed to the function is the current render list (the one that will be used if the function returns null).
+     * The length of this list is passed through renderListLength: don't use renderList.length directly because the array can
+     * hold dummy elements!
     */
-    public getCustomRenderList: (layerOrFace: number, renderList: Nullable<Immutable<Array<AbstractMesh>>>) => Nullable<Array<AbstractMesh>>;
+    public getCustomRenderList: (layerOrFace: number, renderList: Nullable<Immutable<Array<AbstractMesh>>>, renderListLength: number) => Nullable<Array<AbstractMesh>>;
 
     private _hookArray(array: AbstractMesh[]): void {
         var oldPush = array.push;
@@ -729,7 +731,7 @@ export class RenderTargetTexture extends Texture {
         return Math.min(Engine.FloorPOT(renderDimension), curved);
     }
 
-    private _prepareRenderingManager(currentRenderList: Array<AbstractMesh>, camera: Nullable<Camera>, checkLayerMask: boolean): void {
+    private _prepareRenderingManager(currentRenderList: Array<AbstractMesh>, currentRenderListLength: number, camera: Nullable<Camera>, checkLayerMask: boolean): void {
         var scene = this.getScene();
 
         if (!scene) {
@@ -738,7 +740,6 @@ export class RenderTargetTexture extends Texture {
 
         this._renderingManager.reset();
 
-        var currentRenderListLength = currentRenderList.length;
         var sceneRenderId = scene.getRenderId();
         for (var meshIndex = 0; meshIndex < currentRenderListLength; meshIndex++) {
             var mesh = currentRenderList[meshIndex];
@@ -847,22 +848,23 @@ export class RenderTargetTexture extends Texture {
         // Get the list of meshes to render
         let currentRenderList: Nullable<Array<AbstractMesh>> = null;
         let defaultRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
+        let defaultRenderListLength = this.renderList ? this.renderList.length : scene.getActiveMeshes().length;
 
         if (this.getCustomRenderList) {
-            currentRenderList = this.getCustomRenderList(this.is2DArray ? layer : faceIndex, defaultRenderList);
+            currentRenderList = this.getCustomRenderList(this.is2DArray ? layer : faceIndex, defaultRenderList, defaultRenderListLength);
         }
 
         if (!currentRenderList) {
             // No custom render list provided, we prepare the rendering for the default list, but check
             // first if we did not already performed the preparation before so as to avoid re-doing it several times
             if (!this._defaultRenderListPrepared) {
-                this._prepareRenderingManager(defaultRenderList, camera, !this.renderList);
+                this._prepareRenderingManager(defaultRenderList, defaultRenderListLength, camera, !this.renderList);
                 this._defaultRenderListPrepared = true;
             }
             currentRenderList = defaultRenderList;
         } else {
             // Prepare the rendering for the custom render list provided
-            this._prepareRenderingManager(currentRenderList, camera, false);
+            this._prepareRenderingManager(currentRenderList, currentRenderList.length, camera, false);
         }
 
         // Clear
