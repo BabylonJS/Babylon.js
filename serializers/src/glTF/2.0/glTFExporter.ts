@@ -1,4 +1,4 @@
-import { AccessorType, IBufferView, IAccessor, INode, IScene, IMesh, IMaterial, ITexture, IImage, ISampler, IAnimation, ImageMimeType, IMeshPrimitive, IBuffer, IGLTF, MeshPrimitiveMode, AccessorComponentType, ITextureInfo } from "babylonjs-gltf2interface";
+import { AccessorType, IBufferView, IAccessor, INode, IScene, IMesh, IMaterial, ITexture, IImage, ISampler, IAnimation, ImageMimeType, IMeshPrimitive, IBuffer, IGLTF, MeshPrimitiveMode, AccessorComponentType, ITextureInfo, ISkin } from "babylonjs-gltf2interface";
 
 import { FloatArray, Nullable, IndicesArray } from "babylonjs/types";
 import { Vector2, Vector3, Vector4, Quaternion, Matrix } from "babylonjs/Maths/math.vector";
@@ -98,6 +98,10 @@ export class _Exporter {
      * Stores all the texture samplers
      */
     public _samplers: ISampler[];
+    /**
+     * Stores all the generated glTF skins
+     */
+    public _skins: ISkin[];
     /**
      * Stores all the generated animation samplers, which is referenced by glTF animations
      */
@@ -288,6 +292,7 @@ export class _Exporter {
         this._materialMap = [];
         this._textures = [];
         this._samplers = [];
+        this._skins = [];
         this._animations = [];
         this._imageData = {};
         this._options = options || {};
@@ -785,6 +790,9 @@ export class _Exporter {
         }
         if (this._samplers && this._samplers.length) {
             this._glTF.samplers = this._samplers;
+        }
+        if (this._skins && this._skins.length) {
+            this._glTF.skins = this._skins;
         }
         if (this._images && this._images.length) {
             if (!shouldUseGlb) {
