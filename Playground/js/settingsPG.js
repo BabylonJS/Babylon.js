@@ -93,9 +93,15 @@ class SettingsPG {
         }
         if (this.scriptLanguage == "JS") {
             this.parent.utils.setToMultipleID("toJSbutton", "removeClass", "floatLeft");
+            this.parent.utils.setToMultipleID("toJSbutton", "addClass", "selectedLanguage");
+            this.parent.utils.setToMultipleID("toJSbutton", "innerHTML", "Javascript");
+            this.parent.utils.setToMultipleID("toTSbutton", "title", "Switch to TypeScript");
         }
         else if (this.scriptLanguage == "TS") {
             this.parent.utils.setToMultipleID("toJSbutton", "addClass", "floatLeft");
+            this.parent.utils.setToMultipleID("toTSbutton", "addClass", "selectedLanguage");
+            this.parent.utils.setToMultipleID("toTSbutton", "innerHTML", "Typescript");
+            this.parent.utils.setToMultipleID("toJSbutton", "title", "Switch to JavaScript");
         }
     };
 
