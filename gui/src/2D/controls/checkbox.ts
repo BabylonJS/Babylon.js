@@ -120,7 +120,7 @@ export class Checkbox extends Control {
         }
 
         if (this._isChecked) {
-            context.fillStyle = this._isEnabled ? this.color : this._disabledColor;
+            context.fillStyle = this._isEnabled ? this.color : this._disabledColorItem;
             let offsetWidth = actualWidth * this._checkSizeRatio;
             let offseHeight = actualHeight * this._checkSizeRatio;
 

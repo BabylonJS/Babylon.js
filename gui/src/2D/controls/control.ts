@@ -96,6 +96,7 @@ export class Control {
     private _downPointerIds: { [id: number]: boolean } = {};
     protected _isEnabled = true;
     protected _disabledColor = "#9a9a9a";
+    protected _disabledColorItem = "#6a6a6a";
     /** @hidden */
     protected _rebuildLayout = false;
 
@@ -958,6 +959,19 @@ export class Control {
         }
 
         this._disabledColor = value;
+        this._markAsDirty();
+    }
+    /** Gets or sets front color of control if it's disabled*/
+    public get disabledColorItem(): string {
+        return this._disabledColorItem;
+    }
+
+    public set disabledColorItem(value: string) {
+        if (this._disabledColorItem === value) {
+            return;
+        }
+
+        this._disabledColorItem = value;
         this._markAsDirty();
     }
     // Functions
