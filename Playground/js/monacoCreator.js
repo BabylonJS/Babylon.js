@@ -23,6 +23,13 @@ class MonacoCreator {
         this.deprecatedCandidates = [];
 
         this.compilerTriggerTimeoutID = null;
+
+        this.addOnMoncaoLoadedCallback(
+            function () {
+                this.parent.main.run();
+            },
+            this
+        );
     }
 
     // ACCESSORS
@@ -43,8 +50,8 @@ class MonacoCreator {
         return this.monacoMode;
     };
     set MonacoMode(mode) {
-        if (this.monacoMode != "javascript"
-            && this.monacoMode != "typescript")
+        if (this.monacoMode != "javascript" &&
+            this.monacoMode != "typescript")
             console.warn("Error while defining Monaco Mode");
         this.monacoMode = mode;
     };
@@ -81,12 +88,16 @@ class MonacoCreator {
         this.setupDefinitionWorker(libContent);
 
         // WARNING !!! We need the 'dev' version of Monaco, as we use monkey-patching to hook into the suggestion adapter
-        require.config({ paths: { 'vs': '/node_modules/monaco-editor/dev/vs' } });
+        require.config({
+            paths: {
+                'vs': '/node_modules/monaco-editor/dev/vs'
+            }
+        });
 
         require(['vs/editor/editor.main'], () => {
             // Setup the Monaco compilation pipeline, so we can reuse it directly for our scrpting needs
             this.setupMonacoCompilationPipeline(libContent);
-            
+
             // This is used for a vscode-like color preview for ColorX types
             this.setupMonacoColorProvider();
 
@@ -95,9 +106,37 @@ class MonacoCreator {
                 this.hookMonacoCompletionProvider(module.SuggestAdapter);
             });
 
-            this.parent.main.run();
+            this.onMonacoLoaded();
         });
     };
+
+    onMonacoLoaded() {
+        if (this.monacoLoaded) {
+            return;
+        }
+        this.onMonacoLoadedCallbacks.forEach((callbackDef) => {
+            callbackDef.func.call(callbackDef.context, this);
+        });
+        this.monacoLoaded = true;
+    }
+
+    /**
+     * This will register a new callback that will be triggered when the monaco loader is done.
+     * If the loader is already done, the function will be executed right away. 
+     * @param {Function} func the function to call when monaco is available
+     * @param {*} context The context of this function
+     */
+    addOnMoncaoLoadedCallback(func, context) {
+        this.onMonacoLoadedCallbacks = this.onMonacoLoadedCallbacks || [];
+        if (this.monacoLoaded) {
+            func.call(context, this);
+        } else {
+            this.onMonacoLoadedCallbacks.push({
+                func: func,
+                context: context
+            });
+        }
+    }
 
     // > This worker will analyze the syntaxtree and return an array of deprecated functions (but the goal is to do more in the future!)
     // We need to do this because:
@@ -109,22 +148,26 @@ class MonacoCreator {
     // We will also need this worker in the future to compute Intellicode scores for completion using dedicated attributes.
     setupDefinitionWorker(libContent) {
         this.definitionWorker = new Worker('/js/definitionWorker.js');
-        this.definitionWorker.addEventListener('message', ({ data }) => {
+        this.definitionWorker.addEventListener('message', ({
+            data
+        }) => {
             this.deprecatedCandidates = data.result;
             this.analyzeCode();
         });
-        this.definitionWorker.postMessage({ code: libContent });
+        this.definitionWorker.postMessage({
+            code: libContent
+        });
     }
 
     isDeprecatedEntry(details) {
-        return details
-            && details.tags
-            && details.tags.find(this.isDeprecatedTag);
+        return details &&
+            details.tags &&
+            details.tags.find(this.isDeprecatedTag);
     }
 
     isDeprecatedTag(tag) {
-        return tag
-            && tag.name == "deprecated";
+        return tag &&
+            tag.name == "deprecated";
     }
 
     // This will make sure that all members marked with a deprecated jsdoc attribute will be marked as such in Monaco UI
@@ -156,7 +199,10 @@ class MonacoCreator {
         for (const candidate of this.deprecatedCandidates) {
             const matches = model.findMatches(candidate, null, false, true, null, false);
             for (const match of matches) {
-                const position = { lineNumber: match.range.startLineNumber, column: match.range.startColumn };
+                const position = {
+                    lineNumber: match.range.startLineNumber,
+                    column: match.range.startColumn
+                };
                 const wordInfo = model.getWordAtPosition(position);
                 const offset = model.getOffsetAt(position);
 
@@ -184,7 +230,7 @@ class MonacoCreator {
 
         monaco.editor.setModelMarkers(model, source, markers);
     }
-    
+
     // This is our hook in the Monaco suggest adapter, we are called everytime a completion UI is displayed
     // So we need to be super fast.
     // We need the 'dev' version of Monaco, as we use monkey-patching to hook into this suggestion adapter
@@ -273,7 +319,9 @@ class MonacoCreator {
                     label = `(${converter(color.red)}, ${converter(color.green)}, ${converter(color.blue)}, ${converter(color.alpha)})`;
                 }
 
-                return [{ label: label }];
+                return [{
+                    label: label
+                }];
             },
 
             provideDocumentColors: (model) => {
@@ -378,10 +426,16 @@ class MonacoCreator {
         const main = this.parent.main;
         const monacoCreator = this;
 
-        this.diffEditor.addCommand(monaco.KeyCode.Escape, function () { main.toggleDiffEditor(monacoCreator, menuPG); });
+        this.diffEditor.addCommand(monaco.KeyCode.Escape, function () {
+            main.toggleDiffEditor(monacoCreator, menuPG);
+        });
         // Adding default VSCode bindinds for previous/next difference
-        this.diffEditor.addCommand(monaco.KeyMod.Alt | monaco.KeyCode.F5, function () { main.navigateToNext(); });
-        this.diffEditor.addCommand(monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.F5, function () { main.navigateToPrevious(); });
+        this.diffEditor.addCommand(monaco.KeyMod.Alt | monaco.KeyCode.F5, function () {
+            main.navigateToNext();
+        });
+        this.diffEditor.addCommand(monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.F5, function () {
+            main.navigateToPrevious();
+        });
 
         this.diffEditor.focus();
     }
@@ -418,10 +472,18 @@ class MonacoCreator {
     toggleMinimap() {
         var minimapToggle = document.getElementById("minimapToggle1280");
         if (minimapToggle.classList.contains('checked')) {
-            this.jsEditor.updateOptions({ minimap: { enabled: false } });
+            this.jsEditor.updateOptions({
+                minimap: {
+                    enabled: false
+                }
+            });
             this.parent.utils.setToMultipleID("minimapToggle", "innerHTML", 'Minimap <i class="fa fa-square" aria-hidden="true"></i>');
         } else {
-            this.jsEditor.updateOptions({ minimap: { enabled: true } });
+            this.jsEditor.updateOptions({
+                minimap: {
+                    enabled: true
+                }
+            });
             this.parent.utils.setToMultipleID("minimapToggle", "innerHTML", 'Minimap <i class="fa fa-check-square" aria-hidden="true"></i>');
         }
         minimapToggle.classList.toggle('checked');
