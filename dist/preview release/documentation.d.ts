@@ -20411,9 +20411,11 @@ declare module BABYLON {
          * Return null to render with the curent renderList, else return the list of meshes to use for rendering.
          * For 2DArray RTT, layerOrFace is the index of the layer that is going to be rendered, else it is the faceIndex of
          * the cube (if the RTT is a cube, else layerOrFace=0).
-         * The renderList passed to the function is the current render list (the one that will be used if the function returns null)
+         * The renderList passed to the function is the current render list (the one that will be used if the function returns null).
+         * The length of this list is passed through renderListLength: don't use renderList.length directly because the array can
+         * hold dummy elements!
         */
-        getCustomRenderList: (layerOrFace: number, renderList: Nullable<Immutable<Array<AbstractMesh>>>) => Nullable<Array<AbstractMesh>>;
+        getCustomRenderList: (layerOrFace: number, renderList: Nullable<Immutable<Array<AbstractMesh>>>, renderListLength: number) => Nullable<Array<AbstractMesh>>;
         private _hookArray;
         /**
          * Define if particles should be rendered in your texture.
@@ -42683,14 +42685,7 @@ declare module BABYLON {
          * @returns a promise with boolean as final value
          */
         static IsSessionSupportedAsync(sessionMode: XRSessionMode): Promise<boolean>;
-        /**
-         * @hidden
-         * Converts the render layer of xrSession to a render target
-         * @param session session to create render target for
-         * @param scene scene the new render target should be created for
-         * @param baseLayer the webgl layer to create the render target for
-         */
-        static _CreateRenderTargetTextureFromSession(_session: XRSession, scene: Scene, baseLayer: XRWebGLLayer): RenderTargetTexture;
+        private _createRenderTargetTexture;
     }
 }
 declare module BABYLON {
@@ -70772,6 +70767,7 @@ declare module BABYLON.GUI {
         private _downPointerIds;
         protected _isEnabled: boolean;
         protected _disabledColor: string;
+        protected _disabledColorItem: string;
         /** @hidden */
         protected _rebuildLayout: boolean;
         /** @hidden */
@@ -71111,6 +71107,9 @@ declare module BABYLON.GUI {
         /** Gets or sets background color of control if it's disabled*/
         get disabledColor(): string;
         set disabledColor(value: string);
+        /** Gets or sets front color of control if it's disabled*/
+        get disabledColorItem(): string;
+        set disabledColorItem(value: string);
         /**
          * Creates a new control
          * @param name defines the name of the control

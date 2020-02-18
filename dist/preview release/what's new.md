@@ -62,6 +62,7 @@
 - Refactored the shadow generators code ([Popov72](https://github.com/Popov72))
 - Supports clip planes with shadows ([sebavan](http://www.github.com/sebavan))
 - Added Workbench color scheme for VSCode ([drigax](https://github.com/drigax) & [Patrick Ryan](https://github.com/PatrickRyanMS))
+- Playground switch buttons are more intuitive ([#7601](https://github.com/BabylonJS/Babylon.js/issues/7601)) ([RaananW](https://github.com/RaananW/))
 
 ### Engine
 
@@ -344,6 +345,8 @@
 - Fix `HDRCubeTexture` construction, `generateHarmonics` was not properly taken into account ([Popov72](https://github.com/Popov72))
 - VideoTexture poster respects invertY ([Sebavan](https://github.com/sebavan/)
 - Fix for bug where round-tripped glTF imported scenes have incorrect light orientation, and duplicated parent nodes ([#7377](https://github.com/BabylonJS/Babylon.js/issues/7377))([drigax](https://github.com/drigax))
+- Fix bug in PBR sheen where the sheen effect could be a little darker than expected when using direct lighting ([Popov72](https://github.com/Popov72)
+- Fix bug in PBR shader when `reflectionTexture.linearSpecularLOD` is `true`  ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 

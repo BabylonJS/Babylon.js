@@ -52,9 +52,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 let cantDisplaySlider = (isNaN(inputBlock.min) || isNaN(inputBlock.max) || inputBlock.min === inputBlock.max);            
                 return (
                     <>
-                        <CheckBoxLineComponent label="Is boolean" target={inputBlock} propertyName="isBoolean" onValueChanged={() => {
-                            this.forceUpdate();
-                        }}/>
+                        <CheckBoxLineComponent label="Is boolean" target={inputBlock} propertyName="isBoolean" />
                         {
                             inputBlock.isBoolean &&
                             <CheckBoxLineComponent label="Value" isSelected={() => {
@@ -65,20 +63,15 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                     this.props.globalState.onRebuildRequiredObservable.notifyObservers();    
                                 }
                                 this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-                                this.forceUpdate();
                             }}/>
                         }
                         {
                             !inputBlock.isBoolean &&
-                            <FloatLineComponent globalState={this.props.globalState} label="Min" target={inputBlock} propertyName="min" onChange={() => {
-                                this.forceUpdate();
-                            }}></FloatLineComponent>
+                            <FloatLineComponent globalState={this.props.globalState} label="Min" target={inputBlock} propertyName="min"></FloatLineComponent>
                         }
                         {
                             !inputBlock.isBoolean &&
-                            <FloatLineComponent globalState={this.props.globalState} label="Max" target={inputBlock} propertyName="max" onChange={() => {
-                                    this.forceUpdate();
-                                }}></FloatLineComponent>      
+                            <FloatLineComponent globalState={this.props.globalState} label="Max" target={inputBlock} propertyName="max"></FloatLineComponent>      
                         }
                         {
                             !inputBlock.isBoolean && cantDisplaySlider &&
