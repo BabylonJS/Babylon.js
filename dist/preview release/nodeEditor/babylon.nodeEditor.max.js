@@ -54300,6 +54300,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             }
             // No destination so let's spin a new input block
             var inputBlock = new babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["InputBlock"](babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"][this._candidateLink.portA.connectionPoint.type], undefined, this._candidateLink.portA.connectionPoint.type);
+            this.props.globalState.nodeMaterial.attachedBlocks.push(inputBlock);
             pointA = inputBlock.output;
             nodeA = this.appendBlock(inputBlock);
             nodeA.x = this._dropPointX - 200;

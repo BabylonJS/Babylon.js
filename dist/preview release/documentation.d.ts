@@ -56737,6 +56737,10 @@ declare module BABYLON {
          */
         get output(): NodeMaterialConnectionPoint;
         /**
+         * Gets the xyz output component
+         */
+        get xyz(): NodeMaterialConnectionPoint;
+        /**
          * Gets the matrix transform input
          */
         get transform(): NodeMaterialConnectionPoint;
