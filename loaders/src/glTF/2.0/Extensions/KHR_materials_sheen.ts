@@ -34,7 +34,7 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
     /**
      * Defines a number that determines the order the extensions are applied.
      */
-    public order = 240;
+    public order = 190;
 
     private _loader: GLTFLoader;
 
