@@ -935,10 +935,10 @@ void main(void) {
 
             #ifdef REFLECTION
                 environmentIrradiance *= absorption;
-            #endif
 
-            #ifdef SHEEN
-                sheenEnvironmentReflectance *= absorption;
+                #ifdef SHEEN
+                    sheenEnvironmentReflectance *= absorption;
+                #endif
             #endif
 
             specularEnvironmentReflectance *= absorption;
@@ -952,10 +952,10 @@ void main(void) {
 
         #ifdef REFLECTION
             environmentIrradiance *= conservationFactor;
-        #endif
 
-        #ifdef SHEEN
-            sheenEnvironmentReflectance *= conservationFactor;
+            #ifdef SHEEN
+                sheenEnvironmentReflectance *= conservationFactor;
+            #endif
         #endif
 
         specularEnvironmentReflectance *= conservationFactor;
