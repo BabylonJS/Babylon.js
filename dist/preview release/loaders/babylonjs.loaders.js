@@ -4508,7 +4508,7 @@ var KHR_materials_clearcoat = /** @class */ (function () {
         /**
          * Defines a number that determines the order the extensions are applied.
          */
-        this.order = 220;
+        this.order = 190;
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
     }
@@ -4698,7 +4698,7 @@ var KHR_materials_sheen = /** @class */ (function () {
         /**
          * Defines a number that determines the order the extensions are applied.
          */
-        this.order = 240;
+        this.order = 190;
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
     }
@@ -4778,7 +4778,7 @@ var KHR_materials_specular = /** @class */ (function () {
         /**
          * Defines a number that determines the order the extensions are applied.
          */
-        this.order = 230;
+        this.order = 190;
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
     }
