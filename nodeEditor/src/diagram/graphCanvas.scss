@@ -207,6 +207,15 @@
                 z-index: 2;
             }
 
+            .frame-comments.has-comments{
+                display: grid;
+                grid-row: 2;
+                grid-column: 1;
+                padding-left: 10px;
+                font-style: italic;
+                word-wrap: break-word;
+            }
+
             &.selected {
                 .frame-box-border {
                   border-color: white;

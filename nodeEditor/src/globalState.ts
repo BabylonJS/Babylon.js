@@ -49,9 +49,9 @@ export class GlobalState {
     hemisphericLight: boolean;
     directionalLight0: boolean;
     directionalLight1: boolean;
-    controlCamera: boolean;    
+    controlCamera: boolean;
     storeEditorData:(serializationObject: any) => void;
-    
+
     customSave?: {label: string, action: (data: string) => Promise<void>};
 
     public constructor() {
