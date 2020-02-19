@@ -5,7 +5,7 @@ import { LogEntry } from './components/log/logComponent';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 import { PreviewMeshType } from './components/preview/previewMeshType';
 import { DataStorage } from './dataStorage';
-import { Color4, Color3 } from 'babylonjs/Maths/math.color';
+import { Color4 } from 'babylonjs/Maths/math.color';
 import { GraphNode } from './diagram/graphNode';
 import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { NodePort } from './diagram/nodePort';
