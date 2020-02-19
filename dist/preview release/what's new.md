@@ -114,6 +114,10 @@
 - Make frames resizable in NME ([Kyle Belfort](https://github.com/belfortk))
 - Implement NME Preview Area Redesign ([Kyle Belfort](https://github.com/belfortk))
 
+### Cameras
+
+- Added upwards and downwards move to `FreeCamera` ([Pheater](https://github.com/pheater))
+
 ### Meshes
 
 - Added `TransformNode.instantiateHierarchy()` which try to instantiate (or clone) a node and its entire hiearchy ([Deltakosh](https://github.com/deltakosh/))
