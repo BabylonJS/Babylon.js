@@ -54480,10 +54480,15 @@ var GraphFrame = /** @class */ (function () {
             _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onRightHandlePointerMove);
         };
         this._onRightHandlePointerMove = function (evt) {
+            var slack = (_this_1.element.offsetWidth - _this_1._minFrameWidth) * _this_1._ownerCanvas.zoom;
+            var xLimit = _this_1._mouseStartPointX - slack;
+            _this_1._moveRightHandle(evt, xLimit);
+        };
+        this._moveRightHandle = function (evt, xLimit) {
             // tslint:disable-next-line: no-this-assignment
             var _this = _this_1;
             if (_this.mouseXLimit) {
-                if (_this._resizingDirection !== ResizingDirection.Right || _this._mouseStartPointX === null || _this._mouseStartPointY === null || (evt.clientX < _this.mouseXLimit)) {
+                if (_this._resizingDirection !== ResizingDirection.Right || _this._mouseStartPointX === null || _this._mouseStartPointY === null || evt.clientX < xLimit) {
                     return;
                 }
                 if (_this._resizingDirection === ResizingDirection.Right) {
@@ -54501,7 +54506,7 @@ var GraphFrame = /** @class */ (function () {
                 _this.width = parseFloat(_this.element.style.width.replace("px", ""));
                 _this._ownerCanvas.hostCanvas.removeEventListener("pointerup", _this._onRightHandlePointerUp);
                 _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onRightHandlePointerMove);
-                _this_1.cleanUpResizing(evt);
+                _this.cleanUpResizing(evt);
             }
         };
         this._onBottomHandlePointerDown = function (evt) {
@@ -54509,13 +54514,18 @@ var GraphFrame = /** @class */ (function () {
             var _this = _this_1;
             _this_1.initResizing(evt);
             _this._resizingDirection = ResizingDirection.Bottom;
-            _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onBottomHandlePointerUp);
             _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onBottomHandlePointerMove);
+            _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onBottomHandlePointerUp);
         };
         this._onBottomHandlePointerMove = function (evt) {
+            var slack = (_this_1.element.offsetHeight - _this_1._minFrameHeight) * _this_1._ownerCanvas.zoom;
+            var yLimit = _this_1._mouseStartPointY - slack;
+            _this_1._moveBottomHandle(evt, yLimit);
+        };
+        this._moveBottomHandle = function (evt, yLimit) {
             // tslint:disable-next-line: no-this-assignment
             var _this = _this_1;
-            if (_this._resizingDirection !== ResizingDirection.Bottom || _this._mouseStartPointX === null || _this._mouseStartPointY === null || (evt.clientY < (_this.y + _this._minFrameHeight))) {
+            if (_this._resizingDirection !== ResizingDirection.Bottom || _this._mouseStartPointX === null || _this._mouseStartPointY === null || evt.clientY < yLimit) {
                 return;
             }
             if (_this._resizingDirection === ResizingDirection.Bottom) {
@@ -54532,7 +54542,7 @@ var GraphFrame = /** @class */ (function () {
                 _this.height = parseFloat(_this.element.style.height.replace("px", ""));
                 _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onBottomHandlePointerMove);
                 _this._ownerCanvas.hostCanvas.removeEventListener("pointerup", _this._onBottomHandlePointerUp);
-                _this_1.cleanUpResizing(evt);
+                _this.cleanUpResizing(evt);
             }
         };
         this._onLeftHandlePointerDown = function (evt) {
@@ -54545,10 +54555,15 @@ var GraphFrame = /** @class */ (function () {
             _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onLeftHandlePointerMove);
         };
         this._onLeftHandlePointerMove = function (evt) {
+            var slack = (_this_1.element.offsetWidth - _this_1._minFrameWidth) * _this_1._ownerCanvas.zoom;
+            var xLimit = _this_1._mouseStartPointX + slack;
+            _this_1._moveLeftHandle(evt, xLimit);
+        };
+        this._moveLeftHandle = function (evt, xLimit) {
             // tslint:disable-next-line: no-this-assignment
             var _this = _this_1;
             if (_this.mouseXLimit) {
-                if (_this._resizingDirection !== ResizingDirection.Left || _this._mouseStartPointX === null || _this._mouseStartPointY === null || (evt.clientX > _this.mouseXLimit)) {
+                if (_this._resizingDirection !== ResizingDirection.Left || _this._mouseStartPointX === null || _this._mouseStartPointY === null || evt.clientX > xLimit) {
                     return;
                 }
                 if (_this._resizingDirection === ResizingDirection.Left) {
@@ -54567,7 +54582,7 @@ var GraphFrame = /** @class */ (function () {
                 _this.width = parseFloat(_this.element.style.width.replace("px", ""));
                 _this._ownerCanvas.hostCanvas.removeEventListener("pointerup", _this._onLeftHandlePointerUp);
                 _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onLeftHandlePointerMove);
-                _this_1.cleanUpResizing(evt);
+                _this.cleanUpResizing(evt);
             }
         };
         this._onTopHandlePointerDown = function (evt) {
@@ -54579,9 +54594,14 @@ var GraphFrame = /** @class */ (function () {
             _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onTopHandlePointerMove);
         };
         this._onTopHandlePointerMove = function (evt) {
+            var slack = (_this_1.element.offsetHeight - _this_1._minFrameHeight) * _this_1._ownerCanvas.zoom;
+            var yLimit = _this_1._mouseStartPointY + slack;
+            _this_1._moveTopHandle(evt, yLimit);
+        };
+        this._moveTopHandle = function (evt, yLimit) {
             // tslint:disable-next-line: no-this-assignment
             var _this = _this_1;
-            if (_this._resizingDirection !== ResizingDirection.Top || _this._mouseStartPointX === null || _this._mouseStartPointY === null || (evt.clientY > (_this.y + _this.height - _this._minFrameHeight))) {
+            if (_this._resizingDirection !== ResizingDirection.Top || _this._mouseStartPointX === null || _this._mouseStartPointY === null || evt.clientY > yLimit) {
                 return;
             }
             if (_this._resizingDirection === ResizingDirection.Top) {
@@ -54599,7 +54619,7 @@ var GraphFrame = /** @class */ (function () {
                 _this.height = parseFloat(_this.element.style.height.replace("px", ""));
                 _this._ownerCanvas.hostCanvas.removeEventListener("pointerup", _this._onTopHandlePointerUp);
                 _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onTopHandlePointerMove);
-                _this_1.cleanUpResizing(evt);
+                _this.cleanUpResizing(evt);
             }
         };
         this._id = GraphFrame._FrameCounter++;
