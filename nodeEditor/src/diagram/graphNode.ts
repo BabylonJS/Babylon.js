@@ -197,6 +197,11 @@ export class GraphNode {
     public isOverlappingFrame(frame: GraphFrame) {
         const rect2 = this._visual.getBoundingClientRect();
         const rect1 = frame.element.getBoundingClientRect();
+
+        // Add a tiny margin
+        rect1.width -= 5;
+        rect1.height -= 5;
+
         return !(rect1.right < rect2.left || 
             rect1.left > rect2.right || 
             rect1.bottom < rect2.top || 

@@ -153,10 +153,25 @@ run = function () {
                 xmlHttp.onreadystatechange = function () {
                     if (xmlHttp.readyState === 4) {
                         if (xmlHttp.status === 200) {
-                            var snippetCode = JSON.parse(JSON.parse(xmlHttp.responseText).jsonPayload).code;
+                            var snippet = JSON.parse(xmlHttp.responseText);
+                            var snippetCode = JSON.parse(snippet.jsonPayload).code;
                             compileAndRun(snippetCode);
 
                             var refresh = document.getElementById("refresh");
+
+                            if (snippet.name != null && snippet.name != "") {
+                                this.currentSnippetTitle = snippet.name;
+                            } else this.currentSnippetTitle = null;
+    
+                            if (snippet.description != null && snippet.description != "") {
+                                this.currentSnippetDescription = snippet.description;
+                            } else this.currentSnippetDescription = null;
+    
+                            if (snippet.tags != null && snippet.tags != "") {
+                                this.currentSnippetTags = snippet.tags;
+                            } else this.currentSnippetTags = null;
+
+                            updateMetadata.call(this);
 
                             if (refresh) {
                                 refresh.addEventListener("click", function () {
@@ -184,6 +199,31 @@ run = function () {
             }
         }
     };
+
+    var updateMetadata = function() {
+        var selection;
+
+        if (this.currentSnippetTitle) {
+            selection = document.querySelector('title');
+            if (selection) {
+                selection.innerText = (this.currentSnippetTitle + " | Babylon.js Playground");
+            }
+        }
+
+        if (this.currentSnippetDescription) {
+            selection = document.querySelector('meta[name="description"]');
+            if (selection) {
+                selection.setAttribute("content", this.currentSnippetDescription + " - Babylon.js Playground");
+            }
+        }
+
+        if (this.currentSnippetTags) {
+            selection = document.querySelector('meta[name="keywords"]');
+            if (selection) {
+                selection.setAttribute("content", "babylon.js, game engine, webgl, 3d," + this.currentSnippetTags);
+            }
+        }
+    }
 
     checkHash();
 

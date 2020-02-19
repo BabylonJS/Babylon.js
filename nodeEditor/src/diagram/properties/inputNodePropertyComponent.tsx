@@ -67,11 +67,11 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         }
                         {
                             !inputBlock.isBoolean &&
-                            <FloatLineComponent globalState={this.props.globalState} label="Min" target={inputBlock} propertyName="min"></FloatLineComponent>
+                            <FloatLineComponent globalState={this.props.globalState} label="Min" target={inputBlock} propertyName="min" onChange={() => this.forceUpdate()}></FloatLineComponent>
                         }
                         {
                             !inputBlock.isBoolean &&
-                            <FloatLineComponent globalState={this.props.globalState} label="Max" target={inputBlock} propertyName="max"></FloatLineComponent>      
+                            <FloatLineComponent globalState={this.props.globalState} label="Max" target={inputBlock} propertyName="max" onChange={() => this.forceUpdate()}></FloatLineComponent>      
                         }
                         {
                             !inputBlock.isBoolean && cantDisplaySlider &&
@@ -79,7 +79,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         }        
                         {
                             !inputBlock.isBoolean && !cantDisplaySlider &&
-                            <SliderLineComponent label="Value" target={inputBlock} propertyName="value" step={(inputBlock.max - inputBlock.min) / 100.0} minimum={inputBlock.min} maximum={inputBlock.max} onChange={() => {
+                            <SliderLineComponent label="Value" target={inputBlock} propertyName="value" step={Math.abs(inputBlock.max - inputBlock.min) / 100.0} minimum={Math.min(inputBlock.min, inputBlock.max)} maximum={inputBlock.max} onChange={() => {
                                 if (inputBlock.isConstant) {
                                     this.props.globalState.onRebuildRequiredObservable.notifyObservers();    
                                 }

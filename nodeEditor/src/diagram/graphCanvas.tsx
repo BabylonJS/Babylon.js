@@ -689,6 +689,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
             // No destination so let's spin a new input block
             let inputBlock = new InputBlock(NodeMaterialBlockConnectionPointTypes[this._candidateLink!.portA.connectionPoint.type], undefined, this._candidateLink!.portA.connectionPoint.type);
+            this.props.globalState.nodeMaterial.attachedBlocks.push(inputBlock);
             pointA = inputBlock.output;
             nodeA = this.appendBlock(inputBlock);
             
