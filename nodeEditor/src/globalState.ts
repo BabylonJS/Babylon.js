@@ -5,7 +5,7 @@ import { LogEntry } from './components/log/logComponent';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 import { PreviewMeshType } from './components/preview/previewMeshType';
 import { DataStorage } from './dataStorage';
-import { Color4 } from 'babylonjs/Maths/math.color';
+import { Color4, Color3 } from 'babylonjs/Maths/math.color';
 import { GraphNode } from './diagram/graphNode';
 import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { NodePort } from './diagram/nodePort';
@@ -49,9 +49,9 @@ export class GlobalState {
     hemisphericLight: boolean;
     directionalLight0: boolean;
     directionalLight1: boolean;
-    controlCamera: boolean;    
+    controlCamera: boolean;
     storeEditorData:(serializationObject: any) => void;
-    
+
     customSave?: {label: string, action: (data: string) => Promise<void>};
 
     public constructor() {
@@ -63,9 +63,6 @@ export class GlobalState {
         this.directionalLight1 = DataStorage.ReadBoolean("DirectionalLight1", false);
         this.controlCamera = DataStorage.ReadBoolean("ControlCamera", true);
 
-        let r = DataStorage.ReadNumber("BackgroundColorR", 32);
-        let g = DataStorage.ReadNumber("BackgroundColorG", 25);
-        let b = DataStorage.ReadNumber("BackgroundColorB", 64);
-        this.backgroundColor = new Color4(r, g, b, 1.0);
+        this.backgroundColor = Color4.FromColor3(Color3.FromHexString('#201940'), 1.0);
     }
 }
