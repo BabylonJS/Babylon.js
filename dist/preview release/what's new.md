@@ -348,6 +348,7 @@
 - Fix bug in PBR sheen where the sheen effect could be a little darker than expected when using direct lighting ([Popov72](https://github.com/Popov72)
 - Fix bug in PBR shader when `reflectionTexture.linearSpecularLOD` is `true`  ([Popov72](https://github.com/Popov72))
 - Fix for bug whereResize frame bottom at times will not work for any frame in the graph ([#7377](https://github.com/BabylonJS/Babylon.js/issues/7672))([Kyle Belfort](https://github.com/belfortk))
+- Fix bug in PBR sheen when used with clear coat and no env texture provided ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
