@@ -43021,7 +43021,8 @@ var PropertyGridTabComponent = /** @class */ (function (_super) {
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_meshes_meshPropertyGridComponent__WEBPACK_IMPORTED_MODULE_12__["MeshPropertyGridComponent"], { globalState: this.props.globalState, mesh: mesh, lockObject: this._lockObject, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
                 }
             }
-            if (className.indexOf("FreeCamera") !== -1 || className.indexOf("UniversalCamera") !== -1) {
+            if (className.indexOf("FreeCamera") !== -1 || className.indexOf("UniversalCamera") !== -1
+                || className.indexOf("WebXRCamera") !== -1 || className.indexOf("DeviceOrientationCamera") !== -1) {
                 var freeCamera = entity;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_cameras_freeCameraPropertyGridComponent__WEBPACK_IMPORTED_MODULE_10__["FreeCameraPropertyGridComponent"], { globalState: this.props.globalState, camera: freeCamera, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
