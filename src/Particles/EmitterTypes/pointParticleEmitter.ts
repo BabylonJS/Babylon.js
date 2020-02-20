@@ -31,11 +31,17 @@ export class PointParticleEmitter implements IParticleEmitterType {
      * @param worldMatrix is the world matrix of the particle system
      * @param directionToUpdate is the direction vector to update with the result
      * @param particle is the particle we are computed the direction for
+     * @param isLocal defines if the direction should be set in local space
      */
-    public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
+    public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
         var randX = Scalar.RandomRange(this.direction1.x, this.direction2.x);
         var randY = Scalar.RandomRange(this.direction1.y, this.direction2.y);
         var randZ = Scalar.RandomRange(this.direction1.z, this.direction2.z);
+
+        if (isLocal) {
+            directionToUpdate.copyFromFloats(randX, randY, randZ);
+            return;
+        }
 
         Vector3.TransformNormalFromFloatsToRef(randX, randY, randZ, worldMatrix, directionToUpdate);
     }
@@ -45,8 +51,13 @@ export class PointParticleEmitter implements IParticleEmitterType {
      * @param worldMatrix is the world matrix of the particle system
      * @param positionToUpdate is the position vector to update with the result
      * @param particle is the particle we are computed the position for
+     * @param isLocal defines if the position should be set in local space
      */
-    public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void {
+    public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
+        if (isLocal) {
+            positionToUpdate.copyFromFloats(0, 0, 0);
+            return;
+        }
         Vector3.TransformCoordinatesFromFloatsToRef(0, 0, 0, worldMatrix, positionToUpdate);
     }
 

@@ -2,7 +2,8 @@
 import * as React from "react";
 import { GlobalState } from '../../globalState';
 import { DataStorage } from '../../dataStorage';
-import { Nullable, Observer } from 'babylonjs';
+import { Observer } from 'babylonjs/Misc/observable';
+import { Nullable } from 'babylonjs/types';
 
 const doubleSided: string = require("./svgs/doubleSided.svg");
 const depthPass: string = require("./svgs/depthPass.svg");
