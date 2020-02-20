@@ -548,69 +548,6 @@ class Main {
                     this.scripts.sort(sortScriptsList);
 
                     if (exampleList) {
-                        for (var i = 0; i < this.scripts.length; i++) {
-                            this.scripts[i].samples.sort(sortScriptsList);
-
-                            var exampleCategory = document.createElement("div");
-                            exampleCategory.classList.add("categoryContainer");
-
-                            var exampleCategoryTitle = document.createElement("p");
-                            exampleCategoryTitle.innerText = this.scripts[i].title;
-                            exampleCategory.appendChild(exampleCategoryTitle);
-
-                            for (var ii = 0; ii < this.scripts[i].samples.length; ii++) {
-                                var example = document.createElement("div");
-                                example.classList.add("itemLine");
-                                example.id = ii;
-
-                                var exampleImg = document.createElement("img");
-                                exampleImg.setAttribute("data-src", this.scripts[i].samples[ii].icon.replace("icons", "https://doc.babylonjs.com/examples/icons"));
-                                exampleImg.setAttribute("onClick", "document.getElementById('PGLink_" + this.scripts[i].samples[ii].PGID + "').click();");
-
-                                var exampleContent = document.createElement("div");
-                                exampleContent.classList.add("itemContent");
-                                exampleContent.setAttribute("onClick", "document.getElementById('PGLink_" + this.scripts[i].samples[ii].PGID + "').click();");
-
-                                var exampleContentLink = document.createElement("div");
-                                exampleContentLink.classList.add("itemContentLink");
-
-                                var exampleTitle = document.createElement("h3");
-                                exampleTitle.classList.add("exampleCategoryTitle");
-                                exampleTitle.innerText = this.scripts[i].samples[ii].title;
-                                var exampleDescr = document.createElement("div");
-                                exampleDescr.classList.add("itemLineChild");
-                                exampleDescr.innerText = this.scripts[i].samples[ii].description;
-
-                                var exampleDocLink = document.createElement("a");
-                                exampleDocLink.classList.add("itemLineDocLink");
-                                exampleDocLink.innerText = "Documentation";
-                                exampleDocLink.href = this.scripts[i].samples[ii].doc;
-                                exampleDocLink.target = "_blank";
-
-                                var examplePGLink = document.createElement("a");
-                                examplePGLink.id = "PGLink_" + this.scripts[i].samples[ii].PGID;
-                                examplePGLink.classList.add("itemLinePGLink");
-                                examplePGLink.innerText = "Display";
-                                examplePGLink.href = this.scripts[i].samples[ii].PGID;
-                                examplePGLink.addEventListener("click", function () {
-                                    location.href = this.href;
-                                    location.reload();
-                                });
-
-                                exampleContentLink.appendChild(exampleTitle);
-                                exampleContentLink.appendChild(exampleDescr);
-                                exampleContent.appendChild(exampleContentLink);
-                                exampleContent.appendChild(exampleDocLink);
-                                exampleContent.appendChild(examplePGLink);
-
-                                example.appendChild(exampleImg);
-                                example.appendChild(exampleContent);
-
-                                exampleCategory.appendChild(example);
-                            }
-
-                            exampleList.appendChild(exampleCategory);
-                        }
 
                         var noResultContainer = document.createElement("div");
                         noResultContainer.id = "noResultsContainer";
@@ -1133,9 +1070,15 @@ class Main {
 
                         this.updateMetadata();
 
+                        var code = JSON.parse(snippet.jsonPayload).code.toString();
+                        var editorSpace = document.getElementById('jsEditor');
+                        if (editorSpace) {
+                            editorSpace.innerHTML = '<pre class="loading-pre">' + code + "</pre>";
+                        }
+
                         this.parent.monacoCreator.addOnMoncaoLoadedCallback(function () {
                             this.parent.monacoCreator.BlockEditorChange = true;
-                            this.parent.monacoCreator.JsEditor.setValue(JSON.parse(snippet.jsonPayload).code.toString());
+                            this.parent.monacoCreator.JsEditor.setValue(code);
 
                             this.parent.monacoCreator.JsEditor.setPosition({
                                 lineNumber: 0,
