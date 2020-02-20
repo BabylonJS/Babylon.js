@@ -250,7 +250,7 @@ export class GraphFrame {
             return;
         }
         this._height = value;
-        
+
         var gridAlignedBottom = this._ownerCanvas.getGridPositionCeil(value + this._gridAlignedY);
 
         this.element.style.height = `${gridAlignedBottom - this._gridAlignedY}px`;
@@ -261,18 +261,18 @@ export class GraphFrame {
     }
 
     public set comments(comments: string) {
-        if (comments && comments.length > 0) {
-            this.element.style.gridTemplateRows = "40px 40px calc(100% - 80px)";
+        if (comments && (!this._comments || this._comments.length == 0) && comments.length > 0) {
+            this.element.style.gridTemplateRows = "40px min-content 1fr";
             this._borderElement.style.gridRow = "1 / span 3";
             this._portContainer.style.gridRow = "3";
-            this._commentsElement.style.display = "grid";
-            this._commentsElement.style.gridRow = "2";
-            this._commentsElement.style.gridColumn = "1";
-            this._commentsElement.style.paddingLeft = "10px";
-            this._commentsElement.style.fontStyle = "italic";
-            this._commentsElement.innerText = comments;
+            this._commentsElement.classList.add("has-comments");
+        } else if (comments && comments.length === 0) {
+            this._commentsElement.classList.remove('has-comments')
         }
+        this._commentsElement.innerText = comments;
+        this.height = this._borderElement.offsetHeight;
         this._comments = comments;
+        this.updateMinHeightWithComments();
     }
 
     public constructor(candidate: Nullable<HTMLDivElement>, canvas: GraphCanvasComponent, doNotCaptureNodes = false) {
@@ -529,6 +529,13 @@ export class GraphFrame {
         this.refresh();
     }
 
+    private updateMinHeightWithComments = () => {
+        if (this.comments && this.comments.length > 0) {
+            const minFrameHeightWithComments = this._commentsElement.offsetHeight + 40;
+            this._minFrameHeight = minFrameHeightWithComments;
+        }
+    }
+
     private _onRightHandlePointerDown = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
@@ -567,7 +574,8 @@ export class GraphFrame {
             this._mouseStartPointX =  x;
             this.element.style.width = `${frameElementWidth + widthModification}px`;
         }
-
+        this.updateMinHeightWithComments();
+        this.height = this._borderElement.offsetHeight;
     }
 
     private _onRightHandlePointerUp = (evt: PointerEvent) => {
@@ -596,7 +604,7 @@ export class GraphFrame {
         this._moveBottomHandle(evt, yLimit);
     }
 
-    private _moveBottomHandle = (evt: PointerEvent, yLimit:number) => {
+    private _moveBottomHandle = (evt: PointerEvent, yLimit: number) => {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
         if (_this._resizingDirection !== ResizingDirection.Bottom || _this._mouseStartPointX === null || _this._mouseStartPointY === null || evt.clientY < yLimit) {
@@ -663,6 +671,8 @@ export class GraphFrame {
             const frameElementLeft = parseFloat(this.element.style.left.replace("px", ""));
             this.element.style.width = `${frameElementWidth - widthModification}px`;
             this.element.style.left = `${frameElementLeft + widthModification}px`;
+            this.updateMinHeightWithComments();
+            this.height = this._borderElement.offsetHeight;
     }
 
     private _onLeftHandlePointerUp = (evt: PointerEvent) => {

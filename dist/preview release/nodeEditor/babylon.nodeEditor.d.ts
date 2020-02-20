@@ -194,6 +194,7 @@ declare module NODEEDITOR {
         private _onMove;
         private initResizing;
         private cleanUpResizing;
+        private updateMinHeightWithComments;
         private _onRightHandlePointerDown;
         private _onRightHandlePointerMove;
         private _moveRightHandle;

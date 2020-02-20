@@ -274,6 +274,7 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         private _onMove;
         private initResizing;
         private cleanUpResizing;
+        private updateMinHeightWithComments;
         private _onRightHandlePointerDown;
         private _onRightHandlePointerMove;
         private _moveRightHandle;
@@ -1852,6 +1853,7 @@ declare module NODEEDITOR {
         private _onMove;
         private initResizing;
         private cleanUpResizing;
+        private updateMinHeightWithComments;
         private _onRightHandlePointerDown;
         private _onRightHandlePointerMove;
         private _moveRightHandle;
