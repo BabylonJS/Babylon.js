@@ -380,6 +380,7 @@ class MonacoCreator {
             }
         };
         editorOptions.minimap.enabled = document.getElementById("minimapToggle1280").classList.contains('checked');
+        document.getElementById('jsEditor').innerHTML = "";
         this.jsEditor = monaco.editor.create(document.getElementById('jsEditor'), editorOptions);
         this.jsEditor.setValue(oldCode);
 

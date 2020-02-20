@@ -40,8 +40,9 @@ export class CylinderParticleEmitter implements IParticleEmitterType {
      * @param worldMatrix is the world matrix of the particle system
      * @param directionToUpdate is the direction vector to update with the result
      * @param particle is the particle we are computed the direction for
+     * @param isLocal defines if the direction should be set in local space
      */
-    public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
+    public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
         var direction = particle.position.subtract(worldMatrix.getTranslation()).normalize();
         var randY = Scalar.RandomRange(-this.directionRandomizer / 2, this.directionRandomizer / 2);
 
@@ -53,6 +54,11 @@ export class CylinderParticleEmitter implements IParticleEmitterType {
         direction.z = Math.cos(angle);
         direction.normalize();
 
+        if (isLocal) {
+            directionToUpdate.copyFrom(direction);
+            return;
+        }
+
         Vector3.TransformNormalFromFloatsToRef(direction.x, direction.y, direction.z, worldMatrix, directionToUpdate);
     }
 
@@ -61,8 +67,9 @@ export class CylinderParticleEmitter implements IParticleEmitterType {
      * @param worldMatrix is the world matrix of the particle system
      * @param positionToUpdate is the position vector to update with the result
      * @param particle is the particle we are computed the position for
+     * @param isLocal defines if the position should be set in local space
      */
-    public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void {
+    public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
         var yPos = Scalar.RandomRange(-this.height / 2, this.height / 2);
         var angle = Scalar.RandomRange(0, 2 * Math.PI);
 
@@ -71,6 +78,11 @@ export class CylinderParticleEmitter implements IParticleEmitterType {
         var positionRadius = Math.sqrt(radiusDistribution) * this.radius;
         var xPos = positionRadius * Math.cos(angle);
         var zPos = positionRadius * Math.sin(angle);
+
+        if (isLocal) {
+            positionToUpdate.copyFromFloats(xPos, yPos, zPos);
+            return;
+        }
 
         Vector3.TransformCoordinatesFromFloatsToRef(xPos, yPos, zPos, worldMatrix, positionToUpdate);
     }

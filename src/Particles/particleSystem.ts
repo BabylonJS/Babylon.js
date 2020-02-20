@@ -174,6 +174,11 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     */
     public activeSubSystems: Array<ParticleSystem>;
 
+    /**
+     * Specifies if the particles are updated in emitter local space or world space
+     */
+    public isLocal = false;
+
     private _rootParticleSystem: Nullable<ParticleSystem>;
     //end of Sub-emitter
 
@@ -235,6 +240,12 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             if (this.noiseTexture) { // We need to get texture data back to CPU
                 noiseTextureSize = this.noiseTexture.getSize();
                 noiseTextureData = <Nullable<Uint8Array>>(this.noiseTexture.getContent());
+            }
+
+            let worldMatrix: Nullable<Matrix> = null;
+
+            if (this.isLocal && this.emitter && (this.emitter as AbstractMesh).getWorldMatrix) {
+                worldMatrix = (this.emitter as AbstractMesh).getWorldMatrix();
             }
 
             for (var index = 0; index < particles.length; index++) {
@@ -339,7 +350,12 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                     });
                 }
 
-                particle.position.addInPlace(this._scaledDirection);
+                if (worldMatrix) {
+                    particle._localPosition!.addInPlace(this._scaledDirection);
+                    Vector3.TransformCoordinatesToRef(particle._localPosition!, worldMatrix, particle.position);
+                } else {
+                    particle.position.addInPlace(this._scaledDirection);
+                }
 
                 // Noise
                 if (noiseTextureData && noiseTextureSize && particle._randomNoiseCoordinates1) {
@@ -1282,6 +1298,12 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         this.updateFunction(this._particles);
 
+        let worldMatrix: Nullable<Matrix> = null;
+
+        if (this.isLocal && this.emitter && (this.emitter as AbstractMesh).getWorldMatrix) {
+            worldMatrix = (this.emitter as AbstractMesh).getWorldMatrix();
+        }
+
         // Add new ones
         var particle: Particle;
         for (var index = 0; index < newParticles; index++) {
@@ -1315,14 +1337,23 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                 this.startPositionFunction(this._emitterWorldMatrix, particle.position, particle);
             }
             else {
-                this.particleEmitterType.startPositionFunction(this._emitterWorldMatrix, particle.position, particle);
+                this.particleEmitterType.startPositionFunction(this._emitterWorldMatrix, particle.position, particle, this.isLocal);
+            }
+
+            if (worldMatrix) {
+                if (!particle._localPosition) {
+                    particle._localPosition = particle.position.clone();
+                } else {
+                    particle._localPosition.copyFrom(particle.position);
+                }
+                Vector3.TransformCoordinatesToRef(particle._localPosition!, worldMatrix, particle.position);
             }
 
             if (this.startDirectionFunction) {
                 this.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle);
             }
             else {
-                this.particleEmitterType.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle);
+                this.particleEmitterType.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle, this.isLocal);
             }
 
             if (emitPower === 0) {
@@ -2075,6 +2106,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             serializationObject.invertY = particleSystem.particleTexture._invertY;
         }
 
+        serializationObject.isLocal = particleSystem.isLocal;
+
         // Animations
         SerializationHelper.AppendSerializedAnimations(particleSystem, serializationObject);
         serializationObject.beginAnimationOnStart = particleSystem.beginAnimationOnStart;
@@ -2355,6 +2388,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         } else {
             particleSystem.emitter = Vector3.FromArray(parsedParticleSystem.emitter);
         }
+
+        particleSystem.isLocal = !!parsedParticleSystem.isLocal;
 
         // Misc.
         if (parsedParticleSystem.renderingGroupId !== undefined) {

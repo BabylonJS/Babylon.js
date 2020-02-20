@@ -393,6 +393,10 @@ body {
     background-color: #1e1e1e;
 }
 
+.wrapper #jsEditor pre.loading-pre {
+    margin: 20px;
+}
+
 .wrapper #canvasZone {
     height: 100%;
 }

@@ -243,6 +243,11 @@ export interface IParticleSystem {
     disposeOnStop: boolean;
 
     /**
+     * Specifies if the particles are updated in emitter local space or world space
+     */
+    isLocal: boolean;
+
+    /**
      * Gets the maximum number of particles active at the same time.
      * @returns The max number of active particles.
      */
