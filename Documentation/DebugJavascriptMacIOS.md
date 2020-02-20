@@ -2,7 +2,7 @@ You can debug your Javascript program running in BabylonNative for MacOS or iOS 
 
 # Enable Developer options in Safari
 
-Run Safari, got to the preferences:
+Run Safari, go to the preferences:
 
 ![DebugMac](Images/SafariGoPrefs.png)
 
@@ -16,7 +16,7 @@ Run your playground.
 
 ![DebugMac](Images/DebugMacRunPG.png)
 
-In Safari, in the develop menu, you should see your app and the context.
+In Safari, in the develop menu, you should see your app and the JSC context.
 
 ![DebugMac](Images/HookJSCContext.png)
 
