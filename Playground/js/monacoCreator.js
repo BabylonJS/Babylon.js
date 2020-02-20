@@ -380,7 +380,10 @@ class MonacoCreator {
             }
         };
         editorOptions.minimap.enabled = document.getElementById("minimapToggle1280").classList.contains('checked');
-        this.jsEditor = monaco.editor.create(document.getElementById('jsEditor'), editorOptions);
+        var editorElement = document.getElementById('jsEditor');
+        editorElement.innerHTML = "";
+        editorElement.style.overflow = "unset";
+        this.jsEditor = monaco.editor.create(editorElement, editorOptions);
         this.jsEditor.setValue(oldCode);
 
         // We cannot call 'analyzeCode' on every keystroke, that's time consuming
