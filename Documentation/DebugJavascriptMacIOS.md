@@ -1,6 +1,6 @@
-You can debug your Javascript program running in BabylonNative for MacOS or iOS using Safari. These simple steps will show you how you can hook the Safari debugger to your Javascriptcore Context.
+You can debug your JavaScript program running in BabylonNative for MacOS or iOS using Safari. These simple steps will show you how you can hook the Safari debugger to your JavaScriptCore Context.
 
-# Enable Developer options in Safari
+# Enable Developer Options in Safari
 
 Run Safari, go to the preferences:
 
@@ -10,7 +10,7 @@ Click the Advanced tab and enable developer options
 
 ![DebugMac](Images/SafariCheckDeveloper.png)
 
-# Hooking Javascriptcore Context
+# Hooking JavaScriptCore Context
 
 Run your playground.
 
@@ -20,6 +20,6 @@ In Safari, in the develop menu, you should see your app and the JSC context.
 
 ![DebugMac](Images/HookJSCContext.png)
 
-Check everything is properly connected by break the app in the debugger. You should see your scripts and all the details.
+Check everything is properly connected by setting a breakpoint in the debugger. You should see your scripts and all the details.
 
 ![DebugMac](Images/JSCDebugBreakApp.png)
