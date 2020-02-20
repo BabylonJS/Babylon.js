@@ -103,6 +103,14 @@ export class WebXRCamera extends FreeCamera {
         }
     }
 
+    /**
+     * Gets the current instance class name ("WebXRCamera").
+     * @returns the class name
+     */
+    public getClassName(): string {
+        return "WebXRCamera";
+    }
+
     private _updateFromXRSession() {
         const pose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(this._xrSessionManager.referenceSpace);
 

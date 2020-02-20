@@ -149,7 +149,8 @@ export class PropertyGridTabComponent extends PaneComponent {
                 }
             }
 
-            if (className.indexOf("FreeCamera") !== -1 || className.indexOf("UniversalCamera") !== -1) {
+            if (className.indexOf("FreeCamera") !== -1 || className.indexOf("UniversalCamera") !== -1
+            || className.indexOf("WebXRCamera") !== -1  || className.indexOf("DeviceOrientationCamera") !== -1) {
                 const freeCamera = entity as FreeCamera;
                 return (<FreeCameraPropertyGridComponent globalState={this.props.globalState} camera={freeCamera}
                     lockObject={this._lockObject}
