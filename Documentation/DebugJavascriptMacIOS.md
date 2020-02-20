@@ -3,9 +3,11 @@ You can debug your Javascript program running in BabylonNative for MacOS or iOS 
 # Enable Developer options in Safari
 
 Run Safari, got to the preferences:
+
 ![DebugMac](Images/SafariGoPrefs.png)
 
 Click the Advanced tab and enable developer options
+
 ![DebugMac](Images/SafariCheckDeveloper.png)
 
 # Hooking Javascriptcore Context
