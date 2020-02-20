@@ -137,6 +137,9 @@ export class Particle {
     /** @hidden */
     public _randomNoiseCoordinates2: Vector3;
 
+    /** @hidden */
+    public _localPosition?: Vector3;
+
     /**
      * Creates a new instance Particle
      * @param particleSystem the particle system the particle belongs to

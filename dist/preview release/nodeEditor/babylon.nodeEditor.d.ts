@@ -1273,7 +1273,9 @@ declare module NODEEDITOR {
     export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentProps, {
         isLoading: boolean;
     }> {
+        private _onIsLoadingChangedObserver;
         constructor(props: IPreviewAreaComponentProps);
+        componentWillUnmount(): void;
         changeBackFaceCulling(value: boolean): void;
         changeDepthPrePass(value: boolean): void;
         render(): JSX.Element;
