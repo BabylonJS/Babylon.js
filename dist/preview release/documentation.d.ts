@@ -11601,6 +11601,10 @@ declare module BABYLON {
         * The current active Sub-systems, this property is used by the root particle system only.
         */
         activeSubSystems: Array<ParticleSystem>;
+        /**
+         * Specifies if the particles are updated in emitter local space or world space
+         */
+        isLocal: boolean;
         private _rootParticleSystem;
         /**
          * Gets the current list of active particles
@@ -12019,6 +12023,8 @@ declare module BABYLON {
         _randomNoiseCoordinates1: Vector3;
         /** @hidden */
         _randomNoiseCoordinates2: Vector3;
+        /** @hidden */
+        _localPosition?: Vector3;
         /**
          * Creates a new instance Particle
          * @param particleSystem the particle system the particle belongs to
@@ -12057,15 +12063,17 @@ declare module BABYLON {
          * @param worldMatrix is the world matrix of the particle system
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
+         * @param isLocal defines if the direction should be set in local space
          */
-        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void;
+        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Called by the particle System when the position is computed for the created particle.
          * @param worldMatrix is the world matrix of the particle system
          * @param positionToUpdate is the position vector to update with the result
          * @param particle is the particle we are computed the position for
+         * @param isLocal defines if the position should be set in local space
          */
-        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void;
+        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Clones the current emitter and returns a copy of it
          * @returns the new emitter
@@ -12130,15 +12138,17 @@ declare module BABYLON {
          * @param worldMatrix is the world matrix of the particle system
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
+         * @param isLocal defines if the direction should be set in local space
          */
-        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void;
+        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Called by the particle System when the position is computed for the created particle.
          * @param worldMatrix is the world matrix of the particle system
          * @param positionToUpdate is the position vector to update with the result
          * @param particle is the particle we are computed the position for
+         * @param isLocal defines if the position should be set in local space
          */
-        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void;
+        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Clones the current emitter and returns a copy of it
          * @returns the new emitter
@@ -12220,15 +12230,17 @@ declare module BABYLON {
          * @param worldMatrix is the world matrix of the particle system
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
+         * @param isLocal defines if the direction should be set in local space
          */
-        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void;
+        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Called by the particle System when the position is computed for the created particle.
          * @param worldMatrix is the world matrix of the particle system
          * @param positionToUpdate is the position vector to update with the result
          * @param particle is the particle we are computed the position for
+         * @param isLocal defines if the position should be set in local space
          */
-        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void;
+        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Clones the current emitter and returns a copy of it
          * @returns the new emitter
@@ -12312,15 +12324,17 @@ declare module BABYLON {
          * @param worldMatrix is the world matrix of the particle system
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
+         * @param isLocal defines if the direction should be set in local space
          */
-        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void;
+        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Called by the particle System when the position is computed for the created particle.
          * @param worldMatrix is the world matrix of the particle system
          * @param positionToUpdate is the position vector to update with the result
          * @param particle is the particle we are computed the position for
+         * @param isLocal defines if the position should be set in local space
          */
-        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void;
+        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Clones the current emitter and returns a copy of it
          * @returns the new emitter
@@ -12463,15 +12477,17 @@ declare module BABYLON {
          * @param worldMatrix is the world matrix of the particle system
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
+         * @param isLocal defines if the direction should be set in local space
          */
-        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void;
+        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Called by the particle System when the position is computed for the created particle.
          * @param worldMatrix is the world matrix of the particle system
          * @param positionToUpdate is the position vector to update with the result
          * @param particle is the particle we are computed the position for
+         * @param isLocal defines if the position should be set in local space
          */
-        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void;
+        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Clones the current emitter and returns a copy of it
          * @returns the new emitter
@@ -12527,15 +12543,17 @@ declare module BABYLON {
          * @param worldMatrix is the world matrix of the particle system
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
+         * @param isLocal defines if the direction should be set in local space
          */
-        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void;
+        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Called by the particle System when the position is computed for the created particle.
          * @param worldMatrix is the world matrix of the particle system
          * @param positionToUpdate is the position vector to update with the result
          * @param particle is the particle we are computed the position for
+         * @param isLocal defines if the position should be set in local space
          */
-        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void;
+        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Clones the current emitter and returns a copy of it
          * @returns the new emitter
@@ -12610,15 +12628,17 @@ declare module BABYLON {
          * @param worldMatrix is the world matrix of the particle system
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
+         * @param isLocal defines if the direction should be set in local space
          */
-        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void;
+        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Called by the particle System when the position is computed for the created particle.
          * @param worldMatrix is the world matrix of the particle system
          * @param positionToUpdate is the position vector to update with the result
          * @param particle is the particle we are computed the position for
+         * @param isLocal defines if the position should be set in local space
          */
-        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void;
+        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Clones the current emitter and returns a copy of it
          * @returns the new emitter
@@ -12741,15 +12761,17 @@ declare module BABYLON {
          * @param worldMatrix is the world matrix of the particle system
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
+         * @param isLocal defines if the direction should be set in local space
          */
-        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void;
+        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Called by the particle System when the position is computed for the created particle.
          * @param worldMatrix is the world matrix of the particle system
          * @param positionToUpdate is the position vector to update with the result
          * @param particle is the particle we are computed the position for
+         * @param isLocal defines if the position should be set in local space
          */
-        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void;
+        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Clones the current emitter and returns a copy of it
          * @returns the new emitter
@@ -12818,15 +12840,17 @@ declare module BABYLON {
          * @param worldMatrix is the world matrix of the particle system
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
+         * @param isLocal defines if the direction should be set in local space
          */
-        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void;
+        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Called by the particle System when the position is computed for the created particle.
          * @param worldMatrix is the world matrix of the particle system
          * @param positionToUpdate is the position vector to update with the result
          * @param particle is the particle we are computed the position for
+         * @param isLocal defines if the position should be set in local space
          */
-        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void;
+        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
         /**
          * Clones the current emitter and returns a copy of it
          * @returns the new emitter
@@ -13067,6 +13091,10 @@ declare module BABYLON {
          * Specifies whether the particle system will be disposed once it reaches the end of the animation.
          */
         disposeOnStop: boolean;
+        /**
+         * Specifies if the particles are updated in emitter local space or world space
+         */
+        isLocal: boolean;
         /**
          * Gets the maximum number of particles active at the same time.
          * @returns The max number of active particles.
@@ -62408,6 +62436,12 @@ declare module BABYLON {
         get activeParticleCount(): number;
         set activeParticleCount(value: number);
         private _preWarmDone;
+        /**
+         * Specifies if the particles are updated in emitter local space or world space.
+         * This is always false for GPU particles
+         */
+        get isLocal(): boolean;
+        set isLocal(value: boolean);
         /**
          * Is this system ready to be used/rendered
          * @return true if the system is ready

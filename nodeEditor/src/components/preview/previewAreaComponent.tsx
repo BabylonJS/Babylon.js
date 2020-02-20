@@ -2,6 +2,8 @@
 import * as React from "react";
 import { GlobalState } from '../../globalState';
 import { DataStorage } from '../../dataStorage';
+import { Observer } from 'babylonjs/Misc/observable';
+import { Nullable } from 'babylonjs/types';
 
 const doubleSided: string = require("./svgs/doubleSided.svg");
 const depthPass: string = require("./svgs/depthPass.svg");
@@ -15,13 +17,17 @@ interface IPreviewAreaComponentProps {
 }
 
 export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentProps, {isLoading: boolean}> {
+    private _onIsLoadingChangedObserver: Nullable<Observer<boolean>>;
 
     constructor(props: IPreviewAreaComponentProps) {
         super(props);
-
         this.state = {isLoading: true};
 
-        this.props.globalState.onIsLoadingChanged.add(state => this.setState({isLoading: state}));
+        this._onIsLoadingChangedObserver = this.props.globalState.onIsLoadingChanged.add((state) => this.setState({isLoading: state}));
+    }
+
+    componentWillUnmount() {
+        this.props.globalState.onIsLoadingChanged.remove(this._onIsLoadingChangedObserver);
     }
 
     changeBackFaceCulling(value: boolean) {        
