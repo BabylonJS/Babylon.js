@@ -63,6 +63,12 @@ Engine.prototype.registerView = function(canvas: HTMLCanvasElement, camera?: Cam
         }
     }
 
+    let masterCanvas = this.getRenderingCanvas();
+    if (masterCanvas) {
+        canvas.width = masterCanvas.width;
+        canvas.height = masterCanvas.height;
+    }
+
     let newView = {target: canvas, camera: camera};
     this.views.push(newView);
 
