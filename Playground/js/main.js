@@ -1073,7 +1073,9 @@ class Main {
                         var code = JSON.parse(snippet.jsonPayload).code.toString();
                         var editorSpace = document.getElementById('jsEditor');
                         if (editorSpace) {
+                            editorSpace.style.overflow = "overlay";
                             editorSpace.innerHTML = '<pre class="loading-pre">' + code + "</pre>";
+                            this.parent.menuPG.resizeBigJsEditor();
                         }
 
                         this.parent.monacoCreator.addOnMoncaoLoadedCallback(function () {
