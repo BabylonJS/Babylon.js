@@ -794,7 +794,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 && pi.type !== PointerEventTypes.POINTERDOWN) {
                 return;
             }
-            
+
             var pointerId = (pi.event as PointerEvent).pointerId || this._defaultMousePointerId;
             if (pi.pickInfo && pi.pickInfo.hit && pi.pickInfo.pickedMesh === mesh) {
                 var uv = pi.pickInfo.getTextureCoordinates();

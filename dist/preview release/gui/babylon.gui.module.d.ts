@@ -387,6 +387,7 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
         private _renderScale;
         private _rootElement;
         private _cursorChanged;
+        private _defaultMousePointerId;
         /** @hidden */
         _numLayoutCalls: number;
         /** Gets the number of layout calls made the last time the ADT has been rendered */
@@ -4734,6 +4735,7 @@ declare module BABYLON.GUI {
         private _renderScale;
         private _rootElement;
         private _cursorChanged;
+        private _defaultMousePointerId;
         /** @hidden */
         _numLayoutCalls: number;
         /** Gets the number of layout calls made the last time the ADT has been rendered */
