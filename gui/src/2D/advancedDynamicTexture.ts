@@ -84,6 +84,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _renderScale = 1;
     private _rootElement: Nullable<HTMLElement>;
     private _cursorChanged = false;
+    private _defaultMousePointerId = 0;
 
     /** @hidden */
     public _numLayoutCalls = 0;
@@ -710,6 +711,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             if (!scene) {
                 return;
             }
+
+            if (pi.type === PointerEventTypes.POINTERMOVE && (pi.event as PointerEvent).pointerId) {
+                this._defaultMousePointerId = (pi.event as PointerEvent).pointerId; // This is required to make sure we have the correct pointer ID for wheel
+            }
+
             let camera = scene.cameraToUseForPointers || scene.activeCamera;
             let engine = scene.getEngine();
 
@@ -726,7 +732,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             let y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - tempViewport.y - tempViewport.height);
             this._shouldBlockPointer = false;
             // Do picking modifies _shouldBlockPointer
-            this._doPicking(x, y, pi.type, (pi.event as PointerEvent).pointerId || 0, pi.event.button, (<MouseWheelEvent>pi.event).deltaX, (<MouseWheelEvent>pi.event).deltaY);
+            let pointerId = (pi.event as PointerEvent).pointerId || this._defaultMousePointerId;
+            this._doPicking(x, y, pi.type, pointerId, pi.event.button, (<MouseWheelEvent>pi.event).deltaX, (<MouseWheelEvent>pi.event).deltaY);
             // Avoid overwriting a true skipOnPointerObservable to false
             if (this._shouldBlockPointer) {
                 pi.skipOnPointerObservable = this._shouldBlockPointer;
@@ -787,7 +794,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 && pi.type !== PointerEventTypes.POINTERDOWN) {
                 return;
             }
-            var pointerId = (pi.event as PointerEvent).pointerId || 0;
+            
+            var pointerId = (pi.event as PointerEvent).pointerId || this._defaultMousePointerId;
             if (pi.pickInfo && pi.pickInfo.hit && pi.pickInfo.pickedMesh === mesh) {
                 var uv = pi.pickInfo.getTextureCoordinates();
                 if (uv) {
