@@ -11522,12 +11522,12 @@ declare module BABYLON {
          * This function can be defined to specify initial direction for every new particle.
          * It by default use the emitterType defined function
          */
-        startDirectionFunction: (worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle) => void;
+        startDirectionFunction: (worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean) => void;
         /**
          * This function can be defined to specify initial position for every new particle.
          * It by default use the emitterType defined function
          */
-        startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle) => void;
+        startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean) => void;
         /**
          * @hidden
          */
