@@ -208,6 +208,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                             <SliderLineComponent label="Intensity" target={material.sheen} propertyName="intensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <Color3LineComponent label="Color" target={material.sheen} propertyName="color" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <TextureLinkLineComponent label="Texture" texture={material.sheen.texture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
+                            <SliderLineComponent label="Roughness" target={material.sheen} propertyName="roughness" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         </div>
                     }
                 </LineContainerComponent>
