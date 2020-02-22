@@ -205,6 +205,7 @@ void main(void) {
         vec3 baseColor = surfaceAlbedo;
 
         #ifdef REFLECTANCE
+            // *** NOT USED ANYMORE ***
             // Following Frostbite Remapping,
             // https://seblagarde.files.wordpress.com/2015/07/course_notes_moving_frostbite_to_pbr_v32.pdf page 115
             // vec3 f0 = 0.16 * reflectance * reflectance * (1.0 - metallic) + baseColor * metallic;
@@ -551,7 +552,12 @@ void main(void) {
             #ifdef SHEEN_TEXTURE
                 sheenColor.rgb *= toLinearSpace(sheenMapData.rgb);
             #endif
-            float sheenRoughness = roughness;
+            
+            #ifdef SHEEN_ROUGHNESS
+                float sheenRoughness = vSheenRoughness;
+            #else
+                float sheenRoughness = roughness;
+            #endif
 
             // Sheen Lobe Layering.
             sheenIntensity *= (1. - reflectance);
@@ -887,7 +893,12 @@ void main(void) {
 
     // _____________________________ Sheen Environment Oclusion __________________________
     #if defined(SHEEN) && defined(REFLECTION)
-        vec3 sheenEnvironmentReflectance = getSheenReflectanceFromBRDFLookup(sheenColor, environmentBrdf);
+        #ifdef SHEEN_ROUGHNESS
+            vec3 environmentSheenBrdf = getBRDFLookup(NdotV, sheenRoughness);
+        #else
+            vec3 environmentSheenBrdf = environmentBrdf;
+        #endif
+        vec3 sheenEnvironmentReflectance = getSheenReflectanceFromBRDFLookup(sheenColor, environmentSheenBrdf);
 
         #ifdef RADIANCEOCCLUSION
             sheenEnvironmentReflectance *= seo;
