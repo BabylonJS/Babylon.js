@@ -243,8 +243,8 @@ export class Particle {
             other._initialDirection = null;
         }
         other.direction.copyFrom(this.direction);
-        if (this._localPosition) {   
-            if (other._localPosition) {         
+        if (this._localPosition) {
+            if (other._localPosition) {
                 other._localPosition.copyFrom(this._localPosition);
             } else {
                 other._localPosition = this._localPosition.clone();
