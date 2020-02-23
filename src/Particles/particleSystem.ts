@@ -67,12 +67,12 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * This function can be defined to specify initial direction for every new particle.
      * It by default use the emitterType defined function
      */
-    public startDirectionFunction: (worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle) => void;
+    public startDirectionFunction: (worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean) => void;
     /**
      * This function can be defined to specify initial position for every new particle.
      * It by default use the emitterType defined function
      */
-    public startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle) => void;
+    public startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean) => void;
 
     /**
      * @hidden
@@ -1288,21 +1288,20 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         // Update current
         this._alive = this._particles.length > 0;
 
+        let worldMatrix: Nullable<Matrix> = null;
+
         if ((<AbstractMesh>this.emitter).position) {
             var emitterMesh = (<AbstractMesh>this.emitter);
             this._emitterWorldMatrix = emitterMesh.getWorldMatrix();
+            if (this.isLocal) {
+                worldMatrix = this._emitterWorldMatrix;
+            }
         } else {
             var emitterPosition = (<Vector3>this.emitter);
             this._emitterWorldMatrix = Matrix.Translation(emitterPosition.x, emitterPosition.y, emitterPosition.z);
         }
 
         this.updateFunction(this._particles);
-
-        let worldMatrix: Nullable<Matrix> = null;
-
-        if (this.isLocal && this.emitter && (this.emitter as AbstractMesh).getWorldMatrix) {
-            worldMatrix = (this.emitter as AbstractMesh).getWorldMatrix();
-        }
 
         // Add new ones
         var particle: Particle;
@@ -1334,7 +1333,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             let emitPower = Scalar.RandomRange(this.minEmitPower, this.maxEmitPower);
 
             if (this.startPositionFunction) {
-                this.startPositionFunction(this._emitterWorldMatrix, particle.position, particle);
+                this.startPositionFunction(this._emitterWorldMatrix, particle.position, particle, this.isLocal);
             }
             else {
                 this.particleEmitterType.startPositionFunction(this._emitterWorldMatrix, particle.position, particle, this.isLocal);
@@ -1350,7 +1349,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             }
 
             if (this.startDirectionFunction) {
-                this.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle);
+                this.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle, this.isLocal);
             }
             else {
                 this.particleEmitterType.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle, this.isLocal);
