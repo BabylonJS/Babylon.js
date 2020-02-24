@@ -433,6 +433,8 @@ void main() {
 #ifdef ANIMATESHEETRANDOMSTART
     outCellStartOffset = cellStartOffset;
     offsetAge += cellStartOffset;
+#else
+    float cellStartOffset = 0.;
 #endif    
 
     float ratio = clamp(mod(cellStartOffset + cellInfos.z * offsetAge, life) / life, 0., 1.0);
