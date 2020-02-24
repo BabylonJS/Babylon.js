@@ -242,12 +242,6 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                 noiseTextureData = <Nullable<Uint8Array>>(this.noiseTexture.getContent());
             }
 
-            let worldMatrix: Nullable<Matrix> = null;
-
-            if (this.isLocal && this.emitter && (this.emitter as AbstractMesh).getWorldMatrix) {
-                worldMatrix = (this.emitter as AbstractMesh).getWorldMatrix();
-            }
-
             for (var index = 0; index < particles.length; index++) {
                 var particle = particles[index];
 
@@ -350,9 +344,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                     });
                 }
 
-                if (worldMatrix) {
+                if (this.isLocal) {
                     particle._localPosition!.addInPlace(this._scaledDirection);
-                    Vector3.TransformCoordinatesToRef(particle._localPosition!, worldMatrix, particle.position);
+                    Vector3.TransformCoordinatesToRef(particle._localPosition!, this._emitterWorldMatrix, particle.position);
                 } else {
                     particle.position.addInPlace(this._scaledDirection);
                 }
@@ -1160,13 +1154,32 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         if (!this._isBillboardBased) {
             if (particle._initialDirection) {
-                this._vertexData[offset++] = particle._initialDirection.x;
-                this._vertexData[offset++] = particle._initialDirection.y;
-                this._vertexData[offset++] = particle._initialDirection.z;
+                let initialDirection = particle._initialDirection;
+                if (this.isLocal) {
+                    Vector3.TransformNormalToRef(initialDirection, this._emitterWorldMatrix, TmpVectors.Vector3[0]);
+                    initialDirection = TmpVectors.Vector3[0];
+                }
+                if (initialDirection.x === 0 && initialDirection.z === 0) {
+                    initialDirection.x = 0.001;
+                }
+
+                this._vertexData[offset++] = initialDirection.x;
+                this._vertexData[offset++] = initialDirection.y;
+                this._vertexData[offset++] = initialDirection.z;
             } else {
-                this._vertexData[offset++] = particle.direction.x;
-                this._vertexData[offset++] = particle.direction.y;
-                this._vertexData[offset++] = particle.direction.z;
+                let direction = particle.direction;
+                if (this.isLocal) {
+                    Vector3.TransformNormalToRef(direction, this._emitterWorldMatrix, TmpVectors.Vector3[0]);
+                    direction = TmpVectors.Vector3[0];
+                }
+
+                if (direction.x === 0 && direction.z === 0) {
+                    direction.x = 0.001;
+                }
+                this._vertexData[offset++] = direction.x;
+                this._vertexData[offset++] = direction.y;
+                this._vertexData[offset++] = direction.z;
+
             }
         } else if (this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED) {
             this._vertexData[offset++] = particle.direction.x;
@@ -1288,14 +1301,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         // Update current
         this._alive = this._particles.length > 0;
 
-        let worldMatrix: Nullable<Matrix> = null;
-
         if ((<AbstractMesh>this.emitter).position) {
             var emitterMesh = (<AbstractMesh>this.emitter);
             this._emitterWorldMatrix = emitterMesh.getWorldMatrix();
-            if (this.isLocal) {
-                worldMatrix = this._emitterWorldMatrix;
-            }
+
         } else {
             var emitterPosition = (<Vector3>this.emitter);
             this._emitterWorldMatrix = Matrix.Translation(emitterPosition.x, emitterPosition.y, emitterPosition.z);
@@ -1339,13 +1348,13 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                 this.particleEmitterType.startPositionFunction(this._emitterWorldMatrix, particle.position, particle, this.isLocal);
             }
 
-            if (worldMatrix) {
+            if (this.isLocal) {
                 if (!particle._localPosition) {
                     particle._localPosition = particle.position.clone();
                 } else {
                     particle._localPosition.copyFrom(particle.position);
                 }
-                Vector3.TransformCoordinatesToRef(particle._localPosition!, worldMatrix, particle.position);
+                Vector3.TransformCoordinatesToRef(particle._localPosition!, this._emitterWorldMatrix, particle.position);
             }
 
             if (this.startDirectionFunction) {
