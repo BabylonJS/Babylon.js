@@ -24,7 +24,7 @@ class MonacoCreator {
 
         this.compilerTriggerTimeoutID = null;
 
-        this.addOnMoncaoLoadedCallback(
+        this.addOnMonacoLoadedCallback(
             function () {
                 this.parent.main.run();
             },
@@ -126,7 +126,7 @@ class MonacoCreator {
      * @param {Function} func the function to call when monaco is available
      * @param {*} context The context of this function
      */
-    addOnMoncaoLoadedCallback(func, context) {
+    addOnMonacoLoadedCallback(func, context) {
         this.onMonacoLoadedCallbacks = this.onMonacoLoadedCallbacks || [];
         if (this.monacoLoaded) {
             func.call(context, this);

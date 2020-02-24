@@ -504,7 +504,7 @@ class Main {
                     if (!this.checkTypescriptSupport(xhr)) return;
 
                     xhr.onreadystatechange = null;
-                    this.parent.monacoCreator.addOnMoncaoLoadedCallback(function () {
+                    this.parent.monacoCreator.addOnMonacoLoadedCallback(function () {
                         this.parent.monacoCreator.BlockEditorChange = true;
                         this.parent.monacoCreator.JsEditor.setValue(xhr.responseText);
                         this.parent.monacoCreator.JsEditor.setPosition({
@@ -1073,13 +1073,13 @@ class Main {
                         var code = JSON.parse(snippet.jsonPayload).code.toString();
                         var editorSpace = document.getElementById('jsEditor');
                         if (editorSpace) {
-                            editorSpace.style.overflow = "overlay";
-                            editorSpace.innerHTML = '<pre class="loading-pre">' + code + "</pre>";
-                            this.parent.menuPG.resizeBigJsEditor();
+                            // editorSpace.style.overflow = "overlay";
+                            // editorSpace.innerHTML = '<pre class="loading-pre">' + code + "</pre>";
+                            // this.parent.menuPG.resizeBigJsEditor();
                         }
 
-                        this.parent.monacoCreator.addOnMoncaoLoadedCallback(function () {
-                            this.parent.monacoCreator.BlockEditorChange = true;
+                        this.parent.monacoCreator.addOnMonacoLoadedCallback(function () {
+                            this.parent.monacoCreatorjs = true;
                             this.parent.monacoCreator.JsEditor.setValue(code);
 
                             this.parent.monacoCreator.JsEditor.setPosition({
