@@ -220,7 +220,7 @@ class Main {
     constructor(parent) {
         this.parent = parent;
 
-        if (typeof BABYLON !== 'undefined') {
+        if (typeof BABYLON !== 'undefined' && BABYLON.Engine) {
             BABYLON.Engine.ShadersRepository = "/src/Shaders/";
         }
         this.snippetV3Url = "https://snippet.babylonjs.com"
