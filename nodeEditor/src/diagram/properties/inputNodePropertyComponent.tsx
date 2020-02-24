@@ -33,7 +33,10 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
 
     componentDidMount() {        
         let inputBlock = this.props.block as InputBlock;
-        this.onValueChangedObserver = inputBlock.onValueChangedObservable.add(() => this.forceUpdate());
+        this.onValueChangedObserver = inputBlock.onValueChangedObservable.add(() => {
+            this.forceUpdate()
+            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+        });
     }
 
     componentWillUnmount() {
@@ -83,8 +86,6 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                 if (inputBlock.isConstant) {
                                     this.props.globalState.onRebuildRequiredObservable.notifyObservers();    
                                 }
-
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                             }}/>
                         }
                     </>
