@@ -261,15 +261,21 @@ export class GraphFrame {
     }
 
     public set comments(comments: string) {
-        if (comments && (!this._comments || this._comments.length == 0) && comments.length > 0) {
+        if (comments && !this._comments && comments.length > 0) {
             this.element.style.gridTemplateRows = "40px min-content 1fr";
             this._borderElement.style.gridRow = "1 / span 3";
             this._portContainer.style.gridRow = "3";
             this._commentsElement.classList.add("has-comments");
-        } else if (comments && comments.length === 0) {
-            this._commentsElement.classList.remove('has-comments')
+        } else if (!comments) {
+            this.element.style.gridTemplateRows = "40px calc(100% - 40px)";
+            this._borderElement.style.gridRow = "1 / span 2";
+            this._portContainer.style.gridRow = "2";
+            this._commentsElement.classList.remove('has-comments');
         }
-        this._commentsElement.innerText = comments;
+
+        if (comments === "" || (comments && comments.length >= 0)) {
+            this._commentsElement.innerText = comments;
+        }
         this.height = this._borderElement.offsetHeight;
         this._comments = comments;
         this.updateMinHeightWithComments();
