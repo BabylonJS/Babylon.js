@@ -1,9 +1,15 @@
 #include "App.h"
 
 #include <Babylon/Console.h>
+#include <Babylon/NativeEngine.h>
+#include <Babylon/NativeWindow.h>
+#include <Babylon/ScriptLoader.h>
+#include <Babylon/XMLHttpRequest.h>
 
 #include <pplawait.h>
 #include <winrt/Windows.ApplicationModel.h>
+
+#include <windows.ui.core.h>
 
 #include <filesystem>
 
@@ -134,29 +140,20 @@ concurrency::task<void> App::RestartRuntimeAsync(Windows::Foundation::Rect bound
 
     std::string appUrl{ "file:///" + std::filesystem::current_path().generic_string() };
 
-    std::string rootUrl{ appUrl };
-    if (m_fileActivatedArgs != nullptr)
+    // Initialize the runtime.
     {
-        auto file = static_cast<Windows::Storage::IStorageFile^>(m_fileActivatedArgs->Files->GetAt(0));
-        const auto path = winrt::to_string(file->Path->Data());
-        auto parentPath = std::filesystem::path{ path }.parent_path();
-        rootUrl = "file:///" + parentPath.generic_string();
+        std::string rootUrl{ appUrl };
+        if (m_fileActivatedArgs != nullptr)
+        {
+            auto file = static_cast<Windows::Storage::IStorageFile^>(m_fileActivatedArgs->Files->GetAt(0));
+            const auto path = winrt::to_string(file->Path->Data());
+            auto parentPath = std::filesystem::path{ path }.parent_path();
+            rootUrl = "file:///" + parentPath.generic_string();
+        }
+        m_runtime = std::make_unique<Babylon::AppRuntime>(std::move(rootUrl));
     }
 
-    DisplayInformation^ displayInformation = DisplayInformation::GetForCurrentView();
-    m_displayScale = static_cast<float>(displayInformation->RawPixelsPerViewPixel);
-
-    float width = bounds.Width * m_displayScale;
-    float height = bounds.Height * m_displayScale;
-    m_runtime = std::make_unique<Babylon::RuntimeUWP>(
-        reinterpret_cast<ABI::Windows::UI::Core::ICoreWindow*>(CoreWindow::GetForCurrentThread()), rootUrl,
-        width, height);
-
-    // issue a resize here because on some platforms (UWP, WIN32) WM_SIZE is received before the runtime construction
-    // So the context is created with the right size but the nativeWindow still has the wrong size
-    // depending on how you create your app (runtime created before WM_SIZE is received, this call is not needed)
-    m_runtime->UpdateSize(width, height);
-
+    // Create the console plugin.
     m_runtime->Dispatch([](Napi::Env env)
     {
         Babylon::Console::CreateInstance(env, [](const char* message, auto)
@@ -165,15 +162,33 @@ concurrency::task<void> App::RestartRuntimeAsync(Windows::Foundation::Rect bound
         });
     });
 
+    // Initialize NativeWindow plugin.
+    DisplayInformation^ displayInformation = DisplayInformation::GetForCurrentView();
+    m_displayScale = static_cast<float>(displayInformation->RawPixelsPerViewPixel);
+    size_t width = static_cast<size_t>(bounds.Width * m_displayScale);
+    size_t height = static_cast<size_t>(bounds.Height * m_displayScale);
+    auto* windowPtr = reinterpret_cast<ABI::Windows::UI::Core::ICoreWindow*>(CoreWindow::GetForCurrentThread());
+    m_runtime->Dispatch([windowPtr, width, height](Napi::Env env)
+    {
+        Babylon::NativeWindow::Initialize(env, windowPtr, width, height);
+    });
+
+    // Initialize NativeEngine plugin.
+    Babylon::InitializeNativeEngine(*m_runtime, windowPtr, width, height);
+
+    // Initialize XMLHttpRequest plugin.
+    Babylon::InitializeXMLHttpRequest(*m_runtime, m_runtime->RootUrl());
+
     m_inputBuffer = std::make_unique<InputManager::InputBuffer>(*m_runtime);
     InputManager::Initialize(*m_runtime, *m_inputBuffer);
 
-    m_runtime->LoadScript(appUrl + "/Scripts/babylon.max.js");
-    m_runtime->LoadScript(appUrl + "/Scripts/babylon.glTF2FileLoader.js");
+    Babylon::ScriptLoader loader{ *m_runtime, m_runtime->RootUrl() };
+    loader.LoadScript(appUrl + "/Scripts/babylon.max.js");
+    loader.LoadScript(appUrl + "/Scripts/babylon.glTF2FileLoader.js");
 
     if (m_fileActivatedArgs == nullptr)
     {
-        m_runtime->LoadScript("Scripts/experience.js");
+        loader.LoadScript("Scripts/experience.js");
     }
     else
     {
@@ -182,10 +197,10 @@ concurrency::task<void> App::RestartRuntimeAsync(Windows::Foundation::Rect bound
             auto file = static_cast<Windows::Storage::IStorageFile^>(m_fileActivatedArgs->Files->GetAt(idx));
             const auto path = winrt::to_string(file->Path->Data());
             auto text = co_await Windows::Storage::FileIO::ReadTextAsync(file);
-            m_runtime->Eval(winrt::to_string(text->Data()), path);
+            // TODO m_runtime->Eval(winrt::to_string(text->Data()), path);
         }
 
-        m_runtime->LoadScript(appUrl + "/Scripts/playground_runner.js");
+        loader.LoadScript(appUrl + "/Scripts/playground_runner.js");
     }
 }
 
@@ -213,7 +228,13 @@ void App::OnResuming(Platform::Object^ sender, Platform::Object^ args)
 
 void App::OnWindowSizeChanged(CoreWindow^ /*sender*/, WindowSizeChangedEventArgs^ args)
 {
-    m_runtime->UpdateSize(args->Size.Width * m_displayScale, args->Size.Height * m_displayScale);
+    size_t width = static_cast<size_t>(args->Size.Width * m_displayScale);
+    size_t height = static_cast<size_t>(args->Size.Height * m_displayScale);
+    m_runtime->Dispatch([width, height](Napi::Env env)
+    {
+        auto& window = Babylon::NativeWindow::GetFromJavaScript(env);
+        window.Resize(width, height);
+    });
 }
 
 void App::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEventArgs^ args)
@@ -224,6 +245,7 @@ void App::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEventArgs^ ar
 void App::OnWindowClosed(CoreWindow^ sender, CoreWindowEventArgs^ args)
 {
     m_windowClosed = true;
+    m_runtime.reset();
 }
 
 void App::OnPointerMoved(CoreWindow^, PointerEventArgs^ args)

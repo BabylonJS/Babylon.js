@@ -12,8 +12,12 @@
 
 #include <Shared/TestUtils.h>
 
+#include <Babylon/AppRuntime.h>
 #include <Babylon/Console.h>
-#include <Babylon/RuntimeWin32.h>
+#include <Babylon/NativeWindow.h>
+#include <Babylon/NativeEngine.h>
+#include <Babylon/ScriptLoader.h>
+#include <Babylon/XMLHttpRequest.h>
 
 #define MAX_LOADSTRING 100
 
@@ -21,7 +25,7 @@
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
-std::unique_ptr<Babylon::RuntimeWin32> runtime{};
+std::unique_ptr<Babylon::AppRuntime> runtime{};
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -52,16 +56,16 @@ namespace
 
     void RefreshBabylon(HWND hWnd)
     {
-        std::string rootUrl{ GetUrlFromPath(GetModulePath().parent_path().parent_path()) };
         RECT rect;
         if (!GetWindowRect(hWnd, &rect))
         {
             return;
         }
-        auto width = rect.right - rect.left;
-        auto height = rect.bottom - rect.top;
-        runtime = std::make_unique<Babylon::RuntimeWin32>(hWnd, rootUrl, static_cast<float>(width), static_cast<float>(height));
 
+        runtime.reset();
+        runtime = std::make_unique<Babylon::AppRuntime>(GetUrlFromPath(GetModulePath().parent_path().parent_path()));
+
+        // Initialize console plugin.
         runtime->Dispatch([](Napi::Env env)
         {
             Babylon::Console::CreateInstance(env, [](const char* message, auto)
@@ -70,15 +74,30 @@ namespace
             });
         });
 
+        // Initialize NativeWindow plugin.
+        auto width = static_cast<float>(rect.right - rect.left);
+        auto height = static_cast<float>(rect.bottom - rect.top);
+        runtime->Dispatch([hWnd, width, height](Napi::Env env)
+        {
+            Babylon::NativeWindow::Initialize(env, hWnd, width, height);
+        });
+
+        // Initialize NativeEngine plugin.
+        Babylon::InitializeNativeEngine(*runtime, hWnd, width, height);
+
+        // Initialize XMLHttpRequest plugin.
+        Babylon::InitializeXMLHttpRequest(*runtime, runtime->RootUrl());
+
         runtime->Dispatch([hWnd](Napi::Env env)
         {
             Babylon::TestUtils::CreateInstance(env, hWnd);
         });
 
-        runtime->LoadScript("Scripts/babylon.max.js");
-        runtime->LoadScript("Scripts/babylon.glTF2FileLoader.js");
-        runtime->LoadScript("Scripts/babylonjs.materials.js");
-        runtime->LoadScript("Scripts/validation_native.js");
+        Babylon::ScriptLoader loader{ *runtime, runtime->RootUrl() };
+        loader.LoadScript("Scripts/babylon.max.js");
+        loader.LoadScript("Scripts/babylon.glTF2FileLoader.js");
+        loader.LoadScript("Scripts/babylonjs.materials.js");
+        loader.LoadScript("Scripts/validation_native.js");
     }
 }
 
@@ -213,9 +232,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_SIZE:
         {
             if (runtime != nullptr) {
-                float width = static_cast<float>(LOWORD(lParam));
-                float height = static_cast<float>(HIWORD(lParam));
-                runtime->UpdateSize(width, height);
+                size_t width = static_cast<size_t>(LOWORD(lParam));
+                size_t height = static_cast<size_t>(HIWORD(lParam));
+                runtime->Dispatch([width, height](Napi::Env env)
+                {
+                    auto& window = Babylon::NativeWindow::GetFromJavaScript(env);
+                    window.Resize(width, height);
+                });
             }
             break;
         }

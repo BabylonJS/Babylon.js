@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Shared/InputManager.h>
-#include <Babylon/RuntimeUWP.h>
+#include <Babylon/AppRuntime.h>
 #include <ppltasks.h>
 
 // Main entry point for our app. Connects the app with the Windows shell and handles application lifecycle events.
@@ -39,7 +39,7 @@ private:
 
     concurrency::task<void> RestartRuntimeAsync(Windows::Foundation::Rect);
 
-    std::unique_ptr<Babylon::RuntimeUWP> m_runtime{};
+    std::unique_ptr<Babylon::AppRuntime> m_runtime{};
     std::unique_ptr<InputManager::InputBuffer> m_inputBuffer{};
     Windows::ApplicationModel::Activation::FileActivatedEventArgs^ m_fileActivatedArgs;
     bool m_windowClosed;

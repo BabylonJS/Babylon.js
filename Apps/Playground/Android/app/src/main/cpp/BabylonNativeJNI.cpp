@@ -7,11 +7,17 @@
 #include <android/native_window.h> // requires ndk r5 or newer
 #include <android/native_window_jni.h> // requires ndk r5 or newer
 #include <android/log.h>
+
+#include <Babylon/AppRuntime.h>
 #include <Babylon/Console.h>
-#include <Babylon/RuntimeAndroid.h>
+#include <Babylon/NativeEngine.h>
+#include <Babylon/NativeWindow.h>
+#include <Babylon/ScriptLoader.h>
+#include <Babylon/XMLHttpRequest.h>
+#include <InputManager.h>
+
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
-#include <InputManager.h>
 
 extern "C" {
     JNIEXPORT void JNICALL Java_BabylonNative_Wrapper_initEngine(JNIEnv* env, jobject obj, jobject assetMgr, jobject appContext);
@@ -25,8 +31,9 @@ extern "C" {
     JNIEXPORT void JNICALL Java_BabylonNative_Wrapper_setTouchInfo(JNIEnv* env, jobject obj, jfloat dx, jfloat dy, jboolean down);
 };
 
-std::unique_ptr<Babylon::RuntimeAndroid> runtime{};
+std::unique_ptr<Babylon::AppRuntime> runtime{};
 std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
+std::unique_ptr<Babylon::ScriptLoader> loader{};
 
 AAssetManager *g_assetMgrNative = nullptr;
 
@@ -41,6 +48,7 @@ Java_BabylonNative_Wrapper_initEngine(JNIEnv* env, jobject obj,
 JNIEXPORT void JNICALL
 Java_BabylonNative_Wrapper_finishEngine(JNIEnv* env, jobject obj)
 {
+    loader.reset();
     inputBuffer.reset();
     runtime.reset();
 }
@@ -50,11 +58,7 @@ Java_BabylonNative_Wrapper_surfaceCreated(JNIEnv* env, jobject obj, jobject surf
 {
     if (!runtime)
     {
-        ANativeWindow *window = ANativeWindow_fromSurface(env, surface);
-        int32_t width  = ANativeWindow_getWidth(window);
-        int32_t height = ANativeWindow_getHeight(window);
-
-        runtime = std::make_unique<Babylon::RuntimeAndroid>(window, "", width, height);
+        runtime = std::make_unique<Babylon::AppRuntime>("");
 
         runtime->Dispatch([](Napi::Env env)
         {
@@ -75,11 +79,25 @@ Java_BabylonNative_Wrapper_surfaceCreated(JNIEnv* env, jobject obj, jobject surf
             });
         });
 
+        ANativeWindow *window = ANativeWindow_fromSurface(env, surface);
+        int32_t width  = ANativeWindow_getWidth(window);
+        int32_t height = ANativeWindow_getHeight(window);
+        runtime->Dispatch([window, width, height](Napi::Env env)
+        {
+            Babylon::NativeWindow::Initialize(env, window, width, height);
+        });
+        
+        Babylon::InitializeNativeEngine(*runtime, window, width, height);
+        
+        // Initialize XMLHttpRequest plugin.
+        Babylon::InitializeXMLHttpRequest(*runtime, runtime->RootUrl());
+
         inputBuffer = std::make_unique<InputManager::InputBuffer>(*runtime);
         InputManager::Initialize(*runtime, *inputBuffer);
-
-        runtime->LoadScript("Scripts/babylon.max.js");
-        runtime->LoadScript("Scripts/babylon.glTF2FileLoader.js");
+        
+        loader = std::make_unique<Babylon::ScriptLoader>(*runtime, runtime->RootUrl());
+        loader->LoadScript("Scripts/babylon.max.js");
+        loader->LoadScript("Scripts/babylon.glTF2FileLoader.js");
     }
 }
 
@@ -89,17 +107,17 @@ Java_BabylonNative_Wrapper_surfaceChanged(JNIEnv* env, jobject obj, jint width, 
     if (runtime)
     {
         ANativeWindow *window = ANativeWindow_fromSurface(env, surface);
-        runtime->UpdateWindow(width, height, window);
+        Babylon::ReinitializeNativeEngine(*runtime, window, static_cast<size_t>(width), static_cast<size_t>(height));
     }
 }
 
 JNIEXPORT void JNICALL
 Java_BabylonNative_Wrapper_loadScript(JNIEnv* env, jobject obj, jstring path)
 {
-    if (runtime)
+    if (loader)
     {
         jboolean iscopy;
-        runtime->LoadScript(env->GetStringUTFChars(path, &iscopy));
+        loader->LoadScript(env->GetStringUTFChars(path, &iscopy));
     }
 }
 
@@ -110,7 +128,8 @@ Java_BabylonNative_Wrapper_eval(JNIEnv* env, jobject obj, jstring source, jstrin
     {
         jboolean iscopy;
         std::string url = env->GetStringUTFChars(sourceURL, &iscopy);
-        runtime->Eval(env->GetStringUTFChars(source, &iscopy), url);
+        std::string src = env->GetStringUTFChars(source, &iscopy);
+        loader->Eval(std::move(src), std::move(url));
     }
 }
 

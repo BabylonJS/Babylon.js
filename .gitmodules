@@ -1,27 +1,27 @@
 [submodule "base-n"]
-	path = Library/Dependencies/base-n
+	path = Dependencies/base-n
 	url = https://github.com/azawadzki/base-n
 [submodule "arcana.cpp"]
-	path = Library/Dependencies/arcana.cpp
+	path = Dependencies/arcana.cpp
 	url = https://github.com/microsoft/arcana.cpp
 [submodule "glslang"]
-	path = Library/Dependencies/glslang
+	path = Dependencies/glslang
 	url = https://github.com/KhronosGroup/glslang
 [submodule "SPIRV-Cross"]
-	path = Library/Dependencies/SPIRV-Cross
+	path = Dependencies/SPIRV-Cross
 	url = https://github.com/KhronosGroup/SPIRV-Cross
 [submodule "curl"]
-	path = Library/Dependencies/curl
+	path = Dependencies/curl
 	url = https://github.com/curl/curl
 [submodule "bgfx.cmake"]
-	path = Library/Dependencies/bgfx.cmake
+	path = Dependencies/bgfx.cmake
 	url = https://github.com/BabylonJS/bgfx.cmake
 [submodule "Library/Dependencies/ios-cmake"]
-	path = Library/Dependencies/ios-cmake
+	path = Dependencies/ios-cmake
 	url = https://github.com/leetal/ios-cmake.git
 [submodule "Library/Dependencies/xr/Dependencies/OpenXR-SDK"]
-	path = Library/Dependencies/xr/Dependencies/OpenXR-SDK
+	path = Dependencies/xr/Dependencies/OpenXR-SDK
 	url = https://github.com/KhronosGroup/OpenXR-SDK
 [submodule "Library/Dependencies/openssl/openssl"]
-	path = Library/Dependencies/openssl/openssl
+	path = Dependencies/openssl/openssl
 	url = https://github.com/openssl/openssl.git

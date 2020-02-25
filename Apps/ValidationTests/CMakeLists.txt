@@ -38,15 +38,25 @@ if(WINDOWS_STORE)
 endif()
 
 if(WIN32)
-    set(TEST_DEPENDENCY "${CMAKE_CURRENT_SOURCE_DIR}/../../Library/Dependencies/bgfx.cmake/bx/include/compat/msvc"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../../Library/Dependencies/bgfx.cmake/bgfx/include"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../../Library/Dependencies/bgfx.cmake/bx/include"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../../Library/Dependencies/bgfx.cmake/bimg/include")
+    set(TEST_DEPENDENCY "${CMAKE_CURRENT_SOURCE_DIR}/../../Dependencies/bgfx.cmake/bx/include/compat/msvc"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../Dependencies/bgfx.cmake/bgfx/include"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../Dependencies/bgfx.cmake/bx/include"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../Dependencies/bgfx.cmake/bimg/include")
 endif()
 
 target_include_directories(ValidationTests PRIVATE "Source" "." ${TEST_DEPENDENCY})
 
-target_link_libraries(ValidationTests PRIVATE Library ${ADDITIONAL_LIBRARIES})
+target_link_libraries(ValidationTests PRIVATE ${ADDITIONAL_LIBRARIES})
+target_link_libraries(ValidationTests
+    PRIVATE bgfx
+    PRIVATE bimg
+    PRIVATE bx
+    PRIVATE AppRuntime
+    PRIVATE Console
+    PRIVATE NativeEngine
+    PRIVATE NativeWindow
+    PRIVATE ScriptLoader
+    PRIVATE XMLHttpRequest)
 
 foreach(script ${SCRIPTS} ${BABYLONSCRIPTS})
     get_filename_component(SCRIPT_NAME "${script}" NAME)

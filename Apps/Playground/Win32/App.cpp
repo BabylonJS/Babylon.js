@@ -9,8 +9,12 @@
 
 #include <Shared/InputManager.h>
 
+#include <Babylon/AppRuntime.h>
 #include <Babylon/Console.h>
-#include <Babylon/RuntimeWin32.h>
+#include <Babylon/NativeEngine.h>
+#include <Babylon/NativeWindow.h>
+#include <Babylon/ScriptLoader.h>
+#include <Babylon/XMLHttpRequest.h>
 
 #define MAX_LOADSTRING 100
 
@@ -18,7 +22,7 @@
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
-std::unique_ptr<Babylon::RuntimeWin32> runtime{};
+std::unique_ptr<Babylon::AppRuntime> runtime{};
 std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
 
 // Forward declarations of functions included in this code module:
@@ -74,7 +78,6 @@ namespace
     {
         std::vector<std::string> scripts = GetCommandLineArguments();
         std::string moduleRootUrl = GetUrlFromPath(GetModulePath().parent_path().parent_path());
-        std::string rootUrl{ scripts.empty() ? moduleRootUrl : GetUrlFromPath(std::filesystem::path{ scripts.back() }.parent_path()) };
 
         RECT rect;
         if (!GetWindowRect(hWnd, &rect))
@@ -82,16 +85,11 @@ namespace
             return;
         }
 
-        auto width = static_cast<float>(rect.right - rect.left);
-        auto height = static_cast<float>(rect.bottom - rect.top);
+        // Separately call reset and make_unique to ensure prior runtime is destroyed before new one is created.
         runtime.reset();
-        runtime = std::make_unique<Babylon::RuntimeWin32>(hWnd, rootUrl, width, height);
+        runtime = std::make_unique<Babylon::AppRuntime>(scripts.empty() ? moduleRootUrl : GetUrlFromPath(std::filesystem::path{scripts.back()}.parent_path()));
 
-        // issue a resize here because on some platforms (UWP, WIN32) WM_SIZE is received before the runtime construction
-        // So the context is created with the right size but the nativeWindow still has the wrong size
-        // depending on how you create your app (runtime created before WM_SIZE is received, this call is not needed)
-        runtime->UpdateSize(width, height);
-
+        // Initialize console plugin.
         runtime->Dispatch([](Napi::Env env)
         {
             Babylon::Console::CreateInstance(env, [](const char* message, auto)
@@ -100,26 +98,50 @@ namespace
             });
         });
 
+        // Initialize NativeWindow plugin.
+        auto width = static_cast<float>(rect.right - rect.left);
+        auto height = static_cast<float>(rect.bottom - rect.top);
+        runtime->Dispatch([hWnd, width, height](Napi::Env env)
+        {
+            Babylon::NativeWindow::Initialize(env, hWnd, width, height);
+        });
+
+        // Initialize NativeEngine plugin.
+        Babylon::InitializeNativeEngine(*runtime, hWnd, width, height);
+
+        // Initialize XMLHttpRequest plugin.
+        Babylon::InitializeXMLHttpRequest(*runtime, runtime->RootUrl());
+
         inputBuffer = std::make_unique<InputManager::InputBuffer>(*runtime);
         InputManager::Initialize(*runtime, *inputBuffer);
 
-        runtime->LoadScript(moduleRootUrl + "/Scripts/babylon.max.js");
-        runtime->LoadScript(moduleRootUrl + "/Scripts/babylon.glTF2FileLoader.js");
-        runtime->LoadScript(moduleRootUrl + "/Scripts/babylonjs.materials.js");
+        Babylon::ScriptLoader loader{ *runtime, runtime->RootUrl() };
+        loader.LoadScript(moduleRootUrl + "/Scripts/babylon.max.js");
+        loader.LoadScript(moduleRootUrl + "/Scripts/babylon.glTF2FileLoader.js");
+        loader.LoadScript(moduleRootUrl + "/Scripts/babylonjs.materials.js");
 
         if (scripts.empty())
         {
-            runtime->LoadScript("Scripts/experience.js");
+            loader.LoadScript("Scripts/experience.js");
         }
         else
         {
             for (const auto& script : scripts)
             {
-                runtime->LoadScript(GetUrlFromPath(script));
+                loader.LoadScript(GetUrlFromPath(script));
             }
 
-            runtime->LoadScript(moduleRootUrl + "/Scripts/playground_runner.js");
+            loader.LoadScript(moduleRootUrl + "/Scripts/playground_runner.js");
         }
+    }
+
+    void UpdateWindowSize(float width, float height)
+    {
+        runtime->Dispatch([width, height](Napi::Env env)
+        {
+            auto& window = Babylon::NativeWindow::GetFromJavaScript(env);
+            window.Resize(static_cast<size_t>(width), static_cast<size_t>(height));
+        });
     }
 }
 
@@ -273,7 +295,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             if (runtime != nullptr) {
                 float width = static_cast<float>(LOWORD(lParam));
                 float height = static_cast<float>(HIWORD(lParam));
-                runtime->UpdateSize(width, height);
+                UpdateWindowSize(width, height);
             }
             break;
         }

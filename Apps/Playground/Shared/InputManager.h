@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Babylon/Runtime.h>
+#include <Babylon/JsRuntime.h>
 #include <napi/napi.h>
 #include <napi/env.h>
 #include <functional>
@@ -11,7 +11,7 @@ public:
     class InputBuffer
     {
     public:
-        InputBuffer(Babylon::Runtime& runtime)
+        InputBuffer(Babylon::JsRuntime& runtime)
             : m_runtime{ runtime }
         {}
         InputBuffer(const InputBuffer&) = delete;
@@ -50,14 +50,14 @@ public:
         }
 
     private:
-        Babylon::Runtime& m_runtime;
+        Babylon::JsRuntime& m_runtime;
 
         int m_pointerX{};
         int m_pointerY{};
         bool m_isPointerDown{};
     };
 
-    static void Initialize(Babylon::Runtime& runtime, InputBuffer& inputBuffer)
+    static void Initialize(Babylon::JsRuntime& runtime, InputBuffer& inputBuffer)
     {
         runtime.Dispatch([data = &inputBuffer](Napi::Env env)
         {
