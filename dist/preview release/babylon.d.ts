@@ -44342,9 +44342,10 @@ declare module BABYLON {
         private _renderCamera;
         /**
          * Gets the camera that is used to render the utility layer (when not set, this will be the last active camera)
+         * @param getRigParentIfPossible if the current active camera is a rig camera, should its parent camera be returned
          * @returns the camera that is used when rendering the utility layer
          */
-        getRenderCamera(): Camera;
+        getRenderCamera(getRigParentIfPossible?: boolean): Camera;
         /**
          * Sets the camera that should be used when rendering the utility layer (If set to null the last active camera will be used)
          * @param cam the camera that should be used when rendering the utility layer
