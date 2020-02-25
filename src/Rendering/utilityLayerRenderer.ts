@@ -26,7 +26,7 @@ export class UtilityLayerRenderer implements IDisposable {
      * Gets the camera that is used to render the utility layer (when not set, this will be the last active camera)
      * @returns the camera that is used when rendering the utility layer
      */
-    public getRenderCamera() {
+    public getRenderCamera(getRigParentIfPossible?: boolean) {
         if (this._renderCamera) {
             return this._renderCamera;
         } else {
@@ -36,7 +36,11 @@ export class UtilityLayerRenderer implements IDisposable {
             } else {
                 activeCam = <Camera>(this.originalScene.activeCamera!);
             }
-            return (activeCam && activeCam.isRigCamera) ? activeCam.rigParent! : activeCam;
+
+            if (getRigParentIfPossible && activeCam.isRigCamera) {
+                return activeCam.rigParent!;
+            }
+            return activeCam;
         }
     }
     /**
@@ -313,7 +317,7 @@ export class UtilityLayerRenderer implements IDisposable {
     }
 
     private _updateCamera() {
-        this.utilityLayerScene.cameraToUseForPointers = this.getRenderCamera();
-        this.utilityLayerScene.activeCamera = this.getRenderCamera();
+        this.utilityLayerScene.cameraToUseForPointers = this.getRenderCamera(true);
+        this.utilityLayerScene.activeCamera = this.getRenderCamera(true);
     }
 }
