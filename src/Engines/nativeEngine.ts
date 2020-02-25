@@ -73,7 +73,8 @@ interface INativeEngine {
 
     createTexture(): WebGLTexture;
     loadTexture(texture: WebGLTexture, buffer: ArrayBuffer | ArrayBufferView | Blob, mipMap: boolean, invertY: boolean): boolean;
-    loadCubeTexture(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, flipY : boolean): boolean;
+    loadEnvTexture(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>): boolean;
+    loadCubeTexture(texture: WebGLTexture, data: Array<ArrayBufferView>, generateMipMaps: boolean): boolean;
     getTextureWidth(texture: WebGLTexture): number;
     getTextureHeight(texture: WebGLTexture): number;
     setTextureSampling(texture: WebGLTexture, filter: number): void; // filter is a NativeFilter.XXXX value.
@@ -1048,6 +1049,7 @@ export class NativeEngine extends Engine {
         var lastDot = rootUrl.lastIndexOf('.');
         var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "");
 
+        // TODO: use texture loader to load env files?
         if (extension === ".env") {
             const onloaddata = (data: ArrayBufferView) => {
                 var info = EnvironmentTextureTools.GetEnvInfo(data)!;
@@ -1074,7 +1076,7 @@ export class NativeEngine extends Engine {
                 texture.getEngine().updateTextureSamplingMode(Texture.TRILINEAR_SAMPLINGMODE, texture);
                 texture._isRGBD = true;
                 texture.invertY = true;
-                if (!this._native.loadCubeTexture(texture._webGLTexture!, imageData, true)) {
+                if (!this._native.loadEnvTexture(texture._webGLTexture!, imageData)) {
                     throw new Error("Could not load a native cube texture.");
                 }
 
@@ -1084,7 +1086,7 @@ export class NativeEngine extends Engine {
                 }
             };
             if (files && files.length === 6) {
-                throw new Error(`Multi-file loading not yet supported.`);
+                throw new Error(`Multi-file loading not allowed on env files.`);
             }
             else {
                 let onInternalError = (request?: IWebRequest, exception?: any) => {
@@ -1097,7 +1099,24 @@ export class NativeEngine extends Engine {
             }
         }
         else {
-            throw new Error("Cannot load cubemap: non-ENV format not supported.");
+            if (!files || files.length !== 6) {
+                throw new Error("Cannot load cubemap because 6 files were not defined");
+            }
+
+            // Reorder from [+X, +Y, +Z, -X, -Y, -Z] to [+X, -X, +Y, -Y, +Z, -Z].
+            const reorderedFiles = [files[0], files[3], files[1], files[4], files[2], files[5]];
+            Promise.all(reorderedFiles.map((file) => Tools.LoadFileAsync(file).then((data) => new Uint8Array(data as ArrayBuffer)))).then((data) => {
+                this._native.loadCubeTexture(texture._webGLTexture!, data, !noMipmap);
+            }).then(() => {
+                texture.isReady = true;
+                if (onLoad) {
+                    onLoad();
+                }
+            }, (error) => {
+                if (onError) {
+                    onError(`Failed to load cubemap: ${error.message}`, error);
+                }
+            });
         }
 
         this._internalTexturesCache.push(texture);
