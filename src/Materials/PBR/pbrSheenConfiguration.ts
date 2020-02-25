@@ -18,6 +18,8 @@ export interface IMaterialSheenDefines {
     SHEEN_TEXTUREDIRECTUV: number;
     SHEEN_LINKWITHALBEDO: boolean;
     SHEEN_ROUGHNESS: boolean;
+    SHEEN_SOFTER: boolean;
+    SHEEN_ALBEDOSCALING: boolean;
 
     /** @hidden */
     _areTexturesDirty: boolean;
@@ -76,6 +78,16 @@ export class PBRSheenConfiguration {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public roughness = 0.0;
 
+    private _softer = false;
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public softer = false;
+
+    private _albedoScaling = false;
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public albedoScaling = false;
+
     /** @hidden */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
 
@@ -122,6 +134,8 @@ export class PBRSheenConfiguration {
             defines.SHEEN = this._isEnabled;
             defines.SHEEN_LINKWITHALBEDO = this._linkSheenWithAlbedo;
             defines.SHEEN_ROUGHNESS = this._roughness !== 0;
+            defines.SHEEN_SOFTER = this._softer;
+            defines.SHEEN_ALBEDOSCALING = this._albedoScaling;
 
             if (defines._areTexturesDirty) {
                 if (scene.texturesEnabled) {
@@ -138,6 +152,8 @@ export class PBRSheenConfiguration {
             defines.SHEEN_TEXTURE = false;
             defines.SHEEN_LINKWITHALBEDO = false;
             defines.SHEEN_ROUGHNESS = false;
+            defines.SHEEN_SOFTER = false;
+            defines.SHEEN_ALBEDOSCALING = false;
         }
     }
 

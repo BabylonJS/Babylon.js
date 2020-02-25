@@ -560,7 +560,9 @@ void main(void) {
             #endif
 
             // Sheen Lobe Layering.
-            sheenIntensity *= (1. - reflectance);
+            #if !defined(SHEEN_ALBEDOSCALING)
+                sheenIntensity *= (1. - reflectance);
+            #endif
 
             // Remap F0 and sheen.
             sheenColor *= sheenIntensity;
@@ -893,10 +895,14 @@ void main(void) {
 
     // _____________________________ Sheen Environment Oclusion __________________________
     #if defined(SHEEN) && defined(REFLECTION)
-        #ifdef SHEEN_ROUGHNESS
-            vec3 environmentSheenBrdf = getBRDFLookup(NdotV, sheenRoughness);
+        #ifdef SHEEN_SOFTER
+            vec3 environmentSheenBrdf = vec3(0., 0., getBRDFLookupCharlieSheen(NdotV, sheenRoughness));
         #else
-            vec3 environmentSheenBrdf = environmentBrdf;
+            #ifdef SHEEN_ROUGHNESS
+                vec3 environmentSheenBrdf = getBRDFLookup(NdotV, sheenRoughness);
+            #else
+                vec3 environmentSheenBrdf = environmentBrdf;
+            #endif
         #endif
         vec3 sheenEnvironmentReflectance = getSheenReflectanceFromBRDFLookup(sheenColor, environmentSheenBrdf);
 
@@ -910,6 +916,21 @@ void main(void) {
                     sheenEnvironmentReflectance *= eho;
                 #endif
             #endif
+        #endif
+
+        #if defined(SHEEN_ALBEDOSCALING)
+            // Sheen Lobe Layering.
+            // environmentSheenBrdf.b is (integral on hemisphere)[f_sheen*cos(theta)*dtheta*dphi], which happens to also be the directional albedo needed for albedo scaling.
+            // See section 6.2.3 in https://dassaultsystemes-technology.github.io/EnterprisePBRShadingModel/spec-2021x.md.html#components/sheen
+            float albedoScaling = 1.0 - sheenIntensity * max(max(sheenColor.r, sheenColor.g), sheenColor.b) * environmentSheenBrdf.b;
+            #ifdef REFLECTION
+                environmentIrradiance *= albedoScaling;
+                specularEnvironmentReflectance *= albedoScaling;
+            #endif
+            #ifdef SPECULARTERM
+                specularBase *= albedoScaling;
+            #endif
+            diffuseBase *= albedoScaling;
         #endif
     #endif
 
