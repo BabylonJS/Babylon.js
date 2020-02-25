@@ -947,15 +947,23 @@ class Main {
      */
     toggleEditor() {
         var editorButton = document.getElementById("editorButton1280");
+        var gutter = document.querySelector(".gutter");
+        var canvas = document.getElementById("canvasZone");
+        var jsEditor = document.getElementById("jsEditor");
         var scene = engine.scenes[0];
 
         // If the editor is present
         if (editorButton.classList.contains('checked')) {
             this.parent.utils.setToMultipleID("editorButton", "removeClass", 'checked');
+            gutter.style.display = "none";
+            jsEditor.style.display = "none";
             this.parent.splitInstance.collapse(0);
+            canvas.style.width = "100%";
             this.parent.utils.setToMultipleID("editorButton", "innerHTML", 'Editor <i class="fa fa-square" aria-hidden="true"></i>');
         } else {
             this.parent.utils.setToMultipleID("editorButton", "addClass", 'checked');
+            gutter.style.display = "";            
+            jsEditor.style.display = "";
             this.parent.splitInstance.setSizes([50, 50]); // Reset
             this.parent.utils.setToMultipleID("editorButton", "innerHTML", 'Editor <i class="fa fa-check-square" aria-hidden="true"></i>');
         }
