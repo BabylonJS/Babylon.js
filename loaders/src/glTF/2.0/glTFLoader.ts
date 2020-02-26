@@ -709,7 +709,10 @@ export class GLTFLoader implements IGLTFLoader {
         });
     }
 
-    private _loadMeshAsync(context: string, node: INode, mesh: IMesh, assign: (babylonTransformNode: TransformNode) => void): Promise<TransformNode> {
+    /**
+    * @hidden Define this method to modify the default behavior when loading data for meshes
+    */
+    public _loadMeshAsync(context: string, node: INode, mesh: IMesh, assign: (babylonTransformNode: TransformNode) => void): Promise<TransformNode> {
         const primitives = mesh.primitives;
         if (!primitives || !primitives.length) {
             throw new Error(`${context}: Primitives are missing`);
@@ -1561,7 +1564,10 @@ export class GLTFLoader implements IGLTFLoader {
         return accessor._data;
     }
 
-    private _loadFloatAccessorAsync(context: string, accessor: IAccessor): Promise<Float32Array> {
+    /**
+    * @hidden Define this method to modify the default behavior when loading data for meshes
+    */
+    public _loadFloatAccessorAsync(context: string, accessor: IAccessor): Promise<Float32Array> {
         return this._loadAccessorAsync(context, accessor, Float32Array) as Promise<Float32Array>;
     }
 
