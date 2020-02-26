@@ -38,7 +38,7 @@ export class UtilityLayerRenderer implements IDisposable {
                 activeCam = <Camera>(this.originalScene.activeCamera!);
             }
 
-            if (getRigParentIfPossible && activeCam.isRigCamera) {
+            if (getRigParentIfPossible && activeCam && activeCam.isRigCamera) {
                 return activeCam.rigParent!;
             }
             return activeCam;
