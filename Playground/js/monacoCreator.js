@@ -65,10 +65,24 @@ class MonacoCreator {
 
     // FUNCTIONS
 
+    waitForDefine() {
+        return new Promise(function (resolve, reject) {
+            function timeout() {
+                if (!window.define) {
+                    setTimeout(timeout, 200);
+                } else {
+                    resolve();
+                }
+            }
+            timeout();
+        });
+    }
+
     /**
      * Load the Monaco Node module.
      */
     async loadMonaco(typings) {
+        await this.waitForDefine();
         let response = await fetch(typings || "https://preview.babylonjs.com/babylon.d.ts");
         if (!response.ok) {
             return;

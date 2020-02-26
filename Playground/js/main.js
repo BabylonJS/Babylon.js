@@ -820,6 +820,7 @@ class Main {
                         // default behavior!
                         var baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
                         var newUrl = baseUrl + "#" + snippet.id;
+                        newUrl = newUrl.replace('##', '#');
                         this.currentSnippetToken = snippet.id;
                         if (snippet.version && snippet.version !== "0") {
                             newUrl += "#" + snippet.version;
@@ -947,15 +948,23 @@ class Main {
      */
     toggleEditor() {
         var editorButton = document.getElementById("editorButton1280");
+        var gutter = document.querySelector(".gutter");
+        var canvas = document.getElementById("canvasZone");
+        var jsEditor = document.getElementById("jsEditor");
         var scene = engine.scenes[0];
 
         // If the editor is present
         if (editorButton.classList.contains('checked')) {
             this.parent.utils.setToMultipleID("editorButton", "removeClass", 'checked');
+            gutter.style.display = "none";
+            jsEditor.style.display = "none";
             this.parent.splitInstance.collapse(0);
+            canvas.style.width = "100%";
             this.parent.utils.setToMultipleID("editorButton", "innerHTML", 'Editor <i class="fa fa-square" aria-hidden="true"></i>');
         } else {
             this.parent.utils.setToMultipleID("editorButton", "addClass", 'checked');
+            gutter.style.display = "";            
+            jsEditor.style.display = "";
             this.parent.splitInstance.setSizes([50, 50]); // Reset
             this.parent.utils.setToMultipleID("editorButton", "innerHTML", 'Editor <i class="fa fa-check-square" aria-hidden="true"></i>');
         }
@@ -987,7 +996,8 @@ class Main {
      * HASH part
      */
     cleanHash() {
-        var splits = decodeURIComponent(location.hash.substr(1)).split("#");
+        var substr = location.hash[1]==='#' ? 2 : 1
+        var splits = decodeURIComponent(location.hash.substr(substr)).split("#");
 
         if (splits.length > 2) {
             splits.splice(2, splits.length - 2);
@@ -1005,6 +1015,7 @@ class Main {
 
         } else if (location.hash) {
             if (this.previousHash !== location.hash) {
+                this.cleanHash();
                 pgHash = location.hash;
             }
         } else if (location.pathname) {
