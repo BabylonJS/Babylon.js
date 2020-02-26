@@ -820,6 +820,7 @@ class Main {
                         // default behavior!
                         var baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
                         var newUrl = baseUrl + "#" + snippet.id;
+                        newUrl = newUrl.replace('##', '#');
                         this.currentSnippetToken = snippet.id;
                         if (snippet.version && snippet.version !== "0") {
                             newUrl += "#" + snippet.version;
@@ -995,7 +996,8 @@ class Main {
      * HASH part
      */
     cleanHash() {
-        var splits = decodeURIComponent(location.hash.substr(1)).split("#");
+        var substr = location.hash[1]==='#' ? 2 : 1
+        var splits = decodeURIComponent(location.hash.substr(substr)).split("#");
 
         if (splits.length > 2) {
             splits.splice(2, splits.length - 2);
@@ -1013,6 +1015,7 @@ class Main {
 
         } else if (location.hash) {
             if (this.previousHash !== location.hash) {
+                this.cleanHash();
                 pgHash = location.hash;
             }
         } else if (location.pathname) {
