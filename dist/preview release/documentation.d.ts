@@ -31131,6 +31131,16 @@ declare module BABYLON {
         /** @hidden */
         _textureFormatInUse: Nullable<string>;
         protected get _supportsHardwareTextureRescaling(): boolean;
+        private _framebufferDimensionsObject;
+        /**
+         * sets the object from which width and height will be taken from when getting render width and height
+         * Will fallback to the gl object
+         * @param dimensions the framebuffer width and height that will be used.
+         */
+        set framebufferDimensionsObject(dimensions: Nullable<{
+            framebufferWidth: number;
+            framebufferHeight: number;
+        }>);
         /**
          * Gets the list of texture formats supported
          */
