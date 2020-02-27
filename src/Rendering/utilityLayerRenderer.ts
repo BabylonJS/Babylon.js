@@ -318,7 +318,7 @@ export class UtilityLayerRenderer implements IDisposable {
     }
 
     private _updateCamera() {
-        this.utilityLayerScene.cameraToUseForPointers = this.getRenderCamera(true);
-        this.utilityLayerScene.activeCamera = this.getRenderCamera(true);
+        this.utilityLayerScene.cameraToUseForPointers = this.getRenderCamera();
+        this.utilityLayerScene.activeCamera = this.getRenderCamera();
     }
 }
