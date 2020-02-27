@@ -40935,29 +40935,29 @@ declare module BABYLON {
         X = 2,
         /** Y */
         Y = 3,
-        /** Start */
-        Start = 4,
-        /** Back */
-        Back = 5,
         /** Left button */
-        LB = 6,
+        LB = 4,
         /** Right button */
-        RB = 7,
+        RB = 5,
+        /** Back */
+        Back = 8,
+        /** Start */
+        Start = 9,
         /** Left stick */
-        LeftStick = 8,
+        LeftStick = 10,
         /** Right stick */
-        RightStick = 9
+        RightStick = 11
     }
     /** Defines values for XBox360 DPad  */
     export enum Xbox360Dpad {
         /** Up */
-        Up = 0,
+        Up = 12,
         /** Down */
-        Down = 1,
+        Down = 13,
         /** Left */
-        Left = 2,
+        Left = 14,
         /** Right */
-        Right = 3
+        Right = 15
     }
     /**
      * Defines a XBox360 gamepad
@@ -41185,29 +41185,29 @@ declare module BABYLON {
         Square = 2,
         /** Triangle */
         Triangle = 3,
-        /** Options */
-        Options = 4,
-        /** Share */
-        Share = 5,
         /** L1 */
-        L1 = 6,
+        L1 = 4,
         /** R1 */
-        R1 = 7,
+        R1 = 5,
+        /** Share */
+        Share = 8,
+        /** Options */
+        Options = 9,
         /** Left stick */
-        LeftStick = 8,
+        LeftStick = 10,
         /** Right stick */
-        RightStick = 9
+        RightStick = 11
     }
     /** Defines values for DualShock DPad  */
     export enum DualShockDpad {
         /** Up */
-        Up = 0,
+        Up = 12,
         /** Down */
-        Down = 1,
+        Down = 13,
         /** Left */
-        Left = 2,
+        Left = 14,
         /** Right */
-        Right = 3
+        Right = 15
     }
     /**
      * Defines a DualShock gamepad
