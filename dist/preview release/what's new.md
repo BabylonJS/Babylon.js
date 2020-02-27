@@ -121,6 +121,7 @@
 - Added accessor functions for `SubMesh._materialDefines` ([Popov72](https://github.com/Popov72))
 - Generator type used in `TrailMesh` constructor is now `TransformNode` instead of `AbstrachMesh` ([Popov72](https://github.com/Popov72))
 - Added the `useVertexAlpha` options to `MeshBuilder.CreateDashedLines` ([Popov72](https://github.com/Popov72))
+- Fixed a bug in `DracoCompression` when loading color attributes with VEC3. ([bghgary](https://github.com/bghgary))
 
 ### Physics
 
