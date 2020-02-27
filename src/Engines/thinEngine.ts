@@ -390,15 +390,15 @@ export class ThinEngine {
         return false;
     }
 
-    private _glLayerDimensionsObject: Nullable<{framebufferWidth: number, framebufferHeight: number}>;
+    private _framebufferDimensionsObject: Nullable<{framebufferWidth: number, framebufferHeight: number}>;
 
     /**
      * sets the object from which width and height will be taken from when getting render width and height
      * Will fallback to the gl object
      * @param dimensions the framebuffer width and height that will be used.
      */
-    public set glLayerDimensionsObject(dimensions: Nullable<{framebufferWidth: number, framebufferHeight: number}>) {
-      this._glLayerDimensionsObject = dimensions;
+    public set framebufferDimensionsObject(dimensions: Nullable<{framebufferWidth: number, framebufferHeight: number}>) {
+      this._framebufferDimensionsObject = dimensions;
     }
 
     /**
@@ -1110,7 +1110,7 @@ export class ThinEngine {
             return this._currentRenderTarget.width;
         }
 
-        return this._glLayerDimensionsObject ? this._glLayerDimensionsObject.framebufferWidth : this._gl.drawingBufferWidth;
+        return this._framebufferDimensionsObject ? this._framebufferDimensionsObject.framebufferWidth : this._gl.drawingBufferWidth;
     }
 
     /**
@@ -1123,7 +1123,7 @@ export class ThinEngine {
             return this._currentRenderTarget.height;
         }
 
-        return this._glLayerDimensionsObject ? this._glLayerDimensionsObject.framebufferHeight : this._gl.drawingBufferHeight;
+        return this._framebufferDimensionsObject ? this._framebufferDimensionsObject.framebufferHeight : this._gl.drawingBufferHeight;
     }
 
     /**
