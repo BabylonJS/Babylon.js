@@ -265,7 +265,7 @@
 
             .bottom-right-corner-handle{
                 background-color: lightpink;
-                height: 4px;
+                height: 0px;
                 z-index: 21;
                 cursor: nw-resize;
                 grid-area: 4 / 2 / 4 / 2;;
@@ -319,7 +319,7 @@
 
             .bottom-left-corner-handle{
                 background-color: darkviolet;
-                height: 4px;
+                height: 0px;
                 z-index: 21;
                 cursor: sw-resize;
                 grid-area: 4 / 1 / 4 / 1;
