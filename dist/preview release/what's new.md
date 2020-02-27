@@ -237,7 +237,6 @@
 - Added `ImageScrollBar.num90RotationInVerticalMode` property to let the user rotate the pictures when in vertical mode ([Popov72](https://github.com/Popov72))
 - Modified isPointerBlocker to block mouse wheel scroll events. ScrollViewer mouse scroll no longer dependent on scene. ([lockphase](https://github.com/lockphase/))
 
-
 ### Particles
 
 - Added `particleSystem.isLocal` for CPU particles to let the particles live in emitter local space. [Doc](https://doc.babylonjs.com/babylon101/particles#local-space) ([Deltakosh](https://github.com/deltakosh/))
@@ -353,6 +352,7 @@
 - Fix for bug where Preview Area pop up does not change background color across windows ([#7377](https://github.com/BabylonJS/Babylon.js/issues/7684))([Kyle Belfort](https://github.com/belfortk))
 - Fix for bug where comments would break out of frames and break resizing of frames ([Kyle Belfort](https://github.com/belfortk))
 - Fix for bug where frames without comments would display undefined at the bottom right corner ([Kyle Belfort](https://github.com/belfortk))
+- Fixed an issue in XR where one of the cameras used for rendering got the wrong framebuffer dimensions ([RaananW](https://github.com/RaananW/))
 
 ## Breaking changes
 

@@ -390,6 +390,17 @@ export class ThinEngine {
         return false;
     }
 
+    private _glLayerDimensionsObject: Nullable<{framebufferWidth: number, framebufferHeight: number}>;
+
+    /**
+     * sets the object from which width and height will be taken from when getting render width and height
+     * Will fallback to the gl object
+     * @param dimensions the framebuffer width and height that will be used.
+     */
+    public set glLayerDimensionsObject(dimensions: Nullable<{framebufferWidth: number, framebufferHeight: number}>) {
+      this._glLayerDimensionsObject = dimensions;
+    }
+
     /**
      * Gets the list of texture formats supported
      */
@@ -1099,7 +1110,7 @@ export class ThinEngine {
             return this._currentRenderTarget.width;
         }
 
-        return this._gl.drawingBufferWidth;
+        return this._glLayerDimensionsObject ? this._glLayerDimensionsObject.framebufferWidth : this._gl.drawingBufferWidth;
     }
 
     /**
@@ -1112,7 +1123,7 @@ export class ThinEngine {
             return this._currentRenderTarget.height;
         }
 
-        return this._gl.drawingBufferHeight;
+        return this._glLayerDimensionsObject ? this._glLayerDimensionsObject.framebufferHeight : this._gl.drawingBufferHeight;
     }
 
     /**

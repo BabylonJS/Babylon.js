@@ -176,6 +176,8 @@ export class WebXRSessionManager implements IDisposable {
                 this._sessionEnded = true;
                 // Remove render target texture and notify frame observers
                 this._rttProvider = null;
+                // make sure dimensions object is restored
+                engine.glLayerDimensionsObject = null;
 
                 // Restore frame buffer to avoid clear on xr framebuffer after session end
                 engine.restoreDefaultFramebuffer();
@@ -223,7 +225,9 @@ export class WebXRSessionManager implements IDisposable {
                 if (xrFrame) {
                     this.onXRFrameObservable.notifyObservers(xrFrame);
                     // only run the render loop if a frame exists
+                    engine.glLayerDimensionsObject = this.baseLayer!;
                     engine._renderLoop();
+                    engine.glLayerDimensionsObject = null;
                 }
             }
         };
@@ -234,6 +238,7 @@ export class WebXRSessionManager implements IDisposable {
             // Create render target texture from xr's webgl render target
             const rtt = this._createRenderTargetTexture(this.baseLayer!.framebufferWidth, this.baseLayer!.framebufferHeight, this.baseLayer!.framebuffer);
             this._rttProvider = { getRenderTargetForEye: () => rtt };
+            engine.glLayerDimensionsObject = this.baseLayer;
         }
 
         // Stop window's animation frame and trigger sessions animation frame
