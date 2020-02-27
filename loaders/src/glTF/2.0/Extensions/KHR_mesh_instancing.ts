@@ -71,11 +71,11 @@ export class KHR_mesh_instancing implements IGLTFLoaderExtension {
                             let digitLength = instanceCount.toString().length;
                             for (let i = 0; i < instanceCount; ++i) {
                                 let instance;
-                                if (i === 0){
+                                if (i == 0) {
                                     instance = babylonMeshInstanceNode;
                                     instance.setParent(babylonTransformNode);
                                 } else {
-                                    instance = babylonMeshInstanceNode.clone((babylonMeshInstanceNode.name || babylonMeshInstanceNode.id) + "_" + String(i).padStart(digitLength,'0'), babylonTransformNode, true);
+                                    instance = babylonMeshInstanceNode.clone((babylonMeshInstanceNode.name || babylonMeshInstanceNode.id) + "_" + String(i).padStart(digitLength, '0'), babylonTransformNode, true);
                                 }
 
                                 if (instance) {
@@ -90,12 +90,12 @@ export class KHR_mesh_instancing implements IGLTFLoaderExtension {
                             }
                         }
                         let babylonMesh = (babylonTransformNode as Mesh);
-                        if (babylonMesh){
+                        if (babylonMesh) {
                             babylonMesh.isVisible = false;
                         }
                     });
                 });
-                assign(babylonTransformNode)
+                assign(babylonTransformNode);
                 return babylonTransformNode;
             });
 
