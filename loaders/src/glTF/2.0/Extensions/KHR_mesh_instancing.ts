@@ -1,6 +1,6 @@
 import { Nullable } from "babylonjs/types";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
-
+import { Mesh } from 'babylonjs/Meshes/mesh';
 import { INode, IAccessor } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
@@ -14,8 +14,8 @@ interface IKHRMeshInstancing {
 }
 
 /**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1688)
- * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#4)
+ * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1691)
+ * [Playground Sample](//TODO!!!)
  * !!! Experimental Extension Subject to Changes !!!
  */
 export class KHR_mesh_instancing implements IGLTFLoaderExtension {
@@ -47,6 +47,7 @@ export class KHR_mesh_instancing implements IGLTFLoaderExtension {
         return GLTFLoader.LoadExtensionAsync<IKHRMeshInstancing, TransformNode>(context, node, this.name, (extensionContext, extension) => {
             const nodeMesh = node.mesh;
             const promise = this._loader.loadNodeAsync(`#/nodes/${node.index}`, node, (babylonTransformNode) => {
+                babylonTransformNode.parent = this._loader.rootBabylonMesh;
                 const attributeBufferPromises = new Array<Promise<any>>();
 
                 // Read extension json to populate attribute data
@@ -63,31 +64,36 @@ export class KHR_mesh_instancing implements IGLTFLoaderExtension {
                 }
 
                 const mesh = ArrayItem.Get(`${context}/mesh`, this._loader.gltf.meshes, extension.mesh || nodeMesh);
-                this._loader._loadMeshAsync(`/meshes/${mesh.index}`, node, mesh, (babylonChildTransformNode) => {
+                this._loader._loadMeshAsync(`/meshes/${mesh.index}`, node, mesh, (babylonMeshInstanceNode) => {
                     // read all the attributes
                     Promise.all(attributeBufferPromises).then(() => {
                         attributeKeys = Object.keys(attributeBuffers);
                         if (attributeKeys.length > 0) {
                             let instanceCount = attributeBuffers[attributeKeys[0]].accessor.count;
+                            let digitLength = instanceCount.toString().length;
                             // loop through all the instances and create instances, parent to original transform
                             for (let i = 0; i < instanceCount; ++i) {
-                                babylonChildTransformNode.instantiateHierarchy(babylonTransformNode, undefined, (source, instance) => {
-                                    if (instance) {
-                                        instance.setParent(babylonTransformNode);
-                                        instance.position = attributeBuffers["TRANSLATION"] ? Vector3.FromArray(attributeBuffers["TRANSLATION"].buffer, i * 3)
-                                                                                            : Vector3.Zero();
-                                        instance.rotationQuaternion = attributeBuffers["ROTATION"] ? Quaternion.FromArray(attributeBuffers["ROTATION"].buffer, i * 4) // Quaternion.FromEulerAngles(attributeBuffers["ROTATION"].buffer[i * 3], attributeBuffers["ROTATION"].buffer[i * 3 + 1], attributeBuffers["ROTATION"].buffer[i * 3 + 2])
-                                                                                                   : Quaternion.Identity();
-                                        instance.scaling = attributeBuffers["SCALE"] ? Vector3.FromArray(attributeBuffers["SCALE"].buffer, i * 3)
-                                                                                     : Vector3.One();
-                                        instance.computeWorldMatrix(true);
-                                    }
-                                });
+                                let instance = babylonMeshInstanceNode.clone((babylonMeshInstanceNode.name || babylonMeshInstanceNode.id) + "_" + String(i).padStart(digitLength,'0'), babylonTransformNode, true);
+                                if (instance) {
+                                    instance.position = attributeBuffers["TRANSLATION"] ? Vector3.FromArray(attributeBuffers["TRANSLATION"].buffer, i * 3)
+                                                                                        : Vector3.Zero();
+                                    instance.rotationQuaternion = attributeBuffers["ROTATION"] ? Quaternion.FromEulerAngles(attributeBuffers["ROTATION"].buffer[i * 3], attributeBuffers["ROTATION"].buffer[i * 3 + 1], attributeBuffers["ROTATION"].buffer[i * 3 + 2]) //Quaternion.FromArray(attributeBuffers["ROTATION"].buffer, i * 4) //
+                                                                                                : Quaternion.Identity();
+                                    instance.scaling = attributeBuffers["SCALE"] ? Vector3.FromArray(attributeBuffers["SCALE"].buffer, i * 3)
+                                                                                    : Vector3.One();
+                                    instance.computeWorldMatrix(true);
+                                }
                             }
                         }
-                        babylonChildTransformNode.dispose();
+                        babylonMeshInstanceNode.setParent(babylonTransformNode);
+                        (babylonMeshInstanceNode as Mesh).isVisible = false;
+                        let babylonMesh = (babylonTransformNode as Mesh);
+                        if (babylonMesh){
+                            babylonMesh.isVisible = false;
+                        }
                     });
                 });
+                assign(babylonTransformNode)
                 return babylonTransformNode;
             });
 
