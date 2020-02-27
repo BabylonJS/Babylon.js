@@ -15,7 +15,7 @@ interface IKHRMeshInstancing {
 
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1691)
- * [Playground Sample](//TODO!!!)
+ * [Playground Sample](//TODO)
  * !!! Experimental Extension Subject to Changes !!!
  */
 export class KHR_mesh_instancing implements IGLTFLoaderExtension {
@@ -50,8 +50,6 @@ export class KHR_mesh_instancing implements IGLTFLoaderExtension {
                 babylonTransformNode.parent = this._loader.rootBabylonMesh;
                 const attributeBufferPromises = new Array<Promise<any>>();
 
-                // Read extension json to populate attribute data
-                // Do stuff with the data and push any additional asynchronous work to promises
                 let attributes = extension.attributes;
                 let attributeKeys = Object.keys(attributes);
                 const attributeBuffers : { [name: string]: { buffer : Float32Array, accessor : IAccessor } } = {};
@@ -65,13 +63,12 @@ export class KHR_mesh_instancing implements IGLTFLoaderExtension {
 
                 const mesh = ArrayItem.Get(`${context}/mesh`, this._loader.gltf.meshes, extension.mesh || nodeMesh);
                 this._loader._loadMeshAsync(`/meshes/${mesh.index}`, node, mesh, (babylonMeshInstanceNode) => {
-                    // read all the attributes
                     Promise.all(attributeBufferPromises).then(() => {
                         attributeKeys = Object.keys(attributeBuffers);
+
                         if (attributeKeys.length > 0) {
                             let instanceCount = attributeBuffers[attributeKeys[0]].accessor.count;
                             let digitLength = instanceCount.toString().length;
-                            // loop through all the instances and create instances, parent to original transform
                             for (let i = 0; i < instanceCount; ++i) {
                                 let instance = babylonMeshInstanceNode.clone((babylonMeshInstanceNode.name || babylonMeshInstanceNode.id) + "_" + String(i).padStart(digitLength,'0'), babylonTransformNode, true);
                                 if (instance) {
@@ -85,6 +82,7 @@ export class KHR_mesh_instancing implements IGLTFLoaderExtension {
                                 }
                             }
                         }
+
                         babylonMeshInstanceNode.setParent(babylonTransformNode);
                         (babylonMeshInstanceNode as Mesh).isVisible = false;
                         let babylonMesh = (babylonTransformNode as Mesh);
@@ -97,7 +95,6 @@ export class KHR_mesh_instancing implements IGLTFLoaderExtension {
                 return babylonTransformNode;
             });
 
-            // Is this really necessary?
             if (nodeMesh) {
                 node.mesh = nodeMesh;
             }
