@@ -244,6 +244,44 @@
                 }
             }
 
+            .top-right-corner-handle{
+                background-color: lightskyblue;
+                height: 4px;
+                z-index: 21;
+                cursor: ne-resize;
+                width: 4px;
+                margin-left: -6px;
+
+                &::after {
+                    background-color: lightskyblue;
+                    cursor: ne-resize;
+                    margin-left: unset;
+                    top: -4px;
+                    height: 10px;
+                    width: 10px;
+                }
+            }
+
+
+            .bottom-right-corner-handle{
+                background-color: lightpink;
+                height: 4px;
+                z-index: 21;
+                cursor: nw-resize;
+                grid-area: 4 / 2 / 4 / 2;;
+                margin-left: -2px;
+
+
+                &::after {
+                    background-color: lightpink;
+                    height: 10px;
+                    cursor: nw-resize;
+                    top: unset;
+                    bottom: -4px;
+                    width: 10px;               
+                }
+            }
+
             .left-handle {
                 grid-area: 1 / 1 / 3 / 1;
                 width: 4px;
@@ -258,6 +296,42 @@
                     bottom: 0;
                     margin-left: -4px;
 
+                }
+            }
+
+            .top-left-corner-handle{
+                background-color: lightseagreen;
+                height: 4px;
+                z-index: 21;
+                cursor: nw-resize;
+                width: 4px;
+                margin-left: -4px;
+
+                &::before {
+                    background-color: lightseagreen;
+                    cursor: nw-resize;
+                    margin-left: unset;
+                    top: -4px;
+                    height: 10px;
+                    width: 10px;
+                }
+            }
+
+            .bottom-left-corner-handle{
+                background-color: darkviolet;
+                height: 4px;
+                z-index: 21;
+                cursor: sw-resize;
+                grid-area: 4 / 1 / 4 / 1;
+
+
+                &::before {
+                    background-color: darkviolet;
+                    height: 10px;
+                    cursor: sw-resize;
+                    top: unset;
+                    bottom: -4px;
+                    width: 10px;               
                 }
             }
 
