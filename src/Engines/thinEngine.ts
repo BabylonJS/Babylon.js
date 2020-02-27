@@ -132,14 +132,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-rc.9";
+        return "babylonjs@4.1.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-rc.9";
+        return "4.1.0";
     }
 
     /**
@@ -388,6 +388,17 @@ export class ThinEngine {
 
     protected get _supportsHardwareTextureRescaling() {
         return false;
+    }
+
+    private _framebufferDimensionsObject: Nullable<{framebufferWidth: number, framebufferHeight: number}>;
+
+    /**
+     * sets the object from which width and height will be taken from when getting render width and height
+     * Will fallback to the gl object
+     * @param dimensions the framebuffer width and height that will be used.
+     */
+    public set framebufferDimensionsObject(dimensions: Nullable<{framebufferWidth: number, framebufferHeight: number}>) {
+      this._framebufferDimensionsObject = dimensions;
     }
 
     /**
@@ -1099,7 +1110,7 @@ export class ThinEngine {
             return this._currentRenderTarget.width;
         }
 
-        return this._gl.drawingBufferWidth;
+        return this._framebufferDimensionsObject ? this._framebufferDimensionsObject.framebufferWidth : this._gl.drawingBufferWidth;
     }
 
     /**
@@ -1112,7 +1123,7 @@ export class ThinEngine {
             return this._currentRenderTarget.height;
         }
 
-        return this._gl.drawingBufferHeight;
+        return this._framebufferDimensionsObject ? this._framebufferDimensionsObject.framebufferHeight : this._gl.drawingBufferHeight;
     }
 
     /**

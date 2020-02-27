@@ -232,7 +232,8 @@ declare module BABYLON {
         private _renderId;
         private _furTime;
         constructor(name: string, scene: BABYLON.Scene);
-        furTime: number;
+        get furTime(): number;
+        set furTime(furTime: number);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
@@ -556,7 +557,8 @@ declare module BABYLON {
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
-        activeLight: BABYLON.IShadowLight;
+        get activeLight(): BABYLON.IShadowLight;
+        set activeLight(light: BABYLON.IShadowLight);
         isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
         clone(name: string): ShadowOnlyMaterial;
@@ -942,6 +944,11 @@ declare module BABYLON {
         * @param {number}: Defines the waves speed
         */
         waveSpeed: number;
+        /**
+         * Sets or gets whether or not automatic clipping should be enabled or not. Setting to true will save performances and
+         * will avoid calculating useless pixels in the pixel shader of the water material.
+         */
+        disableClipPlane: boolean;
         protected _renderTargets: BABYLON.SmartArray<BABYLON.RenderTargetTexture>;
         private _mesh;
         private _refractionRTT;
@@ -952,21 +959,24 @@ declare module BABYLON {
         private _renderId;
         private _useLogarithmicDepth;
         private _waitingRenderList;
+        private _imageProcessingConfiguration;
+        private _imageProcessingObserver;
         /**
          * Gets a boolean indicating that current material needs to register RTT
          */
-        readonly hasRenderTargetTextures: boolean;
+        get hasRenderTargetTextures(): boolean;
         /**
         * Constructor
         */
         constructor(name: string, scene: BABYLON.Scene, renderTargetSize?: BABYLON.Vector2);
-        useLogarithmicDepth: boolean;
-        readonly refractionTexture: BABYLON.Nullable<BABYLON.RenderTargetTexture>;
-        readonly reflectionTexture: BABYLON.Nullable<BABYLON.RenderTargetTexture>;
+        get useLogarithmicDepth(): boolean;
+        set useLogarithmicDepth(value: boolean);
+        get refractionTexture(): BABYLON.Nullable<BABYLON.RenderTargetTexture>;
+        get reflectionTexture(): BABYLON.Nullable<BABYLON.RenderTargetTexture>;
         addToRenderList(node: any): void;
         enableRenderTargets(enable: boolean): void;
         getRenderList(): BABYLON.Nullable<BABYLON.AbstractMesh[]>;
-        readonly renderTargetsEnabled: boolean;
+        get renderTargetsEnabled(): boolean;
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
