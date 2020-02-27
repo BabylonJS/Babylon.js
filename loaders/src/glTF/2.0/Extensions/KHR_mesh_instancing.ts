@@ -70,21 +70,25 @@ export class KHR_mesh_instancing implements IGLTFLoaderExtension {
                             let instanceCount = attributeBuffers[attributeKeys[0]].accessor.count;
                             let digitLength = instanceCount.toString().length;
                             for (let i = 0; i < instanceCount; ++i) {
-                                let instance = babylonMeshInstanceNode.clone((babylonMeshInstanceNode.name || babylonMeshInstanceNode.id) + "_" + String(i).padStart(digitLength,'0'), babylonTransformNode, true);
+                                let instance;
+                                if (i === 0){
+                                    instance = babylonMeshInstanceNode;
+                                    instance.setParent(babylonTransformNode);
+                                } else {
+                                    instance = babylonMeshInstanceNode.clone((babylonMeshInstanceNode.name || babylonMeshInstanceNode.id) + "_" + String(i).padStart(digitLength,'0'), babylonTransformNode, true);
+                                }
+
                                 if (instance) {
                                     instance.position = attributeBuffers["TRANSLATION"] ? Vector3.FromArray(attributeBuffers["TRANSLATION"].buffer, i * 3)
                                                                                         : Vector3.Zero();
-                                    instance.rotationQuaternion = attributeBuffers["ROTATION"] ? Quaternion.FromEulerAngles(attributeBuffers["ROTATION"].buffer[i * 3], attributeBuffers["ROTATION"].buffer[i * 3 + 1], attributeBuffers["ROTATION"].buffer[i * 3 + 2]) //Quaternion.FromArray(attributeBuffers["ROTATION"].buffer, i * 4) //
-                                                                                                : Quaternion.Identity();
+                                    instance.rotationQuaternion = attributeBuffers["ROTATION"] ? Quaternion.FromArray(attributeBuffers["ROTATION"].buffer, i * 4)
+                                                                                            : Quaternion.Identity();
                                     instance.scaling = attributeBuffers["SCALE"] ? Vector3.FromArray(attributeBuffers["SCALE"].buffer, i * 3)
                                                                                     : Vector3.One();
                                     instance.computeWorldMatrix(true);
                                 }
                             }
                         }
-
-                        babylonMeshInstanceNode.setParent(babylonTransformNode);
-                        (babylonMeshInstanceNode as Mesh).isVisible = false;
                         let babylonMesh = (babylonTransformNode as Mesh);
                         if (babylonMesh){
                             babylonMesh.isVisible = false;
@@ -98,6 +102,7 @@ export class KHR_mesh_instancing implements IGLTFLoaderExtension {
             if (nodeMesh) {
                 node.mesh = nodeMesh;
             }
+
             return promise!;
         });
     }
