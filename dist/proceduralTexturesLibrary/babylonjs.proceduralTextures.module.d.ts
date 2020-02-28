@@ -6,7 +6,7 @@ declare module "babylonjs-procedural-textures/brick/brickProceduralTexture.fragm
     };
 }
 declare module "babylonjs-procedural-textures/brick/brickProceduralTexture" {
-    import { Color3 } from "babylonjs/Maths/math";
+    import { Color3 } from "babylonjs/Maths/math.color";
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
     import { Scene } from "babylonjs/scene";
@@ -18,10 +18,14 @@ declare module "babylonjs-procedural-textures/brick/brickProceduralTexture" {
         private _brickColor;
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
-        numberOfBricksHeight: number;
-        numberOfBricksWidth: number;
-        jointColor: Color3;
-        brickColor: Color3;
+        get numberOfBricksHeight(): number;
+        set numberOfBricksHeight(value: number);
+        get numberOfBricksWidth(): number;
+        set numberOfBricksWidth(value: number);
+        get jointColor(): Color3;
+        set jointColor(value: Color3);
+        get brickColor(): Color3;
+        set brickColor(value: Color3);
         /**
          * Serializes this brick procedural texture
          * @returns a serialized brick procedural texture object
@@ -48,7 +52,7 @@ declare module "babylonjs-procedural-textures/cloud/cloudProceduralTexture.fragm
     };
 }
 declare module "babylonjs-procedural-textures/cloud/cloudProceduralTexture" {
-    import { Color4 } from "babylonjs/Maths/math";
+    import { Color4 } from "babylonjs/Maths/math.color";
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
     import { Scene } from "babylonjs/scene";
@@ -58,8 +62,10 @@ declare module "babylonjs-procedural-textures/cloud/cloudProceduralTexture" {
         private _cloudColor;
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
-        skyColor: Color4;
-        cloudColor: Color4;
+        get skyColor(): Color4;
+        set skyColor(value: Color4);
+        get cloudColor(): Color4;
+        set cloudColor(value: Color4);
         /**
          * Serializes this cloud procedural texture
          * @returns a serialized cloud procedural texture object
@@ -86,7 +92,8 @@ declare module "babylonjs-procedural-textures/fire/fireProceduralTexture.fragmen
     };
 }
 declare module "babylonjs-procedural-textures/fire/fireProceduralTexture" {
-    import { Vector2, Color3 } from "babylonjs/Maths/math";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
+    import { Color3 } from 'babylonjs/Maths/math.color';
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
     import { Scene } from "babylonjs/scene";
@@ -100,15 +107,20 @@ declare module "babylonjs-procedural-textures/fire/fireProceduralTexture" {
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
         render(useCameraPostProcess?: boolean): void;
-        static readonly PurpleFireColors: Color3[];
-        static readonly GreenFireColors: Color3[];
-        static readonly RedFireColors: Color3[];
-        static readonly BlueFireColors: Color3[];
-        autoGenerateTime: boolean;
-        fireColors: Color3[];
-        time: number;
-        speed: Vector2;
-        alphaThreshold: number;
+        static get PurpleFireColors(): Color3[];
+        static get GreenFireColors(): Color3[];
+        static get RedFireColors(): Color3[];
+        static get BlueFireColors(): Color3[];
+        get autoGenerateTime(): boolean;
+        set autoGenerateTime(value: boolean);
+        get fireColors(): Color3[];
+        set fireColors(value: Color3[]);
+        get time(): number;
+        set time(value: number);
+        get speed(): Vector2;
+        set speed(value: Vector2);
+        get alphaThreshold(): number;
+        set alphaThreshold(value: number);
         /**
          * Serializes this fire procedural texture
          * @returns a serialized fire procedural texture object
@@ -135,7 +147,7 @@ declare module "babylonjs-procedural-textures/grass/grassProceduralTexture.fragm
     };
 }
 declare module "babylonjs-procedural-textures/grass/grassProceduralTexture" {
-    import { Color3 } from "babylonjs/Maths/math";
+    import { Color3 } from "babylonjs/Maths/math.color";
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
     import { Scene } from "babylonjs/scene";
@@ -145,8 +157,10 @@ declare module "babylonjs-procedural-textures/grass/grassProceduralTexture" {
         private _groundColor;
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
-        grassColors: Color3[];
-        groundColor: Color3;
+        get grassColors(): Color3[];
+        set grassColors(value: Color3[]);
+        get groundColor(): Color3;
+        set groundColor(value: Color3);
         /**
          * Serializes this grass procedural texture
          * @returns a serialized grass procedural texture object
@@ -173,7 +187,7 @@ declare module "babylonjs-procedural-textures/marble/marbleProceduralTexture.fra
     };
 }
 declare module "babylonjs-procedural-textures/marble/marbleProceduralTexture" {
-    import { Color3 } from "babylonjs/Maths/math";
+    import { Color3 } from "babylonjs/Maths/math.color";
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
     import { Scene } from "babylonjs/scene";
@@ -185,10 +199,14 @@ declare module "babylonjs-procedural-textures/marble/marbleProceduralTexture" {
         private _jointColor;
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
-        numberOfTilesHeight: number;
-        amplitude: number;
-        numberOfTilesWidth: number;
-        jointColor: Color3;
+        get numberOfTilesHeight(): number;
+        set numberOfTilesHeight(value: number);
+        get amplitude(): number;
+        set amplitude(value: number);
+        get numberOfTilesWidth(): number;
+        set numberOfTilesWidth(value: number);
+        get jointColor(): Color3;
+        set jointColor(value: Color3);
         /**
          * Serializes this marble procedural texture
          * @returns a serialized marble procedural texture object
@@ -225,7 +243,8 @@ declare module "babylonjs-procedural-textures/normalMap/normalMapProceduralTextu
         updateShaderUniforms(): void;
         render(useCameraPostProcess?: boolean): void;
         resize(size: any, generateMipMaps: any): void;
-        baseTexture: Texture;
+        get baseTexture(): Texture;
+        set baseTexture(texture: Texture);
         /**
          * Serializes this normal map procedural texture
          * @returns a serialized normal map procedural texture object
@@ -291,7 +310,7 @@ declare module "babylonjs-procedural-textures/road/roadProceduralTexture.fragmen
     };
 }
 declare module "babylonjs-procedural-textures/road/roadProceduralTexture" {
-    import { Color3 } from "babylonjs/Maths/math";
+    import { Color3 } from "babylonjs/Maths/math.color";
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
     import { Scene } from "babylonjs/scene";
@@ -300,7 +319,8 @@ declare module "babylonjs-procedural-textures/road/roadProceduralTexture" {
         private _roadColor;
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
-        roadColor: Color3;
+        get roadColor(): Color3;
+        set roadColor(value: Color3);
         /**
          * Serializes this road procedural texture
          * @returns a serialized road procedural texture object
@@ -345,17 +365,28 @@ declare module "babylonjs-procedural-textures/starfield/starfieldProceduralTextu
         private _saturation;
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
-        time: number;
-        alpha: number;
-        beta: number;
-        formuparam: number;
-        stepsize: number;
-        zoom: number;
-        tile: number;
-        brightness: number;
-        darkmatter: number;
-        distfading: number;
-        saturation: number;
+        get time(): number;
+        set time(value: number);
+        get alpha(): number;
+        set alpha(value: number);
+        get beta(): number;
+        set beta(value: number);
+        get formuparam(): number;
+        set formuparam(value: number);
+        get stepsize(): number;
+        set stepsize(value: number);
+        get zoom(): number;
+        set zoom(value: number);
+        get tile(): number;
+        set tile(value: number);
+        get brightness(): number;
+        set brightness(value: number);
+        get darkmatter(): number;
+        set darkmatter(value: number);
+        get distfading(): number;
+        set distfading(value: number);
+        get saturation(): number;
+        set saturation(value: number);
         /**
          * Serializes this starfield procedural texture
          * @returns a serialized starfield procedural texture object
@@ -382,7 +413,7 @@ declare module "babylonjs-procedural-textures/wood/woodProceduralTexture.fragmen
     };
 }
 declare module "babylonjs-procedural-textures/wood/woodProceduralTexture" {
-    import { Color3 } from "babylonjs/Maths/math";
+    import { Color3 } from "babylonjs/Maths/math.color";
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
     import { Scene } from "babylonjs/scene";
@@ -392,8 +423,10 @@ declare module "babylonjs-procedural-textures/wood/woodProceduralTexture" {
         private _woodColor;
         constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
-        ampScale: number;
-        woodColor: Color3;
+        get ampScale(): number;
+        set ampScale(value: number);
+        get woodColor(): Color3;
+        set woodColor(value: Color3);
         /**
          * Serializes this wood procedural texture
          * @returns a serialized wood procedural texture object
@@ -475,10 +508,14 @@ declare module BABYLON {
         private _brickColor;
         constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
-        numberOfBricksHeight: number;
-        numberOfBricksWidth: number;
-        jointColor: BABYLON.Color3;
-        brickColor: BABYLON.Color3;
+        get numberOfBricksHeight(): number;
+        set numberOfBricksHeight(value: number);
+        get numberOfBricksWidth(): number;
+        set numberOfBricksWidth(value: number);
+        get jointColor(): BABYLON.Color3;
+        set jointColor(value: BABYLON.Color3);
+        get brickColor(): BABYLON.Color3;
+        set brickColor(value: BABYLON.Color3);
         /**
          * Serializes this brick procedural texture
          * @returns a serialized brick procedural texture object
@@ -507,8 +544,10 @@ declare module BABYLON {
         private _cloudColor;
         constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
-        skyColor: BABYLON.Color4;
-        cloudColor: BABYLON.Color4;
+        get skyColor(): BABYLON.Color4;
+        set skyColor(value: BABYLON.Color4);
+        get cloudColor(): BABYLON.Color4;
+        set cloudColor(value: BABYLON.Color4);
         /**
          * Serializes this cloud procedural texture
          * @returns a serialized cloud procedural texture object
@@ -541,15 +580,20 @@ declare module BABYLON {
         constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
         render(useCameraPostProcess?: boolean): void;
-        static readonly PurpleFireColors: BABYLON.Color3[];
-        static readonly GreenFireColors: BABYLON.Color3[];
-        static readonly RedFireColors: BABYLON.Color3[];
-        static readonly BlueFireColors: BABYLON.Color3[];
-        autoGenerateTime: boolean;
-        fireColors: BABYLON.Color3[];
-        time: number;
-        speed: BABYLON.Vector2;
-        alphaThreshold: number;
+        static get PurpleFireColors(): BABYLON.Color3[];
+        static get GreenFireColors(): BABYLON.Color3[];
+        static get RedFireColors(): BABYLON.Color3[];
+        static get BlueFireColors(): BABYLON.Color3[];
+        get autoGenerateTime(): boolean;
+        set autoGenerateTime(value: boolean);
+        get fireColors(): BABYLON.Color3[];
+        set fireColors(value: BABYLON.Color3[]);
+        get time(): number;
+        set time(value: number);
+        get speed(): BABYLON.Vector2;
+        set speed(value: BABYLON.Vector2);
+        get alphaThreshold(): number;
+        set alphaThreshold(value: number);
         /**
          * Serializes this fire procedural texture
          * @returns a serialized fire procedural texture object
@@ -578,8 +622,10 @@ declare module BABYLON {
         private _groundColor;
         constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
-        grassColors: BABYLON.Color3[];
-        groundColor: BABYLON.Color3;
+        get grassColors(): BABYLON.Color3[];
+        set grassColors(value: BABYLON.Color3[]);
+        get groundColor(): BABYLON.Color3;
+        set groundColor(value: BABYLON.Color3);
         /**
          * Serializes this grass procedural texture
          * @returns a serialized grass procedural texture object
@@ -610,10 +656,14 @@ declare module BABYLON {
         private _jointColor;
         constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
-        numberOfTilesHeight: number;
-        amplitude: number;
-        numberOfTilesWidth: number;
-        jointColor: BABYLON.Color3;
+        get numberOfTilesHeight(): number;
+        set numberOfTilesHeight(value: number);
+        get amplitude(): number;
+        set amplitude(value: number);
+        get numberOfTilesWidth(): number;
+        set numberOfTilesWidth(value: number);
+        get jointColor(): BABYLON.Color3;
+        set jointColor(value: BABYLON.Color3);
         /**
          * Serializes this marble procedural texture
          * @returns a serialized marble procedural texture object
@@ -643,7 +693,8 @@ declare module BABYLON {
         updateShaderUniforms(): void;
         render(useCameraPostProcess?: boolean): void;
         resize(size: any, generateMipMaps: any): void;
-        baseTexture: BABYLON.Texture;
+        get baseTexture(): BABYLON.Texture;
+        set baseTexture(texture: BABYLON.Texture);
         /**
          * Serializes this normal map procedural texture
          * @returns a serialized normal map procedural texture object
@@ -703,7 +754,8 @@ declare module BABYLON {
         private _roadColor;
         constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
-        roadColor: BABYLON.Color3;
+        get roadColor(): BABYLON.Color3;
+        set roadColor(value: BABYLON.Color3);
         /**
          * Serializes this road procedural texture
          * @returns a serialized road procedural texture object
@@ -741,17 +793,28 @@ declare module BABYLON {
         private _saturation;
         constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
-        time: number;
-        alpha: number;
-        beta: number;
-        formuparam: number;
-        stepsize: number;
-        zoom: number;
-        tile: number;
-        brightness: number;
-        darkmatter: number;
-        distfading: number;
-        saturation: number;
+        get time(): number;
+        set time(value: number);
+        get alpha(): number;
+        set alpha(value: number);
+        get beta(): number;
+        set beta(value: number);
+        get formuparam(): number;
+        set formuparam(value: number);
+        get stepsize(): number;
+        set stepsize(value: number);
+        get zoom(): number;
+        set zoom(value: number);
+        get tile(): number;
+        set tile(value: number);
+        get brightness(): number;
+        set brightness(value: number);
+        get darkmatter(): number;
+        set darkmatter(value: number);
+        get distfading(): number;
+        set distfading(value: number);
+        get saturation(): number;
+        set saturation(value: number);
         /**
          * Serializes this starfield procedural texture
          * @returns a serialized starfield procedural texture object
@@ -780,8 +843,10 @@ declare module BABYLON {
         private _woodColor;
         constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
-        ampScale: number;
-        woodColor: BABYLON.Color3;
+        get ampScale(): number;
+        set ampScale(value: number);
+        get woodColor(): BABYLON.Color3;
+        set woodColor(value: BABYLON.Color3);
         /**
          * Serializes this wood procedural texture
          * @returns a serialized wood procedural texture object

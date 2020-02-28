@@ -24,9 +24,10 @@ export class UtilityLayerRenderer implements IDisposable {
 
     /**
      * Gets the camera that is used to render the utility layer (when not set, this will be the last active camera)
+     * @param getRigParentIfPossible if the current active camera is a rig camera, should its parent camera be returned
      * @returns the camera that is used when rendering the utility layer
      */
-    public getRenderCamera() {
+    public getRenderCamera(getRigParentIfPossible?: boolean) {
         if (this._renderCamera) {
             return this._renderCamera;
         } else {
@@ -36,7 +37,11 @@ export class UtilityLayerRenderer implements IDisposable {
             } else {
                 activeCam = <Camera>(this.originalScene.activeCamera!);
             }
-            return (activeCam && activeCam.isRigCamera) ? activeCam.rigParent! : activeCam;
+
+            if (getRigParentIfPossible && activeCam && activeCam.isRigCamera) {
+                return activeCam.rigParent!;
+            }
+            return activeCam;
         }
     }
     /**
