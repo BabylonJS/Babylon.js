@@ -120,6 +120,18 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private _preWarmDone = false;
 
     /**
+     * Specifies if the particles are updated in emitter local space or world space.
+     * This is always false for GPU particles
+     */
+    public get isLocal() {
+        return false;
+    }
+
+    public set isLocal(value: boolean) {
+        // Ignore
+    }
+
+    /**
      * Is this system ready to be used/rendered
      * @return true if the system is ready
      */

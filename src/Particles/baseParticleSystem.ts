@@ -65,7 +65,7 @@ export class BaseParticleSystem {
     /**
      * The emitter represents the Mesh or position we are attaching the particle system to.
      */
-    public emitter: Nullable<AbstractMesh | Vector3> = null;
+    public emitter: Nullable<AbstractMesh | Vector3> = Vector3.Zero();
 
     /**
      * The maximum number of particles to emit per frame
