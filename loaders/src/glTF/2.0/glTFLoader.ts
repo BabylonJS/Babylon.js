@@ -709,9 +709,7 @@ export class GLTFLoader implements IGLTFLoader {
         });
     }
 
-    /**
-    * @hidden Define this method to modify the default behavior when loading data for meshes
-    */
+    /** @hidden */
     public _loadMeshAsync(context: string, node: INode, mesh: IMesh, assign: (babylonTransformNode: TransformNode) => void): Promise<TransformNode> {
         const primitives = mesh.primitives;
         if (!primitives || !primitives.length) {
