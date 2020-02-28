@@ -756,7 +756,6 @@ export class GraphFrame {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
         _this.initResizing(evt);
-        // _this.initResizing(evt);
         _this._resizingDirection = ResizingDirection.TopRight;
         _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onTopRightHandlePointerUp);
         _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onTopRightHandlePointerMove);
@@ -787,17 +786,27 @@ export class GraphFrame {
     private _moveTopRightHandle = (evt: PointerEvent, xLimit: number, yLimit: number) => {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
-        if (!(_this._isResizingTop() && _this._isResizingRight()) || _this._mouseStartPointX === null || _this._mouseStartPointY === null || evt.clientY > yLimit || evt.clientX < xLimit) {
+        if (!(_this._isResizingTop() && _this._isResizingRight()) || _this._mouseStartPointX === null || _this._mouseStartPointY === null) {
             return;
         }
         if (_this._isResizingRight() && _this._isResizingTop()) {
             evt.stopPropagation();
-            const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
-            _this._expandRight(distanceMouseMovedX, evt.clientX);
-            _this._mouseStartPointX =  evt.clientX;
-            const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
-            _this._expandTop(distanceMouseMovedY);
-            _this._mouseStartPointY =  evt.clientY;
+            if (evt.clientY < yLimit && evt.clientX > xLimit) { // able to move in X and Y
+                const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
+                _this._expandRight(distanceMouseMovedX, evt.clientX);
+                _this._mouseStartPointX =  evt.clientX;
+                const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
+                _this._expandTop(distanceMouseMovedY);
+                _this._mouseStartPointY =  evt.clientY;
+            } else if (evt.clientY > yLimit && evt.clientX > xLimit) { // able to move in X but not Y
+                const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
+                _this._expandRight(distanceMouseMovedX, evt.clientX);
+                _this._mouseStartPointX =  evt.clientX;
+            } else if (evt.clientY < yLimit && evt.clientX < xLimit) { // able to move in Y but not X
+                const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
+                _this._expandTop(distanceMouseMovedY);
+                _this._mouseStartPointY =  evt.clientY;
+            }
         }
     }
 
@@ -805,7 +814,6 @@ export class GraphFrame {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
         _this.initResizing(evt);
-        // _this.initResizing(evt);
         _this._resizingDirection = ResizingDirection.BottomRight;
         _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onBottomRightHandlePointerUp);
         _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onBottomRightHandlePointerMove);
@@ -835,17 +843,27 @@ export class GraphFrame {
     private _moveBottomRightHandle = (evt: PointerEvent, xLimit: number, yLimit: number) => {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
-        if (!(_this._isResizingBottom() && _this._isResizingRight()) || _this._mouseStartPointX === null || _this._mouseStartPointY === null || evt.clientY < yLimit || evt.clientX < xLimit) {
+        if (!(_this._isResizingBottom() && _this._isResizingRight()) || _this._mouseStartPointX === null || _this._mouseStartPointY === null) {
             return;
         }
         if (_this._isResizingRight() && _this._isResizingBottom()) {
             evt.stopPropagation();
-            const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
-            _this._expandRight(distanceMouseMovedX, evt.clientX);
-            _this._mouseStartPointX =  evt.clientX;
-            const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
-            _this._expandBottom(distanceMouseMovedY);
-            _this._mouseStartPointY =  evt.clientY;
+            if (evt.clientY > yLimit && evt.clientX > xLimit) { // able to move in X and Y
+                const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
+                _this._expandRight(distanceMouseMovedX, evt.clientX);
+                _this._mouseStartPointX =  evt.clientX;
+                const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
+                _this._expandBottom(distanceMouseMovedY);
+                _this._mouseStartPointY =  evt.clientY;
+            } else if (evt.clientY < yLimit && evt.clientX > xLimit) { // able to move in X but not Y
+                const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
+                _this._expandRight(distanceMouseMovedX, evt.clientX);
+                _this._mouseStartPointX =  evt.clientX;
+            } else if (evt.clientY > yLimit && evt.clientX < xLimit) { // able to move in Y but not X
+                const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
+                _this._expandBottom(distanceMouseMovedY);
+                _this._mouseStartPointY =  evt.clientY;
+            }
         }
     }
 
@@ -853,7 +871,6 @@ export class GraphFrame {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
         _this.initResizing(evt);
-        // _this.initResizing(evt);
         _this._resizingDirection = ResizingDirection.BottomLeft;
         _this.mouseXLimit = evt.clientX + _this.width - _this._minFrameWidth;
         _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onBottomLeftHandlePointerUp);
@@ -885,17 +902,27 @@ export class GraphFrame {
     private _moveBottomLeftHandle = (evt: PointerEvent, xLimit: number, yLimit: number) => {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
-        if (!(_this._isResizingBottom() && _this._isResizingLeft()) || _this._mouseStartPointX === null || _this._mouseStartPointY === null || evt.clientY < yLimit || evt.clientX > xLimit) {
+        if (!(_this._isResizingBottom() && _this._isResizingLeft()) || _this._mouseStartPointX === null || _this._mouseStartPointY === null) {
             return;
         }
         if (_this._isResizingLeft() && _this._isResizingBottom()) {
             evt.stopPropagation();
-            const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
-            _this._expandLeft(distanceMouseMovedX);
-            _this._mouseStartPointX =  evt.clientX;
-            const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
-            _this._expandBottom(distanceMouseMovedY);
-            _this._mouseStartPointY =  evt.clientY;
+            if (evt.clientY > yLimit && evt.clientX < xLimit) { // able to move in X and Y
+                const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
+                _this._expandLeft(distanceMouseMovedX);
+                _this._mouseStartPointX =  evt.clientX;
+                const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
+                _this._expandBottom(distanceMouseMovedY);
+                _this._mouseStartPointY =  evt.clientY;
+            } else if (evt.clientY < yLimit && evt.clientX < xLimit) { // able to move in X but not Y
+                const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
+                _this._expandLeft(distanceMouseMovedX);
+                _this._mouseStartPointX =  evt.clientX;
+            } else if (evt.clientY > yLimit && evt.clientX > xLimit) { // able to move in Y but not X
+                const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
+                _this._expandBottom(distanceMouseMovedY);
+                _this._mouseStartPointY =  evt.clientY;
+            }
         }
     }
 
@@ -903,7 +930,6 @@ export class GraphFrame {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
         _this.initResizing(evt);
-        // _this.initResizing(evt);
         _this._resizingDirection = ResizingDirection.TopLeft;
         _this.mouseXLimit = evt.clientX + _this.width - _this._minFrameWidth;
         _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onTopLeftHandlePointerUp);
@@ -936,17 +962,27 @@ export class GraphFrame {
     private _moveTopLeftHandle = (evt: PointerEvent, xLimit: number, yLimit: number) => {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
-        if (!(_this._isResizingTop() && _this._isResizingLeft()) || _this._mouseStartPointX === null || _this._mouseStartPointY === null || evt.clientY > yLimit  || evt.clientX > xLimit) {
+        if (!(_this._isResizingTop() && _this._isResizingLeft()) || _this._mouseStartPointX === null || _this._mouseStartPointY === null) {
             return;
         }
         if (_this._isResizingLeft() && _this._isResizingTop()) {
             evt.stopPropagation();
-            const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
-            _this._expandLeft(distanceMouseMovedX);
-            _this._mouseStartPointX =  evt.clientX;
-            const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
-            _this._expandTop(distanceMouseMovedY);
-            _this._mouseStartPointY =  evt.clientY;
+            if (evt.clientY < yLimit  && evt.clientX < xLimit) { // able to move in X and Y
+                const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
+                _this._expandLeft(distanceMouseMovedX);
+                _this._mouseStartPointX =  evt.clientX;
+                const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
+                _this._expandTop(distanceMouseMovedY);
+                _this._mouseStartPointY =  evt.clientY;
+            } else if (evt.clientY > yLimit  && evt.clientX < xLimit) { // able to move in X but not Y
+                const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
+                _this._expandLeft(distanceMouseMovedX);
+                _this._mouseStartPointX =  evt.clientX;
+            } else if (evt.clientY < yLimit  && evt.clientX > xLimit) { // able to move in Y but not X
+                const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
+                _this._expandTop(distanceMouseMovedY);
+                _this._mouseStartPointY =  evt.clientY;
+            }
         }
     }
 
@@ -956,7 +992,6 @@ export class GraphFrame {
         this.element.style.width = `${frameElementWidth - widthModification}px`;
         this.element.style.left = `${frameElementLeft + widthModification}px`;
         this.updateMinHeightWithComments();
-        // this.height = this._borderElement.offsetHeight;
 }
 
     private _expandTop(heightModification: number) {
@@ -973,7 +1008,6 @@ export class GraphFrame {
             this.element.style.width = `${frameElementWidth + widthModification}px`;
         }
         this.updateMinHeightWithComments();
-        // this.height = this._borderElement.offsetHeight;
     }
 
     private _expandBottom(heightModification: number) {
