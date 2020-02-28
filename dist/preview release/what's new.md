@@ -5,6 +5,7 @@
 ## Updates
 
 ### General
+- NME Frames are now resizable from the corners ([Kyle Belfort](https://github.com/belfortk)
 
 ### Engine
 
