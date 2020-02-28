@@ -1562,9 +1562,7 @@ export class GLTFLoader implements IGLTFLoader {
         return accessor._data;
     }
 
-    /**
-    * @hidden Define this method to modify the default behavior when loading data for meshes
-    */
+    /** @hidden */
     public _loadFloatAccessorAsync(context: string, accessor: IAccessor): Promise<Float32Array> {
         return this._loadAccessorAsync(context, accessor, Float32Array) as Promise<Float32Array>;
     }
