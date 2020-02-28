@@ -2,7 +2,7 @@
 
 # Babylon Native
 
-Welcome to Babylon! Babylon Native is a collection of technologies intended to bring 
+Welcome! Babylon Native is a collection of technologies intended to bring 
 the power and flexibility of Babylon.js to cross-platform applications beyond the 
 browser. The goal of this project is to allow the same JavaScript that powers Babylon.js 
 apps on the Web to work identically in native apps on Windows, Android, macOS, and iOS.
@@ -56,7 +56,7 @@ to us on [the Babylon forum](https://forum.babylonjs.com).
 This quick overview will help you get started developing in the Babylon Native 
 repository. We support development on Windows and macOS. (It is also possible, 
 though not yet fully supported, to develop on Linux.) This overview is intended 
-for reasonably experienced developers with familiar with common native development 
+for reasonably experienced developers familiar with common native development 
 principles.
 
 ### **All Development Platforms, Common First Steps**
