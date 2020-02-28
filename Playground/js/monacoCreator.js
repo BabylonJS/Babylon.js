@@ -24,7 +24,7 @@ class MonacoCreator {
 
         this.compilerTriggerTimeoutID = null;
 
-        this.addOnMoncaoLoadedCallback(
+        this.addOnMonacoLoadedCallback(
             function () {
                 this.parent.main.run();
             },
@@ -65,10 +65,24 @@ class MonacoCreator {
 
     // FUNCTIONS
 
+    waitForDefine() {
+        return new Promise(function (resolve, reject) {
+            function timeout() {
+                if (!window.define) {
+                    setTimeout(timeout, 200);
+                } else {
+                    resolve();
+                }
+            }
+            timeout();
+        });
+    }
+
     /**
      * Load the Monaco Node module.
      */
     async loadMonaco(typings) {
+        await this.waitForDefine();
         let response = await fetch(typings || "https://preview.babylonjs.com/babylon.d.ts");
         if (!response.ok) {
             return;
@@ -126,7 +140,7 @@ class MonacoCreator {
      * @param {Function} func the function to call when monaco is available
      * @param {*} context The context of this function
      */
-    addOnMoncaoLoadedCallback(func, context) {
+    addOnMonacoLoadedCallback(func, context) {
         this.onMonacoLoadedCallbacks = this.onMonacoLoadedCallbacks || [];
         if (this.monacoLoaded) {
             func.call(context, this);
@@ -380,7 +394,10 @@ class MonacoCreator {
             }
         };
         editorOptions.minimap.enabled = document.getElementById("minimapToggle1280").classList.contains('checked');
-        this.jsEditor = monaco.editor.create(document.getElementById('jsEditor'), editorOptions);
+        var editorElement = document.getElementById('jsEditor');
+        editorElement.innerHTML = "";
+        editorElement.style.overflow = "unset";
+        this.jsEditor = monaco.editor.create(editorElement, editorOptions);
         this.jsEditor.setValue(oldCode);
 
         // We cannot call 'analyzeCode' on every keystroke, that's time consuming

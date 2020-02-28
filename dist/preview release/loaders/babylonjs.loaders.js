@@ -4957,16 +4957,15 @@ var KHR_texture_basisu = /** @class */ (function () {
     function KHR_texture_basisu(loader) {
         /** The name of this extension. */
         this.name = NAME;
-        /** Defines whether this extension is enabled. */
-        this.enabled = true;
         this._loader = loader;
+        this.enabled = loader.isExtensionUsed(NAME);
     }
     /** @hidden */
     KHR_texture_basisu.prototype.dispose = function () {
         delete this._loader;
     };
     /** @hidden */
-    KHR_texture_basisu.prototype.loadTextureAsync = function (context, texture, assign) {
+    KHR_texture_basisu.prototype._loadTextureAsync = function (context, texture, assign) {
         var _this = this;
         return _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["GLTFLoader"].LoadExtensionAsync(context, texture, this.name, function (extensionContext, extension) {
             var sampler = (texture.sampler == undefined ? _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["GLTFLoader"].DefaultSampler : _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["ArrayItem"].Get(context + "/sampler", _this._loader.gltf.samplers, texture.sampler));

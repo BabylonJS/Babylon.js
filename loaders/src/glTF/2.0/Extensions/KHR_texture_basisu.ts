@@ -19,13 +19,14 @@ export class KHR_texture_basisu implements IGLTFLoaderExtension {
     public readonly name = NAME;
 
     /** Defines whether this extension is enabled. */
-    public enabled = true;
+    public enabled: boolean;
 
     private _loader: GLTFLoader;
 
     /** @hidden */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
+        this.enabled = loader.isExtensionUsed(NAME);
     }
 
     /** @hidden */
@@ -34,7 +35,7 @@ export class KHR_texture_basisu implements IGLTFLoaderExtension {
     }
 
     /** @hidden */
-    public loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>> {
+    public _loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>> {
         return GLTFLoader.LoadExtensionAsync<IKHRTextureBasisU, BaseTexture>(context, texture, this.name, (extensionContext, extension) => {
             const sampler = (texture.sampler == undefined ? GLTFLoader.DefaultSampler : ArrayItem.Get(`${context}/sampler`, this._loader.gltf.samplers, texture.sampler));
             const image = ArrayItem.Get(`${extensionContext}/source`, this._loader.gltf.images, extension.source);

@@ -67,12 +67,12 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * This function can be defined to specify initial direction for every new particle.
      * It by default use the emitterType defined function
      */
-    public startDirectionFunction: (worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle) => void;
+    public startDirectionFunction: (worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean) => void;
     /**
      * This function can be defined to specify initial position for every new particle.
      * It by default use the emitterType defined function
      */
-    public startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle) => void;
+    public startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean) => void;
 
     /**
      * @hidden
@@ -173,6 +173,11 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     * The current active Sub-systems, this property is used by the root particle system only.
     */
     public activeSubSystems: Array<ParticleSystem>;
+
+    /**
+     * Specifies if the particles are updated in emitter local space or world space
+     */
+    public isLocal = false;
 
     private _rootParticleSystem: Nullable<ParticleSystem>;
     //end of Sub-emitter
@@ -339,7 +344,12 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                     });
                 }
 
-                particle.position.addInPlace(this._scaledDirection);
+                if (this.isLocal) {
+                    particle._localPosition!.addInPlace(this._scaledDirection);
+                    Vector3.TransformCoordinatesToRef(particle._localPosition!, this._emitterWorldMatrix, particle.position);
+                } else {
+                    particle.position.addInPlace(this._scaledDirection);
+                }
 
                 // Noise
                 if (noiseTextureData && noiseTextureSize && particle._randomNoiseCoordinates1) {
@@ -1144,13 +1154,32 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         if (!this._isBillboardBased) {
             if (particle._initialDirection) {
-                this._vertexData[offset++] = particle._initialDirection.x;
-                this._vertexData[offset++] = particle._initialDirection.y;
-                this._vertexData[offset++] = particle._initialDirection.z;
+                let initialDirection = particle._initialDirection;
+                if (this.isLocal) {
+                    Vector3.TransformNormalToRef(initialDirection, this._emitterWorldMatrix, TmpVectors.Vector3[0]);
+                    initialDirection = TmpVectors.Vector3[0];
+                }
+                if (initialDirection.x === 0 && initialDirection.z === 0) {
+                    initialDirection.x = 0.001;
+                }
+
+                this._vertexData[offset++] = initialDirection.x;
+                this._vertexData[offset++] = initialDirection.y;
+                this._vertexData[offset++] = initialDirection.z;
             } else {
-                this._vertexData[offset++] = particle.direction.x;
-                this._vertexData[offset++] = particle.direction.y;
-                this._vertexData[offset++] = particle.direction.z;
+                let direction = particle.direction;
+                if (this.isLocal) {
+                    Vector3.TransformNormalToRef(direction, this._emitterWorldMatrix, TmpVectors.Vector3[0]);
+                    direction = TmpVectors.Vector3[0];
+                }
+
+                if (direction.x === 0 && direction.z === 0) {
+                    direction.x = 0.001;
+                }
+                this._vertexData[offset++] = direction.x;
+                this._vertexData[offset++] = direction.y;
+                this._vertexData[offset++] = direction.z;
+
             }
         } else if (this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED) {
             this._vertexData[offset++] = particle.direction.x;
@@ -1275,6 +1304,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         if ((<AbstractMesh>this.emitter).position) {
             var emitterMesh = (<AbstractMesh>this.emitter);
             this._emitterWorldMatrix = emitterMesh.getWorldMatrix();
+
         } else {
             var emitterPosition = (<Vector3>this.emitter);
             this._emitterWorldMatrix = Matrix.Translation(emitterPosition.x, emitterPosition.y, emitterPosition.z);
@@ -1312,17 +1342,26 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             let emitPower = Scalar.RandomRange(this.minEmitPower, this.maxEmitPower);
 
             if (this.startPositionFunction) {
-                this.startPositionFunction(this._emitterWorldMatrix, particle.position, particle);
+                this.startPositionFunction(this._emitterWorldMatrix, particle.position, particle, this.isLocal);
             }
             else {
-                this.particleEmitterType.startPositionFunction(this._emitterWorldMatrix, particle.position, particle);
+                this.particleEmitterType.startPositionFunction(this._emitterWorldMatrix, particle.position, particle, this.isLocal);
+            }
+
+            if (this.isLocal) {
+                if (!particle._localPosition) {
+                    particle._localPosition = particle.position.clone();
+                } else {
+                    particle._localPosition.copyFrom(particle.position);
+                }
+                Vector3.TransformCoordinatesToRef(particle._localPosition!, this._emitterWorldMatrix, particle.position);
             }
 
             if (this.startDirectionFunction) {
-                this.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle);
+                this.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle, this.isLocal);
             }
             else {
-                this.particleEmitterType.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle);
+                this.particleEmitterType.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle, this.isLocal);
             }
 
             if (emitPower === 0) {
@@ -2075,6 +2114,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             serializationObject.invertY = particleSystem.particleTexture._invertY;
         }
 
+        serializationObject.isLocal = particleSystem.isLocal;
+
         // Animations
         SerializationHelper.AppendSerializedAnimations(particleSystem, serializationObject);
         serializationObject.beginAnimationOnStart = particleSystem.beginAnimationOnStart;
@@ -2355,6 +2396,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         } else {
             particleSystem.emitter = Vector3.FromArray(parsedParticleSystem.emitter);
         }
+
+        particleSystem.isLocal = !!parsedParticleSystem.isLocal;
 
         // Misc.
         if (parsedParticleSystem.renderingGroupId !== undefined) {

@@ -137,6 +137,9 @@ export class Particle {
     /** @hidden */
     public _randomNoiseCoordinates2: Vector3;
 
+    /** @hidden */
+    public _localPosition?: Vector3;
+
     /**
      * Creates a new instance Particle
      * @param particleSystem the particle system the particle belongs to
@@ -240,6 +243,13 @@ export class Particle {
             other._initialDirection = null;
         }
         other.direction.copyFrom(this.direction);
+        if (this._localPosition) {
+            if (other._localPosition) {
+                other._localPosition.copyFrom(this._localPosition);
+            } else {
+                other._localPosition = this._localPosition.clone();
+            }
+        }
         other.color.copyFrom(this.color);
         other.colorStep.copyFrom(this.colorStep);
         other.lifeTime = this.lifeTime;

@@ -393,6 +393,10 @@ body {
     background-color: #1e1e1e;
 }
 
+.wrapper #jsEditor pre.loading-pre {
+    margin: 20px;
+}
+
 .wrapper #canvasZone {
     height: 100%;
 }
@@ -903,7 +907,7 @@ body {
     top: 80px;
     left: calc(50% - 205px);
     width: 410px;
-    height: 370px;
+    height: 390px;
     padding-top: 15px;
     -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
@@ -914,6 +918,10 @@ body {
 
 .save-layer .save-form img {
     display: none;
+}
+
+#saveFormDescription {
+    height: 80px;
 }
 
 .save-layer .save-form .separator {
