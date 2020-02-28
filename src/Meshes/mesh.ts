@@ -407,13 +407,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
 
             // Deep copy
-            DeepCopier.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent", "uniqueId",
-                "source", "metadata", "hasLODLevels", "geometry", "isBlocked", "areNormalsFrozen",
-                "onBeforeDrawObservable", "onBeforeRenderObservable", "onAfterRenderObservable", "onBeforeDraw",
-                "onAfterWorldMatrixUpdateObservable", "onCollideObservable", "onCollisionPositionChangeObservable", "onRebuildObservable",
-                "onDisposeObservable", "lightSources", "morphTargetManager"
-            ],
-                ["_poseMatrix"]);
+            DeepCopier.DeepCopy(source, this, [
+                "name", "material", "skeleton", "instances", "parent", "uniqueId", "source", "metadata", "morphTargetManager",
+                "hasInstances", "source", "worldMatrixInstancedBuffer", "hasLODLevels", "geometry", "isBlocked", "areNormalsFrozen",
+                "facetNb", "isFacetDataEnabled", "lightSources", "useBones", "isAnInstance", "collider", "edgesRenderer", "forward",
+                "up", "right", "absolutePosition", "absoluteScaling", "absoluteRotationQuaternion", "isWorldMatrixFrozen",
+                "nonUniformScaling", "behaviors", "worldMatrixFromCache"
+            ], ["_poseMatrix"]);
 
             // Source mesh
             this._internalMeshDataInfo._source = source;
