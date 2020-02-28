@@ -17,7 +17,7 @@ enum ResizingDirection {
         TopRight,
         TopLeft,
         BottomRight,
-        BottomLeft,
+        BottomLeft
 }
 
 export class GraphFrame {

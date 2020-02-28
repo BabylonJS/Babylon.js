@@ -245,7 +245,7 @@
             }
 
             .top-right-corner-handle{
-                background-color: lightskyblue;
+                background-color: transparent;
                 height: 4px;
                 z-index: 21;
                 cursor: ne-resize;
@@ -253,7 +253,7 @@
                 margin-left: -6px;
 
                 &::after {
-                    background-color: lightskyblue;
+                    background-color: transparent;
                     cursor: ne-resize;
                     margin-left: unset;
                     top: -4px;
@@ -264,7 +264,7 @@
 
 
             .bottom-right-corner-handle{
-                background-color: lightpink;
+                background-color: transparent;
                 height: 0px;
                 z-index: 21;
                 cursor: nw-resize;
@@ -273,7 +273,7 @@
 
 
                 &::after {
-                    background-color: lightpink;
+                    background-color: transparent;
                     height: 10px;
                     cursor: nw-resize;
                     top: unset;
@@ -300,7 +300,7 @@
             }
 
             .top-left-corner-handle{
-                background-color: lightseagreen;
+                background-color: transparent;
                 height: 4px;
                 z-index: 21;
                 cursor: nw-resize;
@@ -308,7 +308,7 @@
                 margin-left: -4px;
 
                 &::before {
-                    background-color: lightseagreen;
+                    background-color: transparent;
                     cursor: nw-resize;
                     margin-left: unset;
                     top: -4px;
@@ -318,7 +318,7 @@
             }
 
             .bottom-left-corner-handle{
-                background-color: darkviolet;
+                background-color: transparent;
                 height: 0px;
                 z-index: 21;
                 cursor: sw-resize;
@@ -326,7 +326,7 @@
 
 
                 &::before {
-                    background-color: darkviolet;
+                    background-color: transparent;
                     height: 10px;
                     cursor: sw-resize;
                     top: unset;
