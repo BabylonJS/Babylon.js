@@ -3,7 +3,7 @@ import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { INode, IAccessor } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
-import { Vector3, Quaternion, Vector4 } from 'babylonjs/Maths/math.vector';
+import { Vector3, Quaternion } from 'babylonjs/Maths/math.vector';
 
 const NAME = "KHR_mesh_instancing";
 
@@ -64,18 +64,18 @@ export class KHR_mesh_instancing implements IGLTFLoaderExtension {
                 return Promise.all(promises).then(() => {
                     const instanceCount = attributeBuffers[attributes[0]].accessor.count;
                     const digitLength = instanceCount.toString().length;
-                    const padNumber = function(num:number, length: number){
+                    const padNumber = function(num: number, length: number) {
                         var str = String(num);
-                        while (str.length < (length)) {str = "0" + str;}
+                        while (str.length < (length)) { str = "0" + str; }
                         return str;
-                    }
+                    };
 
                     for (let i = 0; i < instanceCount; ++i) {
-                        if (node._primitiveBabylonMeshes){
-                            for (let j = 0; j < node._primitiveBabylonMeshes.length; ++j){
+                        if (node._primitiveBabylonMeshes) {
+                            for (let j = 0; j < node._primitiveBabylonMeshes.length; ++j) {
                                 const babylonMeshPrimitive = node._primitiveBabylonMeshes[j];
                                 const instance = babylonMeshPrimitive.clone((babylonMeshPrimitive.name || babylonMeshPrimitive.id) + "_" + padNumber(i, digitLength), babylonTransformNode, true);
-    
+
                                 if (instance) {
                                     attributeBuffers["TRANSLATION"] ? Vector3.FromArrayToRef(attributeBuffers["TRANSLATION"].buffer, i * 3, instance.position)
                                                                     : instance.position.set(0, 0, 0);

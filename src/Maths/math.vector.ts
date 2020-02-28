@@ -3189,10 +3189,10 @@ export class Quaternion {
     }
 
     /**
-     * Updates the given vector "result" from the starting index of the given array.
+     * Updates the given quaternion "result" from the starting index of the given array.
      * @param array the array to pull values from
      * @param offset the offset into the array to start at
-     * @param result the vector to store the result in
+     * @param result the quaternion to store the result in
      */
     public static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number, result: Quaternion): void {
         result.x = array[offset];
