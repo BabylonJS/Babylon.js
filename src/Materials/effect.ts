@@ -10,6 +10,7 @@ import { ShaderProcessor } from '../Engines/Processors/shaderProcessor';
 import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from '../Maths/math.like';
 import { ThinEngine } from '../Engines/thinEngine';
 import { IEffectFallbacks } from './iEffectFallbacks';
+import { WebGLPipelineContext } from '../Engines/WebGL/webGLPipelineContext';
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -75,6 +76,10 @@ export class Effect implements IDisposable {
      * Gets or sets the relative url used to load shaders if using the engine in non-minified mode
      */
     public static ShadersRepository = "src/Shaders/";
+    /**
+     * Enable logging of the shader code when a compilation error occurs
+     */
+    public static LogShaderCodeOnCompilationError = true;
     /**
      * Name of the effect.
      */
@@ -612,6 +617,26 @@ export class Effect implements IDisposable {
         }
     }
 
+    private _getShaderCodeAndErrorLine(shader: WebGLShader, error: Nullable<string>, isFragment: boolean): [Nullable<string>, Nullable<string>] {
+        const regexp = isFragment ? /FRAGMENT SHADER ERROR: 0:(\d+?):/ : /VERTEX SHADER ERROR: 0:(\d+?):/;
+        const code = this._engine?._gl?.getShaderSource(shader) ?? null;
+
+        let errorLine = null;
+
+        if (error && code) {
+            const res = error.match(regexp);
+            if (res && res.length === 2) {
+                const lineNumber = parseInt(res[1]);
+                const lines = code.split("\n", -1);
+                if (lines.length >= lineNumber) {
+                    errorLine = `Offending line [${lineNumber}] in ${isFragment ? "fragment" : "vertex"} code: ${lines[lineNumber - 1]}`;
+                }
+            }
+        }
+
+        return [code, errorLine];
+    }
+
     private _processCompilationErrors(e: any, previousPipelineContext: Nullable<IPipelineContext> = null) {
         this._compilationError = e.message;
         let attributesNames = this._attributesNames;
@@ -626,6 +651,30 @@ export class Effect implements IDisposable {
             return " " + attribute;
         }));
         Logger.Error("Defines:\r\n" + this.defines);
+        if (Effect.LogShaderCodeOnCompilationError) {
+            let pcw = this._pipelineContext as WebGLPipelineContext;
+            let lineErrorVertex = null, lineErrorFragment = null, code = null;
+            if (pcw.vertexShader) {
+                [code, lineErrorVertex] = this._getShaderCodeAndErrorLine(pcw.vertexShader, this._compilationError, false);
+                if (code) {
+                    Logger.Error("Vertex code:");
+                    Logger.Error(code);
+                }
+            }
+            if (pcw.fragmentShader) {
+                [code, lineErrorFragment] = this._getShaderCodeAndErrorLine(pcw.fragmentShader, this._compilationError, true);
+                if (code) {
+                    Logger.Error("Fragment code:");
+                    Logger.Error(code);
+                }
+            }
+            if (lineErrorVertex) {
+                Logger.Error(lineErrorVertex);
+            }
+            if (lineErrorFragment) {
+                Logger.Error(lineErrorFragment);
+            }
+        }
         Logger.Error("Error: " + this._compilationError);
         if (previousPipelineContext) {
             this._pipelineContext = previousPipelineContext;
