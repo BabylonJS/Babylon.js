@@ -63,7 +63,7 @@ export class KHR_mesh_instancing implements IGLTFLoaderExtension {
 
                 return Promise.all(promises).then(() => {
                     const instanceCount = attributeBuffers[attributes[0]].accessor.count;
-                    let digitLength = instanceCount.toString().length;
+                    const digitLength = instanceCount.toString().length;
                     const padNumber = function(num:number, length: number){
                         var str = String(num);
                         while (str.length < (length)) {str = "0" + str;}
