@@ -619,7 +619,7 @@ export class Effect implements IDisposable {
 
     private _getShaderCodeAndErrorLine(shader: WebGLShader, error: Nullable<string>, isFragment: boolean): [Nullable<string>, Nullable<string>] {
         const regexp = isFragment ? /FRAGMENT SHADER ERROR: 0:(\d+?):/ : /VERTEX SHADER ERROR: 0:(\d+?):/;
-        const code = this._engine?._gl?.getShaderSource(shader) ?? null;
+        const code = this._engine._getShaderSource(shader);
 
         let errorLine = null;
 
