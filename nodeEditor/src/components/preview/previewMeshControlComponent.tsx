@@ -3,7 +3,7 @@ import * as React from "react";
 import { GlobalState } from '../../globalState';
 import { Color3, Color4 } from 'babylonjs/Maths/math.color';
 import { PreviewMeshType } from './previewMeshType';
-import { DataStorage } from '../../dataStorage';
+import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
 import * as ReactDOM from 'react-dom';
 
@@ -33,7 +33,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
         this.props.globalState.previewMeshType = newOne;
         this.props.globalState.onPreviewCommandActivated.notifyObservers();
 
-        DataStorage.StoreNumber("PreviewMeshType", newOne);
+        DataStorage.WriteNumber("PreviewMeshType", newOne);
 
         this.forceUpdate();
     }
@@ -64,9 +64,9 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
     changeBackground(value: string) {
         const newColor = Color3.FromHexString(value);
 
-        DataStorage.StoreNumber("BackgroundColorR", newColor.r);
-        DataStorage.StoreNumber("BackgroundColorG", newColor.g);
-        DataStorage.StoreNumber("BackgroundColorB", newColor.b);
+        DataStorage.WriteNumber("BackgroundColorR", newColor.r);
+        DataStorage.WriteNumber("BackgroundColorG", newColor.g);
+        DataStorage.WriteNumber("BackgroundColorB", newColor.b);
 
         const newBackgroundColor = Color4.FromColor3(newColor, 1.0);
         this.props.globalState.backgroundColor = newBackgroundColor;
