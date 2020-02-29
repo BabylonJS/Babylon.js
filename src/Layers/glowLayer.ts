@@ -536,8 +536,8 @@ export class GlowLayer extends EffectLayer {
      */
     public unReferenceMeshFromUsingItsOwnMaterial(mesh: AbstractMesh): void {
         let index = this._meshesUsingTheirOwnMaterials.indexOf(mesh.uniqueId);
-        while (index > 0) {
-            this._meshesUsingTheirOwnMaterials.slice(index, index + 1);
+        while (index >= 0) {
+            this._meshesUsingTheirOwnMaterials.splice(index, 1);
             index = this._meshesUsingTheirOwnMaterials.indexOf(mesh.uniqueId);
         }
     }
