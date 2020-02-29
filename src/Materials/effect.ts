@@ -637,6 +637,10 @@ export class Effect implements IDisposable {
         return [code, errorLine];
     }
 
+    private _isWebGLPipelineContext(obj: any): obj is WebGLPipelineContext {
+        return obj.vertexShader && obj.fragmentShader;
+    }
+
     private _processCompilationErrors(e: any, previousPipelineContext: Nullable<IPipelineContext> = null) {
         this._compilationError = e.message;
         let attributesNames = this._attributesNames;
@@ -651,8 +655,8 @@ export class Effect implements IDisposable {
             return " " + attribute;
         }));
         Logger.Error("Defines:\r\n" + this.defines);
-        if (Effect.LogShaderCodeOnCompilationError) {
-            let pcw = this._pipelineContext as WebGLPipelineContext;
+        if (Effect.LogShaderCodeOnCompilationError && this._isWebGLPipelineContext(this._pipelineContext)) {
+            let pcw = this._pipelineContext;
             let lineErrorVertex = null, lineErrorFragment = null, code = null;
             if (pcw.vertexShader) {
                 [code, lineErrorVertex] = this._getShaderCodeAndErrorLine(pcw.vertexShader, this._compilationError, false);
