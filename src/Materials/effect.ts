@@ -10,7 +10,6 @@ import { ShaderProcessor } from '../Engines/Processors/shaderProcessor';
 import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from '../Maths/math.like';
 import { ThinEngine } from '../Engines/thinEngine';
 import { IEffectFallbacks } from './iEffectFallbacks';
-import { WebGLPipelineContext } from '../Engines/WebGL/webGLPipelineContext';
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -617,9 +616,8 @@ export class Effect implements IDisposable {
         }
     }
 
-    private _getShaderCodeAndErrorLine(shader: WebGLShader, error: Nullable<string>, isFragment: boolean): [Nullable<string>, Nullable<string>] {
+    private _getShaderCodeAndErrorLine(code: Nullable<string>, error: Nullable<string>, isFragment: boolean): [Nullable<string>, Nullable<string>] {
         const regexp = isFragment ? /FRAGMENT SHADER ERROR: 0:(\d+?):/ : /VERTEX SHADER ERROR: 0:(\d+?):/;
-        const code = this._engine._getShaderSource(shader);
 
         let errorLine = null;
 
@@ -637,10 +635,6 @@ export class Effect implements IDisposable {
         return [code, errorLine];
     }
 
-    private _isWebGLPipelineContext(obj: any): obj is WebGLPipelineContext {
-        return obj.vertexShader && obj.fragmentShader;
-    }
-
     private _processCompilationErrors(e: any, previousPipelineContext: Nullable<IPipelineContext> = null) {
         this._compilationError = e.message;
         let attributesNames = this._attributesNames;
@@ -655,18 +649,17 @@ export class Effect implements IDisposable {
             return " " + attribute;
         }));
         Logger.Error("Defines:\r\n" + this.defines);
-        if (Effect.LogShaderCodeOnCompilationError && this._isWebGLPipelineContext(this._pipelineContext)) {
-            let pcw = this._pipelineContext;
+        if (Effect.LogShaderCodeOnCompilationError) {
             let lineErrorVertex = null, lineErrorFragment = null, code = null;
-            if (pcw.vertexShader) {
-                [code, lineErrorVertex] = this._getShaderCodeAndErrorLine(pcw.vertexShader, this._compilationError, false);
+            if (this._pipelineContext?._getVertexShaderCode()) {
+                [code, lineErrorVertex] = this._getShaderCodeAndErrorLine(this._pipelineContext._getVertexShaderCode(), this._compilationError, false);
                 if (code) {
                     Logger.Error("Vertex code:");
                     Logger.Error(code);
                 }
             }
-            if (pcw.fragmentShader) {
-                [code, lineErrorFragment] = this._getShaderCodeAndErrorLine(pcw.fragmentShader, this._compilationError, true);
+            if (this._pipelineContext?._getFragmentShaderCode()) {
+                [code, lineErrorFragment] = this._getShaderCodeAndErrorLine(this._pipelineContext?._getFragmentShaderCode(), this._compilationError, true);
                 if (code) {
                     Logger.Error("Fragment code:");
                     Logger.Error(code);
