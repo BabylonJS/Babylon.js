@@ -75,7 +75,7 @@ export interface IAudioEngine extends IDisposable {
      * This is helpful to resume play once browser policies have been satisfied.
      */
     unlock(): void;
- 
+
     /**
      * Gets the global volume sets on the master gain.
      * @returns the global volume if set or -1 otherwise
