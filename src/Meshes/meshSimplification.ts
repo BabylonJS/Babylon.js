@@ -297,7 +297,7 @@ class Reference {
  * @author RaananW
  * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
  */
-class QuadraticErrorSimplification implements ISimplifier {
+export class QuadraticErrorSimplification implements ISimplifier {
 
     private triangles: Array<DecimationTriangle>;
     private vertices: Array<DecimationVertex>;
