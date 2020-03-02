@@ -2081,6 +2081,11 @@ export class ThinEngine {
         return shader;
     }
 
+    /** @hidden */
+    public _getShaderSource(shader: WebGLShader): Nullable<string> {
+        return this._gl.getShaderSource(shader);
+    }
+
     /**
      * Directly creates a webGL program
      * @param pipelineContext  defines the pipeline context to attach to

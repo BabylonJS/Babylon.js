@@ -107,6 +107,14 @@ class NativePipelineContext implements IPipelineContext {
     public isAsync = false;
     public isReady = false;
 
+    public _getVertexShaderCode(): string | null {
+        return null;
+    }
+
+    public _getFragmentShaderCode(): string | null {
+        return null;
+    }
+
     // TODO: what should this do?
     public _handlesSpectorRebuildCallback(onCompiled: (compiledObject: any) => void): void {
         throw new Error("Not implemented");
