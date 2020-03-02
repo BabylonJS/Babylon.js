@@ -1,12 +1,12 @@
 import { Vector3, Quaternion } from 'babylonjs/Maths/math.vector';
+import { InstancedMesh } from 'babylonjs/Meshes/instancedMesh';
 import { Mesh } from 'babylonjs/Meshes/mesh';
 import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { StringTools } from 'babylonjs/Misc/stringTools'
+import { StringTools } from 'babylonjs/Misc/stringTools';
 import { Nullable } from "babylonjs/types";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { INode, IAccessor } from "../glTFLoaderInterfaces";
-import { InstancedMesh } from 'babylonjs';
 
 const NAME = "KHR_mesh_instancing";
 

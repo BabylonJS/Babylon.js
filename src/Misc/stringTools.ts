@@ -84,6 +84,6 @@ export class StringTools {
         var str = String(num);
         while (str.length < length) { str = "0" + str; }
         return str;
-    };
+    }
 
 }
