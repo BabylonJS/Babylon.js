@@ -1086,6 +1086,7 @@ declare module "babylonjs-node-editor/sharedComponents/fileButtonLineComponent" 
         accept: string;
     }
     export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
+        private uploadRef;
         constructor(props: IFileButtonLineComponentProps);
         onChange(evt: any): void;
         render(): JSX.Element;
@@ -1221,6 +1222,7 @@ declare module "babylonjs-node-editor/sharedComponents/textureLineComponent" {
         face: number;
     }
     export class TextureLineComponent extends React.Component<ITextureLineComponentProps, ITextureLineComponentState> {
+        private canvasRef;
         constructor(props: ITextureLineComponentProps);
         shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: {
             displayRed: boolean;
@@ -1527,6 +1529,7 @@ declare module "babylonjs-node-editor/components/preview/previewMeshControlCompo
     }
     export class PreviewMeshControlComponent extends React.Component<IPreviewMeshControlComponent> {
         private colorInputRef;
+        private filePickerRef;
         constructor(props: IPreviewMeshControlComponent);
         changeMeshType(newOne: PreviewMeshType): void;
         useCustomMesh(evt: any): void;
@@ -2562,6 +2565,7 @@ declare module NODEEDITOR {
         accept: string;
     }
     export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
+        private uploadRef;
         constructor(props: IFileButtonLineComponentProps);
         onChange(evt: any): void;
         render(): JSX.Element;
@@ -2675,6 +2679,7 @@ declare module NODEEDITOR {
         face: number;
     }
     export class TextureLineComponent extends React.Component<ITextureLineComponentProps, ITextureLineComponentState> {
+        private canvasRef;
         constructor(props: ITextureLineComponentProps);
         shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: {
             displayRed: boolean;
@@ -2937,6 +2942,7 @@ declare module NODEEDITOR {
     }
     export class PreviewMeshControlComponent extends React.Component<IPreviewMeshControlComponent> {
         private colorInputRef;
+        private filePickerRef;
         constructor(props: IPreviewMeshControlComponent);
         changeMeshType(newOne: PreviewMeshType): void;
         useCustomMesh(evt: any): void;

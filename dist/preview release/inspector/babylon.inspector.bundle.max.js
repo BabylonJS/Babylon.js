@@ -41222,6 +41222,7 @@ var FileButtonLineComponent = /** @class */ (function (_super) {
     function FileButtonLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._id = FileButtonLineComponent._IDGenerator++;
+        _this.uploadInputRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
     }
     FileButtonLineComponent.prototype.onChange = function (evt) {
@@ -41235,7 +41236,7 @@ var FileButtonLineComponent = /** @class */ (function (_super) {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "buttonLine" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "file-upload" + this._id, className: "file-upload" }, this.props.label),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: "upload", id: "file-upload" + this._id, type: "file", accept: this.props.accept, onChange: function (evt) { return _this.onChange(evt); } })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.uploadInputRef, id: "file-upload" + this._id, type: "file", accept: this.props.accept, onChange: function (evt) { return _this.onChange(evt); } })));
     };
     FileButtonLineComponent._IDGenerator = 0;
     return FileButtonLineComponent;
@@ -41265,6 +41266,7 @@ var FileMultipleButtonLineComponent = /** @class */ (function (_super) {
     function FileMultipleButtonLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._id = FileMultipleButtonLineComponent._IDGenerator++;
+        _this.uploadInputRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
     }
     FileMultipleButtonLineComponent.prototype.onChange = function (evt) {
@@ -41278,7 +41280,7 @@ var FileMultipleButtonLineComponent = /** @class */ (function (_super) {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "buttonLine" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "file-upload" + this._id, className: "file-upload" }, this.props.label),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: "upload", id: "file-upload" + this._id, type: "file", accept: this.props.accept, onChange: function (evt) { return _this.onChange(evt); }, multiple: true })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.uploadInputRef, id: "file-upload" + this._id, type: "file", accept: this.props.accept, onChange: function (evt) { return _this.onChange(evt); }, multiple: true })));
     };
     FileMultipleButtonLineComponent._IDGenerator = 0;
     return FileMultipleButtonLineComponent;
@@ -42049,6 +42051,7 @@ var TextureLineComponent = /** @class */ (function (_super) {
             channel: ChannelToDisplay.All,
             face: 0
         };
+        _this.canvasRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
     }
     TextureLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
@@ -42089,7 +42092,7 @@ var TextureLineComponent = /** @class */ (function (_super) {
             setTimeout(function () { return _this.updatePreview(); }, 250);
             return;
         }
-        var previewCanvas = this.refs.canvas;
+        var previewCanvas = this.canvasRef.current;
         if (this.props.globalState) {
             this.props.globalState.blockMutationUpdates = true;
         }
@@ -42187,7 +42190,7 @@ var TextureLineComponent = /** @class */ (function (_super) {
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === ChannelToDisplay.B ? "blue command selected" : "blue command", onClick: function () { return _this.setState({ channel: ChannelToDisplay.B }); } }, "B"),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === ChannelToDisplay.A ? "alpha command selected" : "alpha command", onClick: function () { return _this.setState({ channel: ChannelToDisplay.A }); } }, "A"),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === ChannelToDisplay.All ? "all command selected" : "all command", onClick: function () { return _this.setState({ channel: ChannelToDisplay.All }); } }, "ALL")),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { ref: "canvas", className: "preview" })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { ref: this.canvasRef, className: "preview" })),
             texture.isRenderTarget &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_buttonLineComponent__WEBPACK_IMPORTED_MODULE_3__["ButtonLineComponent"], { label: "Refresh", onClick: function () {
                         _this.updatePreview();
@@ -43201,6 +43204,7 @@ var AnimationGroupGridComponent = /** @class */ (function (_super) {
         _this._onBeforeRenderObserver = _this.props.scene.onBeforeRenderObservable.add(function () {
             _this.updateCurrentFrame(_this.props.animationGroup);
         });
+        _this.timelineRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
     }
     AnimationGroupGridComponent.prototype.disconnect = function (animationGroup) {
@@ -43281,7 +43285,7 @@ var AnimationGroupGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "CONTROLS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: playButtonText, onClick: function () { return _this.playOrPause(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Speed ratio", minimum: 0, maximum: 10, step: 0.1, target: animationGroup, propertyName: "speedRatio", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { ref: "timeline", label: "Current frame", minimum: animationGroup.from, maximum: animationGroup.to, step: (animationGroup.to - animationGroup.from) / 1000.0, directValue: this.state.currentFrame, onInput: function (value) { return _this.onCurrentFrameChange(value); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { ref: this.timelineRef, label: "Current frame", minimum: animationGroup.from, maximum: animationGroup.to, step: (animationGroup.to - animationGroup.from) / 1000.0, directValue: this.state.currentFrame, onInput: function (value) { return _this.onCurrentFrameChange(value); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "INFOS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Animation count", value: animationGroup.targetedAnimations.length.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "From", value: animationGroup.from.toFixed(2) }),
@@ -43364,6 +43368,7 @@ var AnimationGridComponent = /** @class */ (function (_super) {
                 });
             }
         }
+        _this.timelineRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
     }
     AnimationGridComponent.prototype.playOrPause = function () {
@@ -43446,7 +43451,7 @@ var AnimationGridComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Loop", onSelect: function (value) { return _this._animationControl.loop = value; }, isSelected: function () { return _this._animationControl.loop; } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: this._isPlaying ? "Stop" : "Play", onClick: function () { return _this.playOrPause(); } }),
                     this._isPlaying &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { ref: "timeline", label: "Current frame", minimum: this._animationControl.from, maximum: this._animationControl.to, step: (this._animationControl.to - this._animationControl.from) / 1000.0, directValue: this.state.currentFrame, onInput: function (value) { return _this.onCurrentFrameChange(value); } }))));
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { ref: this.timelineRef, label: "Current frame", minimum: this._animationControl.from, maximum: this._animationControl.to, step: (this._animationControl.to - this._animationControl.from) / 1000.0, directValue: this.state.currentFrame, onInput: function (value) { return _this.onCurrentFrameChange(value); } }))));
     };
     return AnimationGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -46042,6 +46047,7 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
         _this._adtInstrumentation = new babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__["AdvancedDynamicTextureInstrumentation"](adt);
         _this._adtInstrumentation.captureRenderTime = true;
         _this._adtInstrumentation.captureLayoutTime = true;
+        _this.textureLineRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
     }
     TexturePropertyGridComponent.prototype.componentWillUnmount = function () {
@@ -46073,7 +46079,7 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
     };
     TexturePropertyGridComponent.prototype.foreceRefresh = function () {
         this.forceUpdate();
-        this.refs["textureLine"].updatePreview();
+        this.textureLineRef.current.updatePreview();
     };
     TexturePropertyGridComponent.prototype.render = function () {
         var _this = this;
@@ -46111,7 +46117,7 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
         var textureUrl = (url.substring(0, 4) === "data" || url.substring(0, 4) === "blob") ? "" : url;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "PREVIEW" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLineComponent"], { ref: "textureLine", texture: texture, width: 256, height: 256, globalState: this.props.globalState }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLineComponent"], { ref: this.textureLineRef, texture: texture, width: 256, height: 256, globalState: this.props.globalState }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_10__["FileButtonLineComponent"], { label: "Load texture from file", onClick: function (file) { return _this.updateTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_15__["TextInputLineComponent"], { label: "URL", value: textureUrl, lockObject: this.props.lockObject, onChange: function (url) {
                         texture.updateURL(url);
@@ -48203,15 +48209,18 @@ var EmbedHostComponent = /** @class */ (function (_super) {
         return _this;
     }
     EmbedHostComponent.prototype.componentDidMount = function () {
-        var container = this.refs.split;
+        var container = this.splitRef.current;
         if (!container) {
             return;
         }
-        Split([this.refs.topPart, this.refs.bottomPart], {
+        Split([this.topPartRef.current, this.bottomPartRef.current], {
             direction: "vertical",
             minSize: [200, 200],
             gutterSize: 4
         });
+        this.splitRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        this.topPartRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        this.bottomPartRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
     };
     EmbedHostComponent.prototype.renderContent = function () {
         if (this.props.popupMode) {
@@ -48222,10 +48231,10 @@ var EmbedHostComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "bottomPart", style: { marginTop: "4px", overflow: "hidden" } },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_actionTabs_actionTabsComponent__WEBPACK_IMPORTED_MODULE_5__["ActionTabsComponent"], { scene: this.props.scene, popupMode: true, globalState: this.props.globalState, noHeader: true, initialTab: this.props.initialTab }))));
         }
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { ref: "split", id: "split", className: "noPopup" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "topPart", ref: "topPart" },
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { ref: this.splitRef, id: "split", className: "noPopup" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "topPart", ref: this.topPartRef },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sceneExplorer_sceneExplorerComponent__WEBPACK_IMPORTED_MODULE_4__["SceneExplorerComponent"], { scene: this.props.scene, extensibilityGroups: this.props.extensibilityGroups, globalState: this.props.globalState, popupMode: true, noHeader: true })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "bottomPart", ref: "bottomPart", style: { marginTop: "4px", overflow: "hidden" } },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "bottomPart", ref: this.bottomPartRef, style: { marginTop: "4px", overflow: "hidden" } },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_actionTabs_actionTabsComponent__WEBPACK_IMPORTED_MODULE_5__["ActionTabsComponent"], { scene: this.props.scene, globalState: this.props.globalState, popupMode: true, noHeader: true, initialTab: this.props.initialTab }))));
     };
     EmbedHostComponent.prototype.render = function () {
@@ -49577,6 +49586,7 @@ var ExtensionsComponent = /** @class */ (function (_super) {
     function ExtensionsComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { popupVisible: false };
+        _this.extensionRef = react__WEBPACK_IMPORTED_MODULE_3__["createRef"]();
         return _this;
     }
     ExtensionsComponent.prototype.showPopup = function () {
@@ -49609,7 +49619,7 @@ var ExtensionsComponent = /** @class */ (function (_super) {
         if (options.length === 0) {
             return null;
         }
-        return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { ref: "extensions", className: "extensions", onClick: function () { return _this.showPopup(); } },
+        return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { ref: this.extensionRef, className: "extensions", onClick: function () { return _this.showPopup(); } },
             react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { title: "Additional options", className: "icon" },
                 react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__["faEllipsisH"] })),
             react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { ref: function (input) { _this._popup = input; }, tabIndex: -1, className: this.state.popupVisible ? "popup show" : "popup", onBlur: function () { return _this.setState({ popupVisible: false }); } }, options.map(function (extensibility) {
@@ -49713,6 +49723,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         _this._hooked = false;
         _this.state = { filter: null, selectedEntity: null, scene: _this.props.scene };
         _this.sceneMutationFunc = _this.processMutation.bind(_this);
+        _this.sceneExplorerRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
     }
     SceneExplorerComponent.prototype.processMutation = function () {
@@ -49985,7 +49996,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
                 element.style.width = "300px";
             }, 150);
         }
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](re_resizable__WEBPACK_IMPORTED_MODULE_4___default.a, { tabIndex: -1, id: "sceneExplorer", ref: "sceneExplorer", size: { height: "100%" }, minWidth: 300, maxWidth: 600, minHeight: "100%", enable: { top: false, right: true, bottom: false, left: false, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false }, onKeyDown: function (keyEvent) { return _this.processKeys(keyEvent); } },
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](re_resizable__WEBPACK_IMPORTED_MODULE_4___default.a, { tabIndex: -1, id: "sceneExplorer", ref: this.sceneExplorerRef, size: { height: "100%" }, minWidth: 300, maxWidth: 600, minHeight: "100%", enable: { top: false, right: true, bottom: false, left: false, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false }, onKeyDown: function (keyEvent) { return _this.processKeys(keyEvent); } },
             !this.props.noHeader &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_headerComponent__WEBPACK_IMPORTED_MODULE_5__["HeaderComponent"], { title: "SCENE EXPLORER", noClose: this.props.noClose, noExpand: this.props.noExpand, noCommands: this.props.noCommands, onClose: function () { return _this.onClose(); }, onPopup: function () { return _this.onPopup(); } }),
             this.renderContent()));

@@ -32,8 +32,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="ID" value={system.id} />
-                    <TextLineComponent label="Class" value={system.getClassName()} />                    
-                  
+                    <TextLineComponent label="Class" value={system.getClassName()} />                                      
                 </LineContainerComponent>                
             </div>
         );

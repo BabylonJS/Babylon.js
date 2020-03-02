@@ -535,6 +535,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/fileButtonLineCo
     export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
         private static _IDGenerator;
         private _id;
+        private uploadInputRef;
         constructor(props: IFileButtonLineComponentProps);
         onChange(evt: any): void;
         render(): JSX.Element;
@@ -612,6 +613,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/textureLineCompo
         channel: ChannelToDisplay;
         face: number;
     }> {
+        private canvasRef;
         constructor(props: ITextureLineComponentProps);
         shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: {
             channel: ChannelToDisplay;
@@ -673,6 +675,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     }
     export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps> {
         private _adtInstrumentation;
+        private textureLineRef;
         constructor(props: ITexturePropertyGridComponentProps);
         componentWillUnmount(): void;
         updateTexture(file: File): void;
@@ -1119,6 +1122,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _onAnimationGroupPlayObserver;
         private _onAnimationGroupPauseObserver;
         private _onBeforeRenderObserver;
+        private timelineRef;
         constructor(props: IAnimationGroupGridComponentProps);
         disconnect(animationGroup: AnimationGroup): void;
         connect(animationGroup: AnimationGroup): void;
@@ -1523,6 +1527,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _runningAnimatable;
         private _onBeforeRenderObserver;
         private _isPlaying;
+        private timelineRef;
         constructor(props: IAnimationGridComponentProps);
         playOrPause(): void;
         componentDidMount(): void;
@@ -1823,6 +1828,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/fileMultipleButt
     export class FileMultipleButtonLineComponent extends React.Component<IFileMultipleButtonLineComponentProps> {
         private static _IDGenerator;
         private _id;
+        private uploadInputRef;
         constructor(props: IFileMultipleButtonLineComponentProps);
         onChange(evt: any): void;
         render(): JSX.Element;
@@ -1917,6 +1923,7 @@ declare module "babylonjs-inspector/components/sceneExplorer/extensionsComponent
         popupVisible: boolean;
     }> {
         private _popup;
+        private extensionRef;
         constructor(props: IExtensionsComponentProps);
         showPopup(): void;
         componentDidMount(): void;
@@ -2300,6 +2307,7 @@ declare module "babylonjs-inspector/components/sceneExplorer/sceneExplorerCompon
     }> {
         private _onSelectionChangeObserver;
         private _onNewSceneAddedObserver;
+        private sceneExplorerRef;
         private _once;
         private _hooked;
         private sceneMutationFunc;
@@ -2337,6 +2345,9 @@ declare module "babylonjs-inspector/components/embedHost/embedHostComponent" {
     }
     export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps> {
         private _once;
+        private splitRef;
+        private topPartRef;
+        private bottomPartRef;
         constructor(props: IEmbedHostComponentProps);
         componentDidMount(): void;
         renderContent(): JSX.Element;
@@ -2869,6 +2880,7 @@ declare module INSPECTOR {
     export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
         private static _IDGenerator;
         private _id;
+        private uploadInputRef;
         constructor(props: IFileButtonLineComponentProps);
         onChange(evt: any): void;
         render(): JSX.Element;
@@ -2932,6 +2944,7 @@ declare module INSPECTOR {
         channel: ChannelToDisplay;
         face: number;
     }> {
+        private canvasRef;
         constructor(props: ITextureLineComponentProps);
         shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: {
             channel: ChannelToDisplay;
@@ -2983,6 +2996,7 @@ declare module INSPECTOR {
     }
     export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps> {
         private _adtInstrumentation;
+        private textureLineRef;
         constructor(props: ITexturePropertyGridComponentProps);
         componentWillUnmount(): void;
         updateTexture(file: File): void;
@@ -3306,6 +3320,7 @@ declare module INSPECTOR {
         private _onAnimationGroupPlayObserver;
         private _onAnimationGroupPauseObserver;
         private _onBeforeRenderObserver;
+        private timelineRef;
         constructor(props: IAnimationGroupGridComponentProps);
         disconnect(animationGroup: BABYLON.AnimationGroup): void;
         connect(animationGroup: BABYLON.AnimationGroup): void;
@@ -3583,6 +3598,7 @@ declare module INSPECTOR {
         private _runningAnimatable;
         private _onBeforeRenderObserver;
         private _isPlaying;
+        private timelineRef;
         constructor(props: IAnimationGridComponentProps);
         playOrPause(): void;
         componentDidMount(): void;
@@ -3823,6 +3839,7 @@ declare module INSPECTOR {
     export class FileMultipleButtonLineComponent extends React.Component<IFileMultipleButtonLineComponentProps> {
         private static _IDGenerator;
         private _id;
+        private uploadInputRef;
         constructor(props: IFileMultipleButtonLineComponentProps);
         onChange(evt: any): void;
         render(): JSX.Element;
@@ -3907,6 +3924,7 @@ declare module INSPECTOR {
         popupVisible: boolean;
     }> {
         private _popup;
+        private extensionRef;
         constructor(props: IExtensionsComponentProps);
         showPopup(): void;
         componentDidMount(): void;
@@ -4227,6 +4245,7 @@ declare module INSPECTOR {
     }> {
         private _onSelectionChangeObserver;
         private _onNewSceneAddedObserver;
+        private sceneExplorerRef;
         private _once;
         private _hooked;
         private sceneMutationFunc;
@@ -4260,6 +4279,9 @@ declare module INSPECTOR {
     }
     export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps> {
         private _once;
+        private splitRef;
+        private topPartRef;
+        private bottomPartRef;
         constructor(props: IEmbedHostComponentProps);
         componentDidMount(): void;
         renderContent(): JSX.Element;
