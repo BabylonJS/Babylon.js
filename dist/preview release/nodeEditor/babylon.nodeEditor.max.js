@@ -5582,7 +5582,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "#graph-canvas {\n  width: 100%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  font: 14px \"acumin-pro\";\n  user-select: none;\n  overflow: hidden;\n  cursor: move;\n  background-image: linear-gradient(to right, #4F4E4F 1px, transparent 1px), linear-gradient(to bottom, #4F4E4F 1px, transparent 1px); }\n  #graph-canvas #selection-container {\n    pointer-events: none; }\n    #graph-canvas #selection-container .selection-box {\n      z-index: 10;\n      position: absolute;\n      background: rgba(72, 72, 196, 0.5);\n      border: blue solid 2px; }\n  #graph-canvas .port {\n    border-radius: 20px;\n    width: 20px;\n    height: 20px;\n    align-self: center; }\n    #graph-canvas .port .img {\n      width: 100%; }\n    #graph-canvas .port:hover, #graph-canvas .port.selected {\n      filter: brightness(2); }\n  #graph-canvas .portLine {\n    height: 24px;\n    display: grid;\n    grid-template-rows: 100%; }\n  #graph-canvas .port-label {\n    align-items: center; }\n  #graph-canvas .inputsContainer {\n    grid-row: 1;\n    grid-column: 1; }\n    #graph-canvas .inputsContainer .portLine {\n      grid-template-columns: 12px calc(100% - 15px); }\n      #graph-canvas .inputsContainer .portLine .port-label {\n        grid-row: 1;\n        grid-column: 2; }\n      #graph-canvas .inputsContainer .portLine .port {\n        grid-row: 1;\n        grid-column: 1;\n        transform: translateX(-12px); }\n  #graph-canvas .outputsContainer {\n    grid-row: 1;\n    grid-column: 2; }\n    #graph-canvas .outputsContainer .portLine {\n      grid-template-columns: calc(100% - 10px) 12px; }\n      #graph-canvas .outputsContainer .portLine .port-label {\n        grid-row: 1;\n        grid-column: 1;\n        text-align: right; }\n      #graph-canvas .outputsContainer .portLine .port {\n        grid-row: 1;\n        grid-column: 2;\n        transform: translateX(2px); }\n  #graph-canvas #graph-container {\n    width: 100%;\n    height: 100%;\n    left: 0;\n    top: 0;\n    transform-origin: left top;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #graph-canvas #graph-container #frame-container {\n      overflow: visible;\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n    #graph-canvas #graph-container .frame-box {\n      position: absolute;\n      background: rgba(72, 72, 72, 0.7);\n      display: grid;\n      grid-template-rows: 40px calc(100% - 40px);\n      grid-template-columns: 100%;\n      box-sizing: border-box; }\n      #graph-canvas #graph-container .frame-box.collapsed {\n        height: auto !important;\n        width: 200px !important;\n        z-index: 3; }\n        #graph-canvas #graph-container .frame-box.collapsed .frame-box-header {\n          font-size: 16px;\n          grid-template-columns: calc(100% - 37px) 30px 7px; }\n          #graph-canvas #graph-container .frame-box.collapsed .frame-box-header .frame-box-header-collapse {\n            margin-top: -2px; }\n          #graph-canvas #graph-container .frame-box.collapsed .frame-box-header .frame-box-header-close {\n            display: none; }\n      #graph-canvas #graph-container .frame-box .frame-box-border {\n        grid-row: 1 / span 2;\n        grid-column: 1;\n        width: 100%;\n        height: 100%;\n        border: transparent solid 4px;\n        pointer-events: none;\n        box-sizing: border-box; }\n      #graph-canvas #graph-container .frame-box .frame-box-header {\n        grid-row: 1;\n        grid-column: 1;\n        background: #484848;\n        color: white;\n        font-size: 24px;\n        text-align: center;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: calc(100% - 74px) 30px 7px 30px 7px;\n        align-content: center;\n        overflow: hidden; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-button {\n          cursor: pointer;\n          align-self: center;\n          transform-origin: 50% 50%;\n          transform: scale(1);\n          stroke: transparent;\n          fill: white;\n          display: grid; }\n          #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-button.down {\n            transform: scale(0.9); }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-collapse {\n          grid-column: 2;\n          grid-row: 1; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-close {\n          grid-column: 4;\n          grid-row: 1; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-title {\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          height: 100%;\n          width: 100%;\n          align-self: stretch;\n          align-items: center;\n          margin-top: -2px; }\n      #graph-canvas #graph-container .frame-box .port-container {\n        margin-top: 6px;\n        margin-bottom: 6px;\n        margin-left: 4px;\n        margin-right: 4px;\n        color: white;\n        grid-row: 2;\n        grid-column: 1;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: 50% 50%;\n        z-index: 2; }\n      #graph-canvas #graph-container .frame-box .frame-comments.has-comments {\n        display: grid;\n        grid-row: 2;\n        grid-column: 1;\n        padding: 0 10px;\n        font-style: italic;\n        word-wrap: break-word; }\n      #graph-canvas #graph-container .frame-box.selected .frame-box-border {\n        border-color: white; }\n      #graph-canvas #graph-container .frame-box .handle {\n        z-index: 20; }\n      #graph-canvas #graph-container .frame-box .right-handle {\n        grid-area: 1 / 2 / 3 / 2;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .right-handle::after {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px;\n          cursor: ew-resize; }\n      #graph-canvas #graph-container .frame-box .left-handle {\n        grid-area: 1 / 1 / 3 / 1;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .left-handle::before {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px; }\n      #graph-canvas #graph-container .frame-box .top-handle {\n        grid-area: 1 / 1 / 1 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #graph-canvas #graph-container .frame-box .top-handle::before {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: -4px;\n          bottom: 100%;\n          right: 0;\n          left: 0;\n          margin-bottom: -8px;\n          cursor: ns-resize;\n          height: 8px; }\n      #graph-canvas #graph-container .frame-box .bottom-handle {\n        grid-area: 3 / 1 / 3 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #graph-canvas #graph-container .frame-box .bottom-handle::after {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: 100%;\n          bottom: 0;\n          right: 0;\n          left: 0;\n          margin-top: -8px;\n          cursor: ns-resize;\n          height: 12px; }\n    #graph-canvas #graph-container #graph-svg-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%;\n      overflow: visible;\n      pointer-events: none;\n      z-index: 2; }\n      #graph-canvas #graph-container #graph-svg-container .link {\n        stroke-width: 4px; }\n        #graph-canvas #graph-container #graph-svg-container .link.selected {\n          stroke: white !important;\n          stroke-dasharray: 10, 2; }\n        #graph-canvas #graph-container #graph-svg-container .link.hidden {\n          display: none; }\n      #graph-canvas #graph-container #graph-svg-container .selection-link {\n        pointer-events: all;\n        stroke-width: 16px;\n        opacity: 0;\n        transition: opacity 75ms;\n        stroke: transparent;\n        cursor: pointer; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link.hidden {\n          display: none; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link:hover, #graph-canvas #graph-container #graph-svg-container .selection-link.selected {\n          stroke: white !important;\n          opacity: 0.4; }\n    #graph-canvas #graph-container #graph-canvas-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n      #graph-canvas #graph-container #graph-canvas-container .visual {\n        z-index: 4;\n        width: 200px;\n        position: absolute;\n        left: 0;\n        top: 0;\n        background: gray;\n        border: 4px solid black;\n        border-radius: 12px;\n        display: grid;\n        grid-template-rows: 30px auto;\n        grid-template-columns: 100%;\n        color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.hidden {\n          display: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .comments {\n          position: absolute;\n          top: -50px;\n          width: 200px;\n          height: 45px;\n          overflow: hidden;\n          font-style: italic;\n          opacity: 0.8;\n          display: grid;\n          align-items: flex-end;\n          pointer-events: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .selection-border {\n          grid-row: 1 / span 3;\n          grid-column: 1;\n          margin: -4px;\n          transition: border-color 100ms;\n          border: 4px solid black;\n          border-radius: 12px; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.selected .selection-border {\n          border-color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .header {\n          grid-row: 1;\n          grid-column: 1;\n          border: 4px solid black;\n          border-top-right-radius: 7px;\n          border-top-left-radius: 7px;\n          font-size: 16px;\n          text-align: center;\n          margin-top: -1px;\n          margin-left: -1px;\n          margin-right: -1px;\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden;\n          background: black;\n          color: white; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.constant {\n            border-color: #464348;\n            background: #464348; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.inspector {\n            border-color: #66491b;\n            background: #66491b; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .connections {\n          grid-row: 2;\n          grid-column: 1;\n          display: grid;\n          grid-template-columns: 50% 50%; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .content {\n          min-height: 20px;\n          grid-row: 3;\n          grid-column: 1; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block {\n            grid-row: 2;\n            min-height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px 5px;\n            display: grid;\n            align-content: center; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block.small-font {\n              font-size: 17px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.output-block {\n            min-height: 0px;\n            height: 5px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.clamp-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.gradient-block {\n            grid-row: 2;\n            height: 34px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block {\n            grid-row: 3;\n            height: 140px;\n            width: 140px;\n            overflow: hidden;\n            border-bottom-left-radius: 7px;\n            border: black 4px solid;\n            border-left: 0px;\n            border-bottom: 0px; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img {\n              width: 100%;\n              height: 100%;\n              pointer-events: none; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img.empty {\n                display: none; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.regular-texture-block {\n            margin-top: -115px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.remap-block {\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.trigonometry-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n", ""]);
+exports.push([module.i, "#graph-canvas {\n  width: 100%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  font: 14px \"acumin-pro\";\n  user-select: none;\n  overflow: hidden;\n  cursor: move;\n  background-image: linear-gradient(to right, #4F4E4F 1px, transparent 1px), linear-gradient(to bottom, #4F4E4F 1px, transparent 1px); }\n  #graph-canvas #selection-container {\n    pointer-events: none; }\n    #graph-canvas #selection-container .selection-box {\n      z-index: 10;\n      position: absolute;\n      background: rgba(72, 72, 196, 0.5);\n      border: blue solid 2px; }\n  #graph-canvas .port {\n    border-radius: 20px;\n    width: 20px;\n    height: 20px;\n    align-self: center; }\n    #graph-canvas .port .img {\n      width: 100%; }\n    #graph-canvas .port:hover, #graph-canvas .port.selected {\n      filter: brightness(2); }\n  #graph-canvas .portLine {\n    height: 24px;\n    display: grid;\n    grid-template-rows: 100%; }\n  #graph-canvas .port-label {\n    align-items: center; }\n  #graph-canvas .inputsContainer {\n    grid-row: 1;\n    grid-column: 1; }\n    #graph-canvas .inputsContainer .portLine {\n      grid-template-columns: 12px calc(100% - 15px); }\n      #graph-canvas .inputsContainer .portLine .port-label {\n        grid-row: 1;\n        grid-column: 2; }\n      #graph-canvas .inputsContainer .portLine .port {\n        grid-row: 1;\n        grid-column: 1;\n        transform: translateX(-12px); }\n  #graph-canvas .outputsContainer {\n    grid-row: 1;\n    grid-column: 2; }\n    #graph-canvas .outputsContainer .portLine {\n      grid-template-columns: calc(100% - 10px) 12px; }\n      #graph-canvas .outputsContainer .portLine .port-label {\n        grid-row: 1;\n        grid-column: 1;\n        text-align: right; }\n      #graph-canvas .outputsContainer .portLine .port {\n        grid-row: 1;\n        grid-column: 2;\n        transform: translateX(2px); }\n  #graph-canvas #graph-container {\n    width: 100%;\n    height: 100%;\n    left: 0;\n    top: 0;\n    transform-origin: left top;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #graph-canvas #graph-container #frame-container {\n      overflow: visible;\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n    #graph-canvas #graph-container .frame-box {\n      position: absolute;\n      background: rgba(72, 72, 72, 0.7);\n      display: grid;\n      grid-template-rows: 40px calc(100% - 40px);\n      grid-template-columns: 100%;\n      box-sizing: border-box; }\n      #graph-canvas #graph-container .frame-box.collapsed {\n        height: auto !important;\n        width: 200px !important;\n        z-index: 3; }\n        #graph-canvas #graph-container .frame-box.collapsed .frame-box-header {\n          font-size: 16px;\n          grid-template-columns: calc(100% - 37px) 30px 7px; }\n          #graph-canvas #graph-container .frame-box.collapsed .frame-box-header .frame-box-header-collapse {\n            margin-top: -2px; }\n          #graph-canvas #graph-container .frame-box.collapsed .frame-box-header .frame-box-header-close {\n            display: none; }\n      #graph-canvas #graph-container .frame-box .frame-box-border {\n        grid-row: 1 / span 2;\n        grid-column: 1;\n        width: 100%;\n        height: 100%;\n        border: transparent solid 4px;\n        pointer-events: none;\n        box-sizing: border-box; }\n      #graph-canvas #graph-container .frame-box .frame-box-header {\n        grid-row: 1;\n        grid-column: 1;\n        background: #484848;\n        color: white;\n        font-size: 24px;\n        text-align: center;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: calc(100% - 74px) 30px 7px 30px 7px;\n        align-content: center;\n        overflow: hidden; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-button {\n          cursor: pointer;\n          align-self: center;\n          transform-origin: 50% 50%;\n          transform: scale(1);\n          stroke: transparent;\n          fill: white;\n          display: grid; }\n          #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-button.down {\n            transform: scale(0.9); }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-collapse {\n          grid-column: 2;\n          grid-row: 1; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-close {\n          grid-column: 4;\n          grid-row: 1; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-title {\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          height: 100%;\n          width: 100%;\n          align-self: stretch;\n          align-items: center;\n          margin-top: -2px; }\n      #graph-canvas #graph-container .frame-box .port-container {\n        margin-top: 6px;\n        margin-bottom: 6px;\n        margin-left: 4px;\n        margin-right: 4px;\n        color: white;\n        grid-row: 2;\n        grid-column: 1;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: 50% 50%;\n        z-index: 2; }\n      #graph-canvas #graph-container .frame-box .frame-comments.has-comments {\n        display: grid;\n        grid-row: 2;\n        grid-column: 1;\n        padding: 0 10px;\n        font-style: italic;\n        word-wrap: break-word; }\n      #graph-canvas #graph-container .frame-box.selected .frame-box-border {\n        border-color: white; }\n      #graph-canvas #graph-container .frame-box .handle {\n        z-index: 20; }\n      #graph-canvas #graph-container .frame-box .right-handle {\n        grid-area: 1 / 2 / 3 / 2;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .right-handle::after {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px;\n          cursor: ew-resize; }\n      #graph-canvas #graph-container .frame-box .top-right-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: ne-resize;\n        width: 4px;\n        margin-left: -6px; }\n        #graph-canvas #graph-container .frame-box .top-right-corner-handle::after {\n          background-color: transparent;\n          cursor: ne-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .bottom-right-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: nw-resize;\n        grid-area: 4 / 2 / 4 / 2;\n        margin-left: -2px; }\n        #graph-canvas #graph-container .frame-box .bottom-right-corner-handle::after {\n          background-color: transparent;\n          height: 10px;\n          cursor: nw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .left-handle {\n        grid-area: 1 / 1 / 3 / 1;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .left-handle::before {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px; }\n      #graph-canvas #graph-container .frame-box .top-left-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: nw-resize;\n        width: 4px;\n        margin-left: -4px; }\n        #graph-canvas #graph-container .frame-box .top-left-corner-handle::before {\n          background-color: transparent;\n          cursor: nw-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .bottom-left-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: sw-resize;\n        grid-area: 4 / 1 / 4 / 1; }\n        #graph-canvas #graph-container .frame-box .bottom-left-corner-handle::before {\n          background-color: transparent;\n          height: 10px;\n          cursor: sw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .top-handle {\n        grid-area: 1 / 1 / 1 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #graph-canvas #graph-container .frame-box .top-handle::before {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: -4px;\n          bottom: 100%;\n          right: 0;\n          left: 0;\n          margin-bottom: -8px;\n          cursor: ns-resize;\n          height: 8px; }\n      #graph-canvas #graph-container .frame-box .bottom-handle {\n        grid-area: 3 / 1 / 3 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #graph-canvas #graph-container .frame-box .bottom-handle::after {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: 100%;\n          bottom: 0;\n          right: 0;\n          left: 0;\n          margin-top: -8px;\n          cursor: ns-resize;\n          height: 12px; }\n    #graph-canvas #graph-container #graph-svg-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%;\n      overflow: visible;\n      pointer-events: none;\n      z-index: 2; }\n      #graph-canvas #graph-container #graph-svg-container .link {\n        stroke-width: 4px; }\n        #graph-canvas #graph-container #graph-svg-container .link.selected {\n          stroke: white !important;\n          stroke-dasharray: 10, 2; }\n        #graph-canvas #graph-container #graph-svg-container .link.hidden {\n          display: none; }\n      #graph-canvas #graph-container #graph-svg-container .selection-link {\n        pointer-events: all;\n        stroke-width: 16px;\n        opacity: 0;\n        transition: opacity 75ms;\n        stroke: transparent;\n        cursor: pointer; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link.hidden {\n          display: none; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link:hover, #graph-canvas #graph-container #graph-svg-container .selection-link.selected {\n          stroke: white !important;\n          opacity: 0.4; }\n    #graph-canvas #graph-container #graph-canvas-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n      #graph-canvas #graph-container #graph-canvas-container .visual {\n        z-index: 4;\n        width: 200px;\n        position: absolute;\n        left: 0;\n        top: 0;\n        background: gray;\n        border: 4px solid black;\n        border-radius: 12px;\n        display: grid;\n        grid-template-rows: 30px auto;\n        grid-template-columns: 100%;\n        color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.hidden {\n          display: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .comments {\n          position: absolute;\n          top: -50px;\n          width: 200px;\n          height: 45px;\n          overflow: hidden;\n          font-style: italic;\n          opacity: 0.8;\n          display: grid;\n          align-items: flex-end;\n          pointer-events: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .selection-border {\n          grid-row: 1 / span 3;\n          grid-column: 1;\n          margin: -4px;\n          transition: border-color 100ms;\n          border: 4px solid black;\n          border-radius: 12px; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.selected .selection-border {\n          border-color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .header {\n          grid-row: 1;\n          grid-column: 1;\n          border: 4px solid black;\n          border-top-right-radius: 7px;\n          border-top-left-radius: 7px;\n          font-size: 16px;\n          text-align: center;\n          margin-top: -1px;\n          margin-left: -1px;\n          margin-right: -1px;\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden;\n          background: black;\n          color: white; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.constant {\n            border-color: #464348;\n            background: #464348; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.inspector {\n            border-color: #66491b;\n            background: #66491b; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .connections {\n          grid-row: 2;\n          grid-column: 1;\n          display: grid;\n          grid-template-columns: 50% 50%; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .content {\n          min-height: 20px;\n          grid-row: 3;\n          grid-column: 1; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block {\n            grid-row: 2;\n            min-height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px 5px;\n            display: grid;\n            align-content: center; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block.small-font {\n              font-size: 17px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.output-block {\n            min-height: 0px;\n            height: 5px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.clamp-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.gradient-block {\n            grid-row: 2;\n            height: 34px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block {\n            grid-row: 3;\n            height: 140px;\n            width: 140px;\n            overflow: hidden;\n            border-bottom-left-radius: 7px;\n            border: black 4px solid;\n            border-left: 0px;\n            border-bottom: 0px; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img {\n              width: 100%;\n              height: 100%;\n              pointer-events: none; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img.empty {\n                display: none; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.regular-texture-block {\n            margin-top: -115px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.remap-block {\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.trigonometry-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n", ""]);
 
 // exports
 
@@ -54351,6 +54351,10 @@ var ResizingDirection;
     ResizingDirection[ResizingDirection["Left"] = 1] = "Left";
     ResizingDirection[ResizingDirection["Top"] = 2] = "Top";
     ResizingDirection[ResizingDirection["Bottom"] = 3] = "Bottom";
+    ResizingDirection[ResizingDirection["TopRight"] = 4] = "TopRight";
+    ResizingDirection[ResizingDirection["TopLeft"] = 5] = "TopLeft";
+    ResizingDirection[ResizingDirection["BottomRight"] = 6] = "BottomRight";
+    ResizingDirection[ResizingDirection["BottomLeft"] = 7] = "BottomLeft";
 })(ResizingDirection || (ResizingDirection = {}));
 var GraphFrame = /** @class */ (function () {
     function GraphFrame(candidate, canvas, doNotCaptureNodes) {
@@ -54412,10 +54416,10 @@ var GraphFrame = /** @class */ (function () {
             // tslint:disable-next-line: no-this-assignment
             var _this = _this_1;
             if (_this.mouseXLimit) {
-                if (_this._resizingDirection !== ResizingDirection.Right || _this._mouseStartPointX === null || _this._mouseStartPointY === null || evt.clientX < xLimit) {
+                if (!_this._isResizingRight() || _this._mouseStartPointX === null || _this._mouseStartPointY === null || evt.clientX < xLimit) {
                     return;
                 }
-                if (_this._resizingDirection === ResizingDirection.Right) {
+                if (_this._isResizingRight()) {
                     evt.stopPropagation();
                     var distanceMouseMoved = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
                     _this._expandRight(distanceMouseMoved, evt.clientX);
@@ -54426,7 +54430,7 @@ var GraphFrame = /** @class */ (function () {
         this._onRightHandlePointerUp = function (evt) {
             // tslint:disable-next-line: no-this-assignment
             var _this = _this_1;
-            if (_this._resizingDirection === ResizingDirection.Right) {
+            if (_this._isResizingRight()) {
                 _this.width = parseFloat(_this.element.style.width.replace("px", ""));
                 _this._ownerCanvas.hostCanvas.removeEventListener("pointerup", _this._onRightHandlePointerUp);
                 _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onRightHandlePointerMove);
@@ -54436,7 +54440,7 @@ var GraphFrame = /** @class */ (function () {
         this._onBottomHandlePointerDown = function (evt) {
             // tslint:disable-next-line: no-this-assignment
             var _this = _this_1;
-            _this_1.initResizing(evt);
+            _this.initResizing(evt);
             _this._resizingDirection = ResizingDirection.Bottom;
             _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onBottomHandlePointerMove);
             _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onBottomHandlePointerUp);
@@ -54472,7 +54476,7 @@ var GraphFrame = /** @class */ (function () {
         this._onLeftHandlePointerDown = function (evt) {
             // tslint:disable-next-line: no-this-assignment
             var _this = _this_1;
-            _this_1.initResizing(evt);
+            _this.initResizing(evt);
             _this._resizingDirection = ResizingDirection.Left;
             _this.mouseXLimit = evt.clientX + _this.width - _this._minFrameWidth;
             _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onLeftHandlePointerUp);
@@ -54512,7 +54516,7 @@ var GraphFrame = /** @class */ (function () {
         this._onTopHandlePointerDown = function (evt) {
             // tslint:disable-next-line: no-this-assignment
             var _this = _this_1;
-            _this_1.initResizing(evt);
+            _this.initResizing(evt);
             _this._resizingDirection = ResizingDirection.Top;
             _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onTopHandlePointerUp);
             _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onTopHandlePointerMove);
@@ -54525,10 +54529,10 @@ var GraphFrame = /** @class */ (function () {
         this._moveTopHandle = function (evt, yLimit) {
             // tslint:disable-next-line: no-this-assignment
             var _this = _this_1;
-            if (_this._resizingDirection !== ResizingDirection.Top || _this._mouseStartPointX === null || _this._mouseStartPointY === null || evt.clientY > yLimit) {
+            if (!_this._isResizingTop() || _this._mouseStartPointX === null || _this._mouseStartPointY === null || evt.clientY > yLimit) {
                 return;
             }
-            if (_this._resizingDirection === ResizingDirection.Top) {
+            if (_this._isResizingTop()) {
                 evt.stopPropagation();
                 var distanceMouseMoved = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
                 _this._expandTop(distanceMouseMoved);
@@ -54538,11 +54542,237 @@ var GraphFrame = /** @class */ (function () {
         this._onTopHandlePointerUp = function (evt) {
             // tslint:disable-next-line: no-this-assignment
             var _this = _this_1;
-            if (_this._resizingDirection === ResizingDirection.Top) {
+            if (_this._isResizingTop()) {
                 _this.y = parseFloat(_this.element.style.top.replace("px", ""));
                 _this.height = parseFloat(_this.element.style.height.replace("px", ""));
                 _this._ownerCanvas.hostCanvas.removeEventListener("pointerup", _this._onTopHandlePointerUp);
                 _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onTopHandlePointerMove);
+                _this.cleanUpResizing(evt);
+            }
+        };
+        this._onTopRightHandlePointerDown = function (evt) {
+            // tslint:disable-next-line: no-this-assignment
+            var _this = _this_1;
+            _this.initResizing(evt);
+            _this._resizingDirection = ResizingDirection.TopRight;
+            _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onTopRightHandlePointerUp);
+            _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onTopRightHandlePointerMove);
+        };
+        this._onTopRightHandlePointerMove = function (evt) {
+            var topSlack = (_this_1.element.offsetHeight - _this_1._minFrameHeight) * _this_1._ownerCanvas.zoom;
+            var yLimit = _this_1._mouseStartPointY + topSlack;
+            var rightSlack = (_this_1.element.offsetWidth - _this_1._minFrameWidth) * _this_1._ownerCanvas.zoom;
+            var xLimit = _this_1._mouseStartPointX - rightSlack;
+            _this_1._moveTopRightHandle(evt, xLimit, yLimit);
+        };
+        this._moveTopRightHandle = function (evt, xLimit, yLimit) {
+            // tslint:disable-next-line: no-this-assignment
+            var _this = _this_1;
+            if (!(_this._isResizingTop() && _this._isResizingRight()) || _this._mouseStartPointX === null || _this._mouseStartPointY === null) {
+                return;
+            }
+            if (_this._isResizingRight() && _this._isResizingTop()) {
+                evt.stopPropagation();
+                if (evt.clientY < yLimit && evt.clientX > xLimit) { // able to move in X and Y
+                    var distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
+                    _this._expandRight(distanceMouseMovedX, evt.clientX);
+                    _this._mouseStartPointX = evt.clientX;
+                    var distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
+                    _this._expandTop(distanceMouseMovedY);
+                    _this._mouseStartPointY = evt.clientY;
+                }
+                else if (evt.clientY > yLimit && evt.clientX > xLimit) { // able to move in X but not Y
+                    var distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
+                    _this._expandRight(distanceMouseMovedX, evt.clientX);
+                    _this._mouseStartPointX = evt.clientX;
+                }
+                else if (evt.clientY < yLimit && evt.clientX < xLimit) { // able to move in Y but not X
+                    var distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
+                    _this._expandTop(distanceMouseMovedY);
+                    _this._mouseStartPointY = evt.clientY;
+                }
+            }
+        };
+        this._onTopRightHandlePointerUp = function (evt) {
+            evt.stopPropagation();
+            // tslint:disable-next-line: no-this-assignment
+            var _this = _this_1;
+            if (_this._resizingDirection === ResizingDirection.TopRight) {
+                _this.y = parseFloat(_this.element.style.top.replace("px", ""));
+                _this.height = parseFloat(_this.element.style.height.replace("px", ""));
+                _this.width = parseFloat(_this.element.style.width.replace("px", ""));
+                _this._ownerCanvas.hostCanvas.removeEventListener("pointerup", _this._onTopRightHandlePointerUp);
+                _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onTopRightHandlePointerMove);
+                _this.cleanUpResizing(evt);
+            }
+        };
+        this._onBottomRightHandlePointerDown = function (evt) {
+            // tslint:disable-next-line: no-this-assignment
+            var _this = _this_1;
+            _this.initResizing(evt);
+            _this._resizingDirection = ResizingDirection.BottomRight;
+            _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onBottomRightHandlePointerUp);
+            _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onBottomRightHandlePointerMove);
+        };
+        this._onBottomRightHandlePointerMove = function (evt) {
+            var bottomSlack = (_this_1.element.offsetHeight - _this_1._minFrameHeight) * _this_1._ownerCanvas.zoom;
+            var yLimit = _this_1._mouseStartPointY - bottomSlack;
+            var rightSlack = (_this_1.element.offsetWidth - _this_1._minFrameWidth) * _this_1._ownerCanvas.zoom;
+            var xLimit = _this_1._mouseStartPointX - rightSlack;
+            _this_1._moveBottomRightHandle(evt, xLimit, yLimit);
+        };
+        this._moveBottomRightHandle = function (evt, xLimit, yLimit) {
+            // tslint:disable-next-line: no-this-assignment
+            var _this = _this_1;
+            if (!(_this._isResizingBottom() && _this._isResizingRight()) || _this._mouseStartPointX === null || _this._mouseStartPointY === null) {
+                return;
+            }
+            if (_this._isResizingRight() && _this._isResizingBottom()) {
+                evt.stopPropagation();
+                if (evt.clientY > yLimit && evt.clientX > xLimit) { // able to move in X and Y
+                    var distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
+                    _this._expandRight(distanceMouseMovedX, evt.clientX);
+                    _this._mouseStartPointX = evt.clientX;
+                    var distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
+                    _this._expandBottom(distanceMouseMovedY);
+                    _this._mouseStartPointY = evt.clientY;
+                }
+                else if (evt.clientY < yLimit && evt.clientX > xLimit) { // able to move in X but not Y
+                    var distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
+                    _this._expandRight(distanceMouseMovedX, evt.clientX);
+                    _this._mouseStartPointX = evt.clientX;
+                }
+                else if (evt.clientY > yLimit && evt.clientX < xLimit) { // able to move in Y but not X
+                    var distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
+                    _this._expandBottom(distanceMouseMovedY);
+                    _this._mouseStartPointY = evt.clientY;
+                }
+            }
+        };
+        this._onBottomRightHandlePointerUp = function (evt) {
+            evt.stopPropagation();
+            // tslint:disable-next-line: no-this-assignment
+            var _this = _this_1;
+            if (_this._resizingDirection === ResizingDirection.BottomRight) {
+                _this.height = parseFloat(_this.element.style.height.replace("px", ""));
+                _this.width = parseFloat(_this.element.style.width.replace("px", ""));
+                _this._ownerCanvas.hostCanvas.removeEventListener("pointerup", _this._onBottomRightHandlePointerUp);
+                _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onBottomRightHandlePointerMove);
+                _this.cleanUpResizing(evt);
+            }
+        };
+        this._onBottomLeftHandlePointerDown = function (evt) {
+            // tslint:disable-next-line: no-this-assignment
+            var _this = _this_1;
+            _this.initResizing(evt);
+            _this._resizingDirection = ResizingDirection.BottomLeft;
+            _this.mouseXLimit = evt.clientX + _this.width - _this._minFrameWidth;
+            _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onBottomLeftHandlePointerUp);
+            _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onBottomLeftHandlePointerMove);
+        };
+        this._onBottomLeftHandlePointerMove = function (evt) {
+            var bottomSlack = (_this_1.element.offsetHeight - _this_1._minFrameHeight) * _this_1._ownerCanvas.zoom;
+            var yLimit = _this_1._mouseStartPointY - bottomSlack;
+            var leftSlack = (_this_1.element.offsetWidth - _this_1._minFrameWidth) * _this_1._ownerCanvas.zoom;
+            var xLimit = _this_1._mouseStartPointX + leftSlack;
+            _this_1._moveBottomLeftHandle(evt, xLimit, yLimit);
+        };
+        this._moveBottomLeftHandle = function (evt, xLimit, yLimit) {
+            // tslint:disable-next-line: no-this-assignment
+            var _this = _this_1;
+            if (!(_this._isResizingBottom() && _this._isResizingLeft()) || _this._mouseStartPointX === null || _this._mouseStartPointY === null) {
+                return;
+            }
+            if (_this._isResizingLeft() && _this._isResizingBottom()) {
+                evt.stopPropagation();
+                if (evt.clientY > yLimit && evt.clientX < xLimit) { // able to move in X and Y
+                    var distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
+                    _this._expandLeft(distanceMouseMovedX);
+                    _this._mouseStartPointX = evt.clientX;
+                    var distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
+                    _this._expandBottom(distanceMouseMovedY);
+                    _this._mouseStartPointY = evt.clientY;
+                }
+                else if (evt.clientY < yLimit && evt.clientX < xLimit) { // able to move in X but not Y
+                    var distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
+                    _this._expandLeft(distanceMouseMovedX);
+                    _this._mouseStartPointX = evt.clientX;
+                }
+                else if (evt.clientY > yLimit && evt.clientX > xLimit) { // able to move in Y but not X
+                    var distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
+                    _this._expandBottom(distanceMouseMovedY);
+                    _this._mouseStartPointY = evt.clientY;
+                }
+            }
+        };
+        this._onBottomLeftHandlePointerUp = function (evt) {
+            evt.stopPropagation();
+            // tslint:disable-next-line: no-this-assignment
+            var _this = _this_1;
+            if (_this._resizingDirection === ResizingDirection.BottomLeft) {
+                _this.height = parseFloat(_this.element.style.height.replace("px", ""));
+                _this.x = parseFloat(_this.element.style.left.replace("px", ""));
+                _this.width = parseFloat(_this.element.style.width.replace("px", ""));
+                _this._ownerCanvas.hostCanvas.removeEventListener("pointerup", _this._onBottomLeftHandlePointerUp);
+                _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onBottomLeftHandlePointerMove);
+                _this.cleanUpResizing(evt);
+            }
+        };
+        this._onTopLeftHandlePointerDown = function (evt) {
+            // tslint:disable-next-line: no-this-assignment
+            var _this = _this_1;
+            _this.initResizing(evt);
+            _this._resizingDirection = ResizingDirection.TopLeft;
+            _this.mouseXLimit = evt.clientX + _this.width - _this._minFrameWidth;
+            _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onTopLeftHandlePointerUp);
+            _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onTopLeftHandlePointerMove);
+        };
+        this._onTopLeftHandlePointerMove = function (evt) {
+            var topSlack = (_this_1.element.offsetHeight - _this_1._minFrameHeight) * _this_1._ownerCanvas.zoom;
+            var yLimit = _this_1._mouseStartPointY + topSlack;
+            var leftSlack = (_this_1.element.offsetWidth - _this_1._minFrameWidth) * _this_1._ownerCanvas.zoom;
+            var xLimit = _this_1._mouseStartPointX + leftSlack;
+            _this_1._moveTopLeftHandle(evt, xLimit, yLimit);
+        };
+        this._moveTopLeftHandle = function (evt, xLimit, yLimit) {
+            // tslint:disable-next-line: no-this-assignment
+            var _this = _this_1;
+            if (!(_this._isResizingTop() && _this._isResizingLeft()) || _this._mouseStartPointX === null || _this._mouseStartPointY === null) {
+                return;
+            }
+            if (_this._isResizingLeft() && _this._isResizingTop()) {
+                evt.stopPropagation();
+                if (evt.clientY < yLimit && evt.clientX < xLimit) { // able to move in X and Y
+                    var distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
+                    _this._expandLeft(distanceMouseMovedX);
+                    _this._mouseStartPointX = evt.clientX;
+                    var distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
+                    _this._expandTop(distanceMouseMovedY);
+                    _this._mouseStartPointY = evt.clientY;
+                }
+                else if (evt.clientY > yLimit && evt.clientX < xLimit) { // able to move in X but not Y
+                    var distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
+                    _this._expandLeft(distanceMouseMovedX);
+                    _this._mouseStartPointX = evt.clientX;
+                }
+                else if (evt.clientY < yLimit && evt.clientX > xLimit) { // able to move in Y but not X
+                    var distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
+                    _this._expandTop(distanceMouseMovedY);
+                    _this._mouseStartPointY = evt.clientY;
+                }
+            }
+        };
+        this._onTopLeftHandlePointerUp = function (evt) {
+            evt.stopPropagation();
+            // tslint:disable-next-line: no-this-assignment
+            var _this = _this_1;
+            if (_this._resizingDirection === ResizingDirection.TopLeft) {
+                _this.y = parseFloat(_this.element.style.top.replace("px", ""));
+                _this.height = parseFloat(_this.element.style.height.replace("px", ""));
+                _this.x = parseFloat(_this.element.style.left.replace("px", ""));
+                _this.width = parseFloat(_this.element.style.width.replace("px", ""));
+                _this._ownerCanvas.hostCanvas.removeEventListener("pointerup", _this._onTopLeftHandlePointerUp);
+                _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onTopLeftHandlePointerMove);
                 _this.cleanUpResizing(evt);
             }
         };
@@ -54578,6 +54808,23 @@ var GraphFrame = /** @class */ (function () {
         topHandle.className = "handle top-handle";
         this.element.appendChild(topHandle);
         topHandle.addEventListener("pointerdown", this._onTopHandlePointerDown);
+        var topRightCornerHandle = root.ownerDocument.createElement("div");
+        topRightCornerHandle.className = "handle right-handle top-right-corner-handle";
+        this.element.appendChild(topRightCornerHandle);
+        topRightCornerHandle.addEventListener("pointerdown", this._onTopRightHandlePointerDown);
+        var bottomRightCornerHandle = root.ownerDocument.createElement("div");
+        bottomRightCornerHandle.className = "handle right-handle bottom-right-corner-handle";
+        this.element.appendChild(bottomRightCornerHandle);
+        bottomRightCornerHandle.addEventListener("pointerdown", this._onBottomRightHandlePointerDown);
+        var topLeftCornerHandle = root.ownerDocument.createElement("div");
+        topLeftCornerHandle.className = "handle left-handle top-left-corner-handle";
+        this.element.appendChild(topLeftCornerHandle);
+        topLeftCornerHandle.addEventListener("pointerdown", this._onTopLeftHandlePointerDown);
+        var bottomLeftCornerHandle = root.ownerDocument.createElement("div");
+        bottomLeftCornerHandle.className = "handle left-handle bottom-left-corner-handle";
+        this.element.appendChild(bottomLeftCornerHandle);
+        bottomLeftCornerHandle.addEventListener("pointerdown", this._onBottomLeftHandlePointerDown);
+        // add header elements
         this._headerTextElement = root.ownerDocument.createElement("div");
         this._headerTextElement.classList.add("frame-box-header-title");
         this._headerElement.appendChild(this._headerTextElement);
@@ -54967,18 +55214,17 @@ var GraphFrame = /** @class */ (function () {
         this._mouseStartPointY = evt.clientY;
         evt.stopPropagation();
     };
-    GraphFrame.prototype._expandRight = function (widthModification, x) {
-        var frameElementWidth = parseFloat(this.element.style.width.replace("px", ""));
-        if ((frameElementWidth + widthModification) > 20) {
-            this._mouseStartPointX = x;
-            this.element.style.width = frameElementWidth + widthModification + "px";
-        }
-        this.updateMinHeightWithComments();
-        this.height = this._borderElement.offsetHeight;
+    GraphFrame.prototype._isResizingTop = function () {
+        return this._resizingDirection === ResizingDirection.Top || this._resizingDirection === ResizingDirection.TopRight || this._resizingDirection === ResizingDirection.TopLeft;
     };
-    GraphFrame.prototype._expandBottom = function (heightModification) {
-        var frameElementHeight = parseFloat(this.element.style.height.replace("px", ""));
-        this.element.style.height = frameElementHeight + heightModification + "px";
+    GraphFrame.prototype._isResizingRight = function () {
+        return this._resizingDirection === ResizingDirection.Right || this._resizingDirection === ResizingDirection.TopRight || this._resizingDirection === ResizingDirection.BottomRight;
+    };
+    GraphFrame.prototype._isResizingBottom = function () {
+        return this._resizingDirection === ResizingDirection.Bottom || this._resizingDirection === ResizingDirection.BottomLeft || this._resizingDirection === ResizingDirection.BottomRight;
+    };
+    GraphFrame.prototype._isResizingLeft = function () {
+        return this._resizingDirection === ResizingDirection.Left || this._resizingDirection === ResizingDirection.TopLeft || this._resizingDirection === ResizingDirection.BottomLeft;
     };
     GraphFrame.prototype._expandLeft = function (widthModification) {
         var frameElementWidth = parseFloat(this.element.style.width.replace("px", ""));
@@ -54986,13 +55232,24 @@ var GraphFrame = /** @class */ (function () {
         this.element.style.width = frameElementWidth - widthModification + "px";
         this.element.style.left = frameElementLeft + widthModification + "px";
         this.updateMinHeightWithComments();
-        this.height = this._borderElement.offsetHeight;
     };
     GraphFrame.prototype._expandTop = function (heightModification) {
         var frameElementHeight = parseFloat(this.element.style.height.replace("px", ""));
         var frameElementTop = parseFloat(this.element.style.top.replace("px", ""));
         this.element.style.height = frameElementHeight - heightModification + "px";
         this.element.style.top = frameElementTop + heightModification + "px";
+    };
+    GraphFrame.prototype._expandRight = function (widthModification, x) {
+        var frameElementWidth = parseFloat(this.element.style.width.replace("px", ""));
+        if ((frameElementWidth + widthModification) > 20) {
+            this._mouseStartPointX = x;
+            this.element.style.width = frameElementWidth + widthModification + "px";
+        }
+        this.updateMinHeightWithComments();
+    };
+    GraphFrame.prototype._expandBottom = function (heightModification) {
+        var frameElementHeight = parseFloat(this.element.style.height.replace("px", ""));
+        this.element.style.height = frameElementHeight + heightModification + "px";
     };
     GraphFrame.prototype.dispose = function () {
         this.isCollapsed = false;
