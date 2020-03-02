@@ -18,15 +18,6 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
-    export class Tools {
-        static StoreLocalBooleanSettings(key: string, value: boolean): void;
-        static ReadLocalBooleanSettings(key: string, defaultValue: boolean): boolean;
-        static LookForItem(item: any, selectedEntity: any): boolean;
-        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
-        static SortAndFilter(parent: any, items: any[]): any[];
-    }
-}
-declare module INSPECTOR {
     export class GlobalState {
         onSelectionChangedObservable: BABYLON.Observable<any>;
         onPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
@@ -118,7 +109,6 @@ declare module INSPECTOR {
         isExpanded: boolean;
         isHighlighted: boolean;
     }> {
-        private static _InMemoryStorage;
         constructor(props: ILineContainerComponentProps);
         switchExpandedState(): void;
         componentDidMount(): void;
@@ -471,6 +461,7 @@ declare module INSPECTOR {
     export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
         private static _IDGenerator;
         private _id;
+        private uploadInputRef;
         constructor(props: IFileButtonLineComponentProps);
         onChange(evt: any): void;
         render(): JSX.Element;
@@ -534,6 +525,7 @@ declare module INSPECTOR {
         channel: ChannelToDisplay;
         face: number;
     }> {
+        private canvasRef;
         constructor(props: ITextureLineComponentProps);
         shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: {
             channel: ChannelToDisplay;
@@ -585,6 +577,7 @@ declare module INSPECTOR {
     }
     export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps> {
         private _adtInstrumentation;
+        private textureLineRef;
         constructor(props: ITexturePropertyGridComponentProps);
         componentWillUnmount(): void;
         updateTexture(file: File): void;
@@ -908,6 +901,7 @@ declare module INSPECTOR {
         private _onAnimationGroupPlayObserver;
         private _onAnimationGroupPauseObserver;
         private _onBeforeRenderObserver;
+        private timelineRef;
         constructor(props: IAnimationGroupGridComponentProps);
         disconnect(animationGroup: BABYLON.AnimationGroup): void;
         connect(animationGroup: BABYLON.AnimationGroup): void;
@@ -1185,6 +1179,7 @@ declare module INSPECTOR {
         private _runningAnimatable;
         private _onBeforeRenderObserver;
         private _isPlaying;
+        private timelineRef;
         constructor(props: IAnimationGridComponentProps);
         playOrPause(): void;
         componentDidMount(): void;
@@ -1425,6 +1420,7 @@ declare module INSPECTOR {
     export class FileMultipleButtonLineComponent extends React.Component<IFileMultipleButtonLineComponentProps> {
         private static _IDGenerator;
         private _id;
+        private uploadInputRef;
         constructor(props: IFileMultipleButtonLineComponentProps);
         onChange(evt: any): void;
         render(): JSX.Element;
@@ -1509,6 +1505,7 @@ declare module INSPECTOR {
         popupVisible: boolean;
     }> {
         private _popup;
+        private extensionRef;
         constructor(props: IExtensionsComponentProps);
         showPopup(): void;
         componentDidMount(): void;
@@ -1703,6 +1700,13 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export class Tools {
+        static LookForItem(item: any, selectedEntity: any): boolean;
+        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
+        static SortAndFilter(parent: any, items: any[]): any[];
+    }
+}
+declare module INSPECTOR {
     export interface ITreeItemSelectableComponentProps {
         entity: any;
         selectedEntity?: any;
@@ -1822,6 +1826,7 @@ declare module INSPECTOR {
     }> {
         private _onSelectionChangeObserver;
         private _onNewSceneAddedObserver;
+        private sceneExplorerRef;
         private _once;
         private _hooked;
         private sceneMutationFunc;
@@ -1855,6 +1860,9 @@ declare module INSPECTOR {
     }
     export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps> {
         private _once;
+        private splitRef;
+        private topPartRef;
+        private bottomPartRef;
         constructor(props: IEmbedHostComponentProps);
         componentDidMount(): void;
         renderContent(): JSX.Element;
@@ -1890,5 +1898,17 @@ declare module INSPECTOR {
         private static _Cleanup;
         private static _RemoveElementFromDOM;
         static Hide(): void;
+    }
+}
+declare module INSPECTOR {
+    interface IParticleSystemPropertyGridComponentProps {
+        globalState: GlobalState;
+        system: BABYLON.IParticleSystem;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class ParticleSystemPropertyGridComponent extends React.Component<IParticleSystemPropertyGridComponentProps> {
+        constructor(props: IParticleSystemPropertyGridComponentProps);
+        render(): JSX.Element;
     }
 }

@@ -746,6 +746,10 @@ export class Sound {
                             length = length || this._length;
                             offset = offset || this._offset;
 
+                            if (this._soundSource) {
+                                this._soundSource.stop();
+                            }
+
                             this._soundSource = Engine.audioEngine.audioContext.createBufferSource();
                             this._soundSource.buffer = this._audioBuffer;
                             this._soundSource.connect(this._inputAudioNode);
