@@ -1,9 +1,12 @@
-import { Nullable } from "babylonjs/types";
-import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { INode, IAccessor } from "../glTFLoaderInterfaces";
-import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import { Vector3, Quaternion } from 'babylonjs/Maths/math.vector';
+import { Mesh } from 'babylonjs/Meshes/mesh';
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { StringTools } from 'babylonjs/Misc/stringTools'
+import { Nullable } from "babylonjs/types";
+import { GLTFLoader, ArrayItem } from "../glTFLoader";
+import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
+import { INode, IAccessor } from "../glTFLoaderInterfaces";
+import { InstancedMesh } from 'babylonjs';
 
 const NAME = "KHR_mesh_instancing";
 
@@ -46,43 +49,53 @@ export class KHR_mesh_instancing implements IGLTFLoaderExtension {
         return GLTFLoader.LoadExtensionAsync<IKHRMeshInstancing, TransformNode>(context, node, this.name, (extensionContext, extension) => {
             return this._loader.loadNodeAsync(`#/nodes/${node.index}`, node, (babylonTransformNode) => {
                 const promises = new Array<Promise<any>>();
-                const attributeBuffers : { [name: string]: { buffer : Float32Array, accessor : IAccessor } } = {};
-                const loadAttribute = (attribute: string) => {
+                const loadAttribute = (attribute: string, assignBufferFunc: (data: Float32Array, accessor: IAccessor) => void) => {
                     if (extension.attributes[attribute] == undefined) {
                         return;
                     }
                     const accessor = ArrayItem.Get(`${extensionContext}/attributes/${attribute}`, this._loader.gltf.accessors, extension.attributes[attribute]);
                     promises.push(this._loader._loadFloatAccessorAsync(`/accessors/${accessor.bufferView}`, accessor).then((data) => {
-                        attributeBuffers[attribute] = { buffer : data, accessor : accessor };
+                        assignBufferFunc(data, accessor);
                     }));
                 };
-                const attributes = ["TRANSLATION", "ROTATION", "SCALE"];
-                for (let i = 0; i < attributes.length; ++i) {
-                    loadAttribute(attributes[i]);
-                }
+                let translationBuffer: Nullable<Float32Array> = null;
+                let rotationBuffer: Nullable<Float32Array> = null;
+                let scaleBuffer: Nullable<Float32Array> = null;
+                let translationBufferAccessor: Nullable<IAccessor> = null;
+                let rotationBufferAccessor: Nullable<IAccessor> = null;
+                let scaleBufferAccessor: Nullable<IAccessor> = null;
+
+                loadAttribute("TRANSLATION", (data, accessor) => { translationBuffer = data; translationBufferAccessor = accessor; });
+                loadAttribute("ROTATION", (data, accessor) => { rotationBuffer = data; rotationBufferAccessor = accessor; });
+                loadAttribute("SCALE", (data, accessor) => { scaleBuffer = data; scaleBufferAccessor = accessor; });
 
                 return Promise.all(promises).then(() => {
-                    const instanceCount = attributeBuffers[attributes[0]].accessor.count;
-                    const digitLength = instanceCount.toString().length;
-                    const padNumber = function(num: number, length: number) {
-                        var str = String(num);
-                        while (str.length < (length)) { str = "0" + str; }
-                        return str;
-                    };
+                    const anyInstanceAccessor = translationBufferAccessor || rotationBufferAccessor || scaleBufferAccessor;
+                    if (anyInstanceAccessor) {
+                        const instanceCount = anyInstanceAccessor.count;
+                        let instanceName: string = "";
+                        let instance: Nullable<TransformNode> = null;
+                        const digitLength = instanceCount.toString().length;
 
-                    for (let i = 0; i < instanceCount; ++i) {
-                        if (node._primitiveBabylonMeshes) {
-                            for (let j = 0; j < node._primitiveBabylonMeshes.length; ++j) {
-                                const babylonMeshPrimitive = node._primitiveBabylonMeshes[j];
-                                const instance = babylonMeshPrimitive.clone((babylonMeshPrimitive.name || babylonMeshPrimitive.id) + "_" + padNumber(i, digitLength), babylonTransformNode, true);
-
-                                if (instance) {
-                                    attributeBuffers["TRANSLATION"] ? Vector3.FromArrayToRef(attributeBuffers["TRANSLATION"].buffer, i * 3, instance.position)
-                                                                    : instance.position.set(0, 0, 0);
-                                    attributeBuffers["ROTATION"] ? Quaternion.FromArrayToRef(attributeBuffers["ROTATION"].buffer, i * 4, instance.rotationQuaternion!)
-                                                                 : instance.rotationQuaternion?.set(0, 0, 0, 1);
-                                    attributeBuffers["SCALE"] ? Vector3.FromArrayToRef(attributeBuffers["SCALE"].buffer, i * 3, instance.scaling)
-                                                              : instance.scaling.set(1, 1, 1);
+                        for (let i = 0; i < instanceCount; ++i) {
+                            if (node._primitiveBabylonMeshes) {
+                                for (let j = 0; j < node._primitiveBabylonMeshes.length; ++j) {
+                                    const babylonMeshPrimitive = node._primitiveBabylonMeshes[j];
+                                    instanceName = (babylonMeshPrimitive.name || babylonMeshPrimitive.id) + "_" + StringTools.PadNumber(i, digitLength);
+                                    if (babylonMeshPrimitive.isAnInstance) {
+                                        instance = (babylonMeshPrimitive as InstancedMesh).sourceMesh.createInstance(instanceName);
+                                    } else if ((babylonMeshPrimitive as Mesh).createInstance) {
+                                        instance = (babylonMeshPrimitive as Mesh).createInstance(instanceName);
+                                    }
+                                    if (instance) {
+                                        instance.setParent(babylonMeshPrimitive);
+                                        translationBuffer ? Vector3.FromArrayToRef(translationBuffer, i * 3, instance.position)
+                                            : instance.position.set(0, 0, 0);
+                                        rotationBuffer ? Quaternion.FromArrayToRef(rotationBuffer, i * 4, instance.rotationQuaternion!)
+                                            : instance.rotationQuaternion!.set(0, 0, 0, 1);
+                                        scaleBuffer ? Vector3.FromArrayToRef(scaleBuffer, i * 3, instance.scaling)
+                                            : instance.scaling.set(1, 1, 1);
+                                    }
                                 }
                             }
                         }

@@ -709,8 +709,7 @@ export class GLTFLoader implements IGLTFLoader {
         });
     }
 
-    /** @hidden */
-    public _loadMeshAsync(context: string, node: INode, mesh: IMesh, assign: (babylonTransformNode: TransformNode) => void): Promise<TransformNode> {
+    private _loadMeshAsync(context: string, node: INode, mesh: IMesh, assign: (babylonTransformNode: TransformNode) => void): Promise<TransformNode> {
         const primitives = mesh.primitives;
         if (!primitives || !primitives.length) {
             throw new Error(`${context}: Primitives are missing`);
