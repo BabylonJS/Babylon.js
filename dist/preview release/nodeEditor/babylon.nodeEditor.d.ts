@@ -8,15 +8,6 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export class DataStorage {
-        private static _InMemoryStorage;
-        static ReadBoolean(key: string, defaultValue: boolean): boolean;
-        static StoreBoolean(key: string, value: boolean): void;
-        static ReadNumber(key: string, defaultValue: number): number;
-        static StoreNumber(key: string, value: number): void;
-    }
-}
-declare module NODEEDITOR {
     interface ILogComponentProps {
         globalState: GlobalState;
     }

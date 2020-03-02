@@ -51947,7 +51947,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../dataStorage */ "./dataStorage.ts");
+/* harmony import */ var babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/dataStorage */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__);
 
 
 
@@ -51969,13 +51970,13 @@ var PreviewAreaComponent = /** @class */ (function (_super) {
     };
     PreviewAreaComponent.prototype.changeBackFaceCulling = function (value) {
         this.props.globalState.backFaceCulling = value;
-        _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].StoreBoolean("BackFaceCulling", value);
+        babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].WriteBoolean("BackFaceCulling", value);
         this.props.globalState.onBackFaceCullingChanged.notifyObservers();
         this.forceUpdate();
     };
     PreviewAreaComponent.prototype.changeDepthPrePass = function (value) {
         this.props.globalState.depthPrePass = value;
-        _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].StoreBoolean("DepthPrePass", value);
+        babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].WriteBoolean("DepthPrePass", value);
         this.props.globalState.onDepthPrePassChanged.notifyObservers();
         this.forceUpdate();
     };
@@ -51992,21 +51993,21 @@ var PreviewAreaComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: depthPass, alt: "" })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn on/off hemispheric light", onClick: function () {
                         _this.props.globalState.hemisphericLight = !_this.props.globalState.hemisphericLight;
-                        _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].StoreBoolean("HemisphericLight", _this.props.globalState.hemisphericLight);
+                        babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].WriteBoolean("HemisphericLight", _this.props.globalState.hemisphericLight);
                         _this.props.globalState.onLightUpdated.notifyObservers();
                         _this.forceUpdate();
                     }, className: "button hemispheric-light" + (this.props.globalState.hemisphericLight ? " selected" : "") },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: omni, alt: "" })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn on/off direction light #1", onClick: function () {
                         _this.props.globalState.directionalLight1 = !_this.props.globalState.directionalLight1;
-                        _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].StoreBoolean("DirectionalLight1", _this.props.globalState.directionalLight1);
+                        babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].WriteBoolean("DirectionalLight1", _this.props.globalState.directionalLight1);
                         _this.props.globalState.onLightUpdated.notifyObservers();
                         _this.forceUpdate();
                     }, className: "button direction-light-1" + (this.props.globalState.directionalLight1 ? " selected" : "") },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: directionalRight, alt: "" })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn on/off direction light #0", onClick: function () {
                         _this.props.globalState.directionalLight0 = !_this.props.globalState.directionalLight0;
-                        _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].StoreBoolean("DirectionalLight0", _this.props.globalState.directionalLight0);
+                        babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].WriteBoolean("DirectionalLight0", _this.props.globalState.directionalLight0);
                         _this.props.globalState.onLightUpdated.notifyObservers();
                         _this.forceUpdate();
                     }, className: "button direction-light-0" + (this.props.globalState.directionalLight0 ? " selected" : "") },
@@ -52337,10 +52338,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _previewMeshType__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./previewMeshType */ "./components/preview/previewMeshType.ts");
-/* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../dataStorage */ "./dataStorage.ts");
-/* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
-/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react-dom */ "../../node_modules/react-dom/index.js");
-/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react-dom */ "../../node_modules/react-dom/index.js");
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_5__);
 
 
 
@@ -52365,7 +52365,7 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
         }
         this.props.globalState.previewMeshType = newOne;
         this.props.globalState.onPreviewCommandActivated.notifyObservers();
-        _dataStorage__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].StoreNumber("PreviewMeshType", newOne);
+        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].WriteNumber("PreviewMeshType", newOne);
         this.forceUpdate();
     };
     PreviewMeshControlComponent.prototype.useCustomMesh = function (evt) {
@@ -52377,7 +52377,7 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
             this.props.globalState.onPreviewCommandActivated.notifyObservers();
             this.forceUpdate();
         }
-        react_dom__WEBPACK_IMPORTED_MODULE_6__["findDOMNode"](this.refs["file-picker"]).value = "";
+        react_dom__WEBPACK_IMPORTED_MODULE_5__["findDOMNode"](this.refs["file-picker"]).value = "";
     };
     PreviewMeshControlComponent.prototype.onPopUp = function () {
         this.props.togglePreviewAreaComponent();
@@ -52389,9 +52389,9 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
     };
     PreviewMeshControlComponent.prototype.changeBackground = function (value) {
         var newColor = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromHexString(value);
-        _dataStorage__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].StoreNumber("BackgroundColorR", newColor.r);
-        _dataStorage__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].StoreNumber("BackgroundColorG", newColor.g);
-        _dataStorage__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].StoreNumber("BackgroundColorB", newColor.b);
+        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].WriteNumber("BackgroundColorR", newColor.r);
+        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].WriteNumber("BackgroundColorG", newColor.g);
+        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].WriteNumber("BackgroundColorB", newColor.b);
         var newBackgroundColor = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"].FromColor3(newColor, 1.0);
         this.props.globalState.backgroundColor = newBackgroundColor;
         this.props.globalState.onPreviewBackgroundChanged.notifyObservers();
@@ -52416,12 +52416,12 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
             });
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-mesh-bar" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "", options: meshTypeOptions, target: this.props.globalState, propertyName: "previewMeshType", noDirectUpdate: true, onSelect: function (value) {
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_4__["OptionsLineComponent"], { label: "", options: meshTypeOptions, target: this.props.globalState, propertyName: "previewMeshType", noDirectUpdate: true, onSelect: function (value) {
                     if (value !== _previewMeshType__WEBPACK_IMPORTED_MODULE_3__["PreviewMeshType"].Custom + 1) {
                         _this.changeMeshType(value);
                     }
                     else {
-                        react_dom__WEBPACK_IMPORTED_MODULE_6__["findDOMNode"](_this.refs["file-picker"]).click();
+                        react_dom__WEBPACK_IMPORTED_MODULE_5__["findDOMNode"](_this.refs["file-picker"]).click();
                     }
                 } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: {
@@ -52867,18 +52867,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__);
 /* harmony import */ var _serializationTools__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../serializationTools */ "./serializationTools.ts");
 /* harmony import */ var _sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../sharedComponents/checkBoxLineComponent */ "./sharedComponents/checkBoxLineComponent.tsx");
-/* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../dataStorage */ "./dataStorage.ts");
-/* harmony import */ var _diagram_graphNode__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../diagram/graphNode */ "./diagram/graphNode.ts");
-/* harmony import */ var _sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../sharedComponents/sliderLineComponent */ "./sharedComponents/sliderLineComponent.tsx");
-/* harmony import */ var _diagram_graphFrame__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../diagram/graphFrame */ "./diagram/graphFrame.ts");
-/* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
-/* harmony import */ var _diagram_properties_framePropertyComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../diagram/properties/framePropertyComponent */ "./diagram/properties/framePropertyComponent.tsx");
-/* harmony import */ var _sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../sharedComponents/color3LineComponent */ "./sharedComponents/color3LineComponent.tsx");
-/* harmony import */ var _sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../../sharedComponents/floatLineComponent */ "./sharedComponents/floatLineComponent.tsx");
-/* harmony import */ var _sharedComponents_color4LineComponent__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ../../sharedComponents/color4LineComponent */ "./sharedComponents/color4LineComponent.tsx");
-/* harmony import */ var _sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ../../sharedComponents/vector2LineComponent */ "./sharedComponents/vector2LineComponent.tsx");
-/* harmony import */ var _sharedComponents_vector3LineComponent__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ../../sharedComponents/vector3LineComponent */ "./sharedComponents/vector3LineComponent.tsx");
-/* harmony import */ var _sharedComponents_vector4LineComponent__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ../../sharedComponents/vector4LineComponent */ "./sharedComponents/vector4LineComponent.tsx");
+/* harmony import */ var _diagram_graphNode__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../diagram/graphNode */ "./diagram/graphNode.ts");
+/* harmony import */ var _sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../sharedComponents/sliderLineComponent */ "./sharedComponents/sliderLineComponent.tsx");
+/* harmony import */ var _diagram_graphFrame__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../diagram/graphFrame */ "./diagram/graphFrame.ts");
+/* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
+/* harmony import */ var _diagram_properties_framePropertyComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../diagram/properties/framePropertyComponent */ "./diagram/properties/framePropertyComponent.tsx");
+/* harmony import */ var _sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../sharedComponents/color3LineComponent */ "./sharedComponents/color3LineComponent.tsx");
+/* harmony import */ var _sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../sharedComponents/floatLineComponent */ "./sharedComponents/floatLineComponent.tsx");
+/* harmony import */ var _sharedComponents_color4LineComponent__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../../sharedComponents/color4LineComponent */ "./sharedComponents/color4LineComponent.tsx");
+/* harmony import */ var _sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ../../sharedComponents/vector2LineComponent */ "./sharedComponents/vector2LineComponent.tsx");
+/* harmony import */ var _sharedComponents_vector3LineComponent__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ../../sharedComponents/vector3LineComponent */ "./sharedComponents/vector3LineComponent.tsx");
+/* harmony import */ var _sharedComponents_vector4LineComponent__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ../../sharedComponents/vector4LineComponent */ "./sharedComponents/vector4LineComponent.tsx");
 
 
 
@@ -52913,10 +52912,10 @@ var PropertyTabComponent = /** @class */ (function (_super) {
     PropertyTabComponent.prototype.componentDidMount = function () {
         var _this = this;
         this.props.globalState.onSelectionChangedObservable.add(function (selection) {
-            if (selection instanceof _diagram_graphNode__WEBPACK_IMPORTED_MODULE_10__["GraphNode"]) {
+            if (selection instanceof _diagram_graphNode__WEBPACK_IMPORTED_MODULE_9__["GraphNode"]) {
                 _this.setState({ currentNode: selection, currentFrame: null });
             }
-            else if (selection instanceof _diagram_graphFrame__WEBPACK_IMPORTED_MODULE_12__["GraphFrame"]) {
+            else if (selection instanceof _diagram_graphFrame__WEBPACK_IMPORTED_MODULE_11__["GraphFrame"]) {
                 _this.setState({ currentNode: null, currentFrame: selection });
             }
             else {
@@ -52947,19 +52946,19 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                                 _this.processInputBlockUpdate(block);
                             } }),
                     !block.isBoolean && cantDisplaySlider &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_16__["FloatLineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_15__["FloatLineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }),
                     !block.isBoolean && !cantDisplaySlider &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_11__["SliderLineComponent"], { key: block.uniqueId, label: block.name, target: block, propertyName: "value", step: (block.max - block.min) / 100.0, minimum: block.min, maximum: block.max, onChange: function () { return _this.processInputBlockUpdate(block); } })));
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_10__["SliderLineComponent"], { key: block.uniqueId, label: block.name, target: block, propertyName: "value", step: (block.max - block.min) / 100.0, minimum: block.min, maximum: block.max, onChange: function () { return _this.processInputBlockUpdate(block); } })));
             case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialBlockConnectionPointTypes"].Color3:
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_15__["Color3LineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_14__["Color3LineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
             case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialBlockConnectionPointTypes"].Color4:
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color4LineComponent__WEBPACK_IMPORTED_MODULE_17__["Color4LineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color4LineComponent__WEBPACK_IMPORTED_MODULE_16__["Color4LineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
             case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialBlockConnectionPointTypes"].Vector2:
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_18__["Vector2LineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_17__["Vector2LineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
             case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialBlockConnectionPointTypes"].Vector3:
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector3LineComponent__WEBPACK_IMPORTED_MODULE_19__["Vector3LineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector3LineComponent__WEBPACK_IMPORTED_MODULE_18__["Vector3LineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
             case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialBlockConnectionPointTypes"].Vector4:
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector4LineComponent__WEBPACK_IMPORTED_MODULE_20__["Vector4LineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector4LineComponent__WEBPACK_IMPORTED_MODULE_19__["Vector4LineComponent"], { globalState: this.props.globalState, key: block.uniqueId, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
         }
         return null;
     };
@@ -52993,17 +52992,17 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 this.state.currentNode.renderProperties()));
         }
         if (this.state.currentFrame) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_properties_framePropertyComponent__WEBPACK_IMPORTED_MODULE_14__["FramePropertyTabComponent"], { globalState: this.props.globalState, frame: this.state.currentFrame }));
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_properties_framePropertyComponent__WEBPACK_IMPORTED_MODULE_13__["FramePropertyTabComponent"], { globalState: this.props.globalState, frame: this.state.currentFrame }));
         }
-        var gridSize = _dataStorage__WEBPACK_IMPORTED_MODULE_9__["DataStorage"].ReadNumber("GridSize", 20);
+        var gridSize = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].ReadNumber("GridSize", 20);
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "propertyTab" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: "https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "title" }, "NODE MATERIAL EDITOR")),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_13__["TextLineComponent"], { label: "Version", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["Engine"].Version }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_13__["TextLineComponent"], { label: "Help", value: "doc.babylonjs.com", underline: true, onLink: function () { return window.open('https://doc.babylonjs.com/how_to/node_material', '_blank'); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextLineComponent"], { label: "Version", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["Engine"].Version }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextLineComponent"], { label: "Help", value: "doc.babylonjs.com", underline: true, onLink: function () { return window.open('https://doc.babylonjs.com/how_to/node_material', '_blank'); } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Reset to default", onClick: function () {
                             _this.props.globalState.nodeMaterial.setToDefault();
                             _this.props.globalState.onResetRequiredObservable.notifyObservers();
@@ -53016,16 +53015,16 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                             _this.props.globalState.onReOrganizedRequiredObservable.notifyObservers();
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "OPTIONS" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { label: "Embed textures when saving", isSelected: function () { return _dataStorage__WEBPACK_IMPORTED_MODULE_9__["DataStorage"].ReadBoolean("EmbedTextures", true); }, onSelect: function (value) {
-                            _dataStorage__WEBPACK_IMPORTED_MODULE_9__["DataStorage"].StoreBoolean("EmbedTextures", value);
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { label: "Embed textures when saving", isSelected: function () { return babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].ReadBoolean("EmbedTextures", true); }, onSelect: function (value) {
+                            babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].WriteBoolean("EmbedTextures", value);
                         } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_11__["SliderLineComponent"], { label: "Grid size", minimum: 0, maximum: 100, step: 5, decimalCount: 0, directValue: gridSize, onChange: function (value) {
-                            _dataStorage__WEBPACK_IMPORTED_MODULE_9__["DataStorage"].StoreNumber("GridSize", value);
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_10__["SliderLineComponent"], { label: "Grid size", minimum: 0, maximum: 100, step: 5, decimalCount: 0, directValue: gridSize, onChange: function (value) {
+                            babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].WriteNumber("GridSize", value);
                             _this.props.globalState.onGridSizeChanged.notifyObservers();
                             _this.forceUpdate();
                         } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { label: "Show grid", isSelected: function () { return _dataStorage__WEBPACK_IMPORTED_MODULE_9__["DataStorage"].ReadBoolean("ShowGrid", true); }, onSelect: function (value) {
-                            _dataStorage__WEBPACK_IMPORTED_MODULE_9__["DataStorage"].StoreBoolean("ShowGrid", value);
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { label: "Show grid", isSelected: function () { return babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].ReadBoolean("ShowGrid", true); }, onSelect: function (value) {
+                            babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].WriteBoolean("ShowGrid", value);
                             _this.props.globalState.onGridSizeChanged.notifyObservers();
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "FILE" },
@@ -53052,90 +53051,6 @@ var PropertyTabComponent = /** @class */ (function (_super) {
     };
     return PropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
-
-
-/***/ }),
-
-/***/ "./dataStorage.ts":
-/*!************************!*\
-  !*** ./dataStorage.ts ***!
-  \************************/
-/*! exports provided: DataStorage */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DataStorage", function() { return DataStorage; });
-var DataStorage = /** @class */ (function () {
-    function DataStorage() {
-    }
-    DataStorage.ReadBoolean = function (key, defaultValue) {
-        try {
-            if (this._InMemoryStorage && this._InMemoryStorage[key] !== undefined) {
-                return this._InMemoryStorage[key];
-            }
-            else if (typeof (Storage) !== "undefined" && localStorage.getItem(key) !== null) {
-                return localStorage.getItem(key) === "true";
-            }
-            else {
-                return defaultValue;
-            }
-        }
-        catch (e) {
-            this._InMemoryStorage = {};
-            this._InMemoryStorage[key] = defaultValue;
-            return defaultValue;
-        }
-    };
-    DataStorage.StoreBoolean = function (key, value) {
-        try {
-            if (this._InMemoryStorage) {
-                this._InMemoryStorage[key] = value;
-            }
-            else if (typeof (Storage) !== "undefined") {
-                localStorage.setItem(key, value ? "true" : "false");
-            }
-        }
-        catch (e) {
-            this._InMemoryStorage = {};
-            this._InMemoryStorage[key] = value;
-        }
-    };
-    DataStorage.ReadNumber = function (key, defaultValue) {
-        try {
-            if (this._InMemoryStorage && this._InMemoryStorage[key] !== undefined) {
-                return this._InMemoryStorage[key];
-            }
-            else if (typeof (Storage) !== "undefined" && localStorage.getItem(key) !== null) {
-                return parseFloat(localStorage.getItem(key));
-            }
-            else {
-                return defaultValue;
-            }
-        }
-        catch (e) {
-            this._InMemoryStorage = {};
-            this._InMemoryStorage[key] = defaultValue;
-            return defaultValue;
-        }
-    };
-    DataStorage.StoreNumber = function (key, value) {
-        try {
-            if (this._InMemoryStorage) {
-                this._InMemoryStorage[key] = value;
-            }
-            else if (typeof (Storage) !== "undefined") {
-                localStorage.setItem(key, value.toString());
-            }
-        }
-        catch (e) {
-            this._InMemoryStorage = {};
-            this._InMemoryStorage[key] = value;
-        }
-    };
-    return DataStorage;
-}());
 
 
 
@@ -53669,8 +53584,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var dagre__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! dagre */ "../../node_modules/dagre/index.js");
 /* harmony import */ var dagre__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(dagre__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _nodeLink__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./nodeLink */ "./diagram/nodeLink.ts");
-/* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../dataStorage */ "./dataStorage.ts");
-/* harmony import */ var _graphFrame__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./graphFrame */ "./diagram/graphFrame.ts");
+/* harmony import */ var _graphFrame__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./graphFrame */ "./diagram/graphFrame.ts");
 
 
 
@@ -53726,7 +53640,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                     _this._selectedFrame = null;
                     _this._selectedLink = selection;
                 }
-                else if (selection instanceof _graphFrame__WEBPACK_IMPORTED_MODULE_7__["GraphFrame"]) {
+                else if (selection instanceof _graphFrame__WEBPACK_IMPORTED_MODULE_6__["GraphFrame"]) {
                     _this._selectedNodes = [];
                     _this._selectedFrame = selection;
                     _this._selectedLink = null;
@@ -53747,7 +53661,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             _this._candidatePort = port;
         });
         props.globalState.onGridSizeChanged.add(function () {
-            _this.gridSize = _dataStorage__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].ReadNumber("GridSize", 20);
+            _this.gridSize = babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadNumber("GridSize", 20);
         });
         _this.props.globalState.hostDocument.addEventListener("keyup", function () { return _this.onKeyUp(); }, false);
         _this.props.globalState.hostDocument.addEventListener("keydown", function (evt) {
@@ -53922,7 +53836,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
     };
     GraphCanvasComponent.prototype.updateTransform = function () {
         this._rootContainer.style.transform = "translate(" + this._x + "px, " + this._y + "px) scale(" + this._zoom + ")";
-        if (_dataStorage__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].ReadBoolean("ShowGrid", true)) {
+        if (babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("ShowGrid", true)) {
             this._hostCanvas.style.backgroundSize = this._gridSize * this._zoom + "px " + this._gridSize * this._zoom + "px";
             this._hostCanvas.style.backgroundPosition = this._x + "px " + this._y + "px";
         }
@@ -54073,7 +53987,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         this._svgCanvas = this.props.globalState.hostDocument.getElementById("graph-svg-container");
         this._selectionContainer = this.props.globalState.hostDocument.getElementById("selection-container");
         this._frameContainer = this.props.globalState.hostDocument.getElementById("frame-container");
-        this.gridSize = _dataStorage__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].ReadNumber("GridSize", 20);
+        this.gridSize = babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadNumber("GridSize", 20);
         this.updateTransform();
     };
     GraphCanvasComponent.prototype.onMove = function (evt) {
@@ -54222,7 +54136,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             this._selectionBox = null;
         }
         if (this._frameCandidate) {
-            var newFrame = new _graphFrame__WEBPACK_IMPORTED_MODULE_7__["GraphFrame"](this._frameCandidate, this);
+            var newFrame = new _graphFrame__WEBPACK_IMPORTED_MODULE_6__["GraphFrame"](this._frameCandidate, this);
             this._frames.push(newFrame);
             this._frameCandidate.parentElement.removeChild(this._frameCandidate);
             this._frameCandidate = null;
@@ -54390,7 +54304,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         if (editorData.frames) {
             for (var _a = 0, _b = editorData.frames; _a < _b.length; _a++) {
                 var frameData = _b[_a];
-                var frame = _graphFrame__WEBPACK_IMPORTED_MODULE_7__["GraphFrame"].Parse(frameData, this, editorData.map);
+                var frame = _graphFrame__WEBPACK_IMPORTED_MODULE_6__["GraphFrame"].Parse(frameData, this, editorData.map);
                 this._frames.push(frame);
             }
         }
@@ -57097,7 +57011,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _components_preview_previewMeshType__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/preview/previewMeshType */ "./components/preview/previewMeshType.ts");
-/* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./dataStorage */ "./dataStorage.ts");
 
 
 
@@ -57126,16 +57039,16 @@ var GlobalState = /** @class */ (function () {
         this.onCandidatePortSelected = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGridSizeChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.blockKeyboardEvents = false;
-        this.previewMeshType = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadNumber("PreviewMeshType", _components_preview_previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Box);
-        this.backFaceCulling = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("BackFaceCulling", true);
-        this.depthPrePass = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("DepthPrePass", false);
-        this.hemisphericLight = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("HemisphericLight", true);
-        this.directionalLight0 = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("DirectionalLight0", false);
-        this.directionalLight1 = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("DirectionalLight1", false);
-        this.controlCamera = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("ControlCamera", true);
-        var r = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadNumber("BackgroundColorR", 0.12549019607843137);
-        var g = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadNumber("BackgroundColorG", 0.09803921568627451);
-        var b = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadNumber("BackgroundColorB", 0.25098039215686274);
+        this.previewMeshType = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("PreviewMeshType", _components_preview_previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Box);
+        this.backFaceCulling = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("BackFaceCulling", true);
+        this.depthPrePass = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("DepthPrePass", false);
+        this.hemisphericLight = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("HemisphericLight", true);
+        this.directionalLight0 = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("DirectionalLight0", false);
+        this.directionalLight1 = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("DirectionalLight1", false);
+        this.controlCamera = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("ControlCamera", true);
+        var r = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorR", 0.12549019607843137);
+        var g = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorG", 0.09803921568627451);
+        var b = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorB", 0.25098039215686274);
         this.backgroundColor = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Color4"](r, g, b, 1.0);
     }
     return GlobalState;
@@ -57162,19 +57075,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/propertyTab/propertyTabComponent */ "./components/propertyTab/propertyTabComponent.tsx");
 /* harmony import */ var _portal__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./portal */ "./portal.tsx");
 /* harmony import */ var _components_log_logComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./components/log/logComponent */ "./components/log/logComponent.tsx");
-/* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./dataStorage */ "./dataStorage.ts");
-/* harmony import */ var babylonjs_Materials_Node_Blocks_Input_inputBlock__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/Input/inputBlock */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Materials_Node_Blocks_Input_inputBlock__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_Input_inputBlock__WEBPACK_IMPORTED_MODULE_7__);
-/* harmony import */ var _sharedComponents_messageDialog__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./sharedComponents/messageDialog */ "./sharedComponents/messageDialog.tsx");
-/* harmony import */ var _blockTools__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./blockTools */ "./blockTools.ts");
-/* harmony import */ var _components_preview_previewManager__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./components/preview/previewManager */ "./components/preview/previewManager.ts");
-/* harmony import */ var _components_preview_previewMeshControlComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./components/preview/previewMeshControlComponent */ "./components/preview/previewMeshControlComponent.tsx");
-/* harmony import */ var _components_preview_previewAreaComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./components/preview/previewAreaComponent */ "./components/preview/previewAreaComponent.tsx");
-/* harmony import */ var _serializationTools__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./serializationTools */ "./serializationTools.ts");
-/* harmony import */ var _diagram_graphCanvas__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./diagram/graphCanvas */ "./diagram/graphCanvas.tsx");
-/* harmony import */ var _diagram_graphFrame__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./diagram/graphFrame */ "./diagram/graphFrame.ts");
-/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! react-dom */ "../../node_modules/react-dom/index.js");
-/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_16___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_16__);
+/* harmony import */ var babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Misc/dataStorage */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var _sharedComponents_messageDialog__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./sharedComponents/messageDialog */ "./sharedComponents/messageDialog.tsx");
+/* harmony import */ var _blockTools__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./blockTools */ "./blockTools.ts");
+/* harmony import */ var _components_preview_previewManager__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./components/preview/previewManager */ "./components/preview/previewManager.ts");
+/* harmony import */ var _components_preview_previewMeshControlComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./components/preview/previewMeshControlComponent */ "./components/preview/previewMeshControlComponent.tsx");
+/* harmony import */ var _components_preview_previewAreaComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./components/preview/previewAreaComponent */ "./components/preview/previewAreaComponent.tsx");
+/* harmony import */ var _serializationTools__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./serializationTools */ "./serializationTools.ts");
+/* harmony import */ var _diagram_graphCanvas__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./diagram/graphCanvas */ "./diagram/graphCanvas.tsx");
+/* harmony import */ var _diagram_graphFrame__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./diagram/graphFrame */ "./diagram/graphFrame.ts");
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! react-dom */ "../../node_modules/react-dom/index.js");
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_15___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_15__);
 
 
 
@@ -57199,8 +57111,8 @@ var GraphEditor = /** @class */ (function (_super) {
     function GraphEditor(props) {
         var _this = _super.call(this, props) || this;
         _this.NodeWidth = 100;
-        _this._leftWidth = _dataStorage__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].ReadNumber("LeftWidth", 200);
-        _this._rightWidth = _dataStorage__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].ReadNumber("RightWidth", 300);
+        _this._leftWidth = babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].ReadNumber("LeftWidth", 200);
+        _this._rightWidth = babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].ReadNumber("RightWidth", 300);
         _this._blocks = new Array();
         _this._copiedNodes = [];
         _this._copiedFrame = null;
@@ -57222,7 +57134,7 @@ var GraphEditor = /** @class */ (function (_super) {
         };
         _this.initiatePreviewArea = function (canvas) {
             if (canvas === void 0) { canvas = _this.props.globalState.hostDocument.getElementById("preview-canvas"); }
-            _this._previewManager = new _components_preview_previewManager__WEBPACK_IMPORTED_MODULE_10__["PreviewManager"](canvas, _this.props.globalState);
+            _this._previewManager = new _components_preview_previewManager__WEBPACK_IMPORTED_MODULE_9__["PreviewManager"](canvas, _this.props.globalState);
         };
         _this.createPopUp = function () {
             var userOptions = {
@@ -57318,11 +57230,11 @@ var GraphEditor = /** @class */ (function (_super) {
                 host.id = "PreviewMeshControl-host";
                 host.style.width = options.embedHostWidth || "auto";
                 parentControl.appendChild(host);
-                var PreviewMeshControlComponentHost = react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_preview_previewMeshControlComponent__WEBPACK_IMPORTED_MODULE_11__["PreviewMeshControlComponent"], {
+                var PreviewMeshControlComponentHost = react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_preview_previewMeshControlComponent__WEBPACK_IMPORTED_MODULE_10__["PreviewMeshControlComponent"], {
                     globalState: _this.props.globalState,
                     togglePreviewAreaComponent: _this.handlePopUp
                 });
-                react_dom__WEBPACK_IMPORTED_MODULE_16__["render"](PreviewMeshControlComponentHost, host);
+                react_dom__WEBPACK_IMPORTED_MODULE_15__["render"](PreviewMeshControlComponentHost, host);
             }
         };
         _this.createPreviewHost = function (options, parentControl) {
@@ -57341,11 +57253,11 @@ var GraphEditor = /** @class */ (function (_super) {
                 }
             }
             if (_this._previewHost) {
-                var PreviewAreaComponentHost = react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_preview_previewAreaComponent__WEBPACK_IMPORTED_MODULE_12__["PreviewAreaComponent"], {
+                var PreviewAreaComponentHost = react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_preview_previewAreaComponent__WEBPACK_IMPORTED_MODULE_11__["PreviewAreaComponent"], {
                     globalState: _this.props.globalState,
                     width: 200
                 });
-                react_dom__WEBPACK_IMPORTED_MODULE_16__["render"](PreviewAreaComponentHost, _this._previewHost);
+                react_dom__WEBPACK_IMPORTED_MODULE_15__["render"](PreviewAreaComponentHost, _this._previewHost);
             }
         };
         _this.fixPopUpStyles = function (document) {
@@ -57439,7 +57351,7 @@ var GraphEditor = /** @class */ (function (_super) {
                 var currentY = (_this._mouseLocationY - rootElement.offsetTop - _this._graphCanvas.y - 20) / zoomLevel;
                 if (_this._copiedFrame) {
                     // New frame
-                    var newFrame = new _diagram_graphFrame__WEBPACK_IMPORTED_MODULE_15__["GraphFrame"](null, _this._graphCanvas, true);
+                    var newFrame = new _diagram_graphFrame__WEBPACK_IMPORTED_MODULE_14__["GraphFrame"](null, _this._graphCanvas, true);
                     _this._graphCanvas.frames.push(newFrame);
                     newFrame.width = _this._copiedFrame.width;
                     newFrame.height = _this._copiedFrame.height;
@@ -57508,14 +57420,14 @@ var GraphEditor = /** @class */ (function (_super) {
         return node;
     };
     GraphEditor.prototype.addValueNode = function (type) {
-        var nodeType = _blockTools__WEBPACK_IMPORTED_MODULE_9__["BlockTools"].GetConnectionNodeTypeFromString(type);
-        var newInputBlock = new babylonjs_Materials_Node_Blocks_Input_inputBlock__WEBPACK_IMPORTED_MODULE_7__["InputBlock"](type, undefined, nodeType);
+        var nodeType = _blockTools__WEBPACK_IMPORTED_MODULE_8__["BlockTools"].GetConnectionNodeTypeFromString(type);
+        var newInputBlock = new babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_6__["InputBlock"](type, undefined, nodeType);
         return this.createNodeFromObject(newInputBlock);
     };
     GraphEditor.prototype.componentDidMount = function () {
         if (this.props.globalState.hostDocument) {
             this._graphCanvas = this.refs["graphCanvas"];
-            this._previewManager = new _components_preview_previewManager__WEBPACK_IMPORTED_MODULE_10__["PreviewManager"](this.props.globalState.hostDocument.getElementById("preview-canvas"), this.props.globalState);
+            this._previewManager = new _components_preview_previewManager__WEBPACK_IMPORTED_MODULE_9__["PreviewManager"](this.props.globalState.hostDocument.getElementById("preview-canvas"), this.props.globalState);
         }
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
             (this.props.globalState.hostDocument || document).querySelector(".blocker").style.visibility = "visible";
@@ -57620,7 +57532,7 @@ var GraphEditor = /** @class */ (function (_super) {
         catch (err) {
             this.props.globalState.onLogRequiredObservable.notifyObservers(new _components_log_logComponent__WEBPACK_IMPORTED_MODULE_5__["LogEntry"](err, true));
         }
-        _serializationTools__WEBPACK_IMPORTED_MODULE_13__["SerializationTools"].UpdateLocations(this.props.globalState.nodeMaterial, this.props.globalState);
+        _serializationTools__WEBPACK_IMPORTED_MODULE_12__["SerializationTools"].UpdateLocations(this.props.globalState.nodeMaterial, this.props.globalState);
         this.props.globalState.onBuiltObservable.notifyObservers();
     };
     GraphEditor.prototype.build = function () {
@@ -57721,12 +57633,12 @@ var GraphEditor = /** @class */ (function (_super) {
         if (forLeft) {
             this._leftWidth += deltaX;
             this._leftWidth = Math.max(150, Math.min(400, this._leftWidth));
-            _dataStorage__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].StoreNumber("LeftWidth", this._leftWidth);
+            babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].WriteNumber("LeftWidth", this._leftWidth);
         }
         else {
             this._rightWidth -= deltaX;
             this._rightWidth = Math.max(250, Math.min(500, this._rightWidth));
-            _dataStorage__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].StoreNumber("RightWidth", this._rightWidth);
+            babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].WriteNumber("RightWidth", this._rightWidth);
             rootElement.ownerDocument.getElementById("preview").style.height = this._rightWidth + "px";
         }
         rootElement.style.gridTemplateColumns = this.buildColumnLayout();
@@ -57743,7 +57655,7 @@ var GraphEditor = /** @class */ (function (_super) {
             newNode = this.addValueNode(data);
         }
         else {
-            var block_1 = _blockTools__WEBPACK_IMPORTED_MODULE_9__["BlockTools"].GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene(), this.props.globalState.nodeMaterial);
+            var block_1 = _blockTools__WEBPACK_IMPORTED_MODULE_8__["BlockTools"].GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene(), this.props.globalState.nodeMaterial);
             if (block_1.isUnique) {
                 var className = block_1.getClassName();
                 for (var _i = 0, _a = this._blocks; _i < _a.length; _i++) {
@@ -57802,14 +57714,14 @@ var GraphEditor = /** @class */ (function (_super) {
                     }, onDragOver: function (event) {
                         event.preventDefault();
                     } },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_graphCanvas__WEBPACK_IMPORTED_MODULE_14__["GraphCanvasComponent"], { ref: "graphCanvas", globalState: this.props.globalState })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_graphCanvas__WEBPACK_IMPORTED_MODULE_13__["GraphCanvasComponent"], { ref: "graphCanvas", globalState: this.props.globalState })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "rightGrab", onPointerDown: function (evt) { return _this.onPointerDown(evt); }, onPointerUp: function (evt) { return _this.onPointerUp(evt); }, onPointerMove: function (evt) { return _this.resizeColumns(evt, false); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "right-panel" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["PropertyTabComponent"], { globalState: this.props.globalState }),
-                    !this.state.showPreviewPopUp ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_preview_previewMeshControlComponent__WEBPACK_IMPORTED_MODULE_11__["PreviewMeshControlComponent"], { globalState: this.props.globalState, togglePreviewAreaComponent: this.handlePopUp }) : null,
-                    !this.state.showPreviewPopUp ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_preview_previewAreaComponent__WEBPACK_IMPORTED_MODULE_12__["PreviewAreaComponent"], { globalState: this.props.globalState, width: this._rightWidth }) : null),
+                    !this.state.showPreviewPopUp ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_preview_previewMeshControlComponent__WEBPACK_IMPORTED_MODULE_10__["PreviewMeshControlComponent"], { globalState: this.props.globalState, togglePreviewAreaComponent: this.handlePopUp }) : null,
+                    !this.state.showPreviewPopUp ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_preview_previewAreaComponent__WEBPACK_IMPORTED_MODULE_11__["PreviewAreaComponent"], { globalState: this.props.globalState, width: this._rightWidth }) : null),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_log_logComponent__WEBPACK_IMPORTED_MODULE_5__["LogComponent"], { globalState: this.props.globalState })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_messageDialog__WEBPACK_IMPORTED_MODULE_8__["MessageDialogComponent"], { globalState: this.props.globalState }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_messageDialog__WEBPACK_IMPORTED_MODULE_7__["MessageDialogComponent"], { globalState: this.props.globalState }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "blocker" }, "Node Material Editor runs only on desktop"),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "wait-screen hidden" }, "Processing...please wait")));
     };
@@ -58021,7 +57933,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SerializationTools", function() { return SerializationTools; });
 /* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Textures/texture */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./dataStorage */ "./dataStorage.ts");
 
 
 var SerializationTools = /** @class */ (function () {
@@ -58045,7 +57956,7 @@ var SerializationTools = /** @class */ (function () {
     };
     SerializationTools.Serialize = function (material, globalState, selectedBlocks) {
         var bufferSerializationState = babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].SerializeBuffers;
-        babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].SerializeBuffers = _dataStorage__WEBPACK_IMPORTED_MODULE_1__["DataStorage"].ReadBoolean("EmbedTextures", true);
+        babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].SerializeBuffers = babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("EmbedTextures", true);
         this.UpdateLocations(material, globalState);
         var serializationObject = material.serialize(selectedBlocks);
         babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].SerializeBuffers = bufferSerializationState;
@@ -58666,7 +58577,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
 /* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
-/* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../dataStorage */ "./dataStorage.ts");
+/* harmony import */ var babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Misc/dataStorage */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_4__);
 
 
 
@@ -58676,13 +58588,13 @@ var LineContainerComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LineContainerComponent, _super);
     function LineContainerComponent(props) {
         var _this = _super.call(this, props) || this;
-        var initialState = _dataStorage__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean(_this.props.title, !_this.props.closed);
+        var initialState = babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean(_this.props.title, !_this.props.closed);
         _this.state = { isExpanded: initialState };
         return _this;
     }
     LineContainerComponent.prototype.switchExpandedState = function () {
         var newState = !this.state.isExpanded;
-        _dataStorage__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].StoreBoolean(this.props.title, newState);
+        babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].WriteBoolean(this.props.title, newState);
         this.setState({ isExpanded: newState });
     };
     LineContainerComponent.prototype.renderHeader = function () {

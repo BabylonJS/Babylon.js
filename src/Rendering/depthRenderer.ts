@@ -94,9 +94,9 @@ export class DepthRenderer {
 
         // Custom render function
         var renderSubMesh = (subMesh: SubMesh): void => {
-            var ownerMesh = subMesh.getMesh();  
-            var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh: null;
-            var renderingMesh = subMesh.getRenderingMesh();        
+            var ownerMesh = subMesh.getMesh();
+            var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh : null;
+            var renderingMesh = subMesh.getRenderingMesh();
             var effectiveMesh = replacementMesh ? replacementMesh : renderingMesh;
             var scene = this._scene;
             var engine = scene.getEngine();
@@ -147,7 +147,7 @@ export class DepthRenderer {
                 // Morph targets
                 MaterialHelper.BindMorphTargetParameters(renderingMesh, this._effect);
 
-                // Draw                
+                // Draw
                 var world = effectiveMesh.getWorldMatrix();
                 renderingMesh._processRendering(subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
                     (isInstance, w) => this._effect.setMatrix("world", world));

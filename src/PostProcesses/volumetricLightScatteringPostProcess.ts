@@ -291,9 +291,9 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
 
         // Custom render function for submeshes
         var renderSubMesh = (subMesh: SubMesh): void => {
-            var ownerMesh = subMesh.getMesh();  
-            var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh: null;
-            var renderingMesh = subMesh.getRenderingMesh();        
+            var ownerMesh = subMesh.getMesh();
+            var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh : null;
+            var renderingMesh = subMesh.getRenderingMesh();
             var effectiveMesh = replacementMesh ? replacementMesh : renderingMesh;
             if (this._meshExcluded(renderingMesh)) {
                 return;
@@ -358,7 +358,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
                     }
                 }
 
-                // Draw                
+                // Draw
                 var world = effectiveMesh.getWorldMatrix();
                 renderingMesh._processRendering(subMesh, this._volumetricLightScatteringPass, Material.TriangleFillMode, batch, hardwareInstancedRendering,
                     (isInstance, w) => effect.setMatrix("world", world));

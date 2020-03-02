@@ -163,9 +163,9 @@ export class OutlineRenderer implements ISceneComponent {
             return;
         }
 
-        var ownerMesh = subMesh.getMesh();  
-        var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh: null;
-        var renderingMesh = subMesh.getRenderingMesh();        
+        var ownerMesh = subMesh.getMesh();
+        var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh : null;
+        var renderingMesh = subMesh.getRenderingMesh();
         var effectiveMesh = replacementMesh ? replacementMesh : renderingMesh;
         var material = subMesh.getMaterial();
 

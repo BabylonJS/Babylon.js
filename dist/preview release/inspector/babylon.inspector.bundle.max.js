@@ -40688,6 +40688,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
 /* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
+/* harmony import */ var babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Misc/dataStorage */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_4__);
+
 
 
 
@@ -40696,40 +40699,13 @@ var LineContainerComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LineContainerComponent, _super);
     function LineContainerComponent(props) {
         var _this = _super.call(this, props) || this;
-        var initialState;
-        try {
-            if (LineContainerComponent._InMemoryStorage && LineContainerComponent._InMemoryStorage[_this.props.title] !== undefined) {
-                initialState = LineContainerComponent._InMemoryStorage[_this.props.title];
-            }
-            else if (typeof (Storage) !== "undefined" && localStorage.getItem(_this.props.title) !== null) {
-                initialState = localStorage.getItem(_this.props.title) === "true";
-            }
-            else {
-                initialState = !_this.props.closed;
-            }
-        }
-        catch (e) {
-            LineContainerComponent._InMemoryStorage = {};
-            LineContainerComponent._InMemoryStorage[_this.props.title] = !_this.props.closed;
-            initialState = !_this.props.closed;
-        }
+        var initialState = babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean(_this.props.title, !_this.props.closed);
         _this.state = { isExpanded: initialState, isHighlighted: false };
         return _this;
     }
     LineContainerComponent.prototype.switchExpandedState = function () {
         var newState = !this.state.isExpanded;
-        try {
-            if (LineContainerComponent._InMemoryStorage) {
-                LineContainerComponent._InMemoryStorage[this.props.title] = newState;
-            }
-            else if (typeof (Storage) !== "undefined") {
-                localStorage.setItem(this.props.title, newState ? "true" : "false");
-            }
-        }
-        catch (e) {
-            LineContainerComponent._InMemoryStorage = {};
-            LineContainerComponent._InMemoryStorage[this.props.title] = newState;
-        }
+        babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].WriteBoolean(this.props.title, newState);
         this.setState({ isExpanded: newState });
     };
     LineContainerComponent.prototype.componentDidMount = function () {
@@ -48294,7 +48270,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _replayRecorder__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./replayRecorder */ "./components/replayRecorder.ts");
-/* harmony import */ var _tools__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../tools */ "./tools.ts");
 
 
 
@@ -48319,13 +48294,13 @@ var GlobalState = /** @class */ (function () {
     Object.defineProperty(GlobalState.prototype, "onlyUseEulers", {
         get: function () {
             if (this._onlyUseEulers === null) {
-                this._onlyUseEulers = _tools__WEBPACK_IMPORTED_MODULE_2__["Tools"].ReadLocalBooleanSettings("settings_onlyUseEulers", true);
+                this._onlyUseEulers = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("settings_onlyUseEulers", true);
             }
             return this._onlyUseEulers;
         },
         set: function (value) {
             this._onlyUseEulers = value;
-            _tools__WEBPACK_IMPORTED_MODULE_2__["Tools"].StoreLocalBooleanSettings("settings_onlyUseEulers", value);
+            babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].WriteBoolean("settings_onlyUseEulers", value);
         },
         enumerable: true,
         configurable: true
@@ -48333,13 +48308,13 @@ var GlobalState = /** @class */ (function () {
     Object.defineProperty(GlobalState.prototype, "ignoreBackfacesForPicking", {
         get: function () {
             if (this._ignoreBackfacesForPicking === null) {
-                this._ignoreBackfacesForPicking = _tools__WEBPACK_IMPORTED_MODULE_2__["Tools"].ReadLocalBooleanSettings("settings_ignoreBackfacesForPicking", false);
+                this._ignoreBackfacesForPicking = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("settings_ignoreBackfacesForPicking", false);
             }
             return this._ignoreBackfacesForPicking;
         },
         set: function (value) {
             this._ignoreBackfacesForPicking = value;
-            _tools__WEBPACK_IMPORTED_MODULE_2__["Tools"].StoreLocalBooleanSettings("settings_ignoreBackfacesForPicking", value);
+            babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].WriteBoolean("settings_ignoreBackfacesForPicking", value);
         },
         enumerable: true,
         configurable: true
@@ -50939,19 +50914,6 @@ __webpack_require__.r(__webpack_exports__);
 var Tools = /** @class */ (function () {
     function Tools() {
     }
-    Tools.StoreLocalBooleanSettings = function (key, value) {
-        if (typeof (Storage) !== "undefined") {
-            localStorage.setItem(key, value ? "true" : "false");
-        }
-    };
-    Tools.ReadLocalBooleanSettings = function (key, defaultValue) {
-        if (typeof (Storage) !== "undefined" && localStorage.getItem(key) !== null) {
-            return localStorage.getItem(key) === "true";
-        }
-        else {
-            return defaultValue;
-        }
-    };
     Tools.LookForItem = function (item, selectedEntity) {
         if (item === selectedEntity) {
             return true;

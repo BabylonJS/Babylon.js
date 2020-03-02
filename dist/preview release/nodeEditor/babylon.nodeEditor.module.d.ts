@@ -69,15 +69,6 @@ declare module "babylonjs-node-editor/blockTools" {
         static GetStringFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
     }
 }
-declare module "babylonjs-node-editor/dataStorage" {
-    export class DataStorage {
-        private static _InMemoryStorage;
-        static ReadBoolean(key: string, defaultValue: boolean): boolean;
-        static StoreBoolean(key: string, value: boolean): void;
-        static ReadNumber(key: string, defaultValue: number): number;
-        static StoreNumber(key: string, value: number): void;
-    }
-}
 declare module "babylonjs-node-editor/components/log/logComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
@@ -1664,15 +1655,6 @@ declare module NODEEDITOR {
         static GetColorFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): BABYLON.NodeMaterialBlockConnectionPointTypes.Float | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector2 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Matrix | BABYLON.NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
-    }
-}
-declare module NODEEDITOR {
-    export class DataStorage {
-        private static _InMemoryStorage;
-        static ReadBoolean(key: string, defaultValue: boolean): boolean;
-        static StoreBoolean(key: string, value: boolean): void;
-        static ReadNumber(key: string, defaultValue: number): number;
-        static StoreNumber(key: string, value: number): void;
     }
 }
 declare module NODEEDITOR {

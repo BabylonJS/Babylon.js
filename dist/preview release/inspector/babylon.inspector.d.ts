@@ -18,15 +18,6 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
-    export class Tools {
-        static StoreLocalBooleanSettings(key: string, value: boolean): void;
-        static ReadLocalBooleanSettings(key: string, defaultValue: boolean): boolean;
-        static LookForItem(item: any, selectedEntity: any): boolean;
-        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
-        static SortAndFilter(parent: any, items: any[]): any[];
-    }
-}
-declare module INSPECTOR {
     export class GlobalState {
         onSelectionChangedObservable: BABYLON.Observable<any>;
         onPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
@@ -118,7 +109,6 @@ declare module INSPECTOR {
         isExpanded: boolean;
         isHighlighted: boolean;
     }> {
-        private static _InMemoryStorage;
         constructor(props: ILineContainerComponentProps);
         switchExpandedState(): void;
         componentDidMount(): void;
@@ -1700,6 +1690,13 @@ declare module INSPECTOR {
         constructor(props: ITreeItemSpecializedComponentProps);
         onClick(): void;
         render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    export class Tools {
+        static LookForItem(item: any, selectedEntity: any): boolean;
+        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
+        static SortAndFilter(parent: any, items: any[]): any[];
     }
 }
 declare module INSPECTOR {

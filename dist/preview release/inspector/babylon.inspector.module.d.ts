@@ -18,15 +18,6 @@ declare module "babylonjs-inspector/components/replayRecorder" {
         export(): void;
     }
 }
-declare module "babylonjs-inspector/tools" {
-    export class Tools {
-        static StoreLocalBooleanSettings(key: string, value: boolean): void;
-        static ReadLocalBooleanSettings(key: string, defaultValue: boolean): boolean;
-        static LookForItem(item: any, selectedEntity: any): boolean;
-        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
-        static SortAndFilter(parent: any, items: any[]): any[];
-    }
-}
 declare module "babylonjs-inspector/components/globalState" {
     import { GLTFFileLoader, IGLTFLoaderExtension } from "babylonjs-loaders/glTF/index";
     import { IGLTFValidationResults } from "babylonjs-gltf2interface";
@@ -139,7 +130,6 @@ declare module "babylonjs-inspector/components/actionTabs/lineContainerComponent
         isExpanded: boolean;
         isHighlighted: boolean;
     }> {
-        private static _InMemoryStorage;
         constructor(props: ILineContainerComponentProps);
         switchExpandedState(): void;
         componentDidMount(): void;
@@ -2165,6 +2155,13 @@ declare module "babylonjs-inspector/components/sceneExplorer/treeItemSpecialized
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/tools" {
+    export class Tools {
+        static LookForItem(item: any, selectedEntity: any): boolean;
+        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
+        static SortAndFilter(parent: any, items: any[]): any[];
+    }
+}
 declare module "babylonjs-inspector/components/sceneExplorer/treeItemSelectableComponent" {
     import { Nullable } from "babylonjs/types";
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
@@ -2411,15 +2408,6 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
-    export class Tools {
-        static StoreLocalBooleanSettings(key: string, value: boolean): void;
-        static ReadLocalBooleanSettings(key: string, defaultValue: boolean): boolean;
-        static LookForItem(item: any, selectedEntity: any): boolean;
-        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
-        static SortAndFilter(parent: any, items: any[]): any[];
-    }
-}
-declare module INSPECTOR {
     export class GlobalState {
         onSelectionChangedObservable: BABYLON.Observable<any>;
         onPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
@@ -2511,7 +2499,6 @@ declare module INSPECTOR {
         isExpanded: boolean;
         isHighlighted: boolean;
     }> {
-        private static _InMemoryStorage;
         constructor(props: ILineContainerComponentProps);
         switchExpandedState(): void;
         componentDidMount(): void;
@@ -4093,6 +4080,13 @@ declare module INSPECTOR {
         constructor(props: ITreeItemSpecializedComponentProps);
         onClick(): void;
         render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    export class Tools {
+        static LookForItem(item: any, selectedEntity: any): boolean;
+        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
+        static SortAndFilter(parent: any, items: any[]): any[];
     }
 }
 declare module INSPECTOR {

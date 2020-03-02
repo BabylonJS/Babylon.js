@@ -1078,6 +1078,10 @@ declare module BABYLON {
          */
         isReady: boolean;
         /** @hidden */
+        _getVertexShaderCode(): string | null;
+        /** @hidden */
+        _getFragmentShaderCode(): string | null;
+        /** @hidden */
         _handlesSpectorRebuildCallback(onCompiled: (compiledObject: any) => void): void;
     }
 }
@@ -7155,6 +7159,8 @@ declare module BABYLON {
         get isAsync(): boolean;
         get isReady(): boolean;
         _handlesSpectorRebuildCallback(onCompiled: (program: WebGLProgram) => void): void;
+        _getVertexShaderCode(): string | null;
+        _getFragmentShaderCode(): string | null;
     }
 }
 declare module BABYLON {
@@ -30002,6 +30008,10 @@ declare module BABYLON {
          */
         static ShadersRepository: string;
         /**
+         * Enable logging of the shader code when a compilation error occurs
+         */
+        static LogShaderCodeOnCompilationError: boolean;
+        /**
          * Name of the effect.
          */
         name: any;
@@ -30185,6 +30195,7 @@ declare module BABYLON {
          * @hidden
          */
         _prepareEffect(): void;
+        private _getShaderCodeAndErrorLine;
         private _processCompilationErrors;
         /**
          * Checks if the effect is supported. (Must be called after compilation)
@@ -31530,6 +31541,8 @@ declare module BABYLON {
         protected static _ConcatenateShader(source: string, defines: Nullable<string>, shaderVersion?: string): string;
         private _compileShader;
         private _compileRawShader;
+        /** @hidden */
+        _getShaderSource(shader: WebGLShader): Nullable<string>;
         /**
          * Directly creates a webGL program
          * @param pipelineContext  defines the pipeline context to attach to
@@ -32620,6 +32633,23 @@ declare module BABYLON {
          * This is helpful to resume play once browser policies have been satisfied.
          */
         unlock(): void;
+        /**
+         * Gets the global volume sets on the master gain.
+         * @returns the global volume if set or -1 otherwise
+         */
+        getGlobalVolume(): number;
+        /**
+         * Sets the global volume of your experience (sets on the master gain).
+         * @param newVolume Defines the new global volume of the application
+         */
+        setGlobalVolume(newVolume: number): void;
+        /**
+         * Connect the audio engine to an audio analyser allowing some amazing
+         * synchornization between the sounds/music and your visualization (VuMeter for instance).
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
+         * @param analyser The analyser to connect to the engine
+         */
+        connectToAnalyser(analyser: Analyser): void;
     }
     /**
      * This represents the default audio engine used in babylon.
@@ -68622,6 +68652,54 @@ declare module BABYLON {
          * @param byteLength The byte length to skip
          */
         skipBytes(byteLength: number): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class for storing data to local storage if available or in-memory storage otherwise
+     */
+    export class DataStorage {
+        private static _Storage;
+        private static _GetStorage;
+        /**
+         * Reads a string from the data storage
+         * @param key The key to read
+         * @param defaultValue The value if the key doesn't exist
+         * @returns The string value
+         */
+        static ReadString(key: string, defaultValue: string): string;
+        /**
+         * Writes a string to the data storage
+         * @param key The key to write
+         * @param value The value to write
+         */
+        static WriteString(key: string, value: string): void;
+        /**
+         * Reads a boolean from the data storage
+         * @param key The key to read
+         * @param defaultValue The value if the key doesn't exist
+         * @returns The boolean value
+         */
+        static ReadBoolean(key: string, defaultValue: boolean): boolean;
+        /**
+         * Writes a boolean to the data storage
+         * @param key The key to write
+         * @param value The value to write
+         */
+        static WriteBoolean(key: string, value: boolean): void;
+        /**
+         * Reads a number from the data storage
+         * @param key The key to read
+         * @param defaultValue The value if the key doesn't exist
+         * @returns The number value
+         */
+        static ReadNumber(key: string, defaultValue: number): number;
+        /**
+         * Writes a number to the data storage
+         * @param key The key to write
+         * @param value The value to write
+         */
+        static WriteNumber(key: string, value: number): void;
     }
 }
 declare module BABYLON {
