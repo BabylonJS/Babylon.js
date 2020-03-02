@@ -2,6 +2,7 @@ import * as React from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { GlobalState } from '../../components/globalState';
+import { DataStorage } from 'babylonjs/Misc/dataStorage';
 
 interface ILineContainerComponentProps {
     globalState?: GlobalState;
@@ -11,46 +12,16 @@ interface ILineContainerComponentProps {
 }
 
 export class LineContainerComponent extends React.Component<ILineContainerComponentProps, { isExpanded: boolean, isHighlighted: boolean }> {
-    private static _InMemoryStorage: { [key: string]: boolean };
-
     constructor(props: ILineContainerComponentProps) {
         super(props);
 
-        let initialState: boolean;
-
-        try {
-            if (LineContainerComponent._InMemoryStorage && LineContainerComponent._InMemoryStorage[this.props.title] !== undefined) {
-                initialState = LineContainerComponent._InMemoryStorage[this.props.title];
-            } else if (typeof (Storage) !== "undefined" && localStorage.getItem(this.props.title) !== null) {
-                initialState = localStorage.getItem(this.props.title) === "true";
-            } else {
-                initialState = !this.props.closed;
-            }
-        }
-        catch (e) {
-            LineContainerComponent._InMemoryStorage = {};
-            LineContainerComponent._InMemoryStorage[this.props.title] = !this.props.closed
-            initialState = !this.props.closed;
-        }
-
+        const initialState = DataStorage.ReadBoolean(this.props.title, !this.props.closed);
         this.state = { isExpanded: initialState, isHighlighted: false };
     }
 
     switchExpandedState(): void {
         const newState = !this.state.isExpanded;
-
-        try {
-            if (LineContainerComponent._InMemoryStorage) {
-                LineContainerComponent._InMemoryStorage[this.props.title] = newState;
-            } else if (typeof (Storage) !== "undefined") {
-                localStorage.setItem(this.props.title, newState ? "true" : "false");
-            }
-        }
-        catch (e) {
-            LineContainerComponent._InMemoryStorage = {};
-            LineContainerComponent._InMemoryStorage[this.props.title] = newState;
-        }
-
+        DataStorage.WriteBoolean(this.props.title, newState);
         this.setState({ isExpanded: newState });
     }
 
@@ -71,7 +42,7 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
             }, 5000);
         } else {
             this.setState({isExpanded: false});
-        }        
+        }
     }
 
     renderHeader() {

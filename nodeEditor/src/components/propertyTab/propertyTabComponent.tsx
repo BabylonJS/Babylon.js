@@ -9,7 +9,7 @@ import { FileButtonLineComponent } from '../../sharedComponents/fileButtonLineCo
 import { Tools } from 'babylonjs/Misc/tools';
 import { SerializationTools } from '../../serializationTools';
 import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
-import { DataStorage } from '../../dataStorage';
+import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { GraphNode } from '../../diagram/graphNode';
 import { SliderLineComponent } from '../../sharedComponents/sliderLineComponent';
 import { GraphFrame } from '../../diagram/graphFrame';
@@ -202,14 +202,14 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <CheckBoxLineComponent label="Embed textures when saving" 
                             isSelected={() => DataStorage.ReadBoolean("EmbedTextures", true)}
                             onSelect={(value: boolean) => {
-                                DataStorage.StoreBoolean("EmbedTextures", value);
+                                DataStorage.WriteBoolean("EmbedTextures", value);
                             }}
                         />
                         <SliderLineComponent label="Grid size" minimum={0} maximum={100} step={5} 
                             decimalCount={0} 
                             directValue={gridSize}
                             onChange={value => {
-                                DataStorage.StoreNumber("GridSize", value);                                
+                                DataStorage.WriteNumber("GridSize", value);                                
                                 this.props.globalState.onGridSizeChanged.notifyObservers();
                                 this.forceUpdate();
                             }}
@@ -217,7 +217,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <CheckBoxLineComponent label="Show grid" 
                             isSelected={() => DataStorage.ReadBoolean("ShowGrid", true)}
                             onSelect={(value: boolean) => {
-                                DataStorage.StoreBoolean("ShowGrid", value);                
+                                DataStorage.WriteBoolean("ShowGrid", value);                
                                 this.props.globalState.onGridSizeChanged.notifyObservers();
                             }}
                         />
