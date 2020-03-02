@@ -71,6 +71,8 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         this.state = { filter: null, selectedEntity: null, scene: this.props.scene };
 
         this.sceneMutationFunc = this.processMutation.bind(this);
+
+        this.sceneExplorerRef = React.createRef();
     }
 
     processMutation() {

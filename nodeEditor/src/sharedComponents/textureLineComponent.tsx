@@ -36,6 +36,8 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
             displayAlpha: true,
             face: 0
         };
+
+        this.canvasRef = React.createRef();
     }
 
     shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: { displayRed: boolean, displayGreen: boolean, displayBlue: boolean, displayAlpha: boolean, face: number }): boolean {

@@ -36,6 +36,8 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
             channel: ChannelToDisplay.All,
             face: 0
         };
+
+        this.canvasRef = React.createRef();
     }
 
     shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: { channel: ChannelToDisplay, face: number }): boolean {

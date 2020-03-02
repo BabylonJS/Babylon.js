@@ -11,6 +11,8 @@ export class FileButtonLineComponent extends React.Component<IFileButtonLineComp
 
     constructor(props: IFileButtonLineComponentProps) {
         super(props);
+
+        this.uploadRef = React.createRef();
     }
 
     onChange(evt: any) {

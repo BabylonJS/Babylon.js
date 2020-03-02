@@ -76,6 +76,8 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                 });
             }
         }
+
+        this.timelineRef = React.createRef();
     }
 
     playOrPause() {
