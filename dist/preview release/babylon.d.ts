@@ -31131,6 +31131,16 @@ declare module BABYLON {
         /** @hidden */
         _textureFormatInUse: Nullable<string>;
         protected get _supportsHardwareTextureRescaling(): boolean;
+        private _framebufferDimensionsObject;
+        /**
+         * sets the object from which width and height will be taken from when getting render width and height
+         * Will fallback to the gl object
+         * @param dimensions the framebuffer width and height that will be used.
+         */
+        set framebufferDimensionsObject(dimensions: Nullable<{
+            framebufferWidth: number;
+            framebufferHeight: number;
+        }>);
         /**
          * Gets the list of texture formats supported
          */
@@ -33968,7 +33978,8 @@ declare module BABYLON {
          * It can be a string if the expected behavior is identical in the entire app.
          * Or a callback to be able to set it per url or on a group of them (in case of Video source for instance)
          */
-        static CorsBehavior: string | ((url: string | string[]) => string);
+        static get CorsBehavior(): string | ((url: string | string[]) => string);
+        static set CorsBehavior(value: string | ((url: string | string[]) => string));
         /**
          * Gets or sets a global variable indicating if fallback texture must be used when a texture cannot be loaded
          * @ignorenaming

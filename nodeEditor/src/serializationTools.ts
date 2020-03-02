@@ -1,7 +1,7 @@
 import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
 import { GlobalState } from './globalState';
 import { Texture } from 'babylonjs/Materials/Textures/texture';
-import { DataStorage } from './dataStorage';
+import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 
 export class SerializationTools {
