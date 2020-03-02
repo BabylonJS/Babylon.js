@@ -1001,9 +1001,9 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     protected _renderSubMeshForShadowMap(subMesh: SubMesh): void {
-        var ownerMesh = subMesh.getMesh();  
-        var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh: null;
-        var renderingMesh = subMesh.getRenderingMesh();        
+        var ownerMesh = subMesh.getMesh();
+        var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh : null;
+        var renderingMesh = subMesh.getRenderingMesh();
         var effectiveMesh = replacementMesh ? replacementMesh : renderingMesh;
         var scene = this._scene;
         var engine = scene.getEngine();
@@ -1087,7 +1087,7 @@ export class ShadowGenerator implements IShadowGenerator {
             this.onBeforeShadowMapRenderObservable.notifyObservers(this._effect);
 
             // Draw
-            
+
             var world = effectiveMesh.getWorldMatrix();
             renderingMesh._processRendering(subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
                 (isInstance, w) => this._effect.setMatrix("world", world));

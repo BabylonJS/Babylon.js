@@ -390,9 +390,9 @@ export class GeometryBufferRenderer {
 
         // Custom render function
         var renderSubMesh = (subMesh: SubMesh): void => {
-            var ownerMesh = subMesh.getMesh();  
-            var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh: null;
-            var renderingMesh = subMesh.getRenderingMesh();        
+            var ownerMesh = subMesh.getMesh();
+            var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh : null;
+            var renderingMesh = subMesh.getRenderingMesh();
             var effectiveMesh = replacementMesh ? replacementMesh : renderingMesh;
             var scene = this._scene;
             var engine = scene.getEngine();
@@ -429,7 +429,7 @@ export class GeometryBufferRenderer {
 
             var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
             var world = effectiveMesh.getWorldMatrix();
-            
+
             if (this.isReady(subMesh, hardwareInstancedRendering)) {
                 engine.enableEffect(this._effect);
                 renderingMesh._bind(subMesh, this._effect, material.fillMode);

@@ -653,9 +653,9 @@ export abstract class EffectLayer {
         }
 
         var material = subMesh.getMaterial();
-        var ownerMesh = subMesh.getMesh();  
-        var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh: null;
-        var renderingMesh = subMesh.getRenderingMesh();        
+        var ownerMesh = subMesh.getMesh();
+        var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh : null;
+        var renderingMesh = subMesh.getRenderingMesh();
         var effectiveMesh = replacementMesh ? replacementMesh : renderingMesh;
         var scene = this._scene;
         var engine = scene.getEngine();
