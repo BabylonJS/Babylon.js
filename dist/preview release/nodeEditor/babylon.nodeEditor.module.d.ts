@@ -69,15 +69,6 @@ declare module "babylonjs-node-editor/blockTools" {
         static GetStringFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
     }
 }
-declare module "babylonjs-node-editor/dataStorage" {
-    export class DataStorage {
-        private static _InMemoryStorage;
-        static ReadBoolean(key: string, defaultValue: boolean): boolean;
-        static StoreBoolean(key: string, value: boolean): void;
-        static ReadNumber(key: string, defaultValue: number): number;
-        static StoreNumber(key: string, value: number): void;
-    }
-}
 declare module "babylonjs-node-editor/components/log/logComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
@@ -275,26 +266,46 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         private initResizing;
         private cleanUpResizing;
         private updateMinHeightWithComments;
+        private _isResizingTop;
+        private _isResizingRight;
+        private _isResizingBottom;
+        private _isResizingLeft;
         private _onRightHandlePointerDown;
         private _onRightHandlePointerMove;
         private _moveRightHandle;
-        private _expandRight;
         private _onRightHandlePointerUp;
         private _onBottomHandlePointerDown;
         private _onBottomHandlePointerMove;
         private _moveBottomHandle;
-        private _expandBottom;
         private _onBottomHandlePointerUp;
         private _onLeftHandlePointerDown;
         private _onLeftHandlePointerMove;
         private _moveLeftHandle;
-        private _expandLeft;
         private _onLeftHandlePointerUp;
         private _onTopHandlePointerDown;
         private _onTopHandlePointerMove;
         private _moveTopHandle;
-        private _expandTop;
         private _onTopHandlePointerUp;
+        private _onTopRightHandlePointerDown;
+        private _onTopRightHandlePointerMove;
+        private _moveTopRightHandle;
+        private _onTopRightHandlePointerUp;
+        private _onBottomRightHandlePointerDown;
+        private _onBottomRightHandlePointerMove;
+        private _moveBottomRightHandle;
+        private _onBottomRightHandlePointerUp;
+        private _onBottomLeftHandlePointerDown;
+        private _onBottomLeftHandlePointerMove;
+        private _moveBottomLeftHandle;
+        private _onBottomLeftHandlePointerUp;
+        private _onTopLeftHandlePointerDown;
+        private _onTopLeftHandlePointerMove;
+        private _moveTopLeftHandle;
+        private _onTopLeftHandlePointerUp;
+        private _expandLeft;
+        private _expandTop;
+        private _expandRight;
+        private _expandBottom;
         dispose(): void;
         serialize(): IFrameData;
         export(): void;
@@ -1667,15 +1678,6 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export class DataStorage {
-        private static _InMemoryStorage;
-        static ReadBoolean(key: string, defaultValue: boolean): boolean;
-        static StoreBoolean(key: string, value: boolean): void;
-        static ReadNumber(key: string, defaultValue: number): number;
-        static StoreNumber(key: string, value: number): void;
-    }
-}
-declare module NODEEDITOR {
     interface ILogComponentProps {
         globalState: GlobalState;
     }
@@ -1854,26 +1856,46 @@ declare module NODEEDITOR {
         private initResizing;
         private cleanUpResizing;
         private updateMinHeightWithComments;
+        private _isResizingTop;
+        private _isResizingRight;
+        private _isResizingBottom;
+        private _isResizingLeft;
         private _onRightHandlePointerDown;
         private _onRightHandlePointerMove;
         private _moveRightHandle;
-        private _expandRight;
         private _onRightHandlePointerUp;
         private _onBottomHandlePointerDown;
         private _onBottomHandlePointerMove;
         private _moveBottomHandle;
-        private _expandBottom;
         private _onBottomHandlePointerUp;
         private _onLeftHandlePointerDown;
         private _onLeftHandlePointerMove;
         private _moveLeftHandle;
-        private _expandLeft;
         private _onLeftHandlePointerUp;
         private _onTopHandlePointerDown;
         private _onTopHandlePointerMove;
         private _moveTopHandle;
-        private _expandTop;
         private _onTopHandlePointerUp;
+        private _onTopRightHandlePointerDown;
+        private _onTopRightHandlePointerMove;
+        private _moveTopRightHandle;
+        private _onTopRightHandlePointerUp;
+        private _onBottomRightHandlePointerDown;
+        private _onBottomRightHandlePointerMove;
+        private _moveBottomRightHandle;
+        private _onBottomRightHandlePointerUp;
+        private _onBottomLeftHandlePointerDown;
+        private _onBottomLeftHandlePointerMove;
+        private _moveBottomLeftHandle;
+        private _onBottomLeftHandlePointerUp;
+        private _onTopLeftHandlePointerDown;
+        private _onTopLeftHandlePointerMove;
+        private _moveTopLeftHandle;
+        private _onTopLeftHandlePointerUp;
+        private _expandLeft;
+        private _expandTop;
+        private _expandRight;
+        private _expandBottom;
         dispose(): void;
         serialize(): IFrameData;
         export(): void;
