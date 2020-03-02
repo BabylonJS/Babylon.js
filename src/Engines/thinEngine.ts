@@ -2839,11 +2839,10 @@ export class ThinEngine {
 
             if (EngineStore.UseFallbackTexture) {
                 this.createTexture(EngineStore.FallbackTexture, noMipmap, texture.invertY, scene, samplingMode, null, onError, buffer, texture);
-                return;
             }
 
             if (onError) {
-                onError(message || "Unknown error", exception);
+                onError((message || "Unknown error") + (EngineStore.UseFallbackTexture ? " - Fallback texture was used" : ""), exception);
             }
         };
 
