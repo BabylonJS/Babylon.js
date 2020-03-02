@@ -1888,4 +1888,16 @@ declare module INSPECTOR {
         private static _RemoveElementFromDOM;
         static Hide(): void;
     }
+}
+declare module INSPECTOR {
+    interface IParticleSystemPropertyGridComponentProps {
+        globalState: GlobalState;
+        system: BABYLON.IParticleSystem;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class ParticleSystemPropertyGridComponent extends React.Component<IParticleSystemPropertyGridComponentProps> {
+        constructor(props: IParticleSystemPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
 }

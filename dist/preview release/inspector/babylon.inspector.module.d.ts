@@ -2382,6 +2382,24 @@ declare module "babylonjs-inspector/inspector" {
 declare module "babylonjs-inspector/index" {
     export * from "babylonjs-inspector/inspector";
 }
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
+    interface IParticleSystemPropertyGridComponentProps {
+        globalState: GlobalState;
+        system: IParticleSystem;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class ParticleSystemPropertyGridComponent extends React.Component<IParticleSystemPropertyGridComponentProps> {
+        constructor(props: IParticleSystemPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/legacy/legacy" {
     export * from "babylonjs-inspector/index";
 }
@@ -4277,5 +4295,17 @@ declare module INSPECTOR {
         private static _Cleanup;
         private static _RemoveElementFromDOM;
         static Hide(): void;
+    }
+}
+declare module INSPECTOR {
+    interface IParticleSystemPropertyGridComponentProps {
+        globalState: GlobalState;
+        system: BABYLON.IParticleSystem;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class ParticleSystemPropertyGridComponent extends React.Component<IParticleSystemPropertyGridComponentProps> {
+        constructor(props: IParticleSystemPropertyGridComponentProps);
+        render(): JSX.Element;
     }
 }
