@@ -25,9 +25,12 @@ class ViewController: UIViewController {
             self.mtkView.addGestureRecognizer(gesture)
 
             let rawMetalLayerPtr: UnsafeMutableRawPointer = Unmanaged.passUnretained(mtkView.layer).toOpaque()
-            
-            let size = mtkView.frame.size;
-            appDelegate!._bridge!.init(rawMetalLayerPtr, width:Int32(size.width), height:Int32(size.height))
+
+            let screenBounds = UIScreen.main.bounds
+            let width = screenBounds.size.width
+            let height = screenBounds.size.height
+
+            appDelegate!._bridge!.init(rawMetalLayerPtr, width:Int32(width), height:Int32(height))
         }
     }
 
