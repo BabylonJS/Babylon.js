@@ -6,7 +6,7 @@ import { NodeListComponent } from './components/nodeList/nodeListComponent';
 import { PropertyTabComponent } from './components/propertyTab/propertyTabComponent';
 import { Portal } from './portal';
 import { LogComponent, LogEntry } from './components/log/logComponent';
-import { DataStorage } from './dataStorage';
+import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { Nullable } from 'babylonjs/types';
@@ -485,11 +485,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         if (forLeft) {
             this._leftWidth += deltaX;
             this._leftWidth = Math.max(150, Math.min(400, this._leftWidth));
-            DataStorage.StoreNumber("LeftWidth", this._leftWidth);
+            DataStorage.WriteNumber("LeftWidth", this._leftWidth);
         } else {
             this._rightWidth -= deltaX;
             this._rightWidth = Math.max(250, Math.min(500, this._rightWidth));
-            DataStorage.StoreNumber("RightWidth", this._rightWidth);
+            DataStorage.WriteNumber("RightWidth", this._rightWidth);
             rootElement.ownerDocument!.getElementById("preview")!.style.height = this._rightWidth + "px";
         }
 

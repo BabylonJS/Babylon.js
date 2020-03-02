@@ -1,7 +1,7 @@
 
 import * as React from "react";
 import { GlobalState } from '../../globalState';
-import { DataStorage } from '../../dataStorage';
+import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { Observer } from 'babylonjs/Misc/observable';
 import { Nullable } from 'babylonjs/types';
 
@@ -32,14 +32,14 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
 
     changeBackFaceCulling(value: boolean) {        
         this.props.globalState.backFaceCulling = value;
-        DataStorage.StoreBoolean("BackFaceCulling", value);
+        DataStorage.WriteBoolean("BackFaceCulling", value);
         this.props.globalState.onBackFaceCullingChanged.notifyObservers();
         this.forceUpdate();
     }
 
     changeDepthPrePass(value: boolean) {        
         this.props.globalState.depthPrePass = value;
-        DataStorage.StoreBoolean("DepthPrePass", value);
+        DataStorage.WriteBoolean("DepthPrePass", value);
         this.props.globalState.onDepthPrePassChanged.notifyObservers();
         this.forceUpdate();
     }    
@@ -70,7 +70,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                         title="Turn on/off hemispheric light"  
                         onClick={() => {
                             this.props.globalState.hemisphericLight = !this.props.globalState.hemisphericLight;                            
-                            DataStorage.StoreBoolean("HemisphericLight", this.props.globalState.hemisphericLight);
+                            DataStorage.WriteBoolean("HemisphericLight", this.props.globalState.hemisphericLight);
                             this.props.globalState.onLightUpdated.notifyObservers();
                             this.forceUpdate();
                         }} className={"button hemispheric-light" + (this.props.globalState.hemisphericLight ? " selected" : "")}>
@@ -80,7 +80,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                         title="Turn on/off direction light #1"  
                         onClick={() => {
                             this.props.globalState.directionalLight1 = !this.props.globalState.directionalLight1;                       
-                            DataStorage.StoreBoolean("DirectionalLight1", this.props.globalState.directionalLight1);
+                            DataStorage.WriteBoolean("DirectionalLight1", this.props.globalState.directionalLight1);
                             this.props.globalState.onLightUpdated.notifyObservers();
                             this.forceUpdate();
                         }} className={"button direction-light-1" + (this.props.globalState.directionalLight1 ? " selected" : "")}>
@@ -91,7 +91,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                         title="Turn on/off direction light #0"  
                         onClick={() => {
                             this.props.globalState.directionalLight0 = !this.props.globalState.directionalLight0;                       
-                            DataStorage.StoreBoolean("DirectionalLight0", this.props.globalState.directionalLight0);
+                            DataStorage.WriteBoolean("DirectionalLight0", this.props.globalState.directionalLight0);
                             this.props.globalState.onLightUpdated.notifyObservers();
                             this.forceUpdate();
                         }} className={"button direction-light-0" + (this.props.globalState.directionalLight0 ? " selected" : "")}>
