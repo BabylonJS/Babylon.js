@@ -38,6 +38,8 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
     private _runningAnimatable: Nullable<Animatable>;
     private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
     private _isPlaying = false;
+    private timelineRef: React.RefObject<SliderLineComponent>;
+
 
     constructor(props: IAnimationGridComponentProps) {
         super(props);
@@ -182,7 +184,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                         <ButtonLineComponent label={this._isPlaying ? "Stop" : "Play"} onClick={() => this.playOrPause()} />
                         {
                             this._isPlaying &&
-                            <SliderLineComponent ref="timeline" label="Current frame" minimum={this._animationControl.from} maximum={this._animationControl.to}
+                            <SliderLineComponent ref={this.timelineRef} label="Current frame" minimum={this._animationControl.from} maximum={this._animationControl.to}
                                 step={(this._animationControl.to - this._animationControl.from) / 1000.0} directValue={this.state.currentFrame}
                                 onInput={value => this.onCurrentFrameChange(value)}
                             />

@@ -7,6 +7,8 @@ interface IFileButtonLineComponentProps {
 }
 
 export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
+    private uploadRef: React.RefObject<HTMLInputElement>;
+
     constructor(props: IFileButtonLineComponentProps) {
         super(props);
     }
@@ -26,7 +28,7 @@ export class FileButtonLineComponent extends React.Component<IFileButtonLineComp
                 <label htmlFor="file-upload" className="file-upload">
                     {this.props.label}
                 </label>
-                <input ref="upload" id="file-upload" type="file" accept={this.props.accept} onChange={evt => this.onChange(evt)} />
+                <input ref={this.uploadRef} id="file-upload" type="file" accept={this.props.accept} onChange={evt => this.onChange(evt)} />
             </div>
         );
     }

@@ -57,6 +57,8 @@ interface ISceneExplorerComponentProps {
 export class SceneExplorerComponent extends React.Component<ISceneExplorerComponentProps, { filter: Nullable<string>, selectedEntity: any, scene: Scene }> {
     private _onSelectionChangeObserver: Nullable<Observer<any>>;
     private _onNewSceneAddedObserver: Nullable<Observer<Scene>>;
+    private sceneExplorerRef: React.RefObject<Resizable>;
+
 
     private _once = true;
     private _hooked = false;
@@ -390,7 +392,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         }
 
         return (
-            <Resizable tabIndex={-1} id="sceneExplorer" ref="sceneExplorer" size={{ height: "100%" }} minWidth={300} maxWidth={600} minHeight="100%" enable={{ top: false, right: true, bottom: false, left: false, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false }} onKeyDown={(keyEvent) => this.processKeys(keyEvent)}>
+            <Resizable tabIndex={-1} id="sceneExplorer" ref={this.sceneExplorerRef} size={{ height: "100%" }} minWidth={300} maxWidth={600} minHeight="100%" enable={{ top: false, right: true, bottom: false, left: false, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false }} onKeyDown={(keyEvent) => this.processKeys(keyEvent)}>
                 {
                     !this.props.noHeader &&
                     <HeaderComponent title="SCENE EXPLORER" noClose={this.props.noClose} noExpand={this.props.noExpand} noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} />
