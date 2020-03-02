@@ -18,7 +18,6 @@ export interface IMaterialSheenDefines {
     SHEEN_TEXTUREDIRECTUV: number;
     SHEEN_LINKWITHALBEDO: boolean;
     SHEEN_ROUGHNESS: boolean;
-    SHEEN_SOFTER: boolean;
     SHEEN_ALBEDOSCALING: boolean;
 
     /** @hidden */
@@ -68,21 +67,21 @@ export class PBRSheenConfiguration {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public texture: Nullable<BaseTexture> = null;
 
-    private _roughness = 0;
+    private _roughness: Nullable<number> = null;
     /**
      * Defines the sheen roughness.
      * It is not taken into account if linkSheenWithAlbedo is true.
-     * To stay backward compatible, material roughness is used instead if sheen roughness = 0
+     * To stay backward compatible, material roughness is used instead if sheen roughness = null
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public roughness = 0.0;
+    public roughness: Nullable<number> = null;
 
-    private _softer = false;
-    @serialize()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public softer = false;
-
+    /**
+     * If true, the sheen effect is layered above the base BRDF with the albedo-scaling technique.
+     * It allows the strength of the sheen effect to not depend on the base color of the material,
+     * making it easier to setup and tweak the effect
+     */
     private _albedoScaling = false;
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -133,8 +132,7 @@ export class PBRSheenConfiguration {
         if (this._isEnabled) {
             defines.SHEEN = this._isEnabled;
             defines.SHEEN_LINKWITHALBEDO = this._linkSheenWithAlbedo;
-            defines.SHEEN_ROUGHNESS = this._roughness !== 0;
-            defines.SHEEN_SOFTER = this._softer;
+            defines.SHEEN_ROUGHNESS = this._roughness !== null;
             defines.SHEEN_ALBEDOSCALING = this._albedoScaling;
 
             if (defines._areTexturesDirty) {
@@ -152,7 +150,6 @@ export class PBRSheenConfiguration {
             defines.SHEEN_TEXTURE = false;
             defines.SHEEN_LINKWITHALBEDO = false;
             defines.SHEEN_ROUGHNESS = false;
-            defines.SHEEN_SOFTER = false;
             defines.SHEEN_ALBEDOSCALING = false;
         }
     }
@@ -177,7 +174,7 @@ export class PBRSheenConfiguration {
                 this.color.b,
                 this.intensity);
 
-            if (this._roughness !== 0) {
+            if (this._roughness !== null) {
                 uniformBuffer.updateFloat("vSheenRoughness", this._roughness);
             }
         }

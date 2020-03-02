@@ -894,16 +894,16 @@ void main(void) {
     #endif
 
     // _____________________________ Sheen Environment Oclusion __________________________
-    #if defined(SHEEN) && defined(REFLECTION)
-        #ifdef SHEEN_SOFTER
+    #if defined(SHEEN) && defined(ENVIRONMENTBRDF)
+        /*#ifdef SHEEN_SOFTER
             vec3 environmentSheenBrdf = vec3(0., 0., getBRDFLookupCharlieSheen(NdotV, sheenRoughness));
-        #else
+        #else*/
             #ifdef SHEEN_ROUGHNESS
                 vec3 environmentSheenBrdf = getBRDFLookup(NdotV, sheenRoughness);
             #else
                 vec3 environmentSheenBrdf = environmentBrdf;
             #endif
-        #endif
+        /*#endif*/
         vec3 sheenEnvironmentReflectance = getSheenReflectanceFromBRDFLookup(sheenColor, environmentSheenBrdf);
 
         #ifdef RADIANCEOCCLUSION
@@ -922,15 +922,7 @@ void main(void) {
             // Sheen Lobe Layering.
             // environmentSheenBrdf.b is (integral on hemisphere)[f_sheen*cos(theta)*dtheta*dphi], which happens to also be the directional albedo needed for albedo scaling.
             // See section 6.2.3 in https://dassaultsystemes-technology.github.io/EnterprisePBRShadingModel/spec-2021x.md.html#components/sheen
-            float albedoScaling = 1.0 - sheenIntensity * max(max(sheenColor.r, sheenColor.g), sheenColor.b) * environmentSheenBrdf.b;
-            #ifdef REFLECTION
-                environmentIrradiance *= albedoScaling;
-                specularEnvironmentReflectance *= albedoScaling;
-            #endif
-            #ifdef SPECULARTERM
-                specularBase *= albedoScaling;
-            #endif
-            diffuseBase *= albedoScaling;
+            float sheenAlbedoScaling = 1.0 - sheenIntensity * max(max(sheenColor.r, sheenColor.g), sheenColor.b) * environmentSheenBrdf.b;
         #endif
     #endif
 
@@ -967,10 +959,10 @@ void main(void) {
 
             #ifdef REFLECTION
                 environmentIrradiance *= absorption;
+            #endif
 
-                #ifdef SHEEN
-                    sheenEnvironmentReflectance *= absorption;
-                #endif
+            #if defined(SHEEN) && defined(ENVIRONMENTBRDF)
+                sheenEnvironmentReflectance *= absorption;
             #endif
 
             specularEnvironmentReflectance *= absorption;
@@ -984,10 +976,10 @@ void main(void) {
 
         #ifdef REFLECTION
             environmentIrradiance *= conservationFactor;
+        #endif
 
-            #ifdef SHEEN
-                sheenEnvironmentReflectance *= conservationFactor;
-            #endif
+        #if defined(SHEEN) && defined(ENVIRONMENTBRDF)
+            sheenEnvironmentReflectance *= conservationFactor;
         #endif
 
         specularEnvironmentReflectance *= conservationFactor;
@@ -1072,6 +1064,10 @@ void main(void) {
         #endif
     #endif
 
+    #if defined(SHEEN) && defined(SHEEN_ALBEDOSCALING) && defined(ENVIRONMENTBRDF)
+        surfaceAlbedo.rgb = sheenAlbedoScaling * surfaceAlbedo.rgb;
+    #endif
+
     // _____________________________ Irradiance ______________________________________
     #ifdef REFLECTION
         vec3 finalIrradiance = environmentIrradiance;
@@ -1091,6 +1087,10 @@ void main(void) {
         #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)
             finalSpecularScaled *= energyConservationFactor;
         #endif
+
+        #if defined(SHEEN) && defined(ENVIRONMENTBRDF) && defined(SHEEN_ALBEDOSCALING)
+            finalSpecularScaled *= sheenAlbedoScaling;
+        #endif
     #endif
 
     // _____________________________ Radiance ________________________________________
@@ -1103,12 +1103,37 @@ void main(void) {
         #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)
             finalRadianceScaled *= energyConservationFactor;
         #endif
+
+        #if defined(SHEEN) && defined(ENVIRONMENTBRDF) && defined(SHEEN_ALBEDOSCALING)
+            finalRadianceScaled *= sheenAlbedoScaling;
+        #endif
     #endif
 
     // _____________________________ Refraction ______________________________________
     #ifdef SS_REFRACTION
         vec3 finalRefraction = environmentRefraction.rgb;
         finalRefraction *= refractionTransmittance;
+    #endif
+
+    // ________________________________ Sheen ________________________________________
+    #ifdef SHEEN
+        vec3 finalSheen = sheenBase * sheenColor;
+        finalSheen = max(finalSheen, 0.0);
+
+        vec3 finalSheenScaled = finalSheen * vLightingIntensity.x * vLightingIntensity.w;
+        // #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)
+            // The sheen does not use the same BRDF so not energy conservation is possible
+            // Should be less a problem as it is usually not metallic
+            // finalSheenScaled *= energyConservationFactor;
+        // #endif
+        
+        #if defined(REFLECTION) && defined(ENVIRONMENTBRDF)
+            vec3 finalSheenRadiance = environmentSheenRadiance.rgb;
+            finalSheenRadiance *= sheenEnvironmentReflectance;
+
+            // Full value needed for alpha. 
+            vec3 finalSheenRadianceScaled = finalSheenRadiance * vLightingIntensity.z;
+        #endif
     #endif
 
     // _____________________________ Clear Coat _______________________________________
@@ -1136,27 +1161,6 @@ void main(void) {
             #ifdef CLEARCOAT_TINT
                 finalRefraction *= absorption;
             #endif
-        #endif
-    #endif
-
-    // ________________________________ Sheen ________________________________________
-    #ifdef SHEEN
-        vec3 finalSheen = sheenBase * sheenColor;
-        finalSheen = max(finalSheen, 0.0);
-
-        vec3 finalSheenScaled = finalSheen * vLightingIntensity.x * vLightingIntensity.w;
-        // #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)
-            // The sheen does not use the same BRDF so not energy conservation is possible
-            // Should be less a problem as it is usually not metallic
-            // finalSheenScaled *= energyConservationFactor;
-        // #endif
-        
-        #ifdef REFLECTION
-            vec3 finalSheenRadiance = environmentSheenRadiance.rgb;
-            finalSheenRadiance *= sheenEnvironmentReflectance;
-
-            // Full value needed for alpha. 
-            vec3 finalSheenRadianceScaled = finalSheenRadiance * vLightingIntensity.z;
         #endif
     #endif
 
@@ -1224,29 +1228,29 @@ void main(void) {
     //	finalSpecular			* vLightingIntensity.x * vLightingIntensity.w +
         finalSpecularScaled +
     #endif
-    #ifdef CLEARCOAT
-    // Computed in the previous step to help with alpha luminance.
-    //	finalClearCoat			* vLightingIntensity.x * vLightingIntensity.w +
-        finalClearCoatScaled +
-    #endif
     #ifdef SHEEN
     // Computed in the previous step to help with alpha luminance.
     //	finalSheen  			* vLightingIntensity.x * vLightingIntensity.w +
         finalSheenScaled +
     #endif
+    #ifdef CLEARCOAT
+    // Computed in the previous step to help with alpha luminance.
+    //	finalClearCoat			* vLightingIntensity.x * vLightingIntensity.w +
+        finalClearCoatScaled +
+    #endif
     #ifdef REFLECTION
     // Comupted in the previous step to help with alpha luminance.
     //	finalRadiance			* vLightingIntensity.z +
         finalRadianceScaled +
+        #if defined(SHEEN) && defined(ENVIRONMENTBRDF)
+        //  Comupted in the previous step to help with alpha luminance.
+        //  finalSheenRadiance * vLightingIntensity.z 
+            finalSheenRadianceScaled +
+        #endif
         #ifdef CLEARCOAT
         //  Comupted in the previous step to help with alpha luminance.
         //  finalClearCoatRadiance * vLightingIntensity.z 
             finalClearCoatRadianceScaled +
-        #endif
-        #ifdef SHEEN
-        //  Comupted in the previous step to help with alpha luminance.
-        //  finalSheenRadiance * vLightingIntensity.z 
-            finalSheenRadianceScaled +
         #endif
     #endif
     #ifdef SS_REFRACTION
