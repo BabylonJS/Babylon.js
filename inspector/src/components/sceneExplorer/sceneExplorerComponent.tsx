@@ -19,6 +19,7 @@ import { FreeCamera } from 'babylonjs/Cameras/freeCamera';
 import { DirectionalLight } from 'babylonjs/Lights/directionalLight';
 import { SSAORenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline';
 import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
+import { ParticleHelper } from 'babylonjs/Particles/particleHelper';
 
 require("./sceneExplorer.scss");
 
@@ -293,7 +294,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             }
         });
 
-        
+        // Materials
         let materialsContextMenus: { label: string, action: () => void }[] = [];
         materialsContextMenus.push({
             label: "Add new node material",
@@ -312,6 +313,16 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         if (scene.multiMaterials && scene.multiMaterials.length) {
             materials.push(...scene.multiMaterials);
         }
+
+        // Particle systems
+        let particleSystemsContextMenus: { label: string, action: () => void }[] = [];
+        particleSystemsContextMenus.push({
+            label: "Add new particle system",
+            action: () => {
+                let newSystem = ParticleHelper.CreateDefault(Vector3.Zero(), 1000, scene);
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
+            }
+        });
 
         return (
             <div id="tree" onContextMenu={e => e.preventDefault()}>
@@ -336,6 +347,9 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups}
                     contextMenuItems={pipelineContextMenus}
                     selectedEntity={this.state.selectedEntity} items={pipelines} label="Rendering pipelines" offset={1} filter={this.state.filter} />
+                <TreeItemComponent globalState={this.props.globalState} 
+                    contextMenuItems={particleSystemsContextMenus} 
+                    extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.particleSystems} label="Particle systems" offset={1} filter={this.state.filter} />
                 {
                     guiElements && guiElements.length > 0 &&
                     <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={guiElements} label="GUI" offset={1} filter={this.state.filter} />
