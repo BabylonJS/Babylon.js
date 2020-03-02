@@ -1001,12 +1001,15 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     protected _renderSubMeshForShadowMap(subMesh: SubMesh): void {
-        var mesh = subMesh.getRenderingMesh();
+        var ownerMesh = subMesh.getMesh();  
+        var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh: null;
+        var renderingMesh = subMesh.getRenderingMesh();        
+        var effectiveMesh = replacementMesh ? replacementMesh : renderingMesh;
         var scene = this._scene;
         var engine = scene.getEngine();
         let material = subMesh.getMaterial();
 
-        mesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
+        effectiveMesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
 
         if (!material || subMesh.verticesCount === 0) {
             return;
@@ -1016,7 +1019,7 @@ export class ShadowGenerator implements IShadowGenerator {
         engine.setState(material.backFaceCulling);
 
         // Managing instances
-        var batch = mesh._getInstancesRenderList(subMesh._id);
+        var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!replacementMesh);
         if (batch.mustReturn) {
             return;
         }
@@ -1024,7 +1027,7 @@ export class ShadowGenerator implements IShadowGenerator {
         var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
         if (this.isReady(subMesh, hardwareInstancedRendering)) {
             engine.enableEffect(this._effect);
-            mesh._bind(subMesh, this._effect, material.fillMode);
+            renderingMesh._bind(subMesh, this._effect, material.fillMode);
 
             this._effect.setFloat3("biasAndScale", this.bias, this.normalBias, this.depthScale);
 
@@ -1050,11 +1053,11 @@ export class ShadowGenerator implements IShadowGenerator {
             }
 
             // Bones
-            if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
-                const skeleton = mesh.skeleton;
+            if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
+                const skeleton = renderingMesh.skeleton;
 
                 if (skeleton.isUsingTextureForMatrices) {
-                    const boneTexture = skeleton.getTransformMatrixTexture(mesh);
+                    const boneTexture = skeleton.getTransformMatrixTexture(renderingMesh);
 
                     if (!boneTexture) {
                         return;
@@ -1063,12 +1066,12 @@ export class ShadowGenerator implements IShadowGenerator {
                     this._effect.setTexture("boneSampler", boneTexture);
                     this._effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
                 } else {
-                    this._effect.setMatrices("mBones", skeleton.getTransformMatrices((mesh)));
+                    this._effect.setMatrices("mBones", skeleton.getTransformMatrices((renderingMesh)));
                 }
             }
 
             // Morph targets
-            MaterialHelper.BindMorphTargetParameters(mesh, this._effect);
+            MaterialHelper.BindMorphTargetParameters(renderingMesh, this._effect);
 
             // Clip planes
             MaterialHelper.BindClipPlane(this._effect, scene);
@@ -1080,12 +1083,14 @@ export class ShadowGenerator implements IShadowGenerator {
             }
 
             // Observables
-            this.onBeforeShadowMapRenderMeshObservable.notifyObservers(mesh);
+            this.onBeforeShadowMapRenderMeshObservable.notifyObservers(renderingMesh);
             this.onBeforeShadowMapRenderObservable.notifyObservers(this._effect);
 
             // Draw
-            mesh._processRendering(subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
-                (isInstance, world) => this._effect.setMatrix("world", world));
+            
+            var world = effectiveMesh.getWorldMatrix();
+            renderingMesh._processRendering(subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
+                (isInstance, w) => this._effect.setMatrix("world", world));
 
             if (this.forceBackFacesOnly) {
                 engine.setState(true, 0, false, false);
@@ -1093,7 +1098,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
             // Observables
             this.onAfterShadowMapRenderObservable.notifyObservers(this._effect);
-            this.onAfterShadowMapRenderMeshObservable.notifyObservers(mesh);
+            this.onAfterShadowMapRenderMeshObservable.notifyObservers(renderingMesh);
 
         } else {
             // Need to reset refresh rate of the shadowMap
