@@ -3,7 +3,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # -------------------------------- arcana --------------------------------
 # Dependencies: none
-add_subdirectory(arcana.cpp EXCLUDE_FROM_ALL)
+add_subdirectory(arcana.cpp)
 if(WINDOWS_STORE)
     set_property(TARGET arcana PROPERTY FOLDER Dependencies)
 endif()
@@ -29,7 +29,7 @@ if(APPLE)
 endif()
 set(BGFX_BUILD_EXAMPLES OFF CACHE BOOL "Build the BGFX examples.")
 set(BGFX_BUILD_TOOLS OFF CACHE BOOL "Build the BGFX tools.")
-add_subdirectory(bgfx.cmake EXCLUDE_FROM_ALL)
+add_subdirectory(bgfx.cmake)
 set_property(TARGET astc PROPERTY FOLDER Dependencies/bgfx/3rdparty)
 set_property(TARGET astc-codec PROPERTY FOLDER Dependencies/bgfx/3rdparty)
 set_property(TARGET edtaa3 PROPERTY FOLDER Dependencies/bgfx/3rdparty)
@@ -50,7 +50,7 @@ set(ENABLE_SPVREMAPPER OFF CACHE BOOL "Enables building of SPVRemapper")
 set(ENABLE_GLSLANG_BINARIES OFF CACHE BOOL "Builds glslangValidator and spirv-remap")
 set(ENABLE_HLSL OFF CACHE BOOL "Enables HLSL input support")
 set(ENABLE_OPT OFF CACHE BOOL "Enables spirv-opt capability if present")
-add_subdirectory(glslang EXCLUDE_FROM_ALL)
+add_subdirectory(glslang)
 set_property(TARGET glslang PROPERTY FOLDER Dependencies/glslang)
 set_property(TARGET OGLCompiler PROPERTY FOLDER Dependencies/glslang)
 set_property(TARGET OSDependent PROPERTY FOLDER Dependencies/glslang)
@@ -64,7 +64,7 @@ if(ANDROID)
     set(OPENSSL_CRYPTO_LIBRARY crypto.a)
     set(OPENSSL_SSL_LIBRARY ssl.a)
     set(OPENSSL_USE_STATIC_LIBS TRUE)
-    add_subdirectory(openssl EXCLUDE_FROM_ALL)
+    add_subdirectory(openssl)
 
     set_property(TARGET SSL PROPERTY FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/openssl")
     set_property(TARGET Crypto PROPERTY FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/openssl")
@@ -77,13 +77,13 @@ endif()
 
 # -------------------------------- napi --------------------------------
 # Dependencies: none
-add_subdirectory(napi EXCLUDE_FROM_ALL)
+add_subdirectory(napi)
 set_property(TARGET napi PROPERTY FOLDER Dependencies)
 set(BABYLON_NATIVE_DEPENDENCIES ${NAPI_DEPENDENCIES} PARENT_SCOPE)
 
 # -------------------------------- SPIRV-Cross --------------------------------
 # Dependencies: none
-add_subdirectory(SPIRV-Cross EXCLUDE_FROM_ALL)
+add_subdirectory(SPIRV-Cross)
 set_property(TARGET spirv-cross-core PROPERTY FOLDER Dependencies/SPIRV-Cross)
 set_property(TARGET spirv-cross-glsl PROPERTY FOLDER Dependencies/SPIRV-Cross)
 set_property(TARGET spirv-cross-hlsl PROPERTY FOLDER Dependencies/SPIRV-Cross)
@@ -93,7 +93,7 @@ set_property(TARGET spirv-cross-hlsl PROPERTY FOLDER Dependencies/SPIRV-Cross)
 # Currently OpenXR is only supported on Win32. More platforms will be added as 
 # they become viable/available.
 if(WIN32 OR WINDOWS_STORE)
-    add_subdirectory(xr EXCLUDE_FROM_ALL)
+    add_subdirectory(xr)
     set_property(TARGET xr PROPERTY FOLDER Dependencies/xr)
     set_property(TARGET openxr_loader PROPERTY FOLDER Dependencies/xr/OpenXR)
     set_property(TARGET generate_openxr_header PROPERTY FOLDER Dependencies/xr/OpenXR/Generated)
@@ -115,7 +115,7 @@ else()
     set(CMAKE_USE_WINSSL OFF CACHE BOOL "Set cURL to use WinSSL by default.")
 endif()
 
-add_subdirectory(curl EXCLUDE_FROM_ALL)
+add_subdirectory(curl)
 set_property(TARGET libcurl PROPERTY FOLDER Dependencies)
 
 # TODO: Certain parts of cURL's functionality are gated behind WINAPI checks
@@ -127,5 +127,5 @@ endif()
 
 # -------------------------------- BabylonNativeUtils --------------------------------
 # Dependencies: arcana, curl
-add_subdirectory(BabylonNativeUtils EXCLUDE_FROM_ALL)
+add_subdirectory(BabylonNativeUtils)
 set_property(TARGET BabylonNativeUtils PROPERTY FOLDER Dependencies)

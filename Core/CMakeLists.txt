@@ -1,2 +1,2 @@
-add_subdirectory(JsRuntime EXCLUDE_FROM_ALL)
-add_subdirectory(AppRuntime EXCLUDE_FROM_ALL)
+add_subdirectory(JsRuntime)
+add_subdirectory(AppRuntime)
