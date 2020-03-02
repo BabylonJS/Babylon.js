@@ -45,6 +45,10 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
             minSize: [200, 200],
             gutterSize: 4
         });
+
+        this.splitRef = React.createRef();
+        this.topPartRef = React.createRef();
+        this.bottomPartRef = React.createRef();
     }
 
     renderContent() {

@@ -17,6 +17,7 @@ export class ExtensionsComponent extends React.Component<IExtensionsComponentPro
         super(props);
 
         this.state = { popupVisible: false };
+        this.extensionRef = React.createRef();
     }
 
     showPopup() {

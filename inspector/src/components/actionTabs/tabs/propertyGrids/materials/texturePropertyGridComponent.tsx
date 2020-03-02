@@ -53,6 +53,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         this._adtInstrumentation = new AdvancedDynamicTextureInstrumentation(adt);
         this._adtInstrumentation!.captureRenderTime = true;
         this._adtInstrumentation!.captureLayoutTime = true;
+
+        this.textureLineRef = React.createRef();
     }
 
     componentWillUnmount() {

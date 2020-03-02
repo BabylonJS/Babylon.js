@@ -37,7 +37,9 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
 
         this._onBeforeRenderObserver = this.props.scene.onBeforeRenderObservable.add(() => {
             this.updateCurrentFrame(this.props.animationGroup);
-        });        
+        });
+
+        this.timelineRef = React.createRef();
     }
 
     disconnect(animationGroup: AnimationGroup) {

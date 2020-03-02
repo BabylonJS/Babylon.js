@@ -24,6 +24,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
     constructor(props: IPreviewMeshControlComponent) {
         super(props);
         this.colorInputRef = React.createRef();
+        this.filePickerRef = React.createRef();
     }
 
     changeMeshType(newOne: PreviewMeshType) {
