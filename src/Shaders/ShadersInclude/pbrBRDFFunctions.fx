@@ -39,6 +39,7 @@
     }
 #endif
 
+/* NOT USED
 #if defined(SHEEN) && defined(SHEEN_SOFTER)
 // Approximation of (integral on hemisphere)[f_sheen*cos(theta)*dtheta*dphi]
 float getBRDFLookupCharlieSheen(float NdotV, float perceptualRoughness)
@@ -48,6 +49,7 @@ float getBRDFLookupCharlieSheen(float NdotV, float perceptualRoughness)
     return 0.65584461 * c3 + 1.0 / (4.16526551 + exp(-7.97291361*perceptualRoughness+6.33516894));
 }
 #endif
+*/
 
 #if !defined(ENVIRONMENTBRDF) || defined(REFLECTIONMAP_SKYBOX) || defined(ALPHAFRESNEL)
     vec3 getReflectanceFromAnalyticalBRDFLookup_Jones(float VdotN, vec3 reflectance0, vec3 reflectance90, float smoothness)
@@ -257,6 +259,7 @@ float normalDistributionFunction_TrowbridgeReitzGGX(float NdotH, float alphaG)
         return 1. / (4. * (NdotL + NdotV - NdotL * NdotV));
     }
 
+    /* NOT USED
     #ifdef SHEEN_SOFTER
         // http://www.aconty.com/pdf/s2017_pbs_imageworks_sheen.pdf
         float l(float x, float alphaG)
@@ -281,6 +284,7 @@ float normalDistributionFunction_TrowbridgeReitzGGX(float NdotH, float alphaG)
             return G / (4.0 * NdotV * NdotL);
         }
     #endif
+    */
 #endif
 
 // ______________________________________________________________________

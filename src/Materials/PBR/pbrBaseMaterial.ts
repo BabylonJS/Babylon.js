@@ -215,7 +215,6 @@ export class PBRMaterialDefines extends MaterialDefines
     public SHEEN_TEXTUREDIRECTUV = 0;
     public SHEEN_LINKWITHALBEDO = false;
     public SHEEN_ROUGHNESS = false;
-    public SHEEN_SOFTER = false;
     public SHEEN_ALBEDOSCALING = false;
 
     public SUBSURFACE = false;

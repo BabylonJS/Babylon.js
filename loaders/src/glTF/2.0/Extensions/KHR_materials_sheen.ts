@@ -91,6 +91,8 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
             babylonMaterial.sheen.roughness = properties.roughnessFactor;
         }
 
+        babylonMaterial.sheen.albedoScaling = true;
+
         return Promise.all(promises).then(() => { });
     }
 }

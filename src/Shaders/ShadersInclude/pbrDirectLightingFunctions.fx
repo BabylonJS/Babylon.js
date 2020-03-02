@@ -143,11 +143,11 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
         // vec3 fresnel = fresnelSchlickGGX(info.VdotH, reflectance0, reflectance90);
         float fresnel = 1.;
         float distribution = normalDistributionFunction_CharlieSheen(NdotH, alphaG);
-        #ifdef SHEEN_SOFTER
+        /*#ifdef SHEEN_SOFTER
             float visibility = visibility_CharlieSheen(info.NdotL, info.NdotV, alphaG);
-        #else
+        #else */
             float visibility = visibility_Ashikhmin(info.NdotL, info.NdotV);
-        #endif
+        /* #endif */
 
         float sheenTerm = fresnel * distribution * visibility;
         return sheenTerm * info.attenuation * info.NdotL * lightColor;
