@@ -19,6 +19,7 @@ interface IPreviewMeshControlComponent {
 
 export class PreviewMeshControlComponent extends React.Component<IPreviewMeshControlComponent> {
     private colorInputRef: React.RefObject<HTMLInputElement>;
+    private filePickerRef: React.RefObject<HTMLInputElement>;
 
     constructor(props: IPreviewMeshControlComponent) {
         super(props);
@@ -103,13 +104,13 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
                                 if (value !== PreviewMeshType.Custom + 1) {
                                     this.changeMeshType(value);
                                 } else {
-                                    (ReactDOM.findDOMNode(this.refs["file-picker"]) as HTMLElement).click();
+                                    this.filePickerRef.current?.click();
                                 }
                             }} />
                 <div style={{
                     display: "none"
                 }} title="Preview with a custom mesh" >
-                    <input ref="file-picker" id="file-picker" type="file" onChange={evt => this.useCustomMesh(evt)} accept=".gltf, .glb, .babylon, .obj"/>
+                    <input ref={this.filePickerRef} id="file-picker" type="file" onChange={evt => this.useCustomMesh(evt)} accept=".gltf, .glb, .babylon, .obj"/>
                 </div>
                 <div
                     title="Turn-table animation"

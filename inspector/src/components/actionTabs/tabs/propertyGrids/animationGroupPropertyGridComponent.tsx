@@ -25,6 +25,7 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
     private _onAnimationGroupPlayObserver: Nullable<Observer<AnimationGroup>>;
     private _onAnimationGroupPauseObserver: Nullable<Observer<AnimationGroup>>;
     private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
+    private timelineRef: React.RefObject<SliderLineComponent>;
 
     constructor(props: IAnimationGroupGridComponentProps) {
         super(props);
@@ -130,7 +131,7 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
                 <LineContainerComponent globalState={this.props.globalState} title="CONTROLS">
                     <ButtonLineComponent label={playButtonText} onClick={() => this.playOrPause()} />
                     <SliderLineComponent label="Speed ratio" minimum={0} maximum={10} step={0.1} target={animationGroup} propertyName="speedRatio" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <SliderLineComponent ref="timeline" label="Current frame" minimum={animationGroup.from} maximum={animationGroup.to} step={(animationGroup.to - animationGroup.from) / 1000.0} directValue={this.state.currentFrame} onInput={value => this.onCurrentFrameChange(value)} />
+                    <SliderLineComponent ref={this.timelineRef} label="Current frame" minimum={animationGroup.from} maximum={animationGroup.to} step={(animationGroup.to - animationGroup.from) / 1000.0} directValue={this.state.currentFrame} onInput={value => this.onCurrentFrameChange(value)} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="INFOS">
                     <TextLineComponent label="Animation count" value={animationGroup.targetedAnimations.length.toString()} />

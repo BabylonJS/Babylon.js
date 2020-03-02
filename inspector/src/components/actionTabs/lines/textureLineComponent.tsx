@@ -27,6 +27,8 @@ enum ChannelToDisplay {
 }
 
 export class TextureLineComponent extends React.Component<ITextureLineComponentProps, { channel: ChannelToDisplay, face: number }> {
+    private canvasRef: React.RefObject<HTMLCanvasElement>;
+
     constructor(props: ITextureLineComponentProps) {
         super(props);
 
@@ -82,7 +84,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
             return;
         }
 
-        const previewCanvas = this.refs.canvas as HTMLCanvasElement;
+        const previewCanvas = this.canvasRef.current as HTMLCanvasElement;
 
         if (this.props.globalState) {
             this.props.globalState.blockMutationUpdates = true;
@@ -208,7 +210,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
                             <button className={this.state.channel === ChannelToDisplay.All ? "all command selected" : "all command"} onClick={() => this.setState({ channel: ChannelToDisplay.All })}>ALL</button>
                         </div>
                     }
-                    <canvas ref="canvas" className="preview" />
+                    <canvas ref={this.canvasRef} className="preview" />
                 </div>
                 {
                     texture.isRenderTarget &&
