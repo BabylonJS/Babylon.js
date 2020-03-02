@@ -71,7 +71,13 @@ export class Tools {
      * It can be a string if the expected behavior is identical in the entire app.
      * Or a callback to be able to set it per url or on a group of them (in case of Video source for instance)
      */
-    public static CorsBehavior: string | ((url: string | string[]) => string) = "anonymous";
+    public static get CorsBehavior(): string | ((url: string | string[]) => string) {
+        return FileTools.CorsBehavior;
+    }
+
+    public static set CorsBehavior(value: string | ((url: string | string[]) => string)) {
+        FileTools.CorsBehavior = value;
+    }
 
     /**
      * Gets or sets a global variable indicating if fallback texture must be used when a texture cannot be loaded
