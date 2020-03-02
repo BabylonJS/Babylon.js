@@ -41,12 +41,6 @@ namespace glslang
             compiler->set_name(resource.id, "_mtl_u");
         }
 
-        // rename samplers
-        for (auto& resource : resources.separate_samplers)
-        {
-            //compiler->set_name(resource.id, resource.name + "Sampler");
-        }
-
         // rename textures without the 'texture' suffix so it's bindable from .js
         for (auto& resource : resources.separate_images)
         {

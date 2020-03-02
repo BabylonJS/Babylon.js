@@ -222,7 +222,7 @@ napi_status napi_is_exception_pending(napi_env env, bool* result) {
   return napi_ok;
 }
 
-JSValueRef RiseException(JSContextRef ctx, JSValueRef* exception, const char* exceptionString)
+JSValueRef RaiseException(JSContextRef ctx, JSValueRef* exception, const char* exceptionString)
 {
   JSStringRef statement = JSStringCreateWithUTF8CString(exceptionString);
   auto value = JSValueMakeString(ctx, statement);
@@ -235,12 +235,12 @@ JSValueRef JSCFunctionCallback(JSContextRef ctx, JSObjectRef function, JSObjectR
   auto iter = constructorCB.find(function);
     
   if (iter == constructorCB.end()) {
-      return RiseException(ctx, exception, "JavaScriptCore : constructor not found.");
+      return RaiseException(ctx, exception, "JavaScriptCore : constructor not found.");
   }
   ClassTable *cbInfo = iter->second;
     
   if (cbInfo->cb == nullptr) {
-    return RiseException(ctx, exception, "JavaScriptCore : constructor callback is null.");
+    return RaiseException(ctx, exception, "JavaScriptCore : constructor callback is null.");
   }
   
   CallbackInfo callbackInfo;
@@ -393,14 +393,14 @@ template<int functionIndex> JSValueRef JSCStaticMethod(JSContextRef ctx, JSObjec
   // vf table
   auto iter = FunctionTables.find(object);
   if (iter == FunctionTables.end()) {
-    return RiseException(ctx, exception, "JavaScriptCore : function not found in table.");
+    return RaiseException(ctx, exception, "JavaScriptCore : function not found in table.");
   }
   
   const FunctionTable& table = *iter->second;
   const FunctionTableEntry& entry = table.table[functionIndex];
   
   if (entry.cb == nullptr) {
-    return RiseException(ctx, exception, "JavaScriptCore : function callback is null.");
+    return RaiseException(ctx, exception, "JavaScriptCore : function callback is null.");
   }
   CallbackInfo callbackInfo;
   callbackInfo.argc = argumentCount;
@@ -425,12 +425,12 @@ JSObjectRef JSCCallAsConstructor(JSContextRef ctx, JSObjectRef constructor, size
 
   auto iter = constructorCB.find(constructor);
   if (iter == constructorCB.end()) {
-    return const_cast<OpaqueJSValue*>(RiseException(ctx, exception, "JavaScriptCore : constructor not found."));
+    return const_cast<OpaqueJSValue*>(RaiseException(ctx, exception, "JavaScriptCore : constructor not found."));
   }
   ClassTable *cbInfo = iter->second;
   
   if (!cbInfo->cb) {
-    return const_cast<OpaqueJSValue*>(RiseException(ctx, exception, "JavaScriptCore : constructor callback is null."));
+    return const_cast<OpaqueJSValue*>(RaiseException(ctx, exception, "JavaScriptCore : constructor callback is null."));
   }
   
   assert(JSObjectIsConstructor(ctx, constructor));
@@ -457,7 +457,7 @@ bool JSCSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyNa
 {
   auto iter = FunctionTables.find(object);
   if (iter == FunctionTables.end()) {
-    return RiseException(ctx, exception, "JavaScriptCore : object not found in function table.");
+    return RaiseException(ctx, exception, "JavaScriptCore : object not found in function table.");
   }
       
   size_t stringSize = JSStringGetMaximumUTF8CStringSize(propertyName);
@@ -466,13 +466,13 @@ bool JSCSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyNa
     
   auto propertyIter = iter->second->properties.find(std::string(cstr.get()));
   if (propertyIter == iter->second->properties.end()) {
-     return RiseException(ctx, exception, "JavaScriptCore : property not found in function table.");
+     return RaiseException(ctx, exception, "JavaScriptCore : property not found in function table.");
   }
         
   auto prop = propertyIter->second;
     
   if (!prop.setter) {
-    return RiseException(ctx, exception, "JavaScriptCore : setter function is null for the object.");
+    return RaiseException(ctx, exception, "JavaScriptCore : setter function is null for the object.");
   }
   napi_value napiValue = reinterpret_cast<napi_value>(const_cast<OpaqueJSValue*>(value));
   CallbackInfo callbackInfo;
@@ -490,7 +490,7 @@ JSValueRef JSCGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef prop
   auto iter = FunctionTables.find(object);
 
   if (iter == FunctionTables.end()) {
-      return RiseException(ctx, exception, "JavaScriptCore : object not found in function table.");
+      return RaiseException(ctx, exception, "JavaScriptCore : object not found in function table.");
   }
     
   size_t stringSize = JSStringGetMaximumUTF8CStringSize(propertyName);
@@ -499,13 +499,13 @@ JSValueRef JSCGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef prop
   
   auto propertyIter = iter->second->properties.find(std::string(cstr.get()));
   if (propertyIter == iter->second->properties.end()) {
-    return RiseException(ctx, exception, "JavaScriptCore : property not found for object in function table.");
+    return RaiseException(ctx, exception, "JavaScriptCore : property not found for object in function table.");
   }
       
   auto prop = propertyIter->second;
   
   if (!prop.getter) {
-    return RiseException(ctx, exception, "JavaScriptCore : getter function is null for the object.");
+    return RaiseException(ctx, exception, "JavaScriptCore : getter function is null for the object.");
   }
 
   CallbackInfo callbackInfo;
@@ -985,7 +985,7 @@ napi_status napi_new_instance(napi_env env,
 }
 
 JSValueRef JSObjectCallAsFunctionCallbackDefault(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
-    return RiseException(ctx, exception, "JavaScriptCore : callback function is not implemented.");
+    return RaiseException(ctx, exception, "JavaScriptCore : callback function is not implemented.");
 }
 
   napi_status napi_define_properties(napi_env env,
