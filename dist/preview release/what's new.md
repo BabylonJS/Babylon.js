@@ -6,6 +6,7 @@
 
 ### General
 - NME Frames are now resizable from the corners ([Kyle Belfort](https://github.com/belfortk)
+- Refactored React refs from old string API to React.createRef() API ([Kyle Belfort](https://github.com/belfortk)
 
 ### Engine
 
