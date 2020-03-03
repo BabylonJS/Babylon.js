@@ -6,6 +6,8 @@
 
 ### General
 
+- Scale on one axis for `BoundingBoxGizmo` ([cedricguillemet](https://github.com/cedricguillemet))
+
 ### Engine
 
 ## Bugs
