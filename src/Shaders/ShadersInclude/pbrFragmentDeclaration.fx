@@ -100,6 +100,9 @@ uniform mat4 view;
 // Sheen
 #ifdef SHEEN
     uniform vec4 vSheenColor;
+    #ifdef SHEEN_ROUGHNESS
+        uniform float vSheenRoughness;
+    #endif
 
     #ifdef SHEEN_TEXTURE
         uniform vec2 vSheenInfos;
