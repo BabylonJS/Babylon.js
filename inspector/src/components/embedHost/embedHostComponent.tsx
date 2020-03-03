@@ -30,7 +30,11 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
     private bottomPartRef: React.RefObject<HTMLDivElement>;
 
     constructor(props: IEmbedHostComponentProps) {
-        super(props);
+        super(props);        
+
+        this.splitRef = React.createRef();
+        this.topPartRef = React.createRef();
+        this.bottomPartRef = React.createRef();
     }
 
     componentDidMount() {
@@ -45,10 +49,6 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
             minSize: [200, 200],
             gutterSize: 4
         });
-
-        this.splitRef = React.createRef();
-        this.topPartRef = React.createRef();
-        this.bottomPartRef = React.createRef();
     }
 
     renderContent() {
