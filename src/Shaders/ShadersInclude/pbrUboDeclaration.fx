@@ -50,6 +50,7 @@ uniform Material
     uniform mat4 anisotropyMatrix;
 
     uniform vec4 vSheenColor;
+    uniform float vSheenRoughness;
     uniform vec2 vSheenInfos;
     uniform mat4 sheenMatrix;
 

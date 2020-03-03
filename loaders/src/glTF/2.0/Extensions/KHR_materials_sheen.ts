@@ -13,6 +13,7 @@ interface IKHR_materials_sheen {
     intensityFactor: number;
     colorFactor: number[];
     colorIntensityTexture: ITextureInfo;
+    roughnessFactor: number;
 }
 
 /**
@@ -85,6 +86,14 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
                 babylonMaterial.sheen.texture = texture;
             }));
         }
+
+        if (properties.roughnessFactor !== undefined) {
+            babylonMaterial.sheen.roughness = properties.roughnessFactor;
+        } else {
+            babylonMaterial.sheen.roughness = 0;
+        }
+
+        babylonMaterial.sheen.albedoScaling = true;
 
         return Promise.all(promises).then(() => { });
     }

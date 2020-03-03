@@ -39,6 +39,18 @@
     }
 #endif
 
+/* NOT USED
+#if defined(SHEEN) && defined(SHEEN_SOFTER)
+// Approximation of (integral on hemisphere)[f_sheen*cos(theta)*dtheta*dphi]
+float getBRDFLookupCharlieSheen(float NdotV, float perceptualRoughness)
+{
+    float c = 1.0 - NdotV;
+    float c3 = c*c*c;
+    return 0.65584461 * c3 + 1.0 / (4.16526551 + exp(-7.97291361*perceptualRoughness+6.33516894));
+}
+#endif
+*/
+
 #if !defined(ENVIRONMENTBRDF) || defined(REFLECTIONMAP_SKYBOX) || defined(ALPHAFRESNEL)
     vec3 getReflectanceFromAnalyticalBRDFLookup_Jones(float VdotN, vec3 reflectance0, vec3 reflectance90, float smoothness)
     {
@@ -48,7 +60,7 @@
     }
 #endif
 
-#if defined(SHEEN) && defined(REFLECTION)
+#if defined(SHEEN) && defined(ENVIRONMENTBRDF)
     /**
      * The sheen BRDF not containing F can be easily stored in the blue channel of the BRDF texture.
      * The blue channel contains DCharlie * VAshikhmin * NdotL as a lokkup table
@@ -136,6 +148,7 @@ float normalDistributionFunction_TrowbridgeReitzGGX(float NdotH, float alphaG)
 }
 
 #ifdef SHEEN
+    // http://www.aconty.com/pdf/s2017_pbs_imageworks_sheen.pdf
     // https://knarkowicz.wordpress.com/2018/01/04/cloth-shading/
     float normalDistributionFunction_CharlieSheen(float NdotH, float alphaG)
     {
@@ -245,6 +258,33 @@ float normalDistributionFunction_TrowbridgeReitzGGX(float NdotH, float alphaG)
     {
         return 1. / (4. * (NdotL + NdotV - NdotL * NdotV));
     }
+
+    /* NOT USED
+    #ifdef SHEEN_SOFTER
+        // http://www.aconty.com/pdf/s2017_pbs_imageworks_sheen.pdf
+        float l(float x, float alphaG)
+        {
+            float oneMinusAlphaSq = (1.0 - alphaG) * (1.0 - alphaG);
+            float a = mix(21.5473, 25.3245, oneMinusAlphaSq);
+            float b = mix(3.82987, 3.32435, oneMinusAlphaSq);
+            float c = mix(0.19823, 0.16801, oneMinusAlphaSq);
+            float d = mix(-1.97760, -1.27393, oneMinusAlphaSq);
+            float e = mix(-4.32054, -4.85967, oneMinusAlphaSq);
+            return a / (1.0 + b * pow(x, c)) + d * x + e;
+        }
+
+        float lambdaSheen(float cosTheta, float alphaG)
+        {
+            return abs(cosTheta) < 0.5 ? exp(l(cosTheta, alphaG)) : exp(2.0 * l(0.5, alphaG) - l(1.0 - cosTheta, alphaG));
+        }
+
+        float visibility_CharlieSheen(float NdotL, float NdotV, float alphaG)
+        {
+            float G = 1.0 / (1.0 + lambdaSheen(NdotV, alphaG) + lambdaSheen(NdotL, alphaG));
+            return G / (4.0 * NdotV * NdotL);
+        }
+    #endif
+    */
 #endif
 
 // ______________________________________________________________________
