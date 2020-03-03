@@ -8,15 +8,6 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export class DataStorage {
-        private static _InMemoryStorage;
-        static ReadBoolean(key: string, defaultValue: boolean): boolean;
-        static StoreBoolean(key: string, value: boolean): void;
-        static ReadNumber(key: string, defaultValue: number): number;
-        static StoreNumber(key: string, value: number): void;
-    }
-}
-declare module NODEEDITOR {
     interface ILogComponentProps {
         globalState: GlobalState;
     }
@@ -195,26 +186,46 @@ declare module NODEEDITOR {
         private initResizing;
         private cleanUpResizing;
         private updateMinHeightWithComments;
+        private _isResizingTop;
+        private _isResizingRight;
+        private _isResizingBottom;
+        private _isResizingLeft;
         private _onRightHandlePointerDown;
         private _onRightHandlePointerMove;
         private _moveRightHandle;
-        private _expandRight;
         private _onRightHandlePointerUp;
         private _onBottomHandlePointerDown;
         private _onBottomHandlePointerMove;
         private _moveBottomHandle;
-        private _expandBottom;
         private _onBottomHandlePointerUp;
         private _onLeftHandlePointerDown;
         private _onLeftHandlePointerMove;
         private _moveLeftHandle;
-        private _expandLeft;
         private _onLeftHandlePointerUp;
         private _onTopHandlePointerDown;
         private _onTopHandlePointerMove;
         private _moveTopHandle;
-        private _expandTop;
         private _onTopHandlePointerUp;
+        private _onTopRightHandlePointerDown;
+        private _onTopRightHandlePointerMove;
+        private _moveTopRightHandle;
+        private _onTopRightHandlePointerUp;
+        private _onBottomRightHandlePointerDown;
+        private _onBottomRightHandlePointerMove;
+        private _moveBottomRightHandle;
+        private _onBottomRightHandlePointerUp;
+        private _onBottomLeftHandlePointerDown;
+        private _onBottomLeftHandlePointerMove;
+        private _moveBottomLeftHandle;
+        private _onBottomLeftHandlePointerUp;
+        private _onTopLeftHandlePointerDown;
+        private _onTopLeftHandlePointerMove;
+        private _moveTopLeftHandle;
+        private _onTopLeftHandlePointerUp;
+        private _expandLeft;
+        private _expandTop;
+        private _expandRight;
+        private _expandBottom;
         dispose(): void;
         serialize(): IFrameData;
         export(): void;
@@ -881,6 +892,7 @@ declare module NODEEDITOR {
         accept: string;
     }
     export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
+        private uploadRef;
         constructor(props: IFileButtonLineComponentProps);
         onChange(evt: any): void;
         render(): JSX.Element;
@@ -994,6 +1006,7 @@ declare module NODEEDITOR {
         face: number;
     }
     export class TextureLineComponent extends React.Component<ITextureLineComponentProps, ITextureLineComponentState> {
+        private canvasRef;
         constructor(props: ITextureLineComponentProps);
         shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: {
             displayRed: boolean;
@@ -1256,6 +1269,7 @@ declare module NODEEDITOR {
     }
     export class PreviewMeshControlComponent extends React.Component<IPreviewMeshControlComponent> {
         private colorInputRef;
+        private filePickerRef;
         constructor(props: IPreviewMeshControlComponent);
         changeMeshType(newOne: PreviewMeshType): void;
         useCustomMesh(evt: any): void;

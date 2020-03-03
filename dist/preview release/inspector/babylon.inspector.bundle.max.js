@@ -40688,6 +40688,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
 /* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
+/* harmony import */ var babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Misc/dataStorage */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_4__);
+
 
 
 
@@ -40696,40 +40699,13 @@ var LineContainerComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LineContainerComponent, _super);
     function LineContainerComponent(props) {
         var _this = _super.call(this, props) || this;
-        var initialState;
-        try {
-            if (LineContainerComponent._InMemoryStorage && LineContainerComponent._InMemoryStorage[_this.props.title] !== undefined) {
-                initialState = LineContainerComponent._InMemoryStorage[_this.props.title];
-            }
-            else if (typeof (Storage) !== "undefined" && localStorage.getItem(_this.props.title) !== null) {
-                initialState = localStorage.getItem(_this.props.title) === "true";
-            }
-            else {
-                initialState = !_this.props.closed;
-            }
-        }
-        catch (e) {
-            LineContainerComponent._InMemoryStorage = {};
-            LineContainerComponent._InMemoryStorage[_this.props.title] = !_this.props.closed;
-            initialState = !_this.props.closed;
-        }
+        var initialState = babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean(_this.props.title, !_this.props.closed);
         _this.state = { isExpanded: initialState, isHighlighted: false };
         return _this;
     }
     LineContainerComponent.prototype.switchExpandedState = function () {
         var newState = !this.state.isExpanded;
-        try {
-            if (LineContainerComponent._InMemoryStorage) {
-                LineContainerComponent._InMemoryStorage[this.props.title] = newState;
-            }
-            else if (typeof (Storage) !== "undefined") {
-                localStorage.setItem(this.props.title, newState ? "true" : "false");
-            }
-        }
-        catch (e) {
-            LineContainerComponent._InMemoryStorage = {};
-            LineContainerComponent._InMemoryStorage[this.props.title] = newState;
-        }
+        babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].WriteBoolean(this.props.title, newState);
         this.setState({ isExpanded: newState });
     };
     LineContainerComponent.prototype.componentDidMount = function () {
@@ -41246,6 +41222,7 @@ var FileButtonLineComponent = /** @class */ (function (_super) {
     function FileButtonLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._id = FileButtonLineComponent._IDGenerator++;
+        _this.uploadInputRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
     }
     FileButtonLineComponent.prototype.onChange = function (evt) {
@@ -41259,7 +41236,7 @@ var FileButtonLineComponent = /** @class */ (function (_super) {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "buttonLine" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "file-upload" + this._id, className: "file-upload" }, this.props.label),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: "upload", id: "file-upload" + this._id, type: "file", accept: this.props.accept, onChange: function (evt) { return _this.onChange(evt); } })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.uploadInputRef, id: "file-upload" + this._id, type: "file", accept: this.props.accept, onChange: function (evt) { return _this.onChange(evt); } })));
     };
     FileButtonLineComponent._IDGenerator = 0;
     return FileButtonLineComponent;
@@ -41289,6 +41266,7 @@ var FileMultipleButtonLineComponent = /** @class */ (function (_super) {
     function FileMultipleButtonLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._id = FileMultipleButtonLineComponent._IDGenerator++;
+        _this.uploadInputRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
     }
     FileMultipleButtonLineComponent.prototype.onChange = function (evt) {
@@ -41302,7 +41280,7 @@ var FileMultipleButtonLineComponent = /** @class */ (function (_super) {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "buttonLine" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "file-upload" + this._id, className: "file-upload" }, this.props.label),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: "upload", id: "file-upload" + this._id, type: "file", accept: this.props.accept, onChange: function (evt) { return _this.onChange(evt); }, multiple: true })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.uploadInputRef, id: "file-upload" + this._id, type: "file", accept: this.props.accept, onChange: function (evt) { return _this.onChange(evt); }, multiple: true })));
     };
     FileMultipleButtonLineComponent._IDGenerator = 0;
     return FileMultipleButtonLineComponent;
@@ -42073,6 +42051,7 @@ var TextureLineComponent = /** @class */ (function (_super) {
             channel: ChannelToDisplay.All,
             face: 0
         };
+        _this.canvasRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
     }
     TextureLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
@@ -42113,7 +42092,7 @@ var TextureLineComponent = /** @class */ (function (_super) {
             setTimeout(function () { return _this.updatePreview(); }, 250);
             return;
         }
-        var previewCanvas = this.refs.canvas;
+        var previewCanvas = this.canvasRef.current;
         if (this.props.globalState) {
             this.props.globalState.blockMutationUpdates = true;
         }
@@ -42211,7 +42190,7 @@ var TextureLineComponent = /** @class */ (function (_super) {
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === ChannelToDisplay.B ? "blue command selected" : "blue command", onClick: function () { return _this.setState({ channel: ChannelToDisplay.B }); } }, "B"),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === ChannelToDisplay.A ? "alpha command selected" : "alpha command", onClick: function () { return _this.setState({ channel: ChannelToDisplay.A }); } }, "A"),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === ChannelToDisplay.All ? "all command selected" : "all command", onClick: function () { return _this.setState({ channel: ChannelToDisplay.All }); } }, "ALL")),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { ref: "canvas", className: "preview" })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { ref: this.canvasRef, className: "preview" })),
             texture.isRenderTarget &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_buttonLineComponent__WEBPACK_IMPORTED_MODULE_3__["ButtonLineComponent"], { label: "Refresh", onClick: function () {
                         _this.updatePreview();
@@ -43225,6 +43204,7 @@ var AnimationGroupGridComponent = /** @class */ (function (_super) {
         _this._onBeforeRenderObserver = _this.props.scene.onBeforeRenderObservable.add(function () {
             _this.updateCurrentFrame(_this.props.animationGroup);
         });
+        _this.timelineRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
     }
     AnimationGroupGridComponent.prototype.disconnect = function (animationGroup) {
@@ -43305,7 +43285,7 @@ var AnimationGroupGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "CONTROLS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: playButtonText, onClick: function () { return _this.playOrPause(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Speed ratio", minimum: 0, maximum: 10, step: 0.1, target: animationGroup, propertyName: "speedRatio", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { ref: "timeline", label: "Current frame", minimum: animationGroup.from, maximum: animationGroup.to, step: (animationGroup.to - animationGroup.from) / 1000.0, directValue: this.state.currentFrame, onInput: function (value) { return _this.onCurrentFrameChange(value); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { ref: this.timelineRef, label: "Current frame", minimum: animationGroup.from, maximum: animationGroup.to, step: (animationGroup.to - animationGroup.from) / 1000.0, directValue: this.state.currentFrame, onInput: function (value) { return _this.onCurrentFrameChange(value); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "INFOS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Animation count", value: animationGroup.targetedAnimations.length.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "From", value: animationGroup.from.toFixed(2) }),
@@ -43388,6 +43368,7 @@ var AnimationGridComponent = /** @class */ (function (_super) {
                 });
             }
         }
+        _this.timelineRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
     }
     AnimationGridComponent.prototype.playOrPause = function () {
@@ -43470,7 +43451,7 @@ var AnimationGridComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Loop", onSelect: function (value) { return _this._animationControl.loop = value; }, isSelected: function () { return _this._animationControl.loop; } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: this._isPlaying ? "Stop" : "Play", onClick: function () { return _this.playOrPause(); } }),
                     this._isPlaying &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { ref: "timeline", label: "Current frame", minimum: this._animationControl.from, maximum: this._animationControl.to, step: (this._animationControl.to - this._animationControl.from) / 1000.0, directValue: this.state.currentFrame, onInput: function (value) { return _this.onCurrentFrameChange(value); } }))));
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { ref: this.timelineRef, label: "Current frame", minimum: this._animationControl.from, maximum: this._animationControl.to, step: (this._animationControl.to - this._animationControl.from) / 1000.0, directValue: this.state.currentFrame, onInput: function (value) { return _this.onCurrentFrameChange(value); } }))));
     };
     return AnimationGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -46066,6 +46047,7 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
         _this._adtInstrumentation = new babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__["AdvancedDynamicTextureInstrumentation"](adt);
         _this._adtInstrumentation.captureRenderTime = true;
         _this._adtInstrumentation.captureLayoutTime = true;
+        _this.textureLineRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
     }
     TexturePropertyGridComponent.prototype.componentWillUnmount = function () {
@@ -46097,7 +46079,7 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
     };
     TexturePropertyGridComponent.prototype.foreceRefresh = function () {
         this.forceUpdate();
-        this.refs["textureLine"].updatePreview();
+        this.textureLineRef.current.updatePreview();
     };
     TexturePropertyGridComponent.prototype.render = function () {
         var _this = this;
@@ -46135,7 +46117,7 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
         var textureUrl = (url.substring(0, 4) === "data" || url.substring(0, 4) === "blob") ? "" : url;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "PREVIEW" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLineComponent"], { ref: "textureLine", texture: texture, width: 256, height: 256, globalState: this.props.globalState }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLineComponent"], { ref: this.textureLineRef, texture: texture, width: 256, height: 256, globalState: this.props.globalState }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_10__["FileButtonLineComponent"], { label: "Load texture from file", onClick: function (file) { return _this.updateTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_15__["TextInputLineComponent"], { label: "URL", value: textureUrl, lockObject: this.props.lockObject, onChange: function (url) {
                         texture.updateURL(url);
@@ -48227,15 +48209,18 @@ var EmbedHostComponent = /** @class */ (function (_super) {
         return _this;
     }
     EmbedHostComponent.prototype.componentDidMount = function () {
-        var container = this.refs.split;
+        var container = this.splitRef.current;
         if (!container) {
             return;
         }
-        Split([this.refs.topPart, this.refs.bottomPart], {
+        Split([this.topPartRef.current, this.bottomPartRef.current], {
             direction: "vertical",
             minSize: [200, 200],
             gutterSize: 4
         });
+        this.splitRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        this.topPartRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        this.bottomPartRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
     };
     EmbedHostComponent.prototype.renderContent = function () {
         if (this.props.popupMode) {
@@ -48246,10 +48231,10 @@ var EmbedHostComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "bottomPart", style: { marginTop: "4px", overflow: "hidden" } },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_actionTabs_actionTabsComponent__WEBPACK_IMPORTED_MODULE_5__["ActionTabsComponent"], { scene: this.props.scene, popupMode: true, globalState: this.props.globalState, noHeader: true, initialTab: this.props.initialTab }))));
         }
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { ref: "split", id: "split", className: "noPopup" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "topPart", ref: "topPart" },
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { ref: this.splitRef, id: "split", className: "noPopup" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "topPart", ref: this.topPartRef },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sceneExplorer_sceneExplorerComponent__WEBPACK_IMPORTED_MODULE_4__["SceneExplorerComponent"], { scene: this.props.scene, extensibilityGroups: this.props.extensibilityGroups, globalState: this.props.globalState, popupMode: true, noHeader: true })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "bottomPart", ref: "bottomPart", style: { marginTop: "4px", overflow: "hidden" } },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "bottomPart", ref: this.bottomPartRef, style: { marginTop: "4px", overflow: "hidden" } },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_actionTabs_actionTabsComponent__WEBPACK_IMPORTED_MODULE_5__["ActionTabsComponent"], { scene: this.props.scene, globalState: this.props.globalState, popupMode: true, noHeader: true, initialTab: this.props.initialTab }))));
     };
     EmbedHostComponent.prototype.render = function () {
@@ -48294,7 +48279,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _replayRecorder__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./replayRecorder */ "./components/replayRecorder.ts");
-/* harmony import */ var _tools__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../tools */ "./tools.ts");
 
 
 
@@ -48319,13 +48303,13 @@ var GlobalState = /** @class */ (function () {
     Object.defineProperty(GlobalState.prototype, "onlyUseEulers", {
         get: function () {
             if (this._onlyUseEulers === null) {
-                this._onlyUseEulers = _tools__WEBPACK_IMPORTED_MODULE_2__["Tools"].ReadLocalBooleanSettings("settings_onlyUseEulers", true);
+                this._onlyUseEulers = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("settings_onlyUseEulers", true);
             }
             return this._onlyUseEulers;
         },
         set: function (value) {
             this._onlyUseEulers = value;
-            _tools__WEBPACK_IMPORTED_MODULE_2__["Tools"].StoreLocalBooleanSettings("settings_onlyUseEulers", value);
+            babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].WriteBoolean("settings_onlyUseEulers", value);
         },
         enumerable: true,
         configurable: true
@@ -48333,13 +48317,13 @@ var GlobalState = /** @class */ (function () {
     Object.defineProperty(GlobalState.prototype, "ignoreBackfacesForPicking", {
         get: function () {
             if (this._ignoreBackfacesForPicking === null) {
-                this._ignoreBackfacesForPicking = _tools__WEBPACK_IMPORTED_MODULE_2__["Tools"].ReadLocalBooleanSettings("settings_ignoreBackfacesForPicking", false);
+                this._ignoreBackfacesForPicking = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("settings_ignoreBackfacesForPicking", false);
             }
             return this._ignoreBackfacesForPicking;
         },
         set: function (value) {
             this._ignoreBackfacesForPicking = value;
-            _tools__WEBPACK_IMPORTED_MODULE_2__["Tools"].StoreLocalBooleanSettings("settings_ignoreBackfacesForPicking", value);
+            babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].WriteBoolean("settings_ignoreBackfacesForPicking", value);
         },
         enumerable: true,
         configurable: true
@@ -49602,6 +49586,7 @@ var ExtensionsComponent = /** @class */ (function (_super) {
     function ExtensionsComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { popupVisible: false };
+        _this.extensionRef = react__WEBPACK_IMPORTED_MODULE_3__["createRef"]();
         return _this;
     }
     ExtensionsComponent.prototype.showPopup = function () {
@@ -49634,7 +49619,7 @@ var ExtensionsComponent = /** @class */ (function (_super) {
         if (options.length === 0) {
             return null;
         }
-        return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { ref: "extensions", className: "extensions", onClick: function () { return _this.showPopup(); } },
+        return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { ref: this.extensionRef, className: "extensions", onClick: function () { return _this.showPopup(); } },
             react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { title: "Additional options", className: "icon" },
                 react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__["faEllipsisH"] })),
             react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { ref: function (input) { _this._popup = input; }, tabIndex: -1, className: this.state.popupVisible ? "popup show" : "popup", onBlur: function () { return _this.setState({ popupVisible: false }); } }, options.map(function (extensibility) {
@@ -49715,6 +49700,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 __webpack_require__(/*! ./sceneExplorer.scss */ "./components/sceneExplorer/sceneExplorer.scss");
 var SceneExplorerFilterComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SceneExplorerFilterComponent, _super);
@@ -49737,6 +49723,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         _this._hooked = false;
         _this.state = { filter: null, selectedEntity: null, scene: _this.props.scene };
         _this.sceneMutationFunc = _this.processMutation.bind(_this);
+        _this.sceneExplorerRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
     }
     SceneExplorerComponent.prototype.processMutation = function () {
@@ -49936,6 +49923,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
                 _this.props.globalState.onSelectionChangedObservable.notifyObservers(newFreeCamera);
             }
         });
+        // Materials
         var materialsContextMenus = [];
         materialsContextMenus.push({
             label: "Add new node material",
@@ -49951,6 +49939,15 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         if (scene.multiMaterials && scene.multiMaterials.length) {
             materials.push.apply(materials, scene.multiMaterials);
         }
+        // Particle systems
+        var particleSystemsContextMenus = [];
+        particleSystemsContextMenus.push({
+            label: "Add new particle system",
+            action: function () {
+                var newSystem = babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["ParticleHelper"].CreateDefault(babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(), 1000, scene);
+                _this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
+            }
+        });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "tree", onContextMenu: function (e) { return e.preventDefault(); } },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](SceneExplorerFilterComponent, { onFilter: function (filter) { return _this.filterContent(filter); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_entities_sceneTreeItemComponent__WEBPACK_IMPORTED_MODULE_6__["SceneTreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, scene: scene, onRefresh: function () { return _this.forceUpdate(); }, onSelectionChangedObservable: this.props.globalState.onSelectionChangedObservable }),
@@ -49962,6 +49959,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
             postProcessses.length > 0 &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: postProcessses, label: "Post-processes", offset: 1, filter: this.state.filter }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, contextMenuItems: pipelineContextMenus, selectedEntity: this.state.selectedEntity, items: pipelines, label: "Rendering pipelines", offset: 1, filter: this.state.filter }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, contextMenuItems: particleSystemsContextMenus, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.particleSystems, label: "Particle systems", offset: 1, filter: this.state.filter }),
             guiElements && guiElements.length > 0 &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: guiElements, label: "GUI", offset: 1, filter: this.state.filter }),
             scene.animationGroups.length > 0 &&
@@ -49998,7 +49996,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
                 element.style.width = "300px";
             }, 150);
         }
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](re_resizable__WEBPACK_IMPORTED_MODULE_4___default.a, { tabIndex: -1, id: "sceneExplorer", ref: "sceneExplorer", size: { height: "100%" }, minWidth: 300, maxWidth: 600, minHeight: "100%", enable: { top: false, right: true, bottom: false, left: false, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false }, onKeyDown: function (keyEvent) { return _this.processKeys(keyEvent); } },
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](re_resizable__WEBPACK_IMPORTED_MODULE_4___default.a, { tabIndex: -1, id: "sceneExplorer", ref: this.sceneExplorerRef, size: { height: "100%" }, minWidth: 300, maxWidth: 600, minHeight: "100%", enable: { top: false, right: true, bottom: false, left: false, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false }, onKeyDown: function (keyEvent) { return _this.processKeys(keyEvent); } },
             !this.props.noHeader &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_headerComponent__WEBPACK_IMPORTED_MODULE_5__["HeaderComponent"], { title: "SCENE EXPLORER", noClose: this.props.noClose, noExpand: this.props.noExpand, noCommands: this.props.noCommands, onClose: function () { return _this.onClose(); }, onPopup: function () { return _this.onPopup(); } }),
             this.renderContent()));
@@ -50939,19 +50937,6 @@ __webpack_require__.r(__webpack_exports__);
 var Tools = /** @class */ (function () {
     function Tools() {
     }
-    Tools.StoreLocalBooleanSettings = function (key, value) {
-        if (typeof (Storage) !== "undefined") {
-            localStorage.setItem(key, value ? "true" : "false");
-        }
-    };
-    Tools.ReadLocalBooleanSettings = function (key, defaultValue) {
-        if (typeof (Storage) !== "undefined" && localStorage.getItem(key) !== null) {
-            return localStorage.getItem(key) === "true";
-        }
-        else {
-            return defaultValue;
-        }
-    };
     Tools.LookForItem = function (item, selectedEntity) {
         if (item === selectedEntity) {
             return true;

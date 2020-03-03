@@ -312,6 +312,12 @@ export interface IParticleSystem {
      */
     isReady(): boolean;
     /**
+     * Returns the string "ParticleSystem"
+     * @returns a string containing the class name
+     */
+    getClassName(): string;
+
+    /**
      * Adds a new color gradient
      * @param gradient defines the gradient to use (between 0 and 1)
      * @param color1 defines the color to affect to the specified gradient
