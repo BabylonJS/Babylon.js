@@ -498,6 +498,11 @@ export class GraphFrame {
         this.x = newX;
         this.y = newY;
 
+        console.log("move():");
+        console.log("oldX: ", oldX);
+        console.log("oldY: ", oldY);
+        console.log("newX: ", newX);
+        console.log("newY: ", oldY);
         for (var selectedNode of this._nodes) {
             selectedNode.x += this.x - oldX;
             selectedNode.y += this.y - oldY;
@@ -676,10 +681,10 @@ export class GraphFrame {
     private _onLeftHandlePointerDown = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
-        _this.initResizing(evt);
         if (_this.isCollapsed) {
                 return;
             }
+        _this.initResizing(evt);
         _this._resizingDirection = ResizingDirection.Left;
         _this.mouseXLimit = evt.clientX + _this.width - _this._minFrameWidth;
         _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onLeftHandlePointerUp);
@@ -723,10 +728,10 @@ export class GraphFrame {
     private _onTopHandlePointerDown = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
-        _this.initResizing(evt);
         if (_this.isCollapsed) {
                 return;
             }
+        _this.initResizing(evt);
         _this._resizingDirection = ResizingDirection.Top;
         _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onTopHandlePointerUp);
         _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onTopHandlePointerMove);
@@ -767,10 +772,10 @@ export class GraphFrame {
     private _onTopRightHandlePointerDown = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
-        _this.initResizing(evt);
         if (_this.isCollapsed) {
                 return;
             }
+        _this.initResizing(evt);
         _this._resizingDirection = ResizingDirection.TopRight;
         _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onTopRightHandlePointerUp);
         _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onTopRightHandlePointerMove);
@@ -828,10 +833,10 @@ export class GraphFrame {
     private _onBottomRightHandlePointerDown = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
-        _this.initResizing(evt);
         if (_this.isCollapsed) {
                 return;
             }
+        _this.initResizing(evt);
         _this._resizingDirection = ResizingDirection.BottomRight;
         _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onBottomRightHandlePointerUp);
         _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onBottomRightHandlePointerMove);
@@ -888,10 +893,10 @@ export class GraphFrame {
     private _onBottomLeftHandlePointerDown = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
-        _this.initResizing(evt);
         if (_this.isCollapsed) {
                 return;
             }
+        _this.initResizing(evt);
         _this._resizingDirection = ResizingDirection.BottomLeft;
         _this.mouseXLimit = evt.clientX + _this.width - _this._minFrameWidth;
         _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onBottomLeftHandlePointerUp);
@@ -950,10 +955,10 @@ export class GraphFrame {
     private _onTopLeftHandlePointerDown = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
-        _this.initResizing(evt);
         if (_this.isCollapsed) {
                 return;
             }
+        _this.initResizing(evt);
         _this._resizingDirection = ResizingDirection.TopLeft;
         _this.mouseXLimit = evt.clientX + _this.width - _this._minFrameWidth;
         _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onTopLeftHandlePointerUp);
