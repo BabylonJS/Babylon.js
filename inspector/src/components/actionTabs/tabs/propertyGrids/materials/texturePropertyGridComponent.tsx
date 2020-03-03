@@ -44,6 +44,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
 
         const texture = this.props.texture;
 
+        this.textureLineRef = React.createRef();
+
         if (!texture || !(texture as any).rootContainer) {
             return;
         }
@@ -53,8 +55,6 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         this._adtInstrumentation = new AdvancedDynamicTextureInstrumentation(adt);
         this._adtInstrumentation!.captureRenderTime = true;
         this._adtInstrumentation!.captureLayoutTime = true;
-
-        this.textureLineRef = React.createRef();
     }
 
     componentWillUnmount() {
