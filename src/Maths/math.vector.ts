@@ -3189,6 +3189,19 @@ export class Quaternion {
     }
 
     /**
+     * Updates the given quaternion "result" from the starting index of the given array.
+     * @param array the array to pull values from
+     * @param offset the offset into the array to start at
+     * @param result the quaternion to store the result in
+     */
+    public static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number, result: Quaternion): void {
+        result.x = array[offset];
+        result.y = array[offset + 1];
+        result.z = array[offset + 2];
+        result.w = array[offset + 3];
+    }
+
+    /**
      * Create a quaternion from Euler rotation angles
      * @param x Pitch
      * @param y Yaw
