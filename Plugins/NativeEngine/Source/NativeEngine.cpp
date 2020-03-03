@@ -553,7 +553,7 @@ namespace Babylon
                 // with metal, we bind images and not samplers
                 const spirv_cross::SmallVector<spirv_cross::Resource>& samplers = resources.separate_images;
 #else
-                 const spirv_cross::SmallVector<spirv_cross::Resource>& samplers = resources.separate_samplers;
+                const spirv_cross::SmallVector<spirv_cross::Resource>& samplers = resources.separate_samplers;
 #endif
                 size_t numUniforms = compiler.get_type(uniformBuffer.base_type_id).member_types.size() + samplers.size();
 
@@ -612,7 +612,7 @@ namespace Babylon
                 // with metal, we bind images and not samplers
                 const spirv_cross::SmallVector<spirv_cross::Resource>& samplers = resources.separate_images;
 #else
-                 const spirv_cross::SmallVector<spirv_cross::Resource>& samplers = resources.separate_samplers;
+                const spirv_cross::SmallVector<spirv_cross::Resource>& samplers = resources.separate_samplers;
 #endif
                 size_t numUniforms = compiler.get_type(uniformBuffer.base_type_id).member_types.size() + samplers.size();
 
