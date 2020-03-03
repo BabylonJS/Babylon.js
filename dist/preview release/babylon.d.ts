@@ -1078,6 +1078,10 @@ declare module BABYLON {
          */
         isReady: boolean;
         /** @hidden */
+        _getVertexShaderCode(): string | null;
+        /** @hidden */
+        _getFragmentShaderCode(): string | null;
+        /** @hidden */
         _handlesSpectorRebuildCallback(onCompiled: (compiledObject: any) => void): void;
     }
 }
@@ -7155,6 +7159,8 @@ declare module BABYLON {
         get isAsync(): boolean;
         get isReady(): boolean;
         _handlesSpectorRebuildCallback(onCompiled: (program: WebGLProgram) => void): void;
+        _getVertexShaderCode(): string | null;
+        _getFragmentShaderCode(): string | null;
     }
 }
 declare module BABYLON {
@@ -13153,6 +13159,11 @@ declare module BABYLON {
          * @return true if the system is ready
          */
         isReady(): boolean;
+        /**
+         * Returns the string "ParticleSystem"
+         * @returns a string containing the class name
+         */
+        getClassName(): string;
         /**
          * Adds a new color gradient
          * @param gradient defines the gradient to use (between 0 and 1)
@@ -30002,6 +30013,10 @@ declare module BABYLON {
          */
         static ShadersRepository: string;
         /**
+         * Enable logging of the shader code when a compilation error occurs
+         */
+        static LogShaderCodeOnCompilationError: boolean;
+        /**
          * Name of the effect.
          */
         name: any;
@@ -30185,6 +30200,7 @@ declare module BABYLON {
          * @hidden
          */
         _prepareEffect(): void;
+        private _getShaderCodeAndErrorLine;
         private _processCompilationErrors;
         /**
          * Checks if the effect is supported. (Must be called after compilation)
@@ -31530,6 +31546,8 @@ declare module BABYLON {
         protected static _ConcatenateShader(source: string, defines: Nullable<string>, shaderVersion?: string): string;
         private _compileShader;
         private _compileRawShader;
+        /** @hidden */
+        _getShaderSource(shader: WebGLShader): Nullable<string>;
         /**
          * Directly creates a webGL program
          * @param pipelineContext  defines the pipeline context to attach to
@@ -32620,6 +32638,23 @@ declare module BABYLON {
          * This is helpful to resume play once browser policies have been satisfied.
          */
         unlock(): void;
+        /**
+         * Gets the global volume sets on the master gain.
+         * @returns the global volume if set or -1 otherwise
+         */
+        getGlobalVolume(): number;
+        /**
+         * Sets the global volume of your experience (sets on the master gain).
+         * @param newVolume Defines the new global volume of the application
+         */
+        setGlobalVolume(newVolume: number): void;
+        /**
+         * Connect the audio engine to an audio analyser allowing some amazing
+         * synchornization between the sounds/music and your visualization (VuMeter for instance).
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
+         * @param analyser The analyser to connect to the engine
+         */
+        connectToAnalyser(analyser: Analyser): void;
     }
     /**
      * This represents the default audio engine used in babylon.
@@ -33978,7 +34013,8 @@ declare module BABYLON {
          * It can be a string if the expected behavior is identical in the entire app.
          * Or a callback to be able to set it per url or on a group of them (in case of Video source for instance)
          */
-        static CorsBehavior: string | ((url: string | string[]) => string);
+        static get CorsBehavior(): string | ((url: string | string[]) => string);
+        static set CorsBehavior(value: string | ((url: string | string[]) => string));
         /**
          * Gets or sets a global variable indicating if fallback texture must be used when a texture cannot be loaded
          * @ignorenaming
@@ -61764,6 +61800,51 @@ declare module BABYLON {
         /** Quadratic error decimation */
         QUADRATIC = 0
     }
+    /**
+     * An implementation of the Quadratic Error simplification algorithm.
+     * Original paper : http://www1.cs.columbia.edu/~cs4162/html05s/garland97.pdf
+     * Ported mostly from QSlim and http://voxels.blogspot.de/2014/05/quadric-mesh-simplification-with-source.html to babylon JS
+     * @author RaananW
+     * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
+     */
+    export class QuadraticErrorSimplification implements ISimplifier {
+        private _mesh;
+        private triangles;
+        private vertices;
+        private references;
+        private _reconstructedMesh;
+        /** Gets or sets the number pf sync interations */
+        syncIterations: number;
+        /** Gets or sets the aggressiveness of the simplifier */
+        aggressiveness: number;
+        /** Gets or sets the number of allowed iterations for decimation */
+        decimationIterations: number;
+        /** Gets or sets the espilon to use for bounding box computation */
+        boundingBoxEpsilon: number;
+        /**
+         * Creates a new QuadraticErrorSimplification
+         * @param _mesh defines the target mesh
+         */
+        constructor(_mesh: Mesh);
+        /**
+         * Simplification of a given mesh according to the given settings.
+         * Since this requires computation, it is assumed that the function runs async.
+         * @param settings The settings of the simplification, including quality and distance
+         * @param successCallback A callback that will be called after the mesh was simplified.
+         */
+        simplify(settings: ISimplificationSettings, successCallback: (simplifiedMesh: Mesh) => void): void;
+        private runDecimation;
+        private initWithMesh;
+        private init;
+        private reconstructMesh;
+        private initDecimatedMesh;
+        private isFlipped;
+        private updateTriangles;
+        private identifyBorder;
+        private updateMesh;
+        private vertexError;
+        private calculateError;
+    }
 }
 declare module BABYLON {
         interface Scene {
@@ -68621,6 +68702,54 @@ declare module BABYLON {
          * @param byteLength The byte length to skip
          */
         skipBytes(byteLength: number): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class for storing data to local storage if available or in-memory storage otherwise
+     */
+    export class DataStorage {
+        private static _Storage;
+        private static _GetStorage;
+        /**
+         * Reads a string from the data storage
+         * @param key The key to read
+         * @param defaultValue The value if the key doesn't exist
+         * @returns The string value
+         */
+        static ReadString(key: string, defaultValue: string): string;
+        /**
+         * Writes a string to the data storage
+         * @param key The key to write
+         * @param value The value to write
+         */
+        static WriteString(key: string, value: string): void;
+        /**
+         * Reads a boolean from the data storage
+         * @param key The key to read
+         * @param defaultValue The value if the key doesn't exist
+         * @returns The boolean value
+         */
+        static ReadBoolean(key: string, defaultValue: boolean): boolean;
+        /**
+         * Writes a boolean to the data storage
+         * @param key The key to write
+         * @param value The value to write
+         */
+        static WriteBoolean(key: string, value: boolean): void;
+        /**
+         * Reads a number from the data storage
+         * @param key The key to read
+         * @param defaultValue The value if the key doesn't exist
+         * @returns The number value
+         */
+        static ReadNumber(key: string, defaultValue: number): number;
+        /**
+         * Writes a number to the data storage
+         * @param key The key to write
+         * @param value The value to write
+         */
+        static WriteNumber(key: string, value: number): void;
     }
 }
 declare module BABYLON {

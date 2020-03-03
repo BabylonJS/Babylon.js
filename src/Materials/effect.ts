@@ -76,6 +76,10 @@ export class Effect implements IDisposable {
      */
     public static ShadersRepository = "src/Shaders/";
     /**
+     * Enable logging of the shader code when a compilation error occurs
+     */
+    public static LogShaderCodeOnCompilationError = true;
+    /**
      * Name of the effect.
      */
     public name: any = null;
@@ -612,6 +616,25 @@ export class Effect implements IDisposable {
         }
     }
 
+    private _getShaderCodeAndErrorLine(code: Nullable<string>, error: Nullable<string>, isFragment: boolean): [Nullable<string>, Nullable<string>] {
+        const regexp = isFragment ? /FRAGMENT SHADER ERROR: 0:(\d+?):/ : /VERTEX SHADER ERROR: 0:(\d+?):/;
+
+        let errorLine = null;
+
+        if (error && code) {
+            const res = error.match(regexp);
+            if (res && res.length === 2) {
+                const lineNumber = parseInt(res[1]);
+                const lines = code.split("\n", -1);
+                if (lines.length >= lineNumber) {
+                    errorLine = `Offending line [${lineNumber}] in ${isFragment ? "fragment" : "vertex"} code: ${lines[lineNumber - 1]}`;
+                }
+            }
+        }
+
+        return [code, errorLine];
+    }
+
     private _processCompilationErrors(e: any, previousPipelineContext: Nullable<IPipelineContext> = null) {
         this._compilationError = e.message;
         let attributesNames = this._attributesNames;
@@ -626,6 +649,29 @@ export class Effect implements IDisposable {
             return " " + attribute;
         }));
         Logger.Error("Defines:\r\n" + this.defines);
+        if (Effect.LogShaderCodeOnCompilationError) {
+            let lineErrorVertex = null, lineErrorFragment = null, code = null;
+            if (this._pipelineContext?._getVertexShaderCode()) {
+                [code, lineErrorVertex] = this._getShaderCodeAndErrorLine(this._pipelineContext._getVertexShaderCode(), this._compilationError, false);
+                if (code) {
+                    Logger.Error("Vertex code:");
+                    Logger.Error(code);
+                }
+            }
+            if (this._pipelineContext?._getFragmentShaderCode()) {
+                [code, lineErrorFragment] = this._getShaderCodeAndErrorLine(this._pipelineContext?._getFragmentShaderCode(), this._compilationError, true);
+                if (code) {
+                    Logger.Error("Fragment code:");
+                    Logger.Error(code);
+                }
+            }
+            if (lineErrorVertex) {
+                Logger.Error(lineErrorVertex);
+            }
+            if (lineErrorFragment) {
+                Logger.Error(lineErrorFragment);
+            }
+        }
         Logger.Error("Error: " + this._compilationError);
         if (previousPipelineContext) {
             this._pipelineContext = previousPipelineContext;
