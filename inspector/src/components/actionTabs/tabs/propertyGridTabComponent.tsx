@@ -89,8 +89,8 @@ import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
 import { NodeMaterialPropertyGridComponent } from './propertyGrids/materials/nodeMaterialPropertyGridComponent';
 import { MultiMaterial } from 'babylonjs/Materials/multiMaterial';
 import { MultiMaterialPropertyGridComponent } from './propertyGrids/materials/multiMaterialPropertyGridComponent';
-import { IParticleSystem } from 'babylonjs';
 import { ParticleSystemPropertyGridComponent } from './propertyGrids/particleSystems/particleSystemPropertyGridComponent';
+import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
