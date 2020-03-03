@@ -8,6 +8,8 @@
 - NME Frames are now resizable from the corners ([Kyle Belfort](https://github.com/belfortk)
 - Refactored React refs from old string API to React.createRef() API ([Kyle Belfort](https://github.com/belfortk)
 
+- Scale on one axis for `BoundingBoxGizmo` ([cedricguillemet](https://github.com/cedricguillemet))
+
 ### Engine
 
 - Allow logging of shader code when a compilation error occurs ([Popov72](https://github.com/Popov72))
@@ -19,6 +21,13 @@
 ### Physics
 
 - Ammo.js IDL exposed property update and raycast vehicle stablization support ([MackeyK24](https://github.com/MackeyK24))
+
+### Loaders
+- Added support for glTF mesh instancing extension ([#7521](https://github.com/BabylonJS/Babylon.js/issues/7521)) ([drigax](https://github.com/Drigax))
+
+
+### Materials
+- Added the `roughness` and `albedoScaling` parameters to PBR sheen ([Popov72](https://github.com/Popov72))
 
 ## Bugs
 

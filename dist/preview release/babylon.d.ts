@@ -404,6 +404,13 @@ declare module BABYLON {
          * @returns the encoded string
          */
         static EncodeArrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferView): string;
+        /**
+        * Converts a number to string and pads with preceeding zeroes until it is of specified length.
+        * @param num the number to convert and pad
+        * @param length the expected length of the string
+        * @returns the padded string
+        */
+        static PadNumber(num: number, length: number): string;
     }
 }
 declare module BABYLON {
@@ -3729,6 +3736,13 @@ declare module BABYLON {
          * @returns a new quaternion
          */
         static FromArray(array: DeepImmutable<ArrayLike<number>>, offset?: number): Quaternion;
+        /**
+         * Updates the given quaternion "result" from the starting index of the given array.
+         * @param array the array to pull values from
+         * @param offset the offset into the array to start at
+         * @param result the quaternion to store the result in
+         */
+        static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number, result: Quaternion): void;
         /**
          * Create a quaternion from Euler rotation angles
          * @param x Pitch
@@ -8532,6 +8546,15 @@ declare module BABYLON {
          * around all axis.
          */
         noRotationConstraint: boolean;
+        /**
+         * Reverses mouselook direction to 'natural' panning as opposed to traditional direct
+         * panning
+         */
+        invertRotation: boolean;
+        /**
+         * Speed multiplier for inverse camera panning
+         */
+        inverseRotationSpeed: number;
         /**
          * Define the current target of the camera as an object or a position.
          */
@@ -50339,6 +50362,8 @@ declare module BABYLON {
         SHEEN_TEXTURE: boolean;
         SHEEN_TEXTUREDIRECTUV: number;
         SHEEN_LINKWITHALBEDO: boolean;
+        SHEEN_ROUGHNESS: boolean;
+        SHEEN_ALBEDOSCALING: boolean;
         /** @hidden */
         _areTexturesDirty: boolean;
     }
@@ -50371,6 +50396,20 @@ declare module BABYLON {
          * a is a intensity
          */
         texture: Nullable<BaseTexture>;
+        private _roughness;
+        /**
+         * Defines the sheen roughness.
+         * It is not taken into account if linkSheenWithAlbedo is true.
+         * To stay backward compatible, material roughness is used instead if sheen roughness = null
+         */
+        roughness: Nullable<number>;
+        private _albedoScaling;
+        /**
+         * If true, the sheen effect is layered above the base BRDF with the albedo-scaling technique.
+         * It allows the strength of the sheen effect to not depend on the base color of the material,
+         * making it easier to setup and tweak the effect
+         */
+        albedoScaling: boolean;
         /** @hidden */
         private _internalMarkAllSubMeshesAsTexturesDirty;
         /** @hidden */
@@ -50963,6 +51002,8 @@ declare module BABYLON {
         SHEEN_TEXTURE: boolean;
         SHEEN_TEXTUREDIRECTUV: number;
         SHEEN_LINKWITHALBEDO: boolean;
+        SHEEN_ROUGHNESS: boolean;
+        SHEEN_ALBEDOSCALING: boolean;
         SUBSURFACE: boolean;
         SS_REFRACTION: boolean;
         SS_TRANSLUCENCY: boolean;

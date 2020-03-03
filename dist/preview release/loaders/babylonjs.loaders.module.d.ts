@@ -1383,7 +1383,7 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoader" {
     import { SceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
     import { Scene } from "babylonjs/scene";
     import { IProperty } from "babylonjs-gltf2interface";
-    import { IGLTF, ISampler, INode, IScene, IMesh, ICamera, IAnimation, IAnimationChannel, IBufferView, IMaterial, ITextureInfo, ITexture, IImage, IMeshPrimitive, IArrayItem as IArrItem } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
+    import { IGLTF, ISampler, INode, IScene, IMesh, IAccessor, ICamera, IAnimation, IAnimationChannel, IBufferView, IMaterial, ITextureInfo, ITexture, IImage, IMeshPrimitive, IArrayItem as IArrItem } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
     import { IGLTFLoaderExtension } from "babylonjs-loaders/glTF/2.0/glTFLoaderExtension";
     import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, IImportMeshAsyncOutput } from "babylonjs-loaders/glTF/glTFFileLoader";
     import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
@@ -1568,7 +1568,8 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoader" {
          */
         loadBufferViewAsync(context: string, bufferView: IBufferView): Promise<ArrayBufferView>;
         private _loadAccessorAsync;
-        private _loadFloatAccessorAsync;
+        /** @hidden */
+        _loadFloatAccessorAsync(context: string, accessor: IAccessor): Promise<Float32Array>;
         private _loadIndicesAccessorAsync;
         private _loadVertexBufferViewAsync;
         private _loadVertexAccessorAsync;
@@ -1982,6 +1983,35 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_specular" {
         private _loadSpecularPropertiesAsync;
     }
 }
+declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_mesh_instancing" {
+    import { TransformNode } from "babylonjs/Meshes/transformNode";
+    import { Nullable } from "babylonjs/types";
+    import { GLTFLoader } from "babylonjs-loaders/glTF/2.0/glTFLoader";
+    import { IGLTFLoaderExtension } from "babylonjs-loaders/glTF/2.0/glTFLoaderExtension";
+    import { INode } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1691)
+     * [Playground Sample](//TODO)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_mesh_instancing implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>>;
+    }
+}
 declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_mesh_quantization" {
     import { IGLTFLoaderExtension } from "babylonjs-loaders/glTF/2.0/glTFLoaderExtension";
     import { GLTFLoader } from "babylonjs-loaders/glTF/2.0/glTFLoader";
@@ -2245,6 +2275,7 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/index" {
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_clearcoat";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_sheen";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_specular";
+    export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_mesh_instancing";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_mesh_quantization";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_texture_basisu";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_texture_transform";
@@ -4113,7 +4144,8 @@ declare module BABYLON.GLTF2 {
          */
         loadBufferViewAsync(context: string, bufferView: IBufferView): Promise<ArrayBufferView>;
         private _loadAccessorAsync;
-        private _loadFloatAccessorAsync;
+        /** @hidden */
+        _loadFloatAccessorAsync(context: string, accessor: IAccessor): Promise<Float32Array>;
         private _loadIndicesAccessorAsync;
         private _loadVertexBufferViewAsync;
         private _loadVertexAccessorAsync;
@@ -4484,6 +4516,30 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
         private _loadSpecularPropertiesAsync;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1691)
+     * [Playground Sample](//TODO)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_mesh_instancing implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>>;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
