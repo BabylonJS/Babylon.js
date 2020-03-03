@@ -6105,7 +6105,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, "#scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px; }\n  #scene-explorer-host:focus {\n    outline: none; }\n\n#__resizable_base__ {\n  display: none; }\n\n.context-menu {\n  background: #222222; }\n  .context-menu .react-contextmenu-item {\n    padding: 10px;\n    cursor: pointer; }\n    .context-menu .react-contextmenu-item:hover {\n      background: #555555; }\n\n.react-contextmenu.context-menu.react-contextmenu--visible {\n  z-index: 99;\n  transform: scale(1); }\n\n#sceneExplorer {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\"; }\n  #sceneExplorer:focus {\n    outline: none; }\n  #sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #sceneExplorer #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: white; }\n    #sceneExplorer .filter input::placeholder {\n      color: lightgray; }\n    #sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: grid;\n    align-items: center; }\n    #sceneExplorer .groupContainer:hover {\n      background: #444444; }\n    #sceneExplorer .groupContainer .expandableHeader {\n      display: grid;\n      grid-template-columns: 1fr 20px; }\n      #sceneExplorer .groupContainer .expandableHeader .text {\n        grid-column: 1;\n        display: grid;\n        grid-template-columns: 20px 1fr; }\n        #sceneExplorer .groupContainer .expandableHeader .text .arrow {\n          grid-column: 1;\n          margin-left: 0px;\n          color: white;\n          cursor: pointer;\n          display: inline-block;\n          margin-right: 6px;\n          opacity: 0.5; }\n        #sceneExplorer .groupContainer .expandableHeader .text .text-value {\n          grid-column: 2;\n          display: flex;\n          align-items: center; }\n      #sceneExplorer .groupContainer .expandableHeader .expandAll {\n        opacity: 0.5;\n        grid-column: 2;\n        margin-right: 10px; }\n  #sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr; }\n    #sceneExplorer .itemContainer:hover {\n      background: #444444; }\n    #sceneExplorer .itemContainer.selected {\n      background: #bbbbbb;\n      color: black; }\n    #sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: white;\n      opacity: 0.6; }\n    #sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #444444;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px 20px 20px 10px 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #sceneExplorer .itemContainer .sceneNode .translation {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .translation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .rotation {\n        grid-column: 3;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .rotation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .scaling {\n        grid-column: 4;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .scaling.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .bounding {\n        grid-column: 5;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .bounding.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .separator {\n        grid-column: 6;\n        margin-left: 5px;\n        width: 5px;\n        display: flex;\n        align-items: center;\n        height: 18px;\n        border-left: solid 1px #337ab7; }\n      #sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 7;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 8; }\n      #sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 9; }\n    #sceneExplorer .itemContainer .animationGroupTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .animationGroupTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .meshTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .meshTools .bounding-box {\n        grid-column: 2;\n        opacity: 0.5; }\n        #sceneExplorer .itemContainer .meshTools .bounding-box.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .meshTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .meshTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .cameraTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .cameraTools .activeCamera {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .cameraTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .lightTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .lightTools .enableLight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .lightTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .materialTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .materialTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .postProcessTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .postProcessTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .renderingPipelineTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .renderingPipelineTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .textureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .textureTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .adtextureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .adtextureTools .pickingMode {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .adtextureTools .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .adtextureTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .controlTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .controlTools .highlight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .controlTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .controlTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .transformNodeTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .transformNodeTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .skeletonTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .skeletonTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .title {\n      grid-column: 1;\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 25px 1fr;\n      height: 24px;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .title .titleIcon {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center; }\n      #sceneExplorer .itemContainer .title .titleText {\n        grid-column: 2;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden; }\n", ""]);
+exports.push([module.i, "#scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px; }\n  #scene-explorer-host:focus {\n    outline: none; }\n\n#__resizable_base__ {\n  display: none; }\n\n.context-menu {\n  background: #222222; }\n  .context-menu .react-contextmenu-item {\n    padding: 10px;\n    cursor: pointer; }\n    .context-menu .react-contextmenu-item:hover {\n      background: #555555; }\n\n.react-contextmenu.context-menu.react-contextmenu--visible {\n  z-index: 99;\n  transform: scale(1); }\n\n#sceneExplorer {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\"; }\n  #sceneExplorer:focus {\n    outline: none; }\n  #sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #sceneExplorer #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: white; }\n    #sceneExplorer .filter input::placeholder {\n      color: lightgray; }\n    #sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: grid;\n    align-items: center; }\n    #sceneExplorer .groupContainer:hover {\n      background: #444444; }\n    #sceneExplorer .groupContainer .expandableHeader {\n      display: grid;\n      grid-template-columns: 1fr 20px; }\n      #sceneExplorer .groupContainer .expandableHeader .text {\n        grid-column: 1;\n        display: grid;\n        grid-template-columns: 20px 1fr; }\n        #sceneExplorer .groupContainer .expandableHeader .text .arrow {\n          grid-column: 1;\n          margin-left: 0px;\n          color: white;\n          cursor: pointer;\n          display: inline-block;\n          margin-right: 6px;\n          opacity: 0.5; }\n        #sceneExplorer .groupContainer .expandableHeader .text .text-value {\n          grid-column: 2;\n          display: flex;\n          align-items: center; }\n      #sceneExplorer .groupContainer .expandableHeader .expandAll {\n        opacity: 0.5;\n        grid-column: 2;\n        margin-right: 10px; }\n  #sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr; }\n    #sceneExplorer .itemContainer:hover {\n      background: #444444; }\n    #sceneExplorer .itemContainer.selected {\n      background: #bbbbbb;\n      color: black; }\n    #sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: white;\n      opacity: 0.6; }\n    #sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #444444;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px 20px 20px 10px 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #sceneExplorer .itemContainer .sceneNode .translation {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .translation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .rotation {\n        grid-column: 3;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .rotation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .scaling {\n        grid-column: 4;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .scaling.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .bounding {\n        grid-column: 5;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .bounding.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .separator {\n        grid-column: 6;\n        margin-left: 5px;\n        width: 5px;\n        display: flex;\n        align-items: center;\n        height: 18px;\n        border-left: solid 1px #337ab7; }\n      #sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 7;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 8; }\n      #sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 9; }\n    #sceneExplorer .itemContainer .animationGroupTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .animationGroupTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .meshTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .meshTools .bounding-box {\n        grid-column: 2;\n        opacity: 0.5; }\n        #sceneExplorer .itemContainer .meshTools .bounding-box.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .meshTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .meshTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .cameraTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .cameraTools .activeCamera {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .cameraTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .lightTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .lightTools .enableLight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .lightTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .materialTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .materialTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .particleSystemTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .particleSystemTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .postProcessTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .postProcessTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .renderingPipelineTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .renderingPipelineTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .textureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .textureTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .adtextureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .adtextureTools .pickingMode {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .adtextureTools .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .adtextureTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .controlTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .controlTools .highlight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .controlTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .controlTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .transformNodeTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .transformNodeTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .skeletonTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .skeletonTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .title {\n      grid-column: 1;\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 25px 1fr;\n      height: 24px;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .title .titleIcon {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center; }\n      #sceneExplorer .itemContainer .title .titleText {\n        grid-column: 2;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden; }\n", ""]);
 
 // exports
 
@@ -42917,6 +42917,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _propertyGrids_postProcesses_lensRenderingPipelinePropertyGridComponent__WEBPACK_IMPORTED_MODULE_43__ = __webpack_require__(/*! ./propertyGrids/postProcesses/lensRenderingPipelinePropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/postProcesses/lensRenderingPipelinePropertyGridComponent.tsx");
 /* harmony import */ var _propertyGrids_materials_nodeMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_44__ = __webpack_require__(/*! ./propertyGrids/materials/nodeMaterialPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/materials/nodeMaterialPropertyGridComponent.tsx");
 /* harmony import */ var _propertyGrids_materials_multiMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_45__ = __webpack_require__(/*! ./propertyGrids/materials/multiMaterialPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/materials/multiMaterialPropertyGridComponent.tsx");
+/* harmony import */ var _propertyGrids_particleSystems_particleSystemPropertyGridComponent__WEBPACK_IMPORTED_MODULE_46__ = __webpack_require__(/*! ./propertyGrids/particleSystems/particleSystemPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx");
+
 
 
 
@@ -42999,6 +43001,10 @@ var PropertyGridTabComponent = /** @class */ (function (_super) {
                     return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_meshes_meshPropertyGridComponent__WEBPACK_IMPORTED_MODULE_12__["MeshPropertyGridComponent"], { globalState: this.props.globalState, mesh: mesh, lockObject: this._lockObject, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
                 }
+            }
+            if (className.indexOf("ParticleSystem") !== -1) {
+                var particleSystem = entity;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_particleSystems_particleSystemPropertyGridComponent__WEBPACK_IMPORTED_MODULE_46__["ParticleSystemPropertyGridComponent"], { globalState: this.props.globalState, system: particleSystem, lockObject: this._lockObject, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className.indexOf("FreeCamera") !== -1 || className.indexOf("UniversalCamera") !== -1
                 || className.indexOf("WebXRCamera") !== -1 || className.indexOf("DeviceOrientationCamera") !== -1) {
@@ -46040,6 +46046,7 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
     function TexturePropertyGridComponent(props) {
         var _this = _super.call(this, props) || this;
         var texture = _this.props.texture;
+        _this.textureLineRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         if (!texture || !texture.rootContainer) {
             return _this;
         }
@@ -46047,7 +46054,6 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
         _this._adtInstrumentation = new babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__["AdvancedDynamicTextureInstrumentation"](adt);
         _this._adtInstrumentation.captureRenderTime = true;
         _this._adtInstrumentation.captureLayoutTime = true;
-        _this.textureLineRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
     }
     TexturePropertyGridComponent.prototype.componentWillUnmount = function () {
@@ -46815,6 +46821,165 @@ var TransformNodePropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Scaling", target: transformNode, propertyName: "scaling", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
     return TransformNodePropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx":
+/*!**********************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx ***!
+  \**********************************************************************************************************/
+/*! exports provided: ParticleSystemPropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ParticleSystemPropertyGridComponent", function() { return ParticleSystemPropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+/* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
+/* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
+/* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
+/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/textureLinkLineComponent */ "./components/actionTabs/lines/textureLinkLineComponent.tsx");
+/* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
+/* harmony import */ var babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! babylonjs/Particles/particleSystem */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__);
+/* harmony import */ var _lines_color4LineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../lines/color4LineComponent */ "./components/actionTabs/lines/color4LineComponent.tsx");
+/* harmony import */ var _lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../lines/vector3LineComponent */ "./components/actionTabs/lines/vector3LineComponent.tsx");
+/* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ParticleSystemPropertyGridComponent, _super);
+    function ParticleSystemPropertyGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    ParticleSystemPropertyGridComponent.prototype.render = function () {
+        var system = this.props.system;
+        var blendModeOptions = [
+            { label: "Add", value: babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["ParticleSystem"].BLENDMODE_ADD },
+            { label: "Multiply", value: babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["ParticleSystem"].BLENDMODE_MULTIPLY },
+            { label: "Multiply Add", value: babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["ParticleSystem"].BLENDMODE_MULTIPLYADD },
+            { label: "OneOne", value: babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["ParticleSystem"].BLENDMODE_ONEONE },
+            { label: "Standard", value: babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["ParticleSystem"].BLENDMODE_STANDARD },
+        ];
+        var particleEmitterTypeOptions = [
+            { label: "Box", value: 0 },
+            { label: "Cone", value: 1 },
+            { label: "Cylinder", value: 2 },
+            { label: "Hemispheric", value: 3 },
+            { label: "Point", value: 4 },
+            { label: "Sphere", value: 5 },
+        ];
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_4__["CustomPropertyGridComponent"], { globalState: this.props.globalState, target: system, lockObject: this.props.lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "ID", value: system.id }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Class", value: system.getClassName() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Texture", texture: system.particleTexture, onSelectionChangedObservable: this.props.onSelectionChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__["OptionsLineComponent"], { label: "Blend mode", options: blendModeOptions, target: system, propertyName: "blendMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_11__["Vector3LineComponent"], { label: "Gravity", target: system, propertyName: "gravity", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_12__["CheckBoxLineComponent"], { label: "Is billboard", target: system, propertyName: "isBillboardBased", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_12__["CheckBoxLineComponent"], { label: "Is local", target: system, propertyName: "isLocal", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_13__["SliderLineComponent"], { label: "Update speed", target: system, propertyName: "updateSpeed", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "OPTIONS" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__["ButtonLineComponent"], { label: system.isStarted() ? "Stop" : "Start", onClick: function () {
+                        if (system.isStarted()) {
+                            system.stop();
+                        }
+                        else {
+                            system.start();
+                        }
+                    } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "Emitter" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__["OptionsLineComponent"], { label: "Type", options: particleEmitterTypeOptions, target: system, propertyName: "particleEmitterType", noDirectUpdate: true, onSelect: function (value) {
+                        switch (value) {
+                            case 0:
+                                system.particleEmitterType = new babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["BoxParticleEmitter"]();
+                                break;
+                            case 1:
+                                system.particleEmitterType = new babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["ConeParticleEmitter"]();
+                                break;
+                            case 2:
+                                system.particleEmitterType = new babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["CylinderParticleEmitter"]();
+                                break;
+                            case 3:
+                                system.particleEmitterType = new babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["HemisphericParticleEmitter"]();
+                                break;
+                            case 4:
+                                system.particleEmitterType = new babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["PointParticleEmitter"]();
+                                break;
+                            case 5:
+                                system.particleEmitterType = new babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["SphereParticleEmitter"]();
+                                break;
+                        }
+                    }, extractValue: function () {
+                        var _a;
+                        switch ((_a = system.particleEmitterType) === null || _a === void 0 ? void 0 : _a.getClassName()) {
+                            case "BoxParticleEmitter":
+                                return 0;
+                            case "ConeParticleEmitter":
+                                return 1;
+                            case "CylinderParticleEmitter":
+                                return 2;
+                            case "HemisphericParticleEmitter":
+                                return 3;
+                            case "PointParticleEmitter":
+                                return 4;
+                            case "SphereParticleEmitter":
+                                return 5;
+                        }
+                        return 0;
+                    }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "SIZE" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Min size", target: system, propertyName: "minSize", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Max size", target: system, propertyName: "maxSize", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Min scale X", target: system, propertyName: "minScaleX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Max scale X", target: system, propertyName: "maxScaleX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Min scale Y", target: system, propertyName: "minScaleY", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Max scale Y", target: system, propertyName: "maxScaleY", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "LIFETIME" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Min lifetime", target: system, propertyName: "minLifeTime", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Max lifetime", target: system, propertyName: "maxLifeTime", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "EMISSION" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Rate", target: system, propertyName: "emitRate", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Min emit power", target: system, propertyName: "minEmitPower", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Max emit power", target: system, propertyName: "maxEmitPower", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "COLORS" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color4LineComponent__WEBPACK_IMPORTED_MODULE_10__["Color4LineComponent"], { label: "Color 1", target: system, propertyName: "color1", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color4LineComponent__WEBPACK_IMPORTED_MODULE_10__["Color4LineComponent"], { label: "Color 2", target: system, propertyName: "color2", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color4LineComponent__WEBPACK_IMPORTED_MODULE_10__["Color4LineComponent"], { label: "Color dead", target: system, propertyName: "colorDead", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "ROTATION" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Min angular speed", target: system, propertyName: "minAngularSpeed", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Max angular speed", target: system, propertyName: "maxAngularSpeed", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Min initial rotation", target: system, propertyName: "minInitialRotation", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Max initial rotation", target: system, propertyName: "maxInitialRotation", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+    };
+    return ParticleSystemPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -48206,6 +48371,9 @@ var EmbedHostComponent = /** @class */ (function (_super) {
     function EmbedHostComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._once = true;
+        _this.splitRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this.topPartRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this.bottomPartRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
     }
     EmbedHostComponent.prototype.componentDidMount = function () {
@@ -48218,9 +48386,6 @@ var EmbedHostComponent = /** @class */ (function (_super) {
             minSize: [200, 200],
             gutterSize: 4
         });
-        this.splitRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
-        this.topPartRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
-        this.bottomPartRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
     };
     EmbedHostComponent.prototype.renderContent = function () {
         if (this.props.popupMode) {
@@ -49032,6 +49197,45 @@ var MeshTreeItemComponent = /** @class */ (function (_super) {
     };
     return MeshTreeItemComponent;
 }(react__WEBPACK_IMPORTED_MODULE_6__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/sceneExplorer/entities/particleSystemTreeItemComponent.tsx":
+/*!*******************************************************************************!*\
+  !*** ./components/sceneExplorer/entities/particleSystemTreeItemComponent.tsx ***!
+  \*******************************************************************************/
+/*! exports provided: ParticleSystemTreeItemComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ParticleSystemTreeItemComponent", function() { return ParticleSystemTreeItemComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
+/* harmony import */ var _treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../treeItemLabelComponent */ "./components/sceneExplorer/treeItemLabelComponent.tsx");
+/* harmony import */ var _extensionsComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../extensionsComponent */ "./components/sceneExplorer/extensionsComponent.tsx");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_4__);
+
+
+
+
+
+var ParticleSystemTreeItemComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ParticleSystemTreeItemComponent, _super);
+    function ParticleSystemTreeItemComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    ParticleSystemTreeItemComponent.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: "particleSystemTools" },
+            react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_2__["TreeItemLabelComponent"], { label: this.props.system.name || "Particle system", onClick: function () { return _this.props.onClick(); }, icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faBraille"], color: "crimson" }),
+            react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_extensionsComponent__WEBPACK_IMPORTED_MODULE_3__["ExtensionsComponent"], { target: this.props.system, extensibilityGroups: this.props.extensibilityGroups })));
+    };
+    return ParticleSystemTreeItemComponent;
+}(react__WEBPACK_IMPORTED_MODULE_4__["Component"]));
 
 
 
@@ -49945,6 +50149,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
             label: "Add new particle system",
             action: function () {
                 var newSystem = babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["ParticleHelper"].CreateDefault(babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(), 1000, scene);
+                newSystem.start();
                 _this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
             }
         });
@@ -50354,6 +50559,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _entities_renderingPipelineTreeItemComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./entities/renderingPipelineTreeItemComponent */ "./components/sceneExplorer/entities/renderingPipelineTreeItemComponent.tsx");
 /* harmony import */ var _entities_skeletonTreeItemComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./entities/skeletonTreeItemComponent */ "./components/sceneExplorer/entities/skeletonTreeItemComponent.tsx");
 /* harmony import */ var _entities_boneTreeItemComponent__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./entities/boneTreeItemComponent */ "./components/sceneExplorer/entities/boneTreeItemComponent.tsx");
+/* harmony import */ var _entities_particleSystemTreeItemComponent__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./entities/particleSystemTreeItemComponent */ "./components/sceneExplorer/entities/particleSystemTreeItemComponent.tsx");
+
 
 
 
@@ -50413,6 +50620,9 @@ var TreeItemSpecializedComponent = /** @class */ (function (_super) {
             }
             if (className.indexOf("Material") !== -1) {
                 return (react__WEBPACK_IMPORTED_MODULE_9__["createElement"](_entities_materialTreeItemComponent__WEBPACK_IMPORTED_MODULE_6__["MaterialTreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, material: entity, onClick: function () { return _this.onClick(); } }));
+            }
+            if (className.indexOf("ParticleSystem") !== -1) {
+                return (react__WEBPACK_IMPORTED_MODULE_9__["createElement"](_entities_particleSystemTreeItemComponent__WEBPACK_IMPORTED_MODULE_17__["ParticleSystemTreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, system: entity, onClick: function () { return _this.onClick(); } }));
             }
             if (className === "AdvancedDynamicTexture") {
                 return (react__WEBPACK_IMPORTED_MODULE_9__["createElement"](_entities_gui_advancedDynamicTextureTreeItemComponent__WEBPACK_IMPORTED_MODULE_11__["AdvancedDynamicTextureTreeItemComponent"], { onSelectionChangedObservable: this.props.globalState.onSelectionChangedObservable, extensibilityGroups: this.props.extensibilityGroups, texture: entity, onClick: function () { return _this.onClick(); } }));

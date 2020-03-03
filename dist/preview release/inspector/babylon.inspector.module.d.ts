@@ -1750,6 +1750,25 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
+    interface IParticleSystemPropertyGridComponentProps {
+        globalState: GlobalState;
+        system: IParticleSystem;
+        lockObject: LockObject;
+        onSelectionChangedObservable?: Observable<any>;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class ParticleSystemPropertyGridComponent extends React.Component<IParticleSystemPropertyGridComponentProps> {
+        constructor(props: IParticleSystemPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGridTabComponent" {
     import { PaneComponent, IPaneComponentProps } from "babylonjs-inspector/components/actionTabs/paneComponent";
     export class PropertyGridTabComponent extends PaneComponent {
@@ -2145,6 +2164,20 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/boneTreeIt
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/sceneExplorer/entities/particleSystemTreeItemComponent" {
+    import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+    import * as React from 'react';
+    import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
+    interface IParticleSystemTreeItemComponentProps {
+        system: IParticleSystem;
+        extensibilityGroups?: IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class ParticleSystemTreeItemComponent extends React.Component<IParticleSystemTreeItemComponentProps> {
+        constructor(props: IParticleSystemTreeItemComponentProps);
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/sceneExplorer/treeItemSpecializedComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     import * as React from "react";
@@ -2392,24 +2425,6 @@ declare module "babylonjs-inspector/inspector" {
 }
 declare module "babylonjs-inspector/index" {
     export * from "babylonjs-inspector/inspector";
-}
-declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent" {
-    import * as React from "react";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
-    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
-    import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
-    interface IParticleSystemPropertyGridComponentProps {
-        globalState: GlobalState;
-        system: IParticleSystem;
-        lockObject: LockObject;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-    }
-    export class ParticleSystemPropertyGridComponent extends React.Component<IParticleSystemPropertyGridComponentProps> {
-        constructor(props: IParticleSystemPropertyGridComponentProps);
-        render(): JSX.Element;
-    }
 }
 declare module "babylonjs-inspector/legacy/legacy" {
     export * from "babylonjs-inspector/index";
@@ -3770,6 +3785,19 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IParticleSystemPropertyGridComponentProps {
+        globalState: GlobalState;
+        system: BABYLON.IParticleSystem;
+        lockObject: LockObject;
+        onSelectionChangedObservable?: BABYLON.Observable<any>;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class ParticleSystemPropertyGridComponent extends React.Component<IParticleSystemPropertyGridComponentProps> {
+        constructor(props: IParticleSystemPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     export class PropertyGridTabComponent extends PaneComponent {
         private _timerIntervalId;
         private _lockObject;
@@ -4105,6 +4133,17 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IParticleSystemTreeItemComponentProps {
+        system: BABYLON.IParticleSystem;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class ParticleSystemTreeItemComponent extends React.Component<IParticleSystemTreeItemComponentProps> {
+        constructor(props: IParticleSystemTreeItemComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface ITreeItemSpecializedComponentProps {
         label: string;
         entity?: any;
@@ -4317,17 +4356,5 @@ declare module INSPECTOR {
         private static _Cleanup;
         private static _RemoveElementFromDOM;
         static Hide(): void;
-    }
-}
-declare module INSPECTOR {
-    interface IParticleSystemPropertyGridComponentProps {
-        globalState: GlobalState;
-        system: BABYLON.IParticleSystem;
-        lockObject: LockObject;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-    }
-    export class ParticleSystemPropertyGridComponent extends React.Component<IParticleSystemPropertyGridComponentProps> {
-        constructor(props: IParticleSystemPropertyGridComponentProps);
-        render(): JSX.Element;
     }
 }

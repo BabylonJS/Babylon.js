@@ -324,6 +324,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             label: "Add new particle system",
             action: () => {
                 let newSystem = ParticleHelper.CreateDefault(Vector3.Zero(), 1000, scene);
+                newSystem.start();
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
             }
         });
