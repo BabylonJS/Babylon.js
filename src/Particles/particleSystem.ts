@@ -344,7 +344,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                     });
                 }
 
-                if (this.isLocal) {
+                if (this.isLocal && particle._localPosition) {
                     particle._localPosition!.addInPlace(this._scaledDirection);
                     Vector3.TransformCoordinatesToRef(particle._localPosition!, this._emitterWorldMatrix, particle.position);
                 } else {
