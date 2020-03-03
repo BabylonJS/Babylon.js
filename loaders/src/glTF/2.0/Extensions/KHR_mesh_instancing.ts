@@ -6,7 +6,7 @@ import { StringTools } from 'babylonjs/Misc/stringTools';
 import { Nullable } from "babylonjs/types";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { INode, IAccessor } from "../glTFLoaderInterfaces";
+import { INode } from "../glTFLoaderInterfaces";
 
 const NAME = "KHR_mesh_instancing";
 
@@ -49,30 +49,31 @@ export class KHR_mesh_instancing implements IGLTFLoaderExtension {
         return GLTFLoader.LoadExtensionAsync<IKHRMeshInstancing, TransformNode>(context, node, this.name, (extensionContext, extension) => {
             return this._loader.loadNodeAsync(`#/nodes/${node.index}`, node, (babylonTransformNode) => {
                 const promises = new Array<Promise<any>>();
-                const loadAttribute = (attribute: string, assignBufferFunc: (data: Float32Array, accessor: IAccessor) => void) => {
+                let instanceCount: Nullable<number> = null;
+                const loadAttribute = (attribute: string, assignBufferFunc: (data: Float32Array) => void) => {
                     if (extension.attributes[attribute] == undefined) {
                         return;
                     }
                     const accessor = ArrayItem.Get(`${extensionContext}/attributes/${attribute}`, this._loader.gltf.accessors, extension.attributes[attribute]);
+                    if (instanceCount === null) {
+                        instanceCount = accessor.count;
+                    } else if (instanceCount !== accessor.count) {
+                        throw new Error("Instance buffer accessors do not have the same count.");
+                    }
                     promises.push(this._loader._loadFloatAccessorAsync(`/accessors/${accessor.bufferView}`, accessor).then((data) => {
-                        assignBufferFunc(data, accessor);
+                        assignBufferFunc(data);
                     }));
                 };
                 let translationBuffer: Nullable<Float32Array> = null;
                 let rotationBuffer: Nullable<Float32Array> = null;
                 let scaleBuffer: Nullable<Float32Array> = null;
-                let translationBufferAccessor: Nullable<IAccessor> = null;
-                let rotationBufferAccessor: Nullable<IAccessor> = null;
-                let scaleBufferAccessor: Nullable<IAccessor> = null;
 
-                loadAttribute("TRANSLATION", (data, accessor) => { translationBuffer = data; translationBufferAccessor = accessor; });
-                loadAttribute("ROTATION", (data, accessor) => { rotationBuffer = data; rotationBufferAccessor = accessor; });
-                loadAttribute("SCALE", (data, accessor) => { scaleBuffer = data; scaleBufferAccessor = accessor; });
+                loadAttribute("TRANSLATION", (data) => { translationBuffer = data; });
+                loadAttribute("ROTATION", (data) => { rotationBuffer = data; });
+                loadAttribute("SCALE", (data) => { scaleBuffer = data; });
 
                 return Promise.all(promises).then(() => {
-                    const anyInstanceAccessor = translationBufferAccessor || rotationBufferAccessor || scaleBufferAccessor;
-                    if (anyInstanceAccessor) {
-                        const instanceCount = anyInstanceAccessor.count;
+                    if (instanceCount) {
                         let instanceName: string = "";
                         let instance: Nullable<TransformNode> = null;
                         const digitLength = instanceCount.toString().length;
