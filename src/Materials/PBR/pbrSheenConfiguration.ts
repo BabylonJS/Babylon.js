@@ -77,12 +77,12 @@ export class PBRSheenConfiguration {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public roughness: Nullable<number> = null;
 
+    private _albedoScaling = false;
     /**
      * If true, the sheen effect is layered above the base BRDF with the albedo-scaling technique.
      * It allows the strength of the sheen effect to not depend on the base color of the material,
      * making it easier to setup and tweak the effect
      */
-    private _albedoScaling = false;
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public albedoScaling = false;
