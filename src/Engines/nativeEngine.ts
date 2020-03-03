@@ -72,9 +72,9 @@ interface INativeEngine {
     setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
 
     createTexture(): WebGLTexture;
-    loadTexture(texture: WebGLTexture, buffer: ArrayBuffer | ArrayBufferView | Blob, mipMap: boolean, invertY: boolean): boolean;
-    loadEnvTexture(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>): boolean;
-    loadCubeTexture(texture: WebGLTexture, data: Array<ArrayBufferView>, generateMipMaps: boolean): boolean;
+    loadTexture(texture: WebGLTexture, buffer: ArrayBuffer | ArrayBufferView | Blob, generateMips: boolean, invertY: boolean): boolean;
+    loadCubeTexture(texture: WebGLTexture, data: Array<ArrayBufferView>, generateMips: boolean): boolean;
+    loadCubeTextureWithMips(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>): boolean;
     getTextureWidth(texture: WebGLTexture): number;
     getTextureHeight(texture: WebGLTexture): number;
     setTextureSampling(texture: WebGLTexture, filter: number): void; // filter is a NativeFilter.XXXX value.
@@ -83,7 +83,7 @@ interface INativeEngine {
     setTexture(uniform: WebGLUniformLocation, texture: Nullable<WebGLTexture>): void;
     deleteTexture(texture: Nullable<WebGLTexture>): void;
 
-    createFramebuffer(texture: WebGLTexture, width: number, height: number, format: number, samplingMode: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMipMaps: boolean): WebGLFramebuffer;
+    createFramebuffer(texture: WebGLTexture, width: number, height: number, format: number, samplingMode: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMips: boolean): WebGLFramebuffer;
     deleteFramebuffer(framebuffer: WebGLFramebuffer): void;
     bindFramebuffer(framebuffer: WebGLFramebuffer): void;
     unbindFramebuffer(framebuffer: WebGLFramebuffer): void;
@@ -1084,7 +1084,7 @@ export class NativeEngine extends Engine {
                 texture.getEngine().updateTextureSamplingMode(Texture.TRILINEAR_SAMPLINGMODE, texture);
                 texture._isRGBD = true;
                 texture.invertY = true;
-                if (!this._native.loadEnvTexture(texture._webGLTexture!, imageData)) {
+                if (!this._native.loadCubeTextureWithMips(texture._webGLTexture!, imageData)) {
                     throw new Error("Could not load a native cube texture.");
                 }
 
