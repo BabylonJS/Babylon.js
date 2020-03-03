@@ -8,6 +8,8 @@
 - NME Frames are now resizable from the corners ([Kyle Belfort](https://github.com/belfortk)
 - Refactored React refs from old string API to React.createRef() API ([Kyle Belfort](https://github.com/belfortk)
 
+- Scale on one axis for `BoundingBoxGizmo` ([cedricguillemet](https://github.com/cedricguillemet))
+
 ### Engine
 
 - Allow logging of shader code when a compilation error occurs ([Popov72](https://github.com/Popov72))
