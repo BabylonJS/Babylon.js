@@ -12,6 +12,36 @@ export class ReplayRecorder {
         this._previousProperty = "";
     }
 
+    private _getIndirectData(data: any) {
+        if (!data.getClassName) {
+            return data;
+        }
+
+        let indirectData = data.getClassName().toLowerCase();
+
+        if (data.id) {
+            if (indirectData === "Scene") {
+                indirectData = `scene`;
+            } else if (indirectData.indexOf("camera") > -1) {
+                indirectData = `scene.getCameraByID("${data.id}")`;
+            } else if (indirectData.indexOf("mesh") > -1) {
+                indirectData = `scene.getMeshByID("${data.id}")`;
+            } else if (indirectData.indexOf("light") > -1) {
+                indirectData = `scene.getLightByID("${data.id}")`;
+            } else if (indirectData === "transformnode") {
+                indirectData = `scene.getTransformNodeByID("${data.id}")`;
+            } else if (indirectData === "skeleton") {
+                indirectData = `scene.getSkeletonById("${data.id}")`;
+            } else if (indirectData.indexOf("material") > -1) {
+                indirectData = `scene.getMaterialByID("${data.id}")`;
+            }
+        } else {
+            indirectData = "new BABYLON." + data.getClassName() + "()";
+        }
+
+        return indirectData;
+    }
+
     public record(event: PropertyChangedEvent) {
         if (!this._recordedCodeLines) {
             this._recordedCodeLines = [];
@@ -33,27 +63,11 @@ export class ReplayRecorder {
             value = `new BABYLON.Color4(${value.r}, ${value.g}, ${value.b}, ${value.a})`;
         } else if (value.b !== undefined) { // Color3
             value = `new BABYLON.Color3(${value.r}, ${value.g}, ${value.b})`;
+        } else if (value.getClassName) {
+            value = this._getIndirectData(value);
         }
 
-        let target = event.object.getClassName().toLowerCase();
-
-        if (event.object.id) {
-            if (target === "Scene") {
-                target = `scene`;
-            } else if (target.indexOf("camera") > -1) {
-                target = `scene.getCameraByID("${event.object.id}")`;
-            } else if (target.indexOf("mesh") > -1) {
-                target = `scene.getMeshByID("${event.object.id}")`;
-            } else if (target.indexOf("light") > -1) {
-                target = `scene.getLightByID("${event.object.id}")`;
-            } else if (target === "transformnode") {
-                target = `scene.getTransformNodeByID("${event.object.id}")`;
-            } else if (target === "skeleton") {
-                target = `scene.getSkeletonById("${event.object.id}")`;
-            } else if (target.indexOf("material") > -1) {
-                target = `scene.getMaterialByID("${event.object.id}")`;
-            }
-        }
+        let target = this._getIndirectData(event.object);
 
         this._recordedCodeLines.push(`${target}.${event.property} = ${value};`);
 

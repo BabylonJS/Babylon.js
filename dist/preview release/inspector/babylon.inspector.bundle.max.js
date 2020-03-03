@@ -40867,6 +40867,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
         return false;
     };
     CheckBoxLineComponent.prototype.onChange = function () {
+        var _a;
         this._localChange = true;
         if (this.props.onSelect) {
             this.props.onSelect(!this.state.isSelected);
@@ -40874,7 +40875,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
         else {
             if (this.props.onPropertyChangedObservable) {
                 this.props.onPropertyChangedObservable.notifyObservers({
-                    object: this.props.target,
+                    object: (_a = this.props.replaySourceReplacement, (_a !== null && _a !== void 0 ? _a : this.props.target)),
                     property: this.props.propertyName,
                     value: !this.state.isSelected,
                     initialValue: this.state.isSelected
@@ -41337,6 +41338,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
         return false;
     };
     FloatLineComponent.prototype.raiseOnPropertyChanged = function (newValue, previousValue) {
+        var _a;
         if (this.props.onChange) {
             this.props.onChange(newValue);
         }
@@ -41344,7 +41346,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
             return;
         }
         this.props.onPropertyChangedObservable.notifyObservers({
-            object: this.props.target,
+            object: (_a = this.props.replaySourceReplacement, (_a !== null && _a !== void 0 ? _a : this.props.target)),
             property: this.props.propertyName,
             value: newValue,
             initialValue: previousValue
@@ -41399,6 +41401,77 @@ var FloatLineComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__["SliderLineComponent"], { label: this.props.label, minimum: 0, maximum: 360, step: 0.1, directValue: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Tools"].ToDegrees(valueAsNumber), onChange: function (value) { return _this.updateValue(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Tools"].ToRadians(value).toString()); } })));
     };
     return FloatLineComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/lines/meshPickerComponent.tsx":
+/*!*************************************************************!*\
+  !*** ./components/actionTabs/lines/meshPickerComponent.tsx ***!
+  \*************************************************************/
+/*! exports provided: MeshPickerComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MeshPickerComponent", function() { return MeshPickerComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _optionsLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
+
+
+
+var MeshPickerComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MeshPickerComponent, _super);
+    function MeshPickerComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    MeshPickerComponent.prototype.render = function () {
+        var _this = this;
+        var meshEmitters = this.props.scene.meshes.filter(function (m) { return !!m.name; });
+        meshEmitters.sort(function (a, b) { return a.name.localeCompare(b.name); });
+        var emitterOptions = [
+            { label: "None", value: -1 },
+        ];
+        meshEmitters.sort(function (a, b) { return a.name.localeCompare(b.name); });
+        emitterOptions.push.apply(emitterOptions, meshEmitters.map(function (v, i) {
+            return { label: v.name, value: i };
+        }));
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_optionsLineComponent__WEBPACK_IMPORTED_MODULE_2__["OptionsLineComponent"], { label: this.props.label, options: emitterOptions, target: this.props.target, propertyName: this.props.property, noDirectUpdate: true, onSelect: function (value) {
+                    var _a;
+                    var currentState = _this.props.target[_this.props.property];
+                    switch (value) {
+                        case -1:
+                            _this.props.target[_this.props.property] = null;
+                            break;
+                        default:
+                            _this.props.target[_this.props.property] = meshEmitters[value];
+                    }
+                    if (_this.props.onPropertyChangedObservable) {
+                        _this.props.onPropertyChangedObservable.notifyObservers({
+                            object: (_a = _this.props.replaySourceReplacement, (_a !== null && _a !== void 0 ? _a : _this.props.target)),
+                            property: _this.props.property,
+                            value: _this.props.target[_this.props.property],
+                            initialValue: currentState
+                        });
+                    }
+                    _this.forceUpdate();
+                }, extractValue: function () {
+                    if (!_this.props.target[_this.props.property]) {
+                        return -1;
+                    }
+                    var meshIndex = meshEmitters.indexOf(_this.props.target[_this.props.property]);
+                    if (meshIndex > -1) {
+                        return meshIndex;
+                    }
+                    return -1;
+                } })));
+    };
+    return MeshPickerComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -41838,6 +41911,7 @@ var SliderLineComponent = /** @class */ (function (_super) {
         return false;
     };
     SliderLineComponent.prototype.onChange = function (newValueString) {
+        var _a;
         this._localChange = true;
         var newValue = parseFloat(newValueString);
         if (this.props.useEuler) {
@@ -41846,7 +41920,7 @@ var SliderLineComponent = /** @class */ (function (_super) {
         if (this.props.target) {
             if (this.props.onPropertyChangedObservable) {
                 this.props.onPropertyChangedObservable.notifyObservers({
-                    object: this.props.target,
+                    object: (_a = this.props.replaySourceReplacement, (_a !== null && _a !== void 0 ? _a : this.props.target)),
                     property: this.props.propertyName,
                     value: newValue,
                     initialValue: this.state.value
@@ -42545,6 +42619,7 @@ var Vector3LineComponent = /** @class */ (function (_super) {
         this.setState({ isExpanded: !this.state.isExpanded });
     };
     Vector3LineComponent.prototype.raiseOnPropertyChanged = function (previousValue) {
+        var _a;
         if (this.props.onChange) {
             this.props.onChange(this.state.value);
         }
@@ -42552,7 +42627,7 @@ var Vector3LineComponent = /** @class */ (function (_super) {
             return;
         }
         this.props.onPropertyChangedObservable.notifyObservers({
-            object: this.props.target,
+            object: (_a = this.props.replaySourceReplacement, (_a !== null && _a !== void 0 ? _a : this.props.target)),
             property: this.props.propertyName,
             value: this.state.value,
             initialValue: previousValue
@@ -46838,6 +46913,202 @@ var TransformNodePropertyGridComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/actionTabs/tabs/propertyGrids/particleSystems/boxEmitterGridComponent.tsx":
+/*!**********************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/particleSystems/boxEmitterGridComponent.tsx ***!
+  \**********************************************************************************************/
+/*! exports provided: BoxEmitterGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BoxEmitterGridComponent", function() { return BoxEmitterGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/vector3LineComponent */ "./components/actionTabs/lines/vector3LineComponent.tsx");
+
+
+
+var BoxEmitterGridComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(BoxEmitterGridComponent, _super);
+    function BoxEmitterGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    BoxEmitterGridComponent.prototype.render = function () {
+        var emitter = this.props.emitter;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Vector3LineComponent"], { replaySourceReplacement: this.props.replaySourceReplacement, label: "Direction 1", target: emitter, propertyName: "direction1", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Vector3LineComponent"], { replaySourceReplacement: this.props.replaySourceReplacement, label: "Direction 2", target: emitter, propertyName: "direction2", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Vector3LineComponent"], { replaySourceReplacement: this.props.replaySourceReplacement, label: "Min emit box", target: emitter, propertyName: "minEmitBox", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Vector3LineComponent"], { replaySourceReplacement: this.props.replaySourceReplacement, label: "Max emit box", target: emitter, propertyName: "maxEmitBox", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+    };
+    return BoxEmitterGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/particleSystems/coneEmitterGridComponent.tsx":
+/*!***********************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/particleSystems/coneEmitterGridComponent.tsx ***!
+  \***********************************************************************************************/
+/*! exports provided: ConeEmitterGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ConeEmitterGridComponent", function() { return ConeEmitterGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
+/* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
+
+
+
+
+var ConeEmitterGridComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ConeEmitterGridComponent, _super);
+    function ConeEmitterGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    ConeEmitterGridComponent.prototype.render = function () {
+        var emitter = this.props.emitter;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__["SliderLineComponent"], { replaySourceReplacement: this.props.replaySourceReplacement, label: "Radius range", target: emitter, propertyName: "radiusRange", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__["SliderLineComponent"], { replaySourceReplacement: this.props.replaySourceReplacement, label: "Height range", target: emitter, propertyName: "heightRange", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { replaySourceReplacement: this.props.replaySourceReplacement, label: "Emit from spawn point only", target: emitter, propertyName: "emitFromSpawnPointOnly", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__["SliderLineComponent"], { replaySourceReplacement: this.props.replaySourceReplacement, label: "Direction randomizer", target: emitter, propertyName: "directionRandomizer", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+    };
+    return ConeEmitterGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/particleSystems/cylinderEmitterGridComponent.tsx":
+/*!***************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/particleSystems/cylinderEmitterGridComponent.tsx ***!
+  \***************************************************************************************************/
+/*! exports provided: CylinderEmitterGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CylinderEmitterGridComponent", function() { return CylinderEmitterGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
+/* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
+
+
+
+
+var CylinderEmitterGridComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CylinderEmitterGridComponent, _super);
+    function CylinderEmitterGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    CylinderEmitterGridComponent.prototype.render = function () {
+        var emitter = this.props.emitter;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { replaySourceReplacement: this.props.replaySourceReplacement, lockObject: this.props.lockObject, label: "Radius", target: emitter, propertyName: "radius", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { replaySourceReplacement: this.props.replaySourceReplacement, lockObject: this.props.lockObject, label: "Height", target: emitter, propertyName: "height", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__["SliderLineComponent"], { replaySourceReplacement: this.props.replaySourceReplacement, label: "Radius range", target: emitter, propertyName: "radiusRange", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__["SliderLineComponent"], { replaySourceReplacement: this.props.replaySourceReplacement, label: "Direction randomizer", target: emitter, propertyName: "directionRandomizer", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+    };
+    return CylinderEmitterGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/particleSystems/hemisphericEmitterGridComponent.tsx":
+/*!******************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/particleSystems/hemisphericEmitterGridComponent.tsx ***!
+  \******************************************************************************************************/
+/*! exports provided: HemisphericEmitterGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HemisphericEmitterGridComponent", function() { return HemisphericEmitterGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
+/* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
+
+
+
+
+var HemisphericEmitterGridComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(HemisphericEmitterGridComponent, _super);
+    function HemisphericEmitterGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    HemisphericEmitterGridComponent.prototype.render = function () {
+        var emitter = this.props.emitter;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { replaySourceReplacement: this.props.replaySourceReplacement, lockObject: this.props.lockObject, label: "Radius", target: emitter, propertyName: "radius", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__["SliderLineComponent"], { replaySourceReplacement: this.props.replaySourceReplacement, label: "Radius range", target: emitter, propertyName: "radiusRange", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__["SliderLineComponent"], { replaySourceReplacement: this.props.replaySourceReplacement, label: "Direction randomizer", target: emitter, propertyName: "directionRandomizer", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+    };
+    return HemisphericEmitterGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/particleSystems/meshEmitterGridComponent.tsx":
+/*!***********************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/particleSystems/meshEmitterGridComponent.tsx ***!
+  \***********************************************************************************************/
+/*! exports provided: MeshEmitterGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MeshEmitterGridComponent", function() { return MeshEmitterGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/vector3LineComponent */ "./components/actionTabs/lines/vector3LineComponent.tsx");
+/* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var _lines_meshPickerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/meshPickerComponent */ "./components/actionTabs/lines/meshPickerComponent.tsx");
+
+
+
+
+
+var MeshEmitterGridComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MeshEmitterGridComponent, _super);
+    function MeshEmitterGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    MeshEmitterGridComponent.prototype.render = function () {
+        var emitter = this.props.emitter;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_meshPickerComponent__WEBPACK_IMPORTED_MODULE_4__["MeshPickerComponent"], { replaySourceReplacement: this.props.replaySourceReplacement, globalState: this.props.globalState, label: "Source", scene: this.props.scene, onPropertyChangedObservable: this.props.onPropertyChangedObservable, target: this.props.emitter, property: "mesh" }),
+            !emitter.useMeshNormalsForDirection &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Vector3LineComponent"], { replaySourceReplacement: this.props.replaySourceReplacement, label: "Direction 1", target: emitter, propertyName: "direction1", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            !emitter.useMeshNormalsForDirection &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Vector3LineComponent"], { replaySourceReplacement: this.props.replaySourceReplacement, label: "Direction 2", target: emitter, propertyName: "direction2", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { replaySourceReplacement: this.props.replaySourceReplacement, label: "Use normals for direction", target: emitter, propertyName: "useMeshNormalsForDirection", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+    };
+    return MeshEmitterGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx":
 /*!**********************************************************************************************************!*\
   !*** ./components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx ***!
@@ -46864,6 +47135,22 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../lines/vector3LineComponent */ "./components/actionTabs/lines/vector3LineComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
+/* harmony import */ var _boxEmitterGridComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./boxEmitterGridComponent */ "./components/actionTabs/tabs/propertyGrids/particleSystems/boxEmitterGridComponent.tsx");
+/* harmony import */ var _coneEmitterGridComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./coneEmitterGridComponent */ "./components/actionTabs/tabs/propertyGrids/particleSystems/coneEmitterGridComponent.tsx");
+/* harmony import */ var _cylinderEmitterGridComponent__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./cylinderEmitterGridComponent */ "./components/actionTabs/tabs/propertyGrids/particleSystems/cylinderEmitterGridComponent.tsx");
+/* harmony import */ var _hemisphericEmitterGridComponent__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./hemisphericEmitterGridComponent */ "./components/actionTabs/tabs/propertyGrids/particleSystems/hemisphericEmitterGridComponent.tsx");
+/* harmony import */ var _pointEmitterGridComponent__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./pointEmitterGridComponent */ "./components/actionTabs/tabs/propertyGrids/particleSystems/pointEmitterGridComponent.tsx");
+/* harmony import */ var _sphereEmitterGridComponent__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./sphereEmitterGridComponent */ "./components/actionTabs/tabs/propertyGrids/particleSystems/sphereEmitterGridComponent.tsx");
+/* harmony import */ var _meshEmitterGridComponent__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./meshEmitterGridComponent */ "./components/actionTabs/tabs/propertyGrids/particleSystems/meshEmitterGridComponent.tsx");
+
+
+
+
+
+
+
+
+
 
 
 
@@ -46889,7 +47176,42 @@ var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
     function ParticleSystemPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
+    ParticleSystemPropertyGridComponent.prototype.renderEmitter = function () {
+        var _a;
+        var system = this.props.system;
+        var replaySource = "particlesystem.particleEmitterType";
+        switch ((_a = system.particleEmitterType) === null || _a === void 0 ? void 0 : _a.getClassName()) {
+            case "BoxParticleEmitter":
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_boxEmitterGridComponent__WEBPACK_IMPORTED_MODULE_14__["BoxEmitterGridComponent"], { replaySourceReplacement: replaySource, globalState: this.props.globalState, emitter: system.particleEmitterType, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            case "ConeParticleEmitter":
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_coneEmitterGridComponent__WEBPACK_IMPORTED_MODULE_15__["ConeEmitterGridComponent"], { replaySourceReplacement: replaySource, globalState: this.props.globalState, emitter: system.particleEmitterType, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            case "CylinderParticleEmitter":
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_cylinderEmitterGridComponent__WEBPACK_IMPORTED_MODULE_16__["CylinderEmitterGridComponent"], { replaySourceReplacement: replaySource, lockObject: this.props.lockObject, globalState: this.props.globalState, emitter: system.particleEmitterType, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            case "HemisphericParticleEmitter":
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_hemisphericEmitterGridComponent__WEBPACK_IMPORTED_MODULE_17__["HemisphericEmitterGridComponent"], { replaySourceReplacement: replaySource, lockObject: this.props.lockObject, globalState: this.props.globalState, emitter: system.particleEmitterType, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            case "MeshParticleEmitter":
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_meshEmitterGridComponent__WEBPACK_IMPORTED_MODULE_20__["MeshEmitterGridComponent"], { replaySourceReplacement: replaySource, lockObject: this.props.lockObject, scene: system.getScene(), globalState: this.props.globalState, emitter: system.particleEmitterType, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            case "PointParticleEmitter":
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_pointEmitterGridComponent__WEBPACK_IMPORTED_MODULE_18__["PointEmitterGridComponent"], { replaySourceReplacement: replaySource, lockObject: this.props.lockObject, globalState: this.props.globalState, emitter: system.particleEmitterType, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            case "SphereParticleEmitter":
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sphereEmitterGridComponent__WEBPACK_IMPORTED_MODULE_19__["SphereEmitterGridComponent"], { replaySourceReplacement: replaySource, lockObject: this.props.lockObject, globalState: this.props.globalState, emitter: system.particleEmitterType, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+        }
+        return null;
+    };
+    ParticleSystemPropertyGridComponent.prototype.raiseOnPropertyChanged = function (property, newValue, previousValue) {
+        if (!this.props.onPropertyChangedObservable) {
+            return;
+        }
+        var system = this.props.system;
+        this.props.onPropertyChangedObservable.notifyObservers({
+            object: system,
+            property: property,
+            value: newValue,
+            initialValue: previousValue
+        });
+    };
     ParticleSystemPropertyGridComponent.prototype.render = function () {
+        var _this = this;
         var system = this.props.system;
         var blendModeOptions = [
             { label: "Add", value: babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["ParticleSystem"].BLENDMODE_ADD },
@@ -46903,14 +47225,25 @@ var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
             { label: "Cone", value: 1 },
             { label: "Cylinder", value: 2 },
             { label: "Hemispheric", value: 3 },
-            { label: "Point", value: 4 },
-            { label: "Sphere", value: 5 },
+            { label: "Mesh", value: 4 },
+            { label: "Point", value: 5 },
+            { label: "Sphere", value: 6 },
         ];
+        var meshEmitters = this.props.system.getScene().meshes.filter(function (m) { return !!m.name; });
+        var emitterOptions = [
+            { label: "None", value: -1 },
+            { label: "Vector3", value: 0 }
+        ];
+        meshEmitters.sort(function (a, b) { return a.name.localeCompare(b.name); });
+        emitterOptions.push.apply(emitterOptions, meshEmitters.map(function (v, i) {
+            return { label: v.name, value: i + 1 };
+        }));
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_4__["CustomPropertyGridComponent"], { globalState: this.props.globalState, target: system, lockObject: this.props.lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "ID", value: system.id }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Class", value: system.getClassName() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Capacity", value: system.getCapacity().toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Texture", texture: system.particleTexture, onSelectionChangedObservable: this.props.onSelectionChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__["OptionsLineComponent"], { label: "Blend mode", options: blendModeOptions, target: system, propertyName: "blendMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_11__["Vector3LineComponent"], { label: "Gravity", target: system, propertyName: "gravity", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -46926,8 +47259,41 @@ var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
                             system.start();
                         }
                     } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "Emitter" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "EMITTER" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__["OptionsLineComponent"], { label: "Emitter", options: emitterOptions, target: system, propertyName: "emitter", noDirectUpdate: true, onSelect: function (value) {
+                        switch (value) {
+                            case -1:
+                                _this.raiseOnPropertyChanged("emitter", null, system.emitter);
+                                system.emitter = null;
+                                break;
+                            case 0:
+                                _this.raiseOnPropertyChanged("emitter", babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["Vector3"].Zero(), system.emitter);
+                                system.emitter = babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["Vector3"].Zero();
+                                break;
+                            default:
+                                _this.raiseOnPropertyChanged("emitter", meshEmitters[value - 1], system.emitter);
+                                system.emitter = meshEmitters[value - 1];
+                        }
+                        _this.forceUpdate();
+                    }, extractValue: function () {
+                        if (!system.emitter) {
+                            return -1;
+                        }
+                        if (system.emitter.x !== undefined) {
+                            return 0;
+                        }
+                        var meshIndex = meshEmitters.indexOf(system.emitter);
+                        if (meshIndex > -1) {
+                            return meshIndex + 1;
+                        }
+                        return -1;
+                    } }),
+                system.emitter && (system.emitter.x === undefined) &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Link to emitter", value: system.emitter.name, onLink: function () { return _this.props.globalState.onSelectionChangedObservable.notifyObservers(system.emitter); } }),
+                system.emitter && (system.emitter.x !== undefined) &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_11__["Vector3LineComponent"], { label: "Position", target: system, propertyName: "emitter", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__["OptionsLineComponent"], { label: "Type", options: particleEmitterTypeOptions, target: system, propertyName: "particleEmitterType", noDirectUpdate: true, onSelect: function (value) {
+                        var currentType = system.particleEmitterType;
                         switch (value) {
                             case 0:
                                 system.particleEmitterType = new babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["BoxParticleEmitter"]();
@@ -46942,12 +47308,17 @@ var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
                                 system.particleEmitterType = new babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["HemisphericParticleEmitter"]();
                                 break;
                             case 4:
-                                system.particleEmitterType = new babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["PointParticleEmitter"]();
+                                system.particleEmitterType = new babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["MeshParticleEmitter"]();
                                 break;
                             case 5:
+                                system.particleEmitterType = new babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["PointParticleEmitter"]();
+                                break;
+                            case 6:
                                 system.particleEmitterType = new babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["SphereParticleEmitter"]();
                                 break;
                         }
+                        _this.raiseOnPropertyChanged("particleEmitterType", system.particleEmitterType, currentType);
+                        _this.forceUpdate();
                     }, extractValue: function () {
                         var _a;
                         switch ((_a = system.particleEmitterType) === null || _a === void 0 ? void 0 : _a.getClassName()) {
@@ -46959,13 +47330,20 @@ var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
                                 return 2;
                             case "HemisphericParticleEmitter":
                                 return 3;
-                            case "PointParticleEmitter":
+                            case "MeshParticleEmitter":
                                 return 4;
-                            case "SphereParticleEmitter":
+                            case "PointParticleEmitter":
                                 return 5;
+                            case "SphereParticleEmitter":
+                                return 6;
                         }
                         return 0;
-                    }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                    } }),
+                this.renderEmitter()),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "EMISSION" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Rate", target: system, propertyName: "emitRate", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Min emit power", target: system, propertyName: "minEmitPower", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Max emit power", target: system, propertyName: "maxEmitPower", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "SIZE" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Min size", target: system, propertyName: "minSize", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Max size", target: system, propertyName: "maxSize", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -46976,10 +47354,6 @@ var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "LIFETIME" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Min lifetime", target: system, propertyName: "minLifeTime", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Max lifetime", target: system, propertyName: "maxLifeTime", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "EMISSION" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Rate", target: system, propertyName: "emitRate", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Min emit power", target: system, propertyName: "minEmitPower", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Max emit power", target: system, propertyName: "maxEmitPower", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "COLORS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color4LineComponent__WEBPACK_IMPORTED_MODULE_10__["Color4LineComponent"], { label: "Color 1", target: system, propertyName: "color1", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color4LineComponent__WEBPACK_IMPORTED_MODULE_10__["Color4LineComponent"], { label: "Color 2", target: system, propertyName: "color2", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -46991,6 +47365,79 @@ var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Max initial rotation", target: system, propertyName: "maxInitialRotation", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
     return ParticleSystemPropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/particleSystems/pointEmitterGridComponent.tsx":
+/*!************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/particleSystems/pointEmitterGridComponent.tsx ***!
+  \************************************************************************************************/
+/*! exports provided: PointEmitterGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PointEmitterGridComponent", function() { return PointEmitterGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/vector3LineComponent */ "./components/actionTabs/lines/vector3LineComponent.tsx");
+
+
+
+var PointEmitterGridComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PointEmitterGridComponent, _super);
+    function PointEmitterGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    PointEmitterGridComponent.prototype.render = function () {
+        var emitter = this.props.emitter;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Vector3LineComponent"], { replaySourceReplacement: this.props.replaySourceReplacement, label: "Direction 1", target: emitter, propertyName: "direction1", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Vector3LineComponent"], { replaySourceReplacement: this.props.replaySourceReplacement, label: "Direction 2", target: emitter, propertyName: "direction2", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+    };
+    return PointEmitterGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/particleSystems/sphereEmitterGridComponent.tsx":
+/*!*************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/particleSystems/sphereEmitterGridComponent.tsx ***!
+  \*************************************************************************************************/
+/*! exports provided: SphereEmitterGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SphereEmitterGridComponent", function() { return SphereEmitterGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
+/* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
+
+
+
+
+var SphereEmitterGridComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SphereEmitterGridComponent, _super);
+    function SphereEmitterGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    SphereEmitterGridComponent.prototype.render = function () {
+        var emitter = this.props.emitter;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { replaySourceReplacement: this.props.replaySourceReplacement, lockObject: this.props.lockObject, label: "Radius", target: emitter, propertyName: "radius", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { replaySourceReplacement: this.props.replaySourceReplacement, label: "Radius range", target: emitter, propertyName: "radiusRange", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { replaySourceReplacement: this.props.replaySourceReplacement, label: "Direction randomizer", target: emitter, propertyName: "directionRandomizer", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+    };
+    return SphereEmitterGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -48692,6 +49139,39 @@ var ReplayRecorder = /** @class */ (function () {
         this._previousObject = null;
         this._previousProperty = "";
     };
+    ReplayRecorder.prototype._getIndirectData = function (data) {
+        if (!data.getClassName) {
+            return data;
+        }
+        var indirectData = data.getClassName().toLowerCase();
+        if (data.id) {
+            if (indirectData === "Scene") {
+                indirectData = "scene";
+            }
+            else if (indirectData.indexOf("camera") > -1) {
+                indirectData = "scene.getCameraByID(\"" + data.id + "\")";
+            }
+            else if (indirectData.indexOf("mesh") > -1) {
+                indirectData = "scene.getMeshByID(\"" + data.id + "\")";
+            }
+            else if (indirectData.indexOf("light") > -1) {
+                indirectData = "scene.getLightByID(\"" + data.id + "\")";
+            }
+            else if (indirectData === "transformnode") {
+                indirectData = "scene.getTransformNodeByID(\"" + data.id + "\")";
+            }
+            else if (indirectData === "skeleton") {
+                indirectData = "scene.getSkeletonById(\"" + data.id + "\")";
+            }
+            else if (indirectData.indexOf("material") > -1) {
+                indirectData = "scene.getMaterialByID(\"" + data.id + "\")";
+            }
+        }
+        else {
+            indirectData = "new BABYLON." + data.getClassName() + "()";
+        }
+        return indirectData;
+    };
     ReplayRecorder.prototype.record = function (event) {
         if (!this._recordedCodeLines) {
             this._recordedCodeLines = [];
@@ -48715,30 +49195,10 @@ var ReplayRecorder = /** @class */ (function () {
         else if (value.b !== undefined) { // Color3
             value = "new BABYLON.Color3(" + value.r + ", " + value.g + ", " + value.b + ")";
         }
-        var target = event.object.getClassName().toLowerCase();
-        if (event.object.id) {
-            if (target === "Scene") {
-                target = "scene";
-            }
-            else if (target.indexOf("camera") > -1) {
-                target = "scene.getCameraByID(\"" + event.object.id + "\")";
-            }
-            else if (target.indexOf("mesh") > -1) {
-                target = "scene.getMeshByID(\"" + event.object.id + "\")";
-            }
-            else if (target.indexOf("light") > -1) {
-                target = "scene.getLightByID(\"" + event.object.id + "\")";
-            }
-            else if (target === "transformnode") {
-                target = "scene.getTransformNodeByID(\"" + event.object.id + "\")";
-            }
-            else if (target === "skeleton") {
-                target = "scene.getSkeletonById(\"" + event.object.id + "\")";
-            }
-            else if (target.indexOf("material") > -1) {
-                target = "scene.getMaterialByID(\"" + event.object.id + "\")";
-            }
+        else if (value.getClassName) {
+            value = this._getIndirectData(value);
         }
+        var target = this._getIndirectData(event.object);
         this._recordedCodeLines.push(target + "." + event.property + " = " + value + ";");
         this._previousObject = event.object;
         this._previousProperty = event.property;
