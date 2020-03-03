@@ -52357,6 +52357,7 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
     function PreviewMeshControlComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.colorInputRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this.filePickerRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
     }
     PreviewMeshControlComponent.prototype.changeMeshType = function (newOne) {
@@ -52417,17 +52418,18 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-mesh-bar" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_4__["OptionsLineComponent"], { label: "", options: meshTypeOptions, target: this.props.globalState, propertyName: "previewMeshType", noDirectUpdate: true, onSelect: function (value) {
+                    var _a;
                     if (value !== _previewMeshType__WEBPACK_IMPORTED_MODULE_3__["PreviewMeshType"].Custom + 1) {
                         _this.changeMeshType(value);
                     }
                     else {
-                        react_dom__WEBPACK_IMPORTED_MODULE_5__["findDOMNode"](_this.refs["file-picker"]).click();
+                        (_a = _this.filePickerRef.current) === null || _a === void 0 ? void 0 : _a.click();
                     }
                 } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: {
                     display: "none"
                 }, title: "Preview with a custom mesh" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: "file-picker", id: "file-picker", type: "file", onChange: function (evt) { return _this.useCustomMesh(evt); }, accept: ".gltf, .glb, .babylon, .obj" })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.filePickerRef, id: "file-picker", type: "file", onChange: function (evt) { return _this.useCustomMesh(evt); }, accept: ".gltf, .glb, .babylon, .obj" })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn-table animation", onClick: function () { return _this.changeAnimation(); }, className: "button", id: "play-button" }, this.props.globalState.rotatePreview ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: pauseIcon, alt: "" }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: playIcon, alt: "" })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "color-picker-button", title: "Background color", className: "button align", onClick: function (_) { return _this.changeBackgroundClick(); } },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: colorPicker, alt: "" }),
@@ -58708,7 +58710,9 @@ __webpack_require__.r(__webpack_exports__);
 var FileButtonLineComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FileButtonLineComponent, _super);
     function FileButtonLineComponent(props) {
-        return _super.call(this, props) || this;
+        var _this = _super.call(this, props) || this;
+        _this.uploadRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        return _this;
     }
     FileButtonLineComponent.prototype.onChange = function (evt) {
         var files = evt.target.files;
@@ -58721,7 +58725,7 @@ var FileButtonLineComponent = /** @class */ (function (_super) {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "buttonLine" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "file-upload", className: "file-upload" }, this.props.label),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: "upload", id: "file-upload", type: "file", accept: this.props.accept, onChange: function (evt) { return _this.onChange(evt); } })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.uploadRef, id: "file-upload", type: "file", accept: this.props.accept, onChange: function (evt) { return _this.onChange(evt); } })));
     };
     return FileButtonLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -59567,6 +59571,7 @@ var TextureLineComponent = /** @class */ (function (_super) {
             displayAlpha: true,
             face: 0
         };
+        _this.canvasRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
     }
     TextureLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
@@ -59579,7 +59584,7 @@ var TextureLineComponent = /** @class */ (function (_super) {
         this.updatePreview();
     };
     TextureLineComponent.prototype.updatePreview = function () {
-        TextureLineComponent.UpdatePreview(this.refs.canvas, this.props.texture, this.props.width, this.state, undefined, this.props.globalState);
+        TextureLineComponent.UpdatePreview(this.canvasRef.current, this.props.texture, this.props.width, this.state, undefined, this.props.globalState);
     };
     TextureLineComponent.UpdatePreview = function (previewCanvas, texture, width, options, onReady, globalState) {
         if (!texture.isReady() && texture._texture) {
@@ -59699,7 +59704,7 @@ var TextureLineComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayBlue && !this.state.displayAlpha ? "blue command selected" : "blue command", onClick: function () { return _this.setState({ displayRed: false, displayGreen: false, displayBlue: true, displayAlpha: false }); } }, "B"),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayAlpha && !this.state.displayRed ? "alpha command selected" : "alpha command", onClick: function () { return _this.setState({ displayRed: false, displayGreen: false, displayBlue: false, displayAlpha: true }); } }, "A"),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.displayRed && this.state.displayGreen ? "all command selected" : "all command", onClick: function () { return _this.setState({ displayRed: true, displayGreen: true, displayBlue: true, displayAlpha: true }); } }, "ALL")),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { ref: "canvas", className: "preview" })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { ref: this.canvasRef, className: "preview" })));
     };
     return TextureLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));

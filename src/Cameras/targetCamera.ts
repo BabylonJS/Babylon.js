@@ -53,6 +53,17 @@ export class TargetCamera extends Camera {
     public noRotationConstraint = false;
 
     /**
+     * Reverses mouselook direction to 'natural' panning as opposed to traditional direct
+     * panning
+     */
+    public invertRotation = false;
+
+    /**
+     * Speed multiplier for inverse camera panning
+     */
+    public inverseRotationSpeed = 0.2;
+
+    /**
      * Define the current target of the camera as an object or a position.
      */
     @serializeAsMeshReference("lockedTargetId")
@@ -290,6 +301,7 @@ export class TargetCamera extends Camera {
 
     /** @hidden */
     public _checkInputs(): void {
+        var directionMultiplier = this.invertRotation ? -this.inverseRotationSpeed : 1.0;
         var needToMove = this._decideIfNeedsToMove();
         var needToRotate = Math.abs(this.cameraRotation.x) > 0 || Math.abs(this.cameraRotation.y) > 0;
 
@@ -300,8 +312,8 @@ export class TargetCamera extends Camera {
 
         // Rotate
         if (needToRotate) {
-            this.rotation.x += this.cameraRotation.x;
-            this.rotation.y += this.cameraRotation.y;
+            this.rotation.x += this.cameraRotation.x * directionMultiplier;
+            this.rotation.y += this.cameraRotation.y * directionMultiplier;
 
             //rotate, if quaternion is set and rotation was used
             if (this.rotationQuaternion) {
