@@ -58,7 +58,7 @@ export class KHR_mesh_instancing implements IGLTFLoaderExtension {
                     if (instanceCount === null) {
                         instanceCount = accessor.count;
                     } else if (instanceCount !== accessor.count) {
-                        throw new Error("Instance buffer accessors do not have the same count.");
+                        throw new Error(`${extensionContext}/attributes: Instance buffer accessors do not have the same count.`);
                     }
                     promises.push(this._loader._loadFloatAccessorAsync(`/accessors/${accessor.bufferView}`, accessor).then((data) => {
                         assignBufferFunc(data);
