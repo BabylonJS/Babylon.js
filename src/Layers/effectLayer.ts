@@ -763,9 +763,8 @@ export abstract class EffectLayer {
             }
 
             // Draw
-            var world = effectiveMesh.getWorldMatrix();
-            renderingMesh._processRendering(subMesh, this._effectLayerMapGenerationEffect, material.fillMode, batch, hardwareInstancedRendering,
-                (isInstance, w) => this._effectLayerMapGenerationEffect.setMatrix("world", world));
+            renderingMesh._processRendering(effectiveMesh, subMesh, this._effectLayerMapGenerationEffect, material.fillMode, batch, hardwareInstancedRendering,
+                (isInstance, world) => this._effectLayerMapGenerationEffect.setMatrix("world", world));
         } else {
             // Need to reset refresh rate of the main map
             this._mainTexture.resetRefreshCounter();

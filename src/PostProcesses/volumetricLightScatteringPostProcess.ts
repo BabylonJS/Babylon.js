@@ -359,9 +359,8 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
                 }
 
                 // Draw
-                var world = effectiveMesh.getWorldMatrix();
-                renderingMesh._processRendering(subMesh, this._volumetricLightScatteringPass, Material.TriangleFillMode, batch, hardwareInstancedRendering,
-                    (isInstance, w) => effect.setMatrix("world", world));
+                renderingMesh._processRendering(effectiveMesh, subMesh, this._volumetricLightScatteringPass, Material.TriangleFillMode, batch, hardwareInstancedRendering,
+                    (isInstance, world) => effect.setMatrix("world", world));
             }
         };
 

@@ -1087,10 +1087,8 @@ export class ShadowGenerator implements IShadowGenerator {
             this.onBeforeShadowMapRenderObservable.notifyObservers(this._effect);
 
             // Draw
-
-            var world = effectiveMesh.getWorldMatrix();
-            renderingMesh._processRendering(subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
-                (isInstance, w) => this._effect.setMatrix("world", world));
+            renderingMesh._processRendering(effectiveMesh, subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
+                (isInstance, world) => this._effect.setMatrix("world", world));
 
             if (this.forceBackFacesOnly) {
                 engine.setState(true, 0, false, false);
