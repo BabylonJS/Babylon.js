@@ -36,11 +36,15 @@ interface ITexturePropertyGridComponentProps {
 export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps> {
 
     private _adtInstrumentation: Nullable<AdvancedDynamicTextureInstrumentation>;
+    private textureLineRef: React.RefObject<TextureLineComponent>;
+    
 
     constructor(props: ITexturePropertyGridComponentProps) {
         super(props);
 
         const texture = this.props.texture;
+
+        this.textureLineRef = React.createRef();
 
         if (!texture || !(texture as any).rootContainer) {
             return;
@@ -84,7 +88,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
 
     foreceRefresh() {
         this.forceUpdate();
-        (this.refs["textureLine"] as TextureLineComponent).updatePreview();
+        (this.textureLineRef.current as TextureLineComponent).updatePreview();
     }
 
     render() {
@@ -128,7 +132,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         return (
             <div className="pane">
                 <LineContainerComponent globalState={this.props.globalState} title="PREVIEW">
-                    <TextureLineComponent ref="textureLine" texture={texture} width={256} height={256} globalState={this.props.globalState} />
+                    <TextureLineComponent ref={this.textureLineRef} texture={texture} width={256} height={256} globalState={this.props.globalState} />
                     <FileButtonLineComponent label="Load texture from file" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
                     <TextInputLineComponent label="URL" value={textureUrl} lockObject={this.props.lockObject} onChange={url => {
                         (texture as Texture).updateURL(url);
