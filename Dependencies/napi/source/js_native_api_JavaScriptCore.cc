@@ -119,37 +119,23 @@ napi_status napi_create_reference(napi_env env,
     initial_refcount
   };
   
-  if (info->count != 0)
-  {
-    //CHECK_JSRT(JsAddRef(value, nullptr)); todo
-  }
-  
   *result = reinterpret_cast<napi_ref>(info);
   return napi_ok;
 }
 
 napi_status napi_delete_reference(napi_env env, napi_ref ref) {
   auto info = reinterpret_cast<RefInfo*>(ref);
-  
-  if (info->count != 0)
-  {
-    //CHECK_JSRT(JsRelease(info->value, nullptr));
-  }
-  
   delete info;
-  return napi_ok; // NC
+  return napi_ok;
 }
 
 napi_status napi_get_reference_value(napi_env env,
                    napi_ref ref,
                    napi_value* result) {
   auto info = reinterpret_cast<RefInfo*>(ref);
-  if (info->count == 0)
-  {
+  if (info->count == 0) {
     *result = nullptr;
-  }
-  else
-  {
+  } else {
     *result = reinterpret_cast<napi_value>(const_cast<OpaqueJSValue*>(info->value));
   }
   return napi_ok;
@@ -159,9 +145,10 @@ napi_status napi_create_string_utf8(napi_env env,
                   const char* str,
                   size_t length,
                   napi_value* result) {
-  std::string string(str, length);
-  JSStringRef statement = JSStringCreateWithUTF8CString(string.c_str());
-  *result = reinterpret_cast<napi_value>(statement);
+  JSStringRef statement = JSStringCreateWithUTF8CString(str);
+  auto v = JSValueMakeString(env->m_globalContext, statement);
+  JSStringRelease(statement);
+  *result = reinterpret_cast<napi_value>(const_cast<OpaqueJSValue*>(v));
   return napi_ok;
 }
 
@@ -216,15 +203,13 @@ napi_status napi_get_value_string_utf8(napi_env env,
                      size_t bufsize,
                      size_t* result) {
   JSStringRef stringRef = JSValueToStringCopy(env->m_globalContext, reinterpret_cast<JSValueRef>(value), nullptr);
-  if (!buf && result)
-  {
+  if (!buf && result) {
     // get only string length
     *result = JSStringGetLength(stringRef);
     return napi_ok;
   }
   size_t length = JSStringGetUTF8CString(stringRef, buf, bufsize);
-  if (result)
-  {
+  if (result) {
     *result = length;
   }
   JSStringRelease(stringRef);
@@ -237,10 +222,26 @@ napi_status napi_is_exception_pending(napi_env env, bool* result) {
   return napi_ok;
 }
 
+JSValueRef RaiseException(JSContextRef ctx, JSValueRef* exception, const char* exceptionString)
+{
+  JSStringRef statement = JSStringCreateWithUTF8CString(exceptionString);
+  auto value = JSValueMakeString(ctx, statement);
+  JSStringRelease(statement);
+  *exception = value;
+  return value;
+}
+
 JSValueRef JSCFunctionCallback(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
   auto iter = constructorCB.find(function);
-  assert(iter != constructorCB.end());
+    
+  if (iter == constructorCB.end()) {
+      return RaiseException(ctx, exception, "JavaScriptCore : constructor not found.");
+  }
   ClassTable *cbInfo = iter->second;
+    
+  if (cbInfo->cb == nullptr) {
+    return RaiseException(ctx, exception, "JavaScriptCore : constructor callback is null.");
+  }
   
   CallbackInfo callbackInfo;
   callbackInfo.argc = argumentCount;
@@ -284,6 +285,8 @@ napi_status napi_call_function(napi_env env,
     args[i + 1] = reinterpret_cast<JSValueRef>(argv[i]);
   }
   JSObjectRef obj = JSValueToObject(context, reinterpret_cast<JSValueRef>(func), nullptr);
+    
+  assert(JSObjectIsFunction(context, obj));
   JSValueRef jsResult = JSObjectCallAsFunction(context, obj, nullptr, argc + 1, args.data(), nullptr);
   
   if (result != nullptr) {
@@ -323,7 +326,12 @@ napi_status napi_escape_handle(napi_env env,
 napi_status napi_coerce_to_string(napi_env env,
                   napi_value v,
                   napi_value* result) {
-  *result = v;
+  if (JSValueIsString(env->m_globalContext, reinterpret_cast<JSValueRef>(v))) {
+    *result = v;
+  } else {
+    JSStringRef stringref = JSValueToStringCopy(env->m_globalContext, reinterpret_cast<JSValueRef>(v), nullptr);
+    *result = reinterpret_cast<napi_value>(stringref);
+  }
   return napi_ok;
 }
 
@@ -343,8 +351,7 @@ napi_status napi_create_array_with_length(napi_env env,
                       size_t length,
                       napi_value* result) {
   std::vector<JSValueRef> values(length);
-  for (auto i = 0;i<length;i++)
-  {
+  for (auto i = 0;i<length;i++) {
     values[i] = JSValueMakeNull(env->m_globalContext);
   }
   JSObjectRef array = JSObjectMakeArray(env->m_globalContext, length, values.data(), nullptr);
@@ -367,7 +374,11 @@ napi_status napi_create_string_utf16(napi_env env,
                    const char16_t* str,
                    size_t length,
                    napi_value* result) {
-  assert(0);
+  auto s = JSStringCreateWithCharacters((const JSChar*)str, length);
+  auto v = JSValueMakeString(env->m_globalContext, s);
+  JSStringRelease(s);
+
+  *result = reinterpret_cast<napi_value>(const_cast<OpaqueJSValue*>(v));
   return napi_ok;
 }
 
@@ -381,11 +392,16 @@ napi_status napi_create_symbol(napi_env env,
 template<int functionIndex> JSValueRef JSCStaticMethod(JSContextRef ctx, JSObjectRef function, JSObjectRef object, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
   // vf table
   auto iter = FunctionTables.find(object);
-  assert(iter != FunctionTables.end());
+  if (iter == FunctionTables.end()) {
+    return RaiseException(ctx, exception, "JavaScriptCore : function not found in table.");
+  }
   
   const FunctionTable& table = *iter->second;
   const FunctionTableEntry& entry = table.table[functionIndex];
   
+  if (entry.cb == nullptr) {
+    return RaiseException(ctx, exception, "JavaScriptCore : function callback is null.");
+  }
   CallbackInfo callbackInfo;
   callbackInfo.argc = argumentCount;
   auto jsValueRefs = const_cast<JSValueRef*>(arguments);
@@ -403,15 +419,19 @@ template<int functionIndex> JSValueRef JSCStaticMethod(JSContextRef ctx, JSObjec
 
 void JSCFinalize(JSObjectRef object) {
   // todo
-  assert(0);
 }
 
 JSObjectRef JSCCallAsConstructor(JSContextRef ctx, JSObjectRef constructor, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
 
   auto iter = constructorCB.find(constructor);
-  assert(iter != constructorCB.end());
+  if (iter == constructorCB.end()) {
+    return const_cast<OpaqueJSValue*>(RaiseException(ctx, exception, "JavaScriptCore : constructor not found."));
+  }
   ClassTable *cbInfo = iter->second;
   
+  if (!cbInfo->cb) {
+    return const_cast<OpaqueJSValue*>(RaiseException(ctx, exception, "JavaScriptCore : constructor callback is null."));
+  }
   
   assert(JSObjectIsConstructor(ctx, constructor));
   OpaqueJSValue* jsValue = const_cast<OpaqueJSValue*>(JSObjectMake(ctx, cbInfo->classRef, nullptr));
@@ -433,24 +453,61 @@ JSObjectRef JSCCallAsConstructor(JSContextRef ctx, JSObjectRef constructor, size
   return jsValue;
 }
 
-bool JSCSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSValueRef* exception) {
-  assert(0);
-  return false;
+bool JSCSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSValueRef* exception)
+{
+  auto iter = FunctionTables.find(object);
+  if (iter == FunctionTables.end()) {
+    return RaiseException(ctx, exception, "JavaScriptCore : object not found in function table.");
+  }
+      
+  size_t stringSize = JSStringGetMaximumUTF8CStringSize(propertyName);
+  std::unique_ptr<char> cstr = std::make_unique<char>(stringSize);
+  JSStringGetUTF8CString(propertyName, cstr.get(), stringSize);
+    
+  auto propertyIter = iter->second->properties.find(std::string(cstr.get()));
+  if (propertyIter == iter->second->properties.end()) {
+     return RaiseException(ctx, exception, "JavaScriptCore : property not found in function table.");
+  }
+        
+  auto prop = propertyIter->second;
+    
+  if (!prop.setter) {
+    return RaiseException(ctx, exception, "JavaScriptCore : setter function is null for the object.");
+  }
+  napi_value napiValue = reinterpret_cast<napi_value>(const_cast<OpaqueJSValue*>(value));
+  CallbackInfo callbackInfo;
+  callbackInfo.newTarget = 0;
+  callbackInfo.argc = 1;
+  callbackInfo.argv = &napiValue;
+  callbackInfo.thisArg = reinterpret_cast<napi_value>(object);
+  callbackInfo.data = prop.data;
+  callbackInfo.isConstructCall = false;
+  prop.setter(iter->second->env, reinterpret_cast<napi_callback_info>(&callbackInfo));
+  return true;
 }
 
 JSValueRef JSCGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception) {
   auto iter = FunctionTables.find(object);
-  assert(iter != FunctionTables.end());
-  
+
+  if (iter == FunctionTables.end()) {
+      return RaiseException(ctx, exception, "JavaScriptCore : object not found in function table.");
+  }
+    
   size_t stringSize = JSStringGetMaximumUTF8CStringSize(propertyName);
   std::unique_ptr<char> cstr = std::make_unique<char>(stringSize);
   JSStringGetUTF8CString(propertyName, cstr.get(), stringSize);
   
   auto propertyIter = iter->second->properties.find(std::string(cstr.get()));
-  assert(propertyIter != iter->second->properties.end());
-  
+  if (propertyIter == iter->second->properties.end()) {
+    return RaiseException(ctx, exception, "JavaScriptCore : property not found for object in function table.");
+  }
+      
   auto prop = propertyIter->second;
   
+  if (!prop.getter) {
+    return RaiseException(ctx, exception, "JavaScriptCore : getter function is null for the object.");
+  }
+
   CallbackInfo callbackInfo;
   callbackInfo.newTarget = 0;
   callbackInfo.argc = 0;
@@ -459,7 +516,6 @@ JSValueRef JSCGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef prop
   callbackInfo.data = prop.data;
   callbackInfo.isConstructCall = false;
   napi_value retValue = prop.getter(iter->second->env, reinterpret_cast<napi_callback_info>(&callbackInfo));
-  
   return reinterpret_cast<JSValueRef>(retValue);
 }
 
@@ -510,13 +566,12 @@ napi_status napi_define_class(napi_env env,
   
   JSStaticValue* staticValues = new JSStaticValue[propertyCount+1];
   for (auto i = 0;i<propertyCount;i++) {
-    staticValues[i] = {propertyDescriptors[i].utf8name, JSCGetProperty, JSCSetProperty, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete};
+    staticValues[i] = {propertyDescriptors[i].utf8name, JSCGetProperty, JSCSetProperty, kJSPropertyAttributeNone | kJSPropertyAttributeDontDelete};
     table.properties[std::string(propertyDescriptors[i].utf8name)] = {propertyDescriptors[i].getter, propertyDescriptors[i].setter, propertyDescriptors[i].data};
   }
   staticValues[propertyCount] = {0, 0, 0, 0};
   
   classDefinition.staticValues = staticValues;
-  
   
   JSStaticFunction *staticFunctions = new JSStaticFunction[methodCount+1];
   assert(methodCount<70);
@@ -633,7 +688,20 @@ napi_status napi_get_arraybuffer_info(napi_env env,
                     napi_value arraybuffer,
                     void** data,
                     size_t* byte_length) {
-  assert(0);
+  auto context = env->m_globalContext;
+  JSObjectRef array = reinterpret_cast<JSObjectRef>(arraybuffer);
+  if (JSValueIsString(context, array)) {
+    return napi_ok;
+  }
+    
+  void* arrayData = JSObjectGetArrayBufferBytesPtr(context, array, nullptr);
+  size_t elementCount = JSObjectGetArrayBufferByteLength(context, array, nullptr);
+  if (data) {
+    *data = arrayData;
+  }
+  if (byte_length) {
+    *byte_length = elementCount;
+  }
   return napi_ok;
 }
 
@@ -701,8 +769,9 @@ napi_status napi_get_element(napi_env env,
   return napi_ok;
 }
 
+JSGlobalContextRef gcontextref;
 napi_status napi_get_global(napi_env env, napi_value* result) {
-
+  gcontextref = JSContextGetGlobalContext(env->m_globalContext);
   JSObjectRef contextObject = JSContextGetGlobalObject(env->m_globalContext);
   *result = reinterpret_cast<napi_value>(contextObject);
   return napi_ok;
@@ -739,8 +808,7 @@ napi_status napi_get_typedarray_info(napi_env env,
   JSObjectRef array = reinterpret_cast<JSObjectRef>(typedarray);
   JSObjectRef typedObject = JSObjectGetTypedArrayBuffer(context, array, nullptr);
   void* arrayData = JSObjectGetArrayBufferBytesPtr(context, typedObject, &exception); // temporary
-  if (!arrayData)
-  {
+  if (!arrayData) {
     dumpException(env, exception);
   }
   
@@ -786,7 +854,7 @@ napi_status napi_get_typedarray_info(napi_env env,
   }
   
   if (data != nullptr) {
-    *data = static_cast<uint8_t*>(arrayData);
+    *data = static_cast<uint8_t*>(arrayData) + arrayByteOffset;
   }
   
   if (arraybuffer != nullptr) {
@@ -806,9 +874,8 @@ napi_status napi_run_script(napi_env env,
               napi_value* result) {
   JSStringRef statement = reinterpret_cast<JSStringRef>(script);
   JSValueRef exception;
-  OpaqueJSValue *retValue = const_cast<OpaqueJSValue*>(JSEvaluateScript(env->m_globalContext, statement, nullptr, nullptr, 1, &exception));
-  if (!retValue)
-  {
+  OpaqueJSValue *retValue = const_cast<OpaqueJSValue*>(JSEvaluateScript(env->m_globalContext, statement, nullptr, JSStringCreateWithUTF8CString(sourceUrl), 1, &exception));
+  if (!retValue) {
     dumpException(env, exception);
   }
   *result = reinterpret_cast<napi_value>(retValue);
@@ -917,12 +984,11 @@ napi_status napi_new_instance(napi_env env,
   return napi_ok;
 }
 
-JSValueRef JSObjectCallAsFunctionCallbackDefault (JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
-  assert(0);
-  return JSValueMakeNull(ctx);
+JSValueRef JSObjectCallAsFunctionCallbackDefault(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
+    return RaiseException(ctx, exception, "JavaScriptCore : callback function is not implemented.");
 }
 
-napi_status napi_define_properties(napi_env env,
+  napi_status napi_define_properties(napi_env env,
                    const napi_value object,
                    size_t property_count,
                    const napi_property_descriptor* properties) {
@@ -935,8 +1001,7 @@ napi_status napi_create_external(napi_env env,
                  void* finalize_hint,
                  napi_value* result) {
   static JSClassRef classDef = nullptr;
-  if (!classDef)
-  {
+  if (!classDef) {
       JSClassDefinition classDefinition = kJSClassDefinitionEmpty;
       classDefinition.className = "dummyClass";
       classDef = JSClassCreate(&classDefinition);
@@ -949,14 +1014,20 @@ napi_status napi_create_external(napi_env env,
 }
 
 napi_status napi_get_value_external(napi_env env, napi_value v, void** result) {
-  JSObjectRef jsObject = reinterpret_cast<JSObjectRef>(v);
   return napi_unwrap(env, v, result);
+}
+
+void TypedArrayBytesDeallocator(void* bytes, void* deallocatorContext)
+{
+  free(bytes);
 }
 
 napi_status napi_create_arraybuffer(napi_env env,
                   size_t byte_length,
                   void** data,
                   napi_value* result) {
-  assert(0);
+  uint8_t *bytes = (uint8_t*)malloc(byte_length);
+  JSObjectRef jsObject = JSObjectMakeArrayBufferWithBytesNoCopy(env->m_globalContext, bytes, byte_length, TypedArrayBytesDeallocator, nullptr, nullptr);
+  *result = reinterpret_cast<napi_value>(jsObject);
   return napi_ok;
 }

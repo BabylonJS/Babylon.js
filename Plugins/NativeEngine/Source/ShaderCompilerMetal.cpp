@@ -41,6 +41,16 @@ namespace glslang
             compiler->set_name(resource.id, "_mtl_u");
         }
 
+        // rename textures without the 'texture' suffix so it's bindable from .js
+        for (auto& resource : resources.separate_images)
+        {
+            std::string imageName = resource.name;
+            if (imageName.find("Texture") != std::string::npos)
+            {
+                imageName.replace(imageName.find("Texture"), std::string::npos, "");
+                compiler->set_name(resource.id, imageName);
+            }
+        }
         compiler->rename_entry_point("main", "xlatMtlMain", (stage == EShLangVertex) ? spv::ExecutionModelVertex : spv::ExecutionModelFragment);
 
         shaderResult = compiler->compile();
