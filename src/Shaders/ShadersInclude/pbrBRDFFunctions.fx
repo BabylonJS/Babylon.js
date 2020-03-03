@@ -60,7 +60,7 @@ float getBRDFLookupCharlieSheen(float NdotV, float perceptualRoughness)
     }
 #endif
 
-#if defined(SHEEN) && defined(REFLECTION)
+#if defined(SHEEN) && defined(ENVIRONMENTBRDF)
     /**
      * The sheen BRDF not containing F can be easily stored in the blue channel of the BRDF texture.
      * The blue channel contains DCharlie * VAshikhmin * NdotL as a lokkup table
