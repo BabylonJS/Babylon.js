@@ -204,9 +204,8 @@ export class OutlineRenderer implements ISceneComponent {
         }
 
         engine.setZOffset(-this.zOffset);
-        var world = effectiveMesh.getWorldMatrix();
-        renderingMesh._processRendering(subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
-            (isInstance, w) => { this._effect.setMatrix("world", world); });
+        renderingMesh._processRendering(effectiveMesh, subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
+            (isInstance, world) => { this._effect.setMatrix("world", world); });
 
         engine.setZOffset(0);
     }

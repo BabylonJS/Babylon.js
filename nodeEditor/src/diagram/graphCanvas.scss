@@ -242,6 +242,10 @@
                     cursor: ew-resize;
                     
                 }
+
+                &.collapsed {
+                    cursor: pointer;
+                }
             }
 
             .top-right-corner-handle{
@@ -372,6 +376,24 @@
                     margin-top: -8px;
                     cursor: ns-resize;
                     height: 12px;
+                }
+            }
+            
+            &.collapsed{
+                .top-handle, .top-right-corner-handle, .right-handle, .bottom-right-corner-handle, .bottom-handle, .bottom-left-corner-handle, .left-handle, .top-left-corner-handle {
+                    cursor: default;
+                }
+
+                .right-handle, .bottom-handle, .top-right-corner-handle, .bottom-right-corner-handle{
+                    &::after{
+                        cursor: default;
+                    }
+                }
+
+                .left-handle, .top-handle, .top-left-corner-handle, .bottom-left-corner-handle{
+                    &::before{
+                        cursor: default;
+                    }
                 }
             }
         }

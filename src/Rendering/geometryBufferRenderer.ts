@@ -485,8 +485,8 @@ export class GeometryBufferRenderer {
                 }
 
                 // Draw
-                renderingMesh._processRendering(subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
-                    (isInstance, w) => this._effect.setMatrix("world", world));
+                renderingMesh._processRendering(effectiveMesh, subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
+                    (isInstance, w) => this._effect.setMatrix("world", w));
             }
 
             // Velocity
