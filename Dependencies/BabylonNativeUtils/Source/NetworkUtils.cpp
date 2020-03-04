@@ -72,7 +72,8 @@ namespace Babylon
                 data.resize(size);
                 AAsset_read(asset, data.data(), size);
                 AAsset_close(asset);
-                return std::move(data);
+                taskCompletionSource.complete(std::move(data));
+                return;
             }
 #endif
 
