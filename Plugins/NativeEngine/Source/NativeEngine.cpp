@@ -1015,7 +1015,7 @@ namespace Babylon
 
         // Load images and generate mips if requested.
         uint32_t totalSize = 0;
-        std::array<bimg::ImageContainer*, 6> images;
+        std::array<bimg::ImageContainer*, 6> images{};
         for (uint32_t face = 0; face < 6; face++)
         {
             const auto imageData = imageDataArray[face].As<Napi::TypedArray>();
