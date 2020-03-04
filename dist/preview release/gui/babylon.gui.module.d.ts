@@ -3032,6 +3032,7 @@ declare module "babylonjs-gui/2D/controls/scrollViewers/scrollViewerWindow" {
         private _dispatchInBuckets;
         private _updateMeasures;
         private _updateChildrenMeasures;
+        private _restoreMeasures;
         /**
         * Creates a new ScrollViewerWindow
         * @param name of ScrollViewerWindow
@@ -7287,6 +7288,7 @@ declare module BABYLON.GUI {
         private _dispatchInBuckets;
         private _updateMeasures;
         private _updateChildrenMeasures;
+        private _restoreMeasures;
         /**
         * Creates a new ScrollViewerWindow
         * @param name of ScrollViewerWindow

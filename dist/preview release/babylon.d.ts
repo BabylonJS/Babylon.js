@@ -49913,6 +49913,7 @@ declare module BABYLON {
      * Class used to host texture specific utilities
      */
     export class BRDFTextureTools {
+        private static _instanceNumber;
         /**
          * Gets a default environment BRDF for MS-BRDF Height Correlated BRDF
          * @param scene defines the hosting scene
