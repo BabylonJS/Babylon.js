@@ -358,6 +358,10 @@ export class ModelShape {
  */
 export class DepthSortedParticle {
     /**
+     * Particle index
+     */
+    public idx: number = 0;
+    /**
      * Index of the particle in the "indices" array
      */
     public ind: number = 0;
@@ -378,7 +382,8 @@ export class DepthSortedParticle {
      * Creates a new sorted particle
      * @param materialIndex
      */
-    constructor(ind: number, indLength: number, materialIndex: number) {
+    constructor(idx: number, ind: number, indLength: number, materialIndex: number) {
+        this.idx = idx;
         this.ind = ind;
         this.indicesLength = indLength;
         this.materialIndex = materialIndex;
