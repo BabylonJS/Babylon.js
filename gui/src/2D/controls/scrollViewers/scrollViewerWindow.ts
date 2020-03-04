@@ -13,8 +13,8 @@ export class _ScrollViewerWindow extends Container {
 
     private _freezeControls = false;
     private _parentMeasure: Measure;
-    private _oldLeft: number;
-    private _oldTop: number;
+    private _oldLeft: number | null;
+    private _oldTop: number | null;
 
     public get freezeControls(): boolean {
         return this._freezeControls;
@@ -23,6 +23,10 @@ export class _ScrollViewerWindow extends Container {
     public set freezeControls(value: boolean) {
         if (this._freezeControls === value) {
             return;
+        }
+
+        if (!value) {
+            this._restoreMeasures();
         }
 
         // trigger a full normal layout calculation to be sure all children have their measures up to date
@@ -87,16 +91,18 @@ export class _ScrollViewerWindow extends Container {
         this._buckets = {};
         this._bucketLen = Math.ceil(this.widthInPixels / this._bucketWidth);
         this._dispatchInBuckets(this._children);
+        this._oldLeft = null;
+        this._oldTop = null;
     }
 
     private _dispatchInBuckets(children: Control[]): void {
         for (let i = 0; i < children.length; ++i) {
             let child = children[i];
 
-            let bStartX = Math.max(0, Math.floor((child._currentMeasure.left - this._currentMeasure.left) / this._bucketWidth)),
-                bEndX = Math.floor((child._currentMeasure.left - this._currentMeasure.left + child._currentMeasure.width - 1) / this._bucketWidth),
-                bStartY = Math.max(0, Math.floor((child._currentMeasure.top - this._currentMeasure.top) / this._bucketHeight)),
-                bEndY = Math.floor((child._currentMeasure.top - this._currentMeasure.top + child._currentMeasure.height - 1) / this._bucketHeight);
+            let bStartX = Math.max(0, Math.floor((child._customData._origLeft - this._customData.origLeft) / this._bucketWidth)),
+                bEndX = Math.floor((child._customData._origLeft - this._customData.origLeft + child._currentMeasure.width - 1) / this._bucketWidth),
+                bStartY = Math.max(0, Math.floor((child._customData._origTop - this._customData.origTop) / this._bucketHeight)),
+                bEndY = Math.floor((child._customData._origTop - this._customData.origTop + child._currentMeasure.height - 1) / this._bucketHeight);
 
             while (bStartY <= bEndY) {
                 for (let x = bStartX; x <= bEndX; ++x) {
@@ -129,6 +135,11 @@ export class _ScrollViewerWindow extends Container {
         this._currentMeasure.left -= left;
         this._currentMeasure.top -= top;
 
+        this._customData.origLeftForChildren = this._measureForChildren.left;
+        this._customData.origTopForChildren = this._measureForChildren.top;
+        this._customData.origLeft = this._currentMeasure.left;
+        this._customData.origTop = this._currentMeasure.top;
+
         this._updateChildrenMeasures(this._children, left, top);
     }
 
@@ -146,6 +157,16 @@ export class _ScrollViewerWindow extends Container {
                 this._updateChildrenMeasures(child._children, left, top);
             }
         }
+    }
+
+    private _restoreMeasures(): void {
+        let left = this.leftInPixels | 0,
+            top = this.topInPixels | 0;
+
+        this._measureForChildren.left = this._customData.origLeftForChildren + left;
+        this._measureForChildren.top = this._customData.origTopForChildren + top;
+        this._currentMeasure.left = this._customData.origLeft + left;
+        this._currentMeasure.top = this._customData.origTop + top;
     }
 
     /**
@@ -234,12 +255,16 @@ export class _ScrollViewerWindow extends Container {
             this._clipForChildren(context);
         }
 
-        let left = this.leftInPixels,
-            top = this.topInPixels;
+        let left = this.leftInPixels | 0,
+            top = this.topInPixels | 0;
 
         if (this._useBuckets()) {
-            this._scrollChildrenWithBuckets(this._oldLeft, this._oldTop, left, top);
-            this._scrollChildrenWithBuckets(left, top, left, top);
+            if (this._oldLeft !== null && this._oldTop !== null) {
+                this._scrollChildrenWithBuckets(this._oldLeft, this._oldTop, left, top);
+                this._scrollChildrenWithBuckets(left, top, left, top);
+            } else {
+                this._scrollChildren(this._children, left, top);
+            }
         } else {
             this._scrollChildren(this._children, left, top);
         }
