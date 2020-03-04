@@ -34,6 +34,6 @@
 - Fix infinite loop in `GlowLayer.unReferenceMeshFromUsingItsOwnMaterial` ([Popov72](https://github.com/Popov72)
 - `QuadraticErrorSimplification` was not exported ([RaananW](https://github.com/Raananw)
 - Fix NME Frames bug where collapsing and moving a frame removed the nodes inside ([Kyle Belfort](https://github.com/belfortk)
-
+- Fix moving / disappearing controls when freezing/unfreezing the ScrollViewer ([Popov72](https://github.com/Popov72)
 
 ## Breaking changes
