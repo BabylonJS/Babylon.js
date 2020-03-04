@@ -4,8 +4,10 @@ set(SCRIPTS
 set(BABYLONSCRIPTS
     "../BabylonScripts/babylon.glTF2FileLoader.js"
     "../BabylonScripts/babylon.max.js"
-    "../BabylonScripts/babylonjs.materials.js")
-    
+    "../BabylonScripts/babylonjs.materials.js"
+    "../BabylonScripts/ammo.js"
+    "../BabylonScripts/recast.js")
+
 set(SOURCES
     ${SCRIPTS}
     ${BABYLONSCRIPTS}
@@ -45,7 +47,6 @@ elseif(WINDOWS_STORE)
 
     set(RESOURCE_FILES
         ${BABYLON_NATIVE_DEPENDENCIES})
-
 elseif(APPLE)
     find_library(JSCORE_LIBRARY JavaScriptCore)
     if(IOS)
@@ -78,8 +79,12 @@ elseif(APPLE)
     endif()
 
     set(ADDITIONAL_LIBRARIES ${ADDITIONAL_LIBRARIES} ${JSCORE_LIBRARY})
-    set(JSSCRIPT "${CMAKE_CURRENT_LIST_DIR}/../BabylonScripts/babylon.glTF2FileLoader.js"
+    set(JSSCRIPT
+        "${CMAKE_CURRENT_LIST_DIR}/../BabylonScripts/ammo.js"
+        "${CMAKE_CURRENT_LIST_DIR}/../BabylonScripts/recast.js"
+        "${CMAKE_CURRENT_LIST_DIR}/../BabylonScripts/babylon.glTF2FileLoader.js"
         "${CMAKE_CURRENT_LIST_DIR}/../BabylonScripts/babylon.max.js"
+        "${CMAKE_CURRENT_LIST_DIR}/../BabylonScripts/babylonjs.materials.js"
         "${CMAKE_CURRENT_LIST_DIR}/Scripts/experience.js"
         "${CMAKE_CURRENT_LIST_DIR}/Scripts/playground_runner.js")
     set(RESOURCE_FILES ${STORYBOARD} ${JSSCRIPT})

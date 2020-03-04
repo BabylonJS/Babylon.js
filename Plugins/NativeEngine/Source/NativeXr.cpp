@@ -1159,9 +1159,9 @@ namespace Babylon
             {
                 const std::string eye{info[0].As<Napi::String>().Utf8Value()};
 
-                auto rtt = m_jsRenderTargetTextures[XREye::EyeToIndex(eye)].Value();
-                rtt.Set("_framebuffer", Napi::External<FrameBufferData>::New(info.Env(), m_session.GetFrameBufferForEye(eye)));
-                return rtt;
+                auto renderTargetTexture = m_jsRenderTargetTextures[XREye::EyeToIndex(eye)].Value();
+                renderTargetTexture.Get("_texture").As<Napi::Object>().Set("_framebuffer", Napi::External<FrameBufferData>::New(info.Env(), m_session.GetFrameBufferForEye(eye)));
+                return renderTargetTexture;
             }
         };
 

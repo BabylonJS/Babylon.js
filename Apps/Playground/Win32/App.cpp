@@ -116,6 +116,9 @@ namespace
         InputManager::Initialize(*runtime, *inputBuffer);
 
         Babylon::ScriptLoader loader{ *runtime, runtime->RootUrl() };
+        loader.Eval("document = {}", "");
+        loader.LoadScript(moduleRootUrl + "/Scripts/ammo.js");
+        loader.LoadScript(moduleRootUrl + "/Scripts/recast.js");
         loader.LoadScript(moduleRootUrl + "/Scripts/babylon.max.js");
         loader.LoadScript(moduleRootUrl + "/Scripts/babylon.glTF2FileLoader.js");
         loader.LoadScript(moduleRootUrl + "/Scripts/babylonjs.materials.js");

@@ -62,8 +62,12 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
     InputManager::Initialize(*runtime, *inputBuffer);
     
     Babylon::ScriptLoader loader{ *runtime, runtime->RootUrl() };
+    loader.Eval("document = {}", "");
+    loader.LoadScript("ammo.js");
+    loader.LoadScript("recast.js");
     loader.LoadScript("babylon.max.js");
     loader.LoadScript("babylon.glTF2FileLoader.js");
+    loader.LoadScript("babylonjs.materials.js");
     loader.LoadScript("experience.js");
 }
 

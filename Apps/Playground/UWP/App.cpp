@@ -183,8 +183,12 @@ concurrency::task<void> App::RestartRuntimeAsync(Windows::Foundation::Rect bound
     InputManager::Initialize(*m_runtime, *m_inputBuffer);
 
     Babylon::ScriptLoader loader{ *m_runtime, m_runtime->RootUrl() };
+    loader.Eval("document = {}", "");
+    loader.LoadScript(appUrl + "/Scripts/ammo.js");
+    loader.LoadScript(appUrl + "/Scripts/recast.js");
     loader.LoadScript(appUrl + "/Scripts/babylon.max.js");
     loader.LoadScript(appUrl + "/Scripts/babylon.glTF2FileLoader.js");
+    loader.LoadScript(appUrl + "/Scripts/babylonjs.materials.js");
 
     if (m_fileActivatedArgs == nullptr)
     {

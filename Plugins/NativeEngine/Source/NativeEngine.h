@@ -149,7 +149,7 @@ namespace Babylon
             bgfx::setViewRect(ViewId, 0, 0, Width, Height);
         }
 
-        bgfx::FrameBufferHandle FrameBuffer{bgfx::kInvalidHandle};
+        bgfx::FrameBufferHandle FrameBuffer{BGFX_INVALID_HANDLE};
         bgfx::ViewId ViewId{};
         ViewClearState ViewClearState;
         uint16_t Width{};
@@ -160,7 +160,7 @@ namespace Babylon
     {
         FrameBufferManager()
         {
-            m_boundFrameBuffer = m_backBuffer = new FrameBufferData({bgfx::kInvalidHandle}, GetNewViewId(), bgfx::getStats()->width, bgfx::getStats()->height);
+            m_boundFrameBuffer = m_backBuffer = new FrameBufferData(BGFX_INVALID_HANDLE, GetNewViewId(), bgfx::getStats()->width, bgfx::getStats()->height);
         }
 
         FrameBufferData* CreateNew(bgfx::FrameBufferHandle frameBufferHandle, uint16_t width, uint16_t height)
@@ -212,27 +212,23 @@ namespace Babylon
     struct UniformInfo final
     {
         uint8_t Stage{};
-        // uninitilized bgfx resource is kInvalidHandle. 0 can be a valid handle.
-        bgfx::UniformHandle Handle{bgfx::kInvalidHandle};
+        // uninitilized bgfx resource is BGFX_INVALID_HANDLE. 0 can be a valid handle.
+        bgfx::UniformHandle Handle{BGFX_INVALID_HANDLE};
     };
 
     struct TextureData final
     {
         ~TextureData()
         {
-            if (Texture.idx != bgfx::kInvalidHandle)
+            if (bgfx::isValid(Texture))
             {
                 bgfx::destroy(Texture);
             }
-
-            for (auto image : Images)
-            {
-                bimg::imageFree(image);
-            }
         }
 
-        std::vector<bimg::ImageContainer*> Images{};
-        bgfx::TextureHandle Texture{bgfx::kInvalidHandle};
+        bgfx::TextureHandle Texture{BGFX_INVALID_HANDLE};
+        uint32_t Width{0};
+        uint32_t Height{0};
         uint32_t Flags{0};
         uint8_t AnisotropicLevel{0};
     };
@@ -362,9 +358,9 @@ namespace Babylon
         Napi::Value CreateTexture(const Napi::CallbackInfo& info);
         Napi::Value LoadTexture(const Napi::CallbackInfo& info);
         Napi::Value LoadCubeTexture(const Napi::CallbackInfo& info);
+        Napi::Value LoadCubeTextureWithMips(const Napi::CallbackInfo& info);
         Napi::Value GetTextureWidth(const Napi::CallbackInfo& info);
         Napi::Value GetTextureHeight(const Napi::CallbackInfo& info);
-        void UpdateRawTexture(const Napi::CallbackInfo& info);
         void SetTextureSampling(const Napi::CallbackInfo& info);
         void SetTextureWrapMode(const Napi::CallbackInfo& info);
         void SetTextureAnisotropicLevel(const Napi::CallbackInfo& info);
@@ -416,7 +412,6 @@ namespace Babylon
         template<int size>
         void SetMatrixN(const Napi::CallbackInfo& info);
 
-        void ConvertImageToTexture(TextureData* const textureData, bimg::ImageContainer& image, bool invertY, bool mipMap) const;
         // Scratch vector used for data alignment.
         std::vector<float> m_scratch{};
     };

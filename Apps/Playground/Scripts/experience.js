@@ -66,11 +66,12 @@ CreateBoxAsync().then(function () {
 //BABYLON.SceneLoader.AppendAsync("https://raw.githubusercontent.com/stevk/glTF-Asset-Generator/skins/Output/Animation_Skin/Animation_Skin_01.gltf").then(function () {
 //BABYLON.SceneLoader.AppendAsync("https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/RiggedFigure/glTF/RiggedFigure.gltf").then(function () {
 //BABYLON.SceneLoader.AppendAsync("https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/CesiumMan/glTF/CesiumMan.gltf").then(function () {
+//BABYLON.SceneLoader.AppendAsync("https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/ClearCoatTest/glTF/ClearCoatTest.gltf").then(function () {
     BABYLON.Tools.Log("Loaded");
 
-	scene.createDefaultCamera(true);
-	scene.activeCamera.alpha += Math.PI;
-	CreateInputHandling(scene);
+    scene.createDefaultCamera(true);
+    scene.activeCamera.alpha += Math.PI;
+    CreateInputHandling(scene);
 
     if (ibl) {
         scene.createDefaultEnvironment({ createGround: false, createSkybox: false });
@@ -130,7 +131,7 @@ CreateBoxAsync().then(function () {
 
     if (xr) {
         setTimeout(function () {
-            scene.createDefaultXRExperienceAsync({ disableDefaultUI: true }).then((xr) => {
+            scene.createDefaultXRExperienceAsync({ disableDefaultUI: true, disableTeleportation: true }).then((xr) => {
                 setTimeout(function () {
                     scene.meshes[0].position = scene.activeCamera.getFrontPosition(2);
                     scene.meshes[0].rotate(BABYLON.Vector3.Up(), 3.14159);
