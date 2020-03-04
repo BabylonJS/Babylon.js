@@ -12839,12 +12839,11 @@ declare module BABYLON {
      * It emits the particles randomly between 2 given directions.
      */
     export class MeshParticleEmitter implements IParticleEmitterType {
-        /** Defines the mesh to use as source */
-        mesh?: AbstractMesh | undefined;
         private _indices;
         private _positions;
         private _normals;
         private _storedNormal;
+        private _mesh;
         /**
          * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
          */
@@ -12857,13 +12856,14 @@ declare module BABYLON {
          * Gets or sets a boolean indicating that particle directions must be built from mesh face normals
          */
         useMeshNormalsForDirection: boolean;
+        /** Defines the mesh to use as source */
+        get mesh(): Nullable<AbstractMesh>;
+        set mesh(value: Nullable<AbstractMesh>);
         /**
          * Creates a new instance MeshParticleEmitter
          * @param mesh defines the mesh to use as source
          */
-        constructor(
-        /** Defines the mesh to use as source */
-        mesh?: AbstractMesh | undefined);
+        constructor(mesh?: Nullable<AbstractMesh>);
         /**
          * Called by the particle System when the direction is computed for the created particle.
          * @param worldMatrix is the world matrix of the particle system
@@ -24812,7 +24812,7 @@ declare module BABYLON {
         /** @hidden */
         _processInstancedBuffers(visibleInstances: InstancedMesh[], renderSelf: boolean): void;
         /** @hidden */
-        _processRendering(subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material): Mesh;
+        _processRendering(renderingMesh: AbstractMesh, subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material): Mesh;
         /** @hidden */
         _rebuild(): void;
         /** @hidden */
