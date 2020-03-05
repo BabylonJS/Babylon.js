@@ -7,6 +7,7 @@
 #import <Babylon/ScriptLoader.h>
 #import <Babylon/XMLHttpRequest.h>
 #import <Shared/InputManager.h>
+#import "Babylon/XMLHttpRequestApple.h"
 
 std::unique_ptr<Babylon::AppRuntime> runtime{};
 std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
