@@ -32,6 +32,9 @@
 - Added the `roughness` and `albedoScaling` parameters to PBR sheen ([Popov72](https://github.com/Popov72))
 - Updated the energy conservation factor for the clear coat layer in PBR materials ([Popov72](https://github.com/Popov72))
 
+### WebXR
+- Added optional ray and mesh selection predicates to `WebXRControllerPointerSelection` ([Exolun](https://github.com/Exolun))
+
 ## Bugs
 
 - Fix infinite loop in `GlowLayer.unReferenceMeshFromUsingItsOwnMaterial` ([Popov72](https://github.com/Popov72)
