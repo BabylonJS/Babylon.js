@@ -128,6 +128,14 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
             { label: "Alpha", value: 87 },
         ];
 
+        (material.sheen as any)._useRoughness = (material.sheen as any)._useRoughness ?? material.sheen.roughness !== null;
+        material.sheen.roughness = material.sheen.roughness ?? (material.sheen as any)._saveRoughness ?? 0;
+
+        if (!(material.sheen as any)._useRoughness) {
+            (material.sheen as any)._saveRoughness = material.sheen.roughness;
+            material.sheen.roughness = null;
+        }
+
         return (
             <div className="pane">
                 <CommonMaterialPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -208,6 +216,11 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                             <SliderLineComponent label="Intensity" target={material.sheen} propertyName="intensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <Color3LineComponent label="Color" target={material.sheen} propertyName="color" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <TextureLinkLineComponent label="Texture" texture={material.sheen.texture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
+                            <CheckBoxLineComponent label="Use roughness" target={material.sheen} propertyName="_useRoughness" />
+                            { (material.sheen as any)._useRoughness &&
+                                <SliderLineComponent label="Roughness" target={material.sheen} propertyName="roughness" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            }
+                            <CheckBoxLineComponent label="Albedo scaling" target={material.sheen} propertyName="albedoScaling" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         </div>
                     }
                 </LineContainerComponent>
