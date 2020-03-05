@@ -15,6 +15,7 @@ import { SubMesh } from '../Meshes/subMesh';
 import { Material } from '../Materials/material';
 import { StandardMaterial } from '../Materials/standardMaterial';
 import { MultiMaterial } from '../Materials/multiMaterial';
+import { PickingInfo } from '../Collisions/pickingInfo';
 
 /**
  * The SPS is a single updatable mesh. The solid particles are simply separate parts or faces fo this big mesh.
@@ -66,9 +67,24 @@ export class SolidParticleSystem implements IDisposable {
      * Each element of this array is an object `{idx: int, faceId: int}`.
      * `idx` is the picked particle index in the `SPS.particles` array
      * `faceId` is the picked face index counted within this particle.
+     * This array is the first element of the pickedBySubMesh array : sps.pickBySubMesh[0].
+     * It's not pertinent to use it when using a SPS with the support for MultiMaterial enabled.
+     * Use the method SPS.pickedParticle(pickingInfo) instead.
      * Please read : http://doc.babylonjs.com/how_to/Solid_Particle_System#pickable-particles
      */
     public pickedParticles: { idx: number; faceId: number }[];
+    /**
+     * This array is populated when the SPS is set as 'pickable'
+     * Each key of this array is a submesh index.
+     * Each element of this array is a second array defined like this :
+     * Each key of this second array is a `faceId` value that you can get from a pickResult object.
+     * Each element of this second array is an object `{idx: int, faceId: int}`.
+     * `idx` is the picked particle index in the `SPS.particles` array
+     * `faceId` is the picked face index counted within this particle.
+     * It's better to use the method SPS.pickedParticle(pickingInfo) rather than using directly this array.
+     * Please read : http://doc.babylonjs.com/how_to/Solid_Particle_System#pickable-particles
+     */
+    public pickedBySubMesh: { idx: number; faceId: number}[][];
     /**
      * This array is populated when `enableDepthSort` is set to true.
      * Each element of this array is an instance of the class DepthSortedParticle.
@@ -169,7 +185,8 @@ export class SolidParticleSystem implements IDisposable {
             this._updatable = true;
         }
         if (this._pickable) {
-            this.pickedParticles = [];
+            this.pickedBySubMesh = [[]];
+            this.pickedParticles = this.pickedBySubMesh[0];
         }
         if (this._depthSort || this._multimaterialEnabled) {
             this.depthSortedParticles = [];
@@ -430,6 +447,7 @@ export class SolidParticleSystem implements IDisposable {
         copy.uvs.copyFromFloats(0.0, 0.0, 1.0, 1.0);
         copy.color = null;
         copy.translateFromPivot = false;
+        copy.shapeId = 0;
         copy.materialIndex = null;
     }
 
@@ -464,6 +482,7 @@ export class SolidParticleSystem implements IDisposable {
         const storeApart = (options && options.storage) ? true : false;
         copy.idx = idx;
         copy.idxInShape = idxInShape;
+        copy.shapeId = model.shapeID;
         if (this._useModelMaterial) {
             var materialId = model._material!.uniqueId;
             const materialIndexesById = this._materialIndexesById;
@@ -563,7 +582,7 @@ export class SolidParticleSystem implements IDisposable {
 
         if (this._depthSort || this._multimaterialEnabled) {
             var matIndex = (copy.materialIndex !== null) ? copy.materialIndex : 0;
-            this.depthSortedParticles.push(new DepthSortedParticle(ind, meshInd.length, matIndex));
+            this.depthSortedParticles.push(new DepthSortedParticle(idx, ind, meshInd.length, matIndex));
         }
 
         return copy;
@@ -992,6 +1011,7 @@ export class SolidParticleSystem implements IDisposable {
             // camera-particle distance for depth sorting
             if (this._depthSort && this._depthSortParticles) {
                 var dsp = this.depthSortedParticles[p];
+                dsp.idx = particle.idx;
                 dsp.ind = particle._ind;
                 dsp.indicesLength = particle._model._indicesLength;
                 dsp.sqDistance = Vector3.DistanceSquared(particle.position, camInvertedPosition);
@@ -1291,6 +1311,29 @@ export class SolidParticleSystem implements IDisposable {
         (<any>this._uvs32) = null;
         (<any>this._colors32) = null;
         (<any>this.pickedParticles) = null;
+        (<any>this.pickedBySubMesh) = null;
+        (<any>this._materials) = null;
+        (<any>this._materialIndexes) = null;
+        (<any>this._indicesByMaterial) = null;
+        (<any>this._idxOfId) = null;
+    }
+    /** Returns an object {idx: numbern faceId: number} for the picked particle from the passed pickingInfo object.
+     * idx is the particle index in the SPS
+     * faceId is the picked face index counted within this particle.
+     * Returns null if the pickInfo can't identify a picked particle.
+     * @param pickingInfo (PickingInfo object)
+     * @returns {idx: number, faceId: number} or null
+     */
+    public pickedParticle(pickingInfo: PickingInfo): Nullable<{idx: number, faceId: number}> {
+        if (pickingInfo.hit) {
+            const subMesh = pickingInfo.subMeshId;
+            const faceId = pickingInfo.faceId;
+            const picked = this.pickedBySubMesh;
+            if (picked[subMesh] && picked[subMesh][faceId]) {
+                return picked[subMesh][faceId];
+            }
+        }
+        return null;
     }
 
     /**
@@ -1367,6 +1410,7 @@ export class SolidParticleSystem implements IDisposable {
                 sortedPart.materialIndex = part.materialIndex;
                 sortedPart.ind = part._ind;
                 sortedPart.indicesLength = part._model._indicesLength;
+                sortedPart.idx = part.idx;
             }
         }
         this._sortParticlesByMaterial();
@@ -1401,9 +1445,16 @@ export class SolidParticleSystem implements IDisposable {
         const length = depthSortedParticles.length;
         const indices32 = this._indices32;
         const indices = this._indices;
+
+        let subMeshIndex = 0;
+        let subMeshFaceId = 0;
         let sid = 0;
         let lastMatIndex = depthSortedParticles[0].materialIndex;
         materialIndexes.push(lastMatIndex);
+        if (this._pickable) {
+            this.pickedBySubMesh = [[]];
+            this.pickedParticles = this.pickedBySubMesh[0];
+        }
         for (let sorted = 0; sorted < length; sorted++) {
             let sortedPart = depthSortedParticles[sorted];
             let lind = sortedPart.indicesLength;
@@ -1412,12 +1463,28 @@ export class SolidParticleSystem implements IDisposable {
                 lastMatIndex = sortedPart.materialIndex;
                 indicesByMaterial.push(sid);
                 materialIndexes.push(lastMatIndex);
+                if (this._pickable) {
+                    subMeshIndex++;
+                    this.pickedBySubMesh[subMeshIndex] = [];
+                    subMeshFaceId = 0;
+                }
             }
+            let faceId = 0;
             for (let i = 0; i < lind; i++) {
                 indices32[sid] = indices[sind + i];
+                if (this._pickable) {
+                    let f = i % 3;
+                    if (f == 0) {
+                        const pickedData = {idx: sortedPart.idx, faceId: faceId};
+                        this.pickedBySubMesh[subMeshIndex][subMeshFaceId] = pickedData;
+                        subMeshFaceId++;
+                        faceId++;
+                    }
+                }
                 sid++;
             }
         }
+
         indicesByMaterial.push(indices32.length);   // add the last number to ease the indices start/count values for subMeshes creation
         if (this._updatable) {
             this.mesh.updateIndices(indices32);
