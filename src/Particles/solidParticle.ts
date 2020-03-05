@@ -117,6 +117,10 @@ export class SolidParticle {
      */
     public materialIndex: Nullable<number> = null;
     /**
+     * Custom object or properties.
+     */
+    public props: Nullable<any> = null;
+    /**
      * The culling strategy to use to check whether the solid particle must be culled or not when using isInFrustum().
      * The possible values are :
      * - AbstractMesh.CULLINGSTRATEGY_STANDARD
