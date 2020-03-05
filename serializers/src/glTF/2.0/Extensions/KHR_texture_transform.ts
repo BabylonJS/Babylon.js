@@ -55,7 +55,7 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
     }
 
     public postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: Texture): void {
-        if (babylonTexture && babylonTexture.uRotationCenter === 0 && babylonTexture.vRotationCenter === 0) {
+        if (babylonTexture) {
             let textureTransform: IKHRTextureTransform = {};
             let transformIsRequired = false;
 
@@ -118,59 +118,8 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
                 return;
             }
 
-            // Do we need to flatten the transform?
-            if (babylonTexture.uRotationCenter === 0 && babylonTexture.vRotationCenter === 0) {
-                resolve(babylonTexture);
-                return;
-            }
-
-            return this._textureTransformTextureAsync(babylonTexture, scene)
-                .then((proceduralTexture) => {
-                    resolve(proceduralTexture);
-                })
-                .catch((e) => {
-                    reject(e);
-                });
-        });
-    }
-
-    /**
-     * Transform the babylon texture by the offset, rotation and scale parameters using a procedural texture
-     * @param babylonTexture
-     * @param offset
-     * @param rotation
-     * @param scale
-     * @param scene
-     */
-    private _textureTransformTextureAsync(babylonTexture: Texture, scene: Scene): Promise<Texture> {
-        return new Promise((resolve) => {
-            const proceduralTexture = new ProceduralTexture(`${babylonTexture.name}`, babylonTexture.getSize(), "textureTransform", scene);
-            if (!proceduralTexture) {
-                Tools.Log(`Cannot create procedural texture for ${babylonTexture.name}!`);
-                resolve(babylonTexture);
-            }
-
-            proceduralTexture.reservedDataStore = {
-                hidden: true,
-                source: babylonTexture
-            };
-
-            this._recordedTextures.push(proceduralTexture);
-
-            proceduralTexture.coordinatesIndex = babylonTexture.coordinatesIndex;
-            proceduralTexture.setTexture("textureSampler", babylonTexture);
-            proceduralTexture.setMatrix("textureTransformMat", babylonTexture.getTextureMatrix());
-
-            // isReady trigger creation of effect if it doesnt exist yet
-            if (proceduralTexture.isReady()) {
-                proceduralTexture.render();
-                resolve(proceduralTexture);
-            } else {
-                proceduralTexture.getEffect().executeWhenCompiled(() => {
-                    proceduralTexture.render();
-                    resolve(proceduralTexture);
-                });
-            }
+            resolve(babylonTexture);
+            return;
         });
     }
 }
