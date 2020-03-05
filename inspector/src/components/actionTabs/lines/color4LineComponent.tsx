@@ -159,7 +159,7 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
 
     render() {
 
-        const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />
+        const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
         const colorAsColor3 = new Color3(this.state.color.r, this.state.color.g, this.state.color.b);
 
         return (
@@ -181,10 +181,10 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
                 {
                     this.state.isExpanded &&
                     <div className="secondLine">
-                        <NumericInputComponent label="r" value={this.state.color.r} onChange={value => this.updateStateR(value)} />
-                        <NumericInputComponent label="g" value={this.state.color.g} onChange={value => this.updateStateG(value)} />
-                        <NumericInputComponent label="b" value={this.state.color.b} onChange={value => this.updateStateB(value)} />
-                        <NumericInputComponent label="a" value={this.state.color.a} onChange={value => this.updateStateA(value)} />
+                        <NumericInputComponent label="r" value={this.state.color.r} onChange={(value) => this.updateStateR(value)} />
+                        <NumericInputComponent label="g" value={this.state.color.g} onChange={(value) => this.updateStateG(value)} />
+                        <NumericInputComponent label="b" value={this.state.color.b} onChange={(value) => this.updateStateB(value)} />
+                        <NumericInputComponent label="a" value={this.state.color.a} onChange={(value) => this.updateStateA(value)} />
                     </div>
                 }
             </div>
