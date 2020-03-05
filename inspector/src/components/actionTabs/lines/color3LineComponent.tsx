@@ -13,6 +13,7 @@ export interface IColor3LineComponentProps {
     target: any;
     propertyName: string;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    isLinear?: boolean;
 }
 
 export class Color3LineComponent extends React.Component<IColor3LineComponentProps, { isExpanded: boolean, color: Color3 }> {
@@ -21,10 +22,14 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         super(props);
 
         this.state = { isExpanded: false, color: this.props.target[this.props.propertyName].clone() };
+
+        if (props.isLinear) {
+            this.state.color.toGammaSpaceToRef(this.state.color);
+        }
     }
 
     shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: { color: Color3 }) {
-        const currentState = nextProps.target[nextProps.propertyName];
+        const currentState = this.props.isLinear ? nextProps.target[nextProps.propertyName].toGammaSpace() : nextProps.target[nextProps.propertyName];
 
         if (!currentState.equals(nextState.color) || this._localChange) {
             nextState.color = currentState.clone();
@@ -32,6 +37,14 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
             return true;
         }
         return false;
+    }
+
+    setPropertyValue(newColor: Color3) {
+        this.props.target[this.props.propertyName] = newColor;
+
+        if (this.props.isLinear) {
+            this.props.target[this.props.propertyName] = newColor.toLinearSpace();
+        }
     }
 
     onChange(newValue: string) {
@@ -42,12 +55,12 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
             this.props.onPropertyChangedObservable.notifyObservers({
                 object: this.props.target,
                 property: this.props.propertyName,
-                value: newColor,
-                initialValue: this.state.color
+                value: this.props.isLinear ? newColor.toLinearSpace() : newColor,
+                initialValue: this.props.isLinear ? this.state.color.toLinearSpace() : this.state.color,
             });
         }
 
-        this.props.target[this.props.propertyName] = newColor;
+        this.setPropertyValue(newColor);
 
         this.setState({ color: newColor });
     }
@@ -58,15 +71,14 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
     }
 
     raiseOnPropertyChanged(previousValue: Color3) {
-
         if (!this.props.onPropertyChangedObservable) {
             return;
         }
         this.props.onPropertyChangedObservable.notifyObservers({
             object: this.props.target,
             property: this.props.propertyName,
-            value: this.state.color,
-            initialValue: previousValue
+            value: this.props.isLinear ? this.state.color.toLinearSpace() : this.state.color,
+            initialValue: this.props.isLinear ? previousValue.toLinearSpace() : previousValue,
         });
     }
 
@@ -74,9 +86,8 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         this._localChange = true;
 
         const store = this.state.color.clone();
-        this.props.target[this.props.propertyName].x = value;
         this.state.color.r = value;
-        this.props.target[this.props.propertyName] = this.state.color;
+        this.setPropertyValue(this.state.color);
         this.setState({ color: this.state.color });
 
         this.raiseOnPropertyChanged(store);
@@ -86,9 +97,8 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         this._localChange = true;
 
         const store = this.state.color.clone();
-        this.props.target[this.props.propertyName].g = value;
         this.state.color.g = value;
-        this.props.target[this.props.propertyName] = this.state.color;
+        this.setPropertyValue(this.state.color);
         this.setState({ color: this.state.color });
 
         this.raiseOnPropertyChanged(store);
@@ -98,9 +108,8 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         this._localChange = true;
 
         const store = this.state.color.clone();
-        this.props.target[this.props.propertyName].b = value;
         this.state.color.b = value;
-        this.props.target[this.props.propertyName] = this.state.color;
+        this.setPropertyValue(this.state.color);
         this.setState({ color: this.state.color });
 
         this.raiseOnPropertyChanged(store);
@@ -108,7 +117,7 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
 
     copyToClipboard() {
         var element = document.createElement('div');
-        element.textContent = this.state.color.toHexString();
+        element.textContent = this.props.isLinear ? this.state.color.toLinearSpace().toHexString() : this.state.color.toHexString();
         document.body.appendChild(element);
 
         if (window.getSelection) {
