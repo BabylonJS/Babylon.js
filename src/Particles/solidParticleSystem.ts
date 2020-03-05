@@ -447,6 +447,7 @@ export class SolidParticleSystem implements IDisposable {
         copy.uvs.copyFromFloats(0.0, 0.0, 1.0, 1.0);
         copy.color = null;
         copy.translateFromPivot = false;
+        copy.shapeId = 0;
         copy.materialIndex = null;
     }
 
@@ -481,6 +482,7 @@ export class SolidParticleSystem implements IDisposable {
         const storeApart = (options && options.storage) ? true : false;
         copy.idx = idx;
         copy.idxInShape = idxInShape;
+        copy.shapeId = model.shapeID;
         if (this._useModelMaterial) {
             var materialId = model._material!.uniqueId;
             const materialIndexesById = this._materialIndexesById;
@@ -1309,6 +1311,11 @@ export class SolidParticleSystem implements IDisposable {
         (<any>this._uvs32) = null;
         (<any>this._colors32) = null;
         (<any>this.pickedParticles) = null;
+        (<any>this.pickedBySubMesh) = null;
+        (<any>this._materials) = null;
+        (<any>this._materialIndexes) = null;
+        (<any>this._indicesByMaterial) = null;
+        (<any>this._idxOfId) = null;
     }
     /** Returns an object {idx: numbern faceId: number} for the picked particle from the passed pickingInfo object.
      * idx is the particle index in the SPS
