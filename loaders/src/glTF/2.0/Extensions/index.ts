@@ -6,6 +6,7 @@ export * from "./KHR_materials_unlit";
 export * from "./KHR_materials_clearcoat";
 export * from "./KHR_materials_sheen";
 export * from "./KHR_materials_specular";
+export * from "./KHR_mesh_instancing";
 export * from "./KHR_mesh_quantization";
 export * from "./KHR_texture_basisu";
 export * from "./KHR_texture_transform";

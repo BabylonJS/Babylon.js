@@ -404,6 +404,13 @@ declare module BABYLON {
          * @returns the encoded string
          */
         static EncodeArrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferView): string;
+        /**
+        * Converts a number to string and pads with preceeding zeroes until it is of specified length.
+        * @param num the number to convert and pad
+        * @param length the expected length of the string
+        * @returns the padded string
+        */
+        static PadNumber(num: number, length: number): string;
     }
 }
 declare module BABYLON {
@@ -1077,6 +1084,10 @@ declare module BABYLON {
          * Gets a boolean indicating that the context is ready to be used (like shaders / pipelines are compiled and ready for instance)
          */
         isReady: boolean;
+        /** @hidden */
+        _getVertexShaderCode(): string | null;
+        /** @hidden */
+        _getFragmentShaderCode(): string | null;
         /** @hidden */
         _handlesSpectorRebuildCallback(onCompiled: (compiledObject: any) => void): void;
     }
@@ -3725,6 +3736,13 @@ declare module BABYLON {
          * @returns a new quaternion
          */
         static FromArray(array: DeepImmutable<ArrayLike<number>>, offset?: number): Quaternion;
+        /**
+         * Updates the given quaternion "result" from the starting index of the given array.
+         * @param array the array to pull values from
+         * @param offset the offset into the array to start at
+         * @param result the quaternion to store the result in
+         */
+        static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number, result: Quaternion): void;
         /**
          * Create a quaternion from Euler rotation angles
          * @param x Pitch
@@ -7155,6 +7173,8 @@ declare module BABYLON {
         get isAsync(): boolean;
         get isReady(): boolean;
         _handlesSpectorRebuildCallback(onCompiled: (program: WebGLProgram) => void): void;
+        _getVertexShaderCode(): string | null;
+        _getFragmentShaderCode(): string | null;
     }
 }
 declare module BABYLON {
@@ -8526,6 +8546,15 @@ declare module BABYLON {
          * around all axis.
          */
         noRotationConstraint: boolean;
+        /**
+         * Reverses mouselook direction to 'natural' panning as opposed to traditional direct
+         * panning
+         */
+        invertRotation: boolean;
+        /**
+         * Speed multiplier for inverse camera panning
+         */
+        inverseRotationSpeed: number;
         /**
          * Define the current target of the camera as an object or a position.
          */
@@ -12810,12 +12839,11 @@ declare module BABYLON {
      * It emits the particles randomly between 2 given directions.
      */
     export class MeshParticleEmitter implements IParticleEmitterType {
-        /** Defines the mesh to use as source */
-        mesh?: AbstractMesh | undefined;
         private _indices;
         private _positions;
         private _normals;
         private _storedNormal;
+        private _mesh;
         /**
          * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
          */
@@ -12828,13 +12856,14 @@ declare module BABYLON {
          * Gets or sets a boolean indicating that particle directions must be built from mesh face normals
          */
         useMeshNormalsForDirection: boolean;
+        /** Defines the mesh to use as source */
+        get mesh(): Nullable<AbstractMesh>;
+        set mesh(value: Nullable<AbstractMesh>);
         /**
          * Creates a new instance MeshParticleEmitter
          * @param mesh defines the mesh to use as source
          */
-        constructor(
-        /** Defines the mesh to use as source */
-        mesh?: AbstractMesh | undefined);
+        constructor(mesh?: Nullable<AbstractMesh>);
         /**
          * Called by the particle System when the direction is computed for the created particle.
          * @param worldMatrix is the world matrix of the particle system
@@ -13153,6 +13182,11 @@ declare module BABYLON {
          * @return true if the system is ready
          */
         isReady(): boolean;
+        /**
+         * Returns the string "ParticleSystem"
+         * @returns a string containing the class name
+         */
+        getClassName(): string;
         /**
          * Adds a new color gradient
          * @param gradient defines the gradient to use (between 0 and 1)
@@ -24778,7 +24812,7 @@ declare module BABYLON {
         /** @hidden */
         _processInstancedBuffers(visibleInstances: InstancedMesh[], renderSelf: boolean): void;
         /** @hidden */
-        _processRendering(subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material): Mesh;
+        _processRendering(renderingMesh: AbstractMesh, subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material): Mesh;
         /** @hidden */
         _rebuild(): void;
         /** @hidden */
@@ -30002,6 +30036,10 @@ declare module BABYLON {
          */
         static ShadersRepository: string;
         /**
+         * Enable logging of the shader code when a compilation error occurs
+         */
+        static LogShaderCodeOnCompilationError: boolean;
+        /**
          * Name of the effect.
          */
         name: any;
@@ -30185,6 +30223,7 @@ declare module BABYLON {
          * @hidden
          */
         _prepareEffect(): void;
+        private _getShaderCodeAndErrorLine;
         private _processCompilationErrors;
         /**
          * Checks if the effect is supported. (Must be called after compilation)
@@ -31530,6 +31569,8 @@ declare module BABYLON {
         protected static _ConcatenateShader(source: string, defines: Nullable<string>, shaderVersion?: string): string;
         private _compileShader;
         private _compileRawShader;
+        /** @hidden */
+        _getShaderSource(shader: WebGLShader): Nullable<string>;
         /**
          * Directly creates a webGL program
          * @param pipelineContext  defines the pipeline context to attach to
@@ -32620,6 +32661,23 @@ declare module BABYLON {
          * This is helpful to resume play once browser policies have been satisfied.
          */
         unlock(): void;
+        /**
+         * Gets the global volume sets on the master gain.
+         * @returns the global volume if set or -1 otherwise
+         */
+        getGlobalVolume(): number;
+        /**
+         * Sets the global volume of your experience (sets on the master gain).
+         * @param newVolume Defines the new global volume of the application
+         */
+        setGlobalVolume(newVolume: number): void;
+        /**
+         * Connect the audio engine to an audio analyser allowing some amazing
+         * synchornization between the sounds/music and your visualization (VuMeter for instance).
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
+         * @param analyser The analyser to connect to the engine
+         */
+        connectToAnalyser(analyser: Analyser): void;
     }
     /**
      * This represents the default audio engine used in babylon.
@@ -49855,6 +49913,7 @@ declare module BABYLON {
      * Class used to host texture specific utilities
      */
     export class BRDFTextureTools {
+        private static _instanceNumber;
         /**
          * Gets a default environment BRDF for MS-BRDF Height Correlated BRDF
          * @param scene defines the hosting scene
@@ -50304,6 +50363,8 @@ declare module BABYLON {
         SHEEN_TEXTURE: boolean;
         SHEEN_TEXTUREDIRECTUV: number;
         SHEEN_LINKWITHALBEDO: boolean;
+        SHEEN_ROUGHNESS: boolean;
+        SHEEN_ALBEDOSCALING: boolean;
         /** @hidden */
         _areTexturesDirty: boolean;
     }
@@ -50336,6 +50397,20 @@ declare module BABYLON {
          * a is a intensity
          */
         texture: Nullable<BaseTexture>;
+        private _roughness;
+        /**
+         * Defines the sheen roughness.
+         * It is not taken into account if linkSheenWithAlbedo is true.
+         * To stay backward compatible, material roughness is used instead if sheen roughness = null
+         */
+        roughness: Nullable<number>;
+        private _albedoScaling;
+        /**
+         * If true, the sheen effect is layered above the base BRDF with the albedo-scaling technique.
+         * It allows the strength of the sheen effect to not depend on the base color of the material,
+         * making it easier to setup and tweak the effect
+         */
+        albedoScaling: boolean;
         /** @hidden */
         private _internalMarkAllSubMeshesAsTexturesDirty;
         /** @hidden */
@@ -50928,6 +51003,8 @@ declare module BABYLON {
         SHEEN_TEXTURE: boolean;
         SHEEN_TEXTUREDIRECTUV: number;
         SHEEN_LINKWITHALBEDO: boolean;
+        SHEEN_ROUGHNESS: boolean;
+        SHEEN_ALBEDOSCALING: boolean;
         SUBSURFACE: boolean;
         SS_REFRACTION: boolean;
         SS_TRANSLUCENCY: boolean;
@@ -61765,6 +61842,51 @@ declare module BABYLON {
         /** Quadratic error decimation */
         QUADRATIC = 0
     }
+    /**
+     * An implementation of the Quadratic Error simplification algorithm.
+     * Original paper : http://www1.cs.columbia.edu/~cs4162/html05s/garland97.pdf
+     * Ported mostly from QSlim and http://voxels.blogspot.de/2014/05/quadric-mesh-simplification-with-source.html to babylon JS
+     * @author RaananW
+     * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
+     */
+    export class QuadraticErrorSimplification implements ISimplifier {
+        private _mesh;
+        private triangles;
+        private vertices;
+        private references;
+        private _reconstructedMesh;
+        /** Gets or sets the number pf sync interations */
+        syncIterations: number;
+        /** Gets or sets the aggressiveness of the simplifier */
+        aggressiveness: number;
+        /** Gets or sets the number of allowed iterations for decimation */
+        decimationIterations: number;
+        /** Gets or sets the espilon to use for bounding box computation */
+        boundingBoxEpsilon: number;
+        /**
+         * Creates a new QuadraticErrorSimplification
+         * @param _mesh defines the target mesh
+         */
+        constructor(_mesh: Mesh);
+        /**
+         * Simplification of a given mesh according to the given settings.
+         * Since this requires computation, it is assumed that the function runs async.
+         * @param settings The settings of the simplification, including quality and distance
+         * @param successCallback A callback that will be called after the mesh was simplified.
+         */
+        simplify(settings: ISimplificationSettings, successCallback: (simplifiedMesh: Mesh) => void): void;
+        private runDecimation;
+        private initWithMesh;
+        private init;
+        private reconstructMesh;
+        private initDecimatedMesh;
+        private isFlipped;
+        private updateTriangles;
+        private identifyBorder;
+        private updateMesh;
+        private vertexError;
+        private calculateError;
+    }
 }
 declare module BABYLON {
         interface Scene {
@@ -68626,6 +68748,54 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Class for storing data to local storage if available or in-memory storage otherwise
+     */
+    export class DataStorage {
+        private static _Storage;
+        private static _GetStorage;
+        /**
+         * Reads a string from the data storage
+         * @param key The key to read
+         * @param defaultValue The value if the key doesn't exist
+         * @returns The string value
+         */
+        static ReadString(key: string, defaultValue: string): string;
+        /**
+         * Writes a string to the data storage
+         * @param key The key to write
+         * @param value The value to write
+         */
+        static WriteString(key: string, value: string): void;
+        /**
+         * Reads a boolean from the data storage
+         * @param key The key to read
+         * @param defaultValue The value if the key doesn't exist
+         * @returns The boolean value
+         */
+        static ReadBoolean(key: string, defaultValue: boolean): boolean;
+        /**
+         * Writes a boolean to the data storage
+         * @param key The key to write
+         * @param value The value to write
+         */
+        static WriteBoolean(key: string, value: boolean): void;
+        /**
+         * Reads a number from the data storage
+         * @param key The key to read
+         * @param defaultValue The value if the key doesn't exist
+         * @returns The number value
+         */
+        static ReadNumber(key: string, defaultValue: number): number;
+        /**
+         * Writes a number to the data storage
+         * @param key The key to write
+         * @param value The value to write
+         */
+        static WriteNumber(key: string, value: number): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Options used for hit testing
      */
     export interface IWebXRHitTestOptions {
@@ -73030,6 +73200,7 @@ declare module BABYLON.GUI {
         private _dispatchInBuckets;
         private _updateMeasures;
         private _updateChildrenMeasures;
+        private _restoreMeasures;
         /**
         * Creates a new ScrollViewerWindow
         * @param name of ScrollViewerWindow
@@ -75667,7 +75838,8 @@ declare module BABYLON.GLTF2 {
          */
         loadBufferViewAsync(context: string, bufferView: IBufferView): Promise<ArrayBufferView>;
         private _loadAccessorAsync;
-        private _loadFloatAccessorAsync;
+        /** @hidden */
+        _loadFloatAccessorAsync(context: string, accessor: IAccessor): Promise<Float32Array>;
         private _loadIndicesAccessorAsync;
         private _loadVertexBufferViewAsync;
         private _loadVertexAccessorAsync;
@@ -76038,6 +76210,30 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
         private _loadSpecularPropertiesAsync;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1691)
+     * [Playground Sample](//TODO)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_mesh_instancing implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>>;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {

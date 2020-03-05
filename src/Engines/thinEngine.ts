@@ -2081,6 +2081,11 @@ export class ThinEngine {
         return shader;
     }
 
+    /** @hidden */
+    public _getShaderSource(shader: WebGLShader): Nullable<string> {
+        return this._gl.getShaderSource(shader);
+    }
+
     /**
      * Directly creates a webGL program
      * @param pipelineContext  defines the pipeline context to attach to
@@ -2834,11 +2839,10 @@ export class ThinEngine {
 
             if (EngineStore.UseFallbackTexture) {
                 this.createTexture(EngineStore.FallbackTexture, noMipmap, texture.invertY, scene, samplingMode, null, onError, buffer, texture);
-                return;
             }
 
             if (onError) {
-                onError(message || "Unknown error", exception);
+                onError((message || "Unknown error") + (EngineStore.UseFallbackTexture ? " - Fallback texture was used" : ""), exception);
             }
         };
 

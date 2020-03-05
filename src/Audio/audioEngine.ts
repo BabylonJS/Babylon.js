@@ -75,6 +75,26 @@ export interface IAudioEngine extends IDisposable {
      * This is helpful to resume play once browser policies have been satisfied.
      */
     unlock(): void;
+
+    /**
+     * Gets the global volume sets on the master gain.
+     * @returns the global volume if set or -1 otherwise
+     */
+    getGlobalVolume(): number;
+
+    /**
+     * Sets the global volume of your experience (sets on the master gain).
+     * @param newVolume Defines the new global volume of the application
+     */
+    setGlobalVolume(newVolume: number): void;
+
+    /**
+     * Connect the audio engine to an audio analyser allowing some amazing
+     * synchornization between the sounds/music and your visualization (VuMeter for instance).
+     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
+     * @param analyser The analyser to connect to the engine
+     */
+    connectToAnalyser(analyser: Analyser): void;
 }
 
 // Sets the default audio engine to Babylon.js

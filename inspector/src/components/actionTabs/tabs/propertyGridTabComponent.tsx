@@ -89,6 +89,8 @@ import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
 import { NodeMaterialPropertyGridComponent } from './propertyGrids/materials/nodeMaterialPropertyGridComponent';
 import { MultiMaterial } from 'babylonjs/Materials/multiMaterial';
 import { MultiMaterialPropertyGridComponent } from './propertyGrids/materials/multiMaterialPropertyGridComponent';
+import { ParticleSystemPropertyGridComponent } from './propertyGrids/particleSystems/particleSystemPropertyGridComponent';
+import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
@@ -147,6 +149,14 @@ export class PropertyGridTabComponent extends PaneComponent {
                         </div>
                     );
                 }
+            }
+
+            if (className.indexOf("ParticleSystem") !== -1) {
+                const particleSystem = entity as IParticleSystem;
+                return (<ParticleSystemPropertyGridComponent globalState={this.props.globalState} system={particleSystem}
+                    lockObject={this._lockObject}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
 
             if (className.indexOf("FreeCamera") !== -1 || className.indexOf("UniversalCamera") !== -1
