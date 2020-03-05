@@ -163,7 +163,8 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     public selectionMeshPickedColor: Color3 = new Color3(0.3, 0.3, 1.0);
 
     /**
-     * To be optionaly changed by user to define custom ray selection
+     * Optional filter to be used for ray selection.  This predicate shares behavior with
+     * scene.pointerMovePredicate which takes priority if it is also assigned.
      */
     public raySelectionPredicate: (mesh: AbstractMesh) => boolean;
 
@@ -253,7 +254,8 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
             // Every frame check collisions/input
             controllerData.xrController.getWorldPointerRayToRef(controllerData.tmpRay);
-            controllerData.pick = this._scene.pickWithRay(controllerData.tmpRay, this.raySelectionPredicate);
+            controllerData.pick = this._scene.pickWithRay(controllerData.tmpRay,
+                this._scene.pointerMovePredicate || this.raySelectionPredicate);
 
             const pick = controllerData.pick;
 
