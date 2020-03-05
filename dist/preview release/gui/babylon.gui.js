@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*****************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -9999,6 +9999,9 @@ var _ScrollViewerWindow = /** @class */ (function (_super) {
             if (this._freezeControls === value) {
                 return;
             }
+            if (!value) {
+                this._restoreMeasures();
+            }
             // trigger a full normal layout calculation to be sure all children have their measures up to date
             this._freezeControls = false;
             var textureSize = this.host.getSize();
@@ -10054,11 +10057,13 @@ var _ScrollViewerWindow = /** @class */ (function (_super) {
         this._buckets = {};
         this._bucketLen = Math.ceil(this.widthInPixels / this._bucketWidth);
         this._dispatchInBuckets(this._children);
+        this._oldLeft = null;
+        this._oldTop = null;
     };
     _ScrollViewerWindow.prototype._dispatchInBuckets = function (children) {
         for (var i = 0; i < children.length; ++i) {
             var child = children[i];
-            var bStartX = Math.max(0, Math.floor((child._currentMeasure.left - this._currentMeasure.left) / this._bucketWidth)), bEndX = Math.floor((child._currentMeasure.left - this._currentMeasure.left + child._currentMeasure.width - 1) / this._bucketWidth), bStartY = Math.max(0, Math.floor((child._currentMeasure.top - this._currentMeasure.top) / this._bucketHeight)), bEndY = Math.floor((child._currentMeasure.top - this._currentMeasure.top + child._currentMeasure.height - 1) / this._bucketHeight);
+            var bStartX = Math.max(0, Math.floor((child._customData._origLeft - this._customData.origLeft) / this._bucketWidth)), bEndX = Math.floor((child._customData._origLeft - this._customData.origLeft + child._currentMeasure.width - 1) / this._bucketWidth), bStartY = Math.max(0, Math.floor((child._customData._origTop - this._customData.origTop) / this._bucketHeight)), bEndY = Math.floor((child._customData._origTop - this._customData.origTop + child._currentMeasure.height - 1) / this._bucketHeight);
             while (bStartY <= bEndY) {
                 for (var x = bStartX; x <= bEndX; ++x) {
                     var bucket = bStartY * this._bucketLen + x, lstc = this._buckets[bucket];
@@ -10082,6 +10087,10 @@ var _ScrollViewerWindow = /** @class */ (function (_super) {
         this._measureForChildren.top -= top;
         this._currentMeasure.left -= left;
         this._currentMeasure.top -= top;
+        this._customData.origLeftForChildren = this._measureForChildren.left;
+        this._customData.origTopForChildren = this._measureForChildren.top;
+        this._customData.origLeft = this._currentMeasure.left;
+        this._customData.origTop = this._currentMeasure.top;
         this._updateChildrenMeasures(this._children, left, top);
     };
     _ScrollViewerWindow.prototype._updateChildrenMeasures = function (children, left, top) {
@@ -10095,6 +10104,13 @@ var _ScrollViewerWindow = /** @class */ (function (_super) {
                 this._updateChildrenMeasures(child._children, left, top);
             }
         }
+    };
+    _ScrollViewerWindow.prototype._restoreMeasures = function () {
+        var left = this.leftInPixels | 0, top = this.topInPixels | 0;
+        this._measureForChildren.left = this._customData.origLeftForChildren + left;
+        this._measureForChildren.top = this._customData.origTopForChildren + top;
+        this._currentMeasure.left = this._customData.origLeft + left;
+        this._currentMeasure.top = this._customData.origTop + top;
     };
     _ScrollViewerWindow.prototype._getTypeName = function () {
         return "ScrollViewerWindow";
@@ -10154,10 +10170,15 @@ var _ScrollViewerWindow = /** @class */ (function (_super) {
         if (this.clipChildren) {
             this._clipForChildren(context);
         }
-        var left = this.leftInPixels, top = this.topInPixels;
+        var left = this.leftInPixels | 0, top = this.topInPixels | 0;
         if (this._useBuckets()) {
-            this._scrollChildrenWithBuckets(this._oldLeft, this._oldTop, left, top);
-            this._scrollChildrenWithBuckets(left, top, left, top);
+            if (this._oldLeft !== null && this._oldTop !== null) {
+                this._scrollChildrenWithBuckets(this._oldLeft, this._oldTop, left, top);
+                this._scrollChildrenWithBuckets(left, top, left, top);
+            }
+            else {
+                this._scrollChildren(this._children, left, top);
+            }
         }
         else {
             this._scrollChildren(this._children, left, top);
