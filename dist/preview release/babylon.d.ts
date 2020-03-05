@@ -26978,12 +26978,30 @@ declare module BABYLON {
          * Each element of this array is an object `{idx: int, faceId: int}`.
          * `idx` is the picked particle index in the `SPS.particles` array
          * `faceId` is the picked face index counted within this particle.
+         * This array is the first element of the pickedBySubMesh array : sps.pickBySubMesh[0].
+         * It's not pertinent to use it when using a SPS with the support for MultiMaterial enabled.
+         * Use the method SPS.pickedParticle(pickingInfo) instead.
          * Please read : http://doc.babylonjs.com/how_to/Solid_Particle_System#pickable-particles
          */
         pickedParticles: {
             idx: number;
             faceId: number;
         }[];
+        /**
+         * This array is populated when the SPS is set as 'pickable'
+         * Each key of this array is a submesh index.
+         * Each element of this array is a second array defined like this :
+         * Each key of this second array is a `faceId` value that you can get from a pickResult object.
+         * Each element of this second array is an object `{idx: int, faceId: int}`.
+         * `idx` is the picked particle index in the `SPS.particles` array
+         * `faceId` is the picked face index counted within this particle.
+         * It's better to use the method SPS.pickedParticle(pickingInfo) rather than using directly this array.
+         * Please read : http://doc.babylonjs.com/how_to/Solid_Particle_System#pickable-particles
+         */
+        pickedBySubMesh: {
+            idx: number;
+            faceId: number;
+        }[][];
         /**
          * This array is populated when `enableDepthSort` is set to true.
          * Each element of this array is an instance of the class DepthSortedParticle.
@@ -27230,6 +27248,17 @@ declare module BABYLON {
         * Disposes the SPS.
         */
         dispose(): void;
+        /** Returns an object {idx: numbern faceId: number} for the picked particle from the passed pickingInfo object.
+         * idx is the particle index in the SPS
+         * faceId is the picked face index counted within this particle.
+         * Returns null if the pickInfo can't identify a picked particle.
+         * @param pickingInfo (PickingInfo object)
+         * @returns {idx: number, faceId: number} or null
+         */
+        pickedParticle(pickingInfo: PickingInfo): Nullable<{
+            idx: number;
+            faceId: number;
+        }>;
         /**
          * Returns a SolidParticle object from its identifier : particle.id
          * @param id (integer) the particle Id
@@ -27572,6 +27601,10 @@ declare module BABYLON {
          */
         materialIndex: Nullable<number>;
         /**
+         * Custom object or properties.
+         */
+        props: Nullable<any>;
+        /**
          * The culling strategy to use to check whether the solid particle must be culled or not when using isInFrustum().
          * The possible values are :
          * - AbstractMesh.CULLINGSTRATEGY_STANDARD
@@ -27711,6 +27744,10 @@ declare module BABYLON {
      */
     export class DepthSortedParticle {
         /**
+         * Particle index
+         */
+        idx: number;
+        /**
          * Index of the particle in the "indices" array
          */
         ind: number;
@@ -27730,7 +27767,7 @@ declare module BABYLON {
          * Creates a new sorted particle
          * @param materialIndex
          */
-        constructor(ind: number, indLength: number, materialIndex: number);
+        constructor(idx: number, ind: number, indLength: number, materialIndex: number);
     }
 }
 declare module BABYLON {
@@ -49913,6 +49950,9 @@ declare module BABYLON {
      * Class used to host texture specific utilities
      */
     export class BRDFTextureTools {
+        /**
+         * Prevents texture cache collision
+         */
         private static _instanceNumber;
         /**
          * Gets a default environment BRDF for MS-BRDF Height Correlated BRDF
