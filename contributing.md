@@ -35,6 +35,12 @@ Please use the Github issues (after discussing them on the forum) **only** for:
 
 We will try to enforce these rules as we consider the forum is a better place for discussions and learnings.
 
+## Online one-click setup for Contributing
+
+Contribute to BabylonJS using a fully featured online development environment; cloned repo, pre-installed dependencies, running web server.
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/from-referrer/)
+
 ## Pull requests
 
 We are not complicated people, but we still have some [coding guidelines](http://doc.babylonjs.com/how_to/approved_naming_conventions)
