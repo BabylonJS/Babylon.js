@@ -40,19 +40,3 @@
 - Fix: when using instances, master mesh (if displayed) does not have correct instance buffer values ([Popov72](https://github.com/Popov72)
 
 ## Breaking changes
-
-My Pr simplifies code contributions by fully automating the dev setup with gitpod, a free online VS Code like IDE with a single click it'll launch a ready-to-code workspace where:
-
-- Babylon.js repo is already cloned.
-- dependencies are pre-installed.
-- `npm run start` running in `Tools/Gulp`
-   
-So that anyone interested in contributing can start straight away without wasting time on the setup.
-
-You can give it a try on my fork of the repo via the following link:
-
-https://gitpod.io/#https://github.com/nisarhassan12/Babylon.js
-
-This is how it looks:
-
-![image](https://user-images.githubusercontent.com/46004116/75895532-9c8eee80-5e57-11ea-93ba-19eade97f08c.png)
