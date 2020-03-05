@@ -163,11 +163,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     public selectionMeshPickedColor: Color3 = new Color3(0.3, 0.3, 1.0);
 
     /**
-     * To be optionaly changed by user to define custom selection logic (after ray selection)
-     */
-    public meshSelectionPredicate: (mesh: AbstractMesh) => boolean;
-
-    /**
      * To be optionaly changed by user to define custom ray selection
      */
     public raySelectionPredicate: (mesh: AbstractMesh) => boolean;
@@ -283,11 +278,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                     controllerData.selectionMesh.position.addInPlace(pickNormal.scale(deltaFighting));
                 }
                 controllerData.selectionMesh.isVisible = true && this.displaySelectionMesh;
-                if (this.meshSelectionPredicate && pick.pickedMesh && this.meshSelectionPredicate(pick.pickedMesh)) {
-                    controllerData.meshUnderPointer = pick.pickedMesh;
-                } else {
-                    controllerData.meshUnderPointer = pick.pickedMesh;
-                }
+                controllerData.meshUnderPointer = pick.pickedMesh;
             } else {
                 controllerData.selectionMesh.isVisible = false;
                 controllerData.meshUnderPointer = null;
