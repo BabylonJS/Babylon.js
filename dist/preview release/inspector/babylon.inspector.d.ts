@@ -13,6 +13,7 @@ declare module INSPECTOR {
         private _previousObject;
         private _previousProperty;
         reset(): void;
+        private _getIndirectData;
         record(event: PropertyChangedEvent): void;
         export(): void;
     }
@@ -157,6 +158,7 @@ declare module INSPECTOR {
         isSelected?: () => boolean;
         onSelect?: (value: boolean) => void;
         onValueChanged?: () => void;
+        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
@@ -208,6 +210,7 @@ declare module INSPECTOR {
         useEuler?: boolean;
         onChange?: (value: number) => void;
         onInput?: (value: number) => void;
+        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         decimalCount?: number;
     }
@@ -321,6 +324,7 @@ declare module INSPECTOR {
         step?: number;
         onChange?: (newvalue: BABYLON.Vector3) => void;
         useEuler?: boolean;
+        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
@@ -545,6 +549,7 @@ declare module INSPECTOR {
         lockObject?: LockObject;
         onChange?: (newValue: number) => void;
         isInteger?: boolean;
+        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         additionalClass?: string;
         step?: string;
@@ -1351,6 +1356,113 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IBoxEmitterGridComponentProps {
+        globalState: GlobalState;
+        emitter: BABYLON.BoxParticleEmitter;
+        replaySourceReplacement?: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class BoxEmitterGridComponent extends React.Component<IBoxEmitterGridComponentProps> {
+        constructor(props: IBoxEmitterGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IConeEmitterGridComponentProps {
+        globalState: GlobalState;
+        emitter: BABYLON.ConeParticleEmitter;
+        onSelectionChangedObservable?: BABYLON.Observable<any>;
+        replaySourceReplacement?: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class ConeEmitterGridComponent extends React.Component<IConeEmitterGridComponentProps> {
+        constructor(props: IConeEmitterGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface ICylinderEmitterGridComponentProps {
+        globalState: GlobalState;
+        emitter: BABYLON.CylinderParticleEmitter;
+        lockObject: LockObject;
+        replaySourceReplacement?: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class CylinderEmitterGridComponent extends React.Component<ICylinderEmitterGridComponentProps> {
+        constructor(props: ICylinderEmitterGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IHemisphericEmitterGridComponentProps {
+        globalState: GlobalState;
+        emitter: BABYLON.HemisphericParticleEmitter;
+        lockObject: LockObject;
+        replaySourceReplacement?: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class HemisphericEmitterGridComponent extends React.Component<IHemisphericEmitterGridComponentProps> {
+        constructor(props: IHemisphericEmitterGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IPointEmitterGridComponentProps {
+        globalState: GlobalState;
+        emitter: BABYLON.PointParticleEmitter;
+        lockObject: LockObject;
+        replaySourceReplacement?: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class PointEmitterGridComponent extends React.Component<IPointEmitterGridComponentProps> {
+        constructor(props: IPointEmitterGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface ISphereEmitterGridComponentProps {
+        globalState: GlobalState;
+        emitter: BABYLON.SphereParticleEmitter;
+        lockObject: LockObject;
+        replaySourceReplacement?: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class SphereEmitterGridComponent extends React.Component<ISphereEmitterGridComponentProps> {
+        constructor(props: ISphereEmitterGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IMeshPickerComponentProps {
+        globalState: GlobalState;
+        target: any;
+        property: string;
+        scene: BABYLON.Scene;
+        label: string;
+        replaySourceReplacement?: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class MeshPickerComponent extends React.Component<IMeshPickerComponentProps> {
+        constructor(props: IMeshPickerComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IMeshEmitterGridComponentProps {
+        globalState: GlobalState;
+        emitter: BABYLON.MeshParticleEmitter;
+        scene: BABYLON.Scene;
+        lockObject: LockObject;
+        onSelectionChangedObservable?: BABYLON.Observable<any>;
+        replaySourceReplacement?: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class MeshEmitterGridComponent extends React.Component<IMeshEmitterGridComponentProps> {
+        constructor(props: IMeshEmitterGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface IParticleSystemPropertyGridComponentProps {
         globalState: GlobalState;
         system: BABYLON.IParticleSystem;
@@ -1360,6 +1472,8 @@ declare module INSPECTOR {
     }
     export class ParticleSystemPropertyGridComponent extends React.Component<IParticleSystemPropertyGridComponentProps> {
         constructor(props: IParticleSystemPropertyGridComponentProps);
+        renderEmitter(): JSX.Element | null;
+        raiseOnPropertyChanged(property: string, newValue: any, previousValue: any): void;
         render(): JSX.Element;
     }
 }
