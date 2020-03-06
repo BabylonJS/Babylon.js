@@ -1,5 +1,3 @@
-document = {};
-
 var createScene = function () {
 
     // This creates a basic Babylon Scene object (non-mesh)
