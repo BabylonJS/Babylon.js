@@ -98,7 +98,7 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
                 reject(`${context}: "scene" is not defined for Babylon texture ${babylonTexture.name}!`);
                 return;
             }
-            // 
+
             let bakeTextureTransform = false;
 
             /*
@@ -106,7 +106,7 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
             * the texture must be baked to preserve appearance.
             * see: https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_transform#gltf-schema-updates
             */
-            if ( (babylonTexture.uAng !== 0 || babylonTexture.wAng !== 0 || babylonTexture.vAng !== 0) && (babylonTexture.uRotationCenter !== 0 || babylonTexture.vRotationCenter !== 0)) {
+            if ((babylonTexture.uAng !== 0 || babylonTexture.wAng !== 0 || babylonTexture.vAng !== 0) && (babylonTexture.uRotationCenter !== 0 || babylonTexture.vRotationCenter !== 0)) {
                 bakeTextureTransform = true;
             }
 
