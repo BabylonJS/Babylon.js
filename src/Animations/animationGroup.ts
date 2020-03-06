@@ -323,14 +323,14 @@ export class AnimationGroup implements IDisposable {
         for (var index = 0; index < this._targetedAnimations.length; index++) {
             const targetedAnimation = this._targetedAnimations[index];
             let animatable = this._scene.beginDirectAnimation(
-                targetedAnimation.target, 
-                [targetedAnimation.animation], 
-                from !== undefined ? from : this._from, 
-                to !== undefined ? to : this._to, 
-                loop, 
-                speedRatio, 
-                undefined, 
-                undefined, 
+                targetedAnimation.target,
+                [targetedAnimation.animation],
+                from !== undefined ? from : this._from,
+                to !== undefined ? to : this._to,
+                loop,
+                speedRatio,
+                undefined,
+                undefined,
                 isAdditive !== undefined ? isAdditive : this._isAdditive
             );
             animatable.onAnimationEnd = () => {
@@ -636,7 +636,7 @@ export class AnimationGroup implements IDisposable {
         }
 
         animationGroup.isAdditive = true;
-        
+
         return animationGroup;
     }
 

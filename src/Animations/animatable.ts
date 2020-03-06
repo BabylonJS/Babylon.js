@@ -106,6 +106,7 @@ export class Animatable {
      * @param onAnimationEnd defines a callback to call when animation ends if it is not looping
      * @param animations defines a group of animation to add to the new Animatable
      * @param onAnimationLoop defines a callback to call when animation loops
+     * @param isAdditive defines whether the animation should be evaluated additively
      */
     constructor(scene: Scene,
         /** defines the target object */
@@ -438,14 +439,18 @@ declare module "../scene" {
         /** @hidden */
         _processLateAnimationBindingsForMatrices(holder: {
             totalWeight: number,
+            totalAdditiveWeight: number,
             animations: RuntimeAnimation[],
+            additiveAnimations: RuntimeAnimation[],
             originalValue: Matrix
         }): any;
 
         /** @hidden */
         _processLateAnimationBindingsForQuaternions(holder: {
             totalWeight: number,
+            totalAdditiveWeight: number,
             animations: RuntimeAnimation[],
+            additiveAnimations: RuntimeAnimation[],
             originalValue: Quaternion
         }, refQuaternion: Quaternion): Quaternion;
 
@@ -763,7 +768,7 @@ Scene.prototype._registerTargetForLateAnimationBinding = function(runtimeAnimati
     } else {
         target._lateAnimationHolders[runtimeAnimation.targetPath].animations.push(runtimeAnimation);
         target._lateAnimationHolders[runtimeAnimation.targetPath].totalWeight += runtimeAnimation.weight;
-    } 
+    }
 };
 
 Scene.prototype._processLateAnimationBindingsForMatrices = function(holder: {
@@ -789,7 +794,7 @@ Scene.prototype._processLateAnimationBindingsForMatrices = function(holder: {
     var scale = 1;
     var skipOverride = false;
     if (holder.totalWeight < 1.0) {
-        // We need to mix the original value in      
+        // We need to mix the original value in
         scale = 1.0 - holder.totalWeight;
     } else {
         normalizer = holder.totalWeight;
@@ -804,7 +809,7 @@ Scene.prototype._processLateAnimationBindingsForMatrices = function(holder: {
 
         startIndex = 1;
         // We need to normalize the weights
-        originalAnimation.currentValue.decompose(finalScaling, finalQuaternion, finalPosition);    
+        originalAnimation.currentValue.decompose(finalScaling, finalQuaternion, finalPosition);
     }
 
     // Add up the override animations
@@ -848,7 +853,7 @@ Scene.prototype._processLateAnimationBindingsForMatrices = function(holder: {
         finalQuaternion.multiplyToRef(currentQuaternion, currentQuaternion);
         Quaternion.SlerpToRef(finalQuaternion, currentQuaternion, runtimeAnimation.weight, finalQuaternion);
         currentPosition.scaleAndAddToRef(runtimeAnimation.weight, finalPosition);
-        
+
     }
 
     let workValue = originalAnimation ? originalAnimation._animationState.workValue : TmpVectors.Matrix[0].clone();
@@ -896,10 +901,10 @@ Scene.prototype._processLateAnimationBindingsForQuaternions = function(holder: {
         } else {
             if (holder.animations.length === 2) { // Slerp as soon as we can
                 Quaternion.SlerpToRef(holder.animations[0].currentValue, holder.animations[1].currentValue, holder.animations[1].weight / holder.totalWeight, refQuaternion);
-                
+
                 if (!holder.totalAdditiveWeight) {
                     return refQuaternion;
-                }               
+                }
             }
 
             quaternions = [];

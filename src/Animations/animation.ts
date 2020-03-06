@@ -235,9 +235,9 @@ export class Animation {
     public static MakeAnimationAdditive(sourceAnimation: Animation, referenceFrame = 0, range?: string, cloneOriginal = false, clonedName?: string): Animation {
         let animation = sourceAnimation;
 
-		if ( cloneOriginal ) {
-			animation = sourceAnimation.clone();
-			animation.name = clonedName || animation.name;
+        if (cloneOriginal) {
+            animation = sourceAnimation.clone();
+            animation.name = clonedName || animation.name;
         }
 
         if (!animation._keys.length) {
@@ -248,7 +248,7 @@ export class Animation {
         let startIndex = 0;
         let firstKey = animation._keys[0];
         let endIndex = animation._keys.length - 1;
-        let lastKey = animation._keys[endIndex];       
+        let lastKey = animation._keys[endIndex];
         let valueStore = {
             referenceValue: firstKey.value,
             referencePosition: TmpVectors.Vector3[0],
@@ -268,7 +268,7 @@ export class Animation {
                 from = rangeValue.from;
                 to = rangeValue.to;
             }
-        } 
+        }
         let fromKeyFound = firstKey.frame === from;
         let toKeyFound = lastKey.frame === to;
 
@@ -285,7 +285,7 @@ export class Animation {
             valueStore.referenceValue = value.clone ? value.clone() : value;
             referenceFound = true;
         }
-        
+
         // Reference frame is after the last frame, so just use the last frame
         else if (referenceFrame >= lastKey.frame) {
             let value = animation._getKeyValue(lastKey.value);
@@ -336,7 +336,7 @@ export class Animation {
                     let key: IAnimationKey = {
                         frame: from,
                         value: value.clone ? value.clone() : value
-                    }
+                    };
                     animation._keys.splice(index + 1, 0, key);
                     startIndex = index + 1;
                 }
@@ -360,7 +360,7 @@ export class Animation {
                     let key: IAnimationKey = {
                         frame: to,
                         value: value.clone ? value.clone() : value
-                    }
+                    };
                     animation._keys.splice(index + 1, 0, key);
                     endIndex = index + 1;
                 }
@@ -399,23 +399,23 @@ export class Animation {
                     valueStore.referenceQuaternion.multiplyToRef(valueStore.keyQuaternion, valueStore.keyQuaternion);
                     Matrix.ComposeToRef(valueStore.keyScaling, valueStore.keyQuaternion, valueStore.keyPosition, key.value);
                     break;
-                
+
                 case Animation.ANIMATIONTYPE_QUATERNION:
                     valueStore.referenceValue.multiplyToRef(key.value, key.value);
                     break;
-                
+
                 case Animation.ANIMATIONTYPE_VECTOR2:
                 case Animation.ANIMATIONTYPE_VECTOR3:
                 case Animation.ANIMATIONTYPE_COLOR3:
                 case Animation.ANIMATIONTYPE_COLOR4:
                     key.value.subtractToRef(valueStore.referenceValue, key.value);
                     break;
-                
+
                 case Animation.ANIMATIONTYPE_SIZE:
                     key.value.width -= valueStore.referenceValue.width;
                     key.value.height -= valueStore.referenceValue.height;
                     break;
-                
+
                 default:
                     key.value -= valueStore.referenceValue;
             }
