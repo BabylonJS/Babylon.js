@@ -409,8 +409,8 @@ export class Skeleton implements IAnimatable {
         var sceneAnimatables = skeleton._scene.getAllAnimatablesByTarget(skeleton);
         var rangeAnimatable: Nullable<Animatable> = null;
 
-        for (var index = 0; index < sceneAnimatables.length; index++) {
-            var sceneAnimatable = sceneAnimatables[index];
+        for (let index = 0; index < sceneAnimatables.length; index++) {
+            let sceneAnimatable = sceneAnimatables[index];
 
             if (sceneAnimatable.fromFrame === rangeValue?.from && sceneAnimatable.toFrame === rangeValue?.to) {
                 rangeAnimatable = sceneAnimatable;
@@ -421,9 +421,9 @@ export class Skeleton implements IAnimatable {
         // Convert the animations belonging to the skeleton to additive keyframes
         var animatables = skeleton.getAnimatables();
 
-        for (var index = 0; index < animatables.length; index++) {
+        for (let index = 0; index < animatables.length; index++) {
             let animatable = animatables[index];
-            var animations = animatable.animations;
+            let animations = animatable.animations;
 
             if (!animations) {
                 continue;
