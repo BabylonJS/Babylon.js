@@ -1,3 +1,5 @@
+var baseConfig = require('../karma-browsers.config')
+
 module.exports = function(config) {
     config.set({
         basePath: '../../',
@@ -74,7 +76,6 @@ module.exports = function(config) {
             classNameFormatter: undefined, // function (browser, result) to customize the classname attribute in xml testcase element
             properties: {} // key value pair of properties to add to the <properties> section of the report
         },
-
-        browsers: ['ChromeHeadless']
+        ...baseConfig
     })
 }
