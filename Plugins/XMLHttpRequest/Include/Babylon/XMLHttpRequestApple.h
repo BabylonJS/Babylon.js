@@ -16,10 +16,10 @@ typedef NS_ENUM(NSUInteger , ReadyState) {
 };
 
 @protocol XMLHttpRequest <JSExport>
-@property (nonatomic) JSValue *response;
+@property (nonatomic, retain) JSValue *response;
 @property (nonatomic) NSString *responseText;
-@property (nonatomic) NSString *responseType;
-@property (nonatomic) JSValue *onreadystatechange;
+@property (nonatomic, copy) NSString *responseType;
+
 @property (nonatomic) NSNumber *readyState;
 @property (nonatomic) JSValue *onload;
 @property (nonatomic) JSValue *onerror;
@@ -39,4 +39,12 @@ typedef NS_ENUM(NSUInteger , ReadyState) {
 - (instancetype)initWithURLSession: (NSURLSession *)urlSession;
 - (void)extend:(JSGlobalContextRef)globalContextRef :(CompletionHandler)completionHandler;
 @property (nonatomic) NSMutableDictionary *_eventHandlers;
+@property (atomic, copy) NSURLSession *_urlSession;
+@property (atomic, copy) NSString *_httpMethod;
+@property (atomic, copy) NSURL *_url;
+@property (atomic) bool _async;
+@property (nonatomic) NSMutableDictionary *_requestHeaders;
+@property (atomic, copy) NSDictionary *_responseHeaders;
+//@property (atomic, copy) NSString *_urlString;
+@property (nonatomic, retain) JSValue *_onreadystatechange;
 @end

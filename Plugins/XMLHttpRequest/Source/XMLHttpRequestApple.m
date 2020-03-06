@@ -8,26 +8,26 @@ void bytesDeallocator(void* ptr, void* context)
 {
     free(ptr);
 }
-
 @implementation XMLHttpRequest {
-    NSURLSession *_urlSession;
-    NSString *_httpMethod;
-    NSURL *_url;
-    bool _async;
-    NSMutableDictionary *_requestHeaders;
-    NSDictionary *_responseHeaders;
 };
 
 @synthesize response;
 @synthesize responseText;
 @synthesize responseType;
-@synthesize onreadystatechange;
 @synthesize readyState;
 @synthesize onload;
 @synthesize onerror;
 @synthesize status;
 @synthesize statusText;
 @synthesize _eventHandlers;
+@synthesize _urlSession;
+@synthesize _httpMethod;
+@synthesize _url;
+//@synthesize _urlString;
+@synthesize _async;
+@synthesize _requestHeaders;
+@synthesize _responseHeaders;
+@synthesize _onreadystatechange;
 
 static JSGlobalContextRef _jsGlobalContextRef = nil;
 static JSContext *_jsContext = nil;
@@ -39,10 +39,10 @@ static CompletionHandler _completionHandler;
 
 - (instancetype)initWithURLSession:(NSURLSession *)urlSession {
     if (self = [super init]) {
-        _urlSession = urlSession;
+        self._urlSession = urlSession;
         self.readyState = @(XMLHttpRequestUNSENT);
-        _requestHeaders = [NSMutableDictionary new];
-        _eventHandlers = [NSMutableDictionary new];
+        self._requestHeaders = [NSMutableDictionary new];
+        self._eventHandlers = [NSMutableDictionary new];
     }
     return self;
 }
@@ -63,9 +63,10 @@ static CompletionHandler _completionHandler;
 
 - (void)open:(NSString *)httpMethod :(NSString *)url :(bool)async {
     // TODO should throw an error if called with wrong arguments
-    _httpMethod = httpMethod;
-    _url = [NSURL URLWithString:url];
-    _async = async;
+    self._httpMethod = httpMethod;
+    self._url = [NSURL URLWithString:url];
+    //self._urlString = [[NSString alloc]initWithString:url];
+    self._async = async;
     self.readyState = @(XMLHttpRequestOPENED);
 }
 
@@ -78,7 +79,8 @@ static CompletionHandler _completionHandler;
 }
 
 - (void)send:(id)data {
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:_url];
+    //self._url = [NSURL URLWithString:self._urlString];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:self._url];
     for (NSString *name in _requestHeaders) {
         [request setValue:_requestHeaders[name] forHTTPHeaderField:name];
     }
@@ -90,7 +92,7 @@ static CompletionHandler _completionHandler;
     __block __weak XMLHttpRequest *weakSelf = self;
 
     id completionHandler = ^(NSData *receivedData, NSURLResponse *response, NSError *error) {
-        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *) response;
+        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
         weakSelf.readyState = @(XMLHttpRequestDONE);
         weakSelf.status = @(httpResponse.statusCode);
         weakSelf.statusText = [NSString stringWithFormat:@"%ld",httpResponse.statusCode];
@@ -110,11 +112,11 @@ static CompletionHandler _completionHandler;
             memcpy(bytes, receivedData.bytes, byteLength);
         }
         
-        weakSelf.onreadystatechange = weakSelf._eventHandlers[@"readystatechange"];
+        weakSelf._onreadystatechange = weakSelf._eventHandlers[@"readystatechange"];
         [weakSelf setAllResponseHeaders:[httpResponse allHeaderFields]];
-        if (weakSelf.onreadystatechange != nil) {
+        if (weakSelf._onreadystatechange != nil) {
             void (^completion)() = ^() {
-                [weakSelf.onreadystatechange callWithArguments:@[]];
+                [weakSelf._onreadystatechange callWithArguments:@[]];
             };
             _completionHandler(completion);
         }
