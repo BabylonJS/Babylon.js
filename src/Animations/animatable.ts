@@ -778,7 +778,7 @@ Scene.prototype._processLateAnimationBindingsForMatrices = function(holder: {
     additiveAnimations: RuntimeAnimation[],
     originalValue: Matrix
 }): any {
-    if (!holder.totalWeight && !holder.totalAdditiveWeight) {
+    if (holder.totalWeight === 0 && holder.totalAdditiveWeight === 0) {
         return holder.originalValue;
     }
 
@@ -789,14 +789,16 @@ Scene.prototype._processLateAnimationBindingsForMatrices = function(holder: {
     let startIndex = 0;
     let originalAnimation = holder.animations[0];
     let originalValue = holder.originalValue;
-    originalValue.decompose(finalScaling, finalQuaternion, finalPosition);
 
     var scale = 1;
-    var skipOverride = false;
+    let skipOverride = false;
     if (holder.totalWeight < 1.0) {
         // We need to mix the original value in
         scale = 1.0 - holder.totalWeight;
+        originalValue.decompose(finalScaling, finalQuaternion, finalPosition);
     } else {
+        startIndex = 1;
+        // We need to normalize the weights
         normalizer = holder.totalWeight;
         scale = originalAnimation.weight / normalizer;
         if (scale == 1) {
@@ -807,8 +809,6 @@ Scene.prototype._processLateAnimationBindingsForMatrices = function(holder: {
             }
         }
 
-        startIndex = 1;
-        // We need to normalize the weights
         originalAnimation.currentValue.decompose(finalScaling, finalQuaternion, finalPosition);
     }
 
@@ -820,7 +820,7 @@ Scene.prototype._processLateAnimationBindingsForMatrices = function(holder: {
 
         for (var animIndex = startIndex; animIndex < holder.animations.length; animIndex++) {
             var runtimeAnimation = holder.animations[animIndex];
-            if (!runtimeAnimation.weight) {
+            if (runtimeAnimation.weight === 0) {
                 continue;
             }
 
@@ -837,9 +837,9 @@ Scene.prototype._processLateAnimationBindingsForMatrices = function(holder: {
     }
 
     // Add up the additive animations
-    for (var animIndex = 0; animIndex < holder.additiveAnimations.length; animIndex++) {
+    for (let animIndex = 0; animIndex < holder.additiveAnimations.length; animIndex++) {
         var runtimeAnimation = holder.additiveAnimations[animIndex];
-        if (!runtimeAnimation.weight) {
+        if (runtimeAnimation.weight === 0) {
             continue;
         }
 
@@ -868,7 +868,7 @@ Scene.prototype._processLateAnimationBindingsForQuaternions = function(holder: {
     additiveAnimations: RuntimeAnimation[],
     originalValue: Quaternion
 }, refQuaternion: Quaternion): Quaternion {
-    if (!holder.totalWeight && !holder.totalAdditiveWeight) {
+    if (holder.totalWeight === 0 && holder.totalAdditiveWeight === 0) {
         return refQuaternion;
     }
 
@@ -876,12 +876,12 @@ Scene.prototype._processLateAnimationBindingsForQuaternions = function(holder: {
     let originalValue = holder.originalValue;
     let cumulativeQuaternion = refQuaternion;
 
-    if (!holder.totalWeight && holder.totalAdditiveWeight) {
+    if (holder.totalWeight !== 0 && holder.totalAdditiveWeight > 0) {
         cumulativeQuaternion.copyFrom(originalValue);
     } else if (holder.animations.length === 1) {
         Quaternion.SlerpToRef(originalValue, originalAnimation.currentValue, Math.min(1.0, holder.totalWeight), cumulativeQuaternion);
 
-        if (!holder.totalAdditiveWeight) {
+        if (holder.totalAdditiveWeight === 0) {
             return cumulativeQuaternion;
         }
     } else if (holder.animations.length > 1) {
@@ -902,7 +902,7 @@ Scene.prototype._processLateAnimationBindingsForQuaternions = function(holder: {
             if (holder.animations.length === 2) { // Slerp as soon as we can
                 Quaternion.SlerpToRef(holder.animations[0].currentValue, holder.animations[1].currentValue, holder.animations[1].weight / holder.totalWeight, refQuaternion);
 
-                if (!holder.totalAdditiveWeight) {
+                if (holder.totalAdditiveWeight === 0) {
                     return refQuaternion;
                 }
             }
@@ -936,9 +936,9 @@ Scene.prototype._processLateAnimationBindingsForQuaternions = function(holder: {
     }
 
     // Add up the additive animations
-    for (var animIndex = 0; animIndex < holder.additiveAnimations.length; animIndex++) {
+    for (let animIndex = 0; animIndex < holder.additiveAnimations.length; animIndex++) {
         let runtimeAnimation = holder.additiveAnimations[animIndex];
-        if (!runtimeAnimation.weight) {
+        if (runtimeAnimation.weight === 0) {
             continue;
         }
 
@@ -1018,7 +1018,7 @@ Scene.prototype._processLateAnimationBindings = function(): void {
                     }
 
                     // Add up the additive animations
-                    for (var animIndex = 0; animIndex < holder.additiveAnimations.length; animIndex++) {
+                    for (let animIndex = 0; animIndex < holder.additiveAnimations.length; animIndex++) {
                         var runtimeAnimation = holder.additiveAnimations[animIndex];
                         var scale: number = runtimeAnimation.weight;
 
