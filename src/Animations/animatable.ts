@@ -876,7 +876,7 @@ Scene.prototype._processLateAnimationBindingsForQuaternions = function(holder: {
     let originalValue = holder.originalValue;
     let cumulativeQuaternion = refQuaternion;
 
-    if (holder.totalWeight !== 0 && holder.totalAdditiveWeight > 0) {
+    if (holder.totalWeight === 0 && holder.totalAdditiveWeight > 0) {
         cumulativeQuaternion.copyFrom(originalValue);
     } else if (holder.animations.length === 1) {
         Quaternion.SlerpToRef(originalValue, originalAnimation.currentValue, Math.min(1.0, holder.totalWeight), cumulativeQuaternion);
