@@ -1274,7 +1274,12 @@ namespace Babylon
         }
 
         bgfx::setState(m_engineState);
+#if (ANDROID)
+        // TODO : find why we need to discard state on Android
+        bgfx::submit(m_frameBufferManager.GetBound().ViewId, m_currentProgram->Program, 0, false);
+#else
         bgfx::submit(m_frameBufferManager.GetBound().ViewId, m_currentProgram->Program, 0, true);
+#endif
     }
 
     void NativeEngine::Draw(const Napi::CallbackInfo& info)

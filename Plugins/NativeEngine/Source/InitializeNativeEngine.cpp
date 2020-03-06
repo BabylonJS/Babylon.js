@@ -11,7 +11,13 @@ namespace Babylon
 {
     void InitializeNativeEngine(JsRuntime& runtime, void* windowPtr, size_t width, size_t height)
     {
+#if (ANDROID)
+        runtime.Dispatch([windowPtr, width, height](Napi::Env env) {
+            NativeEngine::InitializeWindow(windowPtr, width, height);
+        });
+#else
         NativeEngine::InitializeWindow(windowPtr, width, height);
+#endif
         runtime.Dispatch([](Napi::Env env) {
             NativeEngine::Initialize(env);
 #ifdef NATIVE_ENGINE_XR
