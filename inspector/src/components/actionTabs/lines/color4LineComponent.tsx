@@ -143,7 +143,7 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
 
     copyToClipboard() {
         var element = document.createElement('div');
-        element.textContent = this.props.isLinear ? this.state.color.toLinearSpace().toHexString() : this.state.color.toHexString();
+        element.textContent = this.state.color.toHexString();
         document.body.appendChild(element);
 
         if (window.getSelection) {
