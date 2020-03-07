@@ -26,6 +26,8 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         if (props.isLinear) {
             this.state.color.toGammaSpaceToRef(this.state.color);
         }
+
+        props.target._isLinearColor = props.isLinear; // so that replayRecorder can append toLinearSpace() as appropriate
     }
 
     shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: { color: Color3 }) {
@@ -55,8 +57,8 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
             this.props.onPropertyChangedObservable.notifyObservers({
                 object: this.props.target,
                 property: this.props.propertyName,
-                value: this.props.isLinear ? newColor.toLinearSpace() : newColor,
-                initialValue: this.props.isLinear ? this.state.color.toLinearSpace() : this.state.color,
+                value: newColor,
+                initialValue: this.state.color,
             });
         }
 
@@ -77,8 +79,8 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         this.props.onPropertyChangedObservable.notifyObservers({
             object: this.props.target,
             property: this.props.propertyName,
-            value: this.props.isLinear ? this.state.color.toLinearSpace() : this.state.color,
-            initialValue: this.props.isLinear ? previousValue.toLinearSpace() : previousValue,
+            value: this.state.color,
+            initialValue: previousValue,
         });
     }
 
