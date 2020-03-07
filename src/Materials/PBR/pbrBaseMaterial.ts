@@ -80,6 +80,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public ALPHAFRESNEL = false;
     public LINEARALPHAFRESNEL = false;
     public PREMULTIPLYALPHA = false;
+    public STRICTTRANSPARENCYMODE = false;
 
     public EMISSIVE = false;
     public EMISSIVEDIRECTUV = 0;
@@ -825,6 +826,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * Specifies whether or not this material should be rendered in alpha blend mode.
      */
     public needAlphaBlending(): boolean {
+        if (this.strictTransparencyMode) {
+            return this._transparencyMode === Material.MATERIAL_ALPHABLEND || this._transparencyMode === Material.MATERIAL_ALPHATESTANDBLEND;
+        }
+
         if (this._disableAlphaBlending) {
             return false;
         }
@@ -836,6 +841,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * Specifies whether or not this material should be rendered in alpha test mode.
      */
     public needAlphaTesting(): boolean {
+        if (this.strictTransparencyMode) {
+            return this._transparencyMode === Material.MATERIAL_ALPHATEST || this._transparencyMode === Material.MATERIAL_ALPHATESTANDBLEND;
+        }
+
         if (this._forceAlphaTest) {
             return true;
         }
@@ -851,6 +860,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * Specifies whether or not the alpha value of the albedo texture should be used for alpha blending.
      */
     protected _shouldUseAlphaFromAlbedoTexture(): boolean {
+        if (this.strictTransparencyMode) {
+            return this._useAlphaFromAlbedoTexture;
+        }
+
         return this._albedoTexture != null && this._albedoTexture.hasAlpha && this._useAlphaFromAlbedoTexture && this._transparencyMode !== PBRBaseMaterial.PBRMATERIAL_OPAQUE;
     }
 
@@ -1481,6 +1494,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         defines.RADIANCEOCCLUSION = this._useRadianceOcclusion;
 
         defines.HORIZONOCCLUSION = this._useHorizonOcclusion;
+
+        defines.STRICTTRANSPARENCYMODE = this._strictTransparencyMode;
 
         // Misc.
         if (defines._areMiscDirty) {
