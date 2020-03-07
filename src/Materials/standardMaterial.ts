@@ -289,7 +289,7 @@ export class StandardMaterial extends PushMaterial {
     /**
      * Does the transparency come from the diffuse texture alpha channel.
      */
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
     public useAlphaFromDiffuseTexture: boolean;
 
     @serialize("useEmissiveAsIllumination")
