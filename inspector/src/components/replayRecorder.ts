@@ -61,8 +61,14 @@ export class ReplayRecorder {
             value = `new BABYLON.Vector2(${value.x}, ${value.y})`;
         } else if (value.a !== undefined) { // Color4
             value = `new BABYLON.Color4(${value.r}, ${value.g}, ${value.b}, ${value.a})`;
+            if (event.object._isLinearColor) {
+                value += '.toLinearSpace()';
+            }
         } else if (value.b !== undefined) { // Color3
             value = `new BABYLON.Color3(${value.r}, ${value.g}, ${value.b})`;
+            if (event.object._isLinearColor) {
+                value += '.toLinearSpace()';
+            }
         } else if (value.getClassName) {
             value = this._getIndirectData(value);
         }
