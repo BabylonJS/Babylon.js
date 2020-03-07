@@ -9,14 +9,13 @@ class ListLineOption {
 }
 
 interface IOptionsLineComponentProps {
-    label: string,
-    target: any,
-    propertyName: string,
-    options: ListLineOption[],
-    noDirectUpdate?: boolean,
-    onSelect?: (value: number) => void,
-    extractValue?: () => number,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    label: string;
+    target: any;
+    propertyName: string;
+    options: ListLineOption[];
+    noDirectUpdate?: boolean;
+    onSelect?: (value: number) => void;
+    extractValue?: () => number;
 }
 
 export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, { value: number }> {
@@ -59,21 +58,20 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         const value = parseInt(valueString);
         this._localChange = true;
 
-        const store = this.props.extractValue ? this.props.extractValue() : this.props.target[this.props.propertyName]
+        const store = this.props.extractValue ? this.props.extractValue() : this.props.target[this.props.propertyName];
 
         if (!this.props.noDirectUpdate) {
             this.props.target[this.props.propertyName] = value;
         }
         this.setState({ value: value });
-        
+
         if (this.props.onSelect) {
             this.props.onSelect(value);
         }
 
-        const newValue = this.props.extractValue ? this.props.extractValue() : this.props.target[this.props.propertyName]
+        const newValue = this.props.extractValue ? this.props.extractValue() : this.props.target[this.props.propertyName];
 
         this.raiseOnPropertyChanged(newValue, store);
-
     }
 
     render() {
@@ -84,12 +82,12 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
 
                 </div>
                 <div className="options">
-                    <select onChange={evt => this.updateValue(evt.target.value)} value={this.state.value ?? ""}>
+                    <select onChange={(evt) => this.updateValue(evt.target.value)} value={this.state.value ?? ""}>
                         {
-                            this.props.options.map(option => {
+                            this.props.options.map((option) => {
                                 return (
                                     <option key={option.label} value={option.value}>{option.label}</option>
-                                )
+                                );
                             })
                         }
                     </select>
