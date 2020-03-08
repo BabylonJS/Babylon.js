@@ -117,6 +117,10 @@ export class SolidParticle {
      */
     public materialIndex: Nullable<number> = null;
     /**
+     * Custom object or properties.
+     */
+    public props: Nullable<any> = null;
+    /**
      * The culling strategy to use to check whether the solid particle must be culled or not when using isInFrustum().
      * The possible values are :
      * - AbstractMesh.CULLINGSTRATEGY_STANDARD
@@ -358,6 +362,10 @@ export class ModelShape {
  */
 export class DepthSortedParticle {
     /**
+     * Particle index
+     */
+    public idx: number = 0;
+    /**
      * Index of the particle in the "indices" array
      */
     public ind: number = 0;
@@ -378,7 +386,8 @@ export class DepthSortedParticle {
      * Creates a new sorted particle
      * @param materialIndex
      */
-    constructor(ind: number, indLength: number, materialIndex: number) {
+    constructor(idx: number, ind: number, indLength: number, materialIndex: number) {
+        this.idx = idx;
         this.ind = ind;
         this.indicesLength = indLength;
         this.materialIndex = materialIndex;

@@ -53,24 +53,26 @@ export class ReplayRecorder {
 
         let value = event.value;
 
-        if (value.w !== undefined) { // Quaternion
-            value = `new BABYLON.Quaternion(${value.x}, ${value.y}, ${value.z}, ${value.w})`;
-        } else if (value.z !== undefined) { // Vector3
-            value = `new BABYLON.Vector3(${value.x}, ${value.y}, ${value.z})`;
-        } else if (value.y !== undefined) { // Vector2
-            value = `new BABYLON.Vector2(${value.x}, ${value.y})`;
-        } else if (value.a !== undefined) { // Color4
-            value = `new BABYLON.Color4(${value.r}, ${value.g}, ${value.b}, ${value.a})`;
-            if (event.object._isLinearColor) {
-                value += '.toLinearSpace()';
+        if (!event.allowNullValue || event.allowNullValue && value !== null) {
+            if (value.w !== undefined) { // Quaternion
+                value = `new BABYLON.Quaternion(${value.x}, ${value.y}, ${value.z}, ${value.w})`;
+            } else if (value.z !== undefined) { // Vector3
+                value = `new BABYLON.Vector3(${value.x}, ${value.y}, ${value.z})`;
+            } else if (value.y !== undefined) { // Vector2
+                value = `new BABYLON.Vector2(${value.x}, ${value.y})`;
+            } else if (value.a !== undefined) { // Color4
+                value = `new BABYLON.Color4(${value.r}, ${value.g}, ${value.b}, ${value.a})`;
+                if (event.object._isLinearColor) {
+                    value += '.toLinearSpace()';
+                }
+            } else if (value.b !== undefined) { // Color3
+                value = `new BABYLON.Color3(${value.r}, ${value.g}, ${value.b})`;
+                if (event.object._isLinearColor) {
+                    value += '.toLinearSpace()';
+                }
+            } else if (value.getClassName) {
+                value = this._getIndirectData(value);
             }
-        } else if (value.b !== undefined) { // Color3
-            value = `new BABYLON.Color3(${value.r}, ${value.g}, ${value.b})`;
-            if (event.object._isLinearColor) {
-                value += '.toLinearSpace()';
-            }
-        } else if (value.getClassName) {
-            value = this._getIndirectData(value);
         }
 
         let target = this._getIndirectData(event.object);
