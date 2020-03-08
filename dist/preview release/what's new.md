@@ -16,6 +16,10 @@
 
 - Allow logging of shader code when a compilation error occurs ([Popov72](https://github.com/Popov72))
 
+### Inspector
+
+- Handle PBR colors as colors in linear space ([Popov72](https://github.com/Popov72))
+
 ### Cameras
 
 - Added flag to TargetCamera to invert rotation direction and multiplier to adjust speed ([Exolun](https://github.com/Exolun))
