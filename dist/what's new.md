@@ -61,6 +61,7 @@
 - Supports clip planes with shadows ([sebavan](http://www.github.com/sebavan))
 - Added Workbench color scheme for VSCode ([drigax](https://github.com/drigax) & [Patrick Ryan](https://github.com/PatrickRyanMS))
 - Playground switch buttons are more intuitive ([#7601](https://github.com/BabylonJS/Babylon.js/issues/7601)) ([RaananW](https://github.com/RaananW/))
+- Added upwards and downwards keyboard input to `FreeCamera` ([Pheater](https://github.com/pheater))
 
 ### Engine
 
