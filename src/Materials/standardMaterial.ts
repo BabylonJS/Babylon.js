@@ -15,6 +15,7 @@ import { Mesh } from "../Meshes/mesh";
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration";
 import { ColorCurves } from "./colorCurves";
 import { FresnelParameters } from "./fresnelParameters";
+import { Material } from "../Materials/material";
 import { MaterialDefines } from "../Materials/materialDefines";
 import { PushMaterial } from "./pushMaterial";
 import { MaterialHelper } from "./materialHelper";
@@ -114,6 +115,8 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public NUM_MORPH_INFLUENCERS = 0;
     public NONUNIFORMSCALING = false; // https://playground.babylonjs.com#V6DWIH
     public PREMULTIPLYALPHA = false; // https://playground.babylonjs.com#LNVJJ7
+    public ALPHATEST_AFTERALLALPHACOMPUTATIONS = false;
+    public ALPHABLEND = true;
 
     public IMAGEPROCESSING = false;
     public VIGNETTE = false;
@@ -286,7 +289,7 @@ export class StandardMaterial extends PushMaterial {
     /**
      * Does the transparency come from the diffuse texture alpha channel.
      */
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
     public useAlphaFromDiffuseTexture: boolean;
 
     @serialize("useEmissiveAsIllumination")
@@ -744,6 +747,10 @@ export class StandardMaterial extends PushMaterial {
      * @returns a boolean specifying if alpha blending is needed
      */
     public needAlphaBlending(): boolean {
+        if (this._disableAlphaBlending) {
+            return false;
+        }
+
         return (this.alpha < 1.0) || (this._opacityTexture != null) || this._shouldUseAlphaFromDiffuseTexture() || this._opacityFresnelParameters && this._opacityFresnelParameters.isEnabled;
     }
 
@@ -752,11 +759,15 @@ export class StandardMaterial extends PushMaterial {
      * @returns a boolean specifying if an alpha test is needed.
      */
     public needAlphaTesting(): boolean {
-        return this._diffuseTexture != null && this._diffuseTexture.hasAlpha;
+        if (this._forceAlphaTest) {
+            return true;
+        }
+
+        return this._diffuseTexture != null && this._diffuseTexture.hasAlpha && (this._transparencyMode == null || this._transparencyMode === Material.MATERIAL_ALPHATEST);
     }
 
     protected _shouldUseAlphaFromDiffuseTexture(): boolean {
-        return this._diffuseTexture != null && this._diffuseTexture.hasAlpha && this._useAlphaFromDiffuseTexture;
+        return this._diffuseTexture != null && this._diffuseTexture.hasAlpha && this._useAlphaFromDiffuseTexture && this._transparencyMode !== Material.MATERIAL_OPAQUE;
     }
 
     /**
@@ -971,6 +982,10 @@ export class StandardMaterial extends PushMaterial {
             defines.SPECULAROVERALPHA = this._useSpecularOverAlpha;
 
             defines.PREMULTIPLYALPHA = (this.alphaMode === Constants.ALPHA_PREMULTIPLIED || this.alphaMode === Constants.ALPHA_PREMULTIPLIED_PORTERDUFF);
+
+            defines.ALPHATEST_AFTERALLALPHACOMPUTATIONS = this.transparencyMode !== null;
+
+            defines.ALPHABLEND = this.transparencyMode === null || this.needAlphaBlendingForMesh(mesh); // check on null for backward compatibility
         }
 
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
@@ -1012,7 +1027,7 @@ export class StandardMaterial extends PushMaterial {
         }
 
         // Misc.
-        MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
+        MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh) || this._forceAlphaTest, defines);
 
         // Attribs
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
