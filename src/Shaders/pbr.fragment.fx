@@ -93,7 +93,7 @@ void main(void) {
 
 #ifdef ALBEDO
     vec4 albedoTexture = texture2D(albedoSampler, vAlbedoUV + uvOffset);
-    #if defined(ALPHAFROMALBEDO) || defined(ALPHATEST) && !defined(STRICTTRANSPARENCYMODE)
+    #if defined(ALPHAFROMALBEDO) || defined(ALPHATEST)
         alpha *= albedoTexture.a;
     #endif
 

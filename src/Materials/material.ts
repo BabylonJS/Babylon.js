@@ -729,25 +729,6 @@ export class Material implements IAnimatable {
         this._markAllSubMeshesAsTexturesAndMiscDirty();
     }
 
-    protected _strictTransparencyMode: boolean = false;
-    /**
-     * Gets or sets the strict transparency mode
-     */
-    @serialize()
-    public get strictTransparencyMode(): boolean {
-        return this._strictTransparencyMode;
-    }
-
-    public set strictTransparencyMode(value: boolean) {
-        if (this._strictTransparencyMode === value) {
-            return;
-        }
-
-        this._strictTransparencyMode = value;
-
-        this._markAllSubMeshesAsTexturesAndMiscDirty();
-    }
-
     /**
      * Returns true if alpha blending should be disabled.
      */
@@ -761,10 +742,6 @@ export class Material implements IAnimatable {
      * @returns a boolean specifying if alpha blending is needed
      */
     public needAlphaBlending(): boolean {
-        if (this.strictTransparencyMode) {
-            return this._transparencyMode === Material.MATERIAL_ALPHABLEND || this._transparencyMode === Material.MATERIAL_ALPHATESTANDBLEND;
-        }
-
         if (this._disableAlphaBlending) {
             return false;
         }
@@ -778,10 +755,6 @@ export class Material implements IAnimatable {
      * @returns a boolean specifying if alpha blending is needed for the mesh
      */
     public needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
-        if (this.strictTransparencyMode) {
-            return this._transparencyMode === Material.MATERIAL_ALPHABLEND || this._transparencyMode === Material.MATERIAL_ALPHATESTANDBLEND;
-        }
-
         if (this._disableAlphaBlending && mesh.visibility >= 1.0) {
             return false;
         }
@@ -794,10 +767,6 @@ export class Material implements IAnimatable {
      * @returns a boolean specifying if an alpha test is needed.
      */
     public needAlphaTesting(): boolean {
-        if (this.strictTransparencyMode) {
-            return this._transparencyMode === Material.MATERIAL_ALPHATEST || this._transparencyMode === Material.MATERIAL_ALPHATESTANDBLEND;
-        }
-
         if (this._forceAlphaTest) {
             return true;
         }
@@ -810,10 +779,6 @@ export class Material implements IAnimatable {
      * @param mesh defines the mesh to check
      */
     protected _shouldTurnAlphaTestOn(mesh: AbstractMesh): boolean {
-        if (this.strictTransparencyMode) {
-            return this._transparencyMode === Material.MATERIAL_ALPHATEST || this._transparencyMode === Material.MATERIAL_ALPHATESTANDBLEND;
-        }
-
         return (!this.needAlphaBlendingForMesh(mesh) && this.needAlphaTesting());
     }
 
