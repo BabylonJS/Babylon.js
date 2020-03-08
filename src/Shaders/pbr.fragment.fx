@@ -983,6 +983,10 @@ void main(void) {
         #endif
 
         specularEnvironmentReflectance *= conservationFactor;
+
+        #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)
+            vec3 energyConservationFactorClearCoat = getEnergyConservationFactor(specularEnvironmentR0, environmentClearCoatBrdf);
+        #endif
     #endif
 
     // _____________________________ Transmittance + Tint ________________________________
@@ -1144,7 +1148,7 @@ void main(void) {
         // Full value needed for alpha.
         vec3 finalClearCoatScaled = finalClearCoat * vLightingIntensity.x * vLightingIntensity.w;
         #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)
-            finalClearCoatScaled *= energyConservationFactor;
+            finalClearCoatScaled *= energyConservationFactorClearCoat;
         #endif
 
     // ____________________________ Clear Coat Radiance _______________________________
