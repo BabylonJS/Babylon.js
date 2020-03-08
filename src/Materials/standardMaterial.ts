@@ -747,10 +747,6 @@ export class StandardMaterial extends PushMaterial {
      * @returns a boolean specifying if alpha blending is needed
      */
     public needAlphaBlending(): boolean {
-        if (this.strictTransparencyMode) {
-            return this._transparencyMode === Material.MATERIAL_ALPHABLEND || this._transparencyMode === Material.MATERIAL_ALPHATESTANDBLEND;
-        }
-
         if (this._disableAlphaBlending) {
             return false;
         }
@@ -763,10 +759,6 @@ export class StandardMaterial extends PushMaterial {
      * @returns a boolean specifying if an alpha test is needed.
      */
     public needAlphaTesting(): boolean {
-        if (this.strictTransparencyMode) {
-            return this._transparencyMode === Material.MATERIAL_ALPHATEST || this._transparencyMode === Material.MATERIAL_ALPHATESTANDBLEND;
-        }
-
         if (this._forceAlphaTest) {
             return true;
         }
@@ -775,10 +767,6 @@ export class StandardMaterial extends PushMaterial {
     }
 
     protected _shouldUseAlphaFromDiffuseTexture(): boolean {
-        if (this.strictTransparencyMode) {
-            return this._useAlphaFromDiffuseTexture;
-        }
-
         return this._diffuseTexture != null && this._diffuseTexture.hasAlpha && this._useAlphaFromDiffuseTexture && this._transparencyMode !== Material.MATERIAL_OPAQUE;
     }
 
