@@ -39738,16 +39738,26 @@ var Color3LineComponent = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
         _this.state = { isExpanded: false, color: _this.props.target[_this.props.propertyName].clone() };
+        if (props.isLinear) {
+            _this.state.color.toGammaSpaceToRef(_this.state.color);
+        }
+        props.target._isLinearColor = props.isLinear; // so that replayRecorder can append toLinearSpace() as appropriate
         return _this;
     }
     Color3LineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        var currentState = nextProps.target[nextProps.propertyName];
+        var currentState = this.props.isLinear ? nextProps.target[nextProps.propertyName].toGammaSpace() : nextProps.target[nextProps.propertyName];
         if (!currentState.equals(nextState.color) || this._localChange) {
             nextState.color = currentState.clone();
             this._localChange = false;
             return true;
         }
         return false;
+    };
+    Color3LineComponent.prototype.setPropertyValue = function (newColor) {
+        this.props.target[this.props.propertyName] = newColor;
+        if (this.props.isLinear) {
+            this.props.target[this.props.propertyName] = newColor.toLinearSpace();
+        }
     };
     Color3LineComponent.prototype.onChange = function (newValue) {
         this._localChange = true;
@@ -39757,10 +39767,10 @@ var Color3LineComponent = /** @class */ (function (_super) {
                 object: this.props.target,
                 property: this.props.propertyName,
                 value: newColor,
-                initialValue: this.state.color
+                initialValue: this.state.color,
             });
         }
-        this.props.target[this.props.propertyName] = newColor;
+        this.setPropertyValue(newColor);
         this.setState({ color: newColor });
     };
     Color3LineComponent.prototype.switchExpandState = function () {
@@ -39775,33 +39785,30 @@ var Color3LineComponent = /** @class */ (function (_super) {
             object: this.props.target,
             property: this.props.propertyName,
             value: this.state.color,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     };
     Color3LineComponent.prototype.updateStateR = function (value) {
         this._localChange = true;
         var store = this.state.color.clone();
-        this.props.target[this.props.propertyName].x = value;
         this.state.color.r = value;
-        this.props.target[this.props.propertyName] = this.state.color;
+        this.setPropertyValue(this.state.color);
         this.setState({ color: this.state.color });
         this.raiseOnPropertyChanged(store);
     };
     Color3LineComponent.prototype.updateStateG = function (value) {
         this._localChange = true;
         var store = this.state.color.clone();
-        this.props.target[this.props.propertyName].g = value;
         this.state.color.g = value;
-        this.props.target[this.props.propertyName] = this.state.color;
+        this.setPropertyValue(this.state.color);
         this.setState({ color: this.state.color });
         this.raiseOnPropertyChanged(store);
     };
     Color3LineComponent.prototype.updateStateB = function (value) {
         this._localChange = true;
         var store = this.state.color.clone();
-        this.props.target[this.props.propertyName].b = value;
         this.state.color.b = value;
-        this.props.target[this.props.propertyName] = this.state.color;
+        this.setPropertyValue(this.state.color);
         this.setState({ color: this.state.color });
         this.raiseOnPropertyChanged(store);
     };
@@ -39876,17 +39883,30 @@ var Color4LineComponent = /** @class */ (function (_super) {
         var value = _this.props.target[_this.props.propertyName];
         var currentColor = value.getClassName() === "Color4" ? value.clone() : new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"](value.r, value.g, value.b, 1.0);
         _this.state = { isExpanded: false, color: currentColor };
+        if (props.isLinear) {
+            _this.state.color.toGammaSpaceToRef(_this.state.color);
+        }
+        props.target._isLinearColor = props.isLinear; // so that replayRecorder can append toLinearSpace() as appropriate
         return _this;
     }
     Color4LineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
         var value = this.props.target[this.props.propertyName];
         var currentColor = value.getClassName() === "Color4" ? value : new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"](value.r, value.g, value.b, 1.0);
+        if (this.props.isLinear) {
+            currentColor.toGammaSpaceRef(currentColor);
+        }
         if (!currentColor.equals(nextState.color) || this._localChange) {
             nextState.color = currentColor.clone();
             this._localChange = false;
             return true;
         }
         return false;
+    };
+    Color4LineComponent.prototype.setPropertyValue = function (newColor) {
+        this.props.target[this.props.propertyName] = newColor;
+        if (this.props.isLinear) {
+            this.props.target[this.props.propertyName] = newColor.toLinearSpace();
+        }
     };
     Color4LineComponent.prototype.onChange = function (newValue) {
         this._localChange = true;
@@ -39896,11 +39916,12 @@ var Color4LineComponent = /** @class */ (function (_super) {
                 object: this.props.target,
                 property: this.props.propertyName,
                 value: newColor,
-                initialValue: this.state.color
+                initialValue: this.state.color,
             });
         }
-        this.props.target[this.props.propertyName] = new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"](newColor.r, newColor.g, newColor.b, this.props.target[this.props.propertyName].a);
-        this.setState({ color: this.props.target[this.props.propertyName] });
+        var newColor4 = new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"](newColor.r, newColor.g, newColor.b, this.props.target[this.props.propertyName].a);
+        this.setPropertyValue(newColor4);
+        this.setState({ color: newColor4 });
         if (this.props.onChange) {
             this.props.onChange();
         }
@@ -39917,33 +39938,30 @@ var Color4LineComponent = /** @class */ (function (_super) {
             object: this.props.target,
             property: this.props.propertyName,
             value: this.state.color,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     };
     Color4LineComponent.prototype.updateStateR = function (value) {
         this._localChange = true;
         var store = this.state.color.clone();
-        this.props.target[this.props.propertyName].x = value;
         this.state.color.r = value;
-        this.props.target[this.props.propertyName] = this.state.color;
+        this.setPropertyValue(this.state.color);
         this.setState({ color: this.state.color });
         this.raiseOnPropertyChanged(store);
     };
     Color4LineComponent.prototype.updateStateG = function (value) {
         this._localChange = true;
         var store = this.state.color.clone();
-        this.props.target[this.props.propertyName].g = value;
         this.state.color.g = value;
-        this.props.target[this.props.propertyName] = this.state.color;
+        this.setPropertyValue(this.state.color);
         this.setState({ color: this.state.color });
         this.raiseOnPropertyChanged(store);
     };
     Color4LineComponent.prototype.updateStateB = function (value) {
         this._localChange = true;
         var store = this.state.color.clone();
-        this.props.target[this.props.propertyName].b = value;
         this.state.color.b = value;
-        this.props.target[this.props.propertyName] = this.state.color;
+        this.setPropertyValue(this.state.color);
         this.setState({ color: this.state.color });
         this.raiseOnPropertyChanged(store);
     };
@@ -40388,17 +40406,19 @@ var NumericInputComponent = /** @class */ (function (_super) {
 /*!**************************************************************!*\
   !*** ./components/actionTabs/lines/optionsLineComponent.tsx ***!
   \**************************************************************/
-/*! exports provided: OptionsLineComponent */
+/*! exports provided: Null_Value, OptionsLineComponent */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Null_Value", function() { return Null_Value; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "OptionsLineComponent", function() { return OptionsLineComponent; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 
 
+var Null_Value = Number.MAX_SAFE_INTEGER;
 var ListLineOption = /** @class */ (function () {
     function ListLineOption() {
     }
@@ -40409,15 +40429,21 @@ var OptionsLineComponent = /** @class */ (function (_super) {
     function OptionsLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
-        _this.state = { value: _this.props.extractValue ? _this.props.extractValue() : props.target[props.propertyName] };
+        _this.state = { value: _this.remapValueIn(_this.props.extractValue ? _this.props.extractValue() : props.target[props.propertyName]) };
         return _this;
     }
+    OptionsLineComponent.prototype.remapValueIn = function (value) {
+        return this.props.allowNullValue && value === null ? Null_Value : value;
+    };
+    OptionsLineComponent.prototype.remapValueOut = function (value) {
+        return this.props.allowNullValue && value === Null_Value ? null : value;
+    };
     OptionsLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
         if (this._localChange) {
             this._localChange = false;
             return true;
         }
-        var newValue = nextProps.extractValue ? nextProps.extractValue() : nextProps.target[nextProps.propertyName];
+        var newValue = this.remapValueIn(nextProps.extractValue ? nextProps.extractValue() : nextProps.target[nextProps.propertyName]);
         if (newValue != null && newValue !== nextState.value) {
             nextState.value = newValue;
             return true;
@@ -40432,7 +40458,8 @@ var OptionsLineComponent = /** @class */ (function (_super) {
             object: this.props.target,
             property: this.props.propertyName,
             value: newValue,
-            initialValue: previousValue
+            initialValue: previousValue,
+            allowNullValue: this.props.allowNullValue,
         });
     };
     OptionsLineComponent.prototype.updateValue = function (valueString) {
@@ -40440,7 +40467,7 @@ var OptionsLineComponent = /** @class */ (function (_super) {
         this._localChange = true;
         var store = this.props.extractValue ? this.props.extractValue() : this.props.target[this.props.propertyName];
         if (!this.props.noDirectUpdate) {
-            this.props.target[this.props.propertyName] = value;
+            this.props.target[this.props.propertyName] = this.remapValueOut(value);
         }
         this.setState({ value: value });
         if (this.props.onSelect) {
@@ -44117,6 +44144,7 @@ var CommonMaterialPropertyGridComponent = /** @class */ (function (_super) {
             { label: "Counterclockwise", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Material"].CounterClockWiseSideOrientation }
         ];
         var transparencyModeOptions = [
+            { label: "<Not Defined>", value: _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["Null_Value"] },
             { label: "Opaque", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["PBRMaterial"].PBRMATERIAL_OPAQUE },
             { label: "Alpha test", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["PBRMaterial"].PBRMATERIAL_ALPHATEST },
             { label: "Alpha blend", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["PBRMaterial"].PBRMATERIAL_ALPHABLEND },
@@ -44165,8 +44193,12 @@ var CommonMaterialPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__["LineContainerComponent"], { globalState: this.props.globalState, title: "TRANSPARENCY" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Alpha", target: material, propertyName: "alpha", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 material.transparencyMode !== undefined &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["OptionsLineComponent"], { label: "Transparency mode", options: transparencyModeOptions, target: material, propertyName: "transparencyMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ transparencyMode: value }); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["OptionsLineComponent"], { allowNullValue: true, label: "Transparency mode", options: transparencyModeOptions, target: material, propertyName: "transparencyMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ transparencyMode: value }); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["OptionsLineComponent"], { label: "Alpha mode", options: alphaModeOptions, target: material, propertyName: "alphaMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ alphaMode: value }); } }),
+                material.useAlphaFromDiffuseTexture !== undefined &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Use alpha from diffuse texture", target: material, propertyName: "useAlphaFromDiffuseTexture", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                material.useAlphaFromAlbedoTexture !== undefined &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Use alpha from albedo texture", target: material, propertyName: "useAlphaFromAlbedoTexture", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Separate culling pass", target: material, propertyName: "separateCullingPass", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
     return CommonMaterialPropertyGridComponent;
@@ -44545,11 +44577,11 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_9__["CommonMaterialPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, material: material, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             this.renderTextures(this._onDebugSelectionChangeObservable),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "LIGHTING & COLORS" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Albedo", target: material, propertyName: "albedoColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Reflectivity", target: material, propertyName: "reflectivityColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Albedo", target: material, propertyName: "albedoColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable, isLinear: true }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Reflectivity", target: material, propertyName: "reflectivityColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable, isLinear: true }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Micro-surface", target: material, propertyName: "microSurface", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Emissive", target: material, propertyName: "emissiveColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Ambient", target: material, propertyName: "ambientColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Emissive", target: material, propertyName: "emissiveColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable, isLinear: true }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Ambient", target: material, propertyName: "ambientColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable, isLinear: true }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Use physical light falloff", target: material, propertyName: "usePhysicalLightFalloff", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "METALLIC WORKFLOW" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Metallic", target: material, propertyName: "metallic", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -44569,7 +44601,7 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
                             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Bump strength", target: material.clearCoat.bumpTexture, propertyName: "level", minimum: 0, maximum: 2, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Tint", target: material.clearCoat, propertyName: "isTintEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                         material.clearCoat.isEnabled && material.clearCoat.isTintEnabled &&
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Tint Color", target: material.clearCoat, propertyName: "tintColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Tint Color", target: material.clearCoat, propertyName: "tintColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable, isLinear: true }),
                         material.clearCoat.isEnabled && material.clearCoat.isTintEnabled &&
                             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "At Distance", target: material.clearCoat, propertyName: "tintColorAtDistance", minimum: 0, maximum: 20, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                         material.clearCoat.isEnabled && material.clearCoat.isTintEnabled &&
@@ -44589,7 +44621,7 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "fragment" },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Link to Albedo", target: material.sheen, propertyName: "linkSheenWithAlbedo", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Intensity", target: material.sheen, propertyName: "intensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Color", target: material.sheen, propertyName: "color", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Color", target: material.sheen, propertyName: "color", onPropertyChangedObservable: this.props.onPropertyChangedObservable, isLinear: true }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Texture", texture: material.sheen.texture, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: this._onDebugSelectionChangeObservable }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Use roughness", target: material.sheen, propertyName: "_useRoughness" }),
                         material.sheen._useRoughness &&
@@ -44600,7 +44632,7 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Min Thickness", target: material.subSurface, propertyName: "minimumThickness", minimum: 0, maximum: 10, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Max Thickness", target: material.subSurface, propertyName: "maximumThickness", minimum: 0, maximum: 10, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Mask From Thickness", target: material.subSurface, propertyName: "useMaskFromThicknessTexture", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Tint Color", target: material.subSurface, propertyName: "tintColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Tint Color", target: material.subSurface, propertyName: "tintColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable, isLinear: true }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Refraction Enabled", target: material.subSurface, propertyName: "isRefractionEnabled", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 material.subSurface.isRefractionEnabled &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "fragment" },
@@ -44612,7 +44644,7 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
                 material.subSurface.isTranslucencyEnabled &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "fragment" },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Intensity", target: material.subSurface, propertyName: "translucencyIntensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Diffusion Distance", target: material.subSurface, propertyName: "diffusionDistance", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Diffusion Distance", target: material.subSurface, propertyName: "diffusionDistance", onPropertyChangedObservable: this.props.onPropertyChangedObservable, isLinear: true }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "LEVELS", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Environment", target: material, propertyName: "environmentIntensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Specular", target: material, propertyName: "specularIntensity", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -44706,8 +44738,8 @@ var PBRMetallicRoughnessMaterialPropertyGridComponent = /** @class */ (function 
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_6__["CommonMaterialPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, material: material, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             this.renderTextures(),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "LIGHTING & COLORS" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Base", target: material, propertyName: "baseColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Emissive", target: material, propertyName: "emissiveColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Base", target: material, propertyName: "baseColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable, isLinear: true }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Emissive", target: material, propertyName: "emissiveColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable, isLinear: true })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "LEVELS", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Metallic", target: material, propertyName: "metallic", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Roughness", target: material, propertyName: "roughness", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
@@ -44776,8 +44808,8 @@ var PBRSpecularGlossinessMaterialPropertyGridComponent = /** @class */ (function
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_6__["CommonMaterialPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, material: material, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             this.renderTextures(),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "LIGHTING & COLORS" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Diffuse", target: material, propertyName: "diffuseColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Specular", target: material, propertyName: "specularColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Diffuse", target: material, propertyName: "diffuseColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable, isLinear: true }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Specular", target: material, propertyName: "specularColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable, isLinear: true })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "LEVELS", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Glossiness", target: material, propertyName: "glossiness", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "NORMAL MAP", closed: true },
@@ -44853,7 +44885,8 @@ var StandardMaterialPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Specular", target: material, propertyName: "specularColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Specular power", target: material, propertyName: "specularPower", minimum: 0, maximum: 128, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Emissive", target: material, propertyName: "emissiveColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Ambient", target: material, propertyName: "ambientColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Ambient", target: material, propertyName: "ambientColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { label: "Use specular over alpha", target: material, propertyName: "useSpecularOverAlpha", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "LEVELS", closed: true },
                 material.diffuseTexture &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Diffuse level", target: material.diffuseTexture, propertyName: "level", minimum: 0, maximum: 2, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -47983,23 +48016,31 @@ var ReplayRecorder = /** @class */ (function () {
             this._recordedCodeLines.pop();
         }
         var value = event.value;
-        if (value.w !== undefined) { // Quaternion
-            value = "new BABYLON.Quaternion(" + value.x + ", " + value.y + ", " + value.z + ", " + value.w + ")";
-        }
-        else if (value.z !== undefined) { // Vector3
-            value = "new BABYLON.Vector3(" + value.x + ", " + value.y + ", " + value.z + ")";
-        }
-        else if (value.y !== undefined) { // Vector2
-            value = "new BABYLON.Vector2(" + value.x + ", " + value.y + ")";
-        }
-        else if (value.a !== undefined) { // Color4
-            value = "new BABYLON.Color4(" + value.r + ", " + value.g + ", " + value.b + ", " + value.a + ")";
-        }
-        else if (value.b !== undefined) { // Color3
-            value = "new BABYLON.Color3(" + value.r + ", " + value.g + ", " + value.b + ")";
-        }
-        else if (value.getClassName) {
-            value = this._getIndirectData(value);
+        if (!event.allowNullValue || event.allowNullValue && value !== null) {
+            if (value.w !== undefined) { // Quaternion
+                value = "new BABYLON.Quaternion(" + value.x + ", " + value.y + ", " + value.z + ", " + value.w + ")";
+            }
+            else if (value.z !== undefined) { // Vector3
+                value = "new BABYLON.Vector3(" + value.x + ", " + value.y + ", " + value.z + ")";
+            }
+            else if (value.y !== undefined) { // Vector2
+                value = "new BABYLON.Vector2(" + value.x + ", " + value.y + ")";
+            }
+            else if (value.a !== undefined) { // Color4
+                value = "new BABYLON.Color4(" + value.r + ", " + value.g + ", " + value.b + ", " + value.a + ")";
+                if (event.object._isLinearColor) {
+                    value += '.toLinearSpace()';
+                }
+            }
+            else if (value.b !== undefined) { // Color3
+                value = "new BABYLON.Color3(" + value.r + ", " + value.g + ", " + value.b + ")";
+                if (event.object._isLinearColor) {
+                    value += '.toLinearSpace()';
+                }
+            }
+            else if (value.getClassName) {
+                value = this._getIndirectData(value);
+            }
         }
         var target = this._getIndirectData(event.object);
         this._recordedCodeLines.push(target + "." + event.property + " = " + value + ";");
