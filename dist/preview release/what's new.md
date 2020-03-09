@@ -15,6 +15,7 @@
 ### Engine
 
 - Allow logging of shader code when a compilation error occurs ([Popov72](https://github.com/Popov72))
+- Add back support for selecting textures based on engine capabilities ([bghgary](https://github.com/bghgary))
 
 ### Cameras
 
