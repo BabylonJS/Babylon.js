@@ -24,10 +24,22 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
     public keysUp = [38];
 
     /**
+     * Gets or Set the list of keyboard keys used to control the upward move of the camera.
+     */
+    @serialize()
+    public keysUpward = [33];
+
+    /**
      * Gets or Set the list of keyboard keys used to control the backward move of the camera.
      */
     @serialize()
     public keysDown = [40];
+
+    /**
+     * Gets or Set the list of keyboard keys used to control the downward move of the camera.
+     */
+    @serialize()
+    public keysDownward = [34];
 
     /**
      * Gets or Set the list of keyboard keys used to control the left strafe move of the camera.
@@ -71,7 +83,9 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
                     if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
                         this.keysDown.indexOf(evt.keyCode) !== -1 ||
                         this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRight.indexOf(evt.keyCode) !== -1) {
+                        this.keysRight.indexOf(evt.keyCode) !== -1 ||
+                        this.keysUpward.indexOf(evt.keyCode) !== -1 ||
+                        this.keysDownward.indexOf(evt.keyCode) !== -1) {
                         var index = this._keys.indexOf(evt.keyCode);
 
                         if (index === -1) {
@@ -85,7 +99,9 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
                     if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
                         this.keysDown.indexOf(evt.keyCode) !== -1 ||
                         this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRight.indexOf(evt.keyCode) !== -1) {
+                        this.keysRight.indexOf(evt.keyCode) !== -1 ||
+                        this.keysUpward.indexOf(evt.keyCode) !== -1 ||
+                        this.keysDownward.indexOf(evt.keyCode) !== -1) {
                         var index = this._keys.indexOf(evt.keyCode);
 
                         if (index >= 0) {
@@ -139,6 +155,10 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
                     camera._localDirection.copyFromFloats(speed, 0, 0);
                 } else if (this.keysDown.indexOf(keyCode) !== -1) {
                     camera._localDirection.copyFromFloats(0, 0, -speed);
+                } else if (this.keysUpward.indexOf(keyCode) !== -1) {
+                    camera._localDirection.copyFromFloats(0, speed, 0);
+                } else if (this.keysDownward.indexOf(keyCode) !== -1) {
+                    camera._localDirection.copyFromFloats(0, -speed, 0);
                 }
 
                 if (camera.getScene().useRightHandedSystem) {
