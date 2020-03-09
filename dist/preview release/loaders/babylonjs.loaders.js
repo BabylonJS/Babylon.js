@@ -9110,7 +9110,7 @@ __webpack_require__.r(__webpack_exports__);
 /*!******************!*\
   !*** ./index.ts ***!
   \******************/
-/*! exports provided: GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode, GLTFLoaderState, GLTFFileLoader, GLTFValidation, GLTF1, GLTF2, MTLFileLoader, OBJFileLoader, STLFileLoader */
+/*! exports provided: GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode, GLTFLoaderState, GLTFFileLoader, GLTFValidation, GLTF1, GLTF2, STLFileLoader, MTLFileLoader, OBJFileLoader */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";

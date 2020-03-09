@@ -5,6 +5,7 @@ declare module INSPECTOR {
         property: string;
         value: any;
         initialValue: any;
+        allowNullValue?: boolean;
     }
 }
 declare module INSPECTOR {
@@ -229,6 +230,7 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export const Null_Value: number;
     class ListLineOption {
         label: string;
         value: number;
@@ -242,11 +244,14 @@ declare module INSPECTOR {
         onSelect?: (value: number) => void;
         extractValue?: () => number;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        allowNullValue?: boolean;
     }
     export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
         value: number;
     }> {
         private _localChange;
+        private remapValueIn;
+        private remapValueOut;
         constructor(props: IOptionsLineComponentProps);
         shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: {
             value: number;
@@ -296,6 +301,7 @@ declare module INSPECTOR {
         target: any;
         propertyName: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        isLinear?: boolean;
     }
     export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
         isExpanded: boolean;
@@ -306,6 +312,7 @@ declare module INSPECTOR {
         shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: {
             color: BABYLON.Color3;
         }): boolean;
+        setPropertyValue(newColor: BABYLON.Color3): void;
         onChange(newValue: string): void;
         switchExpandState(): void;
         raiseOnPropertyChanged(previousValue: BABYLON.Color3): void;
@@ -1301,6 +1308,7 @@ declare module INSPECTOR {
         propertyName: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         onChange?: () => void;
+        isLinear?: boolean;
     }
     export class Color4LineComponent extends React.Component<IColor4LineComponentProps, {
         isExpanded: boolean;
@@ -1311,6 +1319,7 @@ declare module INSPECTOR {
         shouldComponentUpdate(nextProps: IColor4LineComponentProps, nextState: {
             color: BABYLON.Color4;
         }): boolean;
+        setPropertyValue(newColor: BABYLON.Color4): void;
         onChange(newValue: string): void;
         switchExpandState(): void;
         raiseOnPropertyChanged(previousValue: BABYLON.Color4): void;
