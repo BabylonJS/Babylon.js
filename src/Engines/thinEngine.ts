@@ -380,8 +380,11 @@ export class ThinEngine {
 
     private _activeRequests = new Array<IFileRequest>();
 
+    // Hardware supported Compressed Textures
+    protected _texturesSupported = new Array<string>();
+
     /** @hidden */
-    public _transformTextureUrl: (url: string) => string;
+    public _textureFormatInUse: Nullable<string>;
 
     protected get _supportsHardwareTextureRescaling() {
         return false;
@@ -396,6 +399,20 @@ export class ThinEngine {
      */
     public set framebufferDimensionsObject(dimensions: Nullable<{framebufferWidth: number, framebufferHeight: number}>) {
       this._framebufferDimensionsObject = dimensions;
+    }
+
+    /**
+     * Gets the list of texture formats supported
+     */
+    public get texturesSupported(): Array<string> {
+        return this._texturesSupported;
+    }
+
+    /**
+     * Gets the list of texture formats in use
+     */
+    public get textureFormatInUse(): Nullable<string> {
+        return this._textureFormatInUse;
     }
 
     /**
@@ -713,7 +730,7 @@ export class ThinEngine {
         }
     }
 
-    protected _initGLContext(): void {
+    private _initGLContext(): void {
         // Caps
         this._caps = {
             maxTexturesImageUnits: this._gl.getParameter(this._gl.MAX_TEXTURE_IMAGE_UNITS),
@@ -868,6 +885,17 @@ export class ThinEngine {
                 this._caps.instancedArrays = false;
             }
         }
+
+        // Intelligently add supported compressed formats in order to check for.
+        // Check for ASTC support first as it is most powerful and to be very cross platform.
+        // Next PVRTC & DXT, which are probably superior to ETC1/2.
+        // Likely no hardware which supports both PVR & DXT, so order matters little.
+        // ETC2 is newer and handles ETC1 (no alpha capability), so check for first.
+        if (this._caps.astc) { this.texturesSupported.push('-astc.ktx'); }
+        if (this._caps.s3tc) { this.texturesSupported.push('-dxt.ktx'); }
+        if (this._caps.pvrtc) { this.texturesSupported.push('-pvrtc.ktx'); }
+        if (this._caps.etc2) { this.texturesSupported.push('-etc2.ktx'); }
+        if (this._caps.etc1) { this.texturesSupported.push('-etc1.ktx'); }
 
         if (this._gl.getShaderPrecisionFormat) {
             var vertex_highp = this._gl.getShaderPrecisionFormat(this._gl.VERTEX_SHADER, this._gl.HIGH_FLOAT);
@@ -2767,10 +2795,6 @@ export class ThinEngine {
         var isBase64 = fromData && url.indexOf(";base64,") !== -1;
 
         let texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Url);
-
-        if (this._transformTextureUrl) {
-            url = this._transformTextureUrl(url);
-        }
 
         // establish the file extension, if possible
         var lastDot = url.lastIndexOf('.');
