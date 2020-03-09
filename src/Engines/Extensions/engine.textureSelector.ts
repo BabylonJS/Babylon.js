@@ -15,7 +15,7 @@ declare module "../../Engines/engine" {
         readonly texturesSupported: Array<string>;
 
         /**
-         * Gets the list of texture formats in use
+         * Gets the texture format in use
          */
         readonly textureFormatInUse: Nullable<string>;
 
