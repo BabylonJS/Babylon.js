@@ -611,13 +611,13 @@ export class InputBlock extends NodeMaterialBlock {
                     `${variableName}.isBoolean = ${this.isBoolean}`,
                     `${variableName}.matrixMode = ${this.matrixMode}`,
                     `${variableName}.animationType = BABYLON.AnimatedInputBlockTypes.${AnimatedInputBlockTypes[this.animationType]}`
-                )
+                );
             }
 
             // Common Property "Type"
             codes.push(
                 `${variableName}.isConstant = ${this.isConstant}`,
-                `${variableName}.visibleInInspector = ${this.visibleInInspector}` 
+                `${variableName}.visibleInInspector = ${this.visibleInInspector}`
             );
 
             codes.push('');
