@@ -14,6 +14,7 @@ export interface IColor4LineComponentProps {
     propertyName: string;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     onChange?: () => void;
+    isLinear?: boolean;
 }
 
 export class Color4LineComponent extends React.Component<IColor4LineComponentProps, { isExpanded: boolean, color: Color4 }> {
@@ -24,11 +25,21 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
         let value = this.props.target[this.props.propertyName];
         let currentColor = value.getClassName() === "Color4" ? value.clone() : new Color4(value.r, value.g, value.b, 1.0);
         this.state = { isExpanded: false, color: currentColor };
+
+        if (props.isLinear) {
+            this.state.color.toGammaSpaceToRef(this.state.color);
+        }
+
+        props.target._isLinearColor = props.isLinear; // so that replayRecorder can append toLinearSpace() as appropriate
     }
 
     shouldComponentUpdate(nextProps: IColor4LineComponentProps, nextState: { color: Color4 }) {
         let value = this.props.target[this.props.propertyName];
         let currentColor = value.getClassName() === "Color4" ? value : new Color4(value.r, value.g, value.b, 1.0);
+
+        if (this.props.isLinear) {
+            currentColor.toGammaSpaceRef(currentColor);
+        }
 
         if (!currentColor.equals(nextState.color) || this._localChange) {
             nextState.color = currentColor.clone();
@@ -36,6 +47,14 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
             return true;
         }
         return false;
+    }
+
+    setPropertyValue(newColor: Color4) {
+        this.props.target[this.props.propertyName] = newColor;
+
+        if (this.props.isLinear) {
+            this.props.target[this.props.propertyName] = newColor.toLinearSpace();
+        }
     }
 
     onChange(newValue: string) {
@@ -47,13 +66,15 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
                 object: this.props.target,
                 property: this.props.propertyName,
                 value: newColor,
-                initialValue: this.state.color
+                initialValue: this.state.color,
             });
         }
 
-        this.props.target[this.props.propertyName] = new Color4(newColor.r, newColor.g, newColor.b, this.props.target[this.props.propertyName].a);
+        const newColor4 = new Color4(newColor.r, newColor.g, newColor.b, this.props.target[this.props.propertyName].a);
 
-        this.setState({ color: this.props.target[this.props.propertyName] });
+        this.setPropertyValue(newColor4);
+
+        this.setState({ color: newColor4 });
 
         if (this.props.onChange) {
             this.props.onChange();
@@ -73,7 +94,7 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
             object: this.props.target,
             property: this.props.propertyName,
             value: this.state.color,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     }
 
@@ -81,9 +102,8 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
         this._localChange = true;
 
         const store = this.state.color.clone();
-        this.props.target[this.props.propertyName].x = value;
         this.state.color.r = value;
-        this.props.target[this.props.propertyName] = this.state.color;
+        this.setPropertyValue(this.state.color);
         this.setState({ color: this.state.color });
 
         this.raiseOnPropertyChanged(store);
@@ -93,9 +113,8 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
         this._localChange = true;
 
         const store = this.state.color.clone();
-        this.props.target[this.props.propertyName].g = value;
         this.state.color.g = value;
-        this.props.target[this.props.propertyName] = this.state.color;
+        this.setPropertyValue(this.state.color);
         this.setState({ color: this.state.color });
 
         this.raiseOnPropertyChanged(store);
@@ -105,9 +124,8 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
         this._localChange = true;
 
         const store = this.state.color.clone();
-        this.props.target[this.props.propertyName].b = value;
         this.state.color.b = value;
-        this.props.target[this.props.propertyName] = this.state.color;
+        this.setPropertyValue(this.state.color);
         this.setState({ color: this.state.color });
 
         this.raiseOnPropertyChanged(store);
@@ -143,7 +161,7 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
 
     render() {
 
-        const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />
+        const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
         const colorAsColor3 = new Color3(this.state.color.r, this.state.color.g, this.state.color.b);
 
         return (
@@ -165,10 +183,10 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
                 {
                     this.state.isExpanded &&
                     <div className="secondLine">
-                        <NumericInputComponent label="r" value={this.state.color.r} onChange={value => this.updateStateR(value)} />
-                        <NumericInputComponent label="g" value={this.state.color.g} onChange={value => this.updateStateG(value)} />
-                        <NumericInputComponent label="b" value={this.state.color.b} onChange={value => this.updateStateB(value)} />
-                        <NumericInputComponent label="a" value={this.state.color.a} onChange={value => this.updateStateA(value)} />
+                        <NumericInputComponent label="r" value={this.state.color.r} onChange={(value) => this.updateStateR(value)} />
+                        <NumericInputComponent label="g" value={this.state.color.g} onChange={(value) => this.updateStateG(value)} />
+                        <NumericInputComponent label="b" value={this.state.color.b} onChange={(value) => this.updateStateB(value)} />
+                        <NumericInputComponent label="a" value={this.state.color.a} onChange={(value) => this.updateStateA(value)} />
                     </div>
                 }
             </div>
