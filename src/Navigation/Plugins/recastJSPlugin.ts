@@ -274,19 +274,11 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
     getNavmeshData(): Uint8Array
     {
         let navmeshData = this.navMesh.getNavmeshData();
-        console.log(navmeshData.dataPointer);
-        return new Uint8Array(this.bjsRECAST.HEAPU8.buffer, navmeshData.dataPointer, navmeshData.size);
-    }
-
-    /**
-     * Disposes the data returned by buildFromNavmeshData
-     * @param data the Uint8Array returned by getNavmeshData
-     */
-    freeNavmeshData(data: Uint8Array): void
-    {
-        let buf = new this.bjsRECAST.NavmeshData;
-        buf.dataPointer = data.buffer;
-        this.navMesh.freeNavmeshData(buf);
+        var arrView = new Uint8Array(this.bjsRECAST.HEAPU8.buffer, navmeshData.dataPointer, navmeshData.size);
+        var ret = new Uint8Array(navmeshData.size);
+        ret.set(arrView);
+        this.navMesh.freeNavmeshData(navmeshData);
+        return ret;
     }
 
     /**
