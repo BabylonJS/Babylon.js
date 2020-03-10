@@ -6,12 +6,29 @@ import { WebXRAbstractFeature } from './WebXRAbstractFeature';
 import { IWebXRLegacyHitTestOptions, IWebXRLegacyHitResult } from '../../Legacy/legacy';
 
 /**
- * Options used for hit testing
+ * Options used for hit testing (version 2)
  */
 export interface IWebXRHitTestOptions extends IWebXRLegacyHitTestOptions {
-    disableAutoStart?: boolean;
+    /**
+     * Do not create a permanent hit test. Will usually be used when only
+     * transient inputs are needed.
+     */
+    disablePermanentHitTest?: boolean;
+    /**
+     * Enable transient (for example touch-based) hit test inspections
+     */
     enableTransientHitTest?: boolean;
-    hitTestOffsetRay?: Vector3;
+    /**
+     * Offset ray for the permanent hit test
+     */
+    offsetRay?: Vector3;
+    /**
+     * Offset ray for the transient hit test
+     */
+    transientOffsetRay?: Vector3;
+    /**
+     * Instead of using viewer space for hit tests, use the reference space defined in the session manager
+     */
     useReferenceSpace?: boolean;
 }
 
@@ -19,9 +36,21 @@ export interface IWebXRHitTestOptions extends IWebXRLegacyHitTestOptions {
  * Interface defining the babylon result of hit-test
  */
 export interface IWebXRHitResult extends IWebXRLegacyHitResult {
+    /**
+     * The input source that generated this hit test (if transient)
+     */
     inputSource?: XRInputSource;
+    /**
+     * Is this a transient hit test
+     */
     isTransient?: boolean;
+    /**
+     * Position of the hit test result
+     */
     position: Vector3;
+    /**
+     * Rotation of the hit test result
+     */
     rotationQuaternion: Quaternion;
 }
 
@@ -29,6 +58,8 @@ export interface IWebXRHitResult extends IWebXRLegacyHitResult {
  * The currently-working hit-test module.
  * Hit test (or Ray-casting) is used to interact with the real world.
  * For further information read here - https://github.com/immersive-web/hit-test
+ *
+ * Tested on chrome (mobile) 80.
  */
 export class WebXRHitTest extends WebXRAbstractFeature {
     private _tmpMat: Matrix = new Matrix();
@@ -38,7 +69,7 @@ export class WebXRHitTest extends WebXRAbstractFeature {
     // in XR space z-forward is negative
     private _xrHitTestSource: XRHitTestSource;
     private initHitTestSource = () => {
-        const offsetRay = new XRRay(this.options.hitTestOffsetRay || {});
+        const offsetRay = new XRRay(this.options.offsetRay || {});
         const options: XRHitTestOptionsInit = {
             space: this.options.useReferenceSpace ? this._xrSessionManager.referenceSpace : this._xrSessionManager.viewerReferenceSpace,
             offsetRay: offsetRay
@@ -76,6 +107,10 @@ export class WebXRHitTest extends WebXRAbstractFeature {
      * Triggered when new babylon (transformed) hit test results are available
      */
     public onHitTestResultObservable: Observable<IWebXRHitResult[]> = new Observable();
+    /**
+     * Use this to temporarily pause hit test checks.
+     */
+    public paused: boolean = false;
 
     /**
      * Creates a new instance of the hit test feature
@@ -101,15 +136,17 @@ export class WebXRHitTest extends WebXRAbstractFeature {
             return false;
         }
 
-        if (!this.options.disableAutoStart) {
+        if (!this.options.disablePermanentHitTest) {
             if (this._xrSessionManager.referenceSpace) {
                 this.initHitTestSource();
             }
             this._xrSessionManager.onXRReferenceSpaceChanged.add(this.initHitTestSource);
         }
         if (this.options.enableTransientHitTest) {
+            const offsetRay = new XRRay(this.options.transientOffsetRay || {});
             this._xrSessionManager.session.requestHitTestSourceForTransientInput({
-                profile : 'generic-touchscreen'
+                profile : 'generic-touchscreen',
+                offsetRay
             }).then((hitSource) => {
                 this._transientXrHitTestSource = hitSource;
             });
@@ -148,7 +185,7 @@ export class WebXRHitTest extends WebXRAbstractFeature {
 
     protected _onXRFrame(frame: XRFrame) {
         // make sure we do nothing if (async) not attached
-        if (!this.attached) {
+        if (!this.attached || this.paused) {
             return;
         }
 
