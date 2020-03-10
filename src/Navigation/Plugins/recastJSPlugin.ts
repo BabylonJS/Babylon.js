@@ -162,6 +162,17 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
     }
 
     /**
+     * Get a navigation mesh constrained position, closest to the parameter position
+     * @param position world position
+     * @param result output the closest point to position constrained by the navigation mesh
+     */
+    getClosestPointToRef(position: Vector3, result: Vector3) : void {
+        var p = new this.bjsRECAST.Vec3(position.x, position.y, position.z);
+        var ret = this.navMesh.getClosestPoint(p);
+        result.set(ret.x, ret.y, ret.z);
+    }
+
+    /**
      * Get a navigation mesh constrained position, within a particular radius
      * @param position world position
      * @param maxRadius the maximum distance to the constrained world position
@@ -172,6 +183,18 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
         var ret = this.navMesh.getRandomPointAround(p, maxRadius);
         var pr = new Vector3(ret.x, ret.y, ret.z);
         return pr;
+    }
+
+    /**
+     * Get a navigation mesh constrained position, within a particular radius
+     * @param position world position
+     * @param maxRadius the maximum distance to the constrained world position
+     * @param result output the closest point to position constrained by the navigation mesh
+     */
+    getRandomPointAroundToRef(position: Vector3, maxRadius: number, result: Vector3): void {
+        var p = new this.bjsRECAST.Vec3(position.x, position.y, position.z);
+        var ret = this.navMesh.getRandomPointAround(p, maxRadius);
+        result.set(ret.x, ret.y, ret.z);
     }
 
     /**
@@ -186,6 +209,19 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
         var ret = this.navMesh.moveAlong(p, d);
         var pr = new Vector3(ret.x, ret.y, ret.z);
         return pr;
+    }
+
+    /**
+     * Compute the final position from a segment made of destination-position
+     * @param position world position
+     * @param destination world position
+     * @param result output the resulting point along the navmesh
+     */
+    moveAlongToRef(position: Vector3, destination: Vector3, result: Vector3): void {
+        var p = new this.bjsRECAST.Vec3(position.x, position.y, position.z);
+        var d = new this.bjsRECAST.Vec3(destination.x, destination.y, destination.z);
+        var ret = this.navMesh.moveAlong(p, d);
+        result.set(ret.x, ret.y, ret.z);
     }
 
     /**
@@ -243,6 +279,16 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
     {
         let p = this.navMesh.getDefaultQueryExtent();
         return new Vector3(p.x, p.y, p.z);
+    }
+
+    /**
+     * Get the Bounding box extent result specified by setDefaultQueryExtent
+     * @param result output the box extent values
+     */
+    getDefaultQueryExtentToRef(result: Vector3): void
+    {
+        let p = this.navMesh.getDefaultQueryExtent();
+        result.set(p.x, p.y, p.z);
     }
 
     /**
@@ -349,6 +395,16 @@ export class RecastJSCrowd implements ICrowd {
     }
 
     /**
+     * Returns the agent position result in world space
+     * @param index agent index returned by addAgent
+     * @param result output world space position
+     */
+    getAgentPositionToRef(index: number, result: Vector3): void {
+        var agentPos = this.recastCrowd.getAgentPosition(index);
+        result.set(agentPos.x, agentPos.y, agentPos.z);
+    }
+
+    /**
      * Returns the agent velocity in world space
      * @param index agent index returned by addAgent
      * @returns world space velocity
@@ -358,6 +414,16 @@ export class RecastJSCrowd implements ICrowd {
         return new Vector3(agentVel.x, agentVel.y, agentVel.z);
     }
 
+    /**
+     * Returns the agent velocity result in world space
+     * @param index agent index returned by addAgent
+     * @param result output world space velocity
+     */
+    getAgentVelocityToRef(index: number, result: Vector3): void {
+        var agentVel = this.recastCrowd.getAgentVelocity(index);
+        result.set(agentVel.x, agentVel.y, agentVel.z);
+    }
+    
     /**
      * Asks a particular agent to go to a destination. That destination is constrained by the navigation mesh
      * @param index agent index returned by addAgent
@@ -466,6 +532,16 @@ export class RecastJSCrowd implements ICrowd {
     {
         let p = this.recastCrowd.getDefaultQueryExtent();
         return new Vector3(p.x, p.y, p.z);
+    }
+
+    /**
+     * Get the Bounding box extent result specified by setDefaultQueryExtent
+     * @param result output the box extent values
+     */
+    getDefaultQueryExtentToRef(result: Vector3): void
+    {
+        let p = this.recastCrowd.getDefaultQueryExtent();
+        result.set(p.x, p.y, p.z);
     }
 
     /**
