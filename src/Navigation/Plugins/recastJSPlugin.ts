@@ -246,6 +246,50 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
     }
 
     /**
+     * build the navmesh from a previously saved state using getNavmeshData
+     * @param data the Uint8Array returned by getNavmeshData
+     */
+    buildFromNavmeshData(data: Uint8Array): void
+    {
+        var nDataBytes = data.length * data.BYTES_PER_ELEMENT;
+        var dataPtr = this.bjsRECAST._malloc(nDataBytes);
+
+        var dataHeap = new Uint8Array(this.bjsRECAST.HEAPU8.buffer, dataPtr, nDataBytes);
+        dataHeap.set(data);
+
+        let buf = new this.bjsRECAST.NavmeshData;
+        buf.dataPointer = dataHeap.byteOffset;
+        buf.size = data.length;
+        this.navMesh = new this.bjsRECAST.NavMesh();
+        this.navMesh.buildFromNavmeshData(buf);
+
+        // Free memory
+        this.bjsRECAST._free(dataHeap.byteOffset);
+    }
+
+    /**
+     * returns the navmesh data that can be used later. The navmesh must be built before retrieving the data
+     * @returns data the Uint8Array that can be saved and reused
+     */
+    getNavmeshData(): Uint8Array
+    {
+        let navmeshData = this.navMesh.getNavmeshData();
+        console.log(navmeshData.dataPointer);
+        return new Uint8Array(this.bjsRECAST.HEAPU8.buffer, navmeshData.dataPointer, navmeshData.size);
+    }
+
+    /**
+     * Disposes the data returned by buildFromNavmeshData
+     * @param data the Uint8Array returned by getNavmeshData
+     */
+    freeNavmeshData(data: Uint8Array): void
+    {
+        let buf = new this.bjsRECAST.NavmeshData;
+        buf.dataPointer = data.buffer;
+        this.navMesh.freeNavmeshData(buf);
+    }
+
+    /**
      * Disposes
      */
     public dispose() {
