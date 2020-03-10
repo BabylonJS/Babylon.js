@@ -99,12 +99,6 @@ export interface INavigationEnginePlugin {
     getNavmeshData(): Uint8Array;
 
     /**
-     * Disposes the data returned by buildFromNavmeshData
-     * @param data the Uint8Array returned by getNavmeshData
-     */
-    freeNavmeshData(data: Uint8Array): void;
-
-    /**
      * Release all resources
      */
     dispose(): void;
