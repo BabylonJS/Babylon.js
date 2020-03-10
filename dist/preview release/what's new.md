@@ -5,6 +5,7 @@
 ## Updates
 
 ### General
+- Recast.js plugin nav mesh and crowd agent to ref performance optimizations. ([MackeyK24](https://github.com/MackeyK24))
 
 ### Engine
 
