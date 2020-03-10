@@ -423,7 +423,7 @@ export class RecastJSCrowd implements ICrowd {
         var agentVel = this.recastCrowd.getAgentVelocity(index);
         result.set(agentVel.x, agentVel.y, agentVel.z);
     }
-    
+
     /**
      * Asks a particular agent to go to a destination. That destination is constrained by the navigation mesh
      * @param index agent index returned by addAgent
