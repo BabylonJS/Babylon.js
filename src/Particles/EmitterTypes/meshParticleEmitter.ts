@@ -17,6 +17,7 @@ export class MeshParticleEmitter implements IParticleEmitterType {
     private _positions: Nullable<FloatArray> = null;
     private _normals: Nullable<FloatArray> = null;
     private _storedNormal = Vector3.Zero();
+    private _mesh: Nullable<AbstractMesh> = null;
 
     /**
      * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
@@ -32,19 +33,35 @@ export class MeshParticleEmitter implements IParticleEmitterType {
      */
     public useMeshNormalsForDirection = true;
 
+    /** Defines the mesh to use as source */
+    public get mesh(): Nullable<AbstractMesh> {
+        return this._mesh;
+    }
+
+    public set mesh(value: Nullable<AbstractMesh>) {
+        if (this._mesh === value) {
+            return;
+        }
+
+        this._mesh = value;
+
+        if (value) {
+            this._indices = value.getIndices();
+            this._positions = value.getVerticesData(VertexBuffer.PositionKind);
+            this._normals = value.getVerticesData(VertexBuffer.NormalKind);
+        } else {
+            this._indices = null;
+            this._positions = null;
+            this._normals = null;
+        }
+    }
+
     /**
      * Creates a new instance MeshParticleEmitter
      * @param mesh defines the mesh to use as source
      */
-    constructor(
-        /** Defines the mesh to use as source */
-        public mesh?: AbstractMesh) {
-
-        if (mesh) {
-            this._indices = mesh.getIndices();
-            this._positions = mesh.getVerticesData(VertexBuffer.PositionKind);
-            this._normals = mesh.getVerticesData(VertexBuffer.NormalKind);
-        }
+    constructor(mesh: Nullable<AbstractMesh> = null) {
+        this.mesh = mesh;
     }
 
     /**
@@ -185,7 +202,7 @@ export class MeshParticleEmitter implements IParticleEmitterType {
         Vector3.FromArrayToRef(serializationObject.direction2, 0, this.direction2);
 
         if (serializationObject.meshId) {
-            this.mesh = scene.getLastMeshByID(serializationObject.meshId) || undefined;
+            this.mesh = scene.getLastMeshByID(serializationObject.meshId);
         }
 
         this.useMeshNormalsForDirection = serializationObject.useMeshNormalsForDirection;

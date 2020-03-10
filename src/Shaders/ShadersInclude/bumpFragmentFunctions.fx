@@ -62,7 +62,7 @@
 	}
 #endif
 
-#if defined(BUMP) || defined(CLEARCOAT_BUMP)
+#if defined(BUMP)
 	vec3 perturbNormal(mat3 cotangentFrame, vec3 color)
 	{
 		return perturbNormal(cotangentFrame, color, vBumpInfos.y);

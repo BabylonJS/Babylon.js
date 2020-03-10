@@ -195,7 +195,7 @@ void main(void) {
 #ifdef DIFFUSE
 	baseColor = texture2D(diffuseSampler, vDiffuseUV + uvOffset);
 
-	#ifdef ALPHATEST
+	#if defined(ALPHATEST) && !defined(ALPHATEST_AFTERALLALPHACOMPUTATIONS)
 		if (baseColor.a < alphaCutOff)
 			discard;
 	#endif
@@ -361,6 +361,17 @@ vec3 reflectionColor = vec3(0., 0., 0.);
 	float opacityFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, opacityParts.z, opacityParts.w);
 
 	alpha += opacityParts.x * (1.0 - opacityFresnelTerm) + opacityFresnelTerm * opacityParts.y;
+#endif
+
+#ifdef ALPHATEST
+    #ifdef ALPHATEST_AFTERALLALPHACOMPUTATIONS
+        if (alpha < alphaCutOff)
+            discard;
+    #endif
+    #ifndef ALPHABLEND
+        // Prevent to blend with the canvas.
+        alpha = 1.0;
+    #endif
 #endif
 
 	// Emissive
