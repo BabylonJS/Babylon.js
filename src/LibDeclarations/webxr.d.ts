@@ -169,7 +169,7 @@ declare class XRRay {
     matrix: Float32Array;
 }
 
-enum XRHitTestTrackableType {
+declare enum XRHitTestTrackableType {
     "point",
     "plane"
 }
@@ -184,7 +184,7 @@ interface XRTransientInputHitTestResult {
 }
 
 interface XRHitTestResult {
-    getPose(baseSpace: XRSpace): XRPose?;
+    getPose(baseSpace: XRSpace): XRPose | undefined;
 }
 
 interface XRHitTestSource {
@@ -202,7 +202,7 @@ interface XRHitTestOptionsInit {
 }
 
 interface XRTransientInputHitTestOptionsInit {
-    profile: DOMString;
+    profile: string;
     entityTypes?: Array<XRHitTestTrackableType>;
     offsetRay?: XRRay;
 }
