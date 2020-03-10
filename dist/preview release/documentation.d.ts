@@ -8754,9 +8754,17 @@ declare module BABYLON {
          */
         keysUp: number[];
         /**
+         * Gets or Set the list of keyboard keys used to control the upward move of the camera.
+         */
+        keysUpward: number[];
+        /**
          * Gets or Set the list of keyboard keys used to control the backward move of the camera.
          */
         keysDown: number[];
+        /**
+         * Gets or Set the list of keyboard keys used to control the downward move of the camera.
+         */
+        keysDownward: number[];
         /**
          * Gets or Set the list of keyboard keys used to control the left strafe move of the camera.
          */
@@ -18392,10 +18400,20 @@ declare module BABYLON {
         get keysUp(): number[];
         set keysUp(value: number[]);
         /**
+         * Gets or Set the list of keyboard keys used to control the upward move of the camera.
+         */
+        get keysUpward(): number[];
+        set keysUpward(value: number[]);
+        /**
          * Gets or Set the list of keyboard keys used to control the backward move of the camera.
          */
         get keysDown(): number[];
         set keysDown(value: number[]);
+        /**
+        * Gets or Set the list of keyboard keys used to control the downward move of the camera.
+        */
+        get keysDownward(): number[];
+        set keysDownward(value: number[]);
         /**
          * Gets or Set the list of keyboard keys used to control the left strafe move of the camera.
          */
@@ -20878,6 +20896,23 @@ declare module BABYLON {
          */
         static readonly AllDirtyFlag: number;
         /**
+         * MaterialTransparencyMode: No transparency mode, Alpha channel is not use.
+         */
+        static readonly MATERIAL_OPAQUE: number;
+        /**
+         * MaterialTransparencyMode: Alpha Test mode, pixel are discarded below a certain threshold defined by the alpha cutoff value.
+         */
+        static readonly MATERIAL_ALPHATEST: number;
+        /**
+         * MaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
+         */
+        static readonly MATERIAL_ALPHABLEND: number;
+        /**
+         * MaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
+         * They are also discarded below the alpha cutoff threshold to improve performances.
+         */
+        static readonly MATERIAL_ALPHATESTANDBLEND: number;
+        /**
          * The ID of the material
          */
         id: string;
@@ -21190,7 +21225,35 @@ declare module BABYLON {
          */
         getScene(): Scene;
         /**
-         * Specifies if the material will require alpha blending
+         * Enforces alpha test in opaque or blend mode in order to improve the performances of some situations.
+         */
+        protected _forceAlphaTest: boolean;
+        /**
+         * The transparency mode of the material.
+         */
+        protected _transparencyMode: Nullable<number>;
+        /**
+         * Gets the current transparency mode.
+         */
+        get transparencyMode(): Nullable<number>;
+        /**
+         * Sets the transparency mode of the material.
+         *
+         * | Value | Type                                | Description |
+         * | ----- | ----------------------------------- | ----------- |
+         * | 0     | OPAQUE                              |             |
+         * | 1     | ALPHATEST                           |             |
+         * | 2     | ALPHABLEND                          |             |
+         * | 3     | ALPHATESTANDBLEND                   |             |
+         *
+         */
+        set transparencyMode(value: Nullable<number>);
+        /**
+         * Returns true if alpha blending should be disabled.
+         */
+        protected get _disableAlphaBlending(): boolean;
+        /**
+         * Specifies whether or not this material should be rendered in alpha blend mode.
          * @returns a boolean specifying if alpha blending is needed
          */
         needAlphaBlending(): boolean;
@@ -21201,10 +21264,15 @@ declare module BABYLON {
          */
         needAlphaBlendingForMesh(mesh: AbstractMesh): boolean;
         /**
-         * Specifies if this material should be rendered in alpha test mode
+         * Specifies whether or not this material should be rendered in alpha test mode.
          * @returns a boolean specifying if an alpha test is needed.
          */
         needAlphaTesting(): boolean;
+        /**
+         * Specifies if material alpha testing should be turned on for the mesh
+         * @param mesh defines the mesh to check
+         */
+        protected _shouldTurnAlphaTestOn(mesh: AbstractMesh): boolean;
         /**
          * Gets the texture used for the alpha test
          * @returns the texture to use for alpha testing
@@ -21250,11 +21318,6 @@ declare module BABYLON {
          * @param effect defines the effect to bind the view projection matrix to
          */
         bindViewProjection(effect: Effect): void;
-        /**
-         * Specifies if material alpha testing should be turned on for the mesh
-         * @param mesh defines the mesh to check
-         */
-        protected _shouldTurnAlphaTestOn(mesh: AbstractMesh): boolean;
         /**
          * Processes to execute after binding the material to a mesh
          * @param mesh defines the rendered mesh
@@ -26411,6 +26474,8 @@ declare module BABYLON {
         NUM_MORPH_INFLUENCERS: number;
         NONUNIFORMSCALING: boolean;
         PREMULTIPLYALPHA: boolean;
+        ALPHATEST_AFTERALLALPHACOMPUTATIONS: boolean;
+        ALPHABLEND: boolean;
         IMAGEPROCESSING: boolean;
         VIGNETTE: boolean;
         VIGNETTEBLENDMODEMULTIPLY: boolean;
@@ -31203,9 +31268,8 @@ declare module BABYLON {
         private _nextFreeTextureSlots;
         private _maxSimultaneousTextures;
         private _activeRequests;
-        protected _texturesSupported: string[];
         /** @hidden */
-        _textureFormatInUse: Nullable<string>;
+        _transformTextureUrl: Nullable<(url: string) => string>;
         protected get _supportsHardwareTextureRescaling(): boolean;
         private _framebufferDimensionsObject;
         /**
@@ -31217,14 +31281,6 @@ declare module BABYLON {
             framebufferWidth: number;
             framebufferHeight: number;
         }>);
-        /**
-         * Gets the list of texture formats supported
-         */
-        get texturesSupported(): Array<string>;
-        /**
-         * Gets the list of texture formats in use
-         */
-        get textureFormatInUse(): Nullable<string>;
         /**
          * Gets the current viewport
          */
@@ -31269,7 +31325,7 @@ declare module BABYLON {
          */
         areAllEffectsReady(): boolean;
         protected _rebuildBuffers(): void;
-        private _initGLContext;
+        protected _initGLContext(): void;
         /**
          * Gets version of the current webGL context
          */
@@ -31810,7 +31866,7 @@ declare module BABYLON {
         /**
          * Usually called from Texture.ts.
          * Passed information to create a WebGLTexture
-         * @param urlArg defines a value which contains one of the following:
+         * @param url defines a value which contains one of the following:
          * * A conventional http URL, e.g. 'http://...' or 'file://...'
          * * A base64 string of in-line texture data, e.g. 'data:image/jpg;base64,/...'
          * * An indicator that data being passed using the buffer parameter, e.g. 'data:mytexture.jpg'
@@ -31827,7 +31883,7 @@ declare module BABYLON {
          * @param mimeType defines an optional mime type
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string): InternalTexture;
+        createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string): InternalTexture;
         /**
          * Loads an image as an HTMLImageElement.
          * @param input url string, ArrayBuffer, or Blob to load
@@ -37552,6 +37608,16 @@ declare module BABYLON {
          * @returns the audio buffer
          */
         getAudioBuffer(): Nullable<AudioBuffer>;
+        /**
+         * Gets the WebAudio AudioBufferSourceNode, lets you keep track of and stop instances of this Sound.
+         * @returns the source node
+         */
+        getSoundSource(): Nullable<AudioBufferSourceNode>;
+        /**
+         * Gets the WebAudio GainNode, gives you precise control over the gain of instances of this Sound.
+         * @returns the gain node
+         */
+        getSoundGain(): Nullable<GainNode>;
         /**
          * Serializes the Sound in a JSON representation
          * @returns the JSON representation of the sound
@@ -47316,6 +47382,50 @@ declare module BABYLON {
         }
 }
 declare module BABYLON {
+        interface Engine {
+            /** @hidden */
+            _excludedCompressedTextures: string[];
+            /** @hidden */
+            _textureFormatInUse: string;
+            /**
+             * Gets the list of texture formats supported
+             */
+            readonly texturesSupported: Array<string>;
+            /**
+             * Gets the texture format in use
+             */
+            readonly textureFormatInUse: Nullable<string>;
+            /**
+             * Set the compressed texture extensions or file names to skip.
+             *
+             * @param skippedFiles defines the list of those texture files you want to skip
+             * Example: [".dds", ".env", "myfile.png"]
+             */
+            setCompressedTextureExclusions(skippedFiles: Array<string>): void;
+            /**
+             * Set the compressed texture format to use, based on the formats you have, and the formats
+             * supported by the hardware / browser.
+             *
+             * Khronos Texture Container (.ktx) files are used to support this.  This format has the
+             * advantage of being specifically designed for OpenGL.  Header elements directly correspond
+             * to API arguments needed to compressed textures.  This puts the burden on the container
+             * generator to house the arcane code for determining these for current & future formats.
+             *
+             * for description see https://www.khronos.org/opengles/sdk/tools/KTX/
+             * for file layout see https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
+             *
+             * Note: The result of this call is not taken into account when a texture is base64.
+             *
+             * @param formatsAvailable defines the list of those format families you have created
+             * on your server.  Syntax: '-' + format family + '.ktx'.  (Case and order do not matter.)
+             *
+             * Current families are astc, dxt, pvrtc, etc2, & etc1.
+             * @returns The extension selected.
+             */
+            setTextureFormatToUse(formatsAvailable: Array<string>): Nullable<string>;
+        }
+}
+declare module BABYLON {
     /**
      * CubeMap information grouping all the data for each faces as well as the cubemap size.
      */
@@ -51362,10 +51472,6 @@ declare module BABYLON {
          */
         protected _useLinearAlphaFresnel: boolean;
         /**
-         * The transparency mode of the material.
-         */
-        protected _transparencyMode: Nullable<number>;
-        /**
          * Specifies the environment BRDF texture used to comput the scale and offset roughness values
          * from cos thetav and roughness:
          * http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
@@ -51487,34 +51593,13 @@ declare module BABYLON {
          */
         set useLogarithmicDepth(value: boolean);
         /**
-         * Gets the current transparency mode.
-         */
-        get transparencyMode(): Nullable<number>;
-        /**
-         * Sets the transparency mode of the material.
-         *
-         * | Value | Type                                | Description |
-         * | ----- | ----------------------------------- | ----------- |
-         * | 0     | OPAQUE                              |             |
-         * | 1     | ALPHATEST                           |             |
-         * | 2     | ALPHABLEND                          |             |
-         * | 3     | ALPHATESTANDBLEND                   |             |
-         *
-         */
-        set transparencyMode(value: Nullable<number>);
-        /**
          * Returns true if alpha blending should be disabled.
          */
-        private get _disableAlphaBlending();
+        protected get _disableAlphaBlending(): boolean;
         /**
          * Specifies whether or not this material should be rendered in alpha blend mode.
          */
         needAlphaBlending(): boolean;
-        /**
-         * Specifies if the mesh will require alpha blending.
-         * @param mesh - BJS mesh.
-         */
-        needAlphaBlendingForMesh(mesh: AbstractMesh): boolean;
         /**
          * Specifies whether or not this material should be rendered in alpha test mode.
          */
