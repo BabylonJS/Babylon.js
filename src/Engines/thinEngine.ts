@@ -380,11 +380,8 @@ export class ThinEngine {
 
     private _activeRequests = new Array<IFileRequest>();
 
-    // Hardware supported Compressed Textures
-    protected _texturesSupported = new Array<string>();
-
     /** @hidden */
-    public _textureFormatInUse: Nullable<string>;
+    public _transformTextureUrl: Nullable<(url: string) => string> = null;
 
     protected get _supportsHardwareTextureRescaling() {
         return false;
@@ -399,20 +396,6 @@ export class ThinEngine {
      */
     public set framebufferDimensionsObject(dimensions: Nullable<{framebufferWidth: number, framebufferHeight: number}>) {
       this._framebufferDimensionsObject = dimensions;
-    }
-
-    /**
-     * Gets the list of texture formats supported
-     */
-    public get texturesSupported(): Array<string> {
-        return this._texturesSupported;
-    }
-
-    /**
-     * Gets the list of texture formats in use
-     */
-    public get textureFormatInUse(): Nullable<string> {
-        return this._textureFormatInUse;
     }
 
     /**
@@ -730,7 +713,7 @@ export class ThinEngine {
         }
     }
 
-    private _initGLContext(): void {
+    protected _initGLContext(): void {
         // Caps
         this._caps = {
             maxTexturesImageUnits: this._gl.getParameter(this._gl.MAX_TEXTURE_IMAGE_UNITS),
@@ -885,17 +868,6 @@ export class ThinEngine {
                 this._caps.instancedArrays = false;
             }
         }
-
-        // Intelligently add supported compressed formats in order to check for.
-        // Check for ASTC support first as it is most powerful and to be very cross platform.
-        // Next PVRTC & DXT, which are probably superior to ETC1/2.
-        // Likely no hardware which supports both PVR & DXT, so order matters little.
-        // ETC2 is newer and handles ETC1 (no alpha capability), so check for first.
-        if (this._caps.astc) { this.texturesSupported.push('-astc.ktx'); }
-        if (this._caps.s3tc) { this.texturesSupported.push('-dxt.ktx'); }
-        if (this._caps.pvrtc) { this.texturesSupported.push('-pvrtc.ktx'); }
-        if (this._caps.etc2) { this.texturesSupported.push('-etc2.ktx'); }
-        if (this._caps.etc1) { this.texturesSupported.push('-etc1.ktx'); }
 
         if (this._gl.getShaderPrecisionFormat) {
             var vertex_highp = this._gl.getShaderPrecisionFormat(this._gl.VERTEX_SHADER, this._gl.HIGH_FLOAT);
@@ -2768,7 +2740,7 @@ export class ThinEngine {
     /**
      * Usually called from Texture.ts.
      * Passed information to create a WebGLTexture
-     * @param urlArg defines a value which contains one of the following:
+     * @param url defines a value which contains one of the following:
      * * A conventional http URL, e.g. 'http://...' or 'file://...'
      * * A base64 string of in-line texture data, e.g. 'data:image/jpg;base64,/...'
      * * An indicator that data being passed using the buffer parameter, e.g. 'data:mytexture.jpg'
@@ -2785,20 +2757,25 @@ export class ThinEngine {
      * @param mimeType defines an optional mime type
      * @returns a InternalTexture for assignment back into BABYLON.Texture
      */
-    public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+    public createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
         forcedExtension: Nullable<string> = null, mimeType?: string): InternalTexture {
-        var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
-        var fromData = url.substr(0, 5) === "data:";
-        var fromBlob = url.substr(0, 5) === "blob:";
-        var isBase64 = fromData && url.indexOf(";base64,") !== -1;
+        url = url || "";
+        const fromData = url.substr(0, 5) === "data:";
+        const fromBlob = url.substr(0, 5) === "blob:";
+        const isBase64 = fromData && url.indexOf(";base64,") !== -1;
 
         let texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Url);
 
+        const originalUrl = url;
+        if (this._transformTextureUrl && !isBase64 && !fallback && !buffer) {
+            url = this._transformTextureUrl(url);
+        }
+
         // establish the file extension, if possible
-        var lastDot = url.lastIndexOf('.');
-        var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? url.substring(lastDot).toLowerCase() : "");
+        const lastDot = url.lastIndexOf('.');
+        const extension = forcedExtension ? forcedExtension : (lastDot > -1 ? url.substring(lastDot).toLowerCase() : "");
         let loader: Nullable<IInternalTextureLoader> = null;
 
         for (let availableLoader of ThinEngine._TextureLoaders) {
@@ -2828,27 +2805,34 @@ export class ThinEngine {
 
         if (!fallback) { this._internalTexturesCache.push(texture); }
 
-        let onInternalError = (message?: string, exception?: any) => {
+        const onInternalError = (message?: string, exception?: any) => {
             if (scene) {
                 scene._removePendingData(texture);
             }
 
-            if (onLoadObserver) {
-                texture.onLoadedObservable.remove(onLoadObserver);
-            }
+            if (url === originalUrl) {
+                if (onLoadObserver) {
+                    texture.onLoadedObservable.remove(onLoadObserver);
+                }
 
-            if (EngineStore.UseFallbackTexture) {
-                this.createTexture(EngineStore.FallbackTexture, noMipmap, texture.invertY, scene, samplingMode, null, onError, buffer, texture);
-            }
+                if (EngineStore.UseFallbackTexture) {
+                    this.createTexture(EngineStore.FallbackTexture, noMipmap, texture.invertY, scene, samplingMode, null, onError, buffer, texture);
+                }
 
-            if (onError) {
-                onError((message || "Unknown error") + (EngineStore.UseFallbackTexture ? " - Fallback texture was used" : ""), exception);
+                if (onError) {
+                    onError((message || "Unknown error") + (EngineStore.UseFallbackTexture ? " - Fallback texture was used" : ""), exception);
+                }
+            }
+            else {
+                // fall back to the original url if the transformed url fails to load
+                Logger.Warn(`Failed to load ${url}, falling back to ${originalUrl}`);
+                this.createTexture(originalUrl, noMipmap, texture.invertY, scene, samplingMode, onLoad, onError, buffer, texture, format, forcedExtension, mimeType);
             }
         };
 
         // processing for non-image formats
         if (loader) {
-            var callback = (data: ArrayBufferView) => {
+            const callback = (data: ArrayBufferView) => {
                 loader!.loadData(data, texture, (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed) => {
                     if (loadFailed) {
                         onInternalError("TextureLoader failed to load data");
@@ -2879,7 +2863,7 @@ export class ThinEngine {
                 }
             }
         } else {
-            var onload = (img: HTMLImageElement | ImageBitmap) => {
+            const onload = (img: HTMLImageElement | ImageBitmap) => {
                 if (fromBlob && !this._doNotHandleContextLost) {
                     // We need to store the image if we need to rebuild the texture
                     // in case of a webgl context lost
