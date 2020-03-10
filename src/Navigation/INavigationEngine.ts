@@ -87,6 +87,24 @@ export interface INavigationEnginePlugin {
     getDefaultQueryExtent(): Vector3;
 
     /**
+     * build the navmesh from a previously saved state using getNavmeshData
+     * @param data the Uint8Array returned by getNavmeshData
+     */
+    buildFromNavmeshData(data: Uint8Array): void;
+
+    /**
+     * returns the navmesh data that can be used later. The navmesh must be built before retrieving the data
+     * @returns data the Uint8Array that can be saved and reused
+     */
+    getNavmeshData(): Uint8Array;
+
+    /**
+     * Disposes the data returned by buildFromNavmeshData
+     * @param data the Uint8Array returned by getNavmeshData
+     */
+    freeNavmeshData(data: Uint8Array): void;
+
+    /**
      * Release all resources
      */
     dispose(): void;
