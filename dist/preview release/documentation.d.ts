@@ -44621,6 +44621,11 @@ declare module BABYLON {
          */
         selectionMeshPickedColor: Color3;
         /**
+         * Optional filter to be used for ray selection.  This predicate shares behavior with
+         * scene.pointerMovePredicate which takes priority if it is also assigned.
+         */
+        raySelectionPredicate: (mesh: AbstractMesh) => boolean;
+        /**
          * constructs a new background remover module
          * @param _xrSessionManager the session manager for this module
          * @param _options read-only options to be used in this module

@@ -15,10 +15,16 @@
 ### Engine
 
 - Allow logging of shader code when a compilation error occurs ([Popov72](https://github.com/Popov72))
+- Add back support for selecting textures based on engine capabilities ([bghgary](https://github.com/bghgary))
+
+### Inspector
+
+- Handle PBR colors as colors in linear space ([Popov72](https://github.com/Popov72))
 
 ### Cameras
 
 - Added flag to TargetCamera to invert rotation direction and multiplier to adjust speed ([Exolun](https://github.com/Exolun))
+- Added upwards and downwards keyboard input to `FreeCamera` ([Pheater](https://github.com/pheater))
 
 ### Physics
 
@@ -31,6 +37,7 @@
 ### Materials
 - Added the `roughness` and `albedoScaling` parameters to PBR sheen ([Popov72](https://github.com/Popov72))
 - Updated the energy conservation factor for the clear coat layer in PBR materials ([Popov72](https://github.com/Popov72))
+- Added the `transparencyMode` property to the `StandardMaterial` class ([Popov72](https://github.com/Popov72))
 
 ### WebXR
 - Added optional ray and mesh selection predicates to `WebXRControllerPointerSelection` ([Exolun](https://github.com/Exolun))
@@ -44,6 +51,7 @@
 - Fix moving / disappearing controls when freezing/unfreezing the ScrollViewer ([Popov72](https://github.com/Popov72)
 - Fix: when using instances, master mesh (if displayed) does not have correct instance buffer values ([Popov72](https://github.com/Popov72)
 - Exit XR will only trigger only if state is IN_XR ([RaananW](https://github.com/RaananW))
-
+- Fix improper baking of transformed textures in `KHR_texture_transform` serializer. ([drigax](https://github.com/Drigax))
+- Fixed NME codegen: missing common properties for float-value input block. ([ycw](https://github.com/ycw))
 
 ## Breaking changes
