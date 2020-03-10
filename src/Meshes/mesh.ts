@@ -1607,7 +1607,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /** @hidden */
-    public _processRendering(subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean,
+    public _processRendering(renderingMesh: AbstractMesh, subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean,
         onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material): Mesh {
         var scene = this.getScene();
         var engine = scene.getEngine();
@@ -1619,7 +1619,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             if (batch.renderSelf[subMesh._id]) {
                 // Draw
                 if (onBeforeDraw) {
-                    onBeforeDraw(false, this._effectiveMesh.getWorldMatrix(), effectiveMaterial);
+                    onBeforeDraw(false, renderingMesh._effectiveMesh.getWorldMatrix(), effectiveMaterial);
                 }
                 instanceCount++;
 
@@ -1807,12 +1807,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         if (!this._effectiveMaterial.backFaceCulling && this._effectiveMaterial.separateCullingPass) {
             engine.setState(true, this._effectiveMaterial.zOffset, false, !reverse);
-            this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._effectiveMaterial);
+            this._processRendering(this, subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._effectiveMaterial);
             engine.setState(true, this._effectiveMaterial.zOffset, false, reverse);
         }
 
         // Draw
-        this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._effectiveMaterial);
+        this._processRendering(this, subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._effectiveMaterial);
 
         // Unbind
         this._effectiveMaterial.unbind();

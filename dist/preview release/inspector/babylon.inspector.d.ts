@@ -5,6 +5,7 @@ declare module INSPECTOR {
         property: string;
         value: any;
         initialValue: any;
+        allowNullValue?: boolean;
     }
 }
 declare module INSPECTOR {
@@ -13,17 +14,9 @@ declare module INSPECTOR {
         private _previousObject;
         private _previousProperty;
         reset(): void;
+        private _getIndirectData;
         record(event: PropertyChangedEvent): void;
         export(): void;
-    }
-}
-declare module INSPECTOR {
-    export class Tools {
-        static StoreLocalBooleanSettings(key: string, value: boolean): void;
-        static ReadLocalBooleanSettings(key: string, defaultValue: boolean): boolean;
-        static LookForItem(item: any, selectedEntity: any): boolean;
-        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
-        static SortAndFilter(parent: any, items: any[]): any[];
     }
 }
 declare module INSPECTOR {
@@ -118,7 +111,6 @@ declare module INSPECTOR {
         isExpanded: boolean;
         isHighlighted: boolean;
     }> {
-        private static _InMemoryStorage;
         constructor(props: ILineContainerComponentProps);
         switchExpandedState(): void;
         componentDidMount(): void;
@@ -167,6 +159,7 @@ declare module INSPECTOR {
         isSelected?: () => boolean;
         onSelect?: (value: boolean) => void;
         onValueChanged?: () => void;
+        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
@@ -218,6 +211,7 @@ declare module INSPECTOR {
         useEuler?: boolean;
         onChange?: (value: number) => void;
         onInput?: (value: number) => void;
+        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         decimalCount?: number;
     }
@@ -236,6 +230,7 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export const Null_Value: number;
     class ListLineOption {
         label: string;
         value: number;
@@ -249,11 +244,14 @@ declare module INSPECTOR {
         onSelect?: (value: number) => void;
         extractValue?: () => number;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        allowNullValue?: boolean;
     }
     export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
         value: number;
     }> {
         private _localChange;
+        private remapValueIn;
+        private remapValueOut;
         constructor(props: IOptionsLineComponentProps);
         shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: {
             value: number;
@@ -303,6 +301,7 @@ declare module INSPECTOR {
         target: any;
         propertyName: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        isLinear?: boolean;
     }
     export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
         isExpanded: boolean;
@@ -313,6 +312,7 @@ declare module INSPECTOR {
         shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: {
             color: BABYLON.Color3;
         }): boolean;
+        setPropertyValue(newColor: BABYLON.Color3): void;
         onChange(newValue: string): void;
         switchExpandState(): void;
         raiseOnPropertyChanged(previousValue: BABYLON.Color3): void;
@@ -331,6 +331,7 @@ declare module INSPECTOR {
         step?: number;
         onChange?: (newvalue: BABYLON.Vector3) => void;
         useEuler?: boolean;
+        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
@@ -471,6 +472,7 @@ declare module INSPECTOR {
     export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
         private static _IDGenerator;
         private _id;
+        private uploadInputRef;
         constructor(props: IFileButtonLineComponentProps);
         onChange(evt: any): void;
         render(): JSX.Element;
@@ -534,6 +536,7 @@ declare module INSPECTOR {
         channel: ChannelToDisplay;
         face: number;
     }> {
+        private canvasRef;
         constructor(props: ITextureLineComponentProps);
         shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: {
             channel: ChannelToDisplay;
@@ -553,6 +556,7 @@ declare module INSPECTOR {
         lockObject?: LockObject;
         onChange?: (newValue: number) => void;
         isInteger?: boolean;
+        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         additionalClass?: string;
         step?: string;
@@ -585,6 +589,7 @@ declare module INSPECTOR {
     }
     export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps> {
         private _adtInstrumentation;
+        private textureLineRef;
         constructor(props: ITexturePropertyGridComponentProps);
         componentWillUnmount(): void;
         updateTexture(file: File): void;
@@ -908,6 +913,7 @@ declare module INSPECTOR {
         private _onAnimationGroupPlayObserver;
         private _onAnimationGroupPauseObserver;
         private _onBeforeRenderObserver;
+        private timelineRef;
         constructor(props: IAnimationGroupGridComponentProps);
         disconnect(animationGroup: BABYLON.AnimationGroup): void;
         connect(animationGroup: BABYLON.AnimationGroup): void;
@@ -1185,6 +1191,7 @@ declare module INSPECTOR {
         private _runningAnimatable;
         private _onBeforeRenderObserver;
         private _isPlaying;
+        private timelineRef;
         constructor(props: IAnimationGridComponentProps);
         playOrPause(): void;
         componentDidMount(): void;
@@ -1301,6 +1308,7 @@ declare module INSPECTOR {
         propertyName: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         onChange?: () => void;
+        isLinear?: boolean;
     }
     export class Color4LineComponent extends React.Component<IColor4LineComponentProps, {
         isExpanded: boolean;
@@ -1311,6 +1319,7 @@ declare module INSPECTOR {
         shouldComponentUpdate(nextProps: IColor4LineComponentProps, nextState: {
             color: BABYLON.Color4;
         }): boolean;
+        setPropertyValue(newColor: BABYLON.Color4): void;
         onChange(newValue: string): void;
         switchExpandState(): void;
         raiseOnPropertyChanged(previousValue: BABYLON.Color4): void;
@@ -1352,6 +1361,128 @@ declare module INSPECTOR {
         constructor(props: IMultiMaterialPropertyGridComponentProps);
         onMaterialLink(mat: BABYLON.Material): void;
         renderChildMaterial(): JSX.Element;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IBoxEmitterGridComponentProps {
+        globalState: GlobalState;
+        emitter: BABYLON.BoxParticleEmitter;
+        replaySourceReplacement?: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class BoxEmitterGridComponent extends React.Component<IBoxEmitterGridComponentProps> {
+        constructor(props: IBoxEmitterGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IConeEmitterGridComponentProps {
+        globalState: GlobalState;
+        emitter: BABYLON.ConeParticleEmitter;
+        onSelectionChangedObservable?: BABYLON.Observable<any>;
+        replaySourceReplacement?: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class ConeEmitterGridComponent extends React.Component<IConeEmitterGridComponentProps> {
+        constructor(props: IConeEmitterGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface ICylinderEmitterGridComponentProps {
+        globalState: GlobalState;
+        emitter: BABYLON.CylinderParticleEmitter;
+        lockObject: LockObject;
+        replaySourceReplacement?: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class CylinderEmitterGridComponent extends React.Component<ICylinderEmitterGridComponentProps> {
+        constructor(props: ICylinderEmitterGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IHemisphericEmitterGridComponentProps {
+        globalState: GlobalState;
+        emitter: BABYLON.HemisphericParticleEmitter;
+        lockObject: LockObject;
+        replaySourceReplacement?: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class HemisphericEmitterGridComponent extends React.Component<IHemisphericEmitterGridComponentProps> {
+        constructor(props: IHemisphericEmitterGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IPointEmitterGridComponentProps {
+        globalState: GlobalState;
+        emitter: BABYLON.PointParticleEmitter;
+        lockObject: LockObject;
+        replaySourceReplacement?: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class PointEmitterGridComponent extends React.Component<IPointEmitterGridComponentProps> {
+        constructor(props: IPointEmitterGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface ISphereEmitterGridComponentProps {
+        globalState: GlobalState;
+        emitter: BABYLON.SphereParticleEmitter;
+        lockObject: LockObject;
+        replaySourceReplacement?: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class SphereEmitterGridComponent extends React.Component<ISphereEmitterGridComponentProps> {
+        constructor(props: ISphereEmitterGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IMeshPickerComponentProps {
+        globalState: GlobalState;
+        target: any;
+        property: string;
+        scene: BABYLON.Scene;
+        label: string;
+        replaySourceReplacement?: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class MeshPickerComponent extends React.Component<IMeshPickerComponentProps> {
+        constructor(props: IMeshPickerComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IMeshEmitterGridComponentProps {
+        globalState: GlobalState;
+        emitter: BABYLON.MeshParticleEmitter;
+        scene: BABYLON.Scene;
+        lockObject: LockObject;
+        onSelectionChangedObservable?: BABYLON.Observable<any>;
+        replaySourceReplacement?: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class MeshEmitterGridComponent extends React.Component<IMeshEmitterGridComponentProps> {
+        constructor(props: IMeshEmitterGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IParticleSystemPropertyGridComponentProps {
+        globalState: GlobalState;
+        system: BABYLON.IParticleSystem;
+        lockObject: LockObject;
+        onSelectionChangedObservable?: BABYLON.Observable<any>;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class ParticleSystemPropertyGridComponent extends React.Component<IParticleSystemPropertyGridComponentProps> {
+        constructor(props: IParticleSystemPropertyGridComponentProps);
+        renderEmitter(): JSX.Element | null;
+        raiseOnPropertyChanged(property: string, newValue: any, previousValue: any): void;
         render(): JSX.Element;
     }
 }
@@ -1425,6 +1556,7 @@ declare module INSPECTOR {
     export class FileMultipleButtonLineComponent extends React.Component<IFileMultipleButtonLineComponentProps> {
         private static _IDGenerator;
         private _id;
+        private uploadInputRef;
         constructor(props: IFileMultipleButtonLineComponentProps);
         onChange(evt: any): void;
         render(): JSX.Element;
@@ -1509,6 +1641,7 @@ declare module INSPECTOR {
         popupVisible: boolean;
     }> {
         private _popup;
+        private extensionRef;
         constructor(props: IExtensionsComponentProps);
         showPopup(): void;
         componentDidMount(): void;
@@ -1689,6 +1822,17 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IParticleSystemTreeItemComponentProps {
+        system: BABYLON.IParticleSystem;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class ParticleSystemTreeItemComponent extends React.Component<IParticleSystemTreeItemComponentProps> {
+        constructor(props: IParticleSystemTreeItemComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface ITreeItemSpecializedComponentProps {
         label: string;
         entity?: any;
@@ -1700,6 +1844,13 @@ declare module INSPECTOR {
         constructor(props: ITreeItemSpecializedComponentProps);
         onClick(): void;
         render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    export class Tools {
+        static LookForItem(item: any, selectedEntity: any): boolean;
+        private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
+        static SortAndFilter(parent: any, items: any[]): any[];
     }
 }
 declare module INSPECTOR {
@@ -1822,6 +1973,7 @@ declare module INSPECTOR {
     }> {
         private _onSelectionChangeObserver;
         private _onNewSceneAddedObserver;
+        private sceneExplorerRef;
         private _once;
         private _hooked;
         private sceneMutationFunc;
@@ -1855,6 +2007,9 @@ declare module INSPECTOR {
     }
     export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps> {
         private _once;
+        private splitRef;
+        private topPartRef;
+        private bottomPartRef;
         constructor(props: IEmbedHostComponentProps);
         componentDidMount(): void;
         renderContent(): JSX.Element;

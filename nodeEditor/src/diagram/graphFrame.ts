@@ -13,7 +13,11 @@ enum ResizingDirection {
         Right,
         Left,
         Top,
-        Bottom
+        Bottom,
+        TopRight,
+        TopLeft,
+        BottomRight,
+        BottomLeft
 }
 
 export class GraphFrame {
@@ -74,7 +78,7 @@ export class GraphFrame {
         port.delegatedPort = localPort;
         this._controlledPorts.push(port);
     }
-   
+
     public set isCollapsed(value: boolean) {
         if (this._isCollapsed === value) {
             return;
@@ -131,7 +135,7 @@ export class GraphFrame {
                     } else {
                         this._createInputPort(port, node);
                     }
-                }               
+                }
             }
         } else {
             this.element.classList.remove("collapsed");
@@ -324,7 +328,29 @@ export class GraphFrame {
         this.element.appendChild(topHandle);
         topHandle.addEventListener("pointerdown", this._onTopHandlePointerDown);
 
-        this._headerTextElement = root.ownerDocument!.createElement("div"); 
+        const topRightCornerHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
+        topRightCornerHandle.className = "handle right-handle top-right-corner-handle";
+        this.element.appendChild(topRightCornerHandle);
+        topRightCornerHandle.addEventListener("pointerdown", this._onTopRightHandlePointerDown);
+
+        const bottomRightCornerHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
+        bottomRightCornerHandle.className = "handle right-handle bottom-right-corner-handle";
+        this.element.appendChild(bottomRightCornerHandle);
+        bottomRightCornerHandle.addEventListener("pointerdown", this._onBottomRightHandlePointerDown);
+
+        const topLeftCornerHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
+        topLeftCornerHandle.className = "handle left-handle top-left-corner-handle";
+        this.element.appendChild(topLeftCornerHandle);
+        topLeftCornerHandle.addEventListener("pointerdown", this._onTopLeftHandlePointerDown);
+
+        const bottomLeftCornerHandle: HTMLDivElement = root.ownerDocument!.createElement("div");
+        bottomLeftCornerHandle.className = "handle left-handle bottom-left-corner-handle";
+        this.element.appendChild(bottomLeftCornerHandle);
+        bottomLeftCornerHandle.addEventListener("pointerdown", this._onBottomLeftHandlePointerDown);
+
+        // add header elements
+
+        this._headerTextElement = root.ownerDocument!.createElement("div");
         this._headerTextElement.classList.add("frame-box-header-title");
         this._headerElement.appendChild(this._headerTextElement);
 
@@ -463,7 +489,7 @@ export class GraphFrame {
         this._ownerCanvas._frameIsMoving = true;
 
         this.move(this._ownerCanvas.getGridPosition(this.x), this._ownerCanvas.getGridPosition(this.y))
-    }    
+    }
 
     public move(newX: number, newY: number, align = true) {
         let oldX = this.x;
@@ -472,6 +498,11 @@ export class GraphFrame {
         this.x = newX;
         this.y = newY;
 
+        console.log("move():");
+        console.log("oldX: ", oldX);
+        console.log("oldY: ", oldY);
+        console.log("newX: ", newX);
+        console.log("newY: ", oldY);
         for (var selectedNode of this._nodes) {
             selectedNode.x += this.x - oldX;
             selectedNode.y += this.y - oldY;
@@ -542,10 +573,29 @@ export class GraphFrame {
         }
     }
 
+    private _isResizingTop(){
+        return this._resizingDirection === ResizingDirection.Top || this._resizingDirection === ResizingDirection.TopRight || this._resizingDirection === ResizingDirection.TopLeft;
+    }
+
+    private _isResizingRight(){
+        return this._resizingDirection === ResizingDirection.Right || this._resizingDirection === ResizingDirection.TopRight || this._resizingDirection === ResizingDirection.BottomRight;
+    }
+
+    private _isResizingBottom(){
+        return this._resizingDirection === ResizingDirection.Bottom || this._resizingDirection === ResizingDirection.BottomLeft || this._resizingDirection === ResizingDirection.BottomRight;
+    }
+
+    private _isResizingLeft() {
+        return this._resizingDirection === ResizingDirection.Left || this._resizingDirection === ResizingDirection.TopLeft || this._resizingDirection === ResizingDirection.BottomLeft;
+    }
+
     private _onRightHandlePointerDown = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
-        this.initResizing(evt)
+        if (_this.isCollapsed) {
+            return;
+        }
+        this.initResizing(evt);
         _this._resizingDirection = ResizingDirection.Right;
         _this.mouseXLimit = evt.clientX - (_this.width - _this._minFrameWidth);
         _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onRightHandlePointerUp);
@@ -562,10 +612,10 @@ export class GraphFrame {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
         if (_this.mouseXLimit) {
-            if (_this._resizingDirection !== ResizingDirection.Right || _this._mouseStartPointX === null || _this._mouseStartPointY === null || evt.clientX < xLimit) {
+            if (!_this._isResizingRight() || _this._mouseStartPointX === null || _this._mouseStartPointY === null || evt.clientX < xLimit) {
                 return;
             }
-            if (_this._resizingDirection === ResizingDirection.Right ) {
+            if (_this._isResizingRight()) {
                 evt.stopPropagation();
                 const distanceMouseMoved = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
                 _this._expandRight(distanceMouseMoved, evt.clientX);
@@ -574,20 +624,10 @@ export class GraphFrame {
         }
     }
 
-    private _expandRight(widthModification: number, x: number) {
-        const frameElementWidth = parseFloat(this.element.style.width.replace("px", ""));
-        if ((frameElementWidth + widthModification) > 20) {
-            this._mouseStartPointX =  x;
-            this.element.style.width = `${frameElementWidth + widthModification}px`;
-        }
-        this.updateMinHeightWithComments();
-        this.height = this._borderElement.offsetHeight;
-    }
-
     private _onRightHandlePointerUp = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
-        if (_this._resizingDirection === ResizingDirection.Right) {
+        if (_this._isResizingRight()) {
             _this.width = parseFloat(_this.element.style.width.replace("px", ""));
             _this._ownerCanvas.hostCanvas.removeEventListener("pointerup", _this._onRightHandlePointerUp);
             _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onRightHandlePointerMove);
@@ -598,7 +638,10 @@ export class GraphFrame {
     private _onBottomHandlePointerDown = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
-        this.initResizing(evt);
+            if (_this.isCollapsed) {
+                return;
+            }
+        _this.initResizing(evt);
         _this._resizingDirection = ResizingDirection.Bottom;
         _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onBottomHandlePointerMove);
         _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onBottomHandlePointerUp);
@@ -624,11 +667,6 @@ export class GraphFrame {
         }
     }
 
-    private _expandBottom(heightModification: number) {
-        const frameElementHeight = parseFloat(this.element.style.height.replace("px", ""));
-        this.element.style.height = `${frameElementHeight + heightModification}px`;
-    }
-
     private _onBottomHandlePointerUp = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
@@ -643,7 +681,10 @@ export class GraphFrame {
     private _onLeftHandlePointerDown = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
-        this.initResizing(evt);
+        if (_this.isCollapsed) {
+                return;
+            }
+        _this.initResizing(evt);
         _this._resizingDirection = ResizingDirection.Left;
         _this.mouseXLimit = evt.clientX + _this.width - _this._minFrameWidth;
         _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onLeftHandlePointerUp);
@@ -672,15 +713,6 @@ export class GraphFrame {
         }
     }
 
-    private _expandLeft(widthModification: number) {
-            const frameElementWidth = parseFloat(this.element.style.width.replace("px", ""));
-            const frameElementLeft = parseFloat(this.element.style.left.replace("px", ""));
-            this.element.style.width = `${frameElementWidth - widthModification}px`;
-            this.element.style.left = `${frameElementLeft + widthModification}px`;
-            this.updateMinHeightWithComments();
-            this.height = this._borderElement.offsetHeight;
-    }
-
     private _onLeftHandlePointerUp = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
@@ -696,7 +728,10 @@ export class GraphFrame {
     private _onTopHandlePointerDown = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
-        this.initResizing(evt)
+        if (_this.isCollapsed) {
+                return;
+            }
+        _this.initResizing(evt);
         _this._resizingDirection = ResizingDirection.Top;
         _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onTopHandlePointerUp);
         _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onTopHandlePointerMove);
@@ -711,10 +746,10 @@ export class GraphFrame {
     private _moveTopHandle = (evt: PointerEvent, yLimit: number) => {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
-        if (_this._resizingDirection !== ResizingDirection.Top || _this._mouseStartPointX === null || _this._mouseStartPointY === null || evt.clientY > yLimit) {
+        if (!_this._isResizingTop() || _this._mouseStartPointX === null || _this._mouseStartPointY === null || evt.clientY > yLimit) {
             return;
         }
-        if (_this._resizingDirection === ResizingDirection.Top) {
+        if (_this._isResizingTop()) {
             evt.stopPropagation();
             const distanceMouseMoved = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
             _this._expandTop(distanceMouseMoved);
@@ -722,24 +757,291 @@ export class GraphFrame {
         }
     }
 
-    private _expandTop(heightModification: number) {
-            const frameElementHeight = parseFloat(this.element.style.height.replace("px", ""));
-            const frameElementTop = parseFloat(this.element.style.top.replace("px", ""));
-            this.element.style.height = `${frameElementHeight - heightModification}px`;
-            this.element.style.top = `${frameElementTop + heightModification}px`;
-
-    }
-
     private _onTopHandlePointerUp = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
-        if (_this._resizingDirection === ResizingDirection.Top) {
+        if (_this._isResizingTop()) {
             _this.y = parseFloat(_this.element.style.top!.replace("px", ""));
             _this.height = parseFloat(_this.element.style.height.replace("px", ""));
             _this._ownerCanvas.hostCanvas.removeEventListener("pointerup", _this._onTopHandlePointerUp);
             _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onTopHandlePointerMove);
             _this.cleanUpResizing(evt);
         }
+    }
+
+    private _onTopRightHandlePointerDown = (evt: PointerEvent) => {
+        // tslint:disable-next-line: no-this-assignment
+        const _this = this;
+        if (_this.isCollapsed) {
+                return;
+            }
+        _this.initResizing(evt);
+        _this._resizingDirection = ResizingDirection.TopRight;
+        _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onTopRightHandlePointerUp);
+        _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onTopRightHandlePointerMove);
+    }
+
+    private _onTopRightHandlePointerMove = (evt: PointerEvent) => {
+        const topSlack = (this.element.offsetHeight - this._minFrameHeight) * this._ownerCanvas.zoom;
+        const yLimit = (this._mouseStartPointY as number) + topSlack;
+        const rightSlack = (this.element.offsetWidth - this._minFrameWidth) * this._ownerCanvas.zoom;
+        const xLimit = (this._mouseStartPointX as number) - rightSlack;
+        this._moveTopRightHandle(evt, xLimit, yLimit);
+    }
+
+    private _moveTopRightHandle = (evt: PointerEvent, xLimit: number, yLimit: number) => {
+        // tslint:disable-next-line: no-this-assignment
+        const _this = this;
+        if (!(_this._isResizingTop() && _this._isResizingRight()) || _this._mouseStartPointX === null || _this._mouseStartPointY === null) {
+            return;
+        }
+        if (_this._isResizingRight() && _this._isResizingTop()) {
+            evt.stopPropagation();
+            if (evt.clientY < yLimit && evt.clientX > xLimit) { // able to move in X and Y
+                const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
+                _this._expandRight(distanceMouseMovedX, evt.clientX);
+                _this._mouseStartPointX =  evt.clientX;
+                const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
+                _this._expandTop(distanceMouseMovedY);
+                _this._mouseStartPointY =  evt.clientY;
+            } else if (evt.clientY > yLimit && evt.clientX > xLimit) { // able to move in X but not Y
+                const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
+                _this._expandRight(distanceMouseMovedX, evt.clientX);
+                _this._mouseStartPointX =  evt.clientX;
+            } else if (evt.clientY < yLimit && evt.clientX < xLimit) { // able to move in Y but not X
+                const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
+                _this._expandTop(distanceMouseMovedY);
+                _this._mouseStartPointY =  evt.clientY;
+            }
+        }
+    }
+
+    private _onTopRightHandlePointerUp = (evt: PointerEvent) => {
+        evt.stopPropagation();
+        // tslint:disable-next-line: no-this-assignment
+        const _this = this;
+        if (_this._resizingDirection === ResizingDirection.TopRight) {
+            _this.y = parseFloat(_this.element.style.top!.replace("px", ""));
+            _this.height = parseFloat(_this.element.style.height.replace("px", ""));
+            _this.width = parseFloat(_this.element.style.width.replace("px", ""));
+            _this._ownerCanvas.hostCanvas.removeEventListener("pointerup", _this._onTopRightHandlePointerUp);
+            _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onTopRightHandlePointerMove);
+            _this.cleanUpResizing(evt);
+        }
+    }
+
+    private _onBottomRightHandlePointerDown = (evt: PointerEvent) => {
+        // tslint:disable-next-line: no-this-assignment
+        const _this = this;
+        if (_this.isCollapsed) {
+                return;
+            }
+        _this.initResizing(evt);
+        _this._resizingDirection = ResizingDirection.BottomRight;
+        _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onBottomRightHandlePointerUp);
+        _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onBottomRightHandlePointerMove);
+    }
+
+    private _onBottomRightHandlePointerMove = (evt: PointerEvent) => {
+        const bottomSlack = (this.element.offsetHeight - this._minFrameHeight) * this._ownerCanvas.zoom;
+        const yLimit = (this._mouseStartPointY as number) - bottomSlack;
+        const rightSlack = (this.element.offsetWidth - this._minFrameWidth) * this._ownerCanvas.zoom;
+        const xLimit = (this._mouseStartPointX as number) - rightSlack;
+        this._moveBottomRightHandle(evt, xLimit, yLimit);
+    }
+
+    private _moveBottomRightHandle = (evt: PointerEvent, xLimit: number, yLimit: number) => {
+        // tslint:disable-next-line: no-this-assignment
+        const _this = this;
+        if (!(_this._isResizingBottom() && _this._isResizingRight()) || _this._mouseStartPointX === null || _this._mouseStartPointY === null) {
+            return;
+        }
+        if (_this._isResizingRight() && _this._isResizingBottom()) {
+            evt.stopPropagation();
+            if (evt.clientY > yLimit && evt.clientX > xLimit) { // able to move in X and Y
+                const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
+                _this._expandRight(distanceMouseMovedX, evt.clientX);
+                _this._mouseStartPointX =  evt.clientX;
+                const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
+                _this._expandBottom(distanceMouseMovedY);
+                _this._mouseStartPointY =  evt.clientY;
+            } else if (evt.clientY < yLimit && evt.clientX > xLimit) { // able to move in X but not Y
+                const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
+                _this._expandRight(distanceMouseMovedX, evt.clientX);
+                _this._mouseStartPointX =  evt.clientX;
+            } else if (evt.clientY > yLimit && evt.clientX < xLimit) { // able to move in Y but not X
+                const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
+                _this._expandBottom(distanceMouseMovedY);
+                _this._mouseStartPointY =  evt.clientY;
+            }
+        }
+    }
+
+    private _onBottomRightHandlePointerUp = (evt: PointerEvent) => {
+        evt.stopPropagation();
+        // tslint:disable-next-line: no-this-assignment
+        const _this = this;
+        if (_this._resizingDirection === ResizingDirection.BottomRight) {
+            _this.height = parseFloat(_this.element.style.height.replace("px", ""));
+            _this.width = parseFloat(_this.element.style.width.replace("px", ""));
+            _this._ownerCanvas.hostCanvas.removeEventListener("pointerup", _this._onBottomRightHandlePointerUp);
+            _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onBottomRightHandlePointerMove);
+            _this.cleanUpResizing(evt);
+        }
+    }
+
+    private _onBottomLeftHandlePointerDown = (evt: PointerEvent) => {
+        // tslint:disable-next-line: no-this-assignment
+        const _this = this;
+        if (_this.isCollapsed) {
+                return;
+            }
+        _this.initResizing(evt);
+        _this._resizingDirection = ResizingDirection.BottomLeft;
+        _this.mouseXLimit = evt.clientX + _this.width - _this._minFrameWidth;
+        _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onBottomLeftHandlePointerUp);
+        _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onBottomLeftHandlePointerMove);
+    }
+
+    private _onBottomLeftHandlePointerMove = (evt: PointerEvent) => {
+        const bottomSlack = (this.element.offsetHeight - this._minFrameHeight) * this._ownerCanvas.zoom;
+        const yLimit = (this._mouseStartPointY as number) - bottomSlack;
+        const leftSlack = (this.element.offsetWidth - this._minFrameWidth) * this._ownerCanvas.zoom;
+        const xLimit = (this._mouseStartPointX as number) + leftSlack;
+        this._moveBottomLeftHandle(evt, xLimit, yLimit);
+    }
+
+    private _moveBottomLeftHandle = (evt: PointerEvent, xLimit: number, yLimit: number) => {
+        // tslint:disable-next-line: no-this-assignment
+        const _this = this;
+        if (!(_this._isResizingBottom() && _this._isResizingLeft()) || _this._mouseStartPointX === null || _this._mouseStartPointY === null) {
+            return;
+        }
+        if (_this._isResizingLeft() && _this._isResizingBottom()) {
+            evt.stopPropagation();
+            if (evt.clientY > yLimit && evt.clientX < xLimit) { // able to move in X and Y
+                const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
+                _this._expandLeft(distanceMouseMovedX);
+                _this._mouseStartPointX =  evt.clientX;
+                const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
+                _this._expandBottom(distanceMouseMovedY);
+                _this._mouseStartPointY =  evt.clientY;
+            } else if (evt.clientY < yLimit && evt.clientX < xLimit) { // able to move in X but not Y
+                const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
+                _this._expandLeft(distanceMouseMovedX);
+                _this._mouseStartPointX =  evt.clientX;
+            } else if (evt.clientY > yLimit && evt.clientX > xLimit) { // able to move in Y but not X
+                const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
+                _this._expandBottom(distanceMouseMovedY);
+                _this._mouseStartPointY =  evt.clientY;
+            }
+        }
+    }
+
+    private _onBottomLeftHandlePointerUp = (evt: PointerEvent) => {
+        evt.stopPropagation();
+        // tslint:disable-next-line: no-this-assignment
+        const _this = this;
+        if (_this._resizingDirection === ResizingDirection.BottomLeft) {
+            _this.height = parseFloat(_this.element.style.height.replace("px", ""));
+            _this.x = parseFloat(_this.element.style.left!.replace("px", ""));
+            _this.width = parseFloat(_this.element.style.width.replace("px", ""));
+            _this._ownerCanvas.hostCanvas.removeEventListener("pointerup", _this._onBottomLeftHandlePointerUp);
+            _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onBottomLeftHandlePointerMove);
+            _this.cleanUpResizing(evt);
+        }
+    }
+
+    private _onTopLeftHandlePointerDown = (evt: PointerEvent) => {
+        // tslint:disable-next-line: no-this-assignment
+        const _this = this;
+        if (_this.isCollapsed) {
+                return;
+            }
+        _this.initResizing(evt);
+        _this._resizingDirection = ResizingDirection.TopLeft;
+        _this.mouseXLimit = evt.clientX + _this.width - _this._minFrameWidth;
+        _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onTopLeftHandlePointerUp);
+        _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onTopLeftHandlePointerMove);
+    }
+
+    private _onTopLeftHandlePointerMove = (evt: PointerEvent) => {
+        const topSlack = (this.element.offsetHeight - this._minFrameHeight) * this._ownerCanvas.zoom;
+        const yLimit = (this._mouseStartPointY as number) + topSlack;
+        const leftSlack = (this.element.offsetWidth - this._minFrameWidth) * this._ownerCanvas.zoom;
+        const xLimit = (this._mouseStartPointX as number) + leftSlack;
+        this._moveTopLeftHandle(evt, xLimit, yLimit);
+    }
+
+    private _moveTopLeftHandle = (evt: PointerEvent, xLimit: number, yLimit: number) => {
+        // tslint:disable-next-line: no-this-assignment
+        const _this = this;
+        if (!(_this._isResizingTop() && _this._isResizingLeft()) || _this._mouseStartPointX === null || _this._mouseStartPointY === null) {
+            return;
+        }
+        if (_this._isResizingLeft() && _this._isResizingTop()) {
+            evt.stopPropagation();
+            if (evt.clientY < yLimit  && evt.clientX < xLimit) { // able to move in X and Y
+                const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
+                _this._expandLeft(distanceMouseMovedX);
+                _this._mouseStartPointX =  evt.clientX;
+                const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
+                _this._expandTop(distanceMouseMovedY);
+                _this._mouseStartPointY =  evt.clientY;
+            } else if (evt.clientY > yLimit  && evt.clientX < xLimit) { // able to move in X but not Y
+                const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
+                _this._expandLeft(distanceMouseMovedX);
+                _this._mouseStartPointX =  evt.clientX;
+            } else if (evt.clientY < yLimit  && evt.clientX > xLimit) { // able to move in Y but not X
+                const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
+                _this._expandTop(distanceMouseMovedY);
+                _this._mouseStartPointY =  evt.clientY;
+            }
+        }
+    }
+
+    private _onTopLeftHandlePointerUp = (evt: PointerEvent) => {
+        evt.stopPropagation();
+        // tslint:disable-next-line: no-this-assignment
+        const _this = this;
+        if (_this._resizingDirection === ResizingDirection.TopLeft) {
+            _this.y = parseFloat(_this.element.style.top!.replace("px", ""));
+            _this.height = parseFloat(_this.element.style.height.replace("px", ""));
+            _this.x = parseFloat(_this.element.style.left!.replace("px", ""));
+            _this.width = parseFloat(_this.element.style.width.replace("px", ""));
+            _this._ownerCanvas.hostCanvas.removeEventListener("pointerup", _this._onTopLeftHandlePointerUp);
+            _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onTopLeftHandlePointerMove);
+            _this.cleanUpResizing(evt);
+        }
+    }
+
+    private _expandLeft(widthModification: number) {
+        const frameElementWidth = parseFloat(this.element.style.width.replace("px", ""));
+        const frameElementLeft = parseFloat(this.element.style.left.replace("px", ""));
+        this.element.style.width = `${frameElementWidth - widthModification}px`;
+        this.element.style.left = `${frameElementLeft + widthModification}px`;
+        this.updateMinHeightWithComments();
+}
+
+    private _expandTop(heightModification: number) {
+        const frameElementHeight = parseFloat(this.element.style.height.replace("px", ""));
+        const frameElementTop = parseFloat(this.element.style.top.replace("px", ""));
+        this.element.style.height = `${frameElementHeight - heightModification}px`;
+        this.element.style.top = `${frameElementTop + heightModification}px`;
+    }
+
+    private _expandRight(widthModification: number, x: number) {
+        const frameElementWidth = parseFloat(this.element.style.width.replace("px", ""));
+        if ((frameElementWidth + widthModification) > 20) {
+            this._mouseStartPointX =  x;
+            this.element.style.width = `${frameElementWidth + widthModification}px`;
+        }
+        this.updateMinHeightWithComments();
+    }
+
+    private _expandBottom(heightModification: number) {
+        const frameElementHeight = parseFloat(this.element.style.height.replace("px", ""));
+        this.element.style.height = `${frameElementHeight + heightModification}px`;
     }
 
     public dispose() {

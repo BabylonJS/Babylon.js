@@ -76,6 +76,12 @@
                 #ifdef SHEEN_LINKWITHALBEDO
                     // BE Carefull: Sheen intensity is replacing the roughness value.
                     preInfo.roughness = sheenIntensity;
+                #else
+                    #ifdef HEMILIGHT{X}
+                        preInfo.roughness = sheenRoughness;
+                    #else
+                        preInfo.roughness = adjustRoughnessFromLightProperties(sheenRoughness, light{X}.vLightSpecular.a, preInfo.lightDistance);
+                    #endif
                 #endif
                 info.sheen = computeSheenLighting(preInfo, normalW, sheenColor, specularEnvironmentR90, AARoughnessFactors.x, light{X}.vLightDiffuse.rgb);
             #endif

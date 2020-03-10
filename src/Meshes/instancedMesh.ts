@@ -535,7 +535,6 @@ Mesh.prototype._processInstancedBuffers = function(visibleInstances: InstancedMe
         // Update data buffer
         let offset = 0;
         if (renderSelf) {
-            offset += stride;
             let value = this.instancedBuffers[kind];
 
             if (value.toArray) {
@@ -543,6 +542,8 @@ Mesh.prototype._processInstancedBuffers = function(visibleInstances: InstancedMe
             } else {
                 value.copyToArray(data, offset);
             }
+
+            offset += stride;
         }
 
         for (var instanceIndex = 0; instanceIndex < instanceCount; instanceIndex++) {

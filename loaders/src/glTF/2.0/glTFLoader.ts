@@ -1561,7 +1561,8 @@ export class GLTFLoader implements IGLTFLoader {
         return accessor._data;
     }
 
-    private _loadFloatAccessorAsync(context: string, accessor: IAccessor): Promise<Float32Array> {
+    /** @hidden */
+    public _loadFloatAccessorAsync(context: string, accessor: IAccessor): Promise<Float32Array> {
         return this._loadAccessorAsync(context, accessor, Float32Array) as Promise<Float32Array>;
     }
 

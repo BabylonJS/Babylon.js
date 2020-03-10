@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*****************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -918,22 +918,16 @@ var KHR_texture_transform = /** @class */ (function () {
                 reject(context + ": \"scene\" is not defined for Babylon texture " + babylonTexture.name + "!");
                 return;
             }
-            var transformIsRequired = false;
-            if (babylonTexture.uOffset !== 0 || babylonTexture.vOffset !== 0) {
-                transformIsRequired = true;
+            var bakeTextureTransform = false;
+            /*
+            * The KHR_texture_transform schema only supports rotation around the origin.
+            * the texture must be baked to preserve appearance.
+            * see: https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_transform#gltf-schema-updates
+            */
+            if ((babylonTexture.uAng !== 0 || babylonTexture.wAng !== 0 || babylonTexture.vAng !== 0) && (babylonTexture.uRotationCenter !== 0 || babylonTexture.vRotationCenter !== 0)) {
+                bakeTextureTransform = true;
             }
-            if (babylonTexture.uScale !== 1 || babylonTexture.vScale !== 1) {
-                transformIsRequired = true;
-            }
-            if (babylonTexture.wAng !== 0) {
-                transformIsRequired = true;
-            }
-            if (!transformIsRequired) {
-                resolve(babylonTexture);
-                return;
-            }
-            // Do we need to flatten the transform?
-            if (babylonTexture.uRotationCenter === 0 && babylonTexture.vRotationCenter === 0) {
+            if (!bakeTextureTransform) {
                 resolve(babylonTexture);
                 return;
             }

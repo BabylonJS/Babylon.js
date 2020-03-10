@@ -572,18 +572,14 @@ export class InputBlock extends NodeMaterialBlock {
             return `${variableName}.setAsSystemValue(BABYLON.NodeMaterialSystemValues.${NodeMaterialSystemValues[this._systemValue!]});\r\n`;
         }
         if (this.isUniform) {
+            const codes: string[] = [];
+
             let valueString = "";
+
             switch (this.type) {
                 case NodeMaterialBlockConnectionPointTypes.Float:
-                    let returnValue = `${variableName}.value = ${this.value};\r\n`;
-
-                    returnValue += `${variableName}.min = ${this.min};\r\n`;
-                    returnValue += `${variableName}.max = ${this.max};\r\n`;
-                    returnValue += `${variableName}.isBoolean = ${this.isBoolean};\r\n`;
-                    returnValue += `${variableName}.matrixMode = ${this.matrixMode};\r\n`;
-                    returnValue += `${variableName}.animationType  = BABYLON.AnimatedInputBlockTypes.${AnimatedInputBlockTypes[this.animationType]};\r\n`;
-
-                    return returnValue;
+                    valueString = `${this.value}`;
+                    break;
                 case NodeMaterialBlockConnectionPointTypes.Vector2:
                     valueString = `new BABYLON.Vector2(${this.value.x}, ${this.value.y})`;
                     break;
@@ -600,14 +596,33 @@ export class InputBlock extends NodeMaterialBlock {
                     valueString = `new BABYLON.Color4(${this.value.r}, ${this.value.g}, ${this.value.b}, ${this.value.a})`;
                     break;
                 case NodeMaterialBlockConnectionPointTypes.Matrix:
-                    valueString = `BABYLON.Matrix.FromArray([${(this.value as Matrix).m.toString()}])`;
+                    valueString = `BABYLON.Matrix.FromArray([${(this.value as Matrix).m}])`;
                     break;
             }
-            let finalOutput = `${variableName}.value = ${valueString};\r\n`;
-            finalOutput += `${variableName}.isConstant = ${this.isConstant ? "true" : "false"};\r\n`;
-            finalOutput += `${variableName}.visibleInInspector = ${this.visibleInInspector ? "true" : "false"};\r\n`;
 
-            return finalOutput;
+            // Common Property "Value"
+            codes.push(`${variableName}.value = ${valueString}`);
+
+            // Float-Value-Specific Properties
+            if (this.type === NodeMaterialBlockConnectionPointTypes.Float) {
+                codes.push(
+                    `${variableName}.min = ${this.min}`,
+                    `${variableName}.max = ${this.max}`,
+                    `${variableName}.isBoolean = ${this.isBoolean}`,
+                    `${variableName}.matrixMode = ${this.matrixMode}`,
+                    `${variableName}.animationType = BABYLON.AnimatedInputBlockTypes.${AnimatedInputBlockTypes[this.animationType]}`
+                );
+            }
+
+            // Common Property "Type"
+            codes.push(
+                `${variableName}.isConstant = ${this.isConstant}`,
+                `${variableName}.visibleInInspector = ${this.visibleInInspector}`
+            );
+
+            codes.push('');
+
+            return codes.join(';\r\n');
         }
         return "";
     }

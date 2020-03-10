@@ -214,6 +214,8 @@ export class PBRMaterialDefines extends MaterialDefines
     public SHEEN_TEXTURE = false;
     public SHEEN_TEXTUREDIRECTUV = 0;
     public SHEEN_LINKWITHALBEDO = false;
+    public SHEEN_ROUGHNESS = false;
+    public SHEEN_ALBEDOSCALING = false;
 
     public SUBSURFACE = false;
 
@@ -267,23 +269,23 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * PBRMaterialTransparencyMode: No transparency mode, Alpha channel is not use.
      */
-    public static readonly PBRMATERIAL_OPAQUE = 0;
+    public static readonly PBRMATERIAL_OPAQUE = Material.MATERIAL_OPAQUE;
 
     /**
      * PBRMaterialTransparencyMode: Alpha Test mode, pixel are discarded below a certain threshold defined by the alpha cutoff value.
      */
-    public static readonly PBRMATERIAL_ALPHATEST = 1;
+    public static readonly PBRMATERIAL_ALPHATEST = Material.MATERIAL_ALPHATEST;
 
     /**
      * PBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
      */
-    public static readonly PBRMATERIAL_ALPHABLEND = 2;
+    public static readonly PBRMATERIAL_ALPHABLEND = Material.MATERIAL_ALPHABLEND;
 
     /**
      * PBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
      * They are also discarded below the alpha cutoff threshold to improve performances.
      */
-    public static readonly PBRMATERIAL_ALPHATESTANDBLEND = 3;
+    public static readonly PBRMATERIAL_ALPHATESTANDBLEND = Material.MATERIAL_ALPHATESTANDBLEND;
 
     /**
      * Defines the default value of how much AO map is occluding the analytical lights
@@ -606,11 +608,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     protected _useLinearAlphaFresnel = false;
 
     /**
-     * The transparency mode of the material.
-     */
-    protected _transparencyMode: Nullable<number> = null;
-
-    /**
      * Specifies the environment BRDF texture used to comput the scale and offset roughness values
      * from cos thetav and roughness:
      * http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
@@ -816,40 +813,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     }
 
     /**
-     * Gets the current transparency mode.
-     */
-    @serialize()
-    public get transparencyMode(): Nullable<number> {
-        return this._transparencyMode;
-    }
-
-    /**
-     * Sets the transparency mode of the material.
-     *
-     * | Value | Type                                | Description |
-     * | ----- | ----------------------------------- | ----------- |
-     * | 0     | OPAQUE                              |             |
-     * | 1     | ALPHATEST                           |             |
-     * | 2     | ALPHABLEND                          |             |
-     * | 3     | ALPHATESTANDBLEND                   |             |
-     *
-     */
-    public set transparencyMode(value: Nullable<number>) {
-        if (this._transparencyMode === value) {
-            return;
-        }
-
-        this._transparencyMode = value;
-
-        this._forceAlphaTest = (value === PBRBaseMaterial.PBRMATERIAL_ALPHATESTANDBLEND);
-
-        this._markAllSubMeshesAsTexturesAndMiscDirty();
-    }
-
-    /**
      * Returns true if alpha blending should be disabled.
      */
-    private get _disableAlphaBlending(): boolean {
+    protected get _disableAlphaBlending(): boolean {
         return (this.subSurface.disableAlphaBlending ||
             this._transparencyMode === PBRBaseMaterial.PBRMATERIAL_OPAQUE ||
             this._transparencyMode === PBRBaseMaterial.PBRMATERIAL_ALPHATEST);
@@ -864,18 +830,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         return (this.alpha < 1.0) || (this._opacityTexture != null) || this._shouldUseAlphaFromAlbedoTexture();
-    }
-
-    /**
-     * Specifies if the mesh will require alpha blending.
-     * @param mesh - BJS mesh.
-     */
-    public needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
-        if (this._disableAlphaBlending && mesh.visibility >= 1.0) {
-            return false;
-        }
-
-        return super.needAlphaBlendingForMesh(mesh);
     }
 
     /**

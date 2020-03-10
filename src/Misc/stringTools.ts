@@ -73,4 +73,17 @@ export class StringTools {
 
         return output;
     }
+
+    /**
+    * Converts a number to string and pads with preceeding zeroes until it is of specified length.
+    * @param num the number to convert and pad
+    * @param length the expected length of the string
+    * @returns the padded string
+    */
+    public static PadNumber(num: number, length: number): string {
+        var str = String(num);
+        while (str.length < length) { str = "0" + str; }
+        return str;
+    }
+
 }

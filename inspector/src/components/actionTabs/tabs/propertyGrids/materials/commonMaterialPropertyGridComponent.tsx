@@ -11,7 +11,7 @@ import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { TextLineComponent } from "../../../lines/textLineComponent";
-import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
+import { OptionsLineComponent, Null_Value } from "../../../lines/optionsLineComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
@@ -40,6 +40,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
         ];
 
         var transparencyModeOptions = [
+            { label: "<Not Defined>", value: Null_Value },
             { label: "Opaque", value: PBRMaterial.PBRMATERIAL_OPAQUE },
             { label: "Alpha test", value: PBRMaterial.PBRMATERIAL_ALPHATEST },
             { label: "Alpha blend", value: PBRMaterial.PBRMATERIAL_ALPHABLEND },
@@ -96,9 +97,17 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                     <SliderLineComponent label="Alpha" target={material} propertyName="alpha" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         (material as any).transparencyMode !== undefined &&
-                        <OptionsLineComponent label="Transparency mode" options={transparencyModeOptions} target={material} propertyName="transparencyMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => this.setState({ transparencyMode: value })} />
+                        <OptionsLineComponent allowNullValue={true} label="Transparency mode" options={transparencyModeOptions} target={material} propertyName="transparencyMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => this.setState({ transparencyMode: value })} />
                     }
                     <OptionsLineComponent label="Alpha mode" options={alphaModeOptions} target={material} propertyName="alphaMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => this.setState({ alphaMode: value })} />
+                    {
+                        (material as any).useAlphaFromDiffuseTexture !== undefined &&
+                        <CheckBoxLineComponent label="Use alpha from diffuse texture" target={material} propertyName="useAlphaFromDiffuseTexture" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
+                    {
+                        (material as any).useAlphaFromAlbedoTexture !== undefined &&
+                        <CheckBoxLineComponent label="Use alpha from albedo texture" target={material} propertyName="useAlphaFromAlbedoTexture" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
                     <CheckBoxLineComponent label="Separate culling pass" target={material} propertyName="separateCullingPass" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
             </div>
