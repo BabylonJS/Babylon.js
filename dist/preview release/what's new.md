@@ -5,6 +5,7 @@
 ## Updates
 
 ### General
+
 - NME Frames are now resizable from the corners ([Kyle Belfort](https://github.com/belfortk)
 - Refactored React refs from old string API to React.createRef() API ([Kyle Belfort](https://github.com/belfortk)
 
@@ -31,16 +32,20 @@
 - Ammo.js IDL exposed property update and raycast vehicle stablization support ([MackeyK24](https://github.com/MackeyK24))
 
 ### Loaders
+
 - Added support for glTF mesh instancing extension ([#7521](https://github.com/BabylonJS/Babylon.js/issues/7521)) ([drigax](https://github.com/Drigax))
 
 
 ### Materials
+
 - Added the `roughness` and `albedoScaling` parameters to PBR sheen ([Popov72](https://github.com/Popov72))
 - Updated the energy conservation factor for the clear coat layer in PBR materials ([Popov72](https://github.com/Popov72))
 - Added the `transparencyMode` property to the `StandardMaterial` class ([Popov72](https://github.com/Popov72))
 
 ### WebXR
+
 - Added optional ray and mesh selection predicates to `WebXRControllerPointerSelection` ([Exolun](https://github.com/Exolun))
+- Implemented the new WebXR HitTest API ([#7364](https://github.com/BabylonJS/Babylon.js/issues/7364)) ([RaananW](https://github.com/RaananW))
 
 ## Bugs
 
