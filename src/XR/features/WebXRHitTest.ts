@@ -9,9 +9,10 @@ import { IWebXRLegacyHitTestOptions, IWebXRLegacyHitResult } from '../../Legacy/
  * Options used for hit testing
  */
 export interface IWebXRHitTestOptions extends IWebXRLegacyHitTestOptions {
+    disableAutoStart?: boolean;
     enableTransientHitTest?: boolean;
     hitTestOffsetRay?: Vector3;
-    disableAutoStart?: boolean;
+    useReferenceSpace?: boolean;
 }
 
 /**
@@ -19,9 +20,9 @@ export interface IWebXRHitTestOptions extends IWebXRLegacyHitTestOptions {
  */
 export interface IWebXRHitResult extends IWebXRLegacyHitResult {
     inputSource?: XRInputSource;
+    isTransient?: boolean;
     position: Vector3;
     rotationQuaternion: Quaternion;
-    isTransient?: boolean;
 }
 
 /**
@@ -30,12 +31,25 @@ export interface IWebXRHitResult extends IWebXRLegacyHitResult {
  * For further information read here - https://github.com/immersive-web/hit-test
  */
 export class WebXRHitTest extends WebXRAbstractFeature {
-    // in XR space z-forward is negative
-    private _xrHitTestSource: XRHitTestSource;
-    private _transientXrHitTestSource: XRTransientInputHitTestSource;
+    private _tmpMat: Matrix = new Matrix();
     private _tmpPos: Vector3 = new Vector3();
     private _tmpQuat: Quaternion = new Quaternion();
-    private _tmpMat: Matrix = new Matrix();
+    private _transientXrHitTestSource: XRTransientInputHitTestSource;
+    // in XR space z-forward is negative
+    private _xrHitTestSource: XRHitTestSource;
+    private initHitTestSource = () => {
+        const offsetRay = new XRRay(this.options.hitTestOffsetRay || {});
+        const options: XRHitTestOptionsInit = {
+            space: this.options.useReferenceSpace ? this._xrSessionManager.referenceSpace : this._xrSessionManager.viewerReferenceSpace,
+            offsetRay: offsetRay
+        };
+        this._xrSessionManager.session.requestHitTestSource(options).then((hitTestSource) => {
+            if (this._xrHitTestSource) {
+                this._xrHitTestSource.cancel();
+            }
+            this._xrHitTestSource = hitTestSource;
+        });
+    }
 
     /**
      * The module's name
@@ -49,6 +63,12 @@ export class WebXRHitTest extends WebXRAbstractFeature {
     public static readonly Version = 2;
 
     /**
+     * When set to true, each hit test will have its own position/rotation objects
+     * When set to false, position and rotation objects will be reused for each hit test. It is expected that
+     * the developers will clone them or copy them as they see fit.
+     */
+    public autoCloneTransformation: boolean = false;
+    /**
      * Populated with the last native XR Hit Results
      */
     public lastNativeXRHitResults: XRHitResult[] = [];
@@ -56,8 +76,6 @@ export class WebXRHitTest extends WebXRAbstractFeature {
      * Triggered when new babylon (transformed) hit test results are available
      */
     public onHitTestResultObservable: Observable<IWebXRHitResult[]> = new Observable();
-
-    public autoCloneTransformation: boolean = false;
 
     /**
      * Creates a new instance of the hit test feature
@@ -72,32 +90,6 @@ export class WebXRHitTest extends WebXRAbstractFeature {
         super(_xrSessionManager);
     }
 
-    public cancel() {
-        if (this._xrHitTestSource) {
-            this._xrHitTestSource.cancel();
-        }
-    }
-
-    public start() {
-        if (this._xrSessionManager.referenceSpace) {
-            this.initHitTestSource();
-        }
-    }
-
-    private initHitTestSource = () => {
-        const offsetRay = new XRRay(this.options.hitTestOffsetRay || {});
-        const options: XRHitTestOptionsInit = {
-            space: this._xrSessionManager.viewerReferenceSpace,
-            offsetRay: offsetRay
-        };
-        this._xrSessionManager.session.requestHitTestSource(options).then((hitTestSource) => {
-            if (this._xrHitTestSource) {
-                this._xrHitTestSource.cancel();
-            }
-            this._xrHitTestSource = hitTestSource;
-        });
-    }
-
     /**
      * attach this feature
      * Will usually be called by the features manager
@@ -110,7 +102,9 @@ export class WebXRHitTest extends WebXRAbstractFeature {
         }
 
         if (!this.options.disableAutoStart) {
-            this.start();
+            if (this._xrSessionManager.referenceSpace) {
+                this.initHitTestSource();
+            }
             this._xrSessionManager.onXRReferenceSpaceChanged.add(this.initHitTestSource);
         }
         if (this.options.enableTransientHitTest) {
@@ -134,7 +128,9 @@ export class WebXRHitTest extends WebXRAbstractFeature {
         if (!super.detach()) {
             return false;
         }
-        this.cancel();
+        if (this._xrHitTestSource) {
+            this._xrHitTestSource.cancel();
+        }
         this._xrSessionManager.onXRReferenceSpaceChanged.removeCallback(this.initHitTestSource);
         if (this._transientXrHitTestSource) {
             this._transientXrHitTestSource.cancel();
