@@ -90,6 +90,7 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
             });
         }
         else {
+            Logger.Error("texture missing KTX identifier");
             callback(0, 0, false, false, () => {}, true);
         }
     }
