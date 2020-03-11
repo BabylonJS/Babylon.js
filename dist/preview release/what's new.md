@@ -35,6 +35,8 @@
 ### Loaders
 - Added support for glTF mesh instancing extension ([#7521](https://github.com/BabylonJS/Babylon.js/issues/7521)) ([drigax](https://github.com/Drigax))
 
+### Navigation
+- export/load prebuilt binary navigation mesh ([cedricguillemet](https://github.com/cedricguillemet))
 
 ### Materials
 - Added the `roughness` and `albedoScaling` parameters to PBR sheen ([Popov72](https://github.com/Popov72))
