@@ -315,6 +315,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
         ret.set(arrView);
         this.navMesh.freeNavmeshData(navmeshData);
         return ret;
+    }
 
     /**
      * Get the Bounding box extent result specified by setDefaultQueryExtent
