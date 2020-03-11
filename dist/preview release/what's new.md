@@ -35,6 +35,8 @@
 ### Loaders
 - Added support for glTF mesh instancing extension ([#7521](https://github.com/BabylonJS/Babylon.js/issues/7521)) ([drigax](https://github.com/Drigax))
 
+### Navigation
+- export/load prebuilt binary navigation mesh ([cedricguillemet](https://github.com/cedricguillemet))
 
 ### Materials
 - Added the `roughness` and `albedoScaling` parameters to PBR sheen ([Popov72](https://github.com/Popov72))
@@ -55,5 +57,6 @@
 - Exit XR will only trigger only if state is IN_XR ([RaananW](https://github.com/RaananW))
 - Fix improper baking of transformed textures in `KHR_texture_transform` serializer. ([drigax](https://github.com/Drigax))
 - Fixed NME codegen: missing common properties for float-value input block. ([ycw](https://github.com/ycw))
+- Fixed missing options for MeshBuilder.CreateBox. ([ycw](https://github.com/ycw))
 
 ## Breaking changes

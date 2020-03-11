@@ -164,11 +164,12 @@ export class EffectRenderer {
 
             // Reset state
             this.setViewport();
-            this.applyEffectWrapper(effectWrapper);
 
             if (renderTo) {
                 this.engine.bindFramebuffer(renderTo.getInternalTexture()!);
             }
+
+            this.applyEffectWrapper(effectWrapper);
 
             this.draw();
 
