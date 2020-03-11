@@ -293,7 +293,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
         var dataHeap = new Uint8Array(this.bjsRECAST.HEAPU8.buffer, dataPtr, nDataBytes);
         dataHeap.set(data);
 
-        let buf = new this.bjsRECAST.NavmeshData;
+        let buf = new this.bjsRECAST.NavmeshData();
         buf.dataPointer = dataHeap.byteOffset;
         buf.size = data.length;
         this.navMesh = new this.bjsRECAST.NavMesh();
