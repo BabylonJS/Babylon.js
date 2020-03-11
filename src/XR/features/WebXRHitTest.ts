@@ -3,7 +3,7 @@ import { WebXRSessionManager } from '../webXRSessionManager';
 import { Observable } from '../../Misc/observable';
 import { Vector3, Matrix, Quaternion } from '../../Maths/math.vector';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
-import { IWebXRLegacyHitTestOptions, IWebXRLegacyHitResult } from '../../Legacy/legacy';
+import { IWebXRLegacyHitTestOptions, IWebXRLegacyHitResult } from './WebXRHitTestLegacy';
 
 /**
  * Options used for hit testing (version 2)
@@ -192,7 +192,7 @@ export class WebXRHitTest extends WebXRAbstractFeature {
         if (this._xrHitTestSource) {
             const results = frame.getHitTestResults(this._xrHitTestSource);
             if (results.length) {
-                this.processWebXRHitTestResult(results);
+                this._processWebXRHitTestResult(results);
             }
         }
         if (this._transientXrHitTestSource) {
@@ -200,13 +200,13 @@ export class WebXRHitTest extends WebXRAbstractFeature {
 
             hitTestResultsPerInputSource.forEach((resultsPerInputSource) => {
                 if (resultsPerInputSource.results.length > 0) {
-                    this.processWebXRHitTestResult(resultsPerInputSource.results, resultsPerInputSource.inputSource);
+                    this._processWebXRHitTestResult(resultsPerInputSource.results, resultsPerInputSource.inputSource);
                 }
             });
         }
     }
 
-    private processWebXRHitTestResult(hitTestResults: XRHitTestResult[], inputSource?: XRInputSource) {
+    private _processWebXRHitTestResult(hitTestResults: XRHitTestResult[], inputSource?: XRInputSource) {
         const results : IWebXRHitResult[] = [];
         hitTestResults.forEach((hitTestResult) => {
             const pose = hitTestResult.getPose(this._xrSessionManager.referenceSpace);
