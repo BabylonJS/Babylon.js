@@ -34,6 +34,13 @@ export interface INavigationEnginePlugin {
     getClosestPoint(position: Vector3): Vector3;
 
     /**
+     * Get a navigation mesh constrained position, closest to the parameter position
+     * @param position world position
+     * @param result output the closest point to position constrained by the navigation mesh
+     */
+    getClosestPointToRef(position: Vector3, result: Vector3): void;
+
+    /**
      * Get a navigation mesh constrained position, within a particular radius
      * @param position world position
      * @param maxRadius the maximum distance to the constrained world position
@@ -42,12 +49,28 @@ export interface INavigationEnginePlugin {
     getRandomPointAround(position: Vector3, maxRadius: number): Vector3;
 
     /**
+     * Get a navigation mesh constrained position, within a particular radius
+     * @param position world position
+     * @param maxRadius the maximum distance to the constrained world position
+     * @param result output the closest point to position constrained by the navigation mesh
+     */
+    getRandomPointAroundToRef(position: Vector3, maxRadius: number, result: Vector3): void;
+
+    /**
      * Compute the final position from a segment made of destination-position
      * @param position world position
      * @param destination world position
      * @returns the resulting point along the navmesh
      */
     moveAlong(position: Vector3, destination: Vector3): Vector3;
+
+    /**
+     * Compute the final position from a segment made of destination-position
+     * @param position world position
+     * @param destination world position
+     * @param result output the resulting point along the navmesh
+     */
+    moveAlongToRef(position: Vector3, destination: Vector3, result: Vector3): void;
 
     /**
      * Compute a navigation path from start to end. Returns an empty array if no path can be computed
@@ -87,6 +110,7 @@ export interface INavigationEnginePlugin {
     getDefaultQueryExtent(): Vector3;
 
     /**
+<<<<<<< HEAD
      * build the navmesh from a previously saved state using getNavmeshData
      * @param data the Uint8Array returned by getNavmeshData
      */
@@ -97,6 +121,12 @@ export interface INavigationEnginePlugin {
      * @returns data the Uint8Array that can be saved and reused
      */
     getNavmeshData(): Uint8Array;
+=======
+     * Get the Bounding box extent result specified by setDefaultQueryExtent
+     * @param result output the box extent values
+     */
+    getDefaultQueryExtentToRef(result: Vector3): void;
+>>>>>>> 59b36372bdcfef5702791b6fbafa43540779b0db
 
     /**
      * Release all resources
@@ -126,11 +156,25 @@ export interface ICrowd {
     getAgentPosition(index: number): Vector3;
 
     /**
+     * Gets the agent position result in world space
+     * @param index agent index returned by addAgent
+     * @param result output world space position
+     */
+    getAgentPositionToRef(index: number, result: Vector3): void;
+
+    /**
      * Gets the agent velocity in world space
      * @param index agent index returned by addAgent
      * @returns world space velocity
      */
     getAgentVelocity(index: number): Vector3;
+
+    /**
+     * Gets the agent velocity result in world space
+     * @param index agent index returned by addAgent
+     * @param result output world space velocity
+     */
+    getAgentVelocityToRef(index: number, result: Vector3): void;
 
     /**
      * remove a particular agent previously created
@@ -184,6 +228,12 @@ export interface ICrowd {
      * @returns the box extent values
      */
     getDefaultQueryExtent(): Vector3;
+
+    /**
+     * Get the Bounding box extent result specified by setDefaultQueryExtent
+     * @param result output the box extent values
+     */
+    getDefaultQueryExtentToRef(result: Vector3): void;
 
     /**
      * Release all resources
