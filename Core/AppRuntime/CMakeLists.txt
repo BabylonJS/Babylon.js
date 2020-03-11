@@ -10,8 +10,6 @@ set(SOURCES
 
 add_library(AppRuntime ${SOURCES})
 
-set_target_properties(AppRuntime PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${BABYLON_NATIVE_PLATFORM}_${ARCH}")
-
 target_include_directories(AppRuntime PRIVATE "Include/Babylon")
 target_include_directories(AppRuntime INTERFACE "Include")
 
