@@ -12,11 +12,9 @@
 std::unique_ptr<Babylon::AppRuntime> runtime{};
 std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
 
-
-void XMLHTTPRequestPlugin(Napi::Env env)
+void InitializeXMLHttpRequest(Napi::Env env)
 {
-    napi_env napienv = env;
-    JSGlobalContextRef globalContext = *(JSGlobalContextRef*)napienv;
+    JSGlobalContextRef globalContext = Napi::GetJavaScriptCoreGlobalContext(env);
     [[XMLHttpRequest new] extend:globalContext :^(CompletionHandlerFunction completetionHandlerFunction) {
         runtime->Dispatch([completetionHandlerFunction](Napi::Env env) {
             completetionHandlerFunction();
@@ -59,7 +57,7 @@ void XMLHTTPRequestPlugin(Napi::Env env)
     // Initialize XMLHttpRequest plugin.
     runtime->Dispatch([](Napi::Env env)
     {
-        XMLHTTPRequestPlugin(env);
+        InitializeXMLHttpRequest(env);
     });
 
 
