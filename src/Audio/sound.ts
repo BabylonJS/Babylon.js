@@ -747,9 +747,11 @@ export class Sound {
                             offset = offset || this._offset;
 
                             if (this._soundSource) {
-                                this._soundSource.stop();
+                                const oldSource = this._soundSource;
+                                oldSource.onended = () => {
+                                    oldSource.disconnect();
+                                };
                             }
-
                             this._soundSource = Engine.audioEngine.audioContext.createBufferSource();
                             this._soundSource.buffer = this._audioBuffer;
                             this._soundSource.connect(this._inputAudioNode);
@@ -998,6 +1000,22 @@ export class Sound {
      */
     public getAudioBuffer(): Nullable<AudioBuffer> {
         return this._audioBuffer;
+    }
+
+    /**
+     * Gets the WebAudio AudioBufferSourceNode, lets you keep track of and stop instances of this Sound.
+     * @returns the source node
+     */
+    public getSoundSource(): Nullable<AudioBufferSourceNode> {
+        return this._soundSource;
+    }
+
+    /**
+     * Gets the WebAudio GainNode, gives you precise control over the gain of instances of this Sound.
+     * @returns the gain node
+     */
+    public getSoundGain(): Nullable<GainNode> {
+        return this._soundGain;
     }
 
     /**
