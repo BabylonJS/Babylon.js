@@ -1285,6 +1285,23 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Makes a duplicate of the current material.
+     * @param name - name to use for the new material.
+     */
+    public clone(name: string): NodeMaterial {
+        const serializationObject = this.serialize();
+
+        const clone = SerializationHelper.Clone(() => new NodeMaterial(name, this.getScene(), this.options), this);
+        clone.id = name;
+        clone.name = name;
+
+        clone.loadFromSerialization(serializationObject);
+        clone.build();
+
+        return clone;
+    }
+
+    /**
      * Creates a node material from parsed material data
      * @param source defines the JSON representation of the material
      * @param scene defines the hosting scene
