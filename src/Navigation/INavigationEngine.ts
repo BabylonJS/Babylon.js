@@ -110,6 +110,18 @@ export interface INavigationEnginePlugin {
     getDefaultQueryExtent(): Vector3;
 
     /**
+     * build the navmesh from a previously saved state using getNavmeshData
+     * @param data the Uint8Array returned by getNavmeshData
+     */
+    buildFromNavmeshData(data: Uint8Array): void;
+
+    /**
+     * returns the navmesh data that can be used later. The navmesh must be built before retrieving the data
+     * @returns data the Uint8Array that can be saved and reused
+     */
+    getNavmeshData(): Uint8Array;
+
+    /**
      * Get the Bounding box extent result specified by setDefaultQueryExtent
      * @param result output the box extent values
      */
