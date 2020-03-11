@@ -57452,6 +57452,11 @@ declare module BABYLON {
          */
         loadFromSerialization(source: any, rootUrl?: string): void;
         /**
+         * Makes a duplicate of the current material.
+         * @param name - name to use for the new material.
+         */
+        clone(name: string): NodeMaterial;
+        /**
          * Creates a node material from parsed material data
          * @param source defines the JSON representation of the material
          * @param scene defines the hosting scene
