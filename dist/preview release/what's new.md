@@ -51,5 +51,6 @@
 - Fix: when using instances, master mesh (if displayed) does not have correct instance buffer values ([Popov72](https://github.com/Popov72)
 - Fix improper baking of transformed textures in `KHR_texture_transform` serializer. ([drigax](https://github.com/Drigax))
 - Fixed NME codegen: missing common properties for float-value input block. ([ycw](https://github.com/ycw))
+- Fixed missing options for MeshBuilder.CreateBox. ([ycw](https://github.com/ycw))
 
 ## Breaking changes
