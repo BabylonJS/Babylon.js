@@ -55,5 +55,6 @@
 - Exit XR will only trigger only if state is IN_XR ([RaananW](https://github.com/RaananW))
 - Fix improper baking of transformed textures in `KHR_texture_transform` serializer. ([drigax](https://github.com/Drigax))
 - Fixed NME codegen: missing common properties for float-value input block. ([ycw](https://github.com/ycw))
+- Fixed missing options for MeshBuilder.CreateBox. ([ycw](https://github.com/ycw))
 
 ## Breaking changes
