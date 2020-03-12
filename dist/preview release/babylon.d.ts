@@ -39508,6 +39508,7 @@ declare module BABYLON {
         private _pointerObserver;
         private _moving;
         private _startingOrientation;
+        private _attachedElement;
         /**
          * How much faster the object should move when the controller is moving towards it. This is useful to bring objects that are far away from the user to them faster. Set this to 0 to avoid any speed increase. (Default: 3)
          */
