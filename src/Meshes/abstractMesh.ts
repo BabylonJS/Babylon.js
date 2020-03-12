@@ -559,6 +559,23 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._meshCollisionData._collisionGroup = !isNaN(mask) ? mask : -1;
     }
 
+    /**
+     * Gets or sets current surrounding meshes (null by default).
+     *
+     * By default collision detection is tested against every mesh in the scene.
+     * It is possible to set surroundingMeshes to a defined list of meshes and then only these specified
+     * meshes will be tested for the collision.
+     *
+     * Note: if set to an empty array no collision will happen when this mesh is moved.
+     */
+    public get surroundingMeshes(): Nullable<AbstractMesh[]> {
+        return this._meshCollisionData._surroundingMeshes;
+    }
+
+    public set surroundingMeshes(meshes: Nullable<AbstractMesh[]>) {
+        this._meshCollisionData._surroundingMeshes = meshes;
+    }
+
     // Edges
     /**
      * Defines edge width used when edgesRenderer is enabled
