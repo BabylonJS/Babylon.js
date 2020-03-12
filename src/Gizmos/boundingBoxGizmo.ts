@@ -256,8 +256,10 @@ export class BoundingBoxGizmo extends Gizmo {
                     if (zeroAxisCount === 1 || zeroAxisCount === 3) {
                         continue;
                     }
+
                     let box = BoxBuilder.CreateBox("", { size: 1 }, gizmoLayer.utilityLayerScene);
                     box.material = this.coloredMaterial;
+                    box.metadata = zeroAxisCount === 2; // None homogenous scale handle
 
                     // Dragging logic
                     let dragAxis = new Vector3(i - 1, j - 1, k - 1);
@@ -542,10 +544,16 @@ export class BoundingBoxGizmo extends Gizmo {
     /**
      * Enables/disables scaling
      * @param enable if scaling should be enabled
+     * @param homogeneousScaling defines if scaling should only be homogeneous
      */
-    public setEnabledScaling(enable: boolean) {
+    public setEnabledScaling(enable: boolean, homogeneousScaling = false) {
         this._scaleBoxesParent.getChildMeshes().forEach((m, i) => {
-            m.setEnabled(enable);
+            let enableMesh = enable;
+            // Disable heterogenous scale handles if requested.
+            if (homogeneousScaling && m.metadata === true) {
+                enableMesh = false;
+            }
+            m.setEnabled(enableMesh);
         });
     }
 
