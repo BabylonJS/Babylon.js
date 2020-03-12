@@ -27843,6 +27843,7 @@ declare module BABYLON {
         _checkCollisions: boolean;
         _collisionMask: number;
         _collisionGroup: number;
+        _surroundingMeshes: Nullable<AbstractMesh[]>;
         _collider: Nullable<Collider>;
         _oldPositionForCollisions: Vector3;
         _diffPositionForCollisions: Vector3;
@@ -28164,6 +28165,17 @@ declare module BABYLON {
          */
         get collisionGroup(): number;
         set collisionGroup(mask: number);
+        /**
+         * Gets or sets current surrounding meshes (null by default).
+         *
+         * By default collision detection is tested against every mesh in the scene.
+         * It is possible to set surroundingMeshes to a defined list of meshes and then only these specified
+         * meshes will be tested for the collision.
+         *
+         * Note: if set to an empty array no collision will happen when this mesh is moved.
+         */
+        get surroundingMeshes(): Nullable<AbstractMesh[]>;
+        set surroundingMeshes(meshes: Nullable<AbstractMesh[]>);
         /**
          * Defines edge width used when edgesRenderer is enabled
          * @see https://www.babylonjs-playground.com/#10OJSG#13
@@ -48741,8 +48753,9 @@ declare module BABYLON {
         /**
          * Enables/disables scaling
          * @param enable if scaling should be enabled
+         * @param homogeneousScaling defines if scaling should only be homogeneous
          */
-        setEnabledScaling(enable: boolean): void;
+        setEnabledScaling(enable: boolean, homogeneousScaling?: boolean): void;
         private _updateDummy;
         /**
          * Enables a pointer drag behavior on the bounding box of the gizmo

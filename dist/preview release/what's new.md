@@ -46,6 +46,9 @@
 ### WebXR
 - Added optional ray and mesh selection predicates to `WebXRControllerPointerSelection` ([Exolun](https://github.com/Exolun))
 
+### Collisions
+- Added an option to optimize collision detection performance ([jsdream](https://github.com/jsdream)) - [PR](https://github.com/BabylonJS/Babylon.js/pull/7810)
+
 ## Bugs
 
 - Fix infinite loop in `GlowLayer.unReferenceMeshFromUsingItsOwnMaterial` ([Popov72](https://github.com/Popov72)
@@ -58,5 +61,6 @@
 - Fix improper baking of transformed textures in `KHR_texture_transform` serializer. ([drigax](https://github.com/Drigax))
 - Fixed NME codegen: missing common properties for float-value input block. ([ycw](https://github.com/ycw))
 - Fixed missing options for MeshBuilder.CreateBox. ([ycw](https://github.com/ycw))
+- Fix bug in `Plane.transform` when matrix passed in is not a pure rotation ([Popov72](https://github.com/Popov72)
 
 ## Breaking changes
