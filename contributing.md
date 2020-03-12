@@ -37,7 +37,13 @@ We will try to enforce these rules as we consider the forum is a better place fo
 
 ## Online one-click setup for Contributing
 
-Contribute to BabylonJS using a fully featured online development environment; cloned repo, pre-installed dependencies, running web server.
+You can use Gitpod (A free online VS Code like IDE) for contributing online. With a single click it'll launch a workspace and automatically:
+
+- clone the BabylonJS repo.
+- install the dependencies.
+- run `npm run start` in `Tools/Gulp`.
+
+so that you can start straight away.
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/from-referrer/)
 
