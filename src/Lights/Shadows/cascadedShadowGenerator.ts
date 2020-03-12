@@ -21,6 +21,9 @@ import { BoundingInfo } from '../../Culling/boundingInfo';
 import { DepthRenderer } from '../../Rendering/depthRenderer';
 import { DepthReducer } from '../../Misc/depthReducer';
 
+import { Logger } from "../../Misc/logger";
+import { EngineStore } from '../../Engines/engineStore';
+
 interface ICascade {
     prevBreakDistance: number;
     breakDistance: number;
@@ -684,6 +687,17 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         }
     }
 
+    /**
+    *  Support test.
+    */
+    public static get IsSupported(): boolean {
+        var engine = EngineStore.LastCreatedEngine;
+        if (!engine) {
+            return false;
+        }
+        return engine.webGLVersion != 1;
+    }
+
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _DevTools.WarnImport("ShadowGeneratorSceneComponent");
@@ -701,8 +715,9 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     constructor(mapSize: number, light: DirectionalLight, usefulFloatFirst?: boolean) {
         super(mapSize, light, usefulFloatFirst);
 
-        if (this._scene.getEngine().webGLVersion == 1) {
-            throw "CSM can only be used in WebGL2";
+        if (!CascadedShadowGenerator.IsSupported) {
+            Logger.Error("CascadedShadowMap needs WebGL 2 support.");
+            return;
         }
 
         this.usePercentageCloserFiltering = true;
