@@ -58,5 +58,6 @@
 - Fix improper baking of transformed textures in `KHR_texture_transform` serializer. ([drigax](https://github.com/Drigax))
 - Fixed NME codegen: missing common properties for float-value input block. ([ycw](https://github.com/ycw))
 - Fixed missing options for MeshBuilder.CreateBox. ([ycw](https://github.com/ycw))
+- Fix bug in `Plane.transform` when matrix passed in is not a pure rotation ([Popov72](https://github.com/Popov72)
 
 ## Breaking changes
