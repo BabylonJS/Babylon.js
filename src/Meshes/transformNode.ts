@@ -1238,7 +1238,7 @@ export class TransformNode extends Node {
             camera = (<Camera>this.getScene().activeCamera);
         }
 
-        return Vector3.TransformCoordinates(this.absolutePosition, camera.getViewMatrix());
+        return Vector3.TransformCoordinates(this.getAbsolutePosition(), camera.getViewMatrix());
     }
 
     /**
@@ -1250,7 +1250,7 @@ export class TransformNode extends Node {
         if (!camera) {
             camera = (<Camera>this.getScene().activeCamera);
         }
-        return this.absolutePosition.subtract(camera.globalPosition).length();
+        return this.getAbsolutePosition().subtract(camera.globalPosition).length();
     }
 
     /**
