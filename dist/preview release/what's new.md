@@ -42,6 +42,7 @@
 - Added the `roughness` and `albedoScaling` parameters to PBR sheen ([Popov72](https://github.com/Popov72))
 - Updated the energy conservation factor for the clear coat layer in PBR materials ([Popov72](https://github.com/Popov72))
 - Added the `transparencyMode` property to the `StandardMaterial` class ([Popov72](https://github.com/Popov72))
+- Added to `FresnelParameters` constructor options and equals method ([brianzinn](https://github.com/brianzinn))
 
 ### WebXR
 - Added optional ray and mesh selection predicates to `WebXRControllerPointerSelection` ([Exolun](https://github.com/Exolun))
