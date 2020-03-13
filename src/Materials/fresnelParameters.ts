@@ -57,7 +57,7 @@ export type IFresnelParametersSerialized = {
     /**
      * Defined the power exponent applied to fresnel term
      */
-    power: number;
+    power?: number;
 
     /**
      * Define if the fresnel effect is enable or not.
@@ -106,6 +106,11 @@ export class FresnelParameters {
      */
     public power: number;
 
+    /**
+     * Creates a new FresnelParameters object.
+     *
+     * @param options provide your own settings to optionally to override defaults
+     */
     public constructor(options: IFresnelParametersCreationOptions = {}) {
         this.bias = (options.bias === undefined) ? 0 : options.bias;
         this.power = (options.power === undefined) ? 1 : options.power;
