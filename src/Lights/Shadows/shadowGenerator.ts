@@ -870,6 +870,13 @@ export class ShadowGenerator implements IShadowGenerator {
         // Custom render function.
         this._shadowMap.customRenderFunction = this._renderForShadowMap.bind(this);
 
+        // Force the mesh is ready funcion to true as we are double checking it
+        // in the custom render function. Also it prevents side effects and useless
+        // shader variations in DEPTHPREPASS mode.
+        this._shadowMap.customIsReadyFunction = (m: AbstractMesh, r: number) => {
+            return true;
+        };
+
         let engine = this._scene.getEngine();
 
         // Record Face Index before render.
