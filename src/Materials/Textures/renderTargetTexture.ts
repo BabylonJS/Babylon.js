@@ -121,6 +121,10 @@ export class RenderTargetTexture extends Texture {
      */
     public activeCamera: Nullable<Camera>;
     /**
+     * Override the mesh isReady function with your own one.
+     */
+    public customIsReadyFunction: (mesh: AbstractMesh, refreshRate: number) => boolean;
+    /**
      * Override the render function of the texture with your own one.
      */
     public customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>, beforeTransparents?: () => void) => void;
@@ -745,7 +749,13 @@ export class RenderTargetTexture extends Texture {
             var mesh = currentRenderList[meshIndex];
 
             if (mesh) {
-                if (!mesh.isReady(this.refreshRate === 0)) {
+                if (this.customIsReadyFunction) {
+                    if (!this.customIsReadyFunction(mesh, this.refreshRate)) {
+                        this.resetRefreshCounter();
+                        continue;
+                    }
+                }
+                else if (!mesh.isReady(this.refreshRate === 0)) {
                     this.resetRefreshCounter();
                     continue;
                 }
