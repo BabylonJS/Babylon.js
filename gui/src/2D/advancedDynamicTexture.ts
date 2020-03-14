@@ -555,19 +555,19 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 return;
             }
             var globalViewport = this._getGlobalViewport(scene);
-            for (var control of this._linkedControls) {
+            for (let control of this._linkedControls) {
                 if (!control.isVisible) {
                     continue;
                 }
-                var mesh = control._linkedMesh;
+                let mesh = control._linkedMesh;
                 if (!mesh || mesh.isDisposed()) {
                     Tools.SetImmediate(() => {
                         control.linkWithMesh(null);
                     });
                     continue;
                 }
-                var position = mesh.getBoundingInfo ? mesh.getBoundingInfo().boundingSphere.center : (Vector3.ZeroReadOnly as Vector3);
-                var projectedPosition = Vector3.Project(position, mesh.getWorldMatrix(), scene.getTransformMatrix(), globalViewport);
+                let position = mesh.getBoundingInfo ? mesh.getBoundingInfo().boundingSphere.center : (Vector3.ZeroReadOnly as Vector3);
+                let projectedPosition = Vector3.Project(position, mesh.getWorldMatrix(), scene.getTransformMatrix(), globalViewport);
                 if (projectedPosition.z < 0 || projectedPosition.z > 1) {
                     control.notRenderable = true;
                     continue;
