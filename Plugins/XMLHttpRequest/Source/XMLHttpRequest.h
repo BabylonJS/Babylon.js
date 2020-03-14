@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Babylon/JsRuntime.h>
+#include <Babylon/JsRuntimeScheduler.h>
 
 #include <napi/napi.h>
 #include <arcana/threading/task.h>
@@ -121,7 +122,8 @@ namespace Babylon
         arcana::task<void, std::exception_ptr> SendAsyncImpl(); // TODO: Eliminate this function once the UWP file access bug is fixed.
         void SetReadyState(ReadyState readyState);
 
-        JsRuntime& m_runtime;
+        JsRuntimeScheduler m_runtimeScheduler;
+
         const std::string m_rootUrl{};
 
         ReadyState m_readyState{ReadyState::Unsent};
