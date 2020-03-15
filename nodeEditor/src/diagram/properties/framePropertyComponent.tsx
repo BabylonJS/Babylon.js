@@ -8,6 +8,7 @@ import { TextInputLineComponent } from '../../sharedComponents/textInputLineComp
 import { ButtonLineComponent } from '../../sharedComponents/buttonLineComponent';
 import { Nullable } from 'babylonjs/types';
 import { Observer } from 'babylonjs/Misc/observable';
+import { NodePort } from '../nodePort';
 
 export interface IFramePropertyTabComponentProps {
     globalState: GlobalState
@@ -48,7 +49,11 @@ export class FramePropertyTabComponent extends React.Component<IFramePropertyTab
                     <Color3LineComponent globalState={this.props.globalState} label="Color" target={this.props.frame} propertyName="color"></Color3LineComponent>
                     <TextInputLineComponent globalState={this.props.globalState} label="Comments" propertyName="comments" target={this.props.frame}
                     />
-
+                    {
+                        this.props.frame.ports && this.props.frame.ports.map((port: NodePort) => 
+                        <TextInputLineComponent globalState={this.props.globalState} label="Port Label" propertyName="portLabel" target={port}/>
+                        )
+                    }
                     {
                         !this.props.frame.isCollapsed &&
                         <ButtonLineComponent label="Collapse" onClick={() => {

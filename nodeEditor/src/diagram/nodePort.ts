@@ -14,6 +14,7 @@ export class NodePort {
     private _img: HTMLImageElement;
     private _globalState: GlobalState;
     private _onCandidateLinkMovedObserver: Nullable<Observer<Nullable<Vector2>>>;
+    private _portLabel: Element;
 
     public delegatedPort: Nullable<NodePort> = null;
 
@@ -23,6 +24,14 @@ export class NodePort {
         }
 
         return this._element;
+    }
+
+    public get portLabel() {
+        return this._portLabel.innerHTML;
+    }
+
+    public set portLabel(newLabel: string) {
+        this._portLabel.innerHTML = newLabel;
     }
 
     public refresh() {
@@ -51,9 +60,11 @@ export class NodePort {
 
     public constructor(portContainer: HTMLElement, public connectionPoint: NodeMaterialConnectionPoint, public node: GraphNode, globalState: GlobalState) {
         this._element = portContainer.ownerDocument!.createElement("div");
-        this._element.classList.add("port");     
+        this._element.classList.add("port");
         portContainer.appendChild(this._element);
         this._globalState = globalState;
+
+        this._portLabel = portContainer.children[0];
 
         this._img = portContainer.ownerDocument!.createElement("img");
         this._element.appendChild(this._img );
