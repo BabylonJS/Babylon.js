@@ -66,9 +66,13 @@ void main(void) {
 
     vec3 geometricNormalW = normalW;
 
+#if defined(TWOSIDEDLIGHTING) && defined(NORMAL)
+    geometricNormalW = gl_FrontFacing ? geometricNormalW : -geometricNormalW;
+#endif
+
 #ifdef CLEARCOAT
     // Needs to use the geometric normal before bump for this.
-    vec3 clearCoatNormalW = normalW;
+    vec3 clearCoatNormalW = geometricNormalW;
 #endif
 
 #include<bumpFragment>
