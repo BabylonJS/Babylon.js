@@ -64,6 +64,8 @@ void main(void) {
     vec3 normalW = normalize(cross(dFdx(vPositionW), dFdy(vPositionW))) * vEyePosition.w;
 #endif
 
+    vec3 geometricNormalW = normalW;
+
 #ifdef CLEARCOAT
     // Needs to use the geometric normal before bump for this.
     vec3 clearCoatNormalW = normalW;
@@ -883,7 +885,7 @@ void main(void) {
         #ifdef HORIZONOCCLUSION
             #ifdef BUMP
                 #ifdef REFLECTIONMAP_3D
-                    float eho = environmentHorizonOcclusion(-viewDirectionW, normalW);
+                    float eho = environmentHorizonOcclusion(-viewDirectionW, normalW, geometricNormalW);
                     specularEnvironmentReflectance *= eho;
                 #endif
             #endif
@@ -941,7 +943,7 @@ void main(void) {
             #ifdef HORIZONOCCLUSION
                 #ifdef BUMP
                     #ifdef REFLECTIONMAP_3D
-                        float clearCoatEho = environmentHorizonOcclusion(-viewDirectionW, clearCoatNormalW);
+                        float clearCoatEho = environmentHorizonOcclusion(-viewDirectionW, clearCoatNormalW, geometricNormalW);
                         clearCoatEnvironmentReflectance *= clearCoatEho;
                     #endif
                 #endif
