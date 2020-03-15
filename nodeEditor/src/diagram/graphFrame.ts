@@ -180,6 +180,10 @@ export class GraphFrame {
         return this._nodes;
     }
 
+    public get ports(){
+        return this._ports;
+    }
+
     public get name() {
         return this._name;
     }
@@ -498,11 +502,6 @@ export class GraphFrame {
         this.x = newX;
         this.y = newY;
 
-        console.log("move():");
-        console.log("oldX: ", oldX);
-        console.log("oldY: ", oldY);
-        console.log("newX: ", newX);
-        console.log("newY: ", oldY);
         for (var selectedNode of this._nodes) {
             selectedNode.x += this.x - oldX;
             selectedNode.y += this.y - oldY;
