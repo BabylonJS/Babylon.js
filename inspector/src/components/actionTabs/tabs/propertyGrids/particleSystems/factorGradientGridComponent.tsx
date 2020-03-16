@@ -7,12 +7,14 @@ import { LockObject } from '../lockObject';
 import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 import { FactorGradientStepGridComponent } from './factorGradientStepGridComponent';
 import { Nullable } from 'babylonjs/types';
+import { TextLineComponent } from '../../../lines/textLineComponent';
 
 interface IFactorGradientGridComponent {
     globalState: GlobalState;
     label: string;
     gradients: Nullable<Array<FactorGradient>>,
     lockObject: LockObject,
+    docLink?: string,
     replaySourceReplacement?: string,
     onCreateRequired: () => void,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
@@ -73,7 +75,7 @@ export class FactorGradientGridComponent extends React.Component<IFactorGradient
                 {
                     gradients &&
                     <div className="gradient-container">
-                        <div className="gradient-label">{this.props.label}</div>
+                        <TextLineComponent label={this.props.label} url={this.props.docLink}/>
                         <ButtonLineComponent label="Add new step" onClick={() => this.addNewStep()} />
                         {
                             gradients.map((g, i) => {
