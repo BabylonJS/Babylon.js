@@ -53590,6 +53590,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         _this._dropPointY = 0;
         _this._selectionStartX = 0;
         _this._selectionStartY = 0;
+        _this._candidateLinkedHasMoved = false;
         _this._x = 0;
         _this._y = 0;
         _this._zoom = 1;
@@ -54025,6 +54026,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             this._dropPointX = (evt.pageX - rootRect.left) / this.zoom;
             this._dropPointY = (evt.pageY - rootRect.top) / this.zoom;
             this._candidateLink.update(this._dropPointX, this._dropPointY, true);
+            this._candidateLinkedHasMoved = true;
             return;
         }
         // Zoom with mouse + alt
@@ -54091,6 +54093,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             if (!this._candidateLink) {
                 var portElement = evt.nativeEvent.srcElement.parentElement.port;
                 this._candidateLink = new _nodeLink__WEBPACK_IMPORTED_MODULE_5__["NodeLink"](this, portElement, portElement.node);
+                this._candidateLinkedHasMoved = false;
             }
             return;
         }
@@ -54104,8 +54107,10 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         this._rootContainer.releasePointerCapture(evt.pointerId);
         this._oldY = -1;
         if (this._candidateLink) {
-            this.processCandidatePort();
-            this.props.globalState.onCandidateLinkMoved.notifyObservers(null);
+            if (this._candidateLinkedHasMoved) {
+                this.processCandidatePort();
+                this.props.globalState.onCandidateLinkMoved.notifyObservers(null);
+            }
             this._candidateLink.dispose();
             this._candidateLink = null;
             this._candidatePort = null;
