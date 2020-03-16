@@ -297,7 +297,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     <FactorGradientGridComponent globalState={this.props.globalState} gradients={system.getSizeGradients()!} 
                         label="Size gradients"
                         onCreateRequired={() => {
-                            system.addSizeGradient(0, 0, 1);
+                            system.addSizeGradient(0, 1, 1);
                         }}
                         lockObject={this.props.lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 </LineContainerComponent>          

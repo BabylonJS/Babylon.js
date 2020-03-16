@@ -40,7 +40,7 @@ export class FactorGradientGridComponent extends React.Component<IFactorGradient
 
         let newStep = new FactorGradient();
         newStep.gradient = 1.0;
-        newStep.factor1 = 0.0;
+        newStep.factor1 = 1.0;
         newStep.factor2 = 1.0;
 
         gradients.push(newStep);
