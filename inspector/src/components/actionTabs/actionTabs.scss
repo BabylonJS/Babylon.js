@@ -264,6 +264,76 @@ $line-padding-left: 2px;
                     }
                 }
 
+                .gradient-container {
+                    margin-top: 3px;
+
+                    .gradient-label {
+                        height: 30px;
+                        display: grid;
+                        align-content: center;
+                    }
+
+                    .gradient-step {
+                        display: grid;
+                        grid-template-rows: 100%;
+                        grid-template-columns: 30px 50px 55px 40px auto 20px 5px;
+                        padding-top: 5px;
+                        padding-left: 5px;
+                        padding-bottom: 5px;
+                
+                        .step {
+                            grid-row: 1;
+                            grid-column: 1;
+                        }
+                            
+                        .factor1 {
+                            grid-row: 1;
+                            grid-column: 2;
+                            cursor: pointer;
+                        }
+
+                        .factor2 {
+                            padding-left: 5px;
+                            grid-row: 1;
+                            grid-column: 3;
+                            cursor: pointer;
+                        }
+
+                        .numeric-input {
+                            width: calc(100% - 5px);
+                        }
+                
+                        .step-value {       
+                            margin-left: 5px;     
+                            grid-row: 1;
+                            grid-column: 4;
+                            text-align: right;
+                            margin-right: 5px;
+                        }
+                
+                        .step-slider {            
+                            grid-row: 1;
+                            grid-column: 5;
+                            display: grid;
+                            justify-content: stretch;
+                            align-content: center;
+                            margin-right: 5px;
+                
+                            input {
+                                width: 100%;
+                            }
+                        }
+                
+                        .gradient-delete {            
+                            grid-row: 1;
+                            grid-column: 6;
+                            display: grid;
+                            align-content: center;
+                            justify-content: center;
+                        }
+                    }
+                }
+
                 .textInputLine {
                     padding-left: $line-padding-left;
                     height: 30px;
