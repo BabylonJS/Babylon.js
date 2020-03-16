@@ -1474,6 +1474,47 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IFactorGradientStepGridComponent {
+        globalState: GlobalState;
+        gradient: BABYLON.FactorGradient;
+        lockObject: LockObject;
+        lineIndex: number;
+        onDelete: () => void;
+        onUpdateGradient: () => void;
+        onCheckForReOrder: () => void;
+    }
+    export class FactorGradientStepGridComponent extends React.Component<IFactorGradientStepGridComponent, {
+        gradient: number;
+    }> {
+        constructor(props: IFactorGradientStepGridComponent);
+        updateFactor1(factor: number): void;
+        updateFactor2(factor: number): void;
+        updateGradient(gradient: number): void;
+        onPointerUp(): void;
+        lock(): void;
+        unlock(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IFactorGradientGridComponent {
+        globalState: GlobalState;
+        label: string;
+        gradients: BABYLON.Nullable<Array<BABYLON.FactorGradient>>;
+        lockObject: LockObject;
+        replaySourceReplacement?: string;
+        onCreateRequired: () => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class FactorGradientGridComponent extends React.Component<IFactorGradientGridComponent> {
+        constructor(props: IFactorGradientGridComponent);
+        deleteStep(step: BABYLON.FactorGradient): void;
+        addNewStep(): void;
+        checkForReOrder(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface IParticleSystemPropertyGridComponentProps {
         globalState: GlobalState;
         system: BABYLON.IParticleSystem;

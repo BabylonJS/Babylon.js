@@ -34,6 +34,7 @@ import { Vector3 } from 'babylonjs/Maths/math.vector';
 import { AbstractMesh } from 'babylonjs/Meshes/abstractMesh';
 import { MeshParticleEmitter } from 'babylonjs/Particles/EmitterTypes/meshParticleEmitter';
 import { MeshEmitterGridComponent } from './meshEmitterGridComponent';
+import { FactorGradientGridComponent } from './factorGradientGridComponent';
 
 interface IParticleSystemPropertyGridComponentProps {
     globalState: GlobalState;
@@ -293,6 +294,12 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     <FloatLineComponent lockObject={this.props.lockObject} label="Max scale X" target={system} propertyName="maxScaleX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Min scale Y" target={system} propertyName="minScaleY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Max scale Y" target={system} propertyName="maxScaleY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FactorGradientGridComponent globalState={this.props.globalState} gradients={system.getSizeGradients()!} 
+                        label="Size gradients"
+                        onCreateRequired={() => {
+                            system.addSizeGradient(0, 1, 1);
+                        }}
+                        lockObject={this.props.lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 </LineContainerComponent>          
                 <LineContainerComponent globalState={this.props.globalState} title="LIFETIME">
                     <FloatLineComponent lockObject={this.props.lockObject} label="Min lifetime" target={system} propertyName="minLifeTime" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -311,6 +318,12 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     <FloatLineComponent lockObject={this.props.lockObject} label="Max angular speed" target={system} propertyName="maxAngularSpeed" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Min initial rotation" target={system} propertyName="minInitialRotation" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Max initial rotation" target={system} propertyName="maxInitialRotation" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FactorGradientGridComponent globalState={this.props.globalState} gradients={system.getAngularSpeedGradients()!} 
+                        label="Angular speed gradients"
+                        onCreateRequired={() => {
+                            system.addAngularSpeedGradient(0, 0.1, 0.1);
+                        }}
+                        lockObject={this.props.lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>                    
                 </LineContainerComponent>  
             </div>
         );

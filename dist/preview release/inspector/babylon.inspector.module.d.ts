@@ -1919,6 +1919,58 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/particleSystems/factorGradientStepGridComponent" {
+    import * as React from 'react';
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { FactorGradient } from 'babylonjs/Misc/gradients';
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    interface IFactorGradientStepGridComponent {
+        globalState: GlobalState;
+        gradient: FactorGradient;
+        lockObject: LockObject;
+        lineIndex: number;
+        onDelete: () => void;
+        onUpdateGradient: () => void;
+        onCheckForReOrder: () => void;
+    }
+    export class FactorGradientStepGridComponent extends React.Component<IFactorGradientStepGridComponent, {
+        gradient: number;
+    }> {
+        constructor(props: IFactorGradientStepGridComponent);
+        updateFactor1(factor: number): void;
+        updateFactor2(factor: number): void;
+        updateGradient(gradient: number): void;
+        onPointerUp(): void;
+        lock(): void;
+        unlock(): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/particleSystems/factorGradientGridComponent" {
+    import * as React from "react";
+    import { Observable } from 'babylonjs/Misc/observable';
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { FactorGradient } from 'babylonjs/Misc/gradients';
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { Nullable } from 'babylonjs/types';
+    interface IFactorGradientGridComponent {
+        globalState: GlobalState;
+        label: string;
+        gradients: Nullable<Array<FactorGradient>>;
+        lockObject: LockObject;
+        replaySourceReplacement?: string;
+        onCreateRequired: () => void;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class FactorGradientGridComponent extends React.Component<IFactorGradientGridComponent> {
+        constructor(props: IFactorGradientGridComponent);
+        deleteStep(step: FactorGradient): void;
+        addNewStep(): void;
+        checkForReOrder(): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
@@ -4075,6 +4127,47 @@ declare module INSPECTOR {
     }
     export class MeshEmitterGridComponent extends React.Component<IMeshEmitterGridComponentProps> {
         constructor(props: IMeshEmitterGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IFactorGradientStepGridComponent {
+        globalState: GlobalState;
+        gradient: BABYLON.FactorGradient;
+        lockObject: LockObject;
+        lineIndex: number;
+        onDelete: () => void;
+        onUpdateGradient: () => void;
+        onCheckForReOrder: () => void;
+    }
+    export class FactorGradientStepGridComponent extends React.Component<IFactorGradientStepGridComponent, {
+        gradient: number;
+    }> {
+        constructor(props: IFactorGradientStepGridComponent);
+        updateFactor1(factor: number): void;
+        updateFactor2(factor: number): void;
+        updateGradient(gradient: number): void;
+        onPointerUp(): void;
+        lock(): void;
+        unlock(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IFactorGradientGridComponent {
+        globalState: GlobalState;
+        label: string;
+        gradients: BABYLON.Nullable<Array<BABYLON.FactorGradient>>;
+        lockObject: LockObject;
+        replaySourceReplacement?: string;
+        onCreateRequired: () => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class FactorGradientGridComponent extends React.Component<IFactorGradientGridComponent> {
+        constructor(props: IFactorGradientGridComponent);
+        deleteStep(step: BABYLON.FactorGradient): void;
+        addNewStep(): void;
+        checkForReOrder(): void;
         render(): JSX.Element;
     }
 }
