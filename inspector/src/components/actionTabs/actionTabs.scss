@@ -279,7 +279,8 @@ $line-padding-left: 2px;
                         grid-template-columns: 30px 50px 55px 40px auto 20px 5px;
                         padding-top: 5px;
                         padding-left: 5px;
-                        padding-bottom: 5px;
+                        padding-bottom: 5px;    
+                        align-items: center;
                 
                         .step {
                             grid-row: 1;

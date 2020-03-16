@@ -285,7 +285,13 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                 <LineContainerComponent globalState={this.props.globalState} title="EMISSION">
                     <FloatLineComponent lockObject={this.props.lockObject} label="Rate" target={system} propertyName="emitRate" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Min emit power" target={system} propertyName="minEmitPower" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent lockObject={this.props.lockObject} label="Max emit power" target={system} propertyName="maxEmitPower" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent lockObject={this.props.lockObject} label="Max emit power" target={system} propertyName="maxEmitPower" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />               
+                    <FactorGradientGridComponent globalState={this.props.globalState} gradients={system.getVelocityGradients()!} 
+                        label="Velocity gradients"
+                        onCreateRequired={() => {
+                            system.addVelocityGradient(0, 0.1, 0.1);
+                        }}
+                        lockObject={this.props.lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 </LineContainerComponent>  
                 <LineContainerComponent globalState={this.props.globalState} title="SIZE">
                     <FloatLineComponent lockObject={this.props.lockObject} label="Min size" target={system} propertyName="minSize" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
