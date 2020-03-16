@@ -1040,7 +1040,7 @@ void main(void) {
 
     // _______________________________  IBL Translucency ________________________________
     #if defined(REFLECTION) && defined(SS_TRANSLUCENCY)
-        #if defined(USESPHERICALINVERTEX)
+        #if defined(NORMAL) && defined(USESPHERICALINVERTEX) || !defined(USESPHERICALFROMREFLECTIONMAP)
             vec3 irradianceVector = vec3(reflectionMatrix * vec4(normalW, 0)).xyz;
             #ifdef REFLECTIONMAP_OPPOSITEZ
                 irradianceVector.z *= -1.0;
