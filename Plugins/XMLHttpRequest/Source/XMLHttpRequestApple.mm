@@ -8,6 +8,22 @@ void bytesDeallocator(void* ptr, void* context)
 {
     free(ptr);
 }
+Babylon::JsRuntime* _runtime = nullptr;
+void InitializeXMLHttpRequest(Babylon::JsRuntime& runtime)
+{
+    _runtime = &runtime;
+    _runtime->Dispatch([](Napi::Env env)
+    {
+    JSGlobalContextRef globalContext = Napi::GetJavaScriptCoreGlobalContext(env);
+    [[XMLHttpRequest new] extend:globalContext :^(CompletionHandlerFunction completetionHandlerFunction) {
+        _runtime->Dispatch([completetionHandlerFunction](Napi::Env env) {
+            completetionHandlerFunction();
+        });
+     }
+     ];
+    });
+}
+
 @implementation XMLHttpRequest {
 };
 

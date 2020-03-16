@@ -3,9 +3,13 @@
 // MIT License
 #import <Foundation/Foundation.h>
 #import <JavaScriptCore/JavaScriptCore.h>
+#include <napi/napi.h>
+#include <Babylon/JsRuntime.h>
 
 typedef void (^ CompletionHandlerFunction)();
 typedef void (^ CompletionHandler)(CompletionHandlerFunction);
+
+void InitializeXMLHttpRequest(Babylon::JsRuntime& runtime);
 
 typedef NS_ENUM(NSUInteger , ReadyState) {
     XMLHttpRequestUNSENT =0,	// open()has not been called yet.
