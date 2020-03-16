@@ -20514,6 +20514,10 @@ declare module BABYLON {
          */
         activeCamera: Nullable<Camera>;
         /**
+         * Override the mesh isReady function with your own one.
+         */
+        customIsReadyFunction: (mesh: AbstractMesh, refreshRate: number) => boolean;
+        /**
          * Override the render function of the texture with your own one.
          */
         customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>, beforeTransparents?: () => void) => void;
@@ -26043,6 +26047,56 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Options to be used when creating a FresnelParameters.
+     */
+    export type IFresnelParametersCreationOptions = {
+        /**
+         * Define the color used on edges (grazing angle)
+         */
+        leftColor?: Color3;
+        /**
+         * Define the color used on center
+         */
+        rightColor?: Color3;
+        /**
+         * Define bias applied to computed fresnel term
+         */
+        bias?: number;
+        /**
+         * Defined the power exponent applied to fresnel term
+         */
+        power?: number;
+        /**
+         * Define if the fresnel effect is enable or not.
+         */
+        isEnabled?: boolean;
+    };
+    /**
+     * Serialized format for FresnelParameters.
+     */
+    export type IFresnelParametersSerialized = {
+        /**
+         * Define the color used on edges (grazing angle) [as an array]
+         */
+        leftColor: number[];
+        /**
+         * Define the color used on center [as an array]
+         */
+        rightColor: number[];
+        /**
+         * Define bias applied to computed fresnel term
+         */
+        bias: number;
+        /**
+         * Defined the power exponent applied to fresnel term
+         */
+        power?: number;
+        /**
+         * Define if the fresnel effect is enable or not.
+         */
+        isEnabled: boolean;
+    };
+    /**
      * This represents all the required information to add a fresnel effect on a material:
      * @see http://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
      */
@@ -26070,21 +26124,33 @@ declare module BABYLON {
          */
         power: number;
         /**
+         * Creates a new FresnelParameters object.
+         *
+         * @param options provide your own settings to optionally to override defaults
+         */
+        constructor(options?: IFresnelParametersCreationOptions);
+        /**
          * Clones the current fresnel and its valuues
          * @returns a clone fresnel configuration
          */
         clone(): FresnelParameters;
         /**
+         * Determines equality between FresnelParameters objects
+         * @param otherFresnelParameters defines the second operand
+         * @returns true if the power, bias, leftColor, rightColor and isEnabled values are equal to the given ones
+         */
+        equals(otherFresnelParameters: DeepImmutable<FresnelParameters>): boolean;
+        /**
          * Serializes the current fresnel parameters to a JSON representation.
          * @return the JSON serialization
          */
-        serialize(): any;
+        serialize(): IFresnelParametersSerialized;
         /**
          * Parse a JSON object and deserialize it to a new Fresnel parameter object.
          * @param parsedFresnelParameters Define the JSON representation
          * @returns the parsed parameters
          */
-        static Parse(parsedFresnelParameters: any): FresnelParameters;
+        static Parse(parsedFresnelParameters: IFresnelParametersSerialized): FresnelParameters;
     }
 }
 declare module BABYLON {
@@ -27843,6 +27909,7 @@ declare module BABYLON {
         _checkCollisions: boolean;
         _collisionMask: number;
         _collisionGroup: number;
+        _surroundingMeshes: Nullable<AbstractMesh[]>;
         _collider: Nullable<Collider>;
         _oldPositionForCollisions: Vector3;
         _diffPositionForCollisions: Vector3;
@@ -28164,6 +28231,17 @@ declare module BABYLON {
          */
         get collisionGroup(): number;
         set collisionGroup(mask: number);
+        /**
+         * Gets or sets current surrounding meshes (null by default).
+         *
+         * By default collision detection is tested against every mesh in the scene.
+         * It is possible to set surroundingMeshes to a defined list of meshes and then only these specified
+         * meshes will be tested for the collision.
+         *
+         * Note: if set to an empty array no collision will happen when this mesh is moved.
+         */
+        get surroundingMeshes(): Nullable<AbstractMesh[]>;
+        set surroundingMeshes(meshes: Nullable<AbstractMesh[]>);
         /**
          * Defines edge width used when edgesRenderer is enabled
          * @see https://www.babylonjs-playground.com/#10OJSG#13
@@ -39508,6 +39586,7 @@ declare module BABYLON {
         private _pointerObserver;
         private _moving;
         private _startingOrientation;
+        private _attachedElement;
         /**
          * How much faster the object should move when the controller is moving towards it. This is useful to bring objects that are far away from the user to them faster. Set this to 0 to avoid any speed increase. (Default: 3)
          */
@@ -48740,8 +48819,9 @@ declare module BABYLON {
         /**
          * Enables/disables scaling
          * @param enable if scaling should be enabled
+         * @param homogeneousScaling defines if scaling should only be homogeneous
          */
-        setEnabledScaling(enable: boolean): void;
+        setEnabledScaling(enable: boolean, homogeneousScaling?: boolean): void;
         private _updateDummy;
         /**
          * Enables a pointer drag behavior on the bounding box of the gizmo
@@ -54554,6 +54634,10 @@ declare module BABYLON {
         private _computeMatrices;
         private _computeFrustumInWorldSpace;
         private _computeCascadeFrustum;
+        /**
+        *  Support test.
+        */
+        static get IsSupported(): boolean;
         /** @hidden */
         static _SceneComponentInitialization: (scene: Scene) => void;
         /**
@@ -57451,6 +57535,11 @@ declare module BABYLON {
          * @param rootUrl defines the root URL to use to load textures and relative dependencies
          */
         loadFromSerialization(source: any, rootUrl?: string): void;
+        /**
+         * Makes a duplicate of the current material.
+         * @param name - name to use for the new material.
+         */
+        clone(name: string): NodeMaterial;
         /**
          * Creates a node material from parsed material data
          * @param source defines the JSON representation of the material
@@ -61162,6 +61251,9 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
+            wrap?: boolean;
+            topBaseAt?: number;
+            bottomBaseAt?: number;
             updatable?: boolean;
         }, scene?: Nullable<Scene>): Mesh;
         /**
@@ -62168,6 +62260,16 @@ declare module BABYLON {
          */
         getDefaultQueryExtent(): Vector3;
         /**
+         * build the navmesh from a previously saved state using getNavmeshData
+         * @param data the Uint8Array returned by getNavmeshData
+         */
+        buildFromNavmeshData(data: Uint8Array): void;
+        /**
+         * returns the navmesh data that can be used later. The navmesh must be built before retrieving the data
+         * @returns data the Uint8Array that can be saved and reused
+         */
+        getNavmeshData(): Uint8Array;
+        /**
          * Get the Bounding box extent result specified by setDefaultQueryExtent
          * @param result output the box extent values
          */
@@ -62468,6 +62570,16 @@ declare module BABYLON {
          * @returns the box extent values
          */
         getDefaultQueryExtent(): Vector3;
+        /**
+         * build the navmesh from a previously saved state using getNavmeshData
+         * @param data the Uint8Array returned by getNavmeshData
+         */
+        buildFromNavmeshData(data: Uint8Array): void;
+        /**
+         * returns the navmesh data that can be used later. The navmesh must be built before retrieving the data
+         * @returns data the Uint8Array that can be saved and reused
+         */
+        getNavmeshData(): Uint8Array;
         /**
          * Get the Bounding box extent result specified by setDefaultQueryExtent
          * @param result output the box extent values

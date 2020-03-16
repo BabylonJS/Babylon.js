@@ -1103,28 +1103,32 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
                 return;
             }
             var globalViewport = this._getGlobalViewport(scene);
-            for (var _i = 0, _a = this._linkedControls; _i < _a.length; _i++) {
-                var control = _a[_i];
+            var _loop_1 = function (control) {
                 if (!control.isVisible) {
-                    continue;
+                    return "continue";
                 }
                 var mesh = control._linkedMesh;
                 if (!mesh || mesh.isDisposed()) {
                     babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Tools"].SetImmediate(function () {
                         control.linkWithMesh(null);
                     });
-                    continue;
+                    return "continue";
                 }
                 var position = mesh.getBoundingInfo ? mesh.getBoundingInfo().boundingSphere.center : babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"].ZeroReadOnly;
                 var projectedPosition = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Project(position, mesh.getWorldMatrix(), scene.getTransformMatrix(), globalViewport);
                 if (projectedPosition.z < 0 || projectedPosition.z > 1) {
                     control.notRenderable = true;
-                    continue;
+                    return "continue";
                 }
                 control.notRenderable = false;
                 // Account for RenderScale.
-                projectedPosition.scaleInPlace(this.renderScale);
+                projectedPosition.scaleInPlace(this_1.renderScale);
                 control._moveToProjectedPosition(projectedPosition);
+            };
+            var this_1 = this;
+            for (var _i = 0, _a = this._linkedControls; _i < _a.length; _i++) {
+                var control = _a[_i];
+                _loop_1(control);
             }
         }
         if (!this._isDirty && !this._rootContainer.isDirty) {
