@@ -69124,7 +69124,7 @@ declare module BABYLON {
     /**
      * Options used for hit testing
      */
-    export interface IWebXRHitTestOptions {
+    export interface IWebXRLegacyHitTestOptions {
         /**
          * Only test when user interacted with the scene. Default - hit test every frame
          */
@@ -69137,7 +69137,7 @@ declare module BABYLON {
     /**
      * Interface defining the babylon result of raycasting/hit-test
      */
-    export interface IWebXRHitResult {
+    export interface IWebXRLegacyHitResult {
         /**
          * Transformation matrix that can be applied to a node that will put it in the hit point location
          */
@@ -69145,7 +69145,7 @@ declare module BABYLON {
         /**
          * The native hit test result
          */
-        xrHitResult: XRHitResult;
+        xrHitResult: XRHitResult | XRHitTestResult;
     }
     /**
      * The currently-working hit-test module.
@@ -69156,7 +69156,7 @@ declare module BABYLON {
         /**
          * options to use when constructing this feature
          */
-        readonly options: IWebXRHitTestOptions;
+        readonly options: IWebXRLegacyHitTestOptions;
         private _direction;
         private _mat;
         private _onSelectEnabled;
@@ -69178,7 +69178,7 @@ declare module BABYLON {
         /**
          * Triggered when new babylon (transformed) hit test results are available
          */
-        onHitTestResultObservable: Observable<IWebXRHitResult[]>;
+        onHitTestResultObservable: Observable<IWebXRLegacyHitResult[]>;
         /**
          * Creates a new instance of the (legacy version) hit test feature
          * @param _xrSessionManager an instance of WebXRSessionManager
@@ -69188,7 +69188,7 @@ declare module BABYLON {
         /**
          * options to use when constructing this feature
          */
-        options?: IWebXRHitTestOptions);
+        options?: IWebXRLegacyHitTestOptions);
         /**
          * execute a hit test with an XR Ray
          *
@@ -69675,6 +69675,132 @@ declare module BABYLON {
         }): void;
         protected _onXRFrame(_xrFrame: any): void;
         private _detachController;
+    }
+}
+declare module BABYLON {
+    /**
+     * Options used for hit testing (version 2)
+     */
+    export interface IWebXRHitTestOptions extends IWebXRLegacyHitTestOptions {
+        /**
+         * Do not create a permanent hit test. Will usually be used when only
+         * transient inputs are needed.
+         */
+        disablePermanentHitTest?: boolean;
+        /**
+         * Enable transient (for example touch-based) hit test inspections
+         */
+        enableTransientHitTest?: boolean;
+        /**
+         * Offset ray for the permanent hit test
+         */
+        offsetRay?: Vector3;
+        /**
+         * Offset ray for the transient hit test
+         */
+        transientOffsetRay?: Vector3;
+        /**
+         * Instead of using viewer space for hit tests, use the reference space defined in the session manager
+         */
+        useReferenceSpace?: boolean;
+    }
+    /**
+     * Interface defining the babylon result of hit-test
+     */
+    export interface IWebXRHitResult extends IWebXRLegacyHitResult {
+        /**
+         * The input source that generated this hit test (if transient)
+         */
+        inputSource?: XRInputSource;
+        /**
+         * Is this a transient hit test
+         */
+        isTransient?: boolean;
+        /**
+         * Position of the hit test result
+         */
+        position: Vector3;
+        /**
+         * Rotation of the hit test result
+         */
+        rotationQuaternion: Quaternion;
+    }
+    /**
+     * The currently-working hit-test module.
+     * Hit test (or Ray-casting) is used to interact with the real world.
+     * For further information read here - https://github.com/immersive-web/hit-test
+     *
+     * Tested on chrome (mobile) 80.
+     */
+    export class WebXRHitTest extends WebXRAbstractFeature {
+        /**
+         * options to use when constructing this feature
+         */
+        readonly options: IWebXRHitTestOptions;
+        private _tmpMat;
+        private _tmpPos;
+        private _tmpQuat;
+        private _transientXrHitTestSource;
+        private _xrHitTestSource;
+        private initHitTestSource;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the WebXR specs version
+         */
+        static readonly Version: number;
+        /**
+         * When set to true, each hit test will have its own position/rotation objects
+         * When set to false, position and rotation objects will be reused for each hit test. It is expected that
+         * the developers will clone them or copy them as they see fit.
+         */
+        autoCloneTransformation: boolean;
+        /**
+         * Populated with the last native XR Hit Results
+         */
+        lastNativeXRHitResults: XRHitResult[];
+        /**
+         * Triggered when new babylon (transformed) hit test results are available
+         */
+        onHitTestResultObservable: Observable<IWebXRHitResult[]>;
+        /**
+         * Use this to temporarily pause hit test checks.
+         */
+        paused: boolean;
+        /**
+         * Creates a new instance of the hit test feature
+         * @param _xrSessionManager an instance of WebXRSessionManager
+         * @param options options to use when constructing this feature
+         */
+        constructor(_xrSessionManager: WebXRSessionManager, 
+        /**
+         * options to use when constructing this feature
+         */
+        options?: IWebXRHitTestOptions);
+        /**
+         * attach this feature
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        attach(): boolean;
+        /**
+         * detach this feature.
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+        /**
+         * Dispose this feature and all of the resources attached
+         */
+        dispose(): void;
+        protected _onXRFrame(frame: XRFrame): void;
+        private _processWebXRHitTestResult;
     }
 }
 declare module BABYLON {
@@ -70479,9 +70605,14 @@ interface XRSession extends XRAnchorCreator {
     renderState: XRRenderState;
     inputSources: Array<XRInputSource>;
 
-    // AR hit test
+    // hit test
+    requestHitTestSource(options: XRHitTestOptionsInit): Promise<XRHitTestSource>;
+    requestHitTestSourceForTransientInput(options: XRTransientInputHitTestOptionsInit): Promise<XRTransientInputHitTestSource>;
+
+    // legacy AR hit test
     requestHitTest(ray: XRRay, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]>;
 
+    // legacy plane detection
     updateWorldTrackingState(options: {
         planeDetectionState?: { enabled: boolean; }
     }): void;
@@ -70500,6 +70631,9 @@ interface XRFrame {
     getViewerPose(referenceSpace: XRReferenceSpace): XRViewerPose | undefined;
     getPose(space: XRSpace, baseSpace: XRSpace): XRPose | undefined;
 
+    // AR
+    getHitTestResults(hitTestSource: XRHitTestSource): Array<XRHitTestResult> ;
+    getHitTestResultsForTransientInput(hitTestSource: XRTransientInputHitTestSource): Array<XRTransientInputHitTestResult>;
     // Anchors
     trackedAnchors?: XRAnchorSet;
     // Planes
@@ -70570,8 +70704,42 @@ declare class XRRay {
     matrix: Float32Array;
 }
 
+declare enum XRHitTestTrackableType {
+    "point",
+    "plane"
+}
+
 interface XRHitResult {
     hitMatrix: Float32Array;
+}
+
+interface XRTransientInputHitTestResult {
+    readonly inputSource: XRInputSource;
+    readonly results: Array<XRHitTestResult>;
+}
+
+interface XRHitTestResult {
+    getPose(baseSpace: XRSpace): XRPose | undefined;
+}
+
+interface XRHitTestSource {
+    cancel(): void;
+}
+
+interface XRTransientInputHitTestSource {
+    cancel(): void;
+}
+
+interface XRHitTestOptionsInit {
+    space: XRSpace;
+    entityTypes?: Array<XRHitTestTrackableType>;
+    offsetRay?: XRRay;
+}
+
+interface XRTransientInputHitTestOptionsInit {
+    profile: string;
+    entityTypes?: Array<XRHitTestTrackableType>;
+    offsetRay?: XRRay;
 }
 
 interface XRAnchor {

@@ -488,6 +488,7 @@ declare module INSPECTOR {
         propertyName?: string;
         onTextureCreated?: (texture: BABYLON.BaseTexture) => void;
         customDebugAction?: (state: boolean) => void;
+        onTextureRemoved?: () => void;
     }
     export class TextureLinkLineComponent extends React.Component<ITextureLinkLineComponentProps, {
         isDebugSelected: boolean;
@@ -499,6 +500,7 @@ declare module INSPECTOR {
         debugTexture(): void;
         onLink(): void;
         updateTexture(file: File): void;
+        removeTexture(): void;
         render(): JSX.Element | null;
     }
 }
