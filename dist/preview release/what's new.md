@@ -1,12 +1,12 @@
 # 4.2.0
 
 ## Major updates
+- Added particle editor to the Inspector ([Deltakosh](https://github.com/deltakosh)
 
 ## Updates
 
 ### General
 
-- NME Frames are now resizable from the corners ([Kyle Belfort](https://github.com/belfortk)
 - Refactored React refs from old string API to React.createRef() API ([Kyle Belfort](https://github.com/belfortk)
 
 - Scale on one axis for `BoundingBoxGizmo` ([cedricguillemet](https://github.com/cedricguillemet))
@@ -18,6 +18,10 @@
 
 - Allow logging of shader code when a compilation error occurs ([Popov72](https://github.com/Popov72))
 - Add back support for selecting textures based on engine capabilities ([bghgary](https://github.com/bghgary))
+
+### NME
+
+- NME Frames are now resizable from the corners ([Kyle Belfort](https://github.com/belfortk)
 
 ### Inspector
 
