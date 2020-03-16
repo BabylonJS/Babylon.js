@@ -267,7 +267,7 @@ export class Animatable {
             var fps = runtimeAnimations[0].animation.framePerSecond;
             var currentFrame = runtimeAnimations[0].currentFrame;
             var adjustTime = frame - currentFrame;
-            var delay = this.speedRatio !== 0 ? adjustTime * 1000 / (fps * this.speedRatio) : 0;
+            var delay = this.speedRatio !== 0 ? adjustTime * 1000 / (fps / this.speedRatio) : 0;
             if (this._localDelayOffset === null) {
                 this._localDelayOffset = 0;
             }
