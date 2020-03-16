@@ -91,6 +91,7 @@ declare module INSPECTOR {
         color?: string;
         underline?: boolean;
         onLink?: () => void;
+        url?: string;
         ignoreValue?: boolean;
     }
     export class TextLineComponent extends React.Component<ITextLineComponentProps> {
@@ -1502,6 +1503,7 @@ declare module INSPECTOR {
         label: string;
         gradients: BABYLON.Nullable<Array<BABYLON.FactorGradient>>;
         lockObject: LockObject;
+        docLink?: string;
         replaySourceReplacement?: string;
         onCreateRequired: () => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;

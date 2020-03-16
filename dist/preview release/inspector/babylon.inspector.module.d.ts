@@ -110,6 +110,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/textLineComponen
         color?: string;
         underline?: boolean;
         onLink?: () => void;
+        url?: string;
         ignoreValue?: boolean;
     }
     export class TextLineComponent extends React.Component<ITextLineComponentProps> {
@@ -1959,6 +1960,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
         label: string;
         gradients: Nullable<Array<FactorGradient>>;
         lockObject: LockObject;
+        docLink?: string;
         replaySourceReplacement?: string;
         onCreateRequired: () => void;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
@@ -2748,6 +2750,7 @@ declare module INSPECTOR {
         color?: string;
         underline?: boolean;
         onLink?: () => void;
+        url?: string;
         ignoreValue?: boolean;
     }
     export class TextLineComponent extends React.Component<ITextLineComponentProps> {
@@ -4159,6 +4162,7 @@ declare module INSPECTOR {
         label: string;
         gradients: BABYLON.Nullable<Array<BABYLON.FactorGradient>>;
         lockObject: LockObject;
+        docLink?: string;
         replaySourceReplacement?: string;
         onCreateRequired: () => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
