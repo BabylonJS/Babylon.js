@@ -1,7 +1,7 @@
 if(APPLE)
     set(SOURCES 
         "Include/Babylon/XMLHttpRequestApple.h"
-        "Source/XMLHttpRequestApple.m")
+        "Source/XMLHttpRequestApple.mm")
 
     # CLANG_ENABLE_OBJC_WEAK = YES
     set_source_files_properties(

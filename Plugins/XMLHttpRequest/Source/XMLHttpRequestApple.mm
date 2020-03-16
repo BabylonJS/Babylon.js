@@ -8,19 +8,13 @@ void bytesDeallocator(void* ptr, void* context)
 {
     free(ptr);
 }
-Babylon::JsRuntime* _runtime = nullptr;
+
 void InitializeXMLHttpRequest(Babylon::JsRuntime& runtime)
 {
-    _runtime = &runtime;
-    _runtime->Dispatch([](Napi::Env env)
+    runtime.Dispatch([&runtime](Napi::Env env)
     {
-    JSGlobalContextRef globalContext = Napi::GetJavaScriptCoreGlobalContext(env);
-    [[XMLHttpRequest new] extend:globalContext :^(CompletionHandlerFunction completetionHandlerFunction) {
-        _runtime->Dispatch([completetionHandlerFunction](Napi::Env env) {
-            completetionHandlerFunction();
-        });
-     }
-     ];
+        JSGlobalContextRef globalContext = Napi::GetJavaScriptCoreGlobalContext(env);
+        [[XMLHttpRequest new] extend:globalContext:&runtime];
     });
 }
 
@@ -47,7 +41,7 @@ void InitializeXMLHttpRequest(Babylon::JsRuntime& runtime)
 
 static JSGlobalContextRef _jsGlobalContextRef = nil;
 static JSContext *_jsContext = nil;
-static CompletionHandler _completionHandler;
+static Babylon::JsRuntime* _runtime = nil;
 
 - (instancetype)init {
     return [self initWithURLSession:[NSURLSession sharedSession]];
@@ -63,9 +57,10 @@ static CompletionHandler _completionHandler;
     return self;
 }
 
-- (void)extend:(JSGlobalContextRef)globalContextRef :(CompletionHandler)completionHandler {
+- (void)extend:(JSGlobalContextRef)globalContextRef:(Babylon::JsRuntime*)runtime {
     _jsGlobalContextRef = globalContextRef;
-    _completionHandler = completionHandler;
+    _runtime = runtime;
+
     JSContext *jsContext = _jsContext = [JSContext contextWithJSGlobalContextRef:globalContextRef];
     jsContext[@"XMLHttpRequest"] = ^{
         return [[XMLHttpRequest alloc] init];
@@ -131,10 +126,9 @@ static CompletionHandler _completionHandler;
         weakSelf._onreadystatechange = weakSelf._eventHandlers[@"readystatechange"];
         [weakSelf setAllResponseHeaders:[httpResponse allHeaderFields]];
         if (weakSelf._onreadystatechange != nil) {
-            void (^completion)() = ^() {
-                [weakSelf._onreadystatechange callWithArguments:@[]];
-            };
-            _completionHandler(completion);
+            _runtime->Dispatch([self](Napi::Env) {
+                [self._onreadystatechange callWithArguments:@[]];
+            });
         }
     };
     NSURLSessionDataTask *task = [_urlSession dataTaskWithRequest:request
