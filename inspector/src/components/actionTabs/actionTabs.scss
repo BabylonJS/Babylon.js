@@ -164,7 +164,7 @@ $line-padding-left: 2px;
                         grid-column: 1;
                         margin-left: 5px;
                         margin-right: 5px;
-                        display: grid;
+                        display: block;
                         align-items: center; 
                         justify-items: center;                          
                         cursor: pointer;
@@ -177,6 +177,12 @@ $line-padding-left: 2px;
 
                     .textLine {
                         grid-column: 2;
+                    }
+
+                    .actionIcon {
+                        display : inline-block;
+                        margin-top : 6px;
+                        margin-right : 4px;
                     }
                 }
 
