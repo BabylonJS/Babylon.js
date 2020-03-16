@@ -34,19 +34,23 @@
 - Recast.js plugin nav mesh and crowd agent to ref performance optimizations. ([MackeyK24](https://github.com/MackeyK24))
 
 ### Loaders
+
 - Added support for glTF mesh instancing extension ([#7521](https://github.com/BabylonJS/Babylon.js/issues/7521)) ([drigax](https://github.com/Drigax))
 
 ### Navigation
 - export/load prebuilt binary navigation mesh ([cedricguillemet](https://github.com/cedricguillemet))
 
 ### Materials
+
 - Added the `roughness` and `albedoScaling` parameters to PBR sheen ([Popov72](https://github.com/Popov72))
 - Updated the energy conservation factor for the clear coat layer in PBR materials ([Popov72](https://github.com/Popov72))
 - Added the `transparencyMode` property to the `StandardMaterial` class ([Popov72](https://github.com/Popov72))
 - Added to `FresnelParameters` constructor options and equals method ([brianzinn](https://github.com/brianzinn))
 
 ### WebXR
+
 - Added optional ray and mesh selection predicates to `WebXRControllerPointerSelection` ([Exolun](https://github.com/Exolun))
+- Implemented the new WebXR HitTest API ([#7364](https://github.com/BabylonJS/Babylon.js/issues/7364)) ([RaananW](https://github.com/RaananW))
 
 ### Collisions
 - Added an option to optimize collision detection performance ([jsdream](https://github.com/jsdream)) - [PR](https://github.com/BabylonJS/Babylon.js/pull/7810)
