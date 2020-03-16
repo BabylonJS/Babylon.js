@@ -134,10 +134,12 @@ Engine.prototype._renderViews = function() {
         }
 
         // Set sizes
-        canvas.width = canvas.clientWidth;
-        canvas.height = canvas.clientHeight;
-        parent.width = canvas.clientWidth;
-        parent.height = canvas.clientHeight;
+        if (canvas.clientWidth && canvas.clientHeight) {
+            canvas.width = canvas.clientWidth;
+            canvas.height = canvas.clientHeight;
+            parent.width = canvas.clientWidth;
+            parent.height = canvas.clientHeight;
+        }
 
         // Render the frame
         this._renderFrame();
