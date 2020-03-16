@@ -284,15 +284,37 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                 </LineContainerComponent>       
                 <LineContainerComponent globalState={this.props.globalState} title="EMISSION">
                     <FloatLineComponent lockObject={this.props.lockObject} label="Rate" target={system} propertyName="emitRate" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FactorGradientGridComponent globalState={this.props.globalState} gradients={system.getEmitRateGradients()!} 
+                        label="Velocity gradients"                        
+                        docLink="https://doc.babylonjs.com/babylon101/particles#emit-rate-over-time"
+                        onCreateRequired={() => {
+                            system.addEmitRateGradient(0, 50, 50);
+                        }}
+                        lockObject={this.props.lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>                  
                     <FloatLineComponent lockObject={this.props.lockObject} label="Min emit power" target={system} propertyName="minEmitPower" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Max emit power" target={system} propertyName="maxEmitPower" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />               
                     <FactorGradientGridComponent globalState={this.props.globalState} gradients={system.getVelocityGradients()!} 
-                        label="Velocity gradients"
+                        label="Velocity gradients"                        
+                        docLink="https://doc.babylonjs.com/babylon101/particles#velocity-over-time"
                         onCreateRequired={() => {
                             system.addVelocityGradient(0, 0.1, 0.1);
                         }}
                         lockObject={this.props.lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
-                </LineContainerComponent>  
+                    <FactorGradientGridComponent globalState={this.props.globalState} gradients={system.getLimitVelocityGradients()!} 
+                        label="Limit velocity gradients"
+                        docLink="https://doc.babylonjs.com/babylon101/particles#limit-velocity-over-time"
+                        onCreateRequired={() => {
+                            system.addLimitVelocityGradient(0, 0.1, 0.1);
+                        }}
+                        lockObject={this.props.lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
+                    <FactorGradientGridComponent globalState={this.props.globalState} gradients={system.getDragGradients()!} 
+                        label="Drag gradients"                        
+                        docLink="https://doc.babylonjs.com/babylon101/particles#drag-factor"
+                        onCreateRequired={() => {
+                            system.addDragGradient(0, 0.1, 0.1);
+                        }}
+                        lockObject={this.props.lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
+                </LineContainerComponent>                  
                 <LineContainerComponent globalState={this.props.globalState} title="SIZE">
                     <FloatLineComponent lockObject={this.props.lockObject} label="Min size" target={system} propertyName="minSize" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Max size" target={system} propertyName="maxSize" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -300,8 +322,17 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     <FloatLineComponent lockObject={this.props.lockObject} label="Max scale X" target={system} propertyName="maxScaleX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Min scale Y" target={system} propertyName="minScaleY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Max scale Y" target={system} propertyName="maxScaleY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FactorGradientGridComponent globalState={this.props.globalState} gradients={system.getStartSizeGradients()!} 
+                        label="Start size gradients"
+                        docLink="https://doc.babylonjs.com/babylon101/particles#start-size-over-time"
+                        onCreateRequired={() => {
+                            system.addStartSizeGradient(0, 1, 1);
+                        }}
+                        lockObject={this.props.lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>                                    
+               
                     <FactorGradientGridComponent globalState={this.props.globalState} gradients={system.getSizeGradients()!} 
                         label="Size gradients"
+                        docLink="https://doc.babylonjs.com/babylon101/particles#size"
                         onCreateRequired={() => {
                             system.addSizeGradient(0, 1, 1);
                         }}
@@ -310,6 +341,13 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                 <LineContainerComponent globalState={this.props.globalState} title="LIFETIME">
                     <FloatLineComponent lockObject={this.props.lockObject} label="Min lifetime" target={system} propertyName="minLifeTime" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Max lifetime" target={system} propertyName="maxLifeTime" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FactorGradientGridComponent globalState={this.props.globalState} gradients={system.getLifeTimeGradients()!} 
+                        label="Lifetime gradients"
+                        docLink="https://doc.babylonjs.com/babylon101/particles#lifetime"
+                        onCreateRequired={() => {
+                            system.addLifeTimeGradient(0, 1, 1);
+                        }}
+                        lockObject={this.props.lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>                    
                 </LineContainerComponent>    
                 <LineContainerComponent globalState={this.props.globalState} title="COLORS">
                     <Color4LineComponent label="Color 1" target={system} propertyName="color1" 
@@ -317,7 +355,21 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     <Color4LineComponent label="Color 2" target={system} propertyName="color2" 
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color4LineComponent label="Color dead" target={system} propertyName="colorDead" 
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />  
+                    <FactorGradientGridComponent globalState={this.props.globalState} gradients={system.getColorRemapGradients()!} 
+                        label="Color remap gradients"
+                        docLink="https://doc.babylonjs.com/babylon101/particles#ramp-gradients"
+                        onCreateRequired={() => {
+                            system.addColorRemapGradient(0, 1, 1);
+                        }}
+                        lockObject={this.props.lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>                    
+                    <FactorGradientGridComponent globalState={this.props.globalState} gradients={system.getAlphaRemapGradients()!} 
+                        label="Alpha remap gradients"
+                        docLink="https://doc.babylonjs.com/babylon101/particles#ramp-gradients"
+                        onCreateRequired={() => {
+                            system.addAlphaRemapGradient(0, 1, 1);
+                        }}
+                        lockObject={this.props.lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>                                    
                 </LineContainerComponent>                     
                 <LineContainerComponent globalState={this.props.globalState} title="ROTATION">
                     <FloatLineComponent lockObject={this.props.lockObject} label="Min angular speed" target={system} propertyName="minAngularSpeed" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -325,7 +377,8 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     <FloatLineComponent lockObject={this.props.lockObject} label="Min initial rotation" target={system} propertyName="minInitialRotation" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Max initial rotation" target={system} propertyName="maxInitialRotation" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FactorGradientGridComponent globalState={this.props.globalState} gradients={system.getAngularSpeedGradients()!} 
-                        label="Angular speed gradients"
+                        label="Angular speed gradients"                        
+                        docLink="hhttps://doc.babylonjs.com/babylon101/particles#rotation"
                         onCreateRequired={() => {
                             system.addAngularSpeedGradient(0, 0.1, 0.1);
                         }}

@@ -6,6 +6,7 @@ interface ITextLineComponentProps {
     color?: string;
     underline?: boolean;
     onLink?: () => void;
+    url?: string;
     ignoreValue?: boolean
 }
 
@@ -27,7 +28,10 @@ export class TextLineComponent extends React.Component<ITextLineComponentProps> 
             return null;
         }
 
-        if (this.props.onLink) {
+        if (this.props.url) {
+            window.open(this.props.url, '_blank');
+            return null;
+        } else if (this.props.onLink) {
             return (
                 <div className="link-value" title={this.props.value} onClick={() => this.onLink()}>
                     {this.props.value || "no name"}
