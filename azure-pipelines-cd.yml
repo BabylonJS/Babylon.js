@@ -52,18 +52,18 @@ jobs:
 #      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
 #      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
 # babylonjs-preview
-  - script: 'npx netlify unlink'
-    displayName: 'netlify unlink'
-  - script: 'npx netlify link --id=e1c1c520-e3a4-4d5b-91e6-254f1bea1b6b'
-    displayName: 'netlify link babylonjs-preview'
-    env:
-      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
-      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
-  - script: 'npx netlify deploy --prod --dir="dist/preview release"'
-    displayName: 'netlify deploy babylonjs-preview'
-    env:
-      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
-      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
+#  - script: 'npx netlify unlink'
+#    displayName: 'netlify unlink'
+#  - script: 'npx netlify link --id=e1c1c520-e3a4-4d5b-91e6-254f1bea1b6b'
+#    displayName: 'netlify link babylonjs-preview'
+#    env:
+#      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+#      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
+#  - script: 'npx netlify deploy --prod --dir="dist/preview release"'
+#    displayName: 'netlify deploy babylonjs-preview'
+#    env:
+#      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+#      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
 # assets-babylonjs
   - script: 'npx netlify unlink'
     displayName: 'netlify unlink'
