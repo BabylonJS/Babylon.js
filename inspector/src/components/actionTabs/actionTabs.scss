@@ -297,6 +297,11 @@ $line-padding-left: 2px;
                             grid-row: 1;
                             grid-column: 3;
                             cursor: pointer;
+
+                            .grayed {
+                                background: gray;
+                                border-color: gray;
+                            }
                         }
 
                         .numeric-input {
