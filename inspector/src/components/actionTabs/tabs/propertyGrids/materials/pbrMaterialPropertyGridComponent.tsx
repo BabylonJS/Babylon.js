@@ -166,8 +166,8 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                             <SliderLineComponent label="Intensity" target={material.clearCoat} propertyName="intensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <SliderLineComponent label="Roughness" target={material.clearCoat} propertyName="roughness" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <SliderLineComponent label="IOR" target={material.clearCoat} propertyName="indexOfRefraction" minimum={1.0} maximum={3} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <TextureLinkLineComponent label="Texture" texture={material.clearCoat.texture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
-                            <TextureLinkLineComponent label="Bump" texture={material.clearCoat.bumpTexture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
+                            <TextureLinkLineComponent label="Clear coat" texture={material.clearCoat.texture} onTextureCreated={(texture) => material.clearCoat.texture = texture} onTextureRemoved={() => material.clearCoat.texture = null} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
+                            <TextureLinkLineComponent label="Bump" texture={material.clearCoat.bumpTexture} onTextureCreated={(texture) => material.clearCoat.bumpTexture = texture} onTextureRemoved={() => material.clearCoat.bumpTexture = null} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
                             {
                                 material.clearCoat.bumpTexture &&
                                 <SliderLineComponent label="Bump strength" target={material.clearCoat.bumpTexture} propertyName="level" minimum={0} maximum={2} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -187,7 +187,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                             }
                             {
                                 material.clearCoat.isEnabled && material.clearCoat.isTintEnabled &&
-                                <TextureLinkLineComponent label="Tint Texture" texture={material.clearCoat.tintTexture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
+                                <TextureLinkLineComponent label="Tint" texture={material.clearCoat.tintTexture} onTextureCreated={(texture) => material.clearCoat.tintTexture = texture} onTextureRemoved={() => material.clearCoat.tintTexture = null} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
                             }
                         </div>
                     }
@@ -201,7 +201,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         <div className="fragment">
                             <SliderLineComponent label="Intensity" target={material.anisotropy} propertyName="intensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <Vector2LineComponent label="Direction" target={material.anisotropy} propertyName="direction" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                            <TextureLinkLineComponent label="Texture" texture={material.anisotropy.texture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
+                            <TextureLinkLineComponent label="Anisotropic" texture={material.anisotropy.texture} onTextureCreated={(texture) => material.anisotropy.texture = texture} onTextureRemoved={() => material.anisotropy.texture = null} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
                         </div>
                     }
                 </LineContainerComponent>
@@ -215,7 +215,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                             <CheckBoxLineComponent label="Link to Albedo" target={material.sheen} propertyName="linkSheenWithAlbedo" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <SliderLineComponent label="Intensity" target={material.sheen} propertyName="intensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <Color3LineComponent label="Color" target={material.sheen} propertyName="color" onPropertyChangedObservable={this.props.onPropertyChangedObservable} isLinear={true} />
-                            <TextureLinkLineComponent label="Texture" texture={material.sheen.texture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
+                            <TextureLinkLineComponent label="Sheen" texture={material.sheen.texture} onTextureCreated={(texture) => material.sheen.texture = texture} onTextureRemoved={() => material.sheen.texture = null} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
                             <CheckBoxLineComponent label="Use roughness" target={material.sheen} propertyName="_useRoughness" />
                             { (material.sheen as any)._useRoughness &&
                                 <SliderLineComponent label="Roughness" target={material.sheen} propertyName="roughness" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -225,7 +225,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     }
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="SUBSURFACE">
-                    <TextureLinkLineComponent label="Thickness" texture={material.subSurface.thicknessTexture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
+                    <TextureLinkLineComponent label="Thickness" texture={material.subSurface.thicknessTexture} onTextureCreated={(texture) => material.subSurface.thicknessTexture = texture} onTextureRemoved={() => material.subSurface.thicknessTexture = null} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
                     <SliderLineComponent label="Min Thickness" target={material.subSurface} propertyName="minimumThickness" minimum={0} maximum={10} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Max Thickness" target={material.subSurface} propertyName="maximumThickness" minimum={0} maximum={10} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Mask From Thickness" target={material.subSurface} propertyName="useMaskFromThicknessTexture"
@@ -240,6 +240,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         material.subSurface.isRefractionEnabled &&
                         <div className="fragment">
                             <SliderLineComponent label="Intensity" target={material.subSurface} propertyName="refractionIntensity" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <TextureLinkLineComponent label="Refraction" texture={material.subSurface.refractionTexture} onTextureCreated={(texture) => material.subSurface.refractionTexture = texture} onTextureRemoved={() => material.subSurface.refractionTexture = null} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
                             <SliderLineComponent label="Index of Refraction" target={material.subSurface} propertyName="indexOfRefraction" minimum={1} maximum={2} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <SliderLineComponent label="Tint at Distance" target={material.subSurface} propertyName="tintColorAtDistance" minimum={0} maximum={10} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <CheckBoxLineComponent label="Link refraction with transparency" target={material.subSurface} propertyName="linkRefractionWithTransparency" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -273,6 +274,34 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     {
                         material.reflectionTexture &&
                         <SliderLineComponent label="Reflection strength" target={material.reflectionTexture} propertyName="level" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
+                    {
+                        material.clearCoat.texture &&
+                        <SliderLineComponent label="Clear coat" target={material.clearCoat.texture} propertyName="level" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
+                    {
+                        material.clearCoat.bumpTexture &&
+                        <SliderLineComponent label="Clear coat bump" target={material.clearCoat.bumpTexture} propertyName="level" minimum={0} maximum={2} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
+                    {
+                        material.clearCoat.tintTexture && false && /* level is not used for the clear coat tint texture */
+                        <SliderLineComponent label="Clear coat tint" target={material.clearCoat.tintTexture} propertyName="level" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
+                    {
+                        material.anisotropy.texture &&
+                        <SliderLineComponent label="Anisotropic" target={material.anisotropy.texture} propertyName="level" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
+                    {
+                        material.sheen.texture &&
+                        <SliderLineComponent label="Sheen" target={material.sheen.texture} propertyName="level" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
+                    {
+                        material.subSurface.thicknessTexture &&
+                        <SliderLineComponent label="Thickness" target={material.subSurface.thicknessTexture} propertyName="level" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
+                    {
+                        material.subSurface.refractionTexture &&
+                        <SliderLineComponent label="Refraction" target={material.subSurface.refractionTexture} propertyName="level" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="RENDERING" closed={true}>
