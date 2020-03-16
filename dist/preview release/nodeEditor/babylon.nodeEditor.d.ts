@@ -279,6 +279,7 @@ declare module NODEEDITOR {
         private _dropPointY;
         private _selectionStartX;
         private _selectionStartY;
+        private _candidateLinkedHasMoved;
         private _x;
         private _y;
         private _zoom;

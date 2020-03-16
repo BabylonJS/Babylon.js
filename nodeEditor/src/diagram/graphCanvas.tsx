@@ -39,6 +39,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _dropPointY = 0;
     private _selectionStartX = 0;
     private _selectionStartY = 0;
+    private _candidateLinkedHasMoved = false;
     private _x = 0;
     private _y = 0;
     private _zoom = 1;
@@ -480,6 +481,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             this._dropPointY = (evt.pageY - rootRect.top) / this.zoom;
 
             this._candidateLink.update(this._dropPointX, this._dropPointY, true);
+            this._candidateLinkedHasMoved = true;
             
             return;
         }          
@@ -562,6 +564,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             if (!this._candidateLink) {
                 let portElement = ((evt.nativeEvent.srcElement as HTMLElement).parentElement as any).port as NodePort;
                 this._candidateLink = new NodeLink(this, portElement, portElement.node);
+                this._candidateLinkedHasMoved = false;
             }  
             return;
         }
@@ -577,9 +580,11 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this._rootContainer.releasePointerCapture(evt.pointerId);   
         this._oldY = -1; 
 
-        if (this._candidateLink) {        
-            this.processCandidatePort();          
-            this.props.globalState.onCandidateLinkMoved.notifyObservers(null);
+        if (this._candidateLink) {       
+            if (this._candidateLinkedHasMoved) {
+                this.processCandidatePort();          
+                this.props.globalState.onCandidateLinkMoved.notifyObservers(null);
+            }
             this._candidateLink.dispose();
             this._candidateLink = null;
             this._candidatePort = null;
