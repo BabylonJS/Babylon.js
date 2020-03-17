@@ -52,6 +52,7 @@
 - Updated the energy conservation factor for the clear coat layer in PBR materials ([Popov72](https://github.com/Popov72))
 - Added the `transparencyMode` property to the `StandardMaterial` class ([Popov72](https://github.com/Popov72))
 - Added to `FresnelParameters` constructor options and equals method ([brianzinn](https://github.com/brianzinn))
+- Added `AddAttribute` to `CustomMaterial` and `PBRCustomMaterial` ([Popov72](https://github.com/Popov72))
 
 ### WebXR
 
