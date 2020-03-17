@@ -107,19 +107,19 @@ jobs:
     env:
       AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
       NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
-  - task: AzureFileCopy@2
-    displayName: 'Update Preview Storage'
-    inputs:
-      SourcePath: 'dist/preview release'
-      azureSubscription: 'Visual Studio Enterprise (2bb1afe6-4492-4d3d-9cf8-e658f447d211)'
-      Destination: AzureBlob
-      storage: previewcdn
-      ContainerName: '$web'
+#  - task: AzureFileCopy@2
+#    displayName: 'Update Preview Storage'
+#    inputs:
+#      SourcePath: 'dist/preview release'
+#      azureSubscription: 'Visual Studio Enterprise (2bb1afe6-4492-4d3d-9cf8-e658f447d211)'
+#      Destination: AzureBlob
+#      storage: previewcdn
+#      ContainerName: '$web'
 
-  - task: AzureCLI@2
-    displayName: 'Purge preview CDN'
-    inputs:
-      azureSubscription: 'Visual Studio Enterprise(2bb1afe6-4492-4d3d-9cf8-e658f447d211)'
-      scriptType: 'ps'
-      scriptLocation: 'inlineScript'
-      inlineScript: 'az cdn endpoint purge --resource-group Playground-Resources --profile-name Preview-CDN --name babylonjspreview --content-paths /*'
+#  - task: AzureCLI@2
+#    displayName: 'Purge preview CDN'
+#    inputs:
+#      azureSubscription: 'Visual Studio Enterprise(2bb1afe6-4492-4d3d-9cf8-e658f447d211)'
+#      scriptType: 'ps'
+#      scriptLocation: 'inlineScript'
+#      inlineScript: 'az cdn endpoint purge --resource-group Playground-Resources --profile-name Preview-CDN --name babylonjspreview --content-paths /*'
