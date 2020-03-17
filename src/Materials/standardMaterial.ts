@@ -665,7 +665,7 @@ export class StandardMaterial extends PushMaterial {
     /**
      * Custom callback helping to override the default shader used in the material.
      */
-    public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines) => string;
+    public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines, attributes?: string[]) => string;
 
     protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
     protected _worldViewProjectionMatrix = Matrix.Zero();
@@ -1163,7 +1163,7 @@ export class StandardMaterial extends PushMaterial {
             });
 
             if (this.customShaderNameResolve) {
-                shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines);
+                shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines, attribs);
             }
 
             var join = defines.toString();
