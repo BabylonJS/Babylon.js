@@ -430,10 +430,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     }
 
     private _addFactorGradient(factorGradients: FactorGradient[], gradient: number, factor: number, factor2?: number) {
-        let newGradient = new FactorGradient();
-        newGradient.gradient = gradient;
-        newGradient.factor1 = factor;
-        newGradient.factor2 = factor2;
+        let newGradient = new FactorGradient(gradient, factor, factor2);
         factorGradients.push(newGradient);
 
         factorGradients.sort((a, b) => {
@@ -785,9 +782,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             this._rampGradients = [];
         }
 
-        let rampGradient = new Color3Gradient();
-        rampGradient.gradient = gradient;
-        rampGradient.color = color;
+        let rampGradient = new Color3Gradient(gradient, color);
         this._rampGradients.push(rampGradient);
 
         this._rampGradients.sort((a, b) => {
@@ -838,10 +833,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             this._colorGradients = [];
         }
 
-        let colorGradient = new ColorGradient();
-        colorGradient.gradient = gradient;
-        colorGradient.color1 = color1;
-        colorGradient.color2 = color2;
+        let colorGradient = new ColorGradient(gradient, color1, color2);
         this._colorGradients.push(colorGradient);
 
         this._colorGradients.sort((a, b) => {

@@ -8,14 +8,22 @@ declare module "babylonjs-inspector/components/propertyChangedEvent" {
         allowNullValue?: boolean;
     }
 }
+declare module "babylonjs-inspector/components/codeChangedEvent" {
+    export class CodeChangedEvent {
+        object: any;
+        code: string;
+    }
+}
 declare module "babylonjs-inspector/components/replayRecorder" {
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { CodeChangedEvent } from "babylonjs-inspector/components/codeChangedEvent";
     export class ReplayRecorder {
         private _recordedCodeLines;
         private _previousObject;
         private _previousProperty;
         reset(): void;
         private _getIndirectData;
+        recordCode(event: CodeChangedEvent): void;
         record(event: PropertyChangedEvent): void;
         export(): void;
     }
@@ -31,9 +39,11 @@ declare module "babylonjs-inspector/components/globalState" {
     import { LightGizmo } from "babylonjs/Gizmos/lightGizmo";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { ReplayRecorder } from "babylonjs-inspector/components/replayRecorder";
+    import { CodeChangedEvent } from "babylonjs-inspector/components/codeChangedEvent";
     export class GlobalState {
         onSelectionChangedObservable: Observable<any>;
         onPropertyChangedObservable: Observable<PropertyChangedEvent>;
+        onCodeChangedObservable: Observable<CodeChangedEvent>;
         onInspectorClosedObservable: Observable<Scene>;
         onTabChangedObservable: Observable<number>;
         onPluginActivatedObserver: Nullable<Observer<ISceneLoaderPlugin | ISceneLoaderPluginAsync>>;
@@ -1925,6 +1935,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     import { FactorGradient } from 'babylonjs/Misc/gradients';
     import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
     interface IFactorGradientStepGridComponent {
         globalState: GlobalState;
         gradient: FactorGradient;
@@ -1933,6 +1944,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
         onDelete: () => void;
         onUpdateGradient: () => void;
         onCheckForReOrder: () => void;
+        host: IParticleSystem;
+        codeRecorderPropertyName: string;
     }
     export class FactorGradientStepGridComponent extends React.Component<IFactorGradientStepGridComponent, {
         gradient: number;
@@ -1947,27 +1960,77 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/particleSystems/factorGradientGridComponent" {
-    import * as React from "react";
-    import { Observable } from 'babylonjs/Misc/observable';
-    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/particleSystems/colorGradientStepGridComponent" {
+    import * as React from 'react';
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { FactorGradient } from 'babylonjs/Misc/gradients';
+    import { ColorGradient, Color3Gradient } from 'babylonjs/Misc/gradients';
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
+    interface IColorGradientStepGridComponent {
+        globalState: GlobalState;
+        gradient: ColorGradient | Color3Gradient;
+        lockObject: LockObject;
+        lineIndex: number;
+        isColor3: boolean;
+        onDelete: () => void;
+        onUpdateGradient: () => void;
+        onCheckForReOrder: () => void;
+        host: IParticleSystem;
+        codeRecorderPropertyName: string;
+    }
+    export class ColorGradientStepGridComponent extends React.Component<IColorGradientStepGridComponent, {
+        gradient: number;
+    }> {
+        constructor(props: IColorGradientStepGridComponent);
+        updateColor1(color: string): void;
+        updateColor2(color: string): void;
+        updateGradient(gradient: number): void;
+        onPointerUp(): void;
+        lock(): void;
+        unlock(): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/lines/linkButtonComponent" {
+    import * as React from "react";
+    interface ILinkButtonComponentProps {
+        label: string;
+        buttonLabel: string;
+        url?: string;
+        onClick: () => void;
+    }
+    export class LinkButtonComponent extends React.Component<ILinkButtonComponentProps> {
+        constructor(props: ILinkButtonComponentProps);
+        onLink(): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/particleSystems/valueGradientGridComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { IValueGradient } from 'babylonjs/Misc/gradients';
     import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
     import { Nullable } from 'babylonjs/types';
-    interface IFactorGradientGridComponent {
+    import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
+    export enum GradientGridMode {
+        Factor = 0,
+        Color3 = 1,
+        Color4 = 2
+    }
+    interface IValueGradientGridComponent {
         globalState: GlobalState;
         label: string;
-        gradients: Nullable<Array<FactorGradient>>;
+        gradients: Nullable<Array<IValueGradient>>;
         lockObject: LockObject;
         docLink?: string;
-        replaySourceReplacement?: string;
+        mode: GradientGridMode;
+        host: IParticleSystem;
+        codeRecorderPropertyName: string;
         onCreateRequired: () => void;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
-    export class FactorGradientGridComponent extends React.Component<IFactorGradientGridComponent> {
-        constructor(props: IFactorGradientGridComponent);
-        deleteStep(step: FactorGradient): void;
+    export class ValueGradientGridComponent extends React.Component<IValueGradientGridComponent> {
+        constructor(props: IValueGradientGridComponent);
+        deleteStep(step: IValueGradient): void;
         addNewStep(): void;
         checkForReOrder(): void;
         render(): JSX.Element;
@@ -2668,12 +2731,19 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export class CodeChangedEvent {
+        object: any;
+        code: string;
+    }
+}
+declare module INSPECTOR {
     export class ReplayRecorder {
         private _recordedCodeLines;
         private _previousObject;
         private _previousProperty;
         reset(): void;
         private _getIndirectData;
+        recordCode(event: CodeChangedEvent): void;
         record(event: PropertyChangedEvent): void;
         export(): void;
     }
@@ -2682,6 +2752,7 @@ declare module INSPECTOR {
     export class GlobalState {
         onSelectionChangedObservable: BABYLON.Observable<any>;
         onPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
+        onCodeChangedObservable: BABYLON.Observable<CodeChangedEvent>;
         onInspectorClosedObservable: BABYLON.Observable<BABYLON.Scene>;
         onTabChangedObservable: BABYLON.Observable<number>;
         onPluginActivatedObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync>>;
@@ -4142,6 +4213,8 @@ declare module INSPECTOR {
         onDelete: () => void;
         onUpdateGradient: () => void;
         onCheckForReOrder: () => void;
+        host: BABYLON.IParticleSystem;
+        codeRecorderPropertyName: string;
     }
     export class FactorGradientStepGridComponent extends React.Component<IFactorGradientStepGridComponent, {
         gradient: number;
@@ -4157,19 +4230,64 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
-    interface IFactorGradientGridComponent {
+    interface IColorGradientStepGridComponent {
+        globalState: GlobalState;
+        gradient: BABYLON.ColorGradient | BABYLON.Color3Gradient;
+        lockObject: LockObject;
+        lineIndex: number;
+        isColor3: boolean;
+        onDelete: () => void;
+        onUpdateGradient: () => void;
+        onCheckForReOrder: () => void;
+        host: BABYLON.IParticleSystem;
+        codeRecorderPropertyName: string;
+    }
+    export class ColorGradientStepGridComponent extends React.Component<IColorGradientStepGridComponent, {
+        gradient: number;
+    }> {
+        constructor(props: IColorGradientStepGridComponent);
+        updateColor1(color: string): void;
+        updateColor2(color: string): void;
+        updateGradient(gradient: number): void;
+        onPointerUp(): void;
+        lock(): void;
+        unlock(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface ILinkButtonComponentProps {
+        label: string;
+        buttonLabel: string;
+        url?: string;
+        onClick: () => void;
+    }
+    export class LinkButtonComponent extends React.Component<ILinkButtonComponentProps> {
+        constructor(props: ILinkButtonComponentProps);
+        onLink(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    export enum GradientGridMode {
+        Factor = 0,
+        BABYLON.Color3 = 1,
+        BABYLON.Color4 = 2
+    }
+    interface IValueGradientGridComponent {
         globalState: GlobalState;
         label: string;
-        gradients: BABYLON.Nullable<Array<BABYLON.FactorGradient>>;
+        gradients: BABYLON.Nullable<Array<BABYLON.IValueGradient>>;
         lockObject: LockObject;
         docLink?: string;
-        replaySourceReplacement?: string;
+        mode: GradientGridMode;
+        host: BABYLON.IParticleSystem;
+        codeRecorderPropertyName: string;
         onCreateRequired: () => void;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
-    export class FactorGradientGridComponent extends React.Component<IFactorGradientGridComponent> {
-        constructor(props: IFactorGradientGridComponent);
-        deleteStep(step: BABYLON.FactorGradient): void;
+    export class ValueGradientGridComponent extends React.Component<IValueGradientGridComponent> {
+        constructor(props: IValueGradientGridComponent);
+        deleteStep(step: BABYLON.IValueGradient): void;
         addNewStep(): void;
         checkForReOrder(): void;
         render(): JSX.Element;

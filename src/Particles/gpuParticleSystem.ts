@@ -227,9 +227,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             this._colorGradients = [];
         }
 
-        let colorGradient = new ColorGradient();
-        colorGradient.gradient = gradient;
-        colorGradient.color1 = color1;
+        let colorGradient = new ColorGradient(gradient, color1);
         this._colorGradients.push(colorGradient);
 
         this._colorGradients.sort((a, b) => {
@@ -271,9 +269,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private _dragGradientsTexture: RawTexture;
 
     private _addFactorGradient(factorGradients: FactorGradient[], gradient: number, factor: number) {
-        let valueGradient = new FactorGradient();
-        valueGradient.gradient = gradient;
-        valueGradient.factor1 = factor;
+        let valueGradient = new FactorGradient(gradient, factor);
         factorGradients.push(valueGradient);
 
         factorGradients.sort((a, b) => {

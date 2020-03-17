@@ -7,7 +7,7 @@
 		exports["babylonjs-materials"] = factory(require("babylonjs"));
 	else
 		root["MATERIALS"] = factory(root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_decorators__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Materials_effect__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -369,7 +369,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ShaderSpecialParts", function() { return ShaderSpecialParts; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CustomMaterial", function() { return CustomMaterial; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/decorators");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Materials/effect");
 /* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__);
 
 
@@ -440,7 +440,7 @@ var CustomMaterial = /** @class */ (function (_super) {
         }
         return arr;
     };
-    CustomMaterial.prototype.Builder = function (shaderName, uniforms, uniformBuffers, samplers, defines) {
+    CustomMaterial.prototype.Builder = function (shaderName, uniforms, uniformBuffers, samplers, defines, attributes) {
         var _this = this;
         if (this._isCreatedShader) {
             return this._createdShaderName;
@@ -448,6 +448,9 @@ var CustomMaterial = /** @class */ (function (_super) {
         this._isCreatedShader = false;
         CustomMaterial.ShaderIndexer++;
         var name = "custom_" + CustomMaterial.ShaderIndexer;
+        if (attributes && this._customAttributes && this._customAttributes.length > 0) {
+            attributes.push.apply(attributes, this._customAttributes);
+        }
         this.ReviewUniform("uniform", uniforms);
         this.ReviewUniform("sampler", samplers);
         var fn_afterBind = this._afterBind.bind(this);
@@ -498,6 +501,13 @@ var CustomMaterial = /** @class */ (function (_super) {
         }
         this._customUniform.push("uniform " + kind + " " + name + ";");
         this._newUniforms.push(name);
+        return this;
+    };
+    CustomMaterial.prototype.AddAttribute = function (name) {
+        if (!this._customAttributes) {
+            this._customAttributes = [];
+        }
+        this._customAttributes.push(name);
         return this;
     };
     CustomMaterial.prototype.Fragment_Begin = function (shaderPart) {
@@ -604,7 +614,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ShaderAlebdoParts", function() { return ShaderAlebdoParts; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PBRCustomMaterial", function() { return PBRCustomMaterial; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/decorators");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Materials/effect");
 /* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__);
 
 
@@ -669,7 +679,7 @@ var PBRCustomMaterial = /** @class */ (function (_super) {
         }
         return arr;
     };
-    PBRCustomMaterial.prototype.Builder = function (shaderName, uniforms, uniformBuffers, samplers, defines) {
+    PBRCustomMaterial.prototype.Builder = function (shaderName, uniforms, uniformBuffers, samplers, defines, attributes) {
         var _this = this;
         if (this._isCreatedShader) {
             return this._createdShaderName;
@@ -677,6 +687,9 @@ var PBRCustomMaterial = /** @class */ (function (_super) {
         this._isCreatedShader = false;
         PBRCustomMaterial.ShaderIndexer++;
         var name = "custom_" + PBRCustomMaterial.ShaderIndexer;
+        if (attributes && this._customAttributes && this._customAttributes.length > 0) {
+            attributes.push.apply(attributes, this._customAttributes);
+        }
         this.ReviewUniform("uniform", uniforms);
         this.ReviewUniform("sampler", samplers);
         var fn_afterBind = this._afterBind.bind(this);
@@ -729,6 +742,13 @@ var PBRCustomMaterial = /** @class */ (function (_super) {
         }
         this._customUniform.push("uniform " + kind + " " + name + ";");
         this._newUniforms.push(name);
+        return this;
+    };
+    PBRCustomMaterial.prototype.AddAttribute = function (name) {
+        if (!this._customAttributes) {
+            this._customAttributes = [];
+        }
+        this._customAttributes.push(name);
         return this;
     };
     PBRCustomMaterial.prototype.Fragment_Begin = function (shaderPart) {
@@ -841,14 +861,14 @@ if (typeof globalObject !== "undefined") {
 
 /***/ }),
 
-/***/ "babylonjs/Misc/decorators":
+/***/ "babylonjs/Materials/effect":
 /*!****************************************************************************************************!*\
   !*** external {"root":"BABYLON","commonjs":"babylonjs","commonjs2":"babylonjs","amd":"babylonjs"} ***!
   \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_decorators__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Materials_effect__;
 
 /***/ })
 
