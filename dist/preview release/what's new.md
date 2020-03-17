@@ -80,5 +80,6 @@
 - Fix bug in PBR when anisotropy is enabled and no bump texture is provided ([Popov72](https://github.com/Popov72)
 - Fix horizon occlusion in PBR materials ([Popov72](https://github.com/Popov72)
 - Fixed delay calculation in Animatable.goToFrame when speedRatio != 1 ([Reimund Järnfors](https://github.com/reimund)
+- Fix bug in PBR when translucency is enabled and an irradiance texture is provided ([Popov72](https://github.com/Popov72)
 
 ## Breaking changes
