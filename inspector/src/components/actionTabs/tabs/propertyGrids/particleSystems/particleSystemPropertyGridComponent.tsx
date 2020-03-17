@@ -36,6 +36,7 @@ import { MeshParticleEmitter } from 'babylonjs/Particles/EmitterTypes/meshPartic
 import { MeshEmitterGridComponent } from './meshEmitterGridComponent';
 import { ValueGradientGridComponent, GradientGridMode } from './valueGradientGridComponent';
 import { Color3, Color4 } from 'babylonjs/Maths/math.color';
+import { GPUParticleSystem } from 'babylonjs/Particles/gpuParticleSystem';
 
 interface IParticleSystemPropertyGridComponentProps {
     globalState: GlobalState;
@@ -108,6 +109,45 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
         });
     }
 
+    renderControls() {
+        const system = this.props.system;
+
+        if (system instanceof GPUParticleSystem) {
+            let isStarted = system.isStarted() && !system.isStopped();
+            return (
+                <ButtonLineComponent label={isStarted ? "Pause" : "Start"} onClick={() => {
+                    if (isStarted) {
+                        system.stop();
+                    } else {
+                        system.start();
+                    }
+                    this.forceUpdate();
+                }} />
+            );
+        }
+
+        let isStarted = system.isStarted();
+        return (
+            <>
+                {
+                    !system.isStopping() && 
+                    <ButtonLineComponent label={isStarted ? "Stop" : "Start"} onClick={() => {
+                        if (isStarted) {
+                            system.stop();
+                        } else {
+                            system.start();
+                        }
+                        this.forceUpdate();
+                    }} />
+                }
+                {
+                    system.isStopping() && 
+                    <TextLineComponent label="System is stoppping..." ignoreValue={true}/>
+                }
+            </>
+        )
+    }
+
     render() {
         const system = this.props.system;
 
@@ -143,6 +183,11 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
             return {label: v.name, value: i + 1}
         }));
 
+        let isStarted = system.isStarted();
+        if (system instanceof GPUParticleSystem) {
+            isStarted = !system.isStopped();
+        }
+
         return (
             <div className="pane">
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={system}
@@ -152,6 +197,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     <TextLineComponent label="ID" value={system.id} />
                     <TextLineComponent label="Class" value={system.getClassName()} />  
                     <TextLineComponent label="Capacity" value={system.getCapacity().toString()} />  
+                    <TextLineComponent label="Capacity" value={system.getActiveCount().toString()} />  
                     <TextureLinkLineComponent label="Texture" texture={system.particleTexture} onSelectionChangedObservable={this.props.onSelectionChangedObservable}/>
                     <OptionsLineComponent label="Blend mode" options={blendModeOptions} target={system} propertyName="blendMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Vector3LineComponent label="Gravity" target={system} propertyName="gravity"
@@ -161,12 +207,10 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     <SliderLineComponent label="Update speed" target={system} propertyName="updateSpeed" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>                      
                 <LineContainerComponent globalState={this.props.globalState} title="OPTIONS">
-                    <ButtonLineComponent label={system.isStarted() ? "Stop" : "Start"} onClick={() => {
-                        if (system.isStarted()) {
-                            system.stop();
-                        } else {
-                            system.start();
-                        }
+                    {this.renderControls()}
+                    <ButtonLineComponent label={"Dispose"} onClick={() => {
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                        system.dispose();
                     }} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="EMITTER">

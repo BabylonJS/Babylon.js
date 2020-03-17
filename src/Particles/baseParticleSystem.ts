@@ -48,6 +48,11 @@ export class BaseParticleSystem {
     public animations: Animation[] = [];
 
     /**
+     * Gets or sets the unique id of the particle system
+     */
+    public uniqueId: number;
+
+    /**
      * The id of the Particle system.
      */
     public id: string;
