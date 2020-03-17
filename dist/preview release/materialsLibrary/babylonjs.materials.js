@@ -830,7 +830,7 @@ var CustomMaterial = /** @class */ (function (_super) {
         }
         return arr;
     };
-    CustomMaterial.prototype.Builder = function (shaderName, uniforms, uniformBuffers, samplers, defines) {
+    CustomMaterial.prototype.Builder = function (shaderName, uniforms, uniformBuffers, samplers, defines, attributes) {
         var _this = this;
         if (this._isCreatedShader) {
             return this._createdShaderName;
@@ -838,6 +838,9 @@ var CustomMaterial = /** @class */ (function (_super) {
         this._isCreatedShader = false;
         CustomMaterial.ShaderIndexer++;
         var name = "custom_" + CustomMaterial.ShaderIndexer;
+        if (attributes && this._customAttributes && this._customAttributes.length > 0) {
+            attributes.push.apply(attributes, this._customAttributes);
+        }
         this.ReviewUniform("uniform", uniforms);
         this.ReviewUniform("sampler", samplers);
         var fn_afterBind = this._afterBind.bind(this);
@@ -888,6 +891,13 @@ var CustomMaterial = /** @class */ (function (_super) {
         }
         this._customUniform.push("uniform " + kind + " " + name + ";");
         this._newUniforms.push(name);
+        return this;
+    };
+    CustomMaterial.prototype.AddAttribute = function (name) {
+        if (!this._customAttributes) {
+            this._customAttributes = [];
+        }
+        this._customAttributes.push(name);
         return this;
     };
     CustomMaterial.prototype.Fragment_Begin = function (shaderPart) {
@@ -1059,7 +1069,7 @@ var PBRCustomMaterial = /** @class */ (function (_super) {
         }
         return arr;
     };
-    PBRCustomMaterial.prototype.Builder = function (shaderName, uniforms, uniformBuffers, samplers, defines) {
+    PBRCustomMaterial.prototype.Builder = function (shaderName, uniforms, uniformBuffers, samplers, defines, attributes) {
         var _this = this;
         if (this._isCreatedShader) {
             return this._createdShaderName;
@@ -1067,6 +1077,9 @@ var PBRCustomMaterial = /** @class */ (function (_super) {
         this._isCreatedShader = false;
         PBRCustomMaterial.ShaderIndexer++;
         var name = "custom_" + PBRCustomMaterial.ShaderIndexer;
+        if (attributes && this._customAttributes && this._customAttributes.length > 0) {
+            attributes.push.apply(attributes, this._customAttributes);
+        }
         this.ReviewUniform("uniform", uniforms);
         this.ReviewUniform("sampler", samplers);
         var fn_afterBind = this._afterBind.bind(this);
@@ -1119,6 +1132,13 @@ var PBRCustomMaterial = /** @class */ (function (_super) {
         }
         this._customUniform.push("uniform " + kind + " " + name + ";");
         this._newUniforms.push(name);
+        return this;
+    };
+    PBRCustomMaterial.prototype.AddAttribute = function (name) {
+        if (!this._customAttributes) {
+            this._customAttributes = [];
+        }
+        this._customAttributes.push(name);
         return this;
     };
     PBRCustomMaterial.prototype.Fragment_Begin = function (shaderPart) {

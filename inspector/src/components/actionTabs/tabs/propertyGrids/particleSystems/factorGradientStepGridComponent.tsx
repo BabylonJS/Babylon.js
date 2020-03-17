@@ -4,6 +4,7 @@ import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { GlobalState } from '../../../../globalState';
 import { FactorGradient } from 'babylonjs/Misc/gradients';
 import { LockObject } from '../lockObject';
+import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
 
 interface IFactorGradientStepGridComponent {
     globalState: GlobalState;
@@ -13,6 +14,8 @@ interface IFactorGradientStepGridComponent {
     onDelete: () => void;
     onUpdateGradient: () => void;
     onCheckForReOrder: () => void;
+    host: IParticleSystem,
+    codeRecorderPropertyName: string,
 }
 
 export class FactorGradientStepGridComponent extends React.Component<IFactorGradientStepGridComponent, {gradient: number}> {
@@ -26,12 +29,22 @@ export class FactorGradientStepGridComponent extends React.Component<IFactorGrad
     updateFactor1(factor: number) {
         this.props.gradient.factor1 = factor;
 
+        this.props.globalState.onCodeChangedObservable.notifyObservers({
+            object: this.props.host,
+            code: `TARGET.${this.props.codeRecorderPropertyName}.factor1 = ${factor};`
+        });                 
+
         this.props.onUpdateGradient();
         this.forceUpdate();
     }    
 
     updateFactor2(factor: number) {
         this.props.gradient.factor2 = factor;
+
+        this.props.globalState.onCodeChangedObservable.notifyObservers({
+            object: this.props.host,
+            code: `TARGET.${this.props.codeRecorderPropertyName}.factor2 = ${factor};`
+        });         
 
         this.props.onUpdateGradient();
         this.forceUpdate();
@@ -41,6 +54,11 @@ export class FactorGradientStepGridComponent extends React.Component<IFactorGrad
         this.props.gradient.gradient = gradient;
 
         this.setState({gradient: gradient});
+
+        this.props.globalState.onCodeChangedObservable.notifyObservers({
+            object: this.props.host,
+            code: `TARGET.${this.props.codeRecorderPropertyName}.gradient = ${gradient};`
+        });         
 
         this.props.onUpdateGradient();
     }

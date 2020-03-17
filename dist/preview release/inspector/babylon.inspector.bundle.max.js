@@ -6035,7 +6035,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, "#inspector-host {\n  position: absolute;\n  right: 0px;\n  top: 0px;\n  bottom: 0px; }\n\n#__resizable_base__ {\n  display: none; }\n\n#actionTabs {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\";\n  overflow: hidden; }\n  #actionTabs .hoverIcon:hover {\n    opacity: 0.8; }\n  #actionTabs #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #actionTabs #header #logo {\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #actionTabs #header #back {\n      grid-column: 1;\n      display: grid;\n      align-self: center;\n      justify-self: center;\n      cursor: pointer; }\n    #actionTabs #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #actionTabs #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #actionTabs #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #actionTabs #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #actionTabs .tabs {\n    display: grid;\n    grid-row: 2;\n    grid-template-rows: 40px 1fr;\n    font: 14px \"Arial\";\n    overflow: hidden; }\n    #actionTabs .tabs .labels {\n      grid-row: 1;\n      display: flex;\n      align-items: center;\n      justify-items: center;\n      border-bottom: 1px solid #ffffff;\n      margin: 0;\n      padding: 0; }\n      #actionTabs .tabs .labels .label {\n        font-size: 24px;\n        color: white;\n        width: 40px;\n        display: flex;\n        align-content: center;\n        justify-content: center;\n        border: 1px solid transparent;\n        border-bottom: none;\n        background: #333333;\n        padding: 5px;\n        height: 28px;\n        cursor: pointer; }\n        #actionTabs .tabs .labels .label.active {\n          border-color: #ffffff;\n          border-bottom: 2px solid transparent;\n          margin-bottom: -2px; }\n    #actionTabs .tabs .panes {\n      grid-row: 2;\n      display: grid;\n      grid-template-rows: 100%;\n      overflow: hidden; }\n      #actionTabs .tabs .panes .infoMessage {\n        opacity: 0.5;\n        color: white;\n        margin: 15px 5px 0px 5px; }\n      #actionTabs .tabs .panes .pane {\n        color: white;\n        overflow-x: hidden;\n        overflow-y: auto;\n        height: 100%;\n        -webkit-user-select: none;\n        -moz-user-select: none;\n        -ms-user-select: none;\n        user-select: none; }\n        #actionTabs .tabs .panes .pane .underline {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.5); }\n        #actionTabs .tabs .panes .pane .textureLinkLine {\n          display: grid;\n          grid-template-columns: auto 1fr; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .debug {\n            grid-column: 1;\n            margin-left: 5px;\n            margin-right: 5px;\n            display: block;\n            align-items: center;\n            justify-items: center;\n            cursor: pointer;\n            opacity: 0.5; }\n            #actionTabs .tabs .panes .pane .textureLinkLine .debug.selected {\n              opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .textLine {\n            grid-column: 2; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .actionIcon {\n            display: inline-block;\n            margin-top: 6px;\n            margin-right: 4px; }\n        #actionTabs .tabs .panes .pane .messageLine {\n          text-align: center;\n          font-size: 12px;\n          font-style: italic;\n          opacity: 0.6; }\n        #actionTabs .tabs .panes .pane .iconMessageLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 30px 1fr; }\n          #actionTabs .tabs .panes .pane .iconMessageLine .icon {\n            grid-column: 1;\n            display: grid;\n            align-items: center;\n            justify-items: center; }\n          #actionTabs .tabs .panes .pane .iconMessageLine .value {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n        #actionTabs .tabs .panes .pane .textLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .textLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .textLine .link-value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 6px;\n            max-width: 140px;\n            text-decoration: underline;\n            cursor: pointer; }\n          #actionTabs .tabs .panes .pane .textLine .value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 6px;\n            max-width: 200px;\n            -webkit-user-select: text;\n            -moz-user-select: text;\n            -ms-user-select: text;\n            user-select: text; }\n            #actionTabs .tabs .panes .pane .textLine .value.check {\n              color: green; }\n            #actionTabs .tabs .panes .pane .textLine .value.uncheck {\n              color: red; }\n        #actionTabs .tabs .panes .pane .gradient-container {\n          margin-top: 3px; }\n          #actionTabs .tabs .panes .pane .gradient-container .gradient-label {\n            height: 30px;\n            display: grid;\n            align-content: center; }\n          #actionTabs .tabs .panes .pane .gradient-container .gradient-step {\n            display: grid;\n            grid-template-rows: 100%;\n            grid-template-columns: 30px 50px 55px 40px auto 20px 5px;\n            padding-top: 5px;\n            padding-left: 5px;\n            padding-bottom: 5px;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .step {\n              grid-row: 1;\n              grid-column: 1; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .factor1 {\n              grid-row: 1;\n              grid-column: 2;\n              cursor: pointer; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .factor2 {\n              padding-left: 5px;\n              grid-row: 1;\n              grid-column: 3;\n              cursor: pointer; }\n              #actionTabs .tabs .panes .pane .gradient-container .gradient-step .factor2 .grayed {\n                background: gray;\n                border-color: gray; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .numeric-input {\n              width: calc(100% - 5px); }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .step-value {\n              margin-left: 5px;\n              grid-row: 1;\n              grid-column: 4;\n              text-align: right;\n              margin-right: 5px; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .step-slider {\n              grid-row: 1;\n              grid-column: 5;\n              display: grid;\n              justify-content: stretch;\n              align-content: center;\n              margin-right: 5px; }\n              #actionTabs .tabs .panes .pane .gradient-container .gradient-step .step-slider input {\n                width: 100%; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .gradient-delete {\n              grid-row: 1;\n              grid-column: 6;\n              display: grid;\n              align-content: center;\n              justify-content: center; }\n        #actionTabs .tabs .panes .pane .textInputLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 120px; }\n          #actionTabs .tabs .panes .pane .textInputLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .textInputLine .value {\n            display: flex;\n            align-items: center;\n            grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textInputLine .value input {\n              width: 110px; }\n        #actionTabs .tabs .panes .pane .buttonLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch; }\n          #actionTabs .tabs .panes .pane .buttonLine input[type=\"file\"] {\n            display: none; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload {\n            background: #222222;\n            border: 1px solid #337ab7;\n            margin: 5px 10px 5px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9;\n            cursor: pointer;\n            text-align: center; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload:hover {\n            opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload:active {\n            transform: scale(0.98);\n            transform-origin: 0.5 0.5; }\n          #actionTabs .tabs .panes .pane .buttonLine button {\n            background: #222222;\n            border: 1px solid #337ab7;\n            margin: 5px 10px 5px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9; }\n          #actionTabs .tabs .panes .pane .buttonLine button:hover {\n            opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .buttonLine button:active {\n            background: #282828; }\n          #actionTabs .tabs .panes .pane .buttonLine button:focus {\n            border: 1px solid #337ab7;\n            outline: 0px; }\n        #actionTabs .tabs .panes .pane .radioLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 24px; }\n          #actionTabs .tabs .panes .pane .radioLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .radioLine .radioContainer {\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio {\n              grid-column: 2;\n              display: none; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:before {\n                border-color: #337ab7; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:after {\n                transform: scale(1); }\n            #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio {\n              display: inline-block;\n              height: 14px;\n              position: relative;\n              padding: 0 24px;\n              margin-bottom: 0;\n              cursor: pointer;\n              vertical-align: bottom; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before, #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                position: absolute;\n                content: '';\n                border-radius: 50%;\n                transition: all .3s ease;\n                transition-property: transform, border-color; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before {\n                left: 0px;\n                top: 0;\n                width: 16px;\n                height: 16px;\n                border: 2px solid white; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                top: 6px;\n                left: 6px;\n                width: 8px;\n                height: 8px;\n                transform: scale(0);\n                background: #337ab7; }\n        #actionTabs .tabs .panes .pane .vector3Line {\n          padding-left: 2px;\n          display: grid; }\n          #actionTabs .tabs .panes .pane .vector3Line .firstLine {\n            display: grid;\n            grid-template-columns: 1fr auto 20px;\n            height: 30px; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .label {\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .vector {\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              text-align: right;\n              opacity: 0.8; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .expand {\n              grid-column: 3;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n          #actionTabs .tabs .panes .pane .vector3Line .secondLine {\n            display: grid;\n            padding-right: 5px;\n            border-left: 1px solid #337ab7; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric {\n              display: grid;\n              grid-template-columns: 1fr auto; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-label {\n              text-align: right;\n              grid-column: 1;\n              display: flex;\n              align-items: center;\n              justify-self: right;\n              margin-right: 10px; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-value {\n              width: 120px;\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              border: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .checkBoxLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .checkBoxLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .checkBoxLine .checkBox {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl {\n              position: relative;\n              display: block;\n              height: 14px;\n              width: 34px;\n              margin-right: 5px;\n              background: #898989;\n              border-radius: 100px;\n              cursor: pointer;\n              transition: all 0.3s ease; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:after {\n              position: absolute;\n              left: 3px;\n              top: 2px;\n              display: block;\n              width: 10px;\n              height: 10px;\n              border-radius: 100px;\n              background: #fff;\n              box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n              content: '';\n              transition: all 0.15s ease; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:active:after {\n              transform: scale(1.15, 0.85); }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label {\n              background: #337ab7; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label:after {\n              left: 20px;\n              background: #164975; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .hidden {\n              display: none; }\n        #actionTabs .tabs .panes .pane .textureLine {\n          display: grid;\n          grid-template-rows: 30px auto; }\n          #actionTabs .tabs .panes .pane .textureLine .control {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 1fr; }\n            #actionTabs .tabs .panes .pane .textureLine .control .red {\n              grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textureLine .control .green {\n              grid-column: 3; }\n            #actionTabs .tabs .panes .pane .textureLine .control .blue {\n              grid-column: 4; }\n            #actionTabs .tabs .panes .pane .textureLine .control .alpha {\n              grid-column: 5; }\n            #actionTabs .tabs .panes .pane .textureLine .control .all {\n              grid-column: 6; }\n          #actionTabs .tabs .panes .pane .textureLine .control3D {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 40px 1fr; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .px {\n              grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .nx {\n              grid-column: 3; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .py {\n              grid-column: 4; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .ny {\n              grid-column: 5; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .pz {\n              grid-column: 6; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .nz {\n              grid-column: 7; }\n          #actionTabs .tabs .panes .pane .textureLine .command {\n            border: 1px solid transparent;\n            background: transparent;\n            color: white; }\n          #actionTabs .tabs .panes .pane .textureLine .selected {\n            border: 1px solid #337ab7; }\n          #actionTabs .tabs .panes .pane .textureLine .preview {\n            grid-row: 2;\n            display: grid;\n            align-self: center;\n            justify-self: center;\n            height: 256px;\n            width: 256px;\n            margin-top: 5px;\n            margin-bottom: 5px;\n            border: 2px solid rgba(255, 255, 255, 0.4); }\n        #actionTabs .tabs .panes .pane .gltf-extension-property {\n          margin-left: 30px;\n          border-left: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .floatLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 120px; }\n          #actionTabs .tabs .panes .pane .floatLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .floatLine .value {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .floatLine .value input {\n              width: 110px; }\n        #actionTabs .tabs .panes .pane .sliderLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .sliderLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .sliderLine .slider {\n            grid-column: 2;\n            margin-right: 5px;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range {\n              -webkit-appearance: none;\n              width: 120px;\n              height: 6px;\n              background: #d3d3d3;\n              border-radius: 5px;\n              outline: none;\n              opacity: 0.7;\n              -webkit-transition: .2s;\n              transition: opacity .2s; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range:hover {\n              opacity: 1; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range::-webkit-slider-thumb {\n              -webkit-appearance: none;\n              appearance: none;\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range::-moz-range-thumb {\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n        #actionTabs .tabs .panes .pane .color3Line {\n          padding-left: 2px;\n          display: grid; }\n          #actionTabs .tabs .panes .pane .color3Line .firstLine {\n            height: 30px;\n            display: grid;\n            grid-template-columns: 1fr auto 20px 20px; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .label {\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 {\n              grid-column: 2;\n              display: flex;\n              align-items: center; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"] {\n                -webkit-appearance: none;\n                border: 1px solid rgba(255, 255, 255, 0.5);\n                padding: 0;\n                width: 30px;\n                height: 20px; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch-wrapper {\n                padding: 0; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch {\n                border: none; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input {\n                margin-right: 5px; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .copy {\n              grid-column: 3;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .copy img {\n                height: 100%; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .expand {\n              grid-column: 4;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n          #actionTabs .tabs .panes .pane .color3Line .secondLine {\n            display: grid;\n            padding-right: 5px;\n            border-left: 1px solid #337ab7; }\n            #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric {\n              display: grid;\n              grid-template-columns: 1fr auto; }\n            #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric-label {\n              text-align: right;\n              grid-column: 1;\n              display: flex;\n              align-items: center;\n              justify-self: right;\n              margin-right: 10px; }\n            #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric-value {\n              width: 120px;\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              border: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .listLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .listLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .listLine .options {\n            grid-column: 2;\n            display: flex;\n            align-items: center;\n            margin-right: 5px; }\n            #actionTabs .tabs .panes .pane .listLine .options select {\n              width: 115px; }\n        #actionTabs .tabs .panes .pane .paneContainer {\n          margin-top: 3px;\n          display: grid;\n          grid-template-rows: 100%;\n          grid-template-columns: 100%; }\n          #actionTabs .tabs .panes .pane .paneContainer .paneList {\n            border-left: 3px solid transparent; }\n          #actionTabs .tabs .panes .pane .paneContainer:hover .paneList {\n            border-left: 3px solid rgba(51, 122, 183, 0.8); }\n          #actionTabs .tabs .panes .pane .paneContainer:hover .paneContainer-content .header .title {\n            border-left: 3px solid #337ab7; }\n          #actionTabs .tabs .panes .pane .paneContainer .paneContainer-highlight-border {\n            grid-row: 1;\n            grid-column: 1;\n            opacity: 1;\n            border: 3px solid red;\n            transition: opacity 250ms;\n            pointer-events: none; }\n            #actionTabs .tabs .panes .pane .paneContainer .paneContainer-highlight-border.transparent {\n              opacity: 0; }\n          #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content {\n            grid-row: 1;\n            grid-column: 1; }\n            #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header {\n              display: grid;\n              grid-template-columns: 1fr auto;\n              background: #555555;\n              height: 30px;\n              padding-right: 5px;\n              cursor: pointer; }\n              #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header .title {\n                border-left: 3px solid transparent;\n                padding-left: 5px;\n                grid-column: 1;\n                display: flex;\n                align-items: center; }\n              #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header .collapse {\n                grid-column: 2;\n                display: flex;\n                align-items: center;\n                justify-items: center;\n                transform-origin: center; }\n                #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header .collapse.closed {\n                  transform: rotate(180deg); }\n            #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n              border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n            #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n              border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n", ""]);
+exports.push([module.i, "#inspector-host {\n  position: absolute;\n  right: 0px;\n  top: 0px;\n  bottom: 0px; }\n\n#__resizable_base__ {\n  display: none; }\n\n#actionTabs {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\";\n  overflow: hidden; }\n  #actionTabs .hoverIcon:hover {\n    opacity: 0.8; }\n  #actionTabs #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #actionTabs #header #logo {\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #actionTabs #header #back {\n      grid-column: 1;\n      display: grid;\n      align-self: center;\n      justify-self: center;\n      cursor: pointer; }\n    #actionTabs #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #actionTabs #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #actionTabs #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #actionTabs #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #actionTabs .tabs {\n    display: grid;\n    grid-row: 2;\n    grid-template-rows: 40px 1fr;\n    font: 14px \"Arial\";\n    overflow: hidden; }\n    #actionTabs .tabs .labels {\n      grid-row: 1;\n      display: flex;\n      align-items: center;\n      justify-items: center;\n      border-bottom: 1px solid #ffffff;\n      margin: 0;\n      padding: 0; }\n      #actionTabs .tabs .labels .label {\n        font-size: 24px;\n        color: white;\n        width: 40px;\n        display: flex;\n        align-content: center;\n        justify-content: center;\n        border: 1px solid transparent;\n        border-bottom: none;\n        background: #333333;\n        padding: 5px;\n        height: 28px;\n        cursor: pointer; }\n        #actionTabs .tabs .labels .label.active {\n          border-color: #ffffff;\n          border-bottom: 2px solid transparent;\n          margin-bottom: -2px; }\n    #actionTabs .tabs .panes {\n      grid-row: 2;\n      display: grid;\n      grid-template-rows: 100%;\n      overflow: hidden; }\n      #actionTabs .tabs .panes .infoMessage {\n        opacity: 0.5;\n        color: white;\n        margin: 15px 5px 0px 5px; }\n      #actionTabs .tabs .panes .pane {\n        color: white;\n        overflow-x: hidden;\n        overflow-y: auto;\n        height: 100%;\n        -webkit-user-select: none;\n        -moz-user-select: none;\n        -ms-user-select: none;\n        user-select: none; }\n        #actionTabs .tabs .panes .pane .underline {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.5); }\n        #actionTabs .tabs .panes .pane .textureLinkLine {\n          display: grid;\n          grid-template-columns: auto 1fr; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .debug {\n            grid-column: 1;\n            margin-left: 5px;\n            margin-right: 5px;\n            display: block;\n            align-items: center;\n            justify-items: center;\n            cursor: pointer;\n            opacity: 0.5; }\n            #actionTabs .tabs .panes .pane .textureLinkLine .debug.selected {\n              opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .textLine {\n            grid-column: 2; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .actionIcon {\n            display: inline-block;\n            margin-top: 6px;\n            margin-right: 4px; }\n        #actionTabs .tabs .panes .pane .messageLine {\n          text-align: center;\n          font-size: 12px;\n          font-style: italic;\n          opacity: 0.6; }\n        #actionTabs .tabs .panes .pane .iconMessageLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 30px 1fr; }\n          #actionTabs .tabs .panes .pane .iconMessageLine .icon {\n            grid-column: 1;\n            display: grid;\n            align-items: center;\n            justify-items: center; }\n          #actionTabs .tabs .panes .pane .iconMessageLine .value {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n        #actionTabs .tabs .panes .pane .linkButtonLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .linkButtonLine .link {\n            grid-column: 1;\n            display: flex;\n            align-items: center;\n            text-decoration: underline;\n            cursor: pointer; }\n          #actionTabs .tabs .panes .pane .linkButtonLine .button {\n            grid-column: 2; }\n            #actionTabs .tabs .panes .pane .linkButtonLine .button button {\n              background: #222222;\n              border: 1px solid #337ab7;\n              margin: 5px 10px 5px 10px;\n              color: white;\n              padding: 4px 5px;\n              opacity: 0.9;\n              cursor: pointer; }\n            #actionTabs .tabs .panes .pane .linkButtonLine .button button:hover {\n              opacity: 1.0; }\n            #actionTabs .tabs .panes .pane .linkButtonLine .button button:active {\n              background: #282828; }\n            #actionTabs .tabs .panes .pane .linkButtonLine .button button:focus {\n              border: 1px solid #337ab7;\n              outline: 0px; }\n        #actionTabs .tabs .panes .pane .textLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .textLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .textLine .link-value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 6px;\n            max-width: 140px;\n            text-decoration: underline;\n            cursor: pointer; }\n          #actionTabs .tabs .panes .pane .textLine .value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 6px;\n            max-width: 200px;\n            -webkit-user-select: text;\n            -moz-user-select: text;\n            -ms-user-select: text;\n            user-select: text; }\n            #actionTabs .tabs .panes .pane .textLine .value.check {\n              color: green; }\n            #actionTabs .tabs .panes .pane .textLine .value.uncheck {\n              color: red; }\n        #actionTabs .tabs .panes .pane .gradient-container {\n          margin-top: 3px; }\n          #actionTabs .tabs .panes .pane .gradient-container .gradient-label {\n            height: 30px;\n            display: grid;\n            align-content: center; }\n          #actionTabs .tabs .panes .pane .gradient-container .gradient-step {\n            display: grid;\n            grid-template-rows: 100%;\n            grid-template-columns: 25px 50px 55px 40px auto 20px 5px;\n            padding-top: 5px;\n            padding-left: 5px;\n            padding-bottom: 5px;\n            align-items: center;\n            border-left: orange 3px solid; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .step {\n              grid-row: 1;\n              grid-column: 1; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .factor1 {\n              grid-row: 1;\n              grid-column: 2;\n              cursor: pointer; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .factor2 {\n              padding-left: 5px;\n              grid-row: 1;\n              grid-column: 3;\n              cursor: pointer; }\n              #actionTabs .tabs .panes .pane .gradient-container .gradient-step .factor2 .grayed {\n                background: gray;\n                border-color: gray; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .numeric-input {\n              width: calc(100% - 5px); }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .step-value {\n              margin-left: 5px;\n              grid-row: 1;\n              grid-column: 4;\n              text-align: right;\n              margin-right: 5px; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .step-slider {\n              grid-row: 1;\n              grid-column: 5;\n              display: grid;\n              justify-content: stretch;\n              align-content: center;\n              margin-right: 5px; }\n              #actionTabs .tabs .panes .pane .gradient-container .gradient-step .step-slider input {\n                width: 100%; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .gradient-delete {\n              grid-row: 1;\n              grid-column: 6;\n              display: grid;\n              align-content: center;\n              justify-content: center; }\n        #actionTabs .tabs .panes .pane .textInputLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 120px; }\n          #actionTabs .tabs .panes .pane .textInputLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .textInputLine .value {\n            display: flex;\n            align-items: center;\n            grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textInputLine .value input {\n              width: 110px; }\n        #actionTabs .tabs .panes .pane .buttonLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch; }\n          #actionTabs .tabs .panes .pane .buttonLine input[type=\"file\"] {\n            display: none; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload {\n            background: #222222;\n            border: 1px solid #337ab7;\n            margin: 5px 10px 5px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9;\n            cursor: pointer;\n            text-align: center; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload:hover {\n            opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload:active {\n            transform: scale(0.98);\n            transform-origin: 0.5 0.5; }\n          #actionTabs .tabs .panes .pane .buttonLine button {\n            background: #222222;\n            border: 1px solid #337ab7;\n            margin: 5px 10px 5px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9;\n            cursor: pointer; }\n          #actionTabs .tabs .panes .pane .buttonLine button:hover {\n            opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .buttonLine button:active {\n            background: #282828; }\n          #actionTabs .tabs .panes .pane .buttonLine button:focus {\n            border: 1px solid #337ab7;\n            outline: 0px; }\n        #actionTabs .tabs .panes .pane .radioLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 24px; }\n          #actionTabs .tabs .panes .pane .radioLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .radioLine .radioContainer {\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio {\n              grid-column: 2;\n              display: none; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:before {\n                border-color: #337ab7; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:after {\n                transform: scale(1); }\n            #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio {\n              display: inline-block;\n              height: 14px;\n              position: relative;\n              padding: 0 24px;\n              margin-bottom: 0;\n              cursor: pointer;\n              vertical-align: bottom; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before, #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                position: absolute;\n                content: '';\n                border-radius: 50%;\n                transition: all .3s ease;\n                transition-property: transform, border-color; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before {\n                left: 0px;\n                top: 0;\n                width: 16px;\n                height: 16px;\n                border: 2px solid white; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                top: 6px;\n                left: 6px;\n                width: 8px;\n                height: 8px;\n                transform: scale(0);\n                background: #337ab7; }\n        #actionTabs .tabs .panes .pane .vector3Line {\n          padding-left: 2px;\n          display: grid; }\n          #actionTabs .tabs .panes .pane .vector3Line .firstLine {\n            display: grid;\n            grid-template-columns: 1fr auto 20px;\n            height: 30px; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .label {\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .vector {\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              text-align: right;\n              opacity: 0.8; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .expand {\n              grid-column: 3;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n          #actionTabs .tabs .panes .pane .vector3Line .secondLine {\n            display: grid;\n            padding-right: 5px;\n            border-left: 1px solid #337ab7; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric {\n              display: grid;\n              grid-template-columns: 1fr auto; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-label {\n              text-align: right;\n              grid-column: 1;\n              display: flex;\n              align-items: center;\n              justify-self: right;\n              margin-right: 10px; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-value {\n              width: 120px;\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              border: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .checkBoxLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .checkBoxLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .checkBoxLine .checkBox {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl {\n              position: relative;\n              display: block;\n              height: 14px;\n              width: 34px;\n              margin-right: 5px;\n              background: #898989;\n              border-radius: 100px;\n              cursor: pointer;\n              transition: all 0.3s ease; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:after {\n              position: absolute;\n              left: 3px;\n              top: 2px;\n              display: block;\n              width: 10px;\n              height: 10px;\n              border-radius: 100px;\n              background: #fff;\n              box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n              content: '';\n              transition: all 0.15s ease; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:active:after {\n              transform: scale(1.15, 0.85); }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label {\n              background: #337ab7; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label:after {\n              left: 20px;\n              background: #164975; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .hidden {\n              display: none; }\n        #actionTabs .tabs .panes .pane .textureLine {\n          display: grid;\n          grid-template-rows: 30px auto; }\n          #actionTabs .tabs .panes .pane .textureLine .control {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 1fr; }\n            #actionTabs .tabs .panes .pane .textureLine .control .red {\n              grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textureLine .control .green {\n              grid-column: 3; }\n            #actionTabs .tabs .panes .pane .textureLine .control .blue {\n              grid-column: 4; }\n            #actionTabs .tabs .panes .pane .textureLine .control .alpha {\n              grid-column: 5; }\n            #actionTabs .tabs .panes .pane .textureLine .control .all {\n              grid-column: 6; }\n          #actionTabs .tabs .panes .pane .textureLine .control3D {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 40px 1fr; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .px {\n              grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .nx {\n              grid-column: 3; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .py {\n              grid-column: 4; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .ny {\n              grid-column: 5; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .pz {\n              grid-column: 6; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .nz {\n              grid-column: 7; }\n          #actionTabs .tabs .panes .pane .textureLine .command {\n            border: 1px solid transparent;\n            background: transparent;\n            color: white; }\n          #actionTabs .tabs .panes .pane .textureLine .selected {\n            border: 1px solid #337ab7; }\n          #actionTabs .tabs .panes .pane .textureLine .preview {\n            grid-row: 2;\n            display: grid;\n            align-self: center;\n            justify-self: center;\n            height: 256px;\n            width: 256px;\n            margin-top: 5px;\n            margin-bottom: 5px;\n            border: 2px solid rgba(255, 255, 255, 0.4); }\n        #actionTabs .tabs .panes .pane .gltf-extension-property {\n          margin-left: 30px;\n          border-left: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .floatLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 120px; }\n          #actionTabs .tabs .panes .pane .floatLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .floatLine .value {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .floatLine .value input {\n              width: 110px; }\n        #actionTabs .tabs .panes .pane .sliderLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .sliderLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .sliderLine .slider {\n            grid-column: 2;\n            margin-right: 5px;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range {\n              -webkit-appearance: none;\n              width: 120px;\n              height: 6px;\n              background: #d3d3d3;\n              border-radius: 5px;\n              outline: none;\n              opacity: 0.7;\n              -webkit-transition: .2s;\n              transition: opacity .2s; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range:hover {\n              opacity: 1; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range::-webkit-slider-thumb {\n              -webkit-appearance: none;\n              appearance: none;\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range::-moz-range-thumb {\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n        #actionTabs .tabs .panes .pane .color3Line {\n          padding-left: 2px;\n          display: grid; }\n          #actionTabs .tabs .panes .pane .color3Line .firstLine {\n            height: 30px;\n            display: grid;\n            grid-template-columns: 1fr auto 20px 20px; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .label {\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 {\n              grid-column: 2;\n              display: flex;\n              align-items: center; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"] {\n                -webkit-appearance: none;\n                border: 1px solid rgba(255, 255, 255, 0.5);\n                padding: 0;\n                width: 30px;\n                height: 20px; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch-wrapper {\n                padding: 0; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch {\n                border: none; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input {\n                margin-right: 5px; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .copy {\n              grid-column: 3;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .copy img {\n                height: 100%; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .expand {\n              grid-column: 4;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n          #actionTabs .tabs .panes .pane .color3Line .secondLine {\n            display: grid;\n            padding-right: 5px;\n            border-left: 1px solid #337ab7; }\n            #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric {\n              display: grid;\n              grid-template-columns: 1fr auto; }\n            #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric-label {\n              text-align: right;\n              grid-column: 1;\n              display: flex;\n              align-items: center;\n              justify-self: right;\n              margin-right: 10px; }\n            #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric-value {\n              width: 120px;\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              border: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .listLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .listLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .listLine .options {\n            grid-column: 2;\n            display: flex;\n            align-items: center;\n            margin-right: 5px; }\n            #actionTabs .tabs .panes .pane .listLine .options select {\n              width: 115px; }\n        #actionTabs .tabs .panes .pane .paneContainer {\n          margin-top: 3px;\n          display: grid;\n          grid-template-rows: 100%;\n          grid-template-columns: 100%; }\n          #actionTabs .tabs .panes .pane .paneContainer .paneList {\n            border-left: 3px solid transparent; }\n          #actionTabs .tabs .panes .pane .paneContainer:hover .paneList {\n            border-left: 3px solid rgba(51, 122, 183, 0.8); }\n          #actionTabs .tabs .panes .pane .paneContainer:hover .paneContainer-content .header .title {\n            border-left: 3px solid #337ab7; }\n          #actionTabs .tabs .panes .pane .paneContainer .paneContainer-highlight-border {\n            grid-row: 1;\n            grid-column: 1;\n            opacity: 1;\n            border: 3px solid red;\n            transition: opacity 250ms;\n            pointer-events: none; }\n            #actionTabs .tabs .panes .pane .paneContainer .paneContainer-highlight-border.transparent {\n              opacity: 0; }\n          #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content {\n            grid-row: 1;\n            grid-column: 1; }\n            #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header {\n              display: grid;\n              grid-template-columns: 1fr auto;\n              background: #555555;\n              height: 30px;\n              padding-right: 5px;\n              cursor: pointer; }\n              #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header .title {\n                border-left: 3px solid transparent;\n                padding-left: 5px;\n                grid-column: 1;\n                display: flex;\n                align-items: center; }\n              #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header .collapse {\n                grid-column: 2;\n                display: flex;\n                align-items: center;\n                justify-items: center;\n                transform-origin: center; }\n                #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header .collapse.closed {\n                  transform: rotate(180deg); }\n            #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n              border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n            #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n              border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n", ""]);
 
 // exports
 
@@ -41402,6 +41402,45 @@ var FloatLineComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/actionTabs/lines/linkButtonComponent.tsx":
+/*!*************************************************************!*\
+  !*** ./components/actionTabs/lines/linkButtonComponent.tsx ***!
+  \*************************************************************/
+/*! exports provided: LinkButtonComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LinkButtonComponent", function() { return LinkButtonComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var LinkButtonComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LinkButtonComponent, _super);
+    function LinkButtonComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    LinkButtonComponent.prototype.onLink = function () {
+        if (this.props.url) {
+            window.open(this.props.url, '_blank');
+        }
+    };
+    LinkButtonComponent.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "linkButtonLine" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "link", title: this.props.label, onClick: function () { return _this.onLink(); } }, this.props.label),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "button" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { onClick: function () { return _this.props.onClick(); } }, this.props.buttonLabel))));
+    };
+    return LinkButtonComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./components/actionTabs/lines/meshPickerComponent.tsx":
 /*!*************************************************************!*\
   !*** ./components/actionTabs/lines/meshPickerComponent.tsx ***!
@@ -42063,6 +42102,10 @@ var TextLineComponent = /** @class */ (function (_super) {
         return _super.call(this, props) || this;
     }
     TextLineComponent.prototype.onLink = function () {
+        if (this.props.url) {
+            window.open(this.props.url, '_blank');
+            return;
+        }
         if (!this.props.onLink) {
             return;
         }
@@ -42073,12 +42116,8 @@ var TextLineComponent = /** @class */ (function (_super) {
         if (this.props.ignoreValue) {
             return null;
         }
-        if (this.props.url) {
-            window.open(this.props.url, '_blank');
-            return null;
-        }
-        else if (this.props.onLink) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "link-value", title: this.props.value, onClick: function () { return _this.onLink(); } }, this.props.value || "no name"));
+        if (this.props.onLink || this.props.url) {
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "link-value", title: this.props.value, onClick: function () { return _this.onLink(); } }, this.props.url ? "doc" : (this.props.value || "no name")));
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value", title: this.props.value, style: { color: this.props.color ? this.props.color : "" } }, this.props.value || "no name"));
     };
@@ -46993,6 +47032,114 @@ var BoxEmitterGridComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/actionTabs/tabs/propertyGrids/particleSystems/colorGradientStepGridComponent.tsx":
+/*!*****************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/particleSystems/colorGradientStepGridComponent.tsx ***!
+  \*****************************************************************************************************/
+/*! exports provided: ColorGradientStepGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ColorGradientStepGridComponent", function() { return ColorGradientStepGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
+/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
+/* harmony import */ var babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Misc/gradients */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_4__);
+
+
+
+
+
+
+var ColorGradientStepGridComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ColorGradientStepGridComponent, _super);
+    function ColorGradientStepGridComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = { gradient: props.gradient.gradient };
+        return _this;
+    }
+    ColorGradientStepGridComponent.prototype.updateColor1 = function (color) {
+        if (this.props.gradient instanceof babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_4__["ColorGradient"]) {
+            this.props.gradient.color1 = babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_4__["Color4"].FromColor3(babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_4__["Color3"].FromHexString(color));
+            this.props.globalState.onCodeChangedObservable.notifyObservers({
+                object: this.props.host,
+                code: "TARGET." + this.props.codeRecorderPropertyName + ".color1 = BABYLON.Color4.FromColor3(BABYLON.Color3.FromHexString(" + color + "));"
+            });
+        }
+        else {
+            this.props.gradient.color = babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_4__["Color3"].FromHexString(color);
+            this.props.globalState.onCodeChangedObservable.notifyObservers({
+                object: this.props.host,
+                code: "TARGET." + this.props.codeRecorderPropertyName + ".color = BABYLON.Color3.FromHexString(" + color + ");"
+            });
+        }
+        this.props.onUpdateGradient();
+        this.forceUpdate();
+    };
+    ColorGradientStepGridComponent.prototype.updateColor2 = function (color) {
+        if (this.props.gradient instanceof babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_4__["ColorGradient"]) {
+            this.props.gradient.color2 = babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_4__["Color4"].FromColor3(babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_4__["Color3"].FromHexString(color));
+            this.props.globalState.onCodeChangedObservable.notifyObservers({
+                object: this.props.host,
+                code: "TARGET." + this.props.codeRecorderPropertyName + ".color2 = BABYLON.Color4.FromColor3(BABYLON.Color3.FromHexString(" + color + "));"
+            });
+        }
+        this.props.onUpdateGradient();
+        this.forceUpdate();
+    };
+    ColorGradientStepGridComponent.prototype.updateGradient = function (gradient) {
+        this.props.gradient.gradient = gradient;
+        this.setState({ gradient: gradient });
+        this.props.globalState.onCodeChangedObservable.notifyObservers({
+            object: this.props.host,
+            code: "TARGET." + this.props.codeRecorderPropertyName + ".gradient = " + gradient + ";"
+        });
+        this.props.onUpdateGradient();
+    };
+    ColorGradientStepGridComponent.prototype.onPointerUp = function () {
+        this.props.onCheckForReOrder();
+    };
+    ColorGradientStepGridComponent.prototype.lock = function () {
+        if (this.props.lockObject) {
+            this.props.lockObject.lock = true;
+        }
+    };
+    ColorGradientStepGridComponent.prototype.unlock = function () {
+        if (this.props.lockObject) {
+            this.props.lockObject.lock = false;
+        }
+    };
+    ColorGradientStepGridComponent.prototype.render = function () {
+        var _this = this;
+        var gradient = this.props.gradient;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "gradient-step" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "step" }, "#" + this.props.lineIndex),
+            gradient instanceof babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_4__["ColorGradient"] &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color1" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "color", value: gradient.color1.toHexString(true), onChange: function (evt) { return _this.updateColor1(evt.target.value); } })),
+            gradient instanceof babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_4__["Color3Gradient"] &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color1" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "color", value: gradient.color.toHexString(), onChange: function (evt) { return _this.updateColor1(evt.target.value); } })),
+            gradient instanceof babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_4__["ColorGradient"] &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color1" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "color", value: gradient.color2 ? gradient.color2.toHexString(true) : "#000000", onChange: function (evt) { return _this.updateColor2(evt.target.value); } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "step-value" }, gradient.gradient.toFixed(2)),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "step-slider" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { className: "range", type: "range", step: 0.01, min: 0, max: 1.0, value: gradient.gradient, onPointerUp: function (evt) { return _this.onPointerUp(); }, onChange: function (evt) { return _this.updateGradient(parseFloat(evt.target.value)); } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "gradient-delete", onClick: function () { return _this.props.onDelete(); } },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faTrash"] }))));
+    };
+    return ColorGradientStepGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./components/actionTabs/tabs/propertyGrids/particleSystems/coneEmitterGridComponent.tsx":
 /*!***********************************************************************************************!*\
   !*** ./components/actionTabs/tabs/propertyGrids/particleSystems/coneEmitterGridComponent.tsx ***!
@@ -47071,89 +47218,6 @@ var CylinderEmitterGridComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./components/actionTabs/tabs/propertyGrids/particleSystems/factorGradientGridComponent.tsx":
-/*!**************************************************************************************************!*\
-  !*** ./components/actionTabs/tabs/propertyGrids/particleSystems/factorGradientGridComponent.tsx ***!
-  \**************************************************************************************************/
-/*! exports provided: FactorGradientGridComponent */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FactorGradientGridComponent", function() { return FactorGradientGridComponent; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/gradients */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
-/* harmony import */ var _factorGradientStepGridComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./factorGradientStepGridComponent */ "./components/actionTabs/tabs/propertyGrids/particleSystems/factorGradientStepGridComponent.tsx");
-/* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
-
-
-
-
-
-
-var FactorGradientGridComponent = /** @class */ (function (_super) {
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FactorGradientGridComponent, _super);
-    function FactorGradientGridComponent(props) {
-        return _super.call(this, props) || this;
-    }
-    FactorGradientGridComponent.prototype.deleteStep = function (step) {
-        var gradients = this.props.gradients;
-        var index = gradients.indexOf(step);
-        if (index > -1) {
-            gradients.splice(index, 1);
-            this.forceUpdate();
-        }
-    };
-    FactorGradientGridComponent.prototype.addNewStep = function () {
-        var gradients = this.props.gradients;
-        var newStep = new babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_2__["FactorGradient"]();
-        newStep.gradient = 1.0;
-        newStep.factor1 = 1.0;
-        newStep.factor2 = 1.0;
-        gradients.push(newStep);
-        this.forceUpdate();
-    };
-    FactorGradientGridComponent.prototype.checkForReOrder = function () {
-        var gradients = this.props.gradients;
-        gradients.sort(function (a, b) {
-            if (a.gradient === b.gradient) {
-                return 0;
-            }
-            if (a.gradient > b.gradient) {
-                return 1;
-            }
-            return -1;
-        });
-        this.forceUpdate();
-    };
-    FactorGradientGridComponent.prototype.render = function () {
-        var _this = this;
-        var gradients = this.props.gradients;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
-            gradients &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "gradient-container" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: this.props.label, url: this.props.docLink }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_3__["ButtonLineComponent"], { label: "Add new step", onClick: function () { return _this.addNewStep(); } }),
-                    gradients.map(function (g, i) {
-                        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_factorGradientStepGridComponent__WEBPACK_IMPORTED_MODULE_4__["FactorGradientStepGridComponent"], { globalState: _this.props.globalState, lockObject: _this.props.lockObject, onCheckForReOrder: function () { return _this.checkForReOrder(); }, onUpdateGradient: function () { return _this.forceUpdate(); }, key: "step-" + i, lineIndex: i, gradient: g, onDelete: function () { return _this.deleteStep(g); } }));
-                    })),
-            !gradients &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_3__["ButtonLineComponent"], { label: "Use " + this.props.label, onClick: function () {
-                        _this.props.onCreateRequired();
-                        _this.forceUpdate();
-                    } })));
-    };
-    return FactorGradientGridComponent;
-}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
-
-
-
-/***/ }),
-
 /***/ "./components/actionTabs/tabs/propertyGrids/particleSystems/factorGradientStepGridComponent.tsx":
 /*!******************************************************************************************************!*\
   !*** ./components/actionTabs/tabs/propertyGrids/particleSystems/factorGradientStepGridComponent.tsx ***!
@@ -47182,17 +47246,29 @@ var FactorGradientStepGridComponent = /** @class */ (function (_super) {
     }
     FactorGradientStepGridComponent.prototype.updateFactor1 = function (factor) {
         this.props.gradient.factor1 = factor;
+        this.props.globalState.onCodeChangedObservable.notifyObservers({
+            object: this.props.host,
+            code: "TARGET." + this.props.codeRecorderPropertyName + ".factor1 = " + factor + ";"
+        });
         this.props.onUpdateGradient();
         this.forceUpdate();
     };
     FactorGradientStepGridComponent.prototype.updateFactor2 = function (factor) {
         this.props.gradient.factor2 = factor;
+        this.props.globalState.onCodeChangedObservable.notifyObservers({
+            object: this.props.host,
+            code: "TARGET." + this.props.codeRecorderPropertyName + ".factor2 = " + factor + ";"
+        });
         this.props.onUpdateGradient();
         this.forceUpdate();
     };
     FactorGradientStepGridComponent.prototype.updateGradient = function (gradient) {
         this.props.gradient.gradient = gradient;
         this.setState({ gradient: gradient });
+        this.props.globalState.onCodeChangedObservable.notifyObservers({
+            object: this.props.host,
+            code: "TARGET." + this.props.codeRecorderPropertyName + ".gradient = " + gradient + ";"
+        });
         this.props.onUpdateGradient();
     };
     FactorGradientStepGridComponent.prototype.onPointerUp = function () {
@@ -47344,7 +47420,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _pointEmitterGridComponent__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./pointEmitterGridComponent */ "./components/actionTabs/tabs/propertyGrids/particleSystems/pointEmitterGridComponent.tsx");
 /* harmony import */ var _sphereEmitterGridComponent__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./sphereEmitterGridComponent */ "./components/actionTabs/tabs/propertyGrids/particleSystems/sphereEmitterGridComponent.tsx");
 /* harmony import */ var _meshEmitterGridComponent__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./meshEmitterGridComponent */ "./components/actionTabs/tabs/propertyGrids/particleSystems/meshEmitterGridComponent.tsx");
-/* harmony import */ var _factorGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./factorGradientGridComponent */ "./components/actionTabs/tabs/propertyGrids/particleSystems/factorGradientGridComponent.tsx");
+/* harmony import */ var _valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./valueGradientGridComponent */ "./components/actionTabs/tabs/propertyGrids/particleSystems/valueGradientGridComponent.tsx");
+
 
 
 
@@ -47546,20 +47623,36 @@ var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
                 this.renderEmitter()),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "EMISSION" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Rate", target: system, propertyName: "emitRate", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_factorGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["FactorGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getEmitRateGradients(), label: "Velocity gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#emit-rate-over-time", onCreateRequired: function () {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["ValueGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getEmitRateGradients(), label: "Velocity gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#emit-rate-over-time", onCreateRequired: function () {
                         system.addEmitRateGradient(0, 50, 50);
-                    }, lockObject: this.props.lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        _this.props.globalState.onCodeChangedObservable.notifyObservers({
+                            object: system,
+                            code: "TARGET.addEmitRateGradient(0, 50, 50);"
+                        });
+                    }, mode: _valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["GradientGridMode"].Factor, host: system, codeRecorderPropertyName: "getEmitRateGradients()", lockObject: this.props.lockObject }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Min emit power", target: system, propertyName: "minEmitPower", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Max emit power", target: system, propertyName: "maxEmitPower", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_factorGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["FactorGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getVelocityGradients(), label: "Velocity gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#velocity-over-time", onCreateRequired: function () {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["ValueGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getVelocityGradients(), label: "Velocity gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#velocity-over-time", onCreateRequired: function () {
                         system.addVelocityGradient(0, 0.1, 0.1);
-                    }, lockObject: this.props.lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_factorGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["FactorGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getLimitVelocityGradients(), label: "Limit velocity gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#limit-velocity-over-time", onCreateRequired: function () {
+                        _this.props.globalState.onCodeChangedObservable.notifyObservers({
+                            object: system,
+                            code: "TARGET.addVelocityGradient(0, 0.1, 0.1);"
+                        });
+                    }, mode: _valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["GradientGridMode"].Factor, host: system, codeRecorderPropertyName: "getVelocityGradients()", lockObject: this.props.lockObject }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["ValueGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getLimitVelocityGradients(), label: "Limit velocity gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#limit-velocity-over-time", onCreateRequired: function () {
                         system.addLimitVelocityGradient(0, 0.1, 0.1);
-                    }, lockObject: this.props.lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_factorGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["FactorGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getDragGradients(), label: "Drag gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#drag-factor", onCreateRequired: function () {
+                        _this.props.globalState.onCodeChangedObservable.notifyObservers({
+                            object: system,
+                            code: "TARGET.addLimitVelocityGradient(0, 0.1, 0.1);"
+                        });
+                    }, mode: _valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["GradientGridMode"].Factor, host: system, codeRecorderPropertyName: "getLimitVelocityGradients()", lockObject: this.props.lockObject }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["ValueGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getDragGradients(), label: "Drag gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#drag-factor", onCreateRequired: function () {
                         system.addDragGradient(0, 0.1, 0.1);
-                    }, lockObject: this.props.lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                        _this.props.globalState.onCodeChangedObservable.notifyObservers({
+                            object: system,
+                            code: "TARGET.addDragGradient(0, 0.1, 0.1);"
+                        });
+                    }, host: system, codeRecorderPropertyName: "getDragGradients()", mode: _valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["GradientGridMode"].Factor, lockObject: this.props.lockObject })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "SIZE" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Min size", target: system, propertyName: "minSize", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Max size", target: system, propertyName: "maxSize", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -47567,36 +47660,76 @@ var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Max scale X", target: system, propertyName: "maxScaleX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Min scale Y", target: system, propertyName: "minScaleY", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Max scale Y", target: system, propertyName: "maxScaleY", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_factorGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["FactorGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getStartSizeGradients(), label: "Start size gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#start-size-over-time", onCreateRequired: function () {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["ValueGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getStartSizeGradients(), label: "Start size gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#start-size-over-time", onCreateRequired: function () {
                         system.addStartSizeGradient(0, 1, 1);
-                    }, lockObject: this.props.lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_factorGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["FactorGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getSizeGradients(), label: "Size gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#size", onCreateRequired: function () {
+                        _this.props.globalState.onCodeChangedObservable.notifyObservers({
+                            object: system,
+                            code: "TARGET.addStartSizeGradient(0, 1, 1);"
+                        });
+                    }, host: system, codeRecorderPropertyName: "getStartSizeGradients()", mode: _valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["GradientGridMode"].Factor, lockObject: this.props.lockObject }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["ValueGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getSizeGradients(), label: "Size gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#size", onCreateRequired: function () {
                         system.addSizeGradient(0, 1, 1);
-                    }, lockObject: this.props.lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                        _this.props.globalState.onCodeChangedObservable.notifyObservers({
+                            object: system,
+                            code: "TARGET.addSizeGradient(0, 1, 1);"
+                        });
+                    }, host: system, codeRecorderPropertyName: "getSizeGradients()", mode: _valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["GradientGridMode"].Factor, lockObject: this.props.lockObject })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "LIFETIME" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Min lifetime", target: system, propertyName: "minLifeTime", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Max lifetime", target: system, propertyName: "maxLifeTime", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_factorGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["FactorGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getLifeTimeGradients(), label: "Lifetime gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#lifetime", onCreateRequired: function () {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Target stop duration", target: system, propertyName: "targetStopDuration", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["ValueGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getLifeTimeGradients(), label: "Lifetime gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#lifetime", onCreateRequired: function () {
                         system.addLifeTimeGradient(0, 1, 1);
-                    }, lockObject: this.props.lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                        _this.props.globalState.onCodeChangedObservable.notifyObservers({
+                            object: system,
+                            code: "TARGET.addLifeTimeGradient(0, 1, 1);"
+                        });
+                    }, host: system, codeRecorderPropertyName: "getLifeTimeGradients()", mode: _valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["GradientGridMode"].Factor, lockObject: this.props.lockObject })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "COLORS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color4LineComponent__WEBPACK_IMPORTED_MODULE_10__["Color4LineComponent"], { label: "Color 1", target: system, propertyName: "color1", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color4LineComponent__WEBPACK_IMPORTED_MODULE_10__["Color4LineComponent"], { label: "Color 2", target: system, propertyName: "color2", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color4LineComponent__WEBPACK_IMPORTED_MODULE_10__["Color4LineComponent"], { label: "Color dead", target: system, propertyName: "colorDead", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_factorGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["FactorGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getColorRemapGradients(), label: "Color remap gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#ramp-gradients", onCreateRequired: function () {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["ValueGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getColorGradients(), label: "Color gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#particle-colors", onCreateRequired: function () {
+                        system.addColorGradient(0, new babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["Color4"](0, 0, 0, 1), new babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["Color4"](1, 1, 1, 1));
+                        _this.props.globalState.onCodeChangedObservable.notifyObservers({
+                            object: system,
+                            code: "TARGET.addColorGradient(0, new BABYLON.Color4(0, 0, 0, 1), new BABYLON.Color4(1, 1, 1, 1));"
+                        });
+                    }, host: system, codeRecorderPropertyName: "getColorGradients()", mode: _valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["GradientGridMode"].Color4, lockObject: this.props.lockObject }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_12__["CheckBoxLineComponent"], { label: "Use ramp grandients", target: system, propertyName: "useRampGradients" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["ValueGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getRampGradients(), label: "Ramp gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#ramp-gradients", onCreateRequired: function () {
+                        system.addRampGradient(0, babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["Color3"].White());
+                        _this.props.globalState.onCodeChangedObservable.notifyObservers({
+                            object: system,
+                            code: "TARGET.addRampGradient(0, BABYLON.Color3.White());"
+                        });
+                    }, mode: _valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["GradientGridMode"].Color3, host: system, codeRecorderPropertyName: "getRampGradients()", lockObject: this.props.lockObject }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["ValueGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getColorRemapGradients(), label: "Color remap gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#ramp-gradients", onCreateRequired: function () {
                         system.addColorRemapGradient(0, 1, 1);
-                    }, lockObject: this.props.lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_factorGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["FactorGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getAlphaRemapGradients(), label: "Alpha remap gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#ramp-gradients", onCreateRequired: function () {
+                        _this.props.globalState.onCodeChangedObservable.notifyObservers({
+                            object: system,
+                            code: "TARGET.addColorRemapGradient(0, 1, 1);"
+                        });
+                    }, host: system, codeRecorderPropertyName: "getColorRemapGradients()", mode: _valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["GradientGridMode"].Factor, lockObject: this.props.lockObject }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["ValueGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getAlphaRemapGradients(), label: "Alpha remap gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#ramp-gradients", onCreateRequired: function () {
                         system.addAlphaRemapGradient(0, 1, 1);
-                    }, lockObject: this.props.lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                        _this.props.globalState.onCodeChangedObservable.notifyObservers({
+                            object: system,
+                            code: "TARGET.addAlphaRemapGradient(0, 1, 1);"
+                        });
+                    }, host: system, codeRecorderPropertyName: "getAlphaRemapGradients()", mode: _valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["GradientGridMode"].Factor, lockObject: this.props.lockObject })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "ROTATION" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Min angular speed", target: system, propertyName: "minAngularSpeed", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Max angular speed", target: system, propertyName: "maxAngularSpeed", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Min initial rotation", target: system, propertyName: "minInitialRotation", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Max initial rotation", target: system, propertyName: "maxInitialRotation", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_factorGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["FactorGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getAngularSpeedGradients(), label: "Angular speed gradients", docLink: "hhttps://doc.babylonjs.com/babylon101/particles#rotation", onCreateRequired: function () {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["ValueGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getAngularSpeedGradients(), label: "Angular speed gradients", docLink: "hhttps://doc.babylonjs.com/babylon101/particles#rotation", onCreateRequired: function () {
                         system.addAngularSpeedGradient(0, 0.1, 0.1);
-                    }, lockObject: this.props.lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+                        _this.props.globalState.onCodeChangedObservable.notifyObservers({
+                            object: system,
+                            code: "TARGET.addAngularSpeedGradient(0, 0.1, 0.1);"
+                        });
+                    }, host: system, codeRecorderPropertyName: "getAngularSpeedGradients()", mode: _valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["GradientGridMode"].Factor, lockObject: this.props.lockObject }))));
     };
     return ParticleSystemPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -47672,6 +47805,135 @@ var SphereEmitterGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { replaySourceReplacement: this.props.replaySourceReplacement, label: "Direction randomizer", target: emitter, propertyName: "directionRandomizer", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return SphereEmitterGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/particleSystems/valueGradientGridComponent.tsx":
+/*!*************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/particleSystems/valueGradientGridComponent.tsx ***!
+  \*************************************************************************************************/
+/*! exports provided: GradientGridMode, ValueGradientGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GradientGridMode", function() { return GradientGridMode; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ValueGradientGridComponent", function() { return ValueGradientGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/gradients */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _factorGradientStepGridComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./factorGradientStepGridComponent */ "./components/actionTabs/tabs/propertyGrids/particleSystems/factorGradientStepGridComponent.tsx");
+/* harmony import */ var _colorGradientStepGridComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./colorGradientStepGridComponent */ "./components/actionTabs/tabs/propertyGrids/particleSystems/colorGradientStepGridComponent.tsx");
+/* harmony import */ var _lines_linkButtonComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/linkButtonComponent */ "./components/actionTabs/lines/linkButtonComponent.tsx");
+
+
+
+
+
+
+
+
+var GradientGridMode;
+(function (GradientGridMode) {
+    GradientGridMode[GradientGridMode["Factor"] = 0] = "Factor";
+    GradientGridMode[GradientGridMode["Color3"] = 1] = "Color3";
+    GradientGridMode[GradientGridMode["Color4"] = 2] = "Color4";
+})(GradientGridMode || (GradientGridMode = {}));
+var ValueGradientGridComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ValueGradientGridComponent, _super);
+    function ValueGradientGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    ValueGradientGridComponent.prototype.deleteStep = function (step) {
+        var gradients = this.props.gradients;
+        var index = gradients.indexOf(step);
+        if (index > -1) {
+            gradients.splice(index, 1);
+            this.forceUpdate();
+            this.props.globalState.onCodeChangedObservable.notifyObservers({
+                object: this.props.host,
+                code: "TARGET." + this.props.codeRecorderPropertyName + ".splice(" + index + ", 1);"
+            });
+        }
+    };
+    ValueGradientGridComponent.prototype.addNewStep = function () {
+        var gradients = this.props.gradients;
+        switch (this.props.mode) {
+            case GradientGridMode.Factor:
+                var newStep = new babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_2__["FactorGradient"](1, 1, 1);
+                gradients.push(newStep);
+                this.props.globalState.onCodeChangedObservable.notifyObservers({
+                    object: this.props.host,
+                    code: "TARGET." + this.props.codeRecorderPropertyName + ".push(new BABYLON.FactorGradient(1, 1, 1));"
+                });
+                break;
+            case GradientGridMode.Color4:
+                var newStepColor = new babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_2__["ColorGradient"](1, new babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_2__["Color4"](1, 1, 1, 1), new babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_2__["Color4"](1, 1, 1, 1));
+                gradients.push(newStepColor);
+                this.props.globalState.onCodeChangedObservable.notifyObservers({
+                    object: this.props.host,
+                    code: "TARGET." + this.props.codeRecorderPropertyName + ".push(new BABYLON.ColorGradient(1, new BABYLON.Color4(1, 1, 1, 1), new BABYLON.Color4(1, 1, 1, 1)));"
+                });
+                break;
+            case GradientGridMode.Color3:
+                var newStepColor3 = new babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_2__["Color3Gradient"](1, babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_2__["Color3"].White());
+                gradients.push(newStepColor3);
+                this.props.globalState.onCodeChangedObservable.notifyObservers({
+                    object: this.props.host,
+                    code: "TARGET." + this.props.codeRecorderPropertyName + ".push(new BABYLON.Color3Gradient(1, BABYLON.Color3.White()));"
+                });
+                break;
+        }
+        this.forceUpdate();
+    };
+    ValueGradientGridComponent.prototype.checkForReOrder = function () {
+        var gradients = this.props.gradients;
+        gradients.sort(function (a, b) {
+            if (a.gradient === b.gradient) {
+                return 0;
+            }
+            if (a.gradient > b.gradient) {
+                return 1;
+            }
+            return -1;
+        });
+        this.props.globalState.onCodeChangedObservable.notifyObservers({
+            object: this.props.host,
+            code: "TARGET." + this.props.codeRecorderPropertyName + ".sort((a, b) => {\n                if (a.gradient === b.gradient) {\n                    return 0;\n                }\n    \n                if (a.gradient > b.gradient) {\n                    return 1;\n                }\n    \n                return -1;\n            });"
+        });
+        this.forceUpdate();
+    };
+    ValueGradientGridComponent.prototype.render = function () {
+        var _this = this;
+        var gradients = this.props.gradients;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            gradients &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "gradient-container" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_linkButtonComponent__WEBPACK_IMPORTED_MODULE_6__["LinkButtonComponent"], { label: this.props.label, url: this.props.docLink, buttonLabel: "Add new step", onClick: function () { return _this.addNewStep(); } }),
+                    gradients.map(function (g, i) {
+                        var codeRecorderPropertyName = _this.props.codeRecorderPropertyName + ("[" + i + "]");
+                        switch (_this.props.mode) {
+                            case GradientGridMode.Factor:
+                                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_factorGradientStepGridComponent__WEBPACK_IMPORTED_MODULE_4__["FactorGradientStepGridComponent"], { globalState: _this.props.globalState, lockObject: _this.props.lockObject, onCheckForReOrder: function () { return _this.checkForReOrder(); }, onUpdateGradient: function () { return _this.forceUpdate(); }, host: _this.props.host, codeRecorderPropertyName: codeRecorderPropertyName, key: "step-" + i, lineIndex: i, gradient: g, onDelete: function () { return _this.deleteStep(g); } }));
+                            case GradientGridMode.Color4:
+                                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorGradientStepGridComponent__WEBPACK_IMPORTED_MODULE_5__["ColorGradientStepGridComponent"], { globalState: _this.props.globalState, host: _this.props.host, codeRecorderPropertyName: codeRecorderPropertyName, lockObject: _this.props.lockObject, isColor3: false, onCheckForReOrder: function () { return _this.checkForReOrder(); }, onUpdateGradient: function () { return _this.forceUpdate(); }, key: "step-" + i, lineIndex: i, gradient: g, onDelete: function () { return _this.deleteStep(g); } }));
+                            case GradientGridMode.Color3:
+                                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorGradientStepGridComponent__WEBPACK_IMPORTED_MODULE_5__["ColorGradientStepGridComponent"], { globalState: _this.props.globalState, host: _this.props.host, codeRecorderPropertyName: codeRecorderPropertyName, lockObject: _this.props.lockObject, isColor3: true, onCheckForReOrder: function () { return _this.checkForReOrder(); }, onUpdateGradient: function () { return _this.forceUpdate(); }, key: "step-" + i, lineIndex: i, gradient: g, onDelete: function () { return _this.deleteStep(g); } }));
+                        }
+                    })),
+            !gradients &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_3__["ButtonLineComponent"], { label: "Use " + this.props.label, onClick: function () {
+                        _this.props.onCreateRequired();
+                        _this.forceUpdate();
+                    } })));
+    };
+    return ValueGradientGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -49142,6 +49404,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var GlobalState = /** @class */ (function () {
     function GlobalState() {
+        this.onCodeChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onInspectorClosedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onTabChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.sceneImportDefaults = {};
@@ -49190,6 +49453,9 @@ var GlobalState = /** @class */ (function () {
         this.onPropertyChangedObservable = propertyChangedObservable;
         propertyChangedObservable.add(function (event) {
             _this.recorder.record(event);
+        });
+        this.onCodeChangedObservable.add(function (code) {
+            _this.recorder.recordCode(code);
         });
     };
     GlobalState.prototype.prepareGLTFPlugin = function (loader) {
@@ -49400,11 +49666,21 @@ var ReplayRecorder = /** @class */ (function () {
             else if (indirectData.indexOf("material") > -1) {
                 indirectData = "scene.getMaterialByID(\"" + data.id + "\")";
             }
+            else if (indirectData.indexOf("particle") > -1) {
+                indirectData = "scene.getParticleSystemById(\"" + data.id + "\")";
+            }
         }
         else {
             indirectData = "new BABYLON." + data.getClassName() + "()";
         }
         return indirectData;
+    };
+    ReplayRecorder.prototype.recordCode = function (event) {
+        if (!this._recordedCodeLines) {
+            this._recordedCodeLines = [];
+        }
+        var target = this._getIndirectData(event.object);
+        this._recordedCodeLines.push(event.code.replace(/TARGET/g, target));
     };
     ReplayRecorder.prototype.record = function (event) {
         if (!this._recordedCodeLines) {
@@ -50618,6 +50894,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 __webpack_require__(/*! ./sceneExplorer.scss */ "./components/sceneExplorer/sceneExplorer.scss");
 var SceneExplorerFilterComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SceneExplorerFilterComponent, _super);
@@ -50866,6 +51143,16 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
                 _this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
             }
         });
+        if (babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["GPUParticleSystem"].IsSupported) {
+            particleSystemsContextMenus.push({
+                label: "Add new GPU particle system",
+                action: function () {
+                    var newSystem = babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["ParticleHelper"].CreateDefault(babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(), 1000, scene, true);
+                    newSystem.start();
+                    _this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
+                }
+            });
+        }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "tree", onContextMenu: function (e) { return e.preventDefault(); } },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](SceneExplorerFilterComponent, { onFilter: function (filter) { return _this.filterContent(filter); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_entities_sceneTreeItemComponent__WEBPACK_IMPORTED_MODULE_6__["SceneTreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, scene: scene, onRefresh: function () { return _this.forceUpdate(); }, onSelectionChangedObservable: this.props.globalState.onSelectionChangedObservable }),

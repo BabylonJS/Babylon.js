@@ -5776,9 +5776,10 @@ declare module BABYLON {
         set(r: number, g: number, b: number, a: number): Color4;
         /**
          * Compute the Color4 hexadecimal code as a string
+         * @param returnAsColor3 defines if the string should only contains RGB values (off by default)
          * @returns a string containing the hexadecimal representation of the Color4 object
          */
-        toHexString(): string;
+        toHexString(returnAsColor3?: boolean): string;
         /**
          * Computes a new Color4 converted from the current one to linear space
          * @returns a new Color4 object
@@ -10117,7 +10118,26 @@ declare module BABYLON {
         /**
          * Gets or sets second associated color
          */
-        color2?: Color4;
+        color2?: Color4 | undefined;
+        /**
+         * Creates a new color4 gradient
+         * @param gradient gets or sets the gradient value (between 0 and 1)
+         * @param color1 gets or sets first associated color
+         * @param color2 gets or sets first second color
+         */
+        constructor(
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */
+        gradient: number, 
+        /**
+         * Gets or sets first associated color
+         */
+        color1: Color4, 
+        /**
+         * Gets or sets second associated color
+         */
+        color2?: Color4 | undefined);
         /**
          * Will get a color picked randomly between color1 and color2.
          * If color2 is undefined then color1 will be used
@@ -10135,6 +10155,20 @@ declare module BABYLON {
          * Gets or sets the associated color
          */
         color: Color3;
+        /**
+         * Creates a new color3 gradient
+         * @param gradient gets or sets the gradient value (between 0 and 1)
+         * @param color gets or sets associated color
+         */
+        constructor(
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */
+        gradient: number, 
+        /**
+         * Gets or sets the associated color
+         */
+        color: Color3);
     }
     /** Class used to store factor gradient */
     export class FactorGradient implements IValueGradient {
@@ -10149,7 +10183,26 @@ declare module BABYLON {
         /**
          * Gets or sets second associated factor
          */
-        factor2?: number;
+        factor2?: number | undefined;
+        /**
+         * Creates a new factor gradient
+         * @param gradient gets or sets the gradient value (between 0 and 1)
+         * @param factor1 gets or sets first associated factor
+         * @param factor2 gets or sets second associated factor
+         */
+        constructor(
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */
+        gradient: number, 
+        /**
+         * Gets or sets first associated factor
+         */
+        factor1: number, 
+        /**
+         * Gets or sets second associated factor
+         */
+        factor2?: number | undefined);
         /**
          * Will get a number picked randomly between factor1 and factor2.
          * If factor2 is undefined then factor1 will be used
@@ -26914,7 +26967,7 @@ declare module BABYLON {
         /**
          * Custom callback helping to override the default shader used in the material.
          */
-        customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines) => string;
+        customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines, attributes?: string[]) => string;
         protected _renderTargets: SmartArray<RenderTargetTexture>;
         protected _worldViewProjectionMatrix: Matrix;
         protected _globalAmbientColor: Color3;
@@ -51700,7 +51753,7 @@ declare module BABYLON {
         /**
          * Custom callback helping to override the default shader used in the material.
          */
-        customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: PBRMaterialDefines) => string;
+        customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: PBRMaterialDefines, attributes?: string[]) => string;
         protected _rebuildInParallel: boolean;
         /**
          * Instantiates a new PBRMaterial instance.

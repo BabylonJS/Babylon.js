@@ -298,7 +298,11 @@ export class Particle {
             other._initialEndSpriteCellID = this._initialEndSpriteCellID;
         }
         if (this.particleSystem.useRampGradients) {
-            other.remapData.copyFrom(this.remapData);
+            if (other.remapData) {
+                other.remapData.copyFrom(this.remapData);
+            } else {
+                other.remapData = new Vector4(0, 0, 0, 0);
+            }
         }
         if (this._randomNoiseCoordinates1) {
             if (other._randomNoiseCoordinates1) {
