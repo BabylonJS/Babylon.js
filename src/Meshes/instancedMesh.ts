@@ -407,12 +407,12 @@ export class InstancedMesh extends AbstractMesh {
 
         // Deep copy
         DeepCopier.DeepCopy(this, result, [
-            "name", "subMeshes", "uniqueId", "parent", "lightSources", 
+            "name", "subMeshes", "uniqueId", "parent", "lightSources",
             "receiveShadows", "material", "visibility", "skeleton",
             "sourceMesh", "isAnInstance", "facetNb", "isFacetDataEnabled",
             "isBlocked", "useBones", "hasInstances", "collider", "edgesRenderer",
             "forward", "up", "right", "absolutePosition", "absoluteScaling", "absoluteRotationQuaternion",
-            "isWorldMatrixFrozen", "nonUniformScaling", "behaviors", "worldMatrixFromCache"            
+            "isWorldMatrixFrozen", "nonUniformScaling", "behaviors", "worldMatrixFromCache"
         ], []);
 
         // Bounding info
