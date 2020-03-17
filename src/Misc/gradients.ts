@@ -71,7 +71,7 @@ export class FactorGradient implements IValueGradient {
      * @returns the picked number
      */
     public getFactor(): number {
-        if (this.factor2 === undefined) {
+        if (this.factor2 === undefined || this.factor2 === this.factor1) {
             return this.factor1;
         }
 
