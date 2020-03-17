@@ -150,7 +150,8 @@ export class UtilityLayerRenderer implements IDisposable {
                 if (!this.processAllEvents) {
                     if (prePointerInfo.type !== PointerEventTypes.POINTERMOVE
                         && prePointerInfo.type !== PointerEventTypes.POINTERUP
-                        && prePointerInfo.type !== PointerEventTypes.POINTERDOWN) {
+                        && prePointerInfo.type !== PointerEventTypes.POINTERDOWN
+                        && prePointerInfo.type !== PointerEventTypes.POINTERDOUBLETAP) {
                         return;
                     }
                 }
