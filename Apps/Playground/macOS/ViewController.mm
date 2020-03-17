@@ -12,17 +12,6 @@
 std::unique_ptr<Babylon::AppRuntime> runtime{};
 std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
 
-void InitializeXMLHttpRequest(Napi::Env env)
-{
-    JSGlobalContextRef globalContext = Napi::GetJavaScriptCoreGlobalContext(env);
-    [[XMLHttpRequest new] extend:globalContext :^(CompletionHandlerFunction completetionHandlerFunction) {
-        runtime->Dispatch([completetionHandlerFunction](Napi::Env env) {
-            completetionHandlerFunction();
-        });
-     }
-     ];
-}
-
 @implementation ViewController
 
 - (void)viewDidLoad {
@@ -55,11 +44,7 @@ void InitializeXMLHttpRequest(Napi::Env env)
     Babylon::InitializeNativeEngine(*runtime, windowPtr, width, height);
     
     // Initialize XMLHttpRequest plugin.
-    runtime->Dispatch([](Napi::Env env)
-    {
-        InitializeXMLHttpRequest(env);
-    });
-
+    InitializeXMLHttpRequest(*runtime);
 
     inputBuffer = std::make_unique<InputManager::InputBuffer>(*runtime);
     InputManager::Initialize(*runtime, *inputBuffer);

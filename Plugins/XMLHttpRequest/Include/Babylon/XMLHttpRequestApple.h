@@ -41,7 +41,7 @@ typedef NS_ENUM(NSUInteger , ReadyState) {
 
 @interface XMLHttpRequest : NSObject <XMLHttpRequest>
 - (instancetype)initWithURLSession: (NSURLSession *)urlSession;
-- (void)extend:(JSGlobalContextRef)globalContextRef :(CompletionHandler)completionHandler;
+- (void)extend:(JSGlobalContextRef)globalContextRef:(Babylon::JsRuntime *)runtime;
 @property (nonatomic) NSMutableDictionary *_eventHandlers;
 @property (atomic, copy) NSURLSession *_urlSession;
 @property (atomic, copy) NSString *_httpMethod;
