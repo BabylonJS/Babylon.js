@@ -11,23 +11,24 @@ export interface IValueGradient {
 /** Class used to store color4 gradient */
 export class ColorGradient implements IValueGradient {
     /**
-     * Gets or sets the gradient value (between 0 and 1)
+     * Creates a new color4 gradient
+     * @param gradient gets or sets the gradient value (between 0 and 1)
+     * @param color1 gets or sets first associated color
+     * @param color2 gets or sets first second color
      */
-    public gradient: number;
-    /**
-     * Gets or sets first associated color
-     */
-    public color1: Color4;
-    /**
-     * Gets or sets second associated color
-     */
-    public color2?: Color4;
-
-    /** Creates a new color4 gradient */
-    public constructor(gradient: number, color1: Color4, color2?: Color4) {
-        this.gradient = gradient;
-        this.color1 = color1;
-        this.color2 = color2;
+    public constructor(
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */
+        public gradient: number,
+        /**
+         * Gets or sets first associated color
+         */
+        public color1: Color4,
+        /**
+         * Gets or sets second associated color
+         */
+        public color2?: Color4) {
     }
 
     /**
@@ -48,41 +49,43 @@ export class ColorGradient implements IValueGradient {
 /** Class used to store color 3 gradient */
 export class Color3Gradient implements IValueGradient {
     /**
-     * Gets or sets the gradient value (between 0 and 1)
+     * Creates a new color3 gradient
+     * @param gradient gets or sets the gradient value (between 0 and 1)
+     * @param color gets or sets associated color
      */
-    public gradient: number;
-    /**
-     * Gets or sets the associated color
-     */
-    public color: Color3;
-
-    /** Creates a new color3 gradient */
-    public constructor(gradient: number, color: Color3) {
-        this.gradient = gradient;
-        this.color = color;
+    public constructor(
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */
+        public gradient: number,
+        /**
+         * Gets or sets the associated color
+         */
+        public color: Color3) {
     }
 }
 
 /** Class used to store factor gradient */
 export class FactorGradient implements IValueGradient {
     /**
-     * Gets or sets the gradient value (between 0 and 1)
+     * Creates a new factor gradient
+     * @param gradient gets or sets the gradient value (between 0 and 1)
+     * @param factor1 gets or sets first associated factor
+     * @param factor2 gets or sets second associated factor
      */
-    public gradient: number;
-    /**
-     * Gets or sets first associated factor
-     */
-    public factor1: number;
-    /**
-     * Gets or sets second associated factor
-     */
-    public factor2?: number;
-
-    /** Creates a new factor gradient */
-    public constructor(gradient: number, factor1: number, factor2?: number) {
-        this.gradient = gradient;
-        this.factor1 = factor1;
-        this.factor2 = factor2;
+    public constructor(
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */
+        public gradient: number,
+        /**
+         * Gets or sets first associated factor
+         */
+        public factor1: number,
+        /**
+         * Gets or sets second associated factor
+         */
+        public factor2?: number) {
     }
 
     /**

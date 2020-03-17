@@ -55,10 +55,7 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
 
         switch(this.props.mode) {
             case GradientGridMode.Factor:
-                let newStep = new FactorGradient();
-                newStep.gradient = 1.0;
-                newStep.factor1 = 1.0;
-                newStep.factor2 = 1.0;
+                let newStep = new FactorGradient(1, 1, 1);
                 gradients.push(newStep);
                 this.props.globalState.onCodeChangedObservable.notifyObservers({
                     object: this.props.host,
@@ -66,10 +63,7 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
                 });
                 break;
             case GradientGridMode.Color4:
-                let newStepColor = new ColorGradient();
-                newStepColor.gradient = 1.0;
-                newStepColor.color1 = new Color4(1, 1, 1, 1);
-                newStepColor.color2 = new Color4(1, 1, 1, 1);
+                let newStepColor = new ColorGradient(1, new Color4(1, 1, 1, 1), new Color4(1, 1, 1, 1));
                 gradients.push(newStepColor);
                 this.props.globalState.onCodeChangedObservable.notifyObservers({
                     object: this.props.host,
@@ -77,9 +71,7 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
                 });
                 break;    
             case GradientGridMode.Color3:
-                let newStepColor3 = new Color3Gradient();
-                newStepColor3.gradient = 1.0;
-                newStepColor3.color = Color3.White();
+                let newStepColor3 = new Color3Gradient(1, Color3.White());
                 gradients.push(newStepColor3);
                 this.props.globalState.onCodeChangedObservable.notifyObservers({
                     object: this.props.host,

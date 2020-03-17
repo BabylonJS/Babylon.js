@@ -823,6 +823,7 @@ export class Color4 {
 
     /**
      * Compute the Color4 hexadecimal code as a string
+     * @param returnAsColor3 defines if the string should only contains RGB values (off by default)
      * @returns a string containing the hexadecimal representation of the Color4 object
      */
     public toHexString(returnAsColor3 = false): string {
