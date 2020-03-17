@@ -183,11 +183,6 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
             return {label: v.name, value: i + 1}
         }));
 
-        let isStarted = system.isStarted();
-        if (system instanceof GPUParticleSystem) {
-            isStarted = !system.isStopped();
-        }
-
         return (
             <div className="pane">
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={system}

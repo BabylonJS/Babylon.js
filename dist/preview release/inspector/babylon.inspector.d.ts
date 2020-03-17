@@ -1583,6 +1583,7 @@ declare module INSPECTOR {
         constructor(props: IParticleSystemPropertyGridComponentProps);
         renderEmitter(): JSX.Element | null;
         raiseOnPropertyChanged(property: string, newValue: any, previousValue: any): void;
+        renderControls(): JSX.Element;
         render(): JSX.Element;
     }
 }
