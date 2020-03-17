@@ -23,13 +23,12 @@ export class ColorGradient implements IValueGradient {
      */
     public color2?: Color4;
 
-
     /** Creates a new color4 gradient */
     public constructor(gradient: number, color1: Color4, color2?: Color4) {
         this.gradient = gradient;
         this.color1 = color1;
         this.color2 = color2;
-    }       
+    }
 
     /**
      * Will get a color picked randomly between color1 and color2.
@@ -61,7 +60,7 @@ export class Color3Gradient implements IValueGradient {
     public constructor(gradient: number, color: Color3) {
         this.gradient = gradient;
         this.color = color;
-    }    
+    }
 }
 
 /** Class used to store factor gradient */
