@@ -1187,7 +1187,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             this._vertexData[offset++] = particle.direction.z;
         }
 
-        if (this._useRampGradients) {
+        if (this._useRampGradients && particle.remapData) {
             this._vertexData[offset++] = particle.remapData.x;
             this._vertexData[offset++] = particle.remapData.y;
             this._vertexData[offset++] = particle.remapData.z;
