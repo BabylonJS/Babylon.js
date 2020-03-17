@@ -56,6 +56,7 @@ export class CustomMaterial extends StandardMaterial {
     _newUniforms: string[];
     _newUniformInstances: any[];
     _newSamplerInstances: Texture[];
+    _customAttributes: string[];
 
     public FragmentShader: string;
     public VertexShader: string;
@@ -105,7 +106,7 @@ export class CustomMaterial extends StandardMaterial {
         return arr;
     }
 
-    public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines): string {
+    public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines, attributes?: string[]): string {
 
         if (this._isCreatedShader) {
             return this._createdShaderName;
@@ -114,6 +115,10 @@ export class CustomMaterial extends StandardMaterial {
 
         CustomMaterial.ShaderIndexer++;
         var name: string = "custom_" + CustomMaterial.ShaderIndexer;
+
+        if (attributes && this._customAttributes && this._customAttributes.length > 0) {
+            attributes.push(...this._customAttributes);
+        }
 
         this.ReviewUniform("uniform", uniforms);
         this.ReviewUniform("sampler", samplers);
@@ -178,6 +183,16 @@ export class CustomMaterial extends StandardMaterial {
         }
         this._customUniform.push("uniform " + kind + " " + name + ";");
         this._newUniforms.push(name);
+
+        return this;
+    }
+
+    public AddAttribute(name: string): CustomMaterial {
+        if (!this._customAttributes) {
+            this._customAttributes = [];
+        }
+
+        this._customAttributes.push(name);
 
         return this;
     }
