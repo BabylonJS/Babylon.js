@@ -20,6 +20,7 @@ import { DirectionalLight } from 'babylonjs/Lights/directionalLight';
 import { SSAORenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline';
 import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
 import { ParticleHelper } from 'babylonjs/Particles/particleHelper';
+import { GPUParticleSystem } from 'babylonjs/Particles/gpuParticleSystem';
 
 require("./sceneExplorer.scss");
 
@@ -328,6 +329,17 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
             }
         });
+
+        if (GPUParticleSystem.IsSupported) {
+            particleSystemsContextMenus.push({
+                label: "Add new GPU particle system",
+                action: () => {
+                    let newSystem = ParticleHelper.CreateDefault(Vector3.Zero(), 1000, scene, true);
+                    newSystem.start();
+                    this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
+                }
+            });
+        }
 
         return (
             <div id="tree" onContextMenu={e => e.preventDefault()}>

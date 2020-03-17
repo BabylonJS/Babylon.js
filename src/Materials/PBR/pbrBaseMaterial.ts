@@ -748,7 +748,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Custom callback helping to override the default shader used in the material.
      */
-    public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: PBRMaterialDefines) => string;
+    public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: PBRMaterialDefines, attributes?: string[]) => string;
 
     protected _rebuildInParallel = false;
 
@@ -1207,7 +1207,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         });
 
         if (this.customShaderNameResolve) {
-            shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines);
+            shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines, attribs);
         }
 
         var join = defines.toString();
