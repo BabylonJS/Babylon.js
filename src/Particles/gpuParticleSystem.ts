@@ -158,6 +158,30 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     }
 
     /**
+     * Gets if the system has been stopped. (Note: rendering is still happening but the system is frozen)
+     * @returns True if it has been stopped, otherwise false.
+     */
+    public isStopped(): boolean {
+        return this._stopped;
+    }
+
+    /**
+     * Gets a boolean indicating that the system is stopping
+     * @returns true if the system is currently stopping
+     */
+    public isStopping() {
+        return false; // Stop is immediate on GPU
+    }
+
+    /**
+     * Gets the number of particles active at the same time.
+     * @returns The number of active particles.
+     */
+    public getActiveCount() {
+        return this._currentActiveCount;
+    }
+
+    /**
      * Starts the particle system and begins to emit
      * @param delay defines the delay in milliseconds before starting the system (this.startDelay by default)
      */
@@ -635,6 +659,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     }>, scene: Scene, isAnimationSheetEnabled: boolean = false) {
         super(name);
         this._scene = scene || EngineStore.LastCreatedScene;
+
+        this.uniqueId = this._scene.getUniqueId();
+
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
 
