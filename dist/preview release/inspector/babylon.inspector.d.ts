@@ -91,6 +91,7 @@ declare module INSPECTOR {
         color?: string;
         underline?: boolean;
         onLink?: () => void;
+        url?: string;
         ignoreValue?: boolean;
     }
     export class TextLineComponent extends React.Component<ITextLineComponentProps> {
@@ -488,6 +489,7 @@ declare module INSPECTOR {
         propertyName?: string;
         onTextureCreated?: (texture: BABYLON.BaseTexture) => void;
         customDebugAction?: (state: boolean) => void;
+        onTextureRemoved?: () => void;
     }
     export class TextureLinkLineComponent extends React.Component<ITextureLinkLineComponentProps, {
         isDebugSelected: boolean;
@@ -499,6 +501,7 @@ declare module INSPECTOR {
         debugTexture(): void;
         onLink(): void;
         updateTexture(file: File): void;
+        removeTexture(): void;
         render(): JSX.Element | null;
     }
 }
@@ -1468,6 +1471,48 @@ declare module INSPECTOR {
     }
     export class MeshEmitterGridComponent extends React.Component<IMeshEmitterGridComponentProps> {
         constructor(props: IMeshEmitterGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IFactorGradientStepGridComponent {
+        globalState: GlobalState;
+        gradient: BABYLON.FactorGradient;
+        lockObject: LockObject;
+        lineIndex: number;
+        onDelete: () => void;
+        onUpdateGradient: () => void;
+        onCheckForReOrder: () => void;
+    }
+    export class FactorGradientStepGridComponent extends React.Component<IFactorGradientStepGridComponent, {
+        gradient: number;
+    }> {
+        constructor(props: IFactorGradientStepGridComponent);
+        updateFactor1(factor: number): void;
+        updateFactor2(factor: number): void;
+        updateGradient(gradient: number): void;
+        onPointerUp(): void;
+        lock(): void;
+        unlock(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IFactorGradientGridComponent {
+        globalState: GlobalState;
+        label: string;
+        gradients: BABYLON.Nullable<Array<BABYLON.FactorGradient>>;
+        lockObject: LockObject;
+        docLink?: string;
+        replaySourceReplacement?: string;
+        onCreateRequired: () => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class FactorGradientGridComponent extends React.Component<IFactorGradientGridComponent> {
+        constructor(props: IFactorGradientGridComponent);
+        deleteStep(step: BABYLON.FactorGradient): void;
+        addNewStep(): void;
+        checkForReOrder(): void;
         render(): JSX.Element;
     }
 }

@@ -14486,6 +14486,10 @@ declare module BABYLON {
          * Gets the actual target of the runtime animation
          */
         get target(): any;
+        /**
+         * Gets the additive state of the runtime animation
+         */
+        get isAdditive(): boolean;
         /** @hidden */
         _onLoop: () => void;
         /**
@@ -14568,6 +14572,8 @@ declare module BABYLON {
         onAnimationEnd?: (() => void) | null | undefined;
         /** defines a callback to call when animation loops */
         onAnimationLoop?: (() => void) | null | undefined;
+        /** defines whether the animation should be evaluated additively */
+        isAdditive: boolean;
         private _localDelayOffset;
         private _pausedDelay;
         private _runtimeAnimations;
@@ -14623,6 +14629,7 @@ declare module BABYLON {
          * @param onAnimationEnd defines a callback to call when animation ends if it is not looping
          * @param animations defines a group of animation to add to the new Animatable
          * @param onAnimationLoop defines a callback to call when animation loops
+         * @param isAdditive defines whether the animation should be evaluated additively
          */
         constructor(scene: Scene, 
         /** defines the target object */
@@ -14636,7 +14643,9 @@ declare module BABYLON {
         /** defines a callback to call when animation ends if it is not looping */
         onAnimationEnd?: (() => void) | null | undefined, animations?: Animation[], 
         /** defines a callback to call when animation loops */
-        onAnimationLoop?: (() => void) | null | undefined);
+        onAnimationLoop?: (() => void) | null | undefined, 
+        /** defines whether the animation should be evaluated additively */
+        isAdditive?: boolean);
         /**
          * Synchronize and normalize current Animatable with a source Animatable
          * This is useful when using animation weights and when animations are not of the same length
@@ -14716,13 +14725,17 @@ declare module BABYLON {
             /** @hidden */
             _processLateAnimationBindingsForMatrices(holder: {
                 totalWeight: number;
+                totalAdditiveWeight: number;
                 animations: RuntimeAnimation[];
+                additiveAnimations: RuntimeAnimation[];
                 originalValue: Matrix;
             }): any;
             /** @hidden */
             _processLateAnimationBindingsForQuaternions(holder: {
                 totalWeight: number;
+                totalAdditiveWeight: number;
                 animations: RuntimeAnimation[];
+                additiveAnimations: RuntimeAnimation[];
                 originalValue: Quaternion;
             }, refQuaternion: Quaternion): Quaternion;
             /** @hidden */
@@ -14739,9 +14752,10 @@ declare module BABYLON {
              * @param animatable defines an animatable object. If not provided a new one will be created from the given params
              * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
              * @param onAnimationLoop defines the callback to call when an animation loops
+             * @param isAdditive defines whether the animation should be evaluated additively (false by default)
              * @returns the animatable object created for this animation
              */
-            beginWeightedAnimation(target: any, from: number, to: number, weight: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable;
+            beginWeightedAnimation(target: any, from: number, to: number, weight: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void, isAdditive?: boolean): Animatable;
             /**
              * Will start the animation sequence of a given target
              * @param target defines the target
@@ -14754,9 +14768,10 @@ declare module BABYLON {
              * @param stopCurrent defines if the current animations must be stopped first (true by default)
              * @param targetMask defines if the target should be animate if animations are present (this is called recursively on descendant animatables regardless of return value)
              * @param onAnimationLoop defines the callback to call when an animation loops
+             * @param isAdditive defines whether the animation should be evaluated additively (false by default)
              * @returns the animatable object created for this animation
              */
-            beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent?: boolean, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable;
+            beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent?: boolean, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void, isAdditive?: boolean): Animatable;
             /**
              * Will start the animation sequence of a given target and its hierarchy
              * @param target defines the target
@@ -14770,9 +14785,10 @@ declare module BABYLON {
              * @param stopCurrent defines if the current animations must be stopped first (true by default)
              * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
              * @param onAnimationLoop defines the callback to call when an animation loops
+             * @param isAdditive defines whether the animation should be evaluated additively (false by default)
              * @returns the list of created animatables
              */
-            beginHierarchyAnimation(target: any, directDescendantsOnly: boolean, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent?: boolean, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable[];
+            beginHierarchyAnimation(target: any, directDescendantsOnly: boolean, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent?: boolean, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void, isAdditive?: boolean): Animatable[];
             /**
              * Begin a new animation on a given node
              * @param target defines the target where the animation will take place
@@ -14783,9 +14799,10 @@ declare module BABYLON {
              * @param speedRatio defines the speed ratio to apply to all animations
              * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
              * @param onAnimationLoop defines the callback to call when an animation loops
+             * @param isAdditive defines whether the animation should be evaluated additively (false by default)
              * @returns the list of created animatables
              */
-            beginDirectAnimation(target: any, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void): Animatable;
+            beginDirectAnimation(target: any, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void, isAdditive?: boolean): Animatable;
             /**
              * Begin a new animation on a given node and its hierarchy
              * @param target defines the root node where the animation will take place
@@ -14797,9 +14814,10 @@ declare module BABYLON {
              * @param speedRatio defines the speed ratio to apply to all animations
              * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
              * @param onAnimationLoop defines the callback to call when an animation loops
+             * @param isAdditive defines whether the animation should be evaluated additively (false by default)
              * @returns the list of animatables created for all nodes
              */
-            beginDirectHierarchyAnimation(target: Node, directDescendantsOnly: boolean, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void): Animatable[];
+            beginDirectHierarchyAnimation(target: Node, directDescendantsOnly: boolean, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void, isAdditive?: boolean): Animatable[];
             /**
              * Gets the animatable associated with a specific target
              * @param target defines the target of the animatable
@@ -15011,6 +15029,14 @@ declare module BABYLON {
          * @returns a new animatable
          */
         beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Nullable<Animatable>;
+        /**
+         * Convert the keyframes for a range of animation on a skeleton to be relative to a given reference frame.
+         * @param skeleton defines the Skeleton containing the animation range to convert
+         * @param referenceFrame defines the frame that keyframes in the range will be relative to
+         * @param range defines the name of the AnimationRange belonging to the Skeleton to convert
+         * @returns the original skeleton
+         */
+        static MakeAnimationAdditive(skeleton: Skeleton, referenceFrame: number | undefined, range: string): Nullable<Skeleton>;
         /** @hidden */
         _markAsDirty(): void;
         /** @hidden */
@@ -29422,6 +29448,16 @@ declare module BABYLON {
          */
         static CreateMergeAndStartAnimation(name: string, node: Node, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable>;
         /**
+         * Convert the keyframes for all animations belonging to the group to be relative to a given reference frame.
+         * @param sourceAnimation defines the Animation containing keyframes to convert
+         * @param referenceFrame defines the frame that keyframes in the range will be relative to
+         * @param range defines the name of the AnimationRange belonging to the Animation to convert
+         * @param cloneOriginal defines whether or not to clone the animation and convert the clone or convert the original animation (default is false)
+         * @param clonedName defines the name of the resulting cloned Animation if cloneOriginal is true
+         * @returns a new Animation if cloneOriginal is true or the original Animation if cloneOriginal is false
+         */
+        static MakeAnimationAdditive(sourceAnimation: Animation, referenceFrame?: number, range?: string, cloneOriginal?: boolean, clonedName?: string): Animation;
+        /**
          * Transition property of an host to the target Value
          * @param property The property to transition
          * @param targetValue The target Value of the property
@@ -35066,6 +35102,7 @@ declare module BABYLON {
         private _isPaused;
         private _speedRatio;
         private _loopAnimation;
+        private _isAdditive;
         /**
          * Gets or sets the unique id of the node
          */
@@ -35124,6 +35161,11 @@ declare module BABYLON {
         get loopAnimation(): boolean;
         set loopAnimation(value: boolean);
         /**
+         * Gets or sets if all animations should be evaluated additively
+         */
+        get isAdditive(): boolean;
+        set isAdditive(value: boolean);
+        /**
          * Gets the targeted animations for this animation group
          */
         get targetedAnimations(): Array<TargetedAnimation>;
@@ -35165,9 +35207,10 @@ declare module BABYLON {
          * @param speedRatio defines the ratio to apply to animation speed (1 by default)
          * @param from defines the from key (optional)
          * @param to defines the to key (optional)
+         * @param isAdditive defines the additive state for the resulting animatables (optional)
          * @returns the current animation group
          */
-        start(loop?: boolean, speedRatio?: number, from?: number, to?: number): AnimationGroup;
+        start(loop?: boolean, speedRatio?: number, from?: number, to?: number, isAdditive?: boolean): AnimationGroup;
         /**
          * Pause all animations
          * @returns the animation group
@@ -35239,6 +35282,16 @@ declare module BABYLON {
          * @returns a new AnimationGroup
          */
         static Parse(parsedAnimationGroup: any, scene: Scene): AnimationGroup;
+        /**
+         * Convert the keyframes for all animations belonging to the group to be relative to a given reference frame.
+         * @param sourceAnimationGroup defines the AnimationGroup containing animations to convert
+         * @param referenceFrame defines the frame that keyframes in the range will be relative to
+         * @param range defines the name of the AnimationRange belonging to the animations in the group to convert
+         * @param cloneOriginal defines whether or not to clone the group and convert the clone or convert the original group (default is false)
+         * @param clonedName defines the name of the resulting cloned AnimationGroup if cloneOriginal is true
+         * @returns a new AnimationGroup if cloneOriginal is true or the original AnimationGroup if cloneOriginal is false
+         */
+        static MakeAnimationAdditive(sourceAnimationGroup: AnimationGroup, referenceFrame?: number, range?: string, cloneOriginal?: boolean, clonedName?: string): AnimationGroup;
         /**
          * Returns the string "AnimationGroup"
          * @returns "AnimationGroup"
@@ -69124,7 +69177,7 @@ declare module BABYLON {
     /**
      * Options used for hit testing
      */
-    export interface IWebXRHitTestOptions {
+    export interface IWebXRLegacyHitTestOptions {
         /**
          * Only test when user interacted with the scene. Default - hit test every frame
          */
@@ -69137,7 +69190,7 @@ declare module BABYLON {
     /**
      * Interface defining the babylon result of raycasting/hit-test
      */
-    export interface IWebXRHitResult {
+    export interface IWebXRLegacyHitResult {
         /**
          * Transformation matrix that can be applied to a node that will put it in the hit point location
          */
@@ -69145,7 +69198,7 @@ declare module BABYLON {
         /**
          * The native hit test result
          */
-        xrHitResult: XRHitResult;
+        xrHitResult: XRHitResult | XRHitTestResult;
     }
     /**
      * The currently-working hit-test module.
@@ -69156,7 +69209,7 @@ declare module BABYLON {
         /**
          * options to use when constructing this feature
          */
-        readonly options: IWebXRHitTestOptions;
+        readonly options: IWebXRLegacyHitTestOptions;
         private _direction;
         private _mat;
         private _onSelectEnabled;
@@ -69178,7 +69231,7 @@ declare module BABYLON {
         /**
          * Triggered when new babylon (transformed) hit test results are available
          */
-        onHitTestResultObservable: Observable<IWebXRHitResult[]>;
+        onHitTestResultObservable: Observable<IWebXRLegacyHitResult[]>;
         /**
          * Creates a new instance of the (legacy version) hit test feature
          * @param _xrSessionManager an instance of WebXRSessionManager
@@ -69188,7 +69241,7 @@ declare module BABYLON {
         /**
          * options to use when constructing this feature
          */
-        options?: IWebXRHitTestOptions);
+        options?: IWebXRLegacyHitTestOptions);
         /**
          * execute a hit test with an XR Ray
          *
@@ -69675,6 +69728,132 @@ declare module BABYLON {
         }): void;
         protected _onXRFrame(_xrFrame: any): void;
         private _detachController;
+    }
+}
+declare module BABYLON {
+    /**
+     * Options used for hit testing (version 2)
+     */
+    export interface IWebXRHitTestOptions extends IWebXRLegacyHitTestOptions {
+        /**
+         * Do not create a permanent hit test. Will usually be used when only
+         * transient inputs are needed.
+         */
+        disablePermanentHitTest?: boolean;
+        /**
+         * Enable transient (for example touch-based) hit test inspections
+         */
+        enableTransientHitTest?: boolean;
+        /**
+         * Offset ray for the permanent hit test
+         */
+        offsetRay?: Vector3;
+        /**
+         * Offset ray for the transient hit test
+         */
+        transientOffsetRay?: Vector3;
+        /**
+         * Instead of using viewer space for hit tests, use the reference space defined in the session manager
+         */
+        useReferenceSpace?: boolean;
+    }
+    /**
+     * Interface defining the babylon result of hit-test
+     */
+    export interface IWebXRHitResult extends IWebXRLegacyHitResult {
+        /**
+         * The input source that generated this hit test (if transient)
+         */
+        inputSource?: XRInputSource;
+        /**
+         * Is this a transient hit test
+         */
+        isTransient?: boolean;
+        /**
+         * Position of the hit test result
+         */
+        position: Vector3;
+        /**
+         * Rotation of the hit test result
+         */
+        rotationQuaternion: Quaternion;
+    }
+    /**
+     * The currently-working hit-test module.
+     * Hit test (or Ray-casting) is used to interact with the real world.
+     * For further information read here - https://github.com/immersive-web/hit-test
+     *
+     * Tested on chrome (mobile) 80.
+     */
+    export class WebXRHitTest extends WebXRAbstractFeature {
+        /**
+         * options to use when constructing this feature
+         */
+        readonly options: IWebXRHitTestOptions;
+        private _tmpMat;
+        private _tmpPos;
+        private _tmpQuat;
+        private _transientXrHitTestSource;
+        private _xrHitTestSource;
+        private initHitTestSource;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the WebXR specs version
+         */
+        static readonly Version: number;
+        /**
+         * When set to true, each hit test will have its own position/rotation objects
+         * When set to false, position and rotation objects will be reused for each hit test. It is expected that
+         * the developers will clone them or copy them as they see fit.
+         */
+        autoCloneTransformation: boolean;
+        /**
+         * Populated with the last native XR Hit Results
+         */
+        lastNativeXRHitResults: XRHitResult[];
+        /**
+         * Triggered when new babylon (transformed) hit test results are available
+         */
+        onHitTestResultObservable: Observable<IWebXRHitResult[]>;
+        /**
+         * Use this to temporarily pause hit test checks.
+         */
+        paused: boolean;
+        /**
+         * Creates a new instance of the hit test feature
+         * @param _xrSessionManager an instance of WebXRSessionManager
+         * @param options options to use when constructing this feature
+         */
+        constructor(_xrSessionManager: WebXRSessionManager, 
+        /**
+         * options to use when constructing this feature
+         */
+        options?: IWebXRHitTestOptions);
+        /**
+         * attach this feature
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        attach(): boolean;
+        /**
+         * detach this feature.
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+        /**
+         * Dispose this feature and all of the resources attached
+         */
+        dispose(): void;
+        protected _onXRFrame(frame: XRFrame): void;
+        private _processWebXRHitTestResult;
     }
 }
 declare module BABYLON {
@@ -70479,9 +70658,14 @@ interface XRSession extends XRAnchorCreator {
     renderState: XRRenderState;
     inputSources: Array<XRInputSource>;
 
-    // AR hit test
+    // hit test
+    requestHitTestSource(options: XRHitTestOptionsInit): Promise<XRHitTestSource>;
+    requestHitTestSourceForTransientInput(options: XRTransientInputHitTestOptionsInit): Promise<XRTransientInputHitTestSource>;
+
+    // legacy AR hit test
     requestHitTest(ray: XRRay, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]>;
 
+    // legacy plane detection
     updateWorldTrackingState(options: {
         planeDetectionState?: { enabled: boolean; }
     }): void;
@@ -70500,6 +70684,9 @@ interface XRFrame {
     getViewerPose(referenceSpace: XRReferenceSpace): XRViewerPose | undefined;
     getPose(space: XRSpace, baseSpace: XRSpace): XRPose | undefined;
 
+    // AR
+    getHitTestResults(hitTestSource: XRHitTestSource): Array<XRHitTestResult> ;
+    getHitTestResultsForTransientInput(hitTestSource: XRTransientInputHitTestSource): Array<XRTransientInputHitTestResult>;
     // Anchors
     trackedAnchors?: XRAnchorSet;
     // Planes
@@ -70570,8 +70757,42 @@ declare class XRRay {
     matrix: Float32Array;
 }
 
+declare enum XRHitTestTrackableType {
+    "point",
+    "plane"
+}
+
 interface XRHitResult {
     hitMatrix: Float32Array;
+}
+
+interface XRTransientInputHitTestResult {
+    readonly inputSource: XRInputSource;
+    readonly results: Array<XRHitTestResult>;
+}
+
+interface XRHitTestResult {
+    getPose(baseSpace: XRSpace): XRPose | undefined;
+}
+
+interface XRHitTestSource {
+    cancel(): void;
+}
+
+interface XRTransientInputHitTestSource {
+    cancel(): void;
+}
+
+interface XRHitTestOptionsInit {
+    space: XRSpace;
+    entityTypes?: Array<XRHitTestTrackableType>;
+    offsetRay?: XRRay;
+}
+
+interface XRTransientInputHitTestOptionsInit {
+    profile: string;
+    entityTypes?: Array<XRHitTestTrackableType>;
+    offsetRay?: XRRay;
 }
 
 interface XRAnchor {
