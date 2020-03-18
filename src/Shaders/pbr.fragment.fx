@@ -170,6 +170,7 @@ void main(void) {
     // _____________________________ Reflectivity Info _______________________________
     float microSurface = vReflectivityColor.a;
     vec3 surfaceReflectivityColor = vReflectivityColor.rgb;
+    vec3 baseColor = surfaceAlbedo;
 
     #ifdef METALLICWORKFLOW
         vec2 metallicRoughness = surfaceReflectivityColor.rg;
@@ -208,8 +209,6 @@ void main(void) {
         microSurface = 1.0 - metallicRoughness.g;
 
         // Diffuse is used as the base of the reflectivity.
-        vec3 baseColor = surfaceAlbedo;
-
         #ifdef REFLECTANCE
             // *** NOT USED ANYMORE ***
             // Following Frostbite Remapping,
@@ -740,7 +739,7 @@ void main(void) {
             #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
                 float clearCoatReflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, clearCoatAlphaG, clearCoatNdotVUnclamped);
             #elif defined(LINEARSPECULARREFLECTION)
-                float sheenReflectionLOD = getLinearLodFromRoughness(vReflectionMicrosurfaceInfos.x, clearCoatRoughness);
+                float clearCoatReflectionLOD = getLinearLodFromRoughness(vReflectionMicrosurfaceInfos.x, clearCoatRoughness);
             #else
                 float clearCoatReflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, clearCoatAlphaG);
             #endif
