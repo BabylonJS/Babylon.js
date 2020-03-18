@@ -15504,14 +15504,14 @@ declare module BABYLON {
          * @param texture Define the texture to bind to this sampler
          * @return the material itself allowing "fluent" like uniform updates
          */
-        setTexture(name: string, texture: Texture): ShaderMaterial;
+        setTexture(name: string, texture: BaseTexture): ShaderMaterial;
         /**
          * Set a texture array in the shader.
          * @param name Define the name of the uniform sampler array as defined in the shader
          * @param textures Define the list of textures to bind to this sampler
          * @return the material itself allowing "fluent" like uniform updates
          */
-        setTextureArray(name: string, textures: Texture[]): ShaderMaterial;
+        setTextureArray(name: string, textures: BaseTexture[]): ShaderMaterial;
         /**
          * Set a float in the shader.
          * @param name Define the name of the uniform as defined in the shader

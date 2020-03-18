@@ -64,8 +64,8 @@ export interface IShaderMaterialOptions {
 export class ShaderMaterial extends Material {
     private _shaderPath: any;
     private _options: IShaderMaterialOptions;
-    private _textures: { [name: string]: Texture } = {};
-    private _textureArrays: { [name: string]: Texture[] } = {};
+    private _textures: { [name: string]: BaseTexture } = {};
+    private _textureArrays: { [name: string]: BaseTexture[] } = {};
     private _floats: { [name: string]: number } = {};
     private _ints: { [name: string]: number } = {};
     private _floatsArrays: { [name: string]: number[] } = {};
@@ -179,7 +179,7 @@ export class ShaderMaterial extends Material {
      * @param texture Define the texture to bind to this sampler
      * @return the material itself allowing "fluent" like uniform updates
      */
-    public setTexture(name: string, texture: Texture): ShaderMaterial {
+    public setTexture(name: string, texture: BaseTexture): ShaderMaterial {
         if (this._options.samplers.indexOf(name) === -1) {
             this._options.samplers.push(name);
         }
@@ -194,7 +194,7 @@ export class ShaderMaterial extends Material {
      * @param textures Define the list of textures to bind to this sampler
      * @return the material itself allowing "fluent" like uniform updates
      */
-    public setTextureArray(name: string, textures: Texture[]): ShaderMaterial {
+    public setTextureArray(name: string, textures: BaseTexture[]): ShaderMaterial {
         if (this._options.samplers.indexOf(name) === -1) {
             this._options.samplers.push(name);
         }

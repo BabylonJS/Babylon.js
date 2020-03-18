@@ -33,6 +33,7 @@ declare module INSPECTOR {
         onCodeChangedObservable: BABYLON.Observable<CodeChangedEvent>;
         onInspectorClosedObservable: BABYLON.Observable<BABYLON.Scene>;
         onTabChangedObservable: BABYLON.Observable<number>;
+        onSelectionRenamedObservable: BABYLON.Observable<void>;
         onPluginActivatedObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync>>;
         sceneImportDefaults: {
             [key: string]: any;
@@ -1584,6 +1585,8 @@ declare module INSPECTOR {
         renderEmitter(): JSX.Element | null;
         raiseOnPropertyChanged(property: string, newValue: any, previousValue: any): void;
         renderControls(): JSX.Element;
+        saveToFile(): void;
+        loadFromFile(file: File): void;
         render(): JSX.Element;
     }
 }
@@ -2073,6 +2076,7 @@ declare module INSPECTOR {
         scene: BABYLON.Scene;
     }> {
         private _onSelectionChangeObserver;
+        private _onSelectionRenamedObserver;
         private _onNewSceneAddedObserver;
         private sceneExplorerRef;
         private _once;
