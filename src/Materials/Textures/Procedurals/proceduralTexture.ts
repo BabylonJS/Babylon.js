@@ -57,9 +57,7 @@ export class ProceduralTexture extends Texture {
     /** @hidden */
     public _textures: { [key: string]: Texture } = {};
 
-    /**
-     * @hidden
-     */
+    /** @hidden */
     protected _fallbackTexture: Nullable<Texture>;
 
     @serialize()
