@@ -11043,6 +11043,10 @@ declare module BABYLON {
          */
         animations: Animation[];
         /**
+         * Gets or sets the unique id of the particle system
+         */
+        uniqueId: number;
+        /**
          * The id of the Particle system.
          */
         id: string;
@@ -11701,10 +11705,20 @@ declare module BABYLON {
          */
         get particles(): Particle[];
         /**
+         * Gets the number of particles active at the same time.
+         * @returns The number of active particles.
+         */
+        getActiveCount(): number;
+        /**
          * Returns the string "ParticleSystem"
          * @returns a string containing the class name
          */
         getClassName(): string;
+        /**
+         * Gets a boolean indicating that the system is stopping
+         * @returns true if the system is currently stopping
+         */
+        isStopping(): boolean;
         /**
          * Instantiates a particle system.
          * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
@@ -13191,6 +13205,11 @@ declare module BABYLON {
          */
         getCapacity(): number;
         /**
+         * Gets the number of particles active at the same time.
+         * @returns The number of active particles.
+         */
+        getActiveCount(): number;
+        /**
          * Gets if the system has been started. (Note: this will still be true after stop is called)
          * @returns True if it has been started, otherwise false.
          */
@@ -13238,6 +13257,11 @@ declare module BABYLON {
          * Remove all active particles
          */
         reset(): void;
+        /**
+         * Gets a boolean indicating that the system is stopping
+         * @returns true if the system is currently stopping
+         */
+        isStopping(): boolean;
         /**
          * Is this system ready to be used/rendered
          * @return true if the system is ready
@@ -63023,6 +63047,21 @@ declare module BABYLON {
          * @returns True if it has been started, otherwise false.
          */
         isStarted(): boolean;
+        /**
+         * Gets if the system has been stopped. (Note: rendering is still happening but the system is frozen)
+         * @returns True if it has been stopped, otherwise false.
+         */
+        isStopped(): boolean;
+        /**
+         * Gets a boolean indicating that the system is stopping
+         * @returns true if the system is currently stopping
+         */
+        isStopping(): boolean;
+        /**
+         * Gets the number of particles active at the same time.
+         * @returns The number of active particles.
+         */
+        getActiveCount(): number;
         /**
          * Starts the particle system and begins to emit
          * @param delay defines the delay in milliseconds before starting the system (this.startDelay by default)

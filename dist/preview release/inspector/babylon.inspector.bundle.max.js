@@ -47452,6 +47452,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ParticleSystemPropertyGridComponent, _super);
     function ParticleSystemPropertyGridComponent(props) {
@@ -47491,6 +47492,36 @@ var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
             initialValue: previousValue
         });
     };
+    ParticleSystemPropertyGridComponent.prototype.renderControls = function () {
+        var _this = this;
+        var system = this.props.system;
+        if (system instanceof babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["GPUParticleSystem"]) {
+            var isStarted_1 = system.isStarted() && !system.isStopped();
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__["ButtonLineComponent"], { label: isStarted_1 ? "Pause" : "Start", onClick: function () {
+                    if (isStarted_1) {
+                        system.stop();
+                    }
+                    else {
+                        system.start();
+                    }
+                    _this.forceUpdate();
+                } }));
+        }
+        var isStarted = system.isStarted();
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+            !system.isStopping() &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__["ButtonLineComponent"], { label: isStarted ? "Stop" : "Start", onClick: function () {
+                        if (isStarted) {
+                            system.stop();
+                        }
+                        else {
+                            system.start();
+                        }
+                        _this.forceUpdate();
+                    } }),
+            system.isStopping() &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "System is stoppping...", ignoreValue: true })));
+    };
     ParticleSystemPropertyGridComponent.prototype.render = function () {
         var _this = this;
         var system = this.props.system;
@@ -47525,6 +47556,7 @@ var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "ID", value: system.id }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Class", value: system.getClassName() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Capacity", value: system.getCapacity().toString() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Capacity", value: system.getActiveCount().toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Texture", texture: system.particleTexture, onSelectionChangedObservable: this.props.onSelectionChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__["OptionsLineComponent"], { label: "Blend mode", options: blendModeOptions, target: system, propertyName: "blendMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_11__["Vector3LineComponent"], { label: "Gravity", target: system, propertyName: "gravity", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -47532,13 +47564,10 @@ var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_12__["CheckBoxLineComponent"], { label: "Is local", target: system, propertyName: "isLocal", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_13__["SliderLineComponent"], { label: "Update speed", target: system, propertyName: "updateSpeed", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "OPTIONS" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__["ButtonLineComponent"], { label: system.isStarted() ? "Stop" : "Start", onClick: function () {
-                        if (system.isStarted()) {
-                            system.stop();
-                        }
-                        else {
-                            system.start();
-                        }
+                this.renderControls(),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__["ButtonLineComponent"], { label: "Dispose", onClick: function () {
+                        _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                        system.dispose();
                     } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "EMITTER" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__["OptionsLineComponent"], { label: "Emitter", options: emitterOptions, target: system, propertyName: "emitter", noDirectUpdate: true, onSelect: function (value) {
@@ -51136,9 +51165,10 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         // Particle systems
         var particleSystemsContextMenus = [];
         particleSystemsContextMenus.push({
-            label: "Add new particle system",
+            label: "Add new CPU particle system",
             action: function () {
-                var newSystem = babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["ParticleHelper"].CreateDefault(babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(), 1000, scene);
+                var newSystem = babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["ParticleHelper"].CreateDefault(babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(), 10000, scene);
+                newSystem.name = "CPU particle system";
                 newSystem.start();
                 _this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
             }
@@ -51147,7 +51177,8 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
             particleSystemsContextMenus.push({
                 label: "Add new GPU particle system",
                 action: function () {
-                    var newSystem = babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["ParticleHelper"].CreateDefault(babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(), 1000, scene, true);
+                    var newSystem = babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["ParticleHelper"].CreateDefault(babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(), 10000, scene, true);
+                    newSystem.name = "GPU particle system";
                     newSystem.start();
                     _this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
                 }
