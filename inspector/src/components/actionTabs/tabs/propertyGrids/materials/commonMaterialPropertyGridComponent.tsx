@@ -16,6 +16,7 @@ import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
+import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
 
 interface ICommonMaterialPropertyGridComponentProps {
     globalState: GlobalState;
@@ -76,6 +77,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="ID" value={material.id} />
+                    <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={material} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <TextLineComponent label="Unique ID" value={material.uniqueId.toString()} />
                     <TextLineComponent label="Class" value={material.getClassName()} />
                     <CheckBoxLineComponent label="Backface culling" target={material} propertyName="backFaceCulling" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
