@@ -63090,6 +63090,9 @@ declare module BABYLON {
          * @returns the current particle system
          */
         addColorGradient(gradient: number, color1: Color4, color2?: Color4): GPUParticleSystem;
+        private _refreshColorGradient;
+        /** Force the system to rebuild all gradients */
+        forceRefreshGradients(): void;
         /**
          * Remove a specific color gradient
          * @param gradient defines the gradient to remove
@@ -63115,6 +63118,7 @@ declare module BABYLON {
          * @returns the current particle system
          */
         removeSizeGradient(gradient: number): GPUParticleSystem;
+        private _refreshFactorGradient;
         /**
          * Adds a new angular speed gradient
          * @param gradient defines the gradient to use (between 0 and 1)

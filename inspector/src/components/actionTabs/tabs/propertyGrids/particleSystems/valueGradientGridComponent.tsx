@@ -9,7 +9,7 @@ import { ColorGradientStepGridComponent } from './colorGradientStepGridComponent
 import { Color4, Color3 } from 'babylonjs/Maths/math.color';
 import { LinkButtonComponent } from '../../../lines/linkButtonComponent';
 import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
-import { GPUParticleSystem } from 'babylonjs';
+import { GPUParticleSystem } from 'babylonjs/Particles/gpuParticleSystem';
 
 export enum GradientGridMode {
     Factor,

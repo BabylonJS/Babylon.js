@@ -282,14 +282,13 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     /** Force the system to rebuild all gradients */
     public forceRefreshGradients() {
-        this._refreshColorGradient();  
+        this._refreshColorGradient();
         this._refreshFactorGradient(this._sizeGradients, "_sizeGradientsTexture");
         this._refreshFactorGradient(this._angularSpeedGradients, "_angularSpeedGradientsTexture");
         this._refreshFactorGradient(this._velocityGradients, "_velocityGradientsTexture");
         this._refreshFactorGradient(this._limitVelocityGradients, "_limitVelocityGradientsTexture");
         this._refreshFactorGradient(this._dragGradients, "_dragGradientsTexture");
 
-        this._releaseBuffers();
         this.reset();
     }
 
@@ -313,7 +312,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     private _addFactorGradient(factorGradients: FactorGradient[], gradient: number, factor: number) {
         let valueGradient = new FactorGradient(gradient, factor);
-        factorGradients.push(valueGradient);      
+        factorGradients.push(valueGradient);
 
         this._releaseBuffers();
     }
@@ -364,7 +363,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
             return 0;
         });
-        
+
         let that = this as any;
         if (that[textureName]) {
             that[textureName].dispose();
