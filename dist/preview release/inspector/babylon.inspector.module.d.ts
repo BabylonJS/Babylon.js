@@ -46,6 +46,7 @@ declare module "babylonjs-inspector/components/globalState" {
         onCodeChangedObservable: Observable<CodeChangedEvent>;
         onInspectorClosedObservable: Observable<Scene>;
         onTabChangedObservable: Observable<number>;
+        onSelectionRenamedObservable: Observable<void>;
         onPluginActivatedObserver: Nullable<Observer<ISceneLoaderPlugin | ISceneLoaderPluginAsync>>;
         sceneImportDefaults: {
             [key: string]: any;
@@ -2055,6 +2056,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
         renderEmitter(): JSX.Element | null;
         raiseOnPropertyChanged(property: string, newValue: any, previousValue: any): void;
         renderControls(): JSX.Element;
+        saveToFile(): void;
+        loadFromFile(file: File): void;
         render(): JSX.Element;
     }
 }
@@ -2628,6 +2631,7 @@ declare module "babylonjs-inspector/components/sceneExplorer/sceneExplorerCompon
         scene: Scene;
     }> {
         private _onSelectionChangeObserver;
+        private _onSelectionRenamedObserver;
         private _onNewSceneAddedObserver;
         private sceneExplorerRef;
         private _once;
@@ -2756,6 +2760,7 @@ declare module INSPECTOR {
         onCodeChangedObservable: BABYLON.Observable<CodeChangedEvent>;
         onInspectorClosedObservable: BABYLON.Observable<BABYLON.Scene>;
         onTabChangedObservable: BABYLON.Observable<number>;
+        onSelectionRenamedObservable: BABYLON.Observable<void>;
         onPluginActivatedObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync>>;
         sceneImportDefaults: {
             [key: string]: any;
@@ -4307,6 +4312,8 @@ declare module INSPECTOR {
         renderEmitter(): JSX.Element | null;
         raiseOnPropertyChanged(property: string, newValue: any, previousValue: any): void;
         renderControls(): JSX.Element;
+        saveToFile(): void;
+        loadFromFile(file: File): void;
         render(): JSX.Element;
     }
 }
@@ -4796,6 +4803,7 @@ declare module INSPECTOR {
         scene: BABYLON.Scene;
     }> {
         private _onSelectionChangeObserver;
+        private _onSelectionRenamedObserver;
         private _onNewSceneAddedObserver;
         private sceneExplorerRef;
         private _once;
