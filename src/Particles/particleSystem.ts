@@ -1982,7 +1982,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             newEmitter = this.emitter;
         }
 
-        result.noiseTexture = this.noiseTexture;
+        if (this.noiseTexture) {
+            result.noiseTexture = this.noiseTexture.clone();
+        }
+
         result.emitter = newEmitter;
         if (this.particleTexture) {
             if (this.particleTexture instanceof DynamicTexture) {

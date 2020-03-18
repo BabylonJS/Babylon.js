@@ -57,6 +57,9 @@ export class ProceduralTexture extends Texture {
     /** @hidden */
     public _textures: { [key: string]: Texture } = {};
 
+    /** @hidden */
+    protected _fallbackTexture: Nullable<Texture>;
+
     @serialize()
     private _size: number;
     private _currentRefreshId = -1;
@@ -76,8 +79,6 @@ export class ProceduralTexture extends Texture {
     private _vectors2: { [key: string]: Vector2 } = {};
     private _vectors3: { [key: string]: Vector3 } = {};
     private _matrices: { [key: string]: Matrix } = {};
-
-    private _fallbackTexture: Nullable<Texture>;
 
     private _fallbackTextureUsed = false;
     private _engine: Engine;
