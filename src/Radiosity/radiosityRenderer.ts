@@ -943,38 +943,37 @@ export class RadiosityRenderer {
 
     private buildPatchesForSubMesh(subMesh: SubMesh) {
         var mesh = subMesh.getRenderingMesh();
-
-        if (this._patchedMeshes.indexOf(mesh) !== -1) {
-            return;
-        }
         var map = (<MultiRenderTarget>mesh.radiosityInfo.residualTexture);
 
-        if (this._cachePatches && !mesh.radiosityInfo.radiosityPatches) {
-            mesh.radiosityInfo.radiosityPatches = [];
+        if (this._patchedMeshes.indexOf(mesh) === -1) {
+            if (this._cachePatches && !mesh.radiosityInfo.radiosityPatches) {
+                mesh.radiosityInfo.radiosityPatches = [];
 
-            var size = map.getSize();
-            var width = size.width;
-            var height = size.height;
-            var engine = this._scene.getEngine();
+                var size = map.getSize();
+                var width = size.width;
+                var height = size.height;
+                var engine = this._scene.getEngine();
 
-            var positions = <Float32Array>engine._readTexturePixels(<InternalTexture>map.internalTextures[0], width, height);
-            var normals = <Float32Array>engine._readTexturePixels(<InternalTexture>map.internalTextures[1], width, height);
-            var ids = <Uint8Array>engine._readTexturePixels(<InternalTexture>map.internalTextures[2], width, height);
-            var residualEnergy = <Uint8Array>engine._readTexturePixels(<InternalTexture>map.internalTextures[3], width, height);
+                var positions = <Float32Array>engine._readTexturePixels(<InternalTexture>map.internalTextures[0], width, height);
+                var normals = <Float32Array>engine._readTexturePixels(<InternalTexture>map.internalTextures[1], width, height);
+                var ids = <Uint8Array>engine._readTexturePixels(<InternalTexture>map.internalTextures[2], width, height);
+                var residualEnergy = <Uint8Array>engine._readTexturePixels(<InternalTexture>map.internalTextures[3], width, height);
 
-            for (let i = 0; i < positions.length; i += 4) {
-                if (positions[i + 3] === 0) {
-                    // add only rendered patches
-                    continue;
+                for (let i = 0; i < positions.length; i += 4) {
+                    if (positions[i + 3] === 0) {
+                        // add only rendered patches
+                        continue;
+                    }
+                    mesh.radiosityInfo.radiosityPatches.push(new Patch(new Vector3(positions[i], positions[i + 1], positions[i + 2]),
+                        new Vector3(normals[i], normals[i + 1], normals[i + 2]),
+                        RadiosityUtils.DecodeId(new Vector3(ids[i], ids[i + 1], ids[i + 2])),
+                        new Vector3(residualEnergy[i] / 255., residualEnergy[i + 1] / 255., residualEnergy[i + 2] / 255.)));
                 }
-                mesh.radiosityInfo.radiosityPatches.push(new Patch(new Vector3(positions[i], positions[i + 1], positions[i + 2]),
-                    new Vector3(normals[i], normals[i + 1], normals[i + 2]),
-                    RadiosityUtils.DecodeId(new Vector3(ids[i], ids[i + 1], ids[i + 2])),
-                    new Vector3(residualEnergy[i] / 255., residualEnergy[i + 1] / 255., residualEnergy[i + 2] / 255.)));
             }
+
+            this._patchedMeshes.push(mesh);
         }
 
-        this._patchedMeshes.push(mesh);
         this._scene.customRenderTargets.splice(this._scene.customRenderTargets.indexOf(map), 1);
         this._patchMapsUnbuilt.splice(this._patchMapsUnbuilt.indexOf(map), 1);
         this._patchMaps.push(map);
