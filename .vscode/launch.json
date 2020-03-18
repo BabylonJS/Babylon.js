@@ -54,6 +54,20 @@
             ]
         },
         {
+            "name": "Launch playground (Edge)",
+            "type": "edge",
+            "version": "dev",
+            "request": "launch",
+            "url": "http://localhost:1338/Playground/index-local.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "preLaunchTask": "run",
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },
+        {
             "name": "Launch playground (Chrome+WebGL 1.0 forced)",
             "type": "chrome",
             "request": "launch",

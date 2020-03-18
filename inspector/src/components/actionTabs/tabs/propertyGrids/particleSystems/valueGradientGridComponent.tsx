@@ -9,6 +9,7 @@ import { ColorGradientStepGridComponent } from './colorGradientStepGridComponent
 import { Color4, Color3 } from 'babylonjs/Maths/math.color';
 import { LinkButtonComponent } from '../../../lines/linkButtonComponent';
 import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
+import { GPUParticleSystem } from 'babylonjs';
 
 export enum GradientGridMode {
     Factor,
@@ -42,6 +43,10 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
         if (index > -1) {
             gradients.splice(index, 1);
             this.forceUpdate();
+
+            if (this.props.host instanceof GPUParticleSystem) {
+                this.props.host.forceRefreshGradients();
+            }
 
             this.props.globalState.onCodeChangedObservable.notifyObservers({
                 object: this.props.host,
@@ -80,6 +85,10 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
                 break;              
         }
 
+        if (this.props.host instanceof GPUParticleSystem) {
+            this.props.host.forceRefreshGradients();
+        }
+
         this.forceUpdate();
     }
 
@@ -110,9 +119,17 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
     
                 return -1;
             });`
-        });
+        });        
 
         this.forceUpdate();
+    }
+
+    updateAndSync() {
+        if (this.props.host instanceof GPUParticleSystem) {
+            this.props.host.forceRefreshGradients();
+        }
+        
+        this.forceUpdate();         
     }
 
     render() {
@@ -134,7 +151,7 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
                                             <FactorGradientStepGridComponent globalState={this.props.globalState} 
                                                 lockObject={this.props.lockObject}
                                                 onCheckForReOrder={() => this.checkForReOrder()}
-                                                onUpdateGradient={() => this.forceUpdate()}
+                                                onUpdateGradient={() => this.updateAndSync()}
                                                 host={this.props.host}
                                                 codeRecorderPropertyName={codeRecorderPropertyName}
                                                 key={"step-" + i} lineIndex={i} gradient={g as FactorGradient} onDelete={() => this.deleteStep(g)}/>
@@ -147,7 +164,7 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
                                                 lockObject={this.props.lockObject}
                                                 isColor3={false}
                                                 onCheckForReOrder={() => this.checkForReOrder()}
-                                                onUpdateGradient={() => this.forceUpdate()}
+                                                onUpdateGradient={() => this.updateAndSync()}
                                                 key={"step-" + i} lineIndex={i} gradient={g as ColorGradient} onDelete={() => this.deleteStep(g)}/>
                                         );   
                                     case GradientGridMode.Color3:
@@ -158,7 +175,7 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
                                                 lockObject={this.props.lockObject}
                                                 isColor3={true}
                                                 onCheckForReOrder={() => this.checkForReOrder()}
-                                                onUpdateGradient={() => this.forceUpdate()}
+                                                onUpdateGradient={() => this.updateAndSync()}
                                                 key={"step-" + i} lineIndex={i} gradient={g as Color3Gradient} onDelete={() => this.deleteStep(g)}/>
                                         );                                      
                                 }
