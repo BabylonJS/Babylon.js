@@ -972,11 +972,19 @@ export class RadiosityRenderer {
             }
 
             this._patchedMeshes.push(mesh);
+            this._patchMaps.push(map);
         }
 
-        this._scene.customRenderTargets.splice(this._scene.customRenderTargets.indexOf(map), 1);
-        this._patchMapsUnbuilt.splice(this._patchMapsUnbuilt.indexOf(map), 1);
-        this._patchMaps.push(map);
+        let index = this._scene.customRenderTargets.indexOf(map);
+        if (index !== -1) {
+            this._scene.customRenderTargets.splice(index, 1);
+        }
+
+        index = this._patchMapsUnbuilt.indexOf(map);
+        if (index !== -1) {
+            this._patchMapsUnbuilt.splice(index, 1);
+        }
+
         if (!this._patchMapsUnbuilt.length) {
             this._isBuildingPatches = false;
         }
