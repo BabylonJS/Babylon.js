@@ -1050,7 +1050,17 @@ void main(void) {
         #if defined(USESPHERICALFROMREFLECTIONMAP)
             vec3 refractionIrradiance = computeEnvironmentIrradiance(-irradianceVector);
         #elif defined(USEIRRADIANCEMAP)
-            vec3 refractionIrradiance = sampleReflection(irradianceSampler, -irradianceVector).rgb;
+            #ifdef REFLECTIONMAP_3D
+                vec3 irradianceCoords = irradianceVector;
+            #else
+                vec2 irradianceCoords = irradianceVector.xy;
+                #ifdef REFLECTIONMAP_PROJECTION
+                    irradianceCoords /= irradianceVector.z;
+                #endif
+                irradianceCoords.y = 1.0 - irradianceCoords.y;
+            #endif
+
+            vec3 refractionIrradiance = sampleReflection(irradianceSampler, -irradianceCoords).rgb;
             #ifdef RGBDREFLECTION
                 refractionIrradiance.rgb = fromRGBD(refractionIrradiance);
             #endif
