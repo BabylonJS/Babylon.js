@@ -2644,7 +2644,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         ParticleSystem._Parse(parsedParticleSystem, particleSystem, scene, rootUrl);
 
-        particleSystem.textureMask = Color4.FromArray(parsedParticleSystem.textureMask);
+        if (parsedParticleSystem.textureMask) {
+            particleSystem.textureMask = Color4.FromArray(parsedParticleSystem.textureMask);
+        }
 
         // Auto start
         if (parsedParticleSystem.preventAutoStart) {

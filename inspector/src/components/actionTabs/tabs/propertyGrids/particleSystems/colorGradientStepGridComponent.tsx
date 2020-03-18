@@ -6,6 +6,7 @@ import { ColorGradient, Color3Gradient } from 'babylonjs/Misc/gradients';
 import { LockObject } from '../lockObject';
 import { Color3, Color4 } from 'babylonjs/Maths/math.color';
 import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
+import { ParticleSystem } from 'babylonjs/Particles/particleSystem';
 
 interface IColorGradientStepGridComponent {
     globalState: GlobalState;
@@ -113,8 +114,8 @@ export class ColorGradientStepGridComponent extends React.Component<IColorGradie
                     </div>
                 }
                 {
-                    gradient instanceof ColorGradient &&
-                    <div className="color1">
+                    this.props.host instanceof ParticleSystem && gradient instanceof ColorGradient &&
+                    <div className="color2">
                         <input type="color" value={gradient.color2 ? gradient.color2.toHexString(true) : "#000000"} onChange={(evt) => this.updateColor2(evt.target.value)} />
                     </div>
                 }

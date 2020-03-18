@@ -1569,6 +1569,7 @@ declare module INSPECTOR {
         deleteStep(step: BABYLON.IValueGradient): void;
         addNewStep(): void;
         checkForReOrder(): void;
+        updateAndSync(): void;
         render(): JSX.Element;
     }
 }

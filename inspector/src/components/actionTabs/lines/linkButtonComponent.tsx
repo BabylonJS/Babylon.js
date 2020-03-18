@@ -24,7 +24,7 @@ export class LinkButtonComponent extends React.Component<ILinkButtonComponentPro
                 <div className="link" title={this.props.label} onClick={() => this.onLink()}>
                     {this.props.label}
                 </div>
-                <div className="button">
+                <div className="link-button">
                     <button onClick={() => this.props.onClick()}>{this.props.buttonLabel}</button>
                 </div> 
             </div>
