@@ -5,6 +5,7 @@ import { GlobalState } from '../../../../globalState';
 import { FactorGradient } from 'babylonjs/Misc/gradients';
 import { LockObject } from '../lockObject';
 import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
+import { ParticleSystem } from 'babylonjs/Particles/particleSystem';
 
 interface IFactorGradientStepGridComponent {
     globalState: GlobalState;
@@ -91,10 +92,13 @@ export class FactorGradientStepGridComponent extends React.Component<IFactorGrad
                     <input type="number" step={"0.01"} className="numeric-input" value={gradient.factor1} onBlur={() => this.unlock()} onFocus={() => this.lock()}
                         onChange={evt => this.updateFactor1(parseFloat(evt.target.value))} />
                 </div>
-                <div className="factor2">
-                    <input type="number" step={"0.01"} className={"numeric-input" + ((gradient.factor1 === gradient.factor2 || gradient.factor2 === undefined) ? " grayed" : "")} value={gradient.factor2} onBlur={() => this.unlock()} onFocus={() => this.lock()} 
-                        onChange={evt => this.updateFactor2(parseFloat(evt.target.value))} />
-                </div>
+                {
+                    this.props.host instanceof ParticleSystem &&
+                    <div className="factor2">
+                        <input type="number" step={"0.01"} className={"numeric-input" + ((gradient.factor1 === gradient.factor2 || gradient.factor2 === undefined) ? " grayed" : "")} value={gradient.factor2} onBlur={() => this.unlock()} onFocus={() => this.lock()} 
+                            onChange={evt => this.updateFactor2(parseFloat(evt.target.value))} />
+                    </div>
+                }
                 <div className="step-value">
                     {gradient.gradient.toFixed(2)}
                 </div>
