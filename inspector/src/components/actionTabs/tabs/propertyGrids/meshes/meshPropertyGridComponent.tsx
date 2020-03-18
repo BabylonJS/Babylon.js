@@ -27,6 +27,7 @@ import { MorphTarget } from 'babylonjs/Morph/morphTarget';
 import { OptionsLineComponent } from '../../../lines/optionsLineComponent';
 import { AbstractMesh } from 'babylonjs/Meshes/abstractMesh';
 import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
+import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
 
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;
@@ -307,6 +308,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="ID" value={mesh.id} />
+                    <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={mesh} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <TextLineComponent label="Unique ID" value={mesh.uniqueId.toString()} />
                     <TextLineComponent label="Class" value={mesh.getClassName()} />
                     <TextLineComponent label="Vertices" value={mesh.getTotalVertices().toString()} />
