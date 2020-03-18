@@ -8,13 +8,14 @@ import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { IDisplayManager } from './display/displayManager';
 import { GraphNode } from './graphNode';
 
-
 export class NodePort {
     private _element: HTMLDivElement;
     private _img: HTMLImageElement;
     private _globalState: GlobalState;
     private _onCandidateLinkMovedObserver: Nullable<Observer<Nullable<Vector2>>>;
     private _portLabel: Element;
+    private _frameId: Nullable<number>
+    private _isInput: boolean;
 
     public delegatedPort: Nullable<NodePort> = null;
 
@@ -24,6 +25,14 @@ export class NodePort {
         }
 
         return this._element;
+    }
+
+    public get frameId() {
+        return this._frameId;
+    }
+
+    public get isInput() {
+        return this._isInput;
     }
 
     public get portLabel() {
@@ -58,13 +67,20 @@ export class NodePort {
         }
     }
 
-    public constructor(portContainer: HTMLElement, public connectionPoint: NodeMaterialConnectionPoint, public node: GraphNode, globalState: GlobalState) {
+    private _onSelection(evt: PointerEvent) {
+        console.log('nodePort._onSelection()')
+        // this._globalState.onSelectionChangedObservable.notifyObservers(this);
+    }
+
+    public constructor(portContainer: HTMLElement, public connectionPoint: NodeMaterialConnectionPoint, public node: GraphNode, globalState: GlobalState, isInput: boolean, frameId: Nullable<number>) {
         this._element = portContainer.ownerDocument!.createElement("div");
         this._element.classList.add("port");
         portContainer.appendChild(this._element);
         this._globalState = globalState;
 
         this._portLabel = portContainer.children[0];
+        this._frameId = frameId
+        this._isInput = isInput;
 
         this._img = portContainer.ownerDocument!.createElement("img");
         this._element.appendChild(this._img );
@@ -75,6 +91,7 @@ export class NodePort {
         this._element.ondragstart= () => false;
 
         this._onCandidateLinkMovedObserver = globalState.onCandidateLinkMoved.add(coords => {
+            console.log('candidate link moved')
             const rect = this._element.getBoundingClientRect();
 
             if (!coords || rect.left > coords.x || rect.right < coords.x || rect.top > coords.y || rect.bottom < coords.y) {
@@ -94,11 +111,12 @@ export class NodePort {
     }
 
     public static CreatePortElement(connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement, 
-            displayManager: Nullable<IDisplayManager>, globalState: GlobalState) {
+            displayManager: Nullable<IDisplayManager>, globalState: GlobalState, isInput: boolean,  frameId:Nullable<number> = null) {
         let portContainer = root.ownerDocument!.createElement("div");
         let block = connectionPoint.ownerBlock;
 
         portContainer.classList.add("portLine");
+        portContainer.dataset.blockId = `${node.block.uniqueId}`;
         root.appendChild(portContainer);
 
         if (!displayManager || displayManager.shouldDisplayPortLabels(block)) {
@@ -108,6 +126,6 @@ export class NodePort {
             portContainer.appendChild(portLabel);
         }
     
-        return new NodePort(portContainer, connectionPoint, node, globalState);
+        return new NodePort(portContainer, connectionPoint, node, globalState, isInput, frameId);
     }
 }
