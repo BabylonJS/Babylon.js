@@ -515,9 +515,10 @@ void main(void) {
                 environmentIrradiance = computeEnvironmentIrradiance(irradianceVector);
             #endif
         #elif defined(USEIRRADIANCEMAP)
-            environmentIrradiance = sampleReflection(irradianceSampler, reflectionCoords).rgb;
+            vec4 environmentIrradiance4 = sampleReflection(irradianceSampler, reflectionCoords);
+            environmentIrradiance = environmentIrradiance4.rgb;
             #ifdef RGBDREFLECTION
-                environmentIrradiance.rgb = fromRGBD(environmentIrradiance);
+                environmentIrradiance.rgb = fromRGBD(environmentIrradiance4);
             #endif
 
             #ifdef GAMMAREFLECTION
@@ -1047,7 +1048,7 @@ void main(void) {
         #endif
 
         #if defined(USESPHERICALFROMREFLECTIONMAP)
-            vec3 refractionIrradiance = computeEnvironmentIrradiance(-irradianceVector);
+            vec4 refractionIrradiance = vec4(computeEnvironmentIrradiance(-irradianceVector), 0.0);
         #elif defined(USEIRRADIANCEMAP)
             #ifdef REFLECTIONMAP_3D
                 vec3 irradianceCoords = irradianceVector;
@@ -1059,7 +1060,7 @@ void main(void) {
                 irradianceCoords.y = 1.0 - irradianceCoords.y;
             #endif
 
-            vec3 refractionIrradiance = sampleReflection(irradianceSampler, -irradianceCoords).rgb;
+            vec4 refractionIrradiance = sampleReflection(irradianceSampler, -irradianceCoords);
             #ifdef RGBDREFLECTION
                 refractionIrradiance.rgb = fromRGBD(refractionIrradiance);
             #endif
@@ -1068,10 +1069,10 @@ void main(void) {
                 refractionIrradiance.rgb = toLinearSpace(refractionIrradiance.rgb);
             #endif
         #else
-            vec3 refractionIrradiance = vec3(0.);
+            vec4 refractionIrradiance = vec4(0.);
         #endif
 
-        refractionIrradiance *= transmittance;
+        refractionIrradiance.rgb *= transmittance;
     #endif
 
     // ______________________________________________________________________________
@@ -1091,7 +1092,7 @@ void main(void) {
     #ifdef REFLECTION
         vec3 finalIrradiance = environmentIrradiance;
         #if defined(SS_TRANSLUCENCY)
-            finalIrradiance += refractionIrradiance;
+            finalIrradiance += refractionIrradiance.rgb;
         #endif
         finalIrradiance *= surfaceAlbedo.rgb;
     #endif
