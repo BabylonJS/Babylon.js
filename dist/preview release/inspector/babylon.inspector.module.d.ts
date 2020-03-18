@@ -2034,6 +2034,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
         deleteStep(step: IValueGradient): void;
         addNewStep(): void;
         checkForReOrder(): void;
+        updateAndSync(): void;
         render(): JSX.Element;
     }
 }
@@ -4296,6 +4297,7 @@ declare module INSPECTOR {
         deleteStep(step: BABYLON.IValueGradient): void;
         addNewStep(): void;
         checkForReOrder(): void;
+        updateAndSync(): void;
         render(): JSX.Element;
     }
 }
