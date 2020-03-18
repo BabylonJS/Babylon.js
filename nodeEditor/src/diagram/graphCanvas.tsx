@@ -14,6 +14,7 @@ import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { GraphFrame } from './graphFrame';
 import { IEditorData } from '../nodeLocationInfo';
+import { Observable } from 'babylonjs';
 
 require("./graphCanvas.scss");
 
@@ -50,8 +51,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _gridSize = 20;
     private _selectionBox: Nullable<HTMLDivElement> = null;   
     private _selectedFrame: Nullable<GraphFrame> = null;   
-    private _frameCandidate: Nullable<HTMLDivElement> = null;  
-
+    private _frameCandidate: Nullable<HTMLDivElement> = null;
     private _frames: GraphFrame[] = [];
 
     private _altKeyIsPressed = false;
@@ -184,6 +184,11 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
         props.globalState.onCandidatePortSelected.add(port => {
             this._candidatePort = port;
+        });
+
+        props.globalState.onFrameNodeMoveUpObserver.add((nodePort: NodePort) => {
+            const frame = this._frames.find(frame => frame.id == nodePort.frameId);
+            frame?.moveFrameNodeUp(nodePort);
         });
 
         props.globalState.onGridSizeChanged.add(() => {
@@ -584,6 +589,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             if (this._candidateLinkedHasMoved) {
                 this.processCandidatePort();          
                 this.props.globalState.onCandidateLinkMoved.notifyObservers(null);
+            } else { // is a click event on NodePort
+                if(this._candidateLink.portA.frameId !== null) { //only on Frame Ports
+                    this.props.globalState.onSelectionChangedObservable.notifyObservers(this._candidateLink.portA);
+                }
             }
             this._candidateLink.dispose();
             this._candidateLink = null;

@@ -17,7 +17,7 @@ export class GlobalState {
     hostElement: HTMLElement;
     hostDocument: HTMLDocument;
     hostWindow: Window;
-    onSelectionChangedObservable = new Observable<Nullable<GraphNode | NodeLink | GraphFrame>>();
+    onSelectionChangedObservable = new Observable<Nullable<GraphNode | NodeLink | GraphFrame | NodePort>>();
     onRebuildRequiredObservable = new Observable<void>();
     onBuiltObservable = new Observable<void>();
     onResetRequiredObservable = new Observable<void>();
@@ -37,6 +37,7 @@ export class GlobalState {
     onSelectionBoxMoved = new Observable<ClientRect | DOMRect>();
     onFrameCreated = new Observable<GraphFrame>();
     onCandidatePortSelected = new Observable<Nullable<NodePort>>();
+    onFrameNodeMoveUpObserver = new Observable<NodePort>();
     onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
     onGridSizeChanged = new Observable<void>();
     previewMeshType: PreviewMeshType;
