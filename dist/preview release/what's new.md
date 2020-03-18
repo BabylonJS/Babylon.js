@@ -82,5 +82,6 @@
 - Fix horizon occlusion in PBR materials ([Popov72](https://github.com/Popov72)
 - Fixed delay calculation in Animatable.goToFrame when speedRatio != 1 ([Reimund Järnfors](https://github.com/reimund)
 - Fix bug in PBR when translucency is enabled and an irradiance texture is provided ([Popov72](https://github.com/Popov72)
+- Fix bug in PBR with translucency when irradiance texture is 2D ([Popov72](https://github.com/Popov72)
 
 ## Breaking changes
