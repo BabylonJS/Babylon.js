@@ -254,6 +254,12 @@ export interface IParticleSystem {
     getCapacity(): number;
 
     /**
+     * Gets the number of particles active at the same time.
+     * @returns The number of active particles.
+     */
+    getActiveCount(): number;
+
+    /**
      * Gets if the system has been started. (Note: this will still be true after stop is called)
      * @returns True if it has been started, otherwise false.
      */
@@ -305,6 +311,12 @@ export interface IParticleSystem {
      * Remove all active particles
      */
     reset(): void;
+
+    /**
+     * Gets a boolean indicating that the system is stopping
+     * @returns true if the system is currently stopping
+     */
+    isStopping(): boolean;
 
     /**
      * Is this system ready to be used/rendered

@@ -190,11 +190,27 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     }
 
     /**
+     * Gets the number of particles active at the same time.
+     * @returns The number of active particles.
+     */
+    public getActiveCount() {
+        return this._particles.length;
+    }
+
+    /**
      * Returns the string "ParticleSystem"
      * @returns a string containing the class name
      */
     public getClassName(): string {
         return "ParticleSystem";
+    }
+
+    /**
+     * Gets a boolean indicating that the system is stopping
+     * @returns true if the system is currently stopping
+     */
+    public isStopping() {
+        return this._stopped && this.isAlive();
     }
 
     /**
@@ -216,6 +232,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         this._isAnimationSheetEnabled = isAnimationSheetEnabled;
 
         this._scene = scene || EngineStore.LastCreatedScene;
+
+        this.uniqueId = this._scene.getUniqueId();
 
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);

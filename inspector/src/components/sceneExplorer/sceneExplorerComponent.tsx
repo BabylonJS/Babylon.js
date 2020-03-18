@@ -322,9 +322,10 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         // Particle systems
         let particleSystemsContextMenus: { label: string, action: () => void }[] = [];
         particleSystemsContextMenus.push({
-            label: "Add new particle system",
+            label: "Add new CPU particle system",
             action: () => {
-                let newSystem = ParticleHelper.CreateDefault(Vector3.Zero(), 1000, scene);
+                let newSystem = ParticleHelper.CreateDefault(Vector3.Zero(), 10000, scene);
+                newSystem.name = "CPU particle system";
                 newSystem.start();
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
             }
@@ -334,7 +335,8 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             particleSystemsContextMenus.push({
                 label: "Add new GPU particle system",
                 action: () => {
-                    let newSystem = ParticleHelper.CreateDefault(Vector3.Zero(), 1000, scene, true);
+                    let newSystem = ParticleHelper.CreateDefault(Vector3.Zero(), 10000, scene, true);
+                    newSystem.name = "GPU particle system";
                     newSystem.start();
                     this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
                 }
