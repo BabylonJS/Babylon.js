@@ -18,6 +18,7 @@ export class GlobalState {
     public onCodeChangedObservable = new Observable<CodeChangedEvent>();
     public onInspectorClosedObservable = new Observable<Scene>();
     public onTabChangedObservable = new Observable<number>();
+    public onSelectionRenamedObservable = new Observable<void>();
     public onPluginActivatedObserver: Nullable<Observer<ISceneLoaderPlugin | ISceneLoaderPluginAsync>>;
 
     public sceneImportDefaults: { [key: string]: any } = {};
@@ -71,6 +72,10 @@ export class GlobalState {
 
         propertyChangedObservable.add(event => {
             this.recorder.record(event);
+
+            if (event.property === "name") {
+                this.onSelectionRenamedObservable.notifyObservers();
+            }
         });
 
         this.onCodeChangedObservable.add(code => {

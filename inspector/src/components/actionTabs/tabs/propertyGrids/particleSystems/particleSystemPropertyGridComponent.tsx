@@ -37,6 +37,9 @@ import { MeshEmitterGridComponent } from './meshEmitterGridComponent';
 import { ValueGradientGridComponent, GradientGridMode } from './valueGradientGridComponent';
 import { Color3, Color4 } from 'babylonjs/Maths/math.color';
 import { GPUParticleSystem } from 'babylonjs/Particles/gpuParticleSystem';
+import { Tools } from 'babylonjs/Misc/tools';
+import { FileButtonLineComponent } from '../../../lines/fileButtonLineComponent';
+import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
 
 interface IParticleSystemPropertyGridComponentProps {
     globalState: GlobalState;
@@ -148,6 +151,29 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
         )
     }
 
+    saveToFile() {        
+        const system = this.props.system;
+        let content = JSON.stringify(system.serialize());
+
+        Tools.Download(new Blob([content]), "particleSystem.json");
+    }
+
+    loadFromFile(file: File) {
+        const system = this.props.system;
+        const scene = system.getScene();
+
+        Tools.ReadFile(file, (data) => {
+            let decoder = new TextDecoder("utf-8");
+            let jsonObject = JSON.parse(decoder.decode(data));
+            
+            system.dispose();            
+            this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+
+            let newSystem = ParticleSystem.Parse(jsonObject, scene, "");
+            this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
+        }, undefined, true);
+    }
+
     render() {
         const system = this.props.system;
 
@@ -190,6 +216,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="ID" value={system.id} />
+                    <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={system} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <TextLineComponent label="Class" value={system.getClassName()} />  
                     <TextLineComponent label="Capacity" value={system.getCapacity().toString()} />  
                     <TextLineComponent label="Capacity" value={system.getActiveCount().toString()} />  
@@ -201,12 +228,16 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     <CheckBoxLineComponent label="Is local" target={system} propertyName="isLocal" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Update speed" target={system} propertyName="updateSpeed" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>                      
-                <LineContainerComponent globalState={this.props.globalState} title="OPTIONS">
+                <LineContainerComponent globalState={this.props.globalState} title="COMMANDS">
                     {this.renderControls()}
                     <ButtonLineComponent label={"Dispose"} onClick={() => {
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                         system.dispose();
                     }} />
+                </LineContainerComponent>
+                <LineContainerComponent globalState={this.props.globalState} title="SERIALIZATION">
+                <FileButtonLineComponent label="Load" onClick={(file) => this.loadFromFile(file)} accept=".json" />
+                    <ButtonLineComponent label="Save" onClick={() => this.saveToFile()} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="EMITTER">
                 <OptionsLineComponent 

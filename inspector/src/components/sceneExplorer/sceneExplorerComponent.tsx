@@ -58,6 +58,7 @@ interface ISceneExplorerComponentProps {
 
 export class SceneExplorerComponent extends React.Component<ISceneExplorerComponentProps, { filter: Nullable<string>, selectedEntity: any, scene: Scene }> {
     private _onSelectionChangeObserver: Nullable<Observer<any>>;
+    private _onSelectionRenamedObserver: Nullable<Observer<void>>;
     private _onNewSceneAddedObserver: Nullable<Observer<Scene>>;
     private sceneExplorerRef: React.RefObject<Resizable>;
 
@@ -91,11 +92,19 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 this.setState({ selectedEntity: entity });
             }
         });
+
+        this._onSelectionRenamedObserver = this.props.globalState.onSelectionRenamedObservable.add(() => {
+            this.forceUpdate();
+        })
     }
 
     componentWillUnmount() {
         if (this._onSelectionChangeObserver) {
             this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangeObserver);
+        }
+
+        if (this._onSelectionRenamedObserver) {
+            this.props.globalState.onSelectionRenamedObservable.remove(this._onSelectionRenamedObserver);
         }
 
         if (this._onNewSceneAddedObserver) {
