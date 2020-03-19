@@ -193,7 +193,9 @@ export class Particle {
             var emitterMesh = (<AbstractMesh>subEmitter.particleSystem.emitter);
             emitterMesh.position.copyFrom(this.position);
             if (subEmitter.inheritDirection) {
-                emitterMesh.setDirection(this.direction.normalize(), 0, Math.PI / 2);
+                let temp = TmpVectors.Vector3[0];
+                this.direction.normalizeToRef(temp);
+                emitterMesh.setDirection(temp, 0, Math.PI / 2);
             }
         } else {
             var emitterPosition = (<Vector3>subEmitter.particleSystem.emitter);
