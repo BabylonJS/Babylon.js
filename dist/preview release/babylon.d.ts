@@ -10840,6 +10840,8 @@ declare module BABYLON {
         _textures: {
             [key: string]: Texture;
         };
+        /** @hidden */
+        protected _fallbackTexture: Nullable<Texture>;
         private _size;
         private _currentRefreshId;
         private _frameId;
@@ -10857,7 +10859,6 @@ declare module BABYLON {
         private _vectors2;
         private _vectors3;
         private _matrices;
-        private _fallbackTexture;
         private _fallbackTextureUsed;
         private _engine;
         private _cachedDefines;
@@ -56623,6 +56624,11 @@ declare module BABYLON {
          * @returns a serialized noise procedural texture object
          */
         serialize(): any;
+        /**
+         * Clone the texture.
+         * @returns the cloned texture
+         */
+        clone(): NoiseProceduralTexture;
         /**
          * Creates a NoiseProceduralTexture from parsed noise procedural texture data
          * @param parsedTexture defines parsed texture data
