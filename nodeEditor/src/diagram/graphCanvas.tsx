@@ -132,6 +132,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         return this._selectedFrame;
     }
 
+    public get selectedPort() {
+        return this._selectedPort;
+    }
+
     public get canvasContainer() {
         return this._graphCanvas;
     }
