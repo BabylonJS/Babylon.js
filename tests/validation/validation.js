@@ -204,6 +204,7 @@ function runTest(index, done) {
         renderImage.className = "renderImage";
         container.appendChild(renderImage);
 
+        seed = 1;
         location.href = "#" + container.id;
        
         if (test.sceneFolder) {
