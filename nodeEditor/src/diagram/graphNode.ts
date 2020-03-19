@@ -31,7 +31,7 @@ export class GraphNode {
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null    
     private _globalState: GlobalState;
-    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | GraphFrame>>>;   
+    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | GraphFrame | NodePort>>>;   
     private _onSelectionBoxMovedObserver: Nullable<Observer<ClientRect | DOMRect>>;  
     private _onFrameCreatedObserver: Nullable<Observer<GraphFrame>>;  
     private _onUpdateRequiredObserver: Nullable<Observer<void>>;  
