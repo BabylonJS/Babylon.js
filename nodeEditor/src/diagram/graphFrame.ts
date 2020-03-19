@@ -46,7 +46,7 @@ export class GraphFrame {
     private _ownerCanvas: GraphCanvasComponent;
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null;
-    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | GraphFrame>>>;
+    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | GraphFrame | NodePort>>>;
     private _isCollapsed = false;
     private _ports: NodePort[] = []; // Ports on Outside of Frame
     private _controlledPorts: NodePort[] = []; // Ports on Nodes that are shown on outside of frame
