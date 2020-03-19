@@ -120,6 +120,7 @@ export class ParticleHelper {
      * Creates a node material from a snippet saved by the node material editor
      * @param snippetId defines the snippet to load
      * @param scene defines the hosting scene
+     * @param gpu If the system will use gpu
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a promise that will resolve to the new node material
      */

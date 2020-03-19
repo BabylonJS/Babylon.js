@@ -1582,12 +1582,14 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class ParticleSystemPropertyGridComponent extends React.Component<IParticleSystemPropertyGridComponentProps> {
+        private _snippetUrl;
         constructor(props: IParticleSystemPropertyGridComponentProps);
         renderEmitter(): JSX.Element | null;
         raiseOnPropertyChanged(property: string, newValue: any, previousValue: any): void;
         renderControls(): JSX.Element;
         saveToFile(): void;
         loadFromFile(file: File): void;
+        saveToSnippet(): void;
         render(): JSX.Element;
     }
 }

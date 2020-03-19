@@ -47482,7 +47482,9 @@ __webpack_require__.r(__webpack_exports__);
 var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ParticleSystemPropertyGridComponent, _super);
     function ParticleSystemPropertyGridComponent(props) {
-        return _super.call(this, props) || this;
+        var _this = _super.call(this, props) || this;
+        _this._snippetUrl = "https://snippet.babylonjs.com";
+        return _this;
     }
     ParticleSystemPropertyGridComponent.prototype.renderEmitter = function () {
         var _a;
@@ -47568,6 +47570,35 @@ var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
             _this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
         }, undefined, true);
     };
+    ParticleSystemPropertyGridComponent.prototype.saveToSnippet = function () {
+        var _this = this;
+        var system = this.props.system;
+        var content = JSON.stringify(system.serialize());
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function () {
+            if (xmlHttp.readyState == 4) {
+                if (xmlHttp.status == 200) {
+                    var snippet = JSON.parse(xmlHttp.responseText);
+                    system.snippetId = snippet.id;
+                    _this.forceUpdate();
+                }
+                else {
+                    alert("Unable to save your particle system");
+                }
+            }
+        };
+        xmlHttp.open("POST", this._snippetUrl + (system.snippetId ? "/" + system.snippetId : ""), true);
+        xmlHttp.setRequestHeader("Content-Type", "application/json");
+        var dataToSend = {
+            payload: JSON.stringify({
+                particleSystem: content
+            }),
+            name: "",
+            description: "",
+            tags: ""
+        };
+        xmlHttp.send(JSON.stringify(dataToSend));
+    };
     ParticleSystemPropertyGridComponent.prototype.render = function () {
         var _this = this;
         var system = this.props.system;
@@ -47616,9 +47647,12 @@ var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
                         _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                         system.dispose();
                     } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "SERIALIZATION" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "FILE" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_22__["FileButtonLineComponent"], { label: "Load", onClick: function (file) { return _this.loadFromFile(file); }, accept: ".json" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__["ButtonLineComponent"], { label: "Save", onClick: function () { return _this.saveToFile(); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__["ButtonLineComponent"], { label: "Save", onClick: function () { return _this.saveToFile(); } }),
+                system.snippetId &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Snippet ID", value: system.snippetId }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__["ButtonLineComponent"], { label: "Save to snippet server", onClick: function () { return _this.saveToSnippet(); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "EMITTER" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__["OptionsLineComponent"], { label: "Emitter", options: emitterOptions, target: system, propertyName: "emitter", noDirectUpdate: true, onSelect: function (value) {
                         switch (value) {
@@ -47772,10 +47806,15 @@ var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color4LineComponent__WEBPACK_IMPORTED_MODULE_10__["Color4LineComponent"], { label: "Color 2", target: system, propertyName: "color2", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color4LineComponent__WEBPACK_IMPORTED_MODULE_10__["Color4LineComponent"], { label: "Color dead", target: system, propertyName: "colorDead", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["ValueGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getColorGradients(), label: "Color gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#particle-colors", onCreateRequired: function () {
-                        system.addColorGradient(0, new babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["Color4"](0, 0, 0, 1), new babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["Color4"](1, 1, 1, 1));
+                        system.addColorGradient(0, new babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["Color4"](0, 0, 0, 1), new babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["Color4"](0, 0, 0, 1));
+                        system.addColorGradient(1, new babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["Color4"](1, 1, 1, 1), new babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["Color4"](1, 1, 1, 1));
                         _this.props.globalState.onCodeChangedObservable.notifyObservers({
                             object: system,
-                            code: "TARGET.addColorGradient(0, new BABYLON.Color4(0, 0, 0, 1), new BABYLON.Color4(1, 1, 1, 1));"
+                            code: "TARGET.addColorGradient(0, new BABYLON.Color4(0, 0, 0, 1), new BABYLON.Color4(0, 0, 0, 1));"
+                        });
+                        _this.props.globalState.onCodeChangedObservable.notifyObservers({
+                            object: system,
+                            code: "TARGET.addColorGradient(1, new BABYLON.Color4(1, 1, 1, 1), new BABYLON.Color4(1, 1, 1, 1));"
                         });
                     }, host: system, codeRecorderPropertyName: "getColorGradients()", mode: _valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["GradientGridMode"].Color4, lockObject: this.props.lockObject }),
                 system instanceof babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["ParticleSystem"] &&
@@ -47783,9 +47822,14 @@ var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_12__["CheckBoxLineComponent"], { label: "Use ramp grandients", target: system, propertyName: "useRampGradients" }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["ValueGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getRampGradients(), label: "Ramp gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#ramp-gradients", onCreateRequired: function () {
                                 system.addRampGradient(0, babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["Color3"].White());
+                                system.addRampGradient(1, babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["Color3"].Black());
                                 _this.props.globalState.onCodeChangedObservable.notifyObservers({
                                     object: system,
                                     code: "TARGET.addRampGradient(0, BABYLON.Color3.White());"
+                                });
+                                _this.props.globalState.onCodeChangedObservable.notifyObservers({
+                                    object: system,
+                                    code: "TARGET.addRampGradient(1, BABYLON.Color3.Black());"
                                 });
                             }, mode: _valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["GradientGridMode"].Color3, host: system, codeRecorderPropertyName: "getRampGradients()", lockObject: this.props.lockObject }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["ValueGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getColorRemapGradients(), label: "Color remap gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#ramp-gradients", onCreateRequired: function () {
@@ -50492,7 +50536,7 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
         var scene = this.props.scene;
         this._onSelectionChangeObserver = this.props.onSelectionChangedObservable.add(function (entity) {
             _this._selectedEntity = entity;
-            if (scene.reservedDataStore && scene.reservedDataStore.gizmoManager) {
+            if (entity && scene.reservedDataStore && scene.reservedDataStore.gizmoManager) {
                 var manager = scene.reservedDataStore.gizmoManager;
                 var className = entity.getClassName();
                 if (className === "TransformNode" || className.indexOf("Mesh") !== -1) {
