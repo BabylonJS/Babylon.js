@@ -31,7 +31,7 @@ export class GraphNode {
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null    
     private _globalState: GlobalState;
-    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | GraphFrame>>>;   
+    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | GraphFrame | NodePort>>>;   
     private _onSelectionBoxMovedObserver: Nullable<Observer<ClientRect | DOMRect>>;  
     private _onFrameCreatedObserver: Nullable<Observer<GraphFrame>>;  
     private _onUpdateRequiredObserver: Nullable<Observer<void>>;  
@@ -407,11 +407,11 @@ export class GraphNode {
 
         // Connections
         for (var input of this.block.inputs) {
-            this._inputPorts.push(NodePort.CreatePortElement(input,  this, this._inputsContainer, this._displayManager, this._globalState));
+            this._inputPorts.push(NodePort.CreatePortElement(input,  this, this._inputsContainer, this._displayManager, this._globalState, true, null, undefined));
         }
 
         for (var output of this.block.outputs) {
-            this._outputPorts.push(NodePort.CreatePortElement(output,  this, this._outputsContainer, this._displayManager, this._globalState));
+            this._outputPorts.push(NodePort.CreatePortElement(output,  this, this._outputsContainer, this._displayManager, this._globalState, false, null, undefined));
         }
 
         this.refresh();
