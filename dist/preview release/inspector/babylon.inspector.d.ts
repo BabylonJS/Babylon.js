@@ -1589,6 +1589,7 @@ declare module INSPECTOR {
         renderControls(): JSX.Element;
         saveToFile(): void;
         loadFromFile(file: File): void;
+        loadFromSnippet(): void;
         saveToSnippet(): void;
         render(): JSX.Element;
     }
