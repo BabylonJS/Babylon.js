@@ -6,19 +6,7 @@ var currentScene;
 var config;
 var justOnce;
 
-// Overload the random to make it deterministic
-var seed = 100000,
-    constant = Math.pow(2, 13) + 1,
-    prime = 37,
-    maximum = Math.pow(2, 50);
-
-Math.random = function() {
-    seed *= constant;
-    seed += prime;
-    seed %= maximum;
-
-    return seed / maximum;
-}
+Math.seedrandom('babylonjs');
 
 function compare(renderData, referenceCanvas, threshold, errorRatio) {
     var width = referenceCanvas.width;
@@ -213,8 +201,6 @@ function runTest(index, done) {
 
         location.href = "#" + container.id;
        
-        seed = 100000;
-
         if (test.sceneFolder) {
             BABYLON.SceneLoader.Load(config.root + test.sceneFolder, test.sceneFilename, engine, function(newScene) {
                 currentScene = newScene;
