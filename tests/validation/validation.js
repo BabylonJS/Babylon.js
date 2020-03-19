@@ -6,7 +6,12 @@ var currentScene;
 var config;
 var justOnce;
 
-Math.seedrandom('babylonjs');
+// Random replacement
+var seed = 1;
+Math.random = function() {
+    var x = Math.sin(seed++) * 10000;
+    return x - Math.floor(x);
+}
 
 function compare(renderData, referenceCanvas, threshold, errorRatio) {
     var width = referenceCanvas.width;
