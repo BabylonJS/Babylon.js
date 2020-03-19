@@ -20,6 +20,7 @@ import { DirectionalLight } from 'babylonjs/Lights/directionalLight';
 import { SSAORenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline';
 import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
 import { ParticleHelper } from 'babylonjs/Particles/particleHelper';
+import { GPUParticleSystem } from 'babylonjs/Particles/gpuParticleSystem';
 
 require("./sceneExplorer.scss");
 
@@ -57,6 +58,7 @@ interface ISceneExplorerComponentProps {
 
 export class SceneExplorerComponent extends React.Component<ISceneExplorerComponentProps, { filter: Nullable<string>, selectedEntity: any, scene: Scene }> {
     private _onSelectionChangeObserver: Nullable<Observer<any>>;
+    private _onSelectionRenamedObserver: Nullable<Observer<void>>;
     private _onNewSceneAddedObserver: Nullable<Observer<Scene>>;
     private sceneExplorerRef: React.RefObject<Resizable>;
 
@@ -90,11 +92,19 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 this.setState({ selectedEntity: entity });
             }
         });
+
+        this._onSelectionRenamedObserver = this.props.globalState.onSelectionRenamedObservable.add(() => {
+            this.forceUpdate();
+        })
     }
 
     componentWillUnmount() {
         if (this._onSelectionChangeObserver) {
             this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangeObserver);
+        }
+
+        if (this._onSelectionRenamedObserver) {
+            this.props.globalState.onSelectionRenamedObservable.remove(this._onSelectionRenamedObserver);
         }
 
         if (this._onNewSceneAddedObserver) {
@@ -321,13 +331,26 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         // Particle systems
         let particleSystemsContextMenus: { label: string, action: () => void }[] = [];
         particleSystemsContextMenus.push({
-            label: "Add new particle system",
+            label: "Add new CPU particle system",
             action: () => {
-                let newSystem = ParticleHelper.CreateDefault(Vector3.Zero(), 1000, scene);
+                let newSystem = ParticleHelper.CreateDefault(Vector3.Zero(), 10000, scene);
+                newSystem.name = "CPU particle system";
                 newSystem.start();
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
             }
         });
+
+        if (GPUParticleSystem.IsSupported) {
+            particleSystemsContextMenus.push({
+                label: "Add new GPU particle system",
+                action: () => {
+                    let newSystem = ParticleHelper.CreateDefault(Vector3.Zero(), 10000, scene, true);
+                    newSystem.name = "GPU particle system";
+                    newSystem.start();
+                    this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
+                }
+            });
+        }
 
         return (
             <div id="tree" onContextMenu={e => e.preventDefault()}>

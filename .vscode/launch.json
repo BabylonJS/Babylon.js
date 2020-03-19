@@ -54,6 +54,20 @@
             ]
         },
         {
+            "name": "Launch playground (Edge)",
+            "type": "edge",
+            "version": "dev",
+            "request": "launch",
+            "url": "http://localhost:1338/Playground/index-local.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "preLaunchTask": "run",
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },
+        {
             "name": "Launch playground (Chrome+WebGL 1.0 forced)",
             "type": "chrome",
             "request": "launch",
@@ -143,6 +157,20 @@
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis"
             ]
+        },        
+        {
+            "name": "Launch Local Dev (Edge)",
+            "type": "edge",
+            "version": "dev",
+            "request": "launch",
+            "url": "http://localhost:1338/localDev/index.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "preLaunchTask": "run",
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
         },
         {
             "name": "Launch Local Dev - Worker mode (Chrome)",
@@ -171,20 +199,6 @@
             ]
         },        
         {
-            "name": "Launch Local Dev (Experimental Firefox)",
-            "type": "firefox",
-            "request": "launch",
-            "reAttach": true,
-            "url": "http://localhost:1338/localDev/index.html",
-            "pathMappings": [
-                {
-                    "url": "http://localhost:1338",
-                    "path": "${workspaceFolder}"
-                }
-            ],
-            "preLaunchTask": "run"
-        },
-        {
             "name": "Launch Build Validation (Chrome)",
             "type": "chrome",
             "request": "launch",
@@ -196,14 +210,6 @@
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis"
             ]
-        },
-        {
-            "name": "Launch Build Validation (Firefox)",
-            "type": "firefox",
-            "request": "launch",
-            "reAttach": true,
-            "webRoot": "${workspaceRoot}/",
-            "url": "http://localhost:1338/tests/validation/index.html"
         },
         {
             "name": "Launch memory checks (Chrome)",
