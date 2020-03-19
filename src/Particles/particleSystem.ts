@@ -190,11 +190,27 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     }
 
     /**
+     * Gets the number of particles active at the same time.
+     * @returns The number of active particles.
+     */
+    public getActiveCount() {
+        return this._particles.length;
+    }
+
+    /**
      * Returns the string "ParticleSystem"
      * @returns a string containing the class name
      */
     public getClassName(): string {
         return "ParticleSystem";
+    }
+
+    /**
+     * Gets a boolean indicating that the system is stopping
+     * @returns true if the system is currently stopping
+     */
+    public isStopping() {
+        return this._stopped && this.isAlive();
     }
 
     /**
@@ -216,6 +232,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         this._isAnimationSheetEnabled = isAnimationSheetEnabled;
 
         this._scene = scene || EngineStore.LastCreatedScene;
+
+        this.uniqueId = this._scene.getUniqueId();
 
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
@@ -430,10 +448,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     }
 
     private _addFactorGradient(factorGradients: FactorGradient[], gradient: number, factor: number, factor2?: number) {
-        let newGradient = new FactorGradient();
-        newGradient.gradient = gradient;
-        newGradient.factor1 = factor;
-        newGradient.factor2 = factor2;
+        let newGradient = new FactorGradient(gradient, factor, factor2);
         factorGradients.push(newGradient);
 
         factorGradients.sort((a, b) => {
@@ -785,9 +800,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             this._rampGradients = [];
         }
 
-        let rampGradient = new Color3Gradient();
-        rampGradient.gradient = gradient;
-        rampGradient.color = color;
+        let rampGradient = new Color3Gradient(gradient, color);
         this._rampGradients.push(rampGradient);
 
         this._rampGradients.sort((a, b) => {
@@ -838,10 +851,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             this._colorGradients = [];
         }
 
-        let colorGradient = new ColorGradient();
-        colorGradient.gradient = gradient;
-        colorGradient.color1 = color1;
-        colorGradient.color2 = color2;
+        let colorGradient = new ColorGradient(gradient, color1, color2);
         this._colorGradients.push(colorGradient);
 
         this._colorGradients.sort((a, b) => {
@@ -1187,7 +1197,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             this._vertexData[offset++] = particle.direction.z;
         }
 
-        if (this._useRampGradients) {
+        if (this._useRampGradients && particle.remapData) {
             this._vertexData[offset++] = particle.remapData.x;
             this._vertexData[offset++] = particle.remapData.y;
             this._vertexData[offset++] = particle.remapData.z;
@@ -1972,7 +1982,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             newEmitter = this.emitter;
         }
 
-        result.noiseTexture = this.noiseTexture;
+        if (this.noiseTexture) {
+            result.noiseTexture = this.noiseTexture.clone();
+        }
+
         result.emitter = newEmitter;
         if (this.particleTexture) {
             if (this.particleTexture instanceof DynamicTexture) {
@@ -2631,7 +2644,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         ParticleSystem._Parse(parsedParticleSystem, particleSystem, scene, rootUrl);
 
-        particleSystem.textureMask = Color4.FromArray(parsedParticleSystem.textureMask);
+        if (parsedParticleSystem.textureMask) {
+            particleSystem.textureMask = Color4.FromArray(parsedParticleSystem.textureMask);
+        }
 
         // Auto start
         if (parsedParticleSystem.preventAutoStart) {

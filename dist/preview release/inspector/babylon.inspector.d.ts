@@ -9,12 +9,19 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export class CodeChangedEvent {
+        object: any;
+        code: string;
+    }
+}
+declare module INSPECTOR {
     export class ReplayRecorder {
         private _recordedCodeLines;
         private _previousObject;
         private _previousProperty;
         reset(): void;
         private _getIndirectData;
+        recordCode(event: CodeChangedEvent): void;
         record(event: PropertyChangedEvent): void;
         export(): void;
     }
@@ -23,8 +30,10 @@ declare module INSPECTOR {
     export class GlobalState {
         onSelectionChangedObservable: BABYLON.Observable<any>;
         onPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
+        onCodeChangedObservable: BABYLON.Observable<CodeChangedEvent>;
         onInspectorClosedObservable: BABYLON.Observable<BABYLON.Scene>;
         onTabChangedObservable: BABYLON.Observable<number>;
+        onSelectionRenamedObservable: BABYLON.Observable<void>;
         onPluginActivatedObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync>>;
         sceneImportDefaults: {
             [key: string]: any;
@@ -1483,6 +1492,8 @@ declare module INSPECTOR {
         onDelete: () => void;
         onUpdateGradient: () => void;
         onCheckForReOrder: () => void;
+        host: BABYLON.IParticleSystem;
+        codeRecorderPropertyName: string;
     }
     export class FactorGradientStepGridComponent extends React.Component<IFactorGradientStepGridComponent, {
         gradient: number;
@@ -1498,21 +1509,67 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
-    interface IFactorGradientGridComponent {
+    interface IColorGradientStepGridComponent {
+        globalState: GlobalState;
+        gradient: BABYLON.ColorGradient | BABYLON.Color3Gradient;
+        lockObject: LockObject;
+        lineIndex: number;
+        isColor3: boolean;
+        onDelete: () => void;
+        onUpdateGradient: () => void;
+        onCheckForReOrder: () => void;
+        host: BABYLON.IParticleSystem;
+        codeRecorderPropertyName: string;
+    }
+    export class ColorGradientStepGridComponent extends React.Component<IColorGradientStepGridComponent, {
+        gradient: number;
+    }> {
+        constructor(props: IColorGradientStepGridComponent);
+        updateColor1(color: string): void;
+        updateColor2(color: string): void;
+        updateGradient(gradient: number): void;
+        onPointerUp(): void;
+        lock(): void;
+        unlock(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface ILinkButtonComponentProps {
+        label: string;
+        buttonLabel: string;
+        url?: string;
+        onClick: () => void;
+    }
+    export class LinkButtonComponent extends React.Component<ILinkButtonComponentProps> {
+        constructor(props: ILinkButtonComponentProps);
+        onLink(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    export enum GradientGridMode {
+        Factor = 0,
+        BABYLON.Color3 = 1,
+        BABYLON.Color4 = 2
+    }
+    interface IValueGradientGridComponent {
         globalState: GlobalState;
         label: string;
-        gradients: BABYLON.Nullable<Array<BABYLON.FactorGradient>>;
+        gradients: BABYLON.Nullable<Array<BABYLON.IValueGradient>>;
         lockObject: LockObject;
         docLink?: string;
-        replaySourceReplacement?: string;
+        mode: GradientGridMode;
+        host: BABYLON.IParticleSystem;
+        codeRecorderPropertyName: string;
         onCreateRequired: () => void;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
-    export class FactorGradientGridComponent extends React.Component<IFactorGradientGridComponent> {
-        constructor(props: IFactorGradientGridComponent);
-        deleteStep(step: BABYLON.FactorGradient): void;
+    export class ValueGradientGridComponent extends React.Component<IValueGradientGridComponent> {
+        constructor(props: IValueGradientGridComponent);
+        deleteStep(step: BABYLON.IValueGradient): void;
         addNewStep(): void;
         checkForReOrder(): void;
+        updateAndSync(): void;
         render(): JSX.Element;
     }
 }
@@ -1528,6 +1585,9 @@ declare module INSPECTOR {
         constructor(props: IParticleSystemPropertyGridComponentProps);
         renderEmitter(): JSX.Element | null;
         raiseOnPropertyChanged(property: string, newValue: any, previousValue: any): void;
+        renderControls(): JSX.Element;
+        saveToFile(): void;
+        loadFromFile(file: File): void;
         render(): JSX.Element;
     }
 }
@@ -2017,6 +2077,7 @@ declare module INSPECTOR {
         scene: BABYLON.Scene;
     }> {
         private _onSelectionChangeObserver;
+        private _onSelectionRenamedObserver;
         private _onNewSceneAddedObserver;
         private sceneExplorerRef;
         private _once;

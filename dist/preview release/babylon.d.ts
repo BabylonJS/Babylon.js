@@ -5776,9 +5776,10 @@ declare module BABYLON {
         set(r: number, g: number, b: number, a: number): Color4;
         /**
          * Compute the Color4 hexadecimal code as a string
+         * @param returnAsColor3 defines if the string should only contains RGB values (off by default)
          * @returns a string containing the hexadecimal representation of the Color4 object
          */
-        toHexString(): string;
+        toHexString(returnAsColor3?: boolean): string;
         /**
          * Computes a new Color4 converted from the current one to linear space
          * @returns a new Color4 object
@@ -10117,7 +10118,26 @@ declare module BABYLON {
         /**
          * Gets or sets second associated color
          */
-        color2?: Color4;
+        color2?: Color4 | undefined;
+        /**
+         * Creates a new color4 gradient
+         * @param gradient gets or sets the gradient value (between 0 and 1)
+         * @param color1 gets or sets first associated color
+         * @param color2 gets or sets first second color
+         */
+        constructor(
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */
+        gradient: number, 
+        /**
+         * Gets or sets first associated color
+         */
+        color1: Color4, 
+        /**
+         * Gets or sets second associated color
+         */
+        color2?: Color4 | undefined);
         /**
          * Will get a color picked randomly between color1 and color2.
          * If color2 is undefined then color1 will be used
@@ -10135,6 +10155,20 @@ declare module BABYLON {
          * Gets or sets the associated color
          */
         color: Color3;
+        /**
+         * Creates a new color3 gradient
+         * @param gradient gets or sets the gradient value (between 0 and 1)
+         * @param color gets or sets associated color
+         */
+        constructor(
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */
+        gradient: number, 
+        /**
+         * Gets or sets the associated color
+         */
+        color: Color3);
     }
     /** Class used to store factor gradient */
     export class FactorGradient implements IValueGradient {
@@ -10149,7 +10183,26 @@ declare module BABYLON {
         /**
          * Gets or sets second associated factor
          */
-        factor2?: number;
+        factor2?: number | undefined;
+        /**
+         * Creates a new factor gradient
+         * @param gradient gets or sets the gradient value (between 0 and 1)
+         * @param factor1 gets or sets first associated factor
+         * @param factor2 gets or sets second associated factor
+         */
+        constructor(
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */
+        gradient: number, 
+        /**
+         * Gets or sets first associated factor
+         */
+        factor1: number, 
+        /**
+         * Gets or sets second associated factor
+         */
+        factor2?: number | undefined);
         /**
          * Will get a number picked randomly between factor1 and factor2.
          * If factor2 is undefined then factor1 will be used
@@ -10787,6 +10840,8 @@ declare module BABYLON {
         _textures: {
             [key: string]: Texture;
         };
+        /** @hidden */
+        protected _fallbackTexture: Nullable<Texture>;
         private _size;
         private _currentRefreshId;
         private _frameId;
@@ -10804,7 +10859,6 @@ declare module BABYLON {
         private _vectors2;
         private _vectors3;
         private _matrices;
-        private _fallbackTexture;
         private _fallbackTextureUsed;
         private _engine;
         private _cachedDefines;
@@ -10989,6 +11043,10 @@ declare module BABYLON {
          * List of animations used by the particle system.
          */
         animations: Animation[];
+        /**
+         * Gets or sets the unique id of the particle system
+         */
+        uniqueId: number;
         /**
          * The id of the Particle system.
          */
@@ -11648,10 +11706,20 @@ declare module BABYLON {
          */
         get particles(): Particle[];
         /**
+         * Gets the number of particles active at the same time.
+         * @returns The number of active particles.
+         */
+        getActiveCount(): number;
+        /**
          * Returns the string "ParticleSystem"
          * @returns a string containing the class name
          */
         getClassName(): string;
+        /**
+         * Gets a boolean indicating that the system is stopping
+         * @returns true if the system is currently stopping
+         */
+        isStopping(): boolean;
         /**
          * Instantiates a particle system.
          * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
@@ -13138,6 +13206,11 @@ declare module BABYLON {
          */
         getCapacity(): number;
         /**
+         * Gets the number of particles active at the same time.
+         * @returns The number of active particles.
+         */
+        getActiveCount(): number;
+        /**
          * Gets if the system has been started. (Note: this will still be true after stop is called)
          * @returns True if it has been started, otherwise false.
          */
@@ -13185,6 +13258,11 @@ declare module BABYLON {
          * Remove all active particles
          */
         reset(): void;
+        /**
+         * Gets a boolean indicating that the system is stopping
+         * @returns true if the system is currently stopping
+         */
+        isStopping(): boolean;
         /**
          * Is this system ready to be used/rendered
          * @return true if the system is ready
@@ -15427,14 +15505,14 @@ declare module BABYLON {
          * @param texture Define the texture to bind to this sampler
          * @return the material itself allowing "fluent" like uniform updates
          */
-        setTexture(name: string, texture: Texture): ShaderMaterial;
+        setTexture(name: string, texture: BaseTexture): ShaderMaterial;
         /**
          * Set a texture array in the shader.
          * @param name Define the name of the uniform sampler array as defined in the shader
          * @param textures Define the list of textures to bind to this sampler
          * @return the material itself allowing "fluent" like uniform updates
          */
-        setTextureArray(name: string, textures: Texture[]): ShaderMaterial;
+        setTextureArray(name: string, textures: BaseTexture[]): ShaderMaterial;
         /**
          * Set a float in the shader.
          * @param name Define the name of the uniform as defined in the shader
@@ -26914,7 +26992,7 @@ declare module BABYLON {
         /**
          * Custom callback helping to override the default shader used in the material.
          */
-        customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines) => string;
+        customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines, attributes?: string[]) => string;
         protected _renderTargets: SmartArray<RenderTargetTexture>;
         protected _worldViewProjectionMatrix: Matrix;
         protected _globalAmbientColor: Color3;
@@ -51700,7 +51778,7 @@ declare module BABYLON {
         /**
          * Custom callback helping to override the default shader used in the material.
          */
-        customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: PBRMaterialDefines) => string;
+        customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: PBRMaterialDefines, attributes?: string[]) => string;
         protected _rebuildInParallel: boolean;
         /**
          * Instantiates a new PBRMaterial instance.
@@ -56546,6 +56624,11 @@ declare module BABYLON {
          * @returns a serialized noise procedural texture object
          */
         serialize(): any;
+        /**
+         * Clone the texture.
+         * @returns the cloned texture
+         */
+        clone(): NoiseProceduralTexture;
         /**
          * Creates a NoiseProceduralTexture from parsed noise procedural texture data
          * @param parsedTexture defines parsed texture data
@@ -62971,6 +63054,21 @@ declare module BABYLON {
          */
         isStarted(): boolean;
         /**
+         * Gets if the system has been stopped. (Note: rendering is still happening but the system is frozen)
+         * @returns True if it has been stopped, otherwise false.
+         */
+        isStopped(): boolean;
+        /**
+         * Gets a boolean indicating that the system is stopping
+         * @returns true if the system is currently stopping
+         */
+        isStopping(): boolean;
+        /**
+         * Gets the number of particles active at the same time.
+         * @returns The number of active particles.
+         */
+        getActiveCount(): number;
+        /**
          * Starts the particle system and begins to emit
          * @param delay defines the delay in milliseconds before starting the system (this.startDelay by default)
          */
@@ -62998,6 +63096,9 @@ declare module BABYLON {
          * @returns the current particle system
          */
         addColorGradient(gradient: number, color1: Color4, color2?: Color4): GPUParticleSystem;
+        private _refreshColorGradient;
+        /** Force the system to rebuild all gradients */
+        forceRefreshGradients(): void;
         /**
          * Remove a specific color gradient
          * @param gradient defines the gradient to remove
@@ -63023,6 +63124,7 @@ declare module BABYLON {
          * @returns the current particle system
          */
         removeSizeGradient(gradient: number): GPUParticleSystem;
+        private _refreshFactorGradient;
         /**
          * Adds a new angular speed gradient
          * @param gradient defines the gradient to use (between 0 and 1)

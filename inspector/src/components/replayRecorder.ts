@@ -1,5 +1,6 @@
 import { PropertyChangedEvent } from './propertyChangedEvent';
 import { Tools } from 'babylonjs/Misc/tools';
+import { CodeChangedEvent } from './codeChangedEvent';
 
 export class ReplayRecorder {
     private _recordedCodeLines: string[];
@@ -34,12 +35,24 @@ export class ReplayRecorder {
                 indirectData = `scene.getSkeletonById("${data.id}")`;
             } else if (indirectData.indexOf("material") > -1) {
                 indirectData = `scene.getMaterialByID("${data.id}")`;
+            }else if (indirectData.indexOf("particle") > -1) {
+                indirectData = `scene.getParticleSystemById("${data.id}")`;
             }
         } else {
             indirectData = "new BABYLON." + data.getClassName() + "()";
         }
 
         return indirectData;
+    }
+
+    public recordCode(event: CodeChangedEvent) {
+        if (!this._recordedCodeLines) {
+            this._recordedCodeLines = [];
+        }
+
+        let target = this._getIndirectData(event.object);
+
+        this._recordedCodeLines.push(event.code.replace(/TARGET/g, target));        
     }
 
     public record(event: PropertyChangedEvent) {

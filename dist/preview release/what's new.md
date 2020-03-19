@@ -54,6 +54,8 @@
 - Updated the energy conservation factor for the clear coat layer in PBR materials ([Popov72](https://github.com/Popov72))
 - Added the `transparencyMode` property to the `StandardMaterial` class ([Popov72](https://github.com/Popov72))
 - Added to `FresnelParameters` constructor options and equals method ([brianzinn](https://github.com/brianzinn))
+- Added `AddAttribute` to `CustomMaterial` and `PBRCustomMaterial` ([Popov72](https://github.com/Popov72))
+- `setTexture` and `setTextureArray` from `ShaderMaterial` take now a `BaseTexture` as input instead of a `Texture`, allowing to pass a `CubeTexture` ([Popov72](https://github.com/Popov72))
 
 ### WebXR
 
@@ -81,5 +83,9 @@
 - Fix bug in `Plane.transform` when matrix passed in is not a pure rotation ([Popov72](https://github.com/Popov72)
 - Fix bug in PBR when anisotropy is enabled and no bump texture is provided ([Popov72](https://github.com/Popov72)
 - Fix horizon occlusion in PBR materials ([Popov72](https://github.com/Popov72)
+- Fixed delay calculation in Animatable.goToFrame when speedRatio != 1 ([Reimund Järnfors](https://github.com/reimund)
+- Fix bug in PBR when translucency is enabled and an irradiance texture is provided ([Popov72](https://github.com/Popov72)
+- Fix bug in PBR with translucency when irradiance texture is 2D ([Popov72](https://github.com/Popov72)
+- Fix bug in PBR when specific combinations of parameters are used ([Popov72](https://github.com/Popov72)
 
 ## Breaking changes
