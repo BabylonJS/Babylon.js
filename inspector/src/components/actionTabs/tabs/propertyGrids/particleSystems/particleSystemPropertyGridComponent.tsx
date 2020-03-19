@@ -50,6 +50,8 @@ interface IParticleSystemPropertyGridComponentProps {
 }
 
 export class ParticleSystemPropertyGridComponent extends React.Component<IParticleSystemPropertyGridComponentProps> {
+    private _snippetUrl = "https://snippet.babylonjs.com";
+
     constructor(props: IParticleSystemPropertyGridComponentProps) {
         super(props);
     }
@@ -176,6 +178,44 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
         }, undefined, true);
     }
 
+    saveToSnippet() {
+        const system = this.props.system;
+        let content = JSON.stringify(system.serialize());
+
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = () => {
+            if (xmlHttp.readyState == 4) {
+                if (xmlHttp.status == 200) {
+                    var baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
+                    var snippet = JSON.parse(xmlHttp.responseText);
+                    var newUrl = baseUrl + "#" + snippet.id;
+                    system.snippetId = snippet.id;
+                    if (snippet.version && snippet.version != "0") {
+                        newUrl += "#" + snippet.version;
+                    }
+                    this.forceUpdate();
+                }
+                else {
+                    alert("Unable to save your particle system");
+                }
+            }
+        }
+
+        xmlHttp.open("POST", this._snippetUrl + (system.snippetId ? "/" + system.snippetId : ""), true);
+        xmlHttp.setRequestHeader("Content-Type", "application/json");
+
+        var dataToSend = {
+            payload : JSON.stringify({
+                particleSystem: content
+            }),
+            name: "",
+            description: "",
+            tags: ""
+        };
+
+        xmlHttp.send(JSON.stringify(dataToSend));
+    }
+
     render() {
         const system = this.props.system;
 
@@ -219,6 +259,10 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="ID" value={system.id} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={system} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
+                    {
+                        system.snippetId &&
+                        <TextLineComponent label="Snippet ID" value={system.snippetId} />
+                    }
                     <TextLineComponent label="Class" value={system.getClassName()} />  
                     <TextLineComponent label="Capacity" value={system.getCapacity().toString()} />  
                     <TextLineComponent label="Active count" value={system.getActiveCount().toString()} />  
@@ -237,9 +281,10 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         system.dispose();
                     }} />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="SERIALIZATION">
+                <LineContainerComponent globalState={this.props.globalState} title="FILE">
                 <FileButtonLineComponent label="Load" onClick={(file) => this.loadFromFile(file)} accept=".json" />
                     <ButtonLineComponent label="Save" onClick={() => this.saveToFile()} />
+                    <ButtonLineComponent label="Save to snippet server" onClick={() => this.saveToSnippet()} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="EMITTER">
                 <OptionsLineComponent 
