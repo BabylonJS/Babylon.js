@@ -8,7 +8,6 @@ import { TextInputLineComponent } from '../../sharedComponents/textInputLineComp
 import { ButtonLineComponent } from '../../sharedComponents/buttonLineComponent';
 import { Nullable } from 'babylonjs/types';
 import { Observer } from 'babylonjs/Misc/observable';
-import { NodePort } from '../nodePort';
 
 export interface IFramePropertyTabComponentProps {
     globalState: GlobalState

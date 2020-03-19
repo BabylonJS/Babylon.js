@@ -23,6 +23,7 @@ enum ResizingDirection {
 export class GraphFrame {
     private readonly CollapsedWidth = 200;
     private static _FrameCounter = 0;
+    private static _FramePortCounter = 0;
     private _name: string;
     private _color: Color3;
     private _x = 0;
@@ -72,7 +73,7 @@ export class GraphFrame {
     }
 
     private _createInputPort(port: NodePort, node: GraphNode) {
-        let localPort = NodePort.CreatePortElement(port.connectionPoint, node, this._inputPortContainer, null, this._ownerCanvas.globalState, true, this.id)
+        let localPort = NodePort.CreatePortElement(port.connectionPoint, node, this._inputPortContainer, null, this._ownerCanvas.globalState, true, this.id, GraphFrame._FramePortCounter++)
         this._ports.push(localPort);
 
         port.delegatedPort = localPort;
@@ -105,7 +106,7 @@ export class GraphFrame {
 
                                 if (!portAdded) {
                                     portAdded = true;
-                                    localPort = NodePort.CreatePortElement(port.connectionPoint, link.nodeB!, this._outputPortContainer, null, this._ownerCanvas.globalState, true, this.id);
+                                    localPort = NodePort.CreatePortElement(port.connectionPoint, link.nodeB!, this._outputPortContainer, null, this._ownerCanvas.globalState, false, this.id, GraphFrame._FramePortCounter++);
                                     this._ports.push(localPort);
                                 } else {
                                     localPort = this._ports.filter(p => p.connectionPoint === port.connectionPoint)[0];
@@ -113,11 +114,11 @@ export class GraphFrame {
 
                                 port.delegatedPort = localPort;
                                 this._controlledPorts.push(port);
-                                link.isVisible = true;
+                                link.isVisible = false;
                             }
                         }
                     } else {
-                        let localPort = NodePort.CreatePortElement(port.connectionPoint, node, this._outputPortContainer, null, this._ownerCanvas.globalState, true, this.id)
+                        let localPort = NodePort.CreatePortElement(port.connectionPoint, node, this._outputPortContainer, null, this._ownerCanvas.globalState, false, this.id, GraphFrame._FramePortCounter++)
                         this._ports.push(localPort);
                         port.delegatedPort = localPort;
                         this._controlledPorts.push(port);
@@ -481,36 +482,6 @@ export class GraphFrame {
         this.y = this._ownerCanvas.getGridPosition(this.y);   
     }
 
-    public moveFrameNodeUp(nodePort: NodePort){
-        console.log('moving node up: ', nodePort.portLabel);
-        if(nodePort.isInput) {
-            if(this._inputPortContainer.children.length < 2) {
-                return;
-            }
-            const elementsArray = Array.from(this._inputPortContainer.children);
-            const indexInContainer = (elementsArray as HTMLElement[]).findIndex(elem => elem.dataset.blockId === `${nodePort.node.block.uniqueId}`)
-            if(indexInContainer === 0){
-                return;
-            }
-            var b = elementsArray;
-            const elemA = elementsArray[indexInContainer];
-            const elemB =  elementsArray[indexInContainer -1];
-            
-        } else {
-            if(this._outputPortContainer.children.length < 2) {
-                return;
-            }
-            const elementsArray = Array.from(this._inputPortContainer.children);
-            console.log(elementsArray)
-        }
-
-    }
-    
-    public moveFrameNodeDown(blockUniqueId: number){
-        console.log('moving block down: ', blockUniqueId)
-        
-    }
-
     private _onDown(evt: PointerEvent) {
         evt.stopPropagation();
 
@@ -576,6 +547,59 @@ export class GraphFrame {
         this._mouseStartPointY = evt.clientY;
 
         evt.stopPropagation();
+    }
+
+    public moveFramePortUp(nodePort: NodePort){
+        if(nodePort.isInput) {
+            if(this._inputPortContainer.children.length < 2) {
+                return;
+            }
+            const elementsArray = Array.from(this._inputPortContainer.childNodes);
+            this._moveFramePortUp(elementsArray, nodePort);
+        } else {
+            if(this._outputPortContainer.children.length < 2) {
+                return;
+            }
+            const elementsArray = Array.from(this._outputPortContainer.childNodes);
+            this._moveFramePortUp(elementsArray, nodePort);
+        }
+
+    }
+
+    private _moveFramePortUp(elementsArray: ChildNode[], nodePort: NodePort) {
+        const indexInContainer = (elementsArray as HTMLElement[]).findIndex(elem => elem.dataset.framePortId === `${nodePort.framePortId}`)
+        if(indexInContainer === 0){
+            return;
+        }
+        const secondPort = elementsArray[indexInContainer];
+        const firstPort =  elementsArray[indexInContainer -1];
+        firstPort.parentElement?.insertBefore(secondPort, firstPort);
+    }
+    
+    public moveFramePortDown(nodePort: NodePort){
+        if(nodePort.isInput) {
+            if(this._inputPortContainer.children.length < 2) {
+                return;
+            }
+            const elementsArray = Array.from(this._inputPortContainer.childNodes);
+            this._moveFramePortDown(elementsArray, nodePort);
+        } else {
+            if(this._outputPortContainer.children.length < 2) {
+                return;
+            }
+            const elementsArray = Array.from(this._outputPortContainer.childNodes);
+            this._moveFramePortDown(elementsArray, nodePort);
+        }
+    }
+
+    private _moveFramePortDown(elementsArray: ChildNode[], nodePort: NodePort) {
+        const indexInContainer = (elementsArray as HTMLElement[]).findIndex(elem => elem.dataset.framePortId === `${nodePort.framePortId}`)
+        if(indexInContainer === elementsArray.length -1){
+            return;
+        }
+        const firstPort = elementsArray[indexInContainer];
+        const secondPort =  elementsArray[indexInContainer + 1];
+        firstPort.parentElement?.insertBefore(secondPort, firstPort);
     }
 
     private initResizing = (evt: PointerEvent) => {

@@ -14,7 +14,6 @@ import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { GraphFrame } from './graphFrame';
 import { IEditorData } from '../nodeLocationInfo';
-import { Observable } from 'babylonjs';
 
 require("./graphCanvas.scss");
 
@@ -186,10 +185,15 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             this._candidatePort = port;
         });
 
-        props.globalState.onFrameNodeMoveUpObserver.add((nodePort: NodePort) => {
-            const frame = this._frames.find(frame => frame.id == nodePort.frameId);
-            frame?.moveFrameNodeUp(nodePort);
+        props.globalState.onFramePortMoveUpObserver.add((nodePort: NodePort) => {
+            const frame = this._frames.find(frame => frame.id === nodePort.frameId);
+            frame?.moveFramePortUp(nodePort);
         });
+
+        props.globalState.onFramePortMoveDownObserver.add((nodePort: NodePort) => {
+            const frame = this._frames.find(frame => frame.id === nodePort.frameId);
+            frame?.moveFramePortDown(nodePort);
+        })
 
         props.globalState.onGridSizeChanged.add(() => {
             this.gridSize = DataStorage.ReadNumber("GridSize", 20);

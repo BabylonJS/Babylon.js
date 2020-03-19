@@ -14,7 +14,6 @@
 - Simplified code contributions by fully automating the dev setup with gitpod ([nisarhassan12](https://github.com/nisarhassan12))
 - Add a `CascadedShadowMap.IsSupported` method and log an error instead of throwing an exception when CSM is not supported ([Popov72](https://github.com/Popov72))
 
-- Can now rename NME frames inputs and outputs ([Kyle Belfort](https://github.com/belfortk)
 
 ### Engine
 
@@ -23,7 +22,8 @@
 
 ### NME
 
-- NME Frames are now resizable from the corners ([Kyle Belfort](https://github.com/belfortk)
+- Frames are now resizable from the corners ([Kyle Belfort](https://github.com/belfortk)
+- Can now rename and re-order frame inputs and outputs ([Kyle Belfort](https://github.com/belfortk)
 
 ### Inspector
 
