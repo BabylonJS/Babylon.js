@@ -72,11 +72,6 @@ export class NodePort {
         }
     }
 
-    private _onSelection(evt: PointerEvent) {
-        console.log('nodePort._onSelection()')
-        // this._globalState.onSelectionChangedObservable.notifyObservers(this);
-    }
-
     public constructor(portContainer: HTMLElement, public connectionPoint: NodeMaterialConnectionPoint, public node: GraphNode, globalState: GlobalState, isInput: boolean, frameId: Nullable<number>, framePortId: number | undefined) {
         this._element = portContainer.ownerDocument!.createElement("div");
         this._element.classList.add("port");
