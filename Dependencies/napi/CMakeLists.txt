@@ -91,7 +91,7 @@ target_include_directories(napi PUBLIC "include")
 
 if(NAPI_JAVASCRIPT_ENGINE STREQUAL "Chakra")
     target_link_libraries(napi PUBLIC "chakrart.lib")
-elseif(NAPI_JAVASCRIPT_ENGINE STREQUAL "V8")
+elseif(NAPI_JAVASCRIPT_ENGINE STREQUAL "V8" AND NOT ANDROID)
     target_link_libraries(napi PUBLIC v8)
 endif()
 

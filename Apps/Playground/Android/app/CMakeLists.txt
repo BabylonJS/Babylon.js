@@ -21,37 +21,26 @@ cmake_minimum_required(VERSION 3.13.2)
 project(BabylonNative)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 set(BABYLON_NATIVE_PLATFORM "Android")
-set(OPENGL_LIB GLESv3)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(ANDROID_STL "c++_shared")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/src/")
 
 set(BABYLON_NATIVE_TESTAPP_DIR "${CMAKE_CURRENT_LIST_DIR}/../..")
-add_subdirectory(${BABYLON_NATIVE_TESTAPP_DIR}/../../Dependencies/ ${BABYLON_NATIVE_TESTAPP_DIR}/../../build/Android_${CMAKE_ANDROID_ARCH_ABI}/Dependencies/)
-add_subdirectory(${BABYLON_NATIVE_TESTAPP_DIR}/../../Core/ ${BABYLON_NATIVE_TESTAPP_DIR}/../../build/Android_${CMAKE_ANDROID_ARCH_ABI}/Core/)
-add_subdirectory(${BABYLON_NATIVE_TESTAPP_DIR}/../../Plugins/ ${BABYLON_NATIVE_TESTAPP_DIR}/../../build/Android_${CMAKE_ANDROID_ARCH_ABI}/Plugins/)
+add_subdirectory(${BABYLON_NATIVE_TESTAPP_DIR}/../../ ${BABYLON_NATIVE_TESTAPP_DIR}/../../build/Android_${CMAKE_ANDROID_ARCH_ABI}/)
 
 add_library(BabylonNativeJNI SHARED
             src/main/cpp/BabylonNativeJNI.cpp
-            ${BABYLON_NATIVE_TESTAPP_DIR}/../../Dependencies/napi/source/js_native_api_v8.cc
-            ${BABYLON_NATIVE_TESTAPP_DIR}/../../Dependencies/napi/source/env_v8.cc
-            ${BABYLON_NATIVE_TESTAPP_DIR}/../../Dependencies/napi/source/env.cc
             ${BABYLON_NATIVE_TESTAPP_DIR}/Shared/InputManager.cpp)
-
-target_compile_definitions(BabylonNativeJNI PUBLIC NODE_ADDON_API_DISABLE_DEPRECATED)
 
 target_include_directories(BabylonNativeJNI
         PRIVATE
-        ${BABYLON_NATIVE_TESTAPP_DIR}/../../Dependencies/v8/include
-        ${BABYLON_NATIVE_TESTAPP_DIR}/../../Dependencies/napi/include
         ${BABYLON_NATIVE_TESTAPP_DIR}/Shared)
 
 add_definitions(-DANDROID_STL=c++_shared)
 
 target_link_libraries(BabylonNativeJNI
-        ${OPENGL_LIB}
+        GLESv3
         android
         EGL
         log
