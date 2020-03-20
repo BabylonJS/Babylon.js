@@ -199,16 +199,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             this._candidatePort = port;
         });
 
-        props.globalState.onFramePortMoveUpObserver.add((nodePort: NodePort) => {
-            const frame = this._frames.find(frame => frame.id === nodePort.frameId);
-            frame?.moveFramePortUp(nodePort);
-        });
-
-        props.globalState.onFramePortMoveDownObserver.add((nodePort: NodePort) => {
-            const frame = this._frames.find(frame => frame.id === nodePort.frameId);
-            frame?.moveFramePortDown(nodePort);
-        })
-
         props.globalState.onGridSizeChanged.add(() => {
             this.gridSize = DataStorage.ReadNumber("GridSize", 20);
         });

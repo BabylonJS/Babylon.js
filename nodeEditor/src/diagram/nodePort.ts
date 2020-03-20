@@ -3,21 +3,28 @@ import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/
 import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
 import { GlobalState } from '../globalState';
 import { Nullable } from 'babylonjs/types';
-import { Observer } from 'babylonjs/Misc/observable';
+import { Observer, Observable } from 'babylonjs/Misc/observable';
 import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { IDisplayManager } from './display/displayManager';
 import { GraphNode } from './graphNode';
+import { NodeLink } from './nodeLink';
+import { GraphFrame, FramePortPosition } from './graphFrame';
 
 export class NodePort {
+    private _onFramePortMoveUpObservable = new Observable<NodePort>();
+    private _onFramePortMoveDownObservable = new Observable<NodePort>();
+    private _onFramePortPositionChangedObservable = new Observable<FramePortPosition>();
     private _element: HTMLDivElement;
     private _img: HTMLImageElement;
     private _globalState: GlobalState;
     private _onCandidateLinkMovedObserver: Nullable<Observer<Nullable<Vector2>>>;
+    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | GraphFrame | NodePort>>>;  
     private _portLabel: Element;
     private _frameId: Nullable<number>
     private _isInput: boolean;
+    private _framePortPosition: FramePortPosition
     private _framePortId: Nullable<number>;
-
+    
     public delegatedPort: Nullable<NodePort> = null;
 
     public get element(): HTMLDivElement {
@@ -26,6 +33,18 @@ export class NodePort {
         }
 
         return this._element;
+    }
+
+    public get onFramePortMoveUpObservable() {
+        return this._onFramePortMoveUpObservable;
+    }
+
+    public get onFramePortMoveDownObservable() {
+        return this._onFramePortMoveDownObservable;
+    }
+
+    public get onFramePortPositionChangedObservable() {
+        return this._onFramePortPositionChangedObservable;
     }
 
     public get frameId() {
@@ -46,6 +65,15 @@ export class NodePort {
 
     public set portLabel(newLabel: string) {
         this._portLabel.innerHTML = newLabel;
+    }
+
+    public get framePortPosition() {
+        return this._framePortPosition;
+    }
+
+    public set framePortPosition(position: FramePortPosition) {
+        this._framePortPosition = position;
+        this.onFramePortPositionChangedObservable.notifyObservers(position);
     }
 
     public refresh() {
@@ -105,11 +133,23 @@ export class NodePort {
             this._globalState.onCandidatePortSelected.notifyObservers(this);
         });
 
+        this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add((selection) => {
+            if (selection === this) {
+                this._img.classList.add("selected");
+            } else {
+                this._img.classList.remove("selected");
+            }
+        });
+
         this.refresh();
     }
 
     public dispose() {
         this._globalState.onCandidateLinkMoved.remove(this._onCandidateLinkMovedObserver);
+
+        if (this._onSelectionChangedObserver) {
+            this._globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
+        }
     }
 
     public static CreatePortElement(connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement, 
