@@ -37,8 +37,6 @@ export class GlobalState {
     onSelectionBoxMoved = new Observable<ClientRect | DOMRect>();
     onFrameCreated = new Observable<GraphFrame>();
     onCandidatePortSelected = new Observable<Nullable<NodePort>>();
-    onFramePortMoveUpObserver = new Observable<NodePort>();
-    onFramePortMoveDownObserver = new Observable<NodePort>();
     onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
     onGridSizeChanged = new Observable<void>();
     previewMeshType: PreviewMeshType;
