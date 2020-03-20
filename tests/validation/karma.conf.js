@@ -16,6 +16,7 @@ module.exports = function (config) {
         frameworks: ['mocha', 'chai', 'sinon'],
 
         files: [
+            'https://cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.5/seedrandom.min.js',
             '!./**/*.d.ts',
             './dist/preview release/earcut.min.js',
             './Tools/DevLoader/BabylonLoader.js',
