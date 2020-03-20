@@ -21,7 +21,9 @@
 
     void sheenBlock(
         const in vec4 vSheenColor,
+    #ifdef SHEEN_ROUGHNESS
         const in float vSheenRoughness,
+    #endif
         const in float roughness,
     #ifdef SHEEN_TEXTURE
         const in vec2 vSheenUV,
