@@ -91,5 +91,6 @@
 - Fix bug in PBR when translucency is enabled and an irradiance texture is provided ([Popov72](https://github.com/Popov72)
 - Fix bug in PBR with translucency when irradiance texture is 2D ([Popov72](https://github.com/Popov72)
 - Fix bug in PBR when specific combinations of parameters are used ([Popov72](https://github.com/Popov72)
+- Fix `TexturePacker` cross-origin image requests, fix falsy default options ([ludevik](https://github.com/ludevik))
 
 ## Breaking changes
