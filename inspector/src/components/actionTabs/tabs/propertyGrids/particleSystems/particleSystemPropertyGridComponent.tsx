@@ -40,6 +40,7 @@ import { GPUParticleSystem } from 'babylonjs/Particles/gpuParticleSystem';
 import { Tools } from 'babylonjs/Misc/tools';
 import { FileButtonLineComponent } from '../../../lines/fileButtonLineComponent';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
+import { ParticleHelper } from 'babylonjs/Particles/particleHelper';
 
 interface IParticleSystemPropertyGridComponentProps {
     globalState: GlobalState;
@@ -168,7 +169,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
         Tools.ReadFile(file, (data) => {
             let decoder = new TextDecoder("utf-8");
             let jsonObject = JSON.parse(decoder.decode(data));
-            let isGpu = system instanceof GPUParticleSystem
+            let isGpu = system instanceof GPUParticleSystem;
             
             system.dispose();            
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
@@ -176,6 +177,27 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
             let newSystem = isGpu ? GPUParticleSystem.Parse(jsonObject, scene, "") : ParticleSystem.Parse(jsonObject, scene, "");
             this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
         }, undefined, true);
+    }
+
+    loadFromSnippet() {
+        const system = this.props.system;
+        const scene = system.getScene();
+        let isGpu = system instanceof GPUParticleSystem;
+
+        let snippedID = window.prompt("Please enter the snippet ID to use");
+
+        if (!snippedID) {
+            return;
+        }
+        
+        system.dispose();            
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+
+        ParticleHelper.CreateFromSnippetAsync(snippedID, scene, isGpu).then((newSystem) => {
+            this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
+        }).catch(err => {
+            alert("Unable to load your particle system: " + err);
+        });
     }
 
     saveToSnippet() {
@@ -188,7 +210,15 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                 if (xmlHttp.status == 200) {
                     var snippet = JSON.parse(xmlHttp.responseText);
                     system.snippetId = snippet.id;
+                    if (snippet.version && snippet.version != "0") {
+                        system.snippetId += "#" + snippet.version;
+                    }
                     this.forceUpdate();
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(system.snippetId);
+                    }
+                    alert("Particle system saved with ID: " + system.snippetId + " (please note that the id was also saved to your clipboard)");
+
                 }
                 else {
                     alert("Unable to save your particle system");
@@ -279,6 +309,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         system.snippetId &&
                         <TextLineComponent label="Snippet ID" value={system.snippetId} />
                     }
+                    <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
                     <ButtonLineComponent label="Save to snippet server" onClick={() => this.saveToSnippet()} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="EMITTER">
