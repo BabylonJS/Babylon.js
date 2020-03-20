@@ -12,8 +12,8 @@
 
     void anisotropicBlock(
         const in vec3 vAnisotropy,
-        const in vec2 vAnisotropyInfos,
     #ifdef ANISOTROPIC_TEXTURE
+        const in vec2 vAnisotropyInfos,
         const in vec2 vAnisotropyUV,
         const in vec2 uvOffset,
         const in sampler2D anisotropySampler,
