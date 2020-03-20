@@ -107,7 +107,7 @@ export class FactorGradientStepGridComponent extends React.Component<IFactorGrad
                         onPointerUp={evt => this.onPointerUp()}
                         onChange={evt => this.updateGradient(parseFloat(evt.target.value))} />
                 </div>
-                <div className="gradient-delete" onClick={() => this.props.onDelete()}>
+                <div className="gradient-delete hoverIcon" onClick={() => this.props.onDelete()}>
                     <FontAwesomeIcon icon={faTrash} />
                 </div>
             </div>

@@ -750,7 +750,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * @returns the current particle system
      */
     public removeStartSizeGradient(gradient: number): IParticleSystem {
-        this._removeFactorGradient(this._emitRateGradients, gradient);
+        this._removeFactorGradient(this._startSizeGradients, gradient);
 
         return this;
     }
