@@ -244,7 +244,9 @@ void main(void) {
 
         sheenBlock(
             vSheenColor,
+        #ifdef SHEEN_ROUGHNESS
             vSheenRoughness,
+        #endif
             roughness,
         #ifdef SHEEN_TEXTURE
             vSheenUV,
