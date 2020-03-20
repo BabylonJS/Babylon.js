@@ -6,7 +6,15 @@ import { IParticleSystem } from './IParticleSystem';
  */
 export class ParticleSystemDebugger implements IDisposable {
 
-    public constructor(public system: IParticleSystem) {
+    /**
+     * Creates a new particle system debugger
+     * @param system defines the particle system to debug
+     */
+    public constructor(
+        /**
+         * Defines the particle system to debug
+         */
+        public system: IParticleSystem) {
 
     }
 

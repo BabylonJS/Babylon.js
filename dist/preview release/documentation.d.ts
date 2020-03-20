@@ -63900,6 +63900,28 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * Represents a set of particle systems working together to create a specific effect
+     */
+    export class ParticleSystemDebugger implements IDisposable {
+        /**
+         * Defines the particle system to debug
+         */
+        system: IParticleSystem;
+        /**
+         * Creates a new particle system debugger
+         * @param system defines the particle system to debug
+         */
+        constructor(
+        /**
+         * Defines the particle system to debug
+         */
+        system: IParticleSystem);
+        /** Clear all the resources */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
         interface Scene {
             /** @hidden (Backing field) */
             _physicsEngine: Nullable<IPhysicsEngine>;
