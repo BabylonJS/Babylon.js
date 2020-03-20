@@ -221,32 +221,6 @@ body {
     background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==");
 }
 
-.pbt-fade {
-    opacity: 0.5
-}
-
-.pbt-darken {
-    opacity: 1
-}
-
-.pbt-back-highlight {
-    background-color: #CDC8F9;
-}
-
-.pbt-margin-decor-on {
-    background-color: #364249;
-    width: 5px;
-}
-
-.pbt-back-highlight-dark {
-    background-color: #364249;
-}
-
-.pbt-margin-decor-on-dark {
-    background-color: #CDC8F9;
-    width: 5px;
-}
-
 #exampleList {
     z-index: 10;
     display: none;
