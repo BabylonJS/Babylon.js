@@ -1,6 +1,7 @@
 # 4.2.0
 
 ## Major updates
+
 - Added particle editor to the Inspector ([Deltakosh](https://github.com/deltakosh)
 
 ## Updates
@@ -13,7 +14,6 @@
 
 - Simplified code contributions by fully automating the dev setup with gitpod ([nisarhassan12](https://github.com/nisarhassan12))
 - Add a `CascadedShadowMap.IsSupported` method and log an error instead of throwing an exception when CSM is not supported ([Popov72](https://github.com/Popov72))
-
 
 ### Engine
 
@@ -46,6 +46,7 @@
 - Added support for glTF mesh instancing extension ([#7521](https://github.com/BabylonJS/Babylon.js/issues/7521)) ([drigax](https://github.com/Drigax))
 
 ### Navigation
+
 - export/load prebuilt binary navigation mesh ([cedricguillemet](https://github.com/cedricguillemet))
 
 ### Materials
@@ -61,11 +62,14 @@
 
 - Added optional ray and mesh selection predicates to `WebXRControllerPointerSelection` ([Exolun](https://github.com/Exolun))
 - Implemented the new WebXR HitTest API ([#7364](https://github.com/BabylonJS/Babylon.js/issues/7364)) ([RaananW](https://github.com/RaananW))
+- Playground doesn't update FPS when in XR ([#7875](https://github.com/BabylonJS/Babylon.js/issues/7875)) ([RaananW](https://github.com/RaananW))
 
 ### Collisions
+
 - Added an option to optimize collision detection performance ([jsdream](https://github.com/jsdream)) - [PR](https://github.com/BabylonJS/Babylon.js/pull/7810)
 
 ### Animation
+
 - Added support for Additive Animation Blending. Existing animations can be converted to additive using the new MakeAnimationAdditive method for Skeletons, AnimationGroups and Animations. Animations can be played additively using the new isAdditive input parameter to the begin animation methods. ([c-morten](https://github.com/c-morten))
 
 ## Bugs
