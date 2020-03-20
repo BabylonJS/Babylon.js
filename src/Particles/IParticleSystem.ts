@@ -247,6 +247,9 @@ export interface IParticleSystem {
      */
     isLocal: boolean;
 
+    /** Snippet ID if the particle system was created from the snippet server */
+    snippetId: string;
+
     /**
      * Gets the maximum number of particles active at the same time.
      * @returns The max number of active particles.

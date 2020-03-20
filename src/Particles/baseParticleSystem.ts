@@ -63,6 +63,11 @@ export class BaseParticleSystem {
     public name: string;
 
     /**
+     * Snippet ID if the particle system was created from the snippet server
+     */
+    public snippetId: string;
+
+    /**
      * The rendering group used by the Particle system to chose when to render.
      */
     public renderingGroupId = 0;

@@ -40,6 +40,7 @@ import { GPUParticleSystem } from 'babylonjs/Particles/gpuParticleSystem';
 import { Tools } from 'babylonjs/Misc/tools';
 import { FileButtonLineComponent } from '../../../lines/fileButtonLineComponent';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
+import { ParticleHelper } from 'babylonjs/Particles/particleHelper';
 
 interface IParticleSystemPropertyGridComponentProps {
     globalState: GlobalState;
@@ -50,6 +51,8 @@ interface IParticleSystemPropertyGridComponentProps {
 }
 
 export class ParticleSystemPropertyGridComponent extends React.Component<IParticleSystemPropertyGridComponentProps> {
+    private _snippetUrl = "https://snippet.babylonjs.com";
+
     constructor(props: IParticleSystemPropertyGridComponentProps) {
         super(props);
     }
@@ -166,7 +169,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
         Tools.ReadFile(file, (data) => {
             let decoder = new TextDecoder("utf-8");
             let jsonObject = JSON.parse(decoder.decode(data));
-            let isGpu = system instanceof GPUParticleSystem
+            let isGpu = system instanceof GPUParticleSystem;
             
             system.dispose();            
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
@@ -174,6 +177,68 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
             let newSystem = isGpu ? GPUParticleSystem.Parse(jsonObject, scene, "") : ParticleSystem.Parse(jsonObject, scene, "");
             this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
         }, undefined, true);
+    }
+
+    loadFromSnippet() {
+        const system = this.props.system;
+        const scene = system.getScene();
+        let isGpu = system instanceof GPUParticleSystem;
+
+        let snippedID = window.prompt("Please enter the snippet ID to use");
+
+        if (!snippedID) {
+            return;
+        }
+        
+        system.dispose();            
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+
+        ParticleHelper.CreateFromSnippetAsync(snippedID, scene, isGpu).then((newSystem) => {
+            this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
+        }).catch(err => {
+            alert("Unable to load your particle system: " + err);
+        });
+    }
+
+    saveToSnippet() {
+        const system = this.props.system;
+        let content = JSON.stringify(system.serialize());
+
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = () => {
+            if (xmlHttp.readyState == 4) {
+                if (xmlHttp.status == 200) {
+                    var snippet = JSON.parse(xmlHttp.responseText);
+                    system.snippetId = snippet.id;
+                    if (snippet.version && snippet.version != "0") {
+                        system.snippetId += "#" + snippet.version;
+                    }
+                    this.forceUpdate();
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(system.snippetId);
+                    }
+                    alert("Particle system saved with ID: " + system.snippetId + " (please note that the id was also saved to your clipboard)");
+
+                }
+                else {
+                    alert("Unable to save your particle system");
+                }
+            }
+        }
+
+        xmlHttp.open("POST", this._snippetUrl + (system.snippetId ? "/" + system.snippetId : ""), true);
+        xmlHttp.setRequestHeader("Content-Type", "application/json");
+
+        var dataToSend = {
+            payload : JSON.stringify({
+                particleSystem: content
+            }),
+            name: "",
+            description: "",
+            tags: ""
+        };
+
+        xmlHttp.send(JSON.stringify(dataToSend));
     }
 
     render() {
@@ -237,9 +302,15 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         system.dispose();
                     }} />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="SERIALIZATION">
+                <LineContainerComponent globalState={this.props.globalState} title="FILE">
                 <FileButtonLineComponent label="Load" onClick={(file) => this.loadFromFile(file)} accept=".json" />
                     <ButtonLineComponent label="Save" onClick={() => this.saveToFile()} />
+                    {
+                        system.snippetId &&
+                        <TextLineComponent label="Snippet ID" value={system.snippetId} />
+                    }
+                    <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
+                    <ButtonLineComponent label="Save to snippet server" onClick={() => this.saveToSnippet()} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="EMITTER">
                 <OptionsLineComponent 
@@ -491,11 +562,16 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         label="Color gradients"
                         docLink="https://doc.babylonjs.com/babylon101/particles#particle-colors"
                         onCreateRequired={() => {
-                            system.addColorGradient(0, new Color4(0, 0, 0, 1), new Color4(1, 1, 1, 1));
+                            system.addColorGradient(0, new Color4(0, 0, 0, 1), new Color4(0, 0, 0, 1));
+                            system.addColorGradient(1, new Color4(1, 1, 1, 1), new Color4(1, 1, 1, 1));
                             this.props.globalState.onCodeChangedObservable.notifyObservers({
                                 object: system,
-                                code: `TARGET.addColorGradient(0, new BABYLON.Color4(0, 0, 0, 1), new BABYLON.Color4(1, 1, 1, 1));`
-                            });                                 
+                                code: `TARGET.addColorGradient(0, new BABYLON.Color4(0, 0, 0, 1), new BABYLON.Color4(0, 0, 0, 1));`
+                            });     
+                            this.props.globalState.onCodeChangedObservable.notifyObservers({
+                                object: system,
+                                code: `TARGET.addColorGradient(1, new BABYLON.Color4(1, 1, 1, 1), new BABYLON.Color4(1, 1, 1, 1));`
+                            });                            
                         }}
                         host={system}    
                         codeRecorderPropertyName="getColorGradients()"                              
@@ -510,10 +586,15 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                                 docLink="https://doc.babylonjs.com/babylon101/particles#ramp-gradients"
                                 onCreateRequired={() => {
                                     system.addRampGradient(0, Color3.White());
+                                    system.addRampGradient(1, Color3.Black());
                                     this.props.globalState.onCodeChangedObservable.notifyObservers({
                                         object: system,
                                         code: `TARGET.addRampGradient(0, BABYLON.Color3.White());`
-                                    });                               
+                                    });          
+                                    this.props.globalState.onCodeChangedObservable.notifyObservers({
+                                        object: system,
+                                        code: `TARGET.addRampGradient(1, BABYLON.Color3.Black());`
+                                    });                          
                                 }}
                                 mode={GradientGridMode.Color3}      
                                 host={system}    

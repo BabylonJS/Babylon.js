@@ -11056,6 +11056,10 @@ declare module BABYLON {
          */
         name: string;
         /**
+         * Snippet ID if the particle system was created from the snippet server
+         */
+        snippetId: string;
+        /**
          * The rendering group used by the Particle system to chose when to render.
          */
         renderingGroupId: number;
@@ -13200,6 +13204,8 @@ declare module BABYLON {
          * Specifies if the particles are updated in emitter local space or world space
          */
         isLocal: boolean;
+        /** Snippet ID if the particle system was created from the snippet server */
+        snippetId: string;
         /**
          * Gets the maximum number of particles active at the same time.
          * @returns The max number of active particles.
@@ -63407,6 +63413,8 @@ declare module BABYLON {
          * Gets or sets base Assets URL
          */
         static BaseAssetsUrl: string;
+        /** Define the Url to load snippets */
+        static SnippetUrl: string;
         /**
          * Create a default particle system that you can tweak
          * @param emitter defines the emitter to use
@@ -63431,6 +63439,15 @@ declare module BABYLON {
          * @returns the created particle system set
          */
         static ExportSet(systems: IParticleSystem[]): ParticleSystemSet;
+        /**
+         * Creates a node material from a snippet saved by the node material editor
+         * @param snippetId defines the snippet to load
+         * @param scene defines the hosting scene
+         * @param gpu If the system will use gpu
+         * @param rootUrl defines the root URL to use to load textures and relative dependencies
+         * @returns a promise that will resolve to the new node material
+         */
+        static CreateFromSnippetAsync(snippetId: string, scene: Scene, gpu?: boolean, rootUrl?: string): Promise<IParticleSystem>;
     }
 }
 declare module BABYLON {
