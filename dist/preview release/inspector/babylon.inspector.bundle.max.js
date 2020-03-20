@@ -47611,6 +47611,7 @@ var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
             if (xmlHttp.readyState == 4) {
                 if (xmlHttp.status == 200) {
                     var snippet = JSON.parse(xmlHttp.responseText);
+                    var oldId = system.snippetId;
                     system.snippetId = snippet.id;
                     if (snippet.version && snippet.version != "0") {
                         system.snippetId += "#" + snippet.version;
@@ -47618,6 +47619,13 @@ var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
                     _this.forceUpdate();
                     if (navigator.clipboard) {
                         navigator.clipboard.writeText(system.snippetId);
+                    }
+                    var windowAsAny = window;
+                    if (windowAsAny.Playground) {
+                        windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
+                            regex: new RegExp(oldId, "g"),
+                            replace: system.snippetId
+                        });
                     }
                     alert("Particle system saved with ID: " + system.snippetId + " (please note that the id was also saved to your clipboard)");
                 }
