@@ -52,7 +52,6 @@ export class GraphFrame {
     private _mouseStartPointY: Nullable<number> = null;
     private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | GraphFrame | NodePort>>>;
     private _isCollapsed = false;
-    private _ports: NodePort[] = []; // Ports on Outside of Frame
     private _frameInPorts: NodePort[] = [];
     private _frameOutPorts: NodePort[] = [];
     private _controlledPorts: NodePort[] = []; // Ports on Nodes that are shown on outside of frame
@@ -80,7 +79,6 @@ export class GraphFrame {
 
     private _createInputPort(port: NodePort, node: GraphNode) {
         let localPort = NodePort.CreatePortElement(port.connectionPoint, node, this._inputPortContainer, null, this._ownerCanvas.globalState, true, this.id, GraphFrame._FramePortCounter++)
-        this._ports.push(localPort);
         this._frameInPorts.push(localPort);
 
         port.delegatedPort = localPort;
@@ -125,7 +123,6 @@ export class GraphFrame {
                                 if (!portAdded) {
                                     portAdded = true;
                                     localPort = NodePort.CreatePortElement(port.connectionPoint, link.nodeB!, this._outputPortContainer, null, this._ownerCanvas.globalState, false, this.id, GraphFrame._FramePortCounter++);
-                                    this._ports.push(localPort);
                                     this._frameOutPorts.push(localPort);
 
                                     localPort.onFramePortMoveUpObservable.add((nodePort: NodePort) => {
@@ -140,7 +137,7 @@ export class GraphFrame {
                                         }
                                     })
                                 } else {
-                                    localPort = this._ports.filter(p => p.connectionPoint === port.connectionPoint)[0];
+                                    localPort = this.ports.filter(p => p.connectionPoint === port.connectionPoint)[0];
                                 }
 
                                 port.delegatedPort = localPort;
@@ -150,7 +147,6 @@ export class GraphFrame {
                         }
                     } else {
                         let localPort = NodePort.CreatePortElement(port.connectionPoint, node, this._outputPortContainer, null, this._ownerCanvas.globalState, false, this.id, GraphFrame._FramePortCounter++)
-                        this._ports.push(localPort);
                         this._frameOutPorts.push(localPort);
                         port.delegatedPort = localPort;
                         this._controlledPorts.push(port);
@@ -210,7 +206,11 @@ export class GraphFrame {
             this._outputPortContainer.innerHTML = "";
             this._inputPortContainer.innerHTML = "";
 
-            this._ports.forEach(p => {
+            this._frameInPorts.forEach(p => {
+                p.dispose();
+            });
+
+            this._frameOutPorts.forEach(p => {
                 p.dispose();
             });
 
@@ -219,7 +219,6 @@ export class GraphFrame {
                 port.refresh();
             })
 
-            this._ports = [];
             this._frameInPorts = [];
             this._frameOutPorts = [];
             this._controlledPorts = [];
@@ -251,7 +250,7 @@ export class GraphFrame {
     }
 
     public get ports(){
-        return this._ports;
+        return this._frameInPorts.concat(this._frameOutPorts);
     }
 
     public get name() {
