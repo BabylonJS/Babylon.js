@@ -680,7 +680,7 @@
             "title": "PBR shader code coverage",
             "playgroundId": "#QI7TL3#3",
             "referenceImage": "pbr_codecoverage.png"
-        }
+        },
         {
             "title": "Texture cache",
             "playgroundId": "#20OAV9#237",
