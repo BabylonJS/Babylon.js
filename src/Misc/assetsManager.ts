@@ -477,11 +477,6 @@ export class TextureAssetTask extends AbstractAssetTask implements ITextureAsset
     public texture: Texture;
 
     /**
-     * Defines if texture must be inverted on Y axis (default is false)
-     */
-    public invertY: boolean = false; // note that Texture defaults to true when using its constructor
-
-    /**
      * Callback called when the task is successful
      */
     public onSuccess: (task: TextureAssetTask) => void;
@@ -514,14 +509,12 @@ export class TextureAssetTask extends AbstractAssetTask implements ITextureAsset
         /**
          * Defines if texture must be inverted on Y axis (default is false)
          */
-        invertY: boolean = false,
+        public invertY: boolean = false, // note that Texture defaults to true when using its constructor
         /**
          * Defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
          */
         public samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
         super(name);
-
-        this.invertY = invertY;
     }
 
     /**
