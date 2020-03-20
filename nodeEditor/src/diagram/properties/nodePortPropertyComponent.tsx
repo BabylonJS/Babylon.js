@@ -6,7 +6,8 @@ import { TextInputLineComponent } from '../../sharedComponents/textInputLineComp
 import { ButtonLineComponent } from '../../sharedComponents/buttonLineComponent';
 import { NodePort } from '../nodePort';
 import { FramePortPosition } from '../graphFrame';
-import { Nullable, Observer } from 'babylonjs';
+import { Nullable } from 'babylonjs/types';
+import { Observer } from 'babylonjs/Misc/observable';
 
 export interface INodePortPropertyTabComponentProps {
     globalState: GlobalState
