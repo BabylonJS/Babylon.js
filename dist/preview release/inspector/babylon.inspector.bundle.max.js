@@ -47479,6 +47479,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ParticleSystemPropertyGridComponent, _super);
     function ParticleSystemPropertyGridComponent(props) {
@@ -47570,6 +47571,23 @@ var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
             _this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
         }, undefined, true);
     };
+    ParticleSystemPropertyGridComponent.prototype.loadFromSnippet = function () {
+        var _this = this;
+        var system = this.props.system;
+        var scene = system.getScene();
+        var isGpu = system instanceof babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["GPUParticleSystem"];
+        var snippedID = window.prompt("Please enter the snippet ID to use");
+        if (!snippedID) {
+            return;
+        }
+        system.dispose();
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+        babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["ParticleHelper"].CreateFromSnippetAsync(snippedID, scene, isGpu).then(function (newSystem) {
+            _this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
+        }).catch(function (err) {
+            alert("Unable to load your particle system: " + err);
+        });
+    };
     ParticleSystemPropertyGridComponent.prototype.saveToSnippet = function () {
         var _this = this;
         var system = this.props.system;
@@ -47580,7 +47598,14 @@ var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
                 if (xmlHttp.status == 200) {
                     var snippet = JSON.parse(xmlHttp.responseText);
                     system.snippetId = snippet.id;
+                    if (snippet.version && snippet.version != "0") {
+                        system.snippetId += "#" + snippet.version;
+                    }
                     _this.forceUpdate();
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(system.snippetId);
+                    }
+                    alert("Particle system saved with ID: " + system.snippetId + " (please note that the id was also saved to your clipboard)");
                 }
                 else {
                     alert("Unable to save your particle system");
@@ -47652,6 +47677,7 @@ var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__["ButtonLineComponent"], { label: "Save", onClick: function () { return _this.saveToFile(); } }),
                 system.snippetId &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Snippet ID", value: system.snippetId }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__["ButtonLineComponent"], { label: "Load from snippet server", onClick: function () { return _this.loadFromSnippet(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__["ButtonLineComponent"], { label: "Save to snippet server", onClick: function () { return _this.saveToSnippet(); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "EMITTER" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__["OptionsLineComponent"], { label: "Emitter", options: emitterOptions, target: system, propertyName: "emitter", noDirectUpdate: true, onSelect: function (value) {
