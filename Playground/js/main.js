@@ -164,7 +164,12 @@ compileAndRun = function (parent, fpsLabel) {
                     sceneToRender.render();
                 }
 
-                fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
+                // Update FPS if camera is not a webxr camera
+                if(!(sceneToRender.activeCamera && 
+                    sceneToRender.activeCamera.getClassName && 
+                    sceneToRender.activeCamera.getClassName() === 'WebXRCamera')) {
+                    fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
+                }
             }.bind(this));
 
             if (checkSceneCount && engine.scenes.length === 0) {
