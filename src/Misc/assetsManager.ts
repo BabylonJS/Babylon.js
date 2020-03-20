@@ -509,7 +509,7 @@ export class TextureAssetTask extends AbstractAssetTask implements ITextureAsset
         /**
          * Defines if texture must be inverted on Y axis (default is false)
          */
-        public invertY?: boolean,
+        public invertY: boolean = false, // note that Texture defaults to true when using its constructor
         /**
          * Defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
          */
