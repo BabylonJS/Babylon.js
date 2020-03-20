@@ -57445,6 +57445,10 @@ declare module BABYLON {
         /** Get the inspector from bundle or global */
         private _getGlobalNodeMaterialEditor;
         /**
+         * Snippet ID if the material was created from the snippet server
+         */
+        snippetId: string;
+        /**
          * Gets or sets data used by visual editor
          * @see https://nme.babylonjs.com
          */
@@ -57703,9 +57707,10 @@ declare module BABYLON {
          * @param snippetId defines the snippet to load
          * @param scene defines the hosting scene
          * @param rootUrl defines the root URL to use to load textures and relative dependencies
+         * @param nodeMaterial defines a node material to update (instead of creating a new one)
          * @returns a promise that will resolve to the new node material
          */
-        static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl?: string): Promise<NodeMaterial>;
+        static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl?: string, nodeMaterial?: NodeMaterial): Promise<NodeMaterial>;
         /**
          * Creates a new node material set to default basic configuration
          * @param name defines the name of the material
@@ -67984,9 +67989,9 @@ declare module BABYLON {
          */
         noMipmap?: boolean | undefined;
         /**
-         * Defines if texture must be inverted on Y axis (default is false)
+         * Defines if texture must be inverted on Y axis (default is true)
          */
-        invertY?: boolean | undefined;
+        invertY: boolean;
         /**
          * Defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
          */
@@ -68008,7 +68013,7 @@ declare module BABYLON {
          * @param name defines the name of the task
          * @param url defines the location of the file to load
          * @param noMipmap defines if mipmap should not be generated (default is false)
-         * @param invertY defines if texture must be inverted on Y axis (default is false)
+         * @param invertY defines if texture must be inverted on Y axis (default is true)
          * @param samplingMode defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
          */
         constructor(
@@ -68025,9 +68030,9 @@ declare module BABYLON {
          */
         noMipmap?: boolean | undefined, 
         /**
-         * Defines if texture must be inverted on Y axis (default is false)
+         * Defines if texture must be inverted on Y axis (default is true)
          */
-        invertY?: boolean | undefined, 
+        invertY?: boolean, 
         /**
          * Defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
          */

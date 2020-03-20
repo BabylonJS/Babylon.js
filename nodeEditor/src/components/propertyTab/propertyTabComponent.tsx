@@ -27,6 +27,7 @@ import { Vector3LineComponent } from '../../sharedComponents/vector3LineComponen
 import { Vector4LineComponent } from '../../sharedComponents/vector4LineComponent';
 import { Observer } from 'babylonjs/Misc/observable';
 import { NodePort } from '../../diagram/nodePort';
+import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
@@ -154,6 +155,80 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         });
     }
 
+    saveToSnippetServer() {
+        const material = this.props.globalState.nodeMaterial;
+        const xmlHttp = new XMLHttpRequest();
+        
+        let json = SerializationTools.Serialize(material, this.props.globalState);
+
+        xmlHttp.onreadystatechange = () => {
+            if (xmlHttp.readyState == 4) {
+                if (xmlHttp.status == 200) {
+                    var snippet = JSON.parse(xmlHttp.responseText);
+                    const oldId = material.snippetId;
+                    material.snippetId = snippet.id;
+                    if (snippet.version && snippet.version != "0") {
+                        material.snippetId += "#" + snippet.version;
+                    }
+
+                    this.forceUpdate();
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(material.snippetId);
+                    }
+
+                    let windowAsAny = window as any;
+
+                    if (windowAsAny.Playground && oldId) {
+                        windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
+                            regex: new RegExp(oldId, "g"),
+                            replace: material.snippetId
+                        });
+                    }
+
+                    alert("NodeMaterial saved with ID: " + material.snippetId + " (please note that the id was also saved to your clipboard)");
+                               
+                }
+                else {
+                    alert(`Unable to save your node material. It may be too large (${(dataToSend.payload.length / 1024).toFixed(2)} KB) because of embedded textures. Please reduce texture sizes or point to a specific url instead of embedding them and try again.`);
+                }
+            }
+        }
+
+        xmlHttp.open("POST", NodeMaterial.SnippetUrl + (material.snippetId ? "/" + material.snippetId : ""), true);
+        xmlHttp.setRequestHeader("Content-Type", "application/json");
+
+        var dataToSend = {
+            payload : JSON.stringify({
+                nodeMaterial: json
+            }),
+            name: "",
+            description: "",
+            tags: ""
+        };
+
+        xmlHttp.send(JSON.stringify(dataToSend));
+    }
+
+    loadFromSnippet() {
+        const material = this.props.globalState.nodeMaterial;
+        const scene = material.getScene();
+
+        let snippedID = window.prompt("Please enter the snippet ID to use");
+
+        if (!snippedID) {
+            return;
+        }
+        
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+
+        NodeMaterial.ParseFromSnippetAsync(snippedID, scene, "", material).then(() => {
+            material.build();
+            this.props.globalState.onResetRequiredObservable.notifyObservers();
+        }).catch(err => {
+            alert("Unable to load your node material: " + err);
+        });
+    }    
+
     render() {
         if (this.state.currentNode) {
             return (
@@ -237,19 +312,33 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <ButtonLineComponent label="Save" onClick={() => {
                             this.save();
                         }} />
-                        {
-                            this.props.globalState.customSave && 
-                            <ButtonLineComponent label={this.props.globalState.customSave!.label} onClick={() => {
-                                this.customSave();
-                            }} />
-                        }
                         <ButtonLineComponent label="Generate code" onClick={() => {
                             StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeMaterial!.generateCode(), "code.txt");
                         }} />
                         <ButtonLineComponent label="Export shaders" onClick={() => {
                             StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeMaterial!.compiledShaders, "shaders.txt");
                         }} />
-                    </LineContainerComponent>                    
+                        {
+                            this.props.globalState.customSave && 
+                            <ButtonLineComponent label={this.props.globalState.customSave!.label} onClick={() => {
+                                this.customSave();
+                            }} />
+                        }                        
+
+                    </LineContainerComponent>                            
+                    {
+                        !this.props.globalState.customSave &&                           
+                        <LineContainerComponent title="SNIPPET"> 
+                            {
+                                this.props.globalState.nodeMaterial!.snippetId &&
+                                <TextLineComponent label="Snippet ID" value={this.props.globalState.nodeMaterial!.snippetId} />
+                            }                                
+                            <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
+                            <ButtonLineComponent label="Save to snippet server" onClick={() => {
+                                this.saveToSnippetServer();
+                            }} />
+                        </LineContainerComponent>  
+                    }                
                     <LineContainerComponent title="INPUTS">   
                     {
                         this.props.globalState.nodeMaterial.getInputBlocks().map(ib => {
