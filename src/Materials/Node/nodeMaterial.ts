@@ -143,6 +143,11 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Snippet ID if the material was created from the snippet server
+     */
+    public snippetId: string;
+
+    /**
      * Gets or sets data used by visual editor
      * @see https://nme.babylonjs.com
      */
@@ -1339,7 +1344,7 @@ export class NodeMaterial extends PushMaterial {
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a promise that will resolve to the new node material
      */
-    public static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = ""): Promise<NodeMaterial> {
+    public static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = "", nodeMaterial?: NodeMaterial): Promise<NodeMaterial> {
         return new Promise((resolve, reject) => {
             var request = new WebRequest();
             request.addEventListener("readystatechange", () => {
@@ -1347,9 +1352,14 @@ export class NodeMaterial extends PushMaterial {
                     if (request.status == 200) {
                         var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
                         let serializationObject = JSON.parse(snippet.nodeMaterial);
-                        let nodeMaterial = SerializationHelper.Parse(() => new NodeMaterial(snippetId, scene), serializationObject, scene, rootUrl);
+
+                        if (!nodeMaterial) {
+                            nodeMaterial = SerializationHelper.Parse(() => new NodeMaterial(snippetId, scene), serializationObject, scene, rootUrl);
+                        }
 
                         nodeMaterial.loadFromSerialization(serializationObject);
+                        nodeMaterial.snippetId = snippetId;
+
                         try {
                             nodeMaterial.build(true);
                             resolve(nodeMaterial);
