@@ -491,8 +491,13 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         lockObject={this.props.lockObject}/>
                 </LineContainerComponent>                  
                 <LineContainerComponent globalState={this.props.globalState} title="SIZE">
-                    <FloatLineComponent lockObject={this.props.lockObject} label="Min size" target={system} propertyName="minSize" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent lockObject={this.props.lockObject} label="Max size" target={system} propertyName="maxSize" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    {
+                        (!system.getSizeGradients() || system.getSizeGradients()?.length === 0)&& 
+                        <>
+                            <FloatLineComponent lockObject={this.props.lockObject} label="Min size" target={system} propertyName="minSize" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <FloatLineComponent lockObject={this.props.lockObject} label="Max size" target={system} propertyName="maxSize" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        </>
+                    }
                     <FloatLineComponent lockObject={this.props.lockObject} label="Min scale X" target={system} propertyName="minScaleX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Max scale X" target={system} propertyName="maxScaleX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Min scale Y" target={system} propertyName="minScaleY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -552,12 +557,17 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     }                    
                 </LineContainerComponent>    
                 <LineContainerComponent globalState={this.props.globalState} title="COLORS">
-                    <Color4LineComponent label="Color 1" target={system} propertyName="color1" 
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <Color4LineComponent label="Color 2" target={system} propertyName="color2" 
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <Color4LineComponent label="Color dead" target={system} propertyName="colorDead" 
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />  
+                    {
+                        (!system.getColorGradients() || system.getColorGradients()?.length === 0) &&
+                        <>
+                            <Color4LineComponent label="Color 1" target={system} propertyName="color1" 
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <Color4LineComponent label="Color 2" target={system} propertyName="color2" 
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <Color4LineComponent label="Color dead" target={system} propertyName="colorDead" 
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable} />  
+                        </>
+                    }
                     <ValueGradientGridComponent globalState={this.props.globalState} gradients={system.getColorGradients()!} 
                         label="Color gradients"
                         docLink="https://doc.babylonjs.com/babylon101/particles#particle-colors"
