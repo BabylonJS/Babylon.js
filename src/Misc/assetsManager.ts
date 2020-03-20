@@ -520,6 +520,8 @@ export class TextureAssetTask extends AbstractAssetTask implements ITextureAsset
          */
         public samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
         super(name);
+
+        this.invertY = invertY;
     }
 
     /**
