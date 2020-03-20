@@ -12,3 +12,4 @@ export * from "./solidParticleSystem";
 export * from "./cloudPoint";
 export * from "./pointsCloudSystem";
 export * from "./subEmitter";
+export * from "./particleSystemDebugger";

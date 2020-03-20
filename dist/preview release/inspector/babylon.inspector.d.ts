@@ -1540,6 +1540,7 @@ declare module INSPECTOR {
         buttonLabel: string;
         url?: string;
         onClick: () => void;
+        onIconClick?: () => void;
     }
     export class LinkButtonComponent extends React.Component<ILinkButtonComponentProps> {
         constructor(props: ILinkButtonComponentProps);
