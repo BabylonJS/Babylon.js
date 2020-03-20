@@ -10,6 +10,7 @@ import { Color4, Color3 } from 'babylonjs/Maths/math.color';
 import { LinkButtonComponent } from '../../../lines/linkButtonComponent';
 import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
 import { GPUParticleSystem } from 'babylonjs/Particles/gpuParticleSystem';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
 export enum GradientGridMode {
     Factor,
@@ -138,9 +139,23 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
         return (
             <div>
                 {
-                    gradients &&
+                    gradients && gradients.length > 0 &&
                     <div className="gradient-container">
                         <LinkButtonComponent label={this.props.label} url={this.props.docLink} 
+                            icon={faTrash}
+                            onIconClick={() => {
+                                gradients!.length = 0;
+                                this.forceUpdate();
+
+                                if (this.props.host instanceof GPUParticleSystem) {
+                                    this.props.host.forceRefreshGradients();
+                                }
+                    
+                                this.props.globalState.onCodeChangedObservable.notifyObservers({
+                                    object: this.props.host,
+                                    code: `TARGET.${this.props.codeRecorderPropertyName}.length = 0;`
+                                });
+                            }}
                             buttonLabel="Add new step" onClick={() => this.addNewStep()} />
                         {
                             gradients.map((g, i) => {
@@ -184,7 +199,7 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
                     </div>
                 }
                 {
-                    !gradients &&                    
+                    (!gradients || gradients.length === 0) &&                    
                     <ButtonLineComponent label={"Use " + this.props.label} onClick={() => {
                         this.props.onCreateRequired();
                         this.forceUpdate();

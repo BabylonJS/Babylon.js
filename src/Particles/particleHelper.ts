@@ -141,6 +141,7 @@ export class ParticleHelper {
                         }
                         output.snippetId = snippetId;
 
+                        resolve(output);
                     } else {
                         reject("Unable to load the snippet " + snippetId);
                     }
