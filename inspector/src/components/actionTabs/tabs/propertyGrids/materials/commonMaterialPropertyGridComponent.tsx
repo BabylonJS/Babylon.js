@@ -103,8 +103,16 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                     }
                     <OptionsLineComponent label="Alpha mode" options={alphaModeOptions} target={material} propertyName="alphaMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => this.setState({ alphaMode: value })} />
                     {
+                        (material as any).diffuseTexture &&
+                        <CheckBoxLineComponent label="Diffuse texture has alpha" target={(material as any).diffuseTexture} propertyName="hasAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
+                    {
                         (material as any).useAlphaFromDiffuseTexture !== undefined &&
                         <CheckBoxLineComponent label="Use alpha from diffuse texture" target={material} propertyName="useAlphaFromDiffuseTexture" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
+                    {
+                        (material as any).albedoTexture &&
+                        <CheckBoxLineComponent label="Albedo texture has alpha" target={(material as any).albedoTexture} propertyName="hasAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
                     {
                         (material as any).useAlphaFromAlbedoTexture !== undefined &&
