@@ -209,6 +209,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
             if (xmlHttp.readyState == 4) {
                 if (xmlHttp.status == 200) {
                     var snippet = JSON.parse(xmlHttp.responseText);
+                    const oldId = system.snippetId ;
                     system.snippetId = snippet.id;
                     if (snippet.version && snippet.version != "0") {
                         system.snippetId += "#" + snippet.version;
@@ -217,8 +218,17 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     if (navigator.clipboard) {
                         navigator.clipboard.writeText(system.snippetId);
                     }
-                    alert("Particle system saved with ID: " + system.snippetId + " (please note that the id was also saved to your clipboard)");
 
+                    let windowAsAny = window as any;
+
+                    if (windowAsAny.Playground) {
+                        windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
+                            regex: new RegExp(oldId, "g"),
+                            replace: system.snippetId
+                        });
+                    }
+
+                    alert("Particle system saved with ID: " + system.snippetId + " (please note that the id was also saved to your clipboard)");
                 }
                 else {
                     alert("Unable to save your particle system");
