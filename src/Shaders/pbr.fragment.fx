@@ -187,8 +187,8 @@ void main(void) {
 
         anisotropicBlock(
             vAnisotropy,
-            vAnisotropyInfos,
         #ifdef ANISOTROPIC_TEXTURE
+            vAnisotropyInfos,
             vAnisotropyUV,
             uvOffset,
             anisotropySampler,
