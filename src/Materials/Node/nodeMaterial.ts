@@ -1342,6 +1342,7 @@ export class NodeMaterial extends PushMaterial {
      * @param snippetId defines the snippet to load
      * @param scene defines the hosting scene
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @param nodeMaterial defines a node material to update (instead of creating a new one)
      * @returns a promise that will resolve to the new node material
      */
     public static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = "", nodeMaterial?: NodeMaterial): Promise<NodeMaterial> {

@@ -52884,6 +52884,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 __webpack_require__(/*! ./propertyTab.scss */ "./components/propertyTab/propertyTab.scss");
 var PropertyTabComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PropertyTabComponent, _super);
@@ -52968,6 +52969,66 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             _this.props.globalState.onLogRequiredObservable.notifyObservers({ message: err, isError: true });
         });
     };
+    PropertyTabComponent.prototype.saveToSnippetServer = function () {
+        var _this = this;
+        var material = this.props.globalState.nodeMaterial;
+        var xmlHttp = new XMLHttpRequest();
+        var json = _serializationTools__WEBPACK_IMPORTED_MODULE_7__["SerializationTools"].Serialize(material, this.props.globalState);
+        xmlHttp.onreadystatechange = function () {
+            if (xmlHttp.readyState == 4) {
+                if (xmlHttp.status == 200) {
+                    var snippet = JSON.parse(xmlHttp.responseText);
+                    var oldId = material.snippetId;
+                    material.snippetId = snippet.id;
+                    if (snippet.version && snippet.version != "0") {
+                        material.snippetId += "#" + snippet.version;
+                    }
+                    _this.forceUpdate();
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(material.snippetId);
+                    }
+                    var windowAsAny = window;
+                    if (windowAsAny.Playground && oldId) {
+                        windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
+                            regex: new RegExp(oldId, "g"),
+                            replace: material.snippetId
+                        });
+                    }
+                    alert("NodeMaterial saved with ID: " + material.snippetId + " (please note that the id was also saved to your clipboard)");
+                }
+                else {
+                    alert("Unable to save your node material. It may be too large (" + (dataToSend.payload.length / 1024).toFixed(2) + " KB) because of embedded textures. Please reduce texture sizes or point to a specific url instead of embedding them and try again.");
+                }
+            }
+        };
+        xmlHttp.open("POST", babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterial"].SnippetUrl + (material.snippetId ? "/" + material.snippetId : ""), true);
+        xmlHttp.setRequestHeader("Content-Type", "application/json");
+        var dataToSend = {
+            payload: JSON.stringify({
+                nodeMaterial: json
+            }),
+            name: "",
+            description: "",
+            tags: ""
+        };
+        xmlHttp.send(JSON.stringify(dataToSend));
+    };
+    PropertyTabComponent.prototype.loadFromSnippet = function () {
+        var _this = this;
+        var material = this.props.globalState.nodeMaterial;
+        var scene = material.getScene();
+        var snippedID = window.prompt("Please enter the snippet ID to use");
+        if (!snippedID) {
+            return;
+        }
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+        babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterial"].ParseFromSnippetAsync(snippedID, scene, "", material).then(function () {
+            material.build();
+            _this.props.globalState.onResetRequiredObservable.notifyObservers();
+        }).catch(function (err) {
+            alert("Unable to load your node material: " + err);
+        });
+    };
     PropertyTabComponent.prototype.render = function () {
         var _this = this;
         if (this.state.currentNode) {
@@ -53021,16 +53082,24 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Save", onClick: function () {
                             _this.save();
                         } }),
-                    this.props.globalState.customSave &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: this.props.globalState.customSave.label, onClick: function () {
-                                _this.customSave();
-                            } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Generate code", onClick: function () {
                             _stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(_this.props.globalState.hostDocument, _this.props.globalState.nodeMaterial.generateCode(), "code.txt");
                         } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Export shaders", onClick: function () {
                             _stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(_this.props.globalState.hostDocument, _this.props.globalState.nodeMaterial.compiledShaders, "shaders.txt");
-                        } })),
+                        } }),
+                    this.props.globalState.customSave &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: this.props.globalState.customSave.label, onClick: function () {
+                                _this.customSave();
+                            } })),
+                !this.props.globalState.customSave &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "SNIPPET" },
+                        this.props.globalState.nodeMaterial.snippetId &&
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextLineComponent"], { label: "Snippet ID", value: this.props.globalState.nodeMaterial.snippetId }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Load from snippet server", onClick: function () { return _this.loadFromSnippet(); } }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Save to snippet server", onClick: function () {
+                                _this.saveToSnippetServer();
+                            } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "INPUTS" }, this.props.globalState.nodeMaterial.getInputBlocks().map(function (ib) {
                     if (!ib.isUniform || ib.isSystemValue || !ib.name) {
                         return null;

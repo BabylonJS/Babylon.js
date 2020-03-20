@@ -1241,6 +1241,8 @@ declare module NODEEDITOR {
         load(file: File): void;
         save(): void;
         customSave(): void;
+        saveToSnippetServer(): void;
+        loadFromSnippet(): void;
         render(): JSX.Element;
     }
 }
