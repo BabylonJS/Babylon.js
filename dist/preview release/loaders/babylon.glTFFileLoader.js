@@ -7256,6 +7256,10 @@ var GLTFFileLoader = /** @class */ (function () {
             _this.onTextureLoadedObservable.add(function (texture) {
                 textures.push(texture);
             });
+            var cameras = [];
+            _this.onCameraLoadedObservable.add(function (camera) {
+                cameras.push(camera);
+            });
             return _this._loader.importMeshAsync(null, scene, true, data, rootUrl, onProgress, fileName).then(function (result) {
                 var container = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["AssetContainer"](scene);
                 Array.prototype.push.apply(container.meshes, result.meshes);
@@ -7266,6 +7270,7 @@ var GLTFFileLoader = /** @class */ (function () {
                 Array.prototype.push.apply(container.textures, textures);
                 Array.prototype.push.apply(container.lights, result.lights);
                 Array.prototype.push.apply(container.transformNodes, result.transformNodes);
+                Array.prototype.push.apply(container.cameras, cameras);
                 return container;
             });
         });

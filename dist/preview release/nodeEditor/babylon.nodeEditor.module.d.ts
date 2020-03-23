@@ -1499,6 +1499,8 @@ declare module "babylonjs-node-editor/components/propertyTab/propertyTabComponen
         load(file: File): void;
         save(): void;
         customSave(): void;
+        saveToSnippetServer(): void;
+        loadFromSnippet(): void;
         render(): JSX.Element;
     }
 }
@@ -2951,6 +2953,8 @@ declare module NODEEDITOR {
         load(file: File): void;
         save(): void;
         customSave(): void;
+        saveToSnippetServer(): void;
+        loadFromSnippet(): void;
         render(): JSX.Element;
     }
 }
