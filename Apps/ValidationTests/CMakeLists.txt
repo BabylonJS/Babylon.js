@@ -46,8 +46,8 @@ endif()
 
 target_include_directories(ValidationTests PRIVATE "Source" "." ${TEST_DEPENDENCY})
 
-target_link_libraries(ValidationTests PRIVATE ${ADDITIONAL_LIBRARIES})
-target_link_libraries(ValidationTests
+target_link_to_dependencies(ValidationTests PRIVATE ${ADDITIONAL_LIBRARIES})
+target_link_to_dependencies(ValidationTests
     PRIVATE bgfx
     PRIVATE bimg
     PRIVATE bx

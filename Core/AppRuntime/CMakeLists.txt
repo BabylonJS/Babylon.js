@@ -13,7 +13,7 @@ add_library(AppRuntime ${SOURCES})
 target_include_directories(AppRuntime PRIVATE "Include/Babylon")
 target_include_directories(AppRuntime INTERFACE "Include")
 
-target_link_libraries(AppRuntime
+target_link_to_dependencies(AppRuntime
     PRIVATE arcana
     PUBLIC JsRuntime)
 
@@ -21,4 +21,3 @@ target_compile_definitions(AppRuntime
     PRIVATE NOMINMAX)
 
 set_property(TARGET AppRuntime PROPERTY FOLDER Core)
-    

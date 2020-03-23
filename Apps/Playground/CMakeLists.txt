@@ -45,8 +45,6 @@ elseif(WINDOWS_STORE)
         "UWP/App.cpp"
         "UWP/App.h")
 
-    set(RESOURCE_FILES
-        ${BABYLON_NATIVE_DEPENDENCIES})
 elseif(APPLE)
     find_library(JSCORE_LIBRARY JavaScriptCore)
     if(IOS)
@@ -119,8 +117,8 @@ endif()
 
 target_include_directories(Playground PRIVATE "Source" "." ${TEST_DEPENDENCY})
 
-target_link_libraries(Playground PRIVATE AppRuntime ${ADDITIONAL_LIBRARIES})
-target_link_libraries(Playground
+target_link_to_dependencies(Playground PRIVATE AppRuntime ${ADDITIONAL_LIBRARIES})
+target_link_to_dependencies(Playground
     PRIVATE Console
     PRIVATE NativeEngine
     PRIVATE NativeWindow
@@ -128,7 +126,7 @@ target_link_libraries(Playground
     PRIVATE XMLHttpRequest)
 
 if (WIN32)
-    target_link_libraries(Playground 
+    target_link_to_dependencies(Playground 
         PRIVATE "shlwapi.lib")
 endif()
 
@@ -171,9 +169,6 @@ endif()
 if(WINDOWS_STORE)
     set_property(SOURCE ${SCRIPTS} ${BABYLONSCRIPTS} PROPERTY VS_DEPLOYMENT_CONTENT 1)
     set_property(SOURCE ${SCRIPTS} ${BABYLONSCRIPTS} PROPERTY VS_DEPLOYMENT_LOCATION "Scripts")
-    
-    set_property(SOURCE ${BABYLON_NATIVE_DEPENDENCIES} PROPERTY VS_DEPLOYMENT_CONTENT 1)
-    set_property(SOURCE ${BABYLON_NATIVE_DEPENDENCIES} PROPERTY VS_DEPLOYMENT_LOCATION ".")
 else()
     foreach(script ${SCRIPTS} ${BABYLONSCRIPTS})
         get_filename_component(SCRIPT_NAME "${script}" NAME)
@@ -183,8 +178,4 @@ else()
             COMMENT "Copying ${SCRIPT_NAME}"
             MAIN_DEPENDENCY "${CMAKE_CURRENT_SOURCE_DIR}/${script}")
     endforeach()
-    
-    foreach(dependency ${BABYLON_NATIVE_DEPENDENCIES})
-        add_custom_command(TARGET Playground POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different ${dependency} $<TARGET_FILE_DIR:Playground>)
-    endforeach(dependency)
 endif()

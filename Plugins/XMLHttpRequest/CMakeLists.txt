@@ -8,13 +8,13 @@ add_library(XMLHttpRequest ${SOURCES})
 
 target_include_directories(XMLHttpRequest PUBLIC "Include")
 
-target_link_libraries(XMLHttpRequest 
+target_link_to_dependencies(XMLHttpRequest 
     PUBLIC JsRuntime
     PRIVATE arcana
     PRIVATE BabylonNativeUtils)
 
 if(WINDOWS_STORE)
-    target_link_libraries(XMLHttpRequest
+    target_link_to_dependencies(XMLHttpRequest
         PUBLIC "Kernel32.lib")
 endif()
 
