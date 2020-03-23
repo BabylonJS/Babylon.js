@@ -10,6 +10,7 @@ import { Vector2 } from "../../../Maths/math.vector";
 import { Color3, Color4 } from "../../../Maths/math.color";
 import { TexturePackerFrame } from "./frame";
 import { Logger } from "../../../Misc/logger";
+import { Tools } from '../../../Misc/tools';
 
 /**
 * Defines the basic options interface of a TexturePacker
@@ -175,7 +176,7 @@ export class TexturePacker{
          * Run through the options and set what ever defaults are needed that where not declared.
          */
         this.options = options;
-        this.options.map = this.options.map || [
+        this.options.map = this.options.map ?? [
                 'ambientTexture',
                 'bumpTexture',
                 'diffuseTexture',
@@ -187,26 +188,26 @@ export class TexturePacker{
                 'specularTexture'
             ];
 
-        this.options.uvsIn = this.options.uvsIn || VertexBuffer.UVKind;
-        this.options.uvsOut = this.options.uvsOut || VertexBuffer.UVKind;
-        this.options.layout = this.options.layout || TexturePacker.LAYOUT_STRIP;
+        this.options.uvsIn = this.options.uvsIn ?? VertexBuffer.UVKind;
+        this.options.uvsOut = this.options.uvsOut ?? VertexBuffer.UVKind;
+        this.options.layout = this.options.layout ?? TexturePacker.LAYOUT_STRIP;
 
         if (this.options.layout === TexturePacker.LAYOUT_COLNUM) {
-            this.options.colnum = this.options.colnum || 8;
+            this.options.colnum = this.options.colnum ?? 8;
         }
 
-        this.options.updateInputMeshes = this.options.updateInputMeshes || true;
-        this.options.disposeSources = this.options.disposeSources || true;
+        this.options.updateInputMeshes = this.options.updateInputMeshes ?? true;
+        this.options.disposeSources = this.options.disposeSources ?? true;
         this._expecting = 0;
 
-        this.options.fillBlanks = this.options.fillBlanks || true;
+        this.options.fillBlanks = this.options.fillBlanks ?? true;
 
         if (this.options.fillBlanks === true) {
-            this.options.customFillColor = this.options.customFillColor || 'black';
+            this.options.customFillColor = this.options.customFillColor ?? 'black';
         }
 
-        this.options.frameSize = this.options.frameSize || 256;
-        this.options.paddingRatio = this.options.paddingRatio || 0.0115;
+        this.options.frameSize = this.options.frameSize ?? 256;
+        this.options.paddingRatio = this.options.paddingRatio ?? 0.0115;
 
         this._paddingValue = Math.ceil(this.options.frameSize * this.options.paddingRatio);
 
@@ -215,10 +216,10 @@ export class TexturePacker{
             this._paddingValue++;
         }
 
-        this.options.paddingMode = this.options.paddingMode || TexturePacker.SUBUV_WRAP;
+        this.options.paddingMode = this.options.paddingMode ?? TexturePacker.SUBUV_WRAP;
 
         if (this.options.paddingMode === TexturePacker.SUBUV_COLOR) {
-            this.options.paddingColor = this.options.paddingColor || new Color4(0, 0, 0, 1.0);
+            this.options.paddingColor = this.options.paddingColor ?? new Color4(0, 0, 0, 1.0);
         }
 
         this.sets = {};
@@ -322,6 +323,7 @@ export class TexturePacker{
                     } else {
                         img.src = setTexture!.url;
                     }
+                    Tools.SetCorsBehavior(img.src, img);
 
                     img.onload = () => {
                         tcx.fillStyle = 'rgba(0,0,0,0)';
