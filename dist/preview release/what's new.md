@@ -58,6 +58,7 @@
 - Added to `FresnelParameters` constructor options and equals method ([brianzinn](https://github.com/brianzinn))
 - Added `AddAttribute` to `CustomMaterial` and `PBRCustomMaterial` ([Popov72](https://github.com/Popov72))
 - `setTexture` and `setTextureArray` from `ShaderMaterial` take now a `BaseTexture` as input instead of a `Texture`, allowing to pass a `CubeTexture` ([Popov72](https://github.com/Popov72))
+- Allow parenthesis usage in `#if` expressions in shader code ([Popov72](https://github.com/Popov72))
 
 ### WebXR
 
