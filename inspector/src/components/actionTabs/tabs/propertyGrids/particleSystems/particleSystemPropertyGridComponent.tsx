@@ -299,10 +299,13 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     <TextLineComponent label="Active count" value={system.getActiveCount().toString()} />  
                     <TextureLinkLineComponent label="Texture" texture={system.particleTexture} onSelectionChangedObservable={this.props.onSelectionChangedObservable}/>
                     <OptionsLineComponent label="Blend mode" options={blendModeOptions} target={system} propertyName="blendMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Vector3LineComponent label="World offset" target={system} propertyName="worldOffset"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Vector3LineComponent label="Gravity" target={system} propertyName="gravity"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Is billboard" target={system} propertyName="isBillboardBased" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Is local" target={system} propertyName="isLocal" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <CheckBoxLineComponent label="Force depth write" target={system} propertyName="forceDepthWrite" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Update speed" target={system} propertyName="updateSpeed" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>                      
                 <LineContainerComponent globalState={this.props.globalState} title="COMMANDS">
@@ -674,6 +677,15 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         mode={GradientGridMode.Factor}                        
                         lockObject={this.props.lockObject}/>                    
                 </LineContainerComponent>  
+                <LineContainerComponent globalState={this.props.globalState} title="SPRITESHEET" closed={true}>
+                    <CheckBoxLineComponent label="Animation sheet enabled" target={system} propertyName="isAnimationSheetEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent label="First sprite index" isInteger={true} target={system} propertyName="startSpriteCellID" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent label="Last sprite index" isInteger={true} target={system} propertyName="endSpriteCellID" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <CheckBoxLineComponent label="Random start cell index" target={system} propertyName="spriteRandomStartCell" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent label="Cell width" isInteger={true} target={system} propertyName="spriteCellWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent label="Cell height" isInteger={true} target={system} propertyName="spriteCellHeight" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent label="Cell change speed" target={system} propertyName="spriteCellChangeSpeed" minimum={0} maximum={10} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                </LineContainerComponent>
             </div>
         );
     }

@@ -52,7 +52,7 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
             top = window.innerHeight - height - 10;
         }
 
-        div.style.top = top + "px";        
+        div.style.top = top + "px";
         div.style.left = host.getBoundingClientRect().left - div.getBoundingClientRect().width + "px";
     }
 
@@ -84,25 +84,24 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
                 {
                     this.state.pickerEnabled &&
                     <>
-                        <div className="color-picker-cover" onClick={() => this.setState({pickerEnabled: false})}>
-                            <div className="color-picker-float" ref={this._floatRef}>
-                                <SketchPicker color={color} 
-                                    disableAlpha={this.props.disableAlpha}
-                                    onChange={(color) => {
-                                        let hex: string;
+                        <div className="color-picker-cover" onClick={() => this.setState({pickerEnabled: false})}></div>
+                        <div className="color-picker-float" ref={this._floatRef}>
+                            <SketchPicker color={color} 
+                                disableAlpha={this.props.disableAlpha}
+                                onChange={(color) => {
+                                    let hex: string;
 
-                                        if (this.props.disableAlpha) {
-                                            let newColor3 = Color3.FromInts(color.rgb.r, color.rgb.g, color.rgb.b);
-                                            hex = newColor3.toHexString();    
-                                        } else {
-                                            let newColor4 = Color4.FromInts(color.rgb.r, color.rgb.g, color.rgb.b, 255 * (color.rgb.a || 0));
-                                            hex = newColor4.toHexString();   
-                                        }
-                                        this.setState({hex: hex, color: color.rgb});
-                                        this.props.onColorChanged(hex);
-                                    }}
-                                />
-                            </div>
+                                    if (this.props.disableAlpha) {
+                                        let newColor3 = Color3.FromInts(color.rgb.r, color.rgb.g, color.rgb.b);
+                                        hex = newColor3.toHexString();    
+                                    } else {
+                                        let newColor4 = Color4.FromInts(color.rgb.r, color.rgb.g, color.rgb.b, 255 * (color.rgb.a || 0));
+                                        hex = newColor4.toHexString();   
+                                    }
+                                    this.setState({hex: hex, color: color.rgb});
+                                    this.props.onColorChanged(hex);
+                                }}
+                            />
                         </div>
                     </>
                 }                

@@ -236,8 +236,6 @@ $line-padding-left: 2px;
                     .color-picker-float {
                         z-index: 2;
                         position: absolute;  
-                        width: 300px;
-                        height: 300px;
                     }                
                 }
 
@@ -370,6 +368,7 @@ $line-padding-left: 2px;
 
                         .color2{
                             height: 100%;
+                            padding-left: 5px;
                         }
                             
                         .factor1 {
