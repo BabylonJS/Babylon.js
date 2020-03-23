@@ -41,7 +41,6 @@ import { Tools } from 'babylonjs/Misc/tools';
 import { FileButtonLineComponent } from '../../../lines/fileButtonLineComponent';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
 import { ParticleHelper } from 'babylonjs/Particles/particleHelper';
-import { NumericInputComponent } from '../../../lines/numericInputComponent';
 
 interface IParticleSystemPropertyGridComponentProps {
     globalState: GlobalState;
