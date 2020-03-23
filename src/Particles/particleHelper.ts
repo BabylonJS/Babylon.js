@@ -115,7 +115,7 @@ export class ParticleHelper {
 
         return set;
     }
-    
+
     /**
      * Creates a particle system from a snippet saved in a remote file
      * @param name defines the name of the  particle system to create
@@ -148,7 +148,7 @@ export class ParticleHelper {
             });
 
             request.open("GET", url);
-            request.send();            
+            request.send();
         });
     }
 
