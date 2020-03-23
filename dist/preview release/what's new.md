@@ -58,12 +58,13 @@
 - Added to `FresnelParameters` constructor options and equals method ([brianzinn](https://github.com/brianzinn))
 - Added `AddAttribute` to `CustomMaterial` and `PBRCustomMaterial` ([Popov72](https://github.com/Popov72))
 - `setTexture` and `setTextureArray` from `ShaderMaterial` take now a `BaseTexture` as input instead of a `Texture`, allowing to pass a `CubeTexture` ([Popov72](https://github.com/Popov72))
+- Allow parenthesis usage in `#if` expressions in shader code ([Popov72](https://github.com/Popov72))
 
 ### WebXR
 
 - Added optional ray and mesh selection predicates to `WebXRControllerPointerSelection` ([Exolun](https://github.com/Exolun))
 - Implemented the new WebXR HitTest API ([#7364](https://github.com/BabylonJS/Babylon.js/issues/7364)) ([RaananW](https://github.com/RaananW))
-- Playground doesn't update FPS when in XR ([#7875](https://github.com/BabylonJS/Babylon.js/issues/7875)) ([RaananW](https://github.com/RaananW))
+- Playground doesn't update FPS when in XR in main and frame ([#7875](https://github.com/BabylonJS/Babylon.js/issues/7875)) ([RaananW](https://github.com/RaananW))
 
 ### Collisions
 
@@ -93,5 +94,9 @@
 - Fix bug in PBR with translucency when irradiance texture is 2D ([Popov72](https://github.com/Popov72)
 - Fix bug in PBR when specific combinations of parameters are used ([Popov72](https://github.com/Popov72)
 - Fix texture being inverted on the Y axis by default when using TextureAsset or AssetManager ([broederj](https://github.com/broederj))
+- Fix `TexturePacker` cross-origin image requests, fix falsy default options ([ludevik](https://github.com/ludevik))
+- Fix freeze (infinite loop) when disposing a scene that loaded some specific gLTF files ([Popov72](https://github.com/Popov72)
+
+- Fix submesh recreation when it should not ([Popov72](https://github.com/Popov72)
 
 ## Breaking changes

@@ -1183,6 +1183,10 @@ declare module BABYLON {
         isTrue(preprocessors: {
             [key: string]: string;
         }): boolean;
+        private static OperatorPriority;
+        private static Stack;
+        static postfixToInfix(postfix: string[]): string;
+        static infixToPostfix(infix: string): string[];
     }
 }
 declare module BABYLON {
@@ -48517,18 +48521,18 @@ declare module BABYLON {
         protected readonly _mapping: {
             buttons: string[];
             buttonMeshNames: {
-                'trigger': string;
-                'menu': string;
-                'grip': string;
-                'thumbstick': string;
-                'trackpad': string;
+                trigger: string;
+                menu: string;
+                grip: string;
+                thumbstick: string;
+                trackpad: string;
             };
             buttonObservableNames: {
-                'trigger': string;
-                'menu': string;
-                'grip': string;
-                'thumbstick': string;
-                'trackpad': string;
+                trigger: string;
+                menu: string;
+                grip: string;
+                thumbstick: string;
+                trackpad: string;
             };
             axisMeshNames: string[];
             pointingPoseMeshName: string;
@@ -48636,18 +48640,18 @@ declare module BABYLON {
         protected readonly _mapping: {
             buttons: string[];
             buttonMeshNames: {
-                'trigger': string;
-                'menu': string;
-                'grip': string;
-                'thumbstick': string;
-                'trackpad': string;
+                trigger: string;
+                menu: string;
+                grip: string;
+                thumbstick: string;
+                trackpad: string;
             };
             buttonObservableNames: {
-                'trigger': string;
-                'menu': string;
-                'grip': string;
-                'thumbstick': string;
-                'trackpad': string;
+                trigger: string;
+                menu: string;
+                grip: string;
+                thumbstick: string;
+                trackpad: string;
             };
             axisMeshNames: string[];
             pointingPoseMeshName: string;
@@ -51197,6 +51201,139 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export var pbrIBLFunctions: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockAlbedoOpacity: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockReflectivity: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockAmbientOcclusion: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockAlphaFresnel: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockAnisotropic: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockReflection: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockSheen: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockClearcoat: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockSubSurface: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockNormalGeometric: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockNormalFinal: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockGeometryInfo: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockReflectance0: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockReflectance: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockDirectLighting: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockFinalLitComponents: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockFinalUnlitComponents: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockFinalColorComposition: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockImageProcessing: {
         name: string;
         shader: string;
     };
@@ -70009,52 +70146,52 @@ declare module BABYLON {
     export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionController {
         protected readonly _mapping: {
             defaultButton: {
-                "valueNodeName": string;
-                "unpressedNodeName": string;
-                "pressedNodeName": string;
+                valueNodeName: string;
+                unpressedNodeName: string;
+                pressedNodeName: string;
             };
             defaultAxis: {
-                "valueNodeName": string;
-                "minNodeName": string;
-                "maxNodeName": string;
+                valueNodeName: string;
+                minNodeName: string;
+                maxNodeName: string;
             };
             buttons: {
                 "xr-standard-trigger": {
-                    "rootNodeName": string;
-                    "componentProperty": string;
-                    "states": string[];
+                    rootNodeName: string;
+                    componentProperty: string;
+                    states: string[];
                 };
                 "xr-standard-squeeze": {
-                    "rootNodeName": string;
-                    "componentProperty": string;
-                    "states": string[];
+                    rootNodeName: string;
+                    componentProperty: string;
+                    states: string[];
                 };
                 "xr-standard-touchpad": {
-                    "rootNodeName": string;
-                    "labelAnchorNodeName": string;
-                    "touchPointNodeName": string;
+                    rootNodeName: string;
+                    labelAnchorNodeName: string;
+                    touchPointNodeName: string;
                 };
                 "xr-standard-thumbstick": {
-                    "rootNodeName": string;
-                    "componentProperty": string;
-                    "states": string[];
+                    rootNodeName: string;
+                    componentProperty: string;
+                    states: string[];
                 };
             };
             axes: {
                 "xr-standard-touchpad": {
                     "x-axis": {
-                        "rootNodeName": string;
+                        rootNodeName: string;
                     };
                     "y-axis": {
-                        "rootNodeName": string;
+                        rootNodeName: string;
                     };
                 };
                 "xr-standard-thumbstick": {
                     "x-axis": {
-                        "rootNodeName": string;
+                        rootNodeName: string;
                     };
                     "y-axis": {
-                        "rootNodeName": string;
+                        rootNodeName: string;
                     };
                 };
             };

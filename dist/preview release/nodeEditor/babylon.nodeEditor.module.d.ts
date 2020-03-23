@@ -1670,7 +1670,7 @@ declare module "babylonjs-node-editor/graphEditor" {
 }
 declare module "babylonjs-node-editor/sharedComponents/popup" {
     export class Popup {
-        static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): import("babylonjs/types").Nullable<HTMLDivElement>;
+        static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
         private static _CopyStyles;
     }
 }
@@ -3107,7 +3107,7 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class Popup {
-        static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): Nullable<HTMLDivElement>;
+        static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
         private static _CopyStyles;
     }
 }

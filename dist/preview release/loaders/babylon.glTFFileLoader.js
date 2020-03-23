@@ -5185,7 +5185,9 @@ var GLTFLoader = /** @class */ (function () {
             }));
         }
         else {
+            this._babylonScene._blockEntityCollection = this._forAssetContainer;
             node._babylonTransformNode = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["TransformNode"](name, this._babylonScene);
+            this._babylonScene._blockEntityCollection = false;
             node._primitiveBabylonMeshes = [];
             for (var _i = 0, primitives_1 = primitives; _i < primitives_1.length; _i++) {
                 var primitive = primitives_1[_i];
