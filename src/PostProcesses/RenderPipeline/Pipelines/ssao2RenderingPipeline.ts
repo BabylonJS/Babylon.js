@@ -124,9 +124,9 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     */
     public set expensiveBlur(b: boolean) {
         this._blurHPostProcess.updateEffect("#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16\n#define EXPENSIVE " + (b ? "1" : "0") + "\n",
-            null, ["textureSampler", "depthSampler"]);
+            null, ["textureSampler", "depthSampler", "normalSampler"]);
         this._blurVPostProcess.updateEffect("#define BILATERAL_BLUR\n#define SAMPLES 16\n#define EXPENSIVE " + (b ? "1" : "0") + "\n",
-            null, ["textureSampler", "depthSampler"]);
+            null, ["textureSampler", "depthSampler", "normalSampler"]);
         this._expensiveBlur = b;
     }
 
@@ -268,31 +268,33 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             this._samplerOffsets.push(i * 2 + 0.5);
         }
 
-        this._blurHPostProcess = new PostProcess("BlurH", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler"], ssaoRatio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n");
+        this._blurHPostProcess = new PostProcess("BlurH", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler", "normalSampler"], ssaoRatio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n");
         this._blurHPostProcess.onApply = (effect: Effect) => {
             if (!this._scene.activeCamera) {
                 return;
             }
 
-            effect.setFloat("outSize", this._ssaoCombinePostProcess.width > 0 ? this._ssaoCombinePostProcess.width : this._originalColorPostProcess.width);
+            effect.setFloat("outSize", this._blurHPostProcess.width);
             effect.setFloat("near", this._scene.activeCamera.minZ);
             effect.setFloat("far", this._scene.activeCamera.maxZ);
             effect.setFloat("radius", this.radius);
             effect.setTexture("depthSampler", this._depthTexture);
+            effect.setTexture("normalSampler", this._normalTexture);
             effect.setArray("samplerOffsets", this._samplerOffsets);
         };
 
-        this._blurVPostProcess = new PostProcess("BlurV", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler"], blurRatio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_V\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n");
+        this._blurVPostProcess = new PostProcess("BlurV", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler", "normalSampler"], blurRatio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_V\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n");
         this._blurVPostProcess.onApply = (effect: Effect) => {
             if (!this._scene.activeCamera) {
                 return;
             }
 
-            effect.setFloat("outSize", this._ssaoCombinePostProcess.height > 0 ? this._ssaoCombinePostProcess.height : this._originalColorPostProcess.height);
+            effect.setFloat("outSize", this._blurVPostProcess.height);
             effect.setFloat("near", this._scene.activeCamera.minZ);
             effect.setFloat("far", this._scene.activeCamera.maxZ);
             effect.setFloat("radius", this.radius);
             effect.setTexture("depthSampler", this._depthTexture);
+            effect.setTexture("normalSampler", this._normalTexture);
             effect.setArray("samplerOffsets", this._samplerOffsets);
 
         };
