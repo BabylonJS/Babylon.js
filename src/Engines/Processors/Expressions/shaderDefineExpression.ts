@@ -4,20 +4,20 @@ export class ShaderDefineExpression {
         return true;
     }
 
-    private static OperatorPriority: { [name: string]: number } = {
+    private static _OperatorPriority: { [name: string]: number } = {
         ")": 0,
         "(": 1,
         "||": 2,
         "&&": 3,
     };
 
-    private static Stack = ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''];
+    private static _Stack = ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''];
 
     public static postfixToInfix(postfix: string[]): string {
         const stack: string[] = [];
 
         for (let c of postfix) {
-            if (ShaderDefineExpression.OperatorPriority[c] === undefined) {
+            if (ShaderDefineExpression._OperatorPriority[c] === undefined) {
                 stack.push(c);
             } else {
                 const v1 = stack[stack.length - 1],
@@ -45,14 +45,14 @@ export class ShaderDefineExpression {
         };
 
         const push = (s: string) => {
-            if (stackIdx < ShaderDefineExpression.Stack.length - 1) {
-                ShaderDefineExpression.Stack[++stackIdx] = s;
+            if (stackIdx < ShaderDefineExpression._Stack.length - 1) {
+                ShaderDefineExpression._Stack[++stackIdx] = s;
             }
         };
 
-        const peek = () => ShaderDefineExpression.Stack[stackIdx];
+        const peek = () => ShaderDefineExpression._Stack[stackIdx];
 
-        const pop = () => stackIdx === -1 ? '!!INVALID EXPRESSION!!' : ShaderDefineExpression.Stack[stackIdx--];
+        const pop = () => stackIdx === -1 ? '!!INVALID EXPRESSION!!' : ShaderDefineExpression._Stack[stackIdx--];
 
         let idx = 0,
             operand = '';
@@ -70,9 +70,9 @@ export class ShaderDefineExpression {
                     result.push(pop());
                 }
                 pop();
-            } else if (ShaderDefineExpression.OperatorPriority[token] > 1) {
+            } else if (ShaderDefineExpression._OperatorPriority[token] > 1) {
                 pushOperand();
-                while (stackIdx !== -1 && ShaderDefineExpression.OperatorPriority[peek()] >= ShaderDefineExpression.OperatorPriority[token]) {
+                while (stackIdx !== -1 && ShaderDefineExpression._OperatorPriority[peek()] >= ShaderDefineExpression._OperatorPriority[token]) {
                     result.push(pop());
                 }
                 push(token);
