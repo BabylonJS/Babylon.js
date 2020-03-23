@@ -63582,12 +63582,22 @@ declare module BABYLON {
          */
         static ExportSet(systems: IParticleSystem[]): ParticleSystemSet;
         /**
-         * Creates a node material from a snippet saved by the node material editor
+         * Creates a particle system from a snippet saved in a remote file
+         * @param name defines the name of the  particle system to create
+         * @param url defines the url to load from
+         * @param scene defines the hosting scene
+         * @param gpu If the system will use gpu
+         * @param rootUrl defines the root URL to use to load textures and relative dependencies
+         * @returns a promise that will resolve to the new  particle system
+         */
+        static ParseFromFileAsync(name: string, url: string, scene: Scene, gpu?: boolean, rootUrl?: string): Promise<IParticleSystem>;
+        /**
+         * Creates a particle system from a snippet saved by the particle system editor
          * @param snippetId defines the snippet to load
          * @param scene defines the hosting scene
          * @param gpu If the system will use gpu
          * @param rootUrl defines the root URL to use to load textures and relative dependencies
-         * @returns a promise that will resolve to the new node material
+         * @returns a promise that will resolve to the new particle system
          */
         static CreateFromSnippetAsync(snippetId: string, scene: Scene, gpu?: boolean, rootUrl?: string): Promise<IParticleSystem>;
     }

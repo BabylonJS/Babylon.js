@@ -306,6 +306,33 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export interface IColorPickerComponentProps {
+        value: BABYLON.Color4 | BABYLON.Color3;
+        onColorChanged: (newOne: string) => void;
+        disableAlpha?: boolean;
+    }
+    interface IColorPickerComponentState {
+        pickerEnabled: boolean;
+        color: {
+            r: number;
+            g: number;
+            b: number;
+            a?: number;
+        };
+        hex: string;
+    }
+    export class ColorPickerLineComponent extends React.Component<IColorPickerComponentProps, IColorPickerComponentState> {
+        private _floatRef;
+        private _floatHostRef;
+        constructor(props: IColorPickerComponentProps);
+        syncPositions(): void;
+        shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState): boolean;
+        componentDidUpdate(): void;
+        componentDidMount(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     export interface IColor3LineComponentProps {
         label: string;
         target: any;

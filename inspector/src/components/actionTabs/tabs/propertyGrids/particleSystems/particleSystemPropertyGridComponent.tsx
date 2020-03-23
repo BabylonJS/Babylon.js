@@ -324,7 +324,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
                     <ButtonLineComponent label="Save to snippet server" onClick={() => this.saveToSnippet()} />
                 </LineContainerComponent>                
-                <LineContainerComponent globalState={this.props.globalState} title="EMITTER">
+                <LineContainerComponent globalState={this.props.globalState} title="EMITTER" closed={true}>
                 <OptionsLineComponent 
                         label="Emitter" 
                         options={emitterOptions} 
@@ -438,7 +438,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         this.renderEmitter()
                     }
                 </LineContainerComponent>       
-                <LineContainerComponent globalState={this.props.globalState} title="EMISSION">
+                <LineContainerComponent globalState={this.props.globalState} title="EMISSION" closed={true}>
                     <FloatLineComponent lockObject={this.props.lockObject} label="Rate" target={system} propertyName="emitRate" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         system instanceof ParticleSystem && 
@@ -502,7 +502,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         mode={GradientGridMode.Factor}                        
                         lockObject={this.props.lockObject}/>
                 </LineContainerComponent>                  
-                <LineContainerComponent globalState={this.props.globalState} title="SIZE">
+                <LineContainerComponent globalState={this.props.globalState} title="SIZE" closed={true}>
                     {
                         (!system.getSizeGradients() || system.getSizeGradients()?.length === 0)&& 
                         <>
@@ -546,7 +546,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         mode={GradientGridMode.Factor}                        
                         lockObject={this.props.lockObject}/>
                 </LineContainerComponent>          
-                <LineContainerComponent globalState={this.props.globalState} title="LIFETIME">
+                <LineContainerComponent globalState={this.props.globalState} title="LIFETIME" closed={true}>
                     <FloatLineComponent lockObject={this.props.lockObject} label="Min lifetime" target={system} propertyName="minLifeTime" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Max lifetime" target={system} propertyName="maxLifeTime" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Target stop duration" target={system} propertyName="targetStopDuration" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -568,7 +568,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                             lockObject={this.props.lockObject}/>
                     }                    
                 </LineContainerComponent>    
-                <LineContainerComponent globalState={this.props.globalState} title="COLORS">
+                <LineContainerComponent globalState={this.props.globalState} title="COLORS" closed={true}>
                     {
                         (!system.getColorGradients() || system.getColorGradients()?.length === 0) &&
                         <>
@@ -654,7 +654,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         </>
                     }                                   
                 </LineContainerComponent>                     
-                <LineContainerComponent globalState={this.props.globalState} title="ROTATION">
+                <LineContainerComponent globalState={this.props.globalState} title="ROTATION" closed={true}>
                     <FloatLineComponent lockObject={this.props.lockObject} label="Min angular speed" target={system} propertyName="minAngularSpeed" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Max angular speed" target={system} propertyName="maxAngularSpeed" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Min initial rotation" target={system} propertyName="minInitialRotation" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
