@@ -733,7 +733,9 @@ export class GLTFLoader implements IGLTFLoader {
             }));
         }
         else {
+            this._babylonScene._blockEntityCollection = this._forAssetContainer;
             node._babylonTransformNode = new TransformNode(name, this._babylonScene);
+            this._babylonScene._blockEntityCollection = false;
             node._primitiveBabylonMeshes = [];
             for (const primitive of primitives) {
                 promises.push(this._loadMeshPrimitiveAsync(`${context}/primitives/${primitive.index}`, `${name}_primitive${primitive.index}`, node, mesh, primitive, (babylonMesh) => {
