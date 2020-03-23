@@ -221,7 +221,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
 
                     let windowAsAny = window as any;
 
-                    if (windowAsAny.Playground) {
+                    if (windowAsAny.Playground && oldId) {
                         windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
                             regex: new RegExp(oldId, "g"),
                             replace: system.snippetId
@@ -315,13 +315,15 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                 <LineContainerComponent globalState={this.props.globalState} title="FILE">
                 <FileButtonLineComponent label="Load" onClick={(file) => this.loadFromFile(file)} accept=".json" />
                     <ButtonLineComponent label="Save" onClick={() => this.saveToFile()} />
+                </LineContainerComponent>
+                <LineContainerComponent globalState={this.props.globalState} title="SNIPPET">
                     {
                         system.snippetId &&
                         <TextLineComponent label="Snippet ID" value={system.snippetId} />
                     }
                     <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
                     <ButtonLineComponent label="Save to snippet server" onClick={() => this.saveToSnippet()} />
-                </LineContainerComponent>
+                </LineContainerComponent>                
                 <LineContainerComponent globalState={this.props.globalState} title="EMITTER">
                 <OptionsLineComponent 
                         label="Emitter" 

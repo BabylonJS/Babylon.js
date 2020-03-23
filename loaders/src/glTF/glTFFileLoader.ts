@@ -597,6 +597,10 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
             this.onTextureLoadedObservable.add((texture) => {
                 textures.push(texture);
             });
+            const cameras: Array<Camera> = [];
+            this.onCameraLoadedObservable.add((camera) => {
+                cameras.push(camera);
+            });
 
             return this._loader.importMeshAsync(null, scene, true, data, rootUrl, onProgress, fileName).then((result) => {
                 const container = new AssetContainer(scene);
@@ -608,6 +612,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                 Array.prototype.push.apply(container.textures, textures);
                 Array.prototype.push.apply(container.lights, result.lights);
                 Array.prototype.push.apply(container.transformNodes, result.transformNodes);
+                Array.prototype.push.apply(container.cameras, cameras);
                 return container;
             });
         });
