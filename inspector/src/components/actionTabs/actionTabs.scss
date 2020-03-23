@@ -213,6 +213,34 @@ $line-padding-left: 2px;
                     }
                 }
 
+                .color-picker {
+                    height: calc(100% - 8px);
+                    margin: 4px;
+                    width: 100%;
+
+                    .color-rect {
+                        height: calc(100% - 4px);
+                        border: 2px white solid;
+                        cursor: pointer;
+                        min-height: 18px;
+                    }
+
+                    .color-picker-cover {
+                        position: fixed;
+                        top: 0px;
+                        right: 0px;
+                        bottom: 0px;
+                        left: 0px;
+                    }
+
+                    .color-picker-float {
+                        z-index: 2;
+                        position: absolute;  
+                        width: 300px;
+                        height: 300px;
+                    }                
+                }
+
                 .linkButtonLine {
                     padding-left: $line-padding-left;
                     height: 30px;
@@ -334,6 +362,14 @@ $line-padding-left: 2px;
                         .step {
                             grid-row: 1;
                             grid-column: 1;
+                        }
+
+                        .color1 {
+                            height: 100%;
+                        }
+
+                        .color2{
+                            height: 100%;
                         }
                             
                         .factor1 {
@@ -840,6 +876,7 @@ $line-padding-left: 2px;
 
                         .color3 {
                             grid-column: 2;
+                            width: 50px;
                             
                             display: flex;
                             align-items: center;   
