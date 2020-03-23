@@ -96,4 +96,6 @@
 - Fix texture being inverted on the Y axis by default when using TextureAsset or AssetManager ([broederj](https://github.com/broederj))
 - Fix `TexturePacker` cross-origin image requests, fix falsy default options ([ludevik](https://github.com/ludevik))
 
+- Fix submesh recreation when it should not ([Popov72](https://github.com/Popov72)
+
 ## Breaking changes
