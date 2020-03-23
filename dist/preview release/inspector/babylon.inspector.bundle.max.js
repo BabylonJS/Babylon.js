@@ -40852,7 +40852,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
         else {
             if (this.props.onPropertyChangedObservable) {
                 this.props.onPropertyChangedObservable.notifyObservers({
-                    object: (_a = this.props.replaySourceReplacement, (_a !== null && _a !== void 0 ? _a : this.props.target)),
+                    object: (_a = this.props.replaySourceReplacement) !== null && _a !== void 0 ? _a : this.props.target,
                     property: this.props.propertyName,
                     value: !this.state.isSelected,
                     initialValue: this.state.isSelected
@@ -41341,7 +41341,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
             return;
         }
         this.props.onPropertyChangedObservable.notifyObservers({
-            object: (_a = this.props.replaySourceReplacement, (_a !== null && _a !== void 0 ? _a : this.props.target)),
+            object: (_a = this.props.replaySourceReplacement) !== null && _a !== void 0 ? _a : this.props.target,
             property: this.props.propertyName,
             value: newValue,
             initialValue: previousValue
@@ -41496,7 +41496,7 @@ var MeshPickerComponent = /** @class */ (function (_super) {
                     }
                     if (_this.props.onPropertyChangedObservable) {
                         _this.props.onPropertyChangedObservable.notifyObservers({
-                            object: (_a = _this.props.replaySourceReplacement, (_a !== null && _a !== void 0 ? _a : _this.props.target)),
+                            object: (_a = _this.props.replaySourceReplacement) !== null && _a !== void 0 ? _a : _this.props.target,
                             property: _this.props.property,
                             value: _this.props.target[_this.props.property],
                             initialValue: currentState
@@ -41704,7 +41704,7 @@ var OptionsLineComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "listLine" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "options" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (evt) { return _this.updateValue(evt.target.value); }, value: (_a = this.state.value, (_a !== null && _a !== void 0 ? _a : "")) }, this.props.options.map(function (option) {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (evt) { return _this.updateValue(evt.target.value); }, value: (_a = this.state.value) !== null && _a !== void 0 ? _a : "" }, this.props.options.map(function (option) {
                     return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { key: option.label, value: option.value }, option.label));
                 })))));
     };
@@ -41972,7 +41972,7 @@ var SliderLineComponent = /** @class */ (function (_super) {
         if (this.props.target) {
             if (this.props.onPropertyChangedObservable) {
                 this.props.onPropertyChangedObservable.notifyObservers({
-                    object: (_a = this.props.replaySourceReplacement, (_a !== null && _a !== void 0 ? _a : this.props.target)),
+                    object: (_a = this.props.replaySourceReplacement) !== null && _a !== void 0 ? _a : this.props.target,
                     property: this.props.propertyName,
                     value: newValue,
                     initialValue: this.state.value
@@ -42697,7 +42697,7 @@ var Vector3LineComponent = /** @class */ (function (_super) {
             return;
         }
         this.props.onPropertyChangedObservable.notifyObservers({
-            object: (_a = this.props.replaySourceReplacement, (_a !== null && _a !== void 0 ? _a : this.props.target)),
+            object: (_a = this.props.replaySourceReplacement) !== null && _a !== void 0 ? _a : this.props.target,
             property: this.props.propertyName,
             value: this.state.value,
             initialValue: previousValue
@@ -45387,7 +45387,7 @@ var CommonMaterialPropertyGridComponent = /** @class */ (function (_super) {
         var _this = this;
         var _a;
         var material = this.props.material;
-        material.depthFunction = (_a = material.depthFunction, (_a !== null && _a !== void 0 ? _a : 0));
+        material.depthFunction = (_a = material.depthFunction) !== null && _a !== void 0 ? _a : 0;
         var orientationOptions = [
             { label: "Clockwise", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Material"].ClockWiseSideOrientation },
             { label: "Counterclockwise", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Material"].CounterClockWiseSideOrientation }
@@ -45822,8 +45822,8 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
             { label: "Luminance Over Alpha", value: 86 },
             { label: "Alpha", value: 87 },
         ];
-        material.sheen._useRoughness = (_a = material.sheen._useRoughness, (_a !== null && _a !== void 0 ? _a : material.sheen.roughness !== null));
-        material.sheen.roughness = (_c = (_b = material.sheen.roughness, (_b !== null && _b !== void 0 ? _b : material.sheen._saveRoughness)), (_c !== null && _c !== void 0 ? _c : 0));
+        material.sheen._useRoughness = (_a = material.sheen._useRoughness) !== null && _a !== void 0 ? _a : material.sheen.roughness !== null;
+        material.sheen.roughness = (_c = (_b = material.sheen.roughness) !== null && _b !== void 0 ? _b : material.sheen._saveRoughness) !== null && _c !== void 0 ? _c : 0;
         if (!material.sheen._useRoughness) {
             material.sheen._saveRoughness = material.sheen.roughness;
             material.sheen.roughness = null;

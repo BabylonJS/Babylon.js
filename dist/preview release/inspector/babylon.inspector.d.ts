@@ -2146,7 +2146,7 @@ declare module INSPECTOR {
         private static _CreateSceneExplorer;
         private static _CreateActionTabs;
         private static _CreateEmbedHost;
-        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): BABYLON.Nullable<HTMLDivElement>;
+        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
         static get IsVisible(): boolean;
         static EarlyAttachToLoader(): void;
         static Show(scene: BABYLON.Scene, userOptions: Partial<BABYLON.IInspectorOptions>): void;

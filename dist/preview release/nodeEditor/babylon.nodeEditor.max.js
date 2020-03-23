@@ -53730,14 +53730,12 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             _this._candidatePort = port;
         });
         props.globalState.onFramePortMoveUpObserver.add(function (nodePort) {
-            var _a;
             var frame = _this._frames.find(function (frame) { return frame.id === nodePort.frameId; });
-            (_a = frame) === null || _a === void 0 ? void 0 : _a.moveFramePortUp(nodePort);
+            frame === null || frame === void 0 ? void 0 : frame.moveFramePortUp(nodePort);
         });
         props.globalState.onFramePortMoveDownObserver.add(function (nodePort) {
-            var _a;
             var frame = _this._frames.find(function (frame) { return frame.id === nodePort.frameId; });
-            (_a = frame) === null || _a === void 0 ? void 0 : _a.moveFramePortDown(nodePort);
+            frame === null || frame === void 0 ? void 0 : frame.moveFramePortDown(nodePort);
         });
         props.globalState.onGridSizeChanged.add(function () {
             _this.gridSize = babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadNumber("GridSize", 20);
@@ -59479,7 +59477,7 @@ var OptionsLineComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "listLine" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "options" + (this.props.className ? " " + this.props.className : "") },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (evt) { return _this.updateValue(evt.target.value); }, value: (_a = this.state.value, (_a !== null && _a !== void 0 ? _a : "")) }, this.props.options.map(function (option) {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (evt) { return _this.updateValue(evt.target.value); }, value: (_a = this.state.value) !== null && _a !== void 0 ? _a : "" }, this.props.options.map(function (option) {
                     return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { key: option.label, value: option.value }, option.label));
                 })))));
     };

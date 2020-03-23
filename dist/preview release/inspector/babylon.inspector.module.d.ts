@@ -2687,7 +2687,6 @@ declare module "babylonjs-inspector/components/embedHost/embedHostComponent" {
 }
 declare module "babylonjs-inspector/inspector" {
     import { IInspectorOptions } from "babylonjs/Debug/debugLayer";
-    import { Nullable } from "babylonjs/types";
     import { Observable } from "babylonjs/Misc/observable";
     import { Scene } from "babylonjs/scene";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
@@ -2710,7 +2709,7 @@ declare module "babylonjs-inspector/inspector" {
         private static _CreateSceneExplorer;
         private static _CreateActionTabs;
         private static _CreateEmbedHost;
-        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): Nullable<HTMLDivElement>;
+        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
         static get IsVisible(): boolean;
         static EarlyAttachToLoader(): void;
         static Show(scene: Scene, userOptions: Partial<IInspectorOptions>): void;
@@ -4878,7 +4877,7 @@ declare module INSPECTOR {
         private static _CreateSceneExplorer;
         private static _CreateActionTabs;
         private static _CreateEmbedHost;
-        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): BABYLON.Nullable<HTMLDivElement>;
+        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
         static get IsVisible(): boolean;
         static EarlyAttachToLoader(): void;
         static Show(scene: BABYLON.Scene, userOptions: Partial<BABYLON.IInspectorOptions>): void;
