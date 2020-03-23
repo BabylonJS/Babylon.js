@@ -1183,8 +1183,8 @@ declare module BABYLON {
         isTrue(preprocessors: {
             [key: string]: string;
         }): boolean;
-        private static OperatorPriority;
-        private static Stack;
+        private static _OperatorPriority;
+        private static _Stack;
         static postfixToInfix(postfix: string[]): string;
         static infixToPostfix(infix: string): string[];
     }
