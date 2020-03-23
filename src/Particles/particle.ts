@@ -300,7 +300,7 @@ export class Particle {
             other._initialEndSpriteCellID = this._initialEndSpriteCellID;
         }
         if (this.particleSystem.useRampGradients) {
-            if (other.remapData) {
+            if (other.remapData && this.remapData) {
                 other.remapData.copyFrom(this.remapData);
             } else {
                 other.remapData = new Vector4(0, 0, 0, 0);
