@@ -1,10 +1,11 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
-import { Color3, Color4 } from "babylonjs/Maths/math.color";
+import { Color4 } from "babylonjs/Maths/math.color";
 import { NumericInputComponent } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { PropertyChangedEvent } from '../../propertyChangedEvent';
+import { ColorPickerLineComponent } from './colorPickerComponent';
 
 const copyIcon: string = require("./copy.svg");
 
@@ -59,7 +60,7 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
 
     onChange(newValue: string) {
         this._localChange = true;
-        const newColor = Color3.FromHexString(newValue);
+        const newColor = Color4.FromHexString(newValue);
 
         if (this.props.onPropertyChangedObservable) {
             this.props.onPropertyChangedObservable.notifyObservers({
@@ -70,11 +71,9 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
             });
         }
 
-        const newColor4 = new Color4(newColor.r, newColor.g, newColor.b, this.props.target[this.props.propertyName].a);
+        this.setPropertyValue(newColor);
 
-        this.setPropertyValue(newColor4);
-
-        this.setState({ color: newColor4 });
+        this.setState({ color: newColor });
 
         if (this.props.onChange) {
             this.props.onChange();
@@ -162,7 +161,6 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
     render() {
 
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
-        const colorAsColor3 = new Color3(this.state.color.r, this.state.color.g, this.state.color.b);
 
         return (
             <div className="color3Line">
@@ -171,7 +169,9 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
                         {this.props.label}
                     </div>
                     <div className="color3">
-                        <input type="color" value={colorAsColor3.toHexString()} onChange={(evt) => this.onChange(evt.target.value)} />
+                        <ColorPickerLineComponent value={this.state.color} onColorChanged={color => {
+                            this.onChange(color);
+                        }} />                        
                     </div>
                     <div className="copy hoverIcon" onClick={() => this.copyToClipboard()} title="Copy to clipboard">
                         <img src={copyIcon} alt=""/>

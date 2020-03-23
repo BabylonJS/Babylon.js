@@ -105,6 +105,8 @@
         "webpack-dev-server": "^3.1.14",
         "webpack-stream": "5.0.0",
         "xhr2": "^0.1.4",
-        "xmlbuilder": "8.2.2"
+        "xmlbuilder": "8.2.2",
+        "react-color": "^2.18.0",        
+        "@types/react-color": "^3.0.1"
     }
 }
