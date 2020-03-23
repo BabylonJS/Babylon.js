@@ -752,18 +752,18 @@ export class Camera extends Node {
             var halfWidth = engine.getRenderWidth() / 2.0;
             var halfHeight = engine.getRenderHeight() / 2.0;
             if (scene.useRightHandedSystem) {
-                Matrix.OrthoOffCenterRHToRef(this.orthoLeft || -halfWidth,
-                    this.orthoRight || halfWidth,
-                    this.orthoBottom || -halfHeight,
-                    this.orthoTop || halfHeight,
+                Matrix.OrthoOffCenterRHToRef(this.orthoLeft ?? -halfWidth,
+                    this.orthoRight ?? halfWidth,
+                    this.orthoBottom ?? -halfHeight,
+                    this.orthoTop ?? halfHeight,
                     this.minZ,
                     this.maxZ,
                     this._projectionMatrix);
             } else {
-                Matrix.OrthoOffCenterLHToRef(this.orthoLeft || -halfWidth,
-                    this.orthoRight || halfWidth,
-                    this.orthoBottom || -halfHeight,
-                    this.orthoTop || halfHeight,
+                Matrix.OrthoOffCenterLHToRef(this.orthoLeft ?? -halfWidth,
+                    this.orthoRight ?? halfWidth,
+                    this.orthoBottom ?? -halfHeight,
+                    this.orthoTop ?? halfHeight,
                     this.minZ,
                     this.maxZ,
                     this._projectionMatrix);
