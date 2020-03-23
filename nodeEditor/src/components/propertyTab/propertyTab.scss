@@ -211,7 +211,7 @@
     .color-picker {
         height: calc(100% - 8px);
         margin: 4px;
-        width: 100%;
+        width: calc(100% - 8px);
 
         .color-rect {
             height: calc(100% - 4px);
