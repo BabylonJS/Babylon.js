@@ -1983,6 +1983,11 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
         factor2?: string;
     }> {
         constructor(props: IFactorGradientStepGridComponent);
+        shouldComponentUpdate(nextProps: IFactorGradientStepGridComponent, nextState: {
+            gradient: number;
+            factor1: string;
+            factor2?: string;
+        }): boolean;
         updateFactor1(valueString: string): void;
         updateFactor2(valueString: string): void;
         updateGradient(gradient: number): void;
@@ -4290,6 +4295,11 @@ declare module INSPECTOR {
         factor2?: string;
     }> {
         constructor(props: IFactorGradientStepGridComponent);
+        shouldComponentUpdate(nextProps: IFactorGradientStepGridComponent, nextState: {
+            gradient: number;
+            factor1: string;
+            factor2?: string;
+        }): boolean;
         updateFactor1(valueString: string): void;
         updateFactor2(valueString: string): void;
         updateGradient(gradient: number): void;

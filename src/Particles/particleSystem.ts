@@ -2207,6 +2207,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 if (colorGradient.color2) {
                     serializedGradient.color2 = colorGradient.color2.asArray();
+                } else {
+                    serializedGradient.color2 = colorGradient.color1.asArray();
                 }
 
                 serializationObject.colorGradients.push(serializedGradient);
@@ -2239,6 +2241,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 if (colorRemapGradient.factor2 !== undefined) {
                     serializedGradient.factor2 = colorRemapGradient.factor2;
+                } else {
+                    serializedGradient.factor2 = colorRemapGradient.factor1;
                 }
 
                 serializationObject.colorRemapGradients.push(serializedGradient);
@@ -2257,6 +2261,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 if (alphaRemapGradient.factor2 !== undefined) {
                     serializedGradient.factor2 = alphaRemapGradient.factor2;
+                } else {
+                    serializedGradient.factor2 = alphaRemapGradient.factor1;
                 }
 
                 serializationObject.alphaRemapGradients.push(serializedGradient);
@@ -2275,6 +2281,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 if (sizeGradient.factor2 !== undefined) {
                     serializedGradient.factor2 = sizeGradient.factor2;
+                } else {
+                    serializedGradient.factor2 = sizeGradient.factor1;
                 }
 
                 serializationObject.sizeGradients.push(serializedGradient);
@@ -2293,6 +2301,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 if (angularSpeedGradient.factor2 !== undefined) {
                     serializedGradient.factor2 = angularSpeedGradient.factor2;
+                } else {
+                    serializedGradient.factor2 = angularSpeedGradient.factor1;
                 }
 
                 serializationObject.angularSpeedGradients.push(serializedGradient);
@@ -2311,6 +2321,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 if (velocityGradient.factor2 !== undefined) {
                     serializedGradient.factor2 = velocityGradient.factor2;
+                } else {
+                    serializedGradient.factor2 = velocityGradient.factor1;
                 }
 
                 serializationObject.velocityGradients.push(serializedGradient);
@@ -2329,6 +2341,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 if (dragGradient.factor2 !== undefined) {
                     serializedGradient.factor2 = dragGradient.factor2;
+                } else {
+                    serializedGradient.factor2 = dragGradient.factor1;
                 }
 
                 serializationObject.dragGradients.push(serializedGradient);
@@ -2347,6 +2361,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 if (emitRateGradient.factor2 !== undefined) {
                     serializedGradient.factor2 = emitRateGradient.factor2;
+                } else {
+                    serializedGradient.factor2 = emitRateGradient.factor1;
                 }
 
                 serializationObject.emitRateGradients.push(serializedGradient);
@@ -2365,6 +2381,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 if (startSizeGradient.factor2 !== undefined) {
                     serializedGradient.factor2 = startSizeGradient.factor2;
+                } else {
+                    serializedGradient.factor2 = startSizeGradient.factor1;
                 }
 
                 serializationObject.startSizeGradients.push(serializedGradient);
@@ -2383,6 +2401,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 if (lifeTimeGradient.factor2 !== undefined) {
                     serializedGradient.factor2 = lifeTimeGradient.factor2;
+                } else {
+                    serializedGradient.factor2 = lifeTimeGradient.factor1;
                 }
 
                 serializationObject.lifeTimeGradients.push(serializedGradient);
@@ -2401,6 +2421,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 if (limitVelocityGradient.factor2 !== undefined) {
                     serializedGradient.factor2 = limitVelocityGradient.factor2;
+                } else {
+                    serializedGradient.factor2 = limitVelocityGradient.factor1;
                 }
 
                 serializationObject.limitVelocityGradients.push(serializedGradient);
