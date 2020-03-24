@@ -1524,10 +1524,12 @@ declare module INSPECTOR {
     }
     export class FactorGradientStepGridComponent extends React.Component<IFactorGradientStepGridComponent, {
         gradient: number;
+        factor1: string;
+        factor2?: string;
     }> {
         constructor(props: IFactorGradientStepGridComponent);
-        updateFactor1(factor: number): void;
-        updateFactor2(factor: number): void;
+        updateFactor1(valueString: string): void;
+        updateFactor2(valueString: string): void;
         updateGradient(gradient: number): void;
         onPointerUp(): void;
         lock(): void;

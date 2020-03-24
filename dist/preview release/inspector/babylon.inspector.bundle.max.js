@@ -56332,7 +56332,13 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-rect", ref: this._floatHostRef, style: { background: this.state.hex }, onClick: function () { return _this.setState({ pickerEnabled: true }); } }),
             this.state.pickerEnabled &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-cover", onClick: function () { return _this.setState({ pickerEnabled: false }); } },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-cover", onClick: function (evt) {
+                            var _a, _b;
+                            if (evt.target !== ((_b = (_a = _this._floatRef.current) === null || _a === void 0 ? void 0 : _a.ownerDocument) === null || _b === void 0 ? void 0 : _b.querySelector(".color-picker-cover"))) {
+                                return;
+                            }
+                            _this.setState({ pickerEnabled: false });
+                        } },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-float", ref: this._floatRef },
                             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react_color__WEBPACK_IMPORTED_MODULE_3__["SketchPicker"], { color: color, disableAlpha: this.props.disableAlpha, onChange: function (color) {
                                     var hex;
@@ -62445,24 +62451,41 @@ __webpack_require__.r(__webpack_exports__);
 var FactorGradientStepGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FactorGradientStepGridComponent, _super);
     function FactorGradientStepGridComponent(props) {
+        var _a;
         var _this = _super.call(this, props) || this;
-        _this.state = { gradient: props.gradient.gradient };
+        _this.state = { gradient: props.gradient.gradient, factor1: _this.props.gradient.factor1.toString(), factor2: (_a = _this.props.gradient.factor2) === null || _a === void 0 ? void 0 : _a.toString() };
         return _this;
     }
-    FactorGradientStepGridComponent.prototype.updateFactor1 = function (factor) {
-        this.props.gradient.factor1 = factor;
+    FactorGradientStepGridComponent.prototype.updateFactor1 = function (valueString) {
+        if (/[^0-9\.\-]/g.test(valueString)) {
+            return;
+        }
+        var valueAsNumber = parseFloat(valueString);
+        this.setState({ factor1: valueString });
+        if (isNaN(valueAsNumber)) {
+            return;
+        }
+        this.props.gradient.factor1 = valueAsNumber;
         this.props.globalState.onCodeChangedObservable.notifyObservers({
             object: this.props.host,
-            code: "TARGET." + this.props.codeRecorderPropertyName + ".factor1 = " + factor + ";"
+            code: "TARGET." + this.props.codeRecorderPropertyName + ".factor1 = " + valueAsNumber + ";"
         });
         this.props.onUpdateGradient();
         this.forceUpdate();
     };
-    FactorGradientStepGridComponent.prototype.updateFactor2 = function (factor) {
-        this.props.gradient.factor2 = factor;
+    FactorGradientStepGridComponent.prototype.updateFactor2 = function (valueString) {
+        if (/[^0-9\.\-]/g.test(valueString)) {
+            return;
+        }
+        var valueAsNumber = parseFloat(valueString);
+        this.setState({ factor2: valueString });
+        if (isNaN(valueAsNumber)) {
+            return;
+        }
+        this.props.gradient.factor2 = valueAsNumber;
         this.props.globalState.onCodeChangedObservable.notifyObservers({
             object: this.props.host,
-            code: "TARGET." + this.props.codeRecorderPropertyName + ".factor2 = " + factor + ";"
+            code: "TARGET." + this.props.codeRecorderPropertyName + ".factor2 = " + valueAsNumber + ";"
         });
         this.props.onUpdateGradient();
         this.forceUpdate();
@@ -62495,10 +62518,10 @@ var FactorGradientStepGridComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "gradient-step" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "step" }, "#" + this.props.lineIndex),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "factor1" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: "0.01", className: "numeric-input", value: gradient.factor1, onBlur: function () { return _this.unlock(); }, onFocus: function () { return _this.lock(); }, onChange: function (evt) { return _this.updateFactor1(parseFloat(evt.target.value)); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: "0.01", className: "numeric-input", value: this.state.factor1, onBlur: function () { return _this.unlock(); }, onFocus: function () { return _this.lock(); }, onChange: function (evt) { return _this.updateFactor1(evt.target.value); } })),
             this.props.host instanceof babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_4__["ParticleSystem"] &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "factor2" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: "0.01", className: "numeric-input" + ((gradient.factor1 === gradient.factor2 || gradient.factor2 === undefined) ? " grayed" : ""), value: gradient.factor2, onBlur: function () { return _this.unlock(); }, onFocus: function () { return _this.lock(); }, onChange: function (evt) { return _this.updateFactor2(parseFloat(evt.target.value)); } })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: "0.01", className: "numeric-input" + ((this.state.factor1 === this.state.factor2 || gradient.factor2 === undefined) ? " grayed" : ""), value: this.state.factor2, onBlur: function () { return _this.unlock(); }, onFocus: function () { return _this.lock(); }, onChange: function (evt) { return _this.updateFactor2(evt.target.value); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "step-value" }, gradient.gradient.toFixed(2)),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "step-slider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { className: "range", type: "range", step: 0.01, min: 0, max: 1.0, value: gradient.gradient, onPointerUp: function (evt) { return _this.onPointerUp(); }, onChange: function (evt) { return _this.updateGradient(parseFloat(evt.target.value)); } })),
