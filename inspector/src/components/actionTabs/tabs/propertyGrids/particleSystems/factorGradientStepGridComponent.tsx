@@ -27,6 +27,16 @@ export class FactorGradientStepGridComponent extends React.Component<IFactorGrad
         this.state={gradient: props.gradient.gradient, factor1: this.props.gradient.factor1.toString(), factor2: this.props.gradient.factor2?.toString()};
     }
 
+    shouldComponentUpdate(nextProps: IFactorGradientStepGridComponent, nextState: {gradient: number, factor1: string, factor2?: string}) {
+        if (nextProps.gradient !== this.props.gradient) {
+            nextState.gradient = nextProps.gradient.gradient;
+            nextState.factor1 = nextProps.gradient.factor1.toString();
+            nextState.factor2 = nextProps.gradient.factor2?.toString();
+        }
+
+        return true;
+    }
+
     updateFactor1(valueString: string) {
         if (/[^0-9\.\-]/g.test(valueString)) {
             return;
