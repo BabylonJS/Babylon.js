@@ -2068,13 +2068,14 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     }
 
     /**
-     * Serializes the particle system to a JSON object.
+     * Serializes the particle system to a JSON object
+     * @param serializeTexture defines if the texture must be serialized as well
      * @returns the JSON object
      */
-    public serialize(): any {
+    public serialize(serializeTexture = false): any {
         var serializationObject: any = {};
 
-        ParticleSystem._Serialize(serializationObject, this);
+        ParticleSystem._Serialize(serializationObject, this, serializeTexture);
 
         serializationObject.textureMask = this.textureMask.asArray();
         serializationObject.customShader = this.customShader;
@@ -2102,7 +2103,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     }
 
     /** @hidden */
-    public static _Serialize(serializationObject: any, particleSystem: IParticleSystem) {
+    public static _Serialize(serializationObject: any, particleSystem: IParticleSystem, serializeTexture: boolean) {
         serializationObject.name = particleSystem.name;
         serializationObject.id = particleSystem.id;
 
@@ -2123,8 +2124,12 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
 
         if (particleSystem.particleTexture) {
-            serializationObject.textureName = particleSystem.particleTexture.name;
-            serializationObject.invertY = particleSystem.particleTexture._invertY;
+            if (serializeTexture) {
+                serializationObject.texture = particleSystem.particleTexture.serialize();
+            } else {
+                serializationObject.textureName = particleSystem.particleTexture.name;
+                serializationObject.invertY = particleSystem.particleTexture._invertY;
+            }
         }
 
         serializationObject.isLocal = particleSystem.isLocal;
@@ -2395,7 +2400,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     /** @hidden */
     public static _Parse(parsedParticleSystem: any, particleSystem: IParticleSystem, scene: Scene, rootUrl: string) {
         // Texture
-        if (parsedParticleSystem.textureName) {
+        if (parsedParticleSystem.texture) {
+            particleSystem.particleTexture = Texture.Parse(parsedParticleSystem.texture, scene, rootUrl) as Texture;
+        } else if (parsedParticleSystem.textureName) {
             particleSystem.particleTexture = new Texture(rootUrl + parsedParticleSystem.textureName, scene, false, parsedParticleSystem.invertY !== undefined ? parsedParticleSystem.invertY : true);
             particleSystem.particleTexture.name = parsedParticleSystem.textureName;
         }
