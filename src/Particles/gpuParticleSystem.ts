@@ -1658,13 +1658,14 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     }
 
     /**
-     * Serializes the particle system to a JSON object.
+     * Serializes the particle system to a JSON object
+     * @param serializeTexture defines if the texture must be serialized as well
      * @returns the JSON object
      */
-    public serialize(): any {
+    public serialize(serializeTexture = false): any {
         var serializationObject: any = {};
 
-        ParticleSystem._Serialize(serializationObject, this);
+        ParticleSystem._Serialize(serializationObject, this, serializeTexture);
         serializationObject.activeParticleCount = this.activeParticleCount;
 
         return serializationObject;

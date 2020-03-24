@@ -231,10 +231,10 @@ $line-padding-left: 2px;
                         right: 0px;
                         bottom: 0px;
                         left: 0px;
+                        z-index: 100;
                     }
 
                     .color-picker-float {
-                        z-index: 2;
                         position: absolute;  
                     }                
                 }
