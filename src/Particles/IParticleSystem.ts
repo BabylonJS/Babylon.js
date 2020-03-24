@@ -290,7 +290,7 @@ export interface IParticleSystem {
      */
     clone(name: string, newEmitter: any): Nullable<IParticleSystem>;
     /**
-     * Serializes the particle system to a JSON object     
+     * Serializes the particle system to a JSON object
      * @param serializeTexture defines if the texture must be serialized as well
      * @returns the JSON object
      */
