@@ -84,7 +84,12 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
                 {
                     this.state.pickerEnabled &&
                     <>
-                        <div className="color-picker-cover" onClick={() => this.setState({pickerEnabled: false})}>
+                        <div className="color-picker-cover" onClick={(evt) => {
+                                if (evt.target !== this._floatRef.current?.ownerDocument?.querySelector(".color-picker-cover")) {
+                                    return;
+                                }
+                                this.setState({pickerEnabled: false});
+                            }}>
                             <div className="color-picker-float" ref={this._floatRef}>
                                 <SketchPicker color={color} 
                                     disableAlpha={this.props.disableAlpha}
