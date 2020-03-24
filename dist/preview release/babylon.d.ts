@@ -12004,12 +12004,13 @@ declare module BABYLON {
          */
         clone(name: string, newEmitter: any): ParticleSystem;
         /**
-         * Serializes the particle system to a JSON object.
+         * Serializes the particle system to a JSON object
+         * @param serializeTexture defines if the texture must be serialized as well
          * @returns the JSON object
          */
-        serialize(): any;
+        serialize(serializeTexture?: boolean): any;
         /** @hidden */
-        static _Serialize(serializationObject: any, particleSystem: IParticleSystem): void;
+        static _Serialize(serializationObject: any, particleSystem: IParticleSystem, serializeTexture: boolean): void;
         /** @hidden */
         static _Parse(parsedParticleSystem: any, particleSystem: IParticleSystem, scene: Scene, rootUrl: string): void;
         /**
@@ -13247,10 +13248,11 @@ declare module BABYLON {
          */
         clone(name: string, newEmitter: any): Nullable<IParticleSystem>;
         /**
-         * Serializes the particle system to a JSON object.
+         * Serializes the particle system to a JSON object
+         * @param serializeTexture defines if the texture must be serialized as well
          * @returns the JSON object
          */
-        serialize(): any;
+        serialize(serializeTexture: boolean): any;
         /**
          * Rebuild the particle system
          */
@@ -63477,10 +63479,11 @@ declare module BABYLON {
          */
         clone(name: string, newEmitter: any): GPUParticleSystem;
         /**
-         * Serializes the particle system to a JSON object.
+         * Serializes the particle system to a JSON object
+         * @param serializeTexture defines if the texture must be serialized as well
          * @returns the JSON object
          */
-        serialize(): any;
+        serialize(serializeTexture?: boolean): any;
         /**
          * Parses a JSON object to create a GPU particle system.
          * @param parsedParticleSystem The JSON object to parse
@@ -63533,9 +63536,10 @@ declare module BABYLON {
         dispose(): void;
         /**
          * Serialize the set into a JSON compatible object
+         * @param serializeTexture defines if the texture must be serialized as well
          * @returns a JSON compatible representation of the set
          */
-        serialize(): any;
+        serialize(serializeTexture?: boolean): any;
         /**
          * Parse a new ParticleSystemSet from a serialized source
          * @param data defines a JSON compatible representation of the set

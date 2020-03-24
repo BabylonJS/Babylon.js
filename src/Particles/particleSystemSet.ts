@@ -103,14 +103,15 @@ export class ParticleSystemSet implements IDisposable {
 
     /**
      * Serialize the set into a JSON compatible object
+     * @param serializeTexture defines if the texture must be serialized as well
      * @returns a JSON compatible representation of the set
      */
-    public serialize(): any {
+    public serialize(serializeTexture = false): any {
         var result: any = {};
 
         result.systems = [];
         for (var system of this.systems) {
-            result.systems.push(system.serialize());
+            result.systems.push(system.serialize(serializeTexture));
         }
 
         if (this._emitterNode) {
