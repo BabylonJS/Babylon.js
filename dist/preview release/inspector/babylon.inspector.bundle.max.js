@@ -63069,33 +63069,35 @@ var ParticleSystemPropertyGridComponent = /** @class */ (function (_super) {
                     }, host: system, codeRecorderPropertyName: "getColorGradients()", mode: _valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["GradientGridMode"].Color4, lockObject: this.props.lockObject }),
                 system instanceof babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["ParticleSystem"] &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_12__["CheckBoxLineComponent"], { label: "Use ramp grandients", target: system, propertyName: "useRampGradients" }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["ValueGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getRampGradients(), label: "Ramp gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#ramp-gradients", onCreateRequired: function () {
-                                system.addRampGradient(0, babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["Color3"].White());
-                                system.addRampGradient(1, babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["Color3"].Black());
-                                _this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                    object: system,
-                                    code: "TARGET.addRampGradient(0, BABYLON.Color3.White());"
-                                });
-                                _this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                    object: system,
-                                    code: "TARGET.addRampGradient(1, BABYLON.Color3.Black());"
-                                });
-                            }, mode: _valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["GradientGridMode"].Color3, host: system, codeRecorderPropertyName: "getRampGradients()", lockObject: this.props.lockObject }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["ValueGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getColorRemapGradients(), label: "Color remap gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#ramp-gradients", onCreateRequired: function () {
-                                system.addColorRemapGradient(0, 1, 1);
-                                _this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                    object: system,
-                                    code: "TARGET.addColorRemapGradient(0, 1, 1);"
-                                });
-                            }, host: system, codeRecorderPropertyName: "getColorRemapGradients()", mode: _valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["GradientGridMode"].Factor, lockObject: this.props.lockObject }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["ValueGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getAlphaRemapGradients(), label: "Alpha remap gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#ramp-gradients", onCreateRequired: function () {
-                                system.addAlphaRemapGradient(0, 1, 1);
-                                _this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                    object: system,
-                                    code: "TARGET.addAlphaRemapGradient(0, 1, 1);"
-                                });
-                            }, host: system, codeRecorderPropertyName: "getAlphaRemapGradients()", mode: _valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["GradientGridMode"].Factor, lockObject: this.props.lockObject }))),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_12__["CheckBoxLineComponent"], { label: "Enable ramp grandients", target: system, propertyName: "useRampGradients" }),
+                        system.useRampGradients &&
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["ValueGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getRampGradients(), label: "Ramp gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#ramp-gradients", onCreateRequired: function () {
+                                        system.addRampGradient(0, babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["Color3"].White());
+                                        system.addRampGradient(1, babylonjs_Particles_particleSystem__WEBPACK_IMPORTED_MODULE_9__["Color3"].Black());
+                                        _this.props.globalState.onCodeChangedObservable.notifyObservers({
+                                            object: system,
+                                            code: "TARGET.addRampGradient(0, BABYLON.Color3.White());"
+                                        });
+                                        _this.props.globalState.onCodeChangedObservable.notifyObservers({
+                                            object: system,
+                                            code: "TARGET.addRampGradient(1, BABYLON.Color3.Black());"
+                                        });
+                                    }, mode: _valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["GradientGridMode"].Color3, host: system, codeRecorderPropertyName: "getRampGradients()", lockObject: this.props.lockObject }),
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["ValueGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getColorRemapGradients(), label: "Color remap gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#ramp-gradients", onCreateRequired: function () {
+                                        system.addColorRemapGradient(0, 1, 1);
+                                        _this.props.globalState.onCodeChangedObservable.notifyObservers({
+                                            object: system,
+                                            code: "TARGET.addColorRemapGradient(0, 1, 1);"
+                                        });
+                                    }, host: system, codeRecorderPropertyName: "getColorRemapGradients()", mode: _valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["GradientGridMode"].Factor, lockObject: this.props.lockObject }),
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["ValueGradientGridComponent"], { globalState: this.props.globalState, gradients: system.getAlphaRemapGradients(), label: "Alpha remap gradients", docLink: "https://doc.babylonjs.com/babylon101/particles#ramp-gradients", onCreateRequired: function () {
+                                        system.addAlphaRemapGradient(0, 1, 1);
+                                        _this.props.globalState.onCodeChangedObservable.notifyObservers({
+                                            object: system,
+                                            code: "TARGET.addAlphaRemapGradient(0, 1, 1);"
+                                        });
+                                    }, host: system, codeRecorderPropertyName: "getAlphaRemapGradients()", mode: _valueGradientGridComponent__WEBPACK_IMPORTED_MODULE_21__["GradientGridMode"].Factor, lockObject: this.props.lockObject })))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "ROTATION", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Min angular speed", target: system, propertyName: "minAngularSpeed", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Max angular speed", target: system, propertyName: "maxAngularSpeed", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -63227,7 +63229,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
 var GradientGridMode;
 (function (GradientGridMode) {
     GradientGridMode[GradientGridMode["Factor"] = 0] = "Factor";
@@ -63244,10 +63245,7 @@ var ValueGradientGridComponent = /** @class */ (function (_super) {
         var index = gradients.indexOf(step);
         if (index > -1) {
             gradients.splice(index, 1);
-            this.forceUpdate();
-            if (this.props.host instanceof babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_2__["GPUParticleSystem"]) {
-                this.props.host.forceRefreshGradients();
-            }
+            this.updateAndSync();
             this.props.globalState.onCodeChangedObservable.notifyObservers({
                 object: this.props.host,
                 code: "TARGET." + this.props.codeRecorderPropertyName + ".splice(" + index + ", 1);"
@@ -63282,9 +63280,7 @@ var ValueGradientGridComponent = /** @class */ (function (_super) {
                 });
                 break;
         }
-        if (this.props.host instanceof babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_2__["GPUParticleSystem"]) {
-            this.props.host.forceRefreshGradients();
-        }
+        this.props.host.forceRefreshGradients();
         this.forceUpdate();
     };
     ValueGradientGridComponent.prototype.checkForReOrder = function () {
@@ -63305,9 +63301,7 @@ var ValueGradientGridComponent = /** @class */ (function (_super) {
         this.forceUpdate();
     };
     ValueGradientGridComponent.prototype.updateAndSync = function () {
-        if (this.props.host instanceof babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_2__["GPUParticleSystem"]) {
-            this.props.host.forceRefreshGradients();
-        }
+        this.props.host.forceRefreshGradients();
         this.forceUpdate();
     };
     ValueGradientGridComponent.prototype.render = function () {
@@ -63318,10 +63312,7 @@ var ValueGradientGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "gradient-container" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_linkButtonComponent__WEBPACK_IMPORTED_MODULE_6__["LinkButtonComponent"], { label: this.props.label, url: this.props.docLink, icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_7__["faTrash"], onIconClick: function () {
                             gradients.length = 0;
-                            _this.forceUpdate();
-                            if (_this.props.host instanceof babylonjs_Misc_gradients__WEBPACK_IMPORTED_MODULE_2__["GPUParticleSystem"]) {
-                                _this.props.host.forceRefreshGradients();
-                            }
+                            _this.updateAndSync();
                             _this.props.globalState.onCodeChangedObservable.notifyObservers({
                                 object: _this.props.host,
                                 code: "TARGET." + _this.props.codeRecorderPropertyName + ".length = 0;"
