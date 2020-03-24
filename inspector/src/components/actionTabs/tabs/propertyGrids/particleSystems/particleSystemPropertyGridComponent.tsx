@@ -157,7 +157,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
 
     saveToFile() {        
         const system = this.props.system;
-        let content = JSON.stringify(system.serialize());
+        let content = JSON.stringify(system.serialize(true));
 
         Tools.Download(new Blob([content]), "particleSystem.json");
     }
@@ -202,7 +202,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
 
     saveToSnippet() {
         const system = this.props.system;
-        let content = JSON.stringify(system.serialize());
+        let content = JSON.stringify(system.serialize(true));
 
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = () => {
@@ -306,7 +306,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     <CheckBoxLineComponent label="Is billboard" target={system} propertyName="isBillboardBased" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Is local" target={system} propertyName="isLocal" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Force depth write" target={system} propertyName="forceDepthWrite" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <SliderLineComponent label="Update speed" target={system} propertyName="updateSpeed" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent label="Update speed" target={system} propertyName="updateSpeed" minimum={0} maximum={0.1} decimalCount={3} step={0.001} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>                      
                 <LineContainerComponent globalState={this.props.globalState} title="COMMANDS">
                     {this.renderControls()}
