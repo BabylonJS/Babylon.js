@@ -789,6 +789,34 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         return this._rampGradients;
     }
 
+    /** Force the system to rebuild all gradients that need to be resync */
+    public forceRefreshGradients() {
+        this._syncRampGradientTexture();
+    }
+
+    private _syncRampGradientTexture() {
+        if (!this._rampGradients) {
+            return;
+        }
+
+        this._rampGradients.sort((a, b) => {
+            if (a.gradient < b.gradient) {
+                return -1;
+            } else if (a.gradient > b.gradient) {
+                return 1;
+            }
+
+            return 0;
+        });
+
+        if (this._rampGradientsTexture) {
+            this._rampGradientsTexture.dispose();
+            this._rampGradientsTexture = null;
+        }
+
+        this._createRampGradientTexture();
+    }
+
     /**
      * Adds a new ramp gradient used to remap particle colors
      * @param gradient defines the gradient to use (between 0 and 1)
@@ -803,22 +831,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         let rampGradient = new Color3Gradient(gradient, color);
         this._rampGradients.push(rampGradient);
 
-        this._rampGradients.sort((a, b) => {
-            if (a.gradient < b.gradient) {
-                return -1;
-            } else if (a.gradient > b.gradient) {
-                return 1;
-            }
-
-            return 0;
-        });
-
-        if (this._rampGradientsTexture) {
-            this._rampGradientsTexture.dispose();
-            (<any>this._rampGradientsTexture) = null;
-        }
-
-        this._createRampGradientTexture();
+        this._syncRampGradientTexture();
 
         return this;
     }
@@ -830,7 +843,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      */
     public removeRampGradient(gradient: number): ParticleSystem {
         this._removeGradientAndTexture(gradient, this._rampGradients, this._rampGradientsTexture);
-        (<any>this._rampGradientsTexture) = null;
+        this._rampGradientsTexture = null;
 
         if (this._rampGradients && this._rampGradients.length > 0) {
             this._createRampGradientTexture();
@@ -1817,6 +1830,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
 
         if (this._rampGradientsTexture) {
+            if (!this._rampGradients || !this._rampGradients.length) {
+                this._rampGradientsTexture.dispose();
+                this._rampGradientsTexture = null;
+            }
             effect.setTexture("rampSampler", this._rampGradientsTexture);
         }
 
