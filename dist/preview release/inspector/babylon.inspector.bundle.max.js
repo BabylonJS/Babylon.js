@@ -56314,7 +56314,17 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
         div.style.left = host.getBoundingClientRect().left - div.getBoundingClientRect().width + "px";
     };
     ColorPickerLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        return nextProps.value.toHexString() !== this.props.value.toHexString()
+        var diffProps = nextProps.value.toHexString() !== this.props.value.toHexString();
+        if (diffProps) {
+            nextState.color = {
+                r: nextProps.value.r * 255,
+                g: nextProps.value.g * 255,
+                b: nextProps.value.b * 255,
+                a: nextProps instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"] ? nextProps.a * 100 : 100,
+            };
+            nextState.hex = nextProps.value.toHexString();
+        }
+        return diffProps
             || nextProps.disableAlpha !== this.props.disableAlpha
             || nextState.hex !== this.state.hex
             || nextState.pickerEnabled !== this.state.pickerEnabled;
@@ -62456,6 +62466,15 @@ var FactorGradientStepGridComponent = /** @class */ (function (_super) {
         _this.state = { gradient: props.gradient.gradient, factor1: _this.props.gradient.factor1.toString(), factor2: (_a = _this.props.gradient.factor2) === null || _a === void 0 ? void 0 : _a.toString() };
         return _this;
     }
+    FactorGradientStepGridComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
+        var _a;
+        if (nextProps.gradient !== this.props.gradient) {
+            nextState.gradient = nextProps.gradient.gradient;
+            nextState.factor1 = nextProps.gradient.factor1.toString();
+            nextState.factor2 = (_a = nextProps.gradient.factor2) === null || _a === void 0 ? void 0 : _a.toString();
+        }
+        return true;
+    };
     FactorGradientStepGridComponent.prototype.updateFactor1 = function (valueString) {
         if (/[^0-9\.\-]/g.test(valueString)) {
             return;
