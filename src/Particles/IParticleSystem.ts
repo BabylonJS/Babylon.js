@@ -300,6 +300,9 @@ export interface IParticleSystem {
      */
     rebuild(): void;
 
+    /** Force the system to rebuild all gradients that need to be resync */
+    forceRefreshGradients(): void;
+
     /**
      * Starts the particle system and begins to emit
      * @param delay defines the delay in milliseconds before starting the system (0 by default)

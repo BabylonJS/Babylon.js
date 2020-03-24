@@ -280,7 +280,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
     }
 
-    /** Force the system to rebuild all gradients */
+    /** Force the system to rebuild all gradients that need to be resync */
     public forceRefreshGradients() {
         this._refreshColorGradient();
         this._refreshFactorGradient(this._sizeGradients, "_sizeGradientsTexture");
