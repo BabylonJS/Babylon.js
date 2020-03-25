@@ -116,7 +116,9 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "WorleyNoise3DBlock": "Creates a random pattern resembling cells.",
         "ReflectBlock": "Outputs the direction of the input vector reflected across the surface normal.",
         "RefractBlock": "Outputs a direction simulating a deflection of the input vector.", 
-        "Rotate2dBlock": "Rotates UV coordinates around the W axis."
+        "Rotate2dBlock": "Rotates UV coordinates around the W axis.",
+        "PBRMetallicRoughnessBlock": "PBR metallic/roughness material",
+        "SheenBlock": "Sheen block"
     }
 
     constructor(props: INodeListComponentProps) {
@@ -145,6 +147,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock" , "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"], 
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
+            PBR: ["PBRMetallicRoughnessBlock", "SheenBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
             Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock"],
