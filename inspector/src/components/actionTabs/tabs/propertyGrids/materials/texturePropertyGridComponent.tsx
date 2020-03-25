@@ -68,20 +68,25 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         const texture = this.props.texture;
         Tools.ReadFile(file, (data) => {
             var blob = new Blob([data], { type: "octet/stream" });
-            var url = URL.createObjectURL(blob);
 
-            if (texture.isCube) {
-                let extension: string | undefined = undefined;
-                if (file.name.toLowerCase().indexOf(".dds") > 0) {
-                    extension = ".dds";
-                } else if (file.name.toLowerCase().indexOf(".env") > 0) {
-                    extension = ".env";
+            var reader = new FileReader();
+            reader.readAsDataURL(blob); 
+            reader.onloadend = () => {
+                let base64data = reader.result as string;     
+
+                if (texture.isCube) {
+                    let extension: string | undefined = undefined;
+                    if (file.name.toLowerCase().indexOf(".dds") > 0) {
+                        extension = ".dds";
+                    } else if (file.name.toLowerCase().indexOf(".env") > 0) {
+                        extension = ".env";
+                    }
+
+                    (texture as CubeTexture).updateURL(base64data, extension, () => this.foreceRefresh());
+                } else {
+                    (texture as Texture).updateURL(base64data, null, () => this.foreceRefresh());
                 }
-
-                (texture as CubeTexture).updateURL(url, extension, () => this.foreceRefresh());
-            } else {
-                (texture as Texture).updateURL(url, null, () => this.foreceRefresh());
-            }
+            };
 
         }, undefined, true);
     }    
@@ -115,19 +120,16 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
 
         let extension = "";
         let url = (texture as Texture).url;
+        let textureUrl = (!url || url.substring(0, 4) === "data" || url.substring(0, 4) === "blob") ? "" : url;
 
-        if (url) {
-            for (var index = url.length - 1; index >= 0; index--) {
-                if (url[index] === ".") {
+        if (textureUrl) {
+            for (var index = textureUrl.length - 1; index >= 0; index--) {
+                if (textureUrl[index] === ".") {
                     break;
                 }
-                extension = url[index] + extension;
+                extension = textureUrl[index] + extension;
             }
-        } else {
-            url = "";
         }
-
-        let textureUrl = (url.substring(0, 4) === "data" || url.substring(0, 4) === "blob") ? "" : url;
 
         return (
             <div className="pane">

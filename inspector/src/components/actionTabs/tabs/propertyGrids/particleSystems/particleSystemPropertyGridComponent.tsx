@@ -157,7 +157,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
 
     saveToFile() {        
         const system = this.props.system;
-        let content = JSON.stringify(system.serialize());
+        let content = JSON.stringify(system.serialize(true));
 
         Tools.Download(new Blob([content]), "particleSystem.json");
     }
@@ -202,7 +202,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
 
     saveToSnippet() {
         const system = this.props.system;
-        let content = JSON.stringify(system.serialize());
+        let content = JSON.stringify(system.serialize(true));
 
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = () => {
@@ -306,7 +306,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     <CheckBoxLineComponent label="Is billboard" target={system} propertyName="isBillboardBased" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Is local" target={system} propertyName="isLocal" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Force depth write" target={system} propertyName="forceDepthWrite" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <SliderLineComponent label="Update speed" target={system} propertyName="updateSpeed" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent label="Update speed" target={system} propertyName="updateSpeed" minimum={0} maximum={0.1} decimalCount={3} step={0.001} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>                      
                 <LineContainerComponent globalState={this.props.globalState} title="COMMANDS">
                     {this.renderControls()}
@@ -605,55 +605,60 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     {
                         system instanceof ParticleSystem && 
                         <>
-                            <CheckBoxLineComponent label="Use ramp grandients" target={system} propertyName="useRampGradients"/>
-                            <ValueGradientGridComponent globalState={this.props.globalState} gradients={system.getRampGradients()!} 
-                                label="Ramp gradients"
-                                docLink="https://doc.babylonjs.com/babylon101/particles#ramp-gradients"
-                                onCreateRequired={() => {
-                                    system.addRampGradient(0, Color3.White());
-                                    system.addRampGradient(1, Color3.Black());
-                                    this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                        object: system,
-                                        code: `TARGET.addRampGradient(0, BABYLON.Color3.White());`
-                                    });          
-                                    this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                        object: system,
-                                        code: `TARGET.addRampGradient(1, BABYLON.Color3.Black());`
-                                    });                          
-                                }}
-                                mode={GradientGridMode.Color3}      
-                                host={system}    
-                                codeRecorderPropertyName="getRampGradients()"                                                   
-                                lockObject={this.props.lockObject}/>                    
-                                                                    
-                            <ValueGradientGridComponent globalState={this.props.globalState} gradients={system.getColorRemapGradients()!} 
-                                label="Color remap gradients"
-                                docLink="https://doc.babylonjs.com/babylon101/particles#ramp-gradients"
-                                onCreateRequired={() => {
-                                    system.addColorRemapGradient(0, 1, 1);
-                                    this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                        object: system,
-                                        code: `TARGET.addColorRemapGradient(0, 1, 1);`
-                                    });
-                                }}
-                                host={system}    
-                                codeRecorderPropertyName="getColorRemapGradients()"      
-                                mode={GradientGridMode.Factor}                        
-                                lockObject={this.props.lockObject}/>                    
-                            <ValueGradientGridComponent globalState={this.props.globalState} gradients={system.getAlphaRemapGradients()!} 
-                                label="Alpha remap gradients"
-                                docLink="https://doc.babylonjs.com/babylon101/particles#ramp-gradients"
-                                onCreateRequired={() => {
-                                    system.addAlphaRemapGradient(0, 1, 1);
-                                    this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                        object: system,
-                                        code: `TARGET.addAlphaRemapGradient(0, 1, 1);`
-                                    });                            
-                                }}
-                                host={system}    
-                                codeRecorderPropertyName="getAlphaRemapGradients()"                             
-                                mode={GradientGridMode.Factor}                        
-                                lockObject={this.props.lockObject}/>
+                            <CheckBoxLineComponent label="Enable ramp grandients" target={system} propertyName="useRampGradients"/>
+                            {
+                                system.useRampGradients &&
+                                <>
+                                    <ValueGradientGridComponent globalState={this.props.globalState} gradients={system.getRampGradients()!} 
+                                    label="Ramp gradients"
+                                    docLink="https://doc.babylonjs.com/babylon101/particles#ramp-gradients"
+                                    onCreateRequired={() => {
+                                        system.addRampGradient(0, Color3.White());
+                                        system.addRampGradient(1, Color3.Black());
+                                        this.props.globalState.onCodeChangedObservable.notifyObservers({
+                                            object: system,
+                                            code: `TARGET.addRampGradient(0, BABYLON.Color3.White());`
+                                        });          
+                                        this.props.globalState.onCodeChangedObservable.notifyObservers({
+                                            object: system,
+                                            code: `TARGET.addRampGradient(1, BABYLON.Color3.Black());`
+                                        });                          
+                                    }}
+                                    mode={GradientGridMode.Color3}      
+                                    host={system}    
+                                    codeRecorderPropertyName="getRampGradients()"                                                   
+                                    lockObject={this.props.lockObject}/>                    
+                                                                        
+                                <ValueGradientGridComponent globalState={this.props.globalState} gradients={system.getColorRemapGradients()!} 
+                                    label="Color remap gradients"
+                                    docLink="https://doc.babylonjs.com/babylon101/particles#ramp-gradients"
+                                    onCreateRequired={() => {
+                                        system.addColorRemapGradient(0, 1, 1);
+                                        this.props.globalState.onCodeChangedObservable.notifyObservers({
+                                            object: system,
+                                            code: `TARGET.addColorRemapGradient(0, 1, 1);`
+                                        });
+                                    }}
+                                    host={system}    
+                                    codeRecorderPropertyName="getColorRemapGradients()"      
+                                    mode={GradientGridMode.Factor}                        
+                                    lockObject={this.props.lockObject}/>                    
+                                <ValueGradientGridComponent globalState={this.props.globalState} gradients={system.getAlphaRemapGradients()!} 
+                                    label="Alpha remap gradients"
+                                    docLink="https://doc.babylonjs.com/babylon101/particles#ramp-gradients"
+                                    onCreateRequired={() => {
+                                        system.addAlphaRemapGradient(0, 1, 1);
+                                        this.props.globalState.onCodeChangedObservable.notifyObservers({
+                                            object: system,
+                                            code: `TARGET.addAlphaRemapGradient(0, 1, 1);`
+                                        });                            
+                                    }}
+                                    host={system}    
+                                    codeRecorderPropertyName="getAlphaRemapGradients()"                             
+                                    mode={GradientGridMode.Factor}                        
+                                    lockObject={this.props.lockObject}/>
+                                </>
+                            }                           
                         </>
                     }                                   
                 </LineContainerComponent>                     

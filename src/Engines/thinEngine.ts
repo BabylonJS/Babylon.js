@@ -132,14 +132,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.2.0-alpha.5";
+        return "babylonjs@4.2.0-alpha.8";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.2.0-alpha.5";
+        return "4.2.0-alpha.8";
     }
 
     /**
@@ -4298,7 +4298,10 @@ export class ThinEngine {
             requester = window;
         }
 
-        if (requester.requestAnimationFrame) {
+        if (requester.requestPostAnimationFrame) {
+            return requester.requestPostAnimationFrame(func);
+        }
+        else if (requester.requestAnimationFrame) {
             return requester.requestAnimationFrame(func);
         }
         else if (requester.msRequestAnimationFrame) {
