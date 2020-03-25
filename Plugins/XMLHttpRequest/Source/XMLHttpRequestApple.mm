@@ -13,7 +13,7 @@ void InitializeXMLHttpRequest(Babylon::JsRuntime& runtime)
 {
     runtime.Dispatch([&runtime](Napi::Env env)
     {
-        JSGlobalContextRef globalContext = Napi::GetEngine<JSGlobalContextRef>(env);
+        JSGlobalContextRef globalContext = Napi::GetContext<JSGlobalContextRef>(env);
         [[XMLHttpRequest new] extend:globalContext:&runtime];
     });
 }

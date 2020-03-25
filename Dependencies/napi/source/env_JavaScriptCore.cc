@@ -18,7 +18,7 @@ namespace Napi
         delete env.operator napi_env();
     }
 
-    template<> JSGlobalContextRef GetEngine(Napi::Env env)
+    template<> JSGlobalContextRef GetContext(Napi::Env env)
     {
         napi_env napienv = env;
         return napienv->m_globalContext;
