@@ -110,36 +110,6 @@ declare module "babylonjs-node-editor/diagram/display/displayManager" {
         getHeaderText(block: NodeMaterialBlock): string;
     }
 }
-declare module "babylonjs-node-editor/diagram/nodePort" {
-    import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
-    import { GlobalState } from "babylonjs-node-editor/globalState";
-    import { Nullable } from 'babylonjs/types';
-    import { IDisplayManager } from "babylonjs-node-editor/diagram/display/displayManager";
-    import { GraphNode } from "babylonjs-node-editor/diagram/graphNode";
-    export class NodePort {
-        connectionPoint: NodeMaterialConnectionPoint;
-        node: GraphNode;
-        private _element;
-        private _img;
-        private _globalState;
-        private _onCandidateLinkMovedObserver;
-        private _portLabel;
-        private _frameId;
-        private _isInput;
-        private _framePortId;
-        delegatedPort: Nullable<NodePort>;
-        get element(): HTMLDivElement;
-        get frameId(): Nullable<number>;
-        get isInput(): boolean;
-        get portLabel(): string;
-        get framePortId(): Nullable<number>;
-        set portLabel(newLabel: string);
-        refresh(): void;
-        constructor(portContainer: HTMLElement, connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, globalState: GlobalState, isInput: boolean, frameId: Nullable<number>, framePortId: number | undefined);
-        dispose(): void;
-        static CreatePortElement(connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement, displayManager: Nullable<IDisplayManager>, globalState: GlobalState, isInput: boolean, frameId: number | null | undefined, framePortId: number | undefined): NodePort;
-    }
-}
 declare module "babylonjs-node-editor/nodeLocationInfo" {
     export interface INodeLocationInfo {
         blockId: number;
@@ -195,6 +165,38 @@ declare module "babylonjs-node-editor/stringTools" {
         static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
     }
 }
+declare module "babylonjs-node-editor/diagram/frameNodePort" {
+    import { NodePort } from "babylonjs-node-editor/diagram/nodePort";
+    import { GraphNode } from "babylonjs-node-editor/diagram/graphNode";
+    import { FramePortPosition } from "babylonjs-node-editor/diagram/graphFrame";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { IDisplayManager } from "babylonjs-node-editor/diagram/display/displayManager";
+    import { Observable } from 'babylonjs/Misc/observable';
+    import { Nullable } from 'babylonjs/types';
+    import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
+    export class FrameNodePort extends NodePort {
+        connectionPoint: NodeMaterialConnectionPoint;
+        node: GraphNode;
+        private _onFramePortMoveUpObservable;
+        private _onFramePortMoveDownObservable;
+        private _onFramePortPositionChangedObservable;
+        private _portLabel;
+        private _isInput;
+        private _framePortPosition;
+        private _framePortId;
+        get onFramePortMoveUpObservable(): Observable<FrameNodePort>;
+        get onFramePortMoveDownObservable(): Observable<FrameNodePort>;
+        get onFramePortPositionChangedObservable(): Observable<FramePortPosition>;
+        get isInput(): boolean;
+        get portLabel(): string;
+        get framePortId(): Nullable<number>;
+        set portLabel(newLabel: string);
+        get framePortPosition(): FramePortPosition;
+        set framePortPosition(position: FramePortPosition);
+        constructor(portContainer: HTMLElement, connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, globalState: GlobalState, isInput: boolean, framePortId: number);
+        static CreateFrameNodePortElement(connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement, displayManager: Nullable<IDisplayManager>, globalState: GlobalState, isInput: boolean, framePortId: number): FrameNodePort;
+    }
+}
 declare module "babylonjs-node-editor/diagram/graphFrame" {
     import { GraphNode } from "babylonjs-node-editor/diagram/graphNode";
     import { GraphCanvasComponent } from "babylonjs-node-editor/diagram/graphCanvas";
@@ -202,7 +204,12 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
     import { Observable } from 'babylonjs/Misc/observable';
     import { IFrameData } from "babylonjs-node-editor/nodeLocationInfo";
     import { Color3 } from 'babylonjs/Maths/math.color';
-    import { NodePort } from "babylonjs-node-editor/diagram/nodePort";
+    import { FrameNodePort } from "babylonjs-node-editor/diagram/frameNodePort";
+    export enum FramePortPosition {
+        Top = 0,
+        Middle = 1,
+        Bottom = 2
+    }
     export class GraphFrame {
         private readonly CollapsedWidth;
         private static _FrameCounter;
@@ -230,8 +237,10 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         private _mouseStartPointX;
         private _mouseStartPointY;
         private _onSelectionChangedObserver;
+        private _onGraphNodeRemovalObserver;
         private _isCollapsed;
-        private _ports;
+        private _frameInPorts;
+        private _frameOutPorts;
         private _controlledPorts;
         private _id;
         private _comments;
@@ -249,7 +258,7 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         private _createInputPort;
         set isCollapsed(value: boolean);
         get nodes(): GraphNode[];
-        get ports(): NodePort[];
+        get ports(): FrameNodePort[];
         get name(): string;
         set name(value: string);
         get color(): Color3;
@@ -275,10 +284,10 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         private _onUp;
         private _moveFrame;
         private _onMove;
-        moveFramePortUp(nodePort: NodePort): void;
-        private _moveFramePortUp;
-        moveFramePortDown(nodePort: NodePort): void;
-        private _moveFramePortDown;
+        private moveFramePortUp;
+        private _movePortUp;
+        private moveFramePortDown;
+        private _movePortDown;
         private initResizing;
         private cleanUpResizing;
         private updateMinHeightWithComments;
@@ -330,11 +339,39 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         }): GraphFrame;
     }
 }
+declare module "babylonjs-node-editor/diagram/nodePort" {
+    import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { Nullable } from 'babylonjs/types';
+    import { Observer } from 'babylonjs/Misc/observable';
+    import { Vector2 } from 'babylonjs/Maths/math.vector';
+    import { IDisplayManager } from "babylonjs-node-editor/diagram/display/displayManager";
+    import { GraphNode } from "babylonjs-node-editor/diagram/graphNode";
+    import { NodeLink } from "babylonjs-node-editor/diagram/nodeLink";
+    import { GraphFrame } from "babylonjs-node-editor/diagram/graphFrame";
+    import { FrameNodePort } from "babylonjs-node-editor/diagram/frameNodePort";
+    export class NodePort {
+        connectionPoint: NodeMaterialConnectionPoint;
+        node: GraphNode;
+        protected _element: HTMLDivElement;
+        protected _img: HTMLImageElement;
+        protected _globalState: GlobalState;
+        protected _onCandidateLinkMovedObserver: Nullable<Observer<Nullable<Vector2>>>;
+        protected _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | GraphFrame | NodePort | FrameNodePort>>>;
+        delegatedPort: Nullable<FrameNodePort>;
+        get element(): HTMLDivElement;
+        refresh(): void;
+        constructor(portContainer: HTMLElement, connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, globalState: GlobalState);
+        dispose(): void;
+        static CreatePortElement(connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement, displayManager: Nullable<IDisplayManager>, globalState: GlobalState): NodePort;
+    }
+}
 declare module "babylonjs-node-editor/diagram/nodeLink" {
     import { GraphCanvasComponent } from "babylonjs-node-editor/diagram/graphCanvas";
     import { GraphNode } from "babylonjs-node-editor/diagram/graphNode";
     import { NodePort } from "babylonjs-node-editor/diagram/nodePort";
     import { Observable } from 'babylonjs/Misc/observable';
+    import { FrameNodePort } from "babylonjs-node-editor/diagram/frameNodePort";
     export class NodeLink {
         private _graphCanvas;
         private _portA;
@@ -348,8 +385,8 @@ declare module "babylonjs-node-editor/diagram/nodeLink" {
         onDisposedObservable: Observable<NodeLink>;
         get isVisible(): boolean;
         set isVisible(value: boolean);
-        get portA(): NodePort;
-        get portB(): NodePort | undefined;
+        get portA(): FrameNodePort | NodePort;
+        get portB(): FrameNodePort | NodePort | undefined;
         get nodeA(): GraphNode;
         get nodeB(): GraphNode | undefined;
         update(endX?: number, endY?: number, straight?: boolean): void;
@@ -1400,12 +1437,13 @@ declare module "babylonjs-node-editor/globalState" {
     import { NodePort } from "babylonjs-node-editor/diagram/nodePort";
     import { NodeLink } from "babylonjs-node-editor/diagram/nodeLink";
     import { GraphFrame } from "babylonjs-node-editor/diagram/graphFrame";
+    import { FrameNodePort } from "babylonjs-node-editor/diagram/frameNodePort";
     export class GlobalState {
         nodeMaterial: NodeMaterial;
         hostElement: HTMLElement;
         hostDocument: HTMLDocument;
         hostWindow: Window;
-        onSelectionChangedObservable: Observable<Nullable<NodePort | GraphNode | GraphFrame | NodeLink>>;
+        onSelectionChangedObservable: Observable<Nullable<GraphNode | NodePort | NodeLink | GraphFrame>>;
         onRebuildRequiredObservable: Observable<void>;
         onBuiltObservable: Observable<void>;
         onResetRequiredObservable: Observable<void>;
@@ -1423,10 +1461,9 @@ declare module "babylonjs-node-editor/globalState" {
         onAnimationCommandActivated: Observable<void>;
         onCandidateLinkMoved: Observable<Nullable<Vector2>>;
         onSelectionBoxMoved: Observable<DOMRect | ClientRect>;
-        onFrameCreated: Observable<GraphFrame>;
-        onCandidatePortSelected: Observable<Nullable<NodePort>>;
-        onFramePortMoveUpObserver: Observable<NodePort>;
-        onFramePortMoveDownObserver: Observable<NodePort>;
+        onFrameCreatedObservable: Observable<GraphFrame>;
+        onCandidatePortSelectedObservable: Observable<Nullable<FrameNodePort | NodePort>>;
+        onGraphNodeRemovalObservable: Observable<GraphNode>;
         onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
         onGridSizeChanged: Observable<void>;
         previewMeshType: PreviewMeshType;
@@ -1490,16 +1527,21 @@ declare module "babylonjs-node-editor/diagram/properties/framePropertyComponent"
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-node-editor/diagram/properties/nodePortPropertyComponent" {
+declare module "babylonjs-node-editor/diagram/properties/frameNodePortPropertyComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
-    import { NodePort } from "babylonjs-node-editor/diagram/nodePort";
-    export interface INodePortPropertyTabComponentProps {
+    import { FramePortPosition } from "babylonjs-node-editor/diagram/graphFrame";
+    import { FrameNodePort } from "babylonjs-node-editor/diagram/frameNodePort";
+    export interface IFrameNodePortPropertyTabComponentProps {
         globalState: GlobalState;
-        nodePort: NodePort;
+        frameNodePort: FrameNodePort;
     }
-    export class NodePortPropertyTabComponent extends React.Component<INodePortPropertyTabComponentProps> {
-        constructor(props: INodePortPropertyTabComponentProps);
+    export class FrameNodePortPropertyTabComponent extends React.Component<IFrameNodePortPropertyTabComponentProps, {
+        framePortPosition: FramePortPosition;
+    }> {
+        private _onFramePortPositionChangedObserver;
+        constructor(props: IFrameNodePortPropertyTabComponentProps);
+        componentWillUnmount(): void;
         render(): JSX.Element;
     }
 }
@@ -1510,14 +1552,14 @@ declare module "babylonjs-node-editor/components/propertyTab/propertyTabComponen
     import { GraphNode } from "babylonjs-node-editor/diagram/graphNode";
     import { GraphFrame } from "babylonjs-node-editor/diagram/graphFrame";
     import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
-    import { NodePort } from "babylonjs-node-editor/diagram/nodePort";
+    import { FrameNodePort } from "babylonjs-node-editor/diagram/frameNodePort";
     interface IPropertyTabComponentProps {
         globalState: GlobalState;
     }
     export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, {
         currentNode: Nullable<GraphNode>;
         currentFrame: Nullable<GraphFrame>;
-        currentNodePort: Nullable<NodePort>;
+        currentFrameNodePort: Nullable<FrameNodePort>;
     }> {
         private _onBuiltObserver;
         constructor(props: IPropertyTabComponentProps);
@@ -1787,31 +1829,6 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export class NodePort {
-        connectionPoint: BABYLON.NodeMaterialConnectionPoint;
-        node: GraphNode;
-        private _element;
-        private _img;
-        private _globalState;
-        private _onCandidateLinkMovedObserver;
-        private _portLabel;
-        private _frameId;
-        private _isInput;
-        private _framePortId;
-        delegatedPort: BABYLON.Nullable<NodePort>;
-        get element(): HTMLDivElement;
-        get frameId(): BABYLON.Nullable<number>;
-        get isInput(): boolean;
-        get portLabel(): string;
-        get framePortId(): BABYLON.Nullable<number>;
-        set portLabel(newLabel: string);
-        refresh(): void;
-        constructor(portContainer: HTMLElement, connectionPoint: BABYLON.NodeMaterialConnectionPoint, node: GraphNode, globalState: GlobalState, isInput: boolean, frameId: BABYLON.Nullable<number>, framePortId: number | undefined);
-        dispose(): void;
-        static CreatePortElement(connectionPoint: BABYLON.NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement, displayManager: BABYLON.Nullable<IDisplayManager>, globalState: GlobalState, isInput: boolean, frameId: number | null | undefined, framePortId: number | undefined): NodePort;
-    }
-}
-declare module NODEEDITOR {
     export interface INodeLocationInfo {
         blockId: number;
         x: number;
@@ -1863,6 +1880,35 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export class FrameNodePort extends NodePort {
+        connectionPoint: BABYLON.NodeMaterialConnectionPoint;
+        node: GraphNode;
+        private _onFramePortMoveUpObservable;
+        private _onFramePortMoveDownObservable;
+        private _onFramePortPositionChangedObservable;
+        private _portLabel;
+        private _isInput;
+        private _framePortPosition;
+        private _framePortId;
+        get onFramePortMoveUpObservable(): BABYLON.Observable<FrameNodePort>;
+        get onFramePortMoveDownObservable(): BABYLON.Observable<FrameNodePort>;
+        get onFramePortPositionChangedObservable(): BABYLON.Observable<FramePortPosition>;
+        get isInput(): boolean;
+        get portLabel(): string;
+        get framePortId(): BABYLON.Nullable<number>;
+        set portLabel(newLabel: string);
+        get framePortPosition(): FramePortPosition;
+        set framePortPosition(position: FramePortPosition);
+        constructor(portContainer: HTMLElement, connectionPoint: BABYLON.NodeMaterialConnectionPoint, node: GraphNode, globalState: GlobalState, isInput: boolean, framePortId: number);
+        static CreateFrameNodePortElement(connectionPoint: BABYLON.NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement, displayManager: BABYLON.Nullable<IDisplayManager>, globalState: GlobalState, isInput: boolean, framePortId: number): FrameNodePort;
+    }
+}
+declare module NODEEDITOR {
+    export enum FramePortPosition {
+        Top = 0,
+        Middle = 1,
+        Bottom = 2
+    }
     export class GraphFrame {
         private readonly CollapsedWidth;
         private static _FrameCounter;
@@ -1890,8 +1936,10 @@ declare module NODEEDITOR {
         private _mouseStartPointX;
         private _mouseStartPointY;
         private _onSelectionChangedObserver;
+        private _onGraphNodeRemovalObserver;
         private _isCollapsed;
-        private _ports;
+        private _frameInPorts;
+        private _frameOutPorts;
         private _controlledPorts;
         private _id;
         private _comments;
@@ -1909,7 +1957,7 @@ declare module NODEEDITOR {
         private _createInputPort;
         set isCollapsed(value: boolean);
         get nodes(): GraphNode[];
-        get ports(): NodePort[];
+        get ports(): FrameNodePort[];
         get name(): string;
         set name(value: string);
         get color(): BABYLON.Color3;
@@ -1935,10 +1983,10 @@ declare module NODEEDITOR {
         private _onUp;
         private _moveFrame;
         private _onMove;
-        moveFramePortUp(nodePort: NodePort): void;
-        private _moveFramePortUp;
-        moveFramePortDown(nodePort: NodePort): void;
-        private _moveFramePortDown;
+        private moveFramePortUp;
+        private _movePortUp;
+        private moveFramePortDown;
+        private _movePortDown;
         private initResizing;
         private cleanUpResizing;
         private updateMinHeightWithComments;
@@ -1991,6 +2039,23 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export class NodePort {
+        connectionPoint: BABYLON.NodeMaterialConnectionPoint;
+        node: GraphNode;
+        protected _element: HTMLDivElement;
+        protected _img: HTMLImageElement;
+        protected _globalState: GlobalState;
+        protected _onCandidateLinkMovedObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.Nullable<BABYLON.Vector2>>>;
+        protected _onSelectionChangedObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.Nullable<GraphNode | NodeLink | GraphFrame | NodePort | FrameNodePort>>>;
+        delegatedPort: BABYLON.Nullable<FrameNodePort>;
+        get element(): HTMLDivElement;
+        refresh(): void;
+        constructor(portContainer: HTMLElement, connectionPoint: BABYLON.NodeMaterialConnectionPoint, node: GraphNode, globalState: GlobalState);
+        dispose(): void;
+        static CreatePortElement(connectionPoint: BABYLON.NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement, displayManager: BABYLON.Nullable<IDisplayManager>, globalState: GlobalState): NodePort;
+    }
+}
+declare module NODEEDITOR {
     export class NodeLink {
         private _graphCanvas;
         private _portA;
@@ -2004,8 +2069,8 @@ declare module NODEEDITOR {
         onDisposedObservable: BABYLON.Observable<NodeLink>;
         get isVisible(): boolean;
         set isVisible(value: boolean);
-        get portA(): NodePort;
-        get portB(): NodePort | undefined;
+        get portA(): FrameNodePort | NodePort;
+        get portB(): FrameNodePort | NodePort | undefined;
         get nodeA(): GraphNode;
         get nodeB(): GraphNode | undefined;
         update(endX?: number, endY?: number, straight?: boolean): void;
@@ -2902,7 +2967,7 @@ declare module NODEEDITOR {
         hostElement: HTMLElement;
         hostDocument: HTMLDocument;
         hostWindow: Window;
-        onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<NodePort | GraphNode | GraphFrame | NodeLink>>;
+        onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<GraphNode | NodePort | NodeLink | GraphFrame>>;
         onRebuildRequiredObservable: BABYLON.Observable<void>;
         onBuiltObservable: BABYLON.Observable<void>;
         onResetRequiredObservable: BABYLON.Observable<void>;
@@ -2920,10 +2985,9 @@ declare module NODEEDITOR {
         onAnimationCommandActivated: BABYLON.Observable<void>;
         onCandidateLinkMoved: BABYLON.Observable<BABYLON.Nullable<BABYLON.Vector2>>;
         onSelectionBoxMoved: BABYLON.Observable<DOMRect | ClientRect>;
-        onFrameCreated: BABYLON.Observable<GraphFrame>;
-        onCandidatePortSelected: BABYLON.Observable<BABYLON.Nullable<NodePort>>;
-        onFramePortMoveUpObserver: BABYLON.Observable<NodePort>;
-        onFramePortMoveDownObserver: BABYLON.Observable<NodePort>;
+        onFrameCreatedObservable: BABYLON.Observable<GraphFrame>;
+        onCandidatePortSelectedObservable: BABYLON.Observable<BABYLON.Nullable<FrameNodePort | NodePort>>;
+        onGraphNodeRemovalObservable: BABYLON.Observable<GraphNode>;
         onGetNodeFromBlock: (block: BABYLON.NodeMaterialBlock) => GraphNode;
         onGridSizeChanged: BABYLON.Observable<void>;
         previewMeshType: PreviewMeshType;
@@ -2982,12 +3046,16 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export interface INodePortPropertyTabComponentProps {
+    export interface IFrameNodePortPropertyTabComponentProps {
         globalState: GlobalState;
-        nodePort: NodePort;
+        frameNodePort: FrameNodePort;
     }
-    export class NodePortPropertyTabComponent extends React.Component<INodePortPropertyTabComponentProps> {
-        constructor(props: INodePortPropertyTabComponentProps);
+    export class FrameNodePortPropertyTabComponent extends React.Component<IFrameNodePortPropertyTabComponentProps, {
+        framePortPosition: FramePortPosition;
+    }> {
+        private _onFramePortPositionChangedObserver;
+        constructor(props: IFrameNodePortPropertyTabComponentProps);
+        componentWillUnmount(): void;
         render(): JSX.Element;
     }
 }
@@ -2998,7 +3066,7 @@ declare module NODEEDITOR {
     export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, {
         currentNode: BABYLON.Nullable<GraphNode>;
         currentFrame: BABYLON.Nullable<GraphFrame>;
-        currentNodePort: BABYLON.Nullable<NodePort>;
+        currentFrameNodePort: BABYLON.Nullable<FrameNodePort>;
     }> {
         private _onBuiltObserver;
         constructor(props: IPropertyTabComponentProps);

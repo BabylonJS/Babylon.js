@@ -1,9 +1,11 @@
 import { NodePort } from "./nodePort";
-import { Nullable, Observable, NodeMaterialConnectionPoint } from 'babylonjs';
 import { GraphNode } from './graphNode';
 import { FramePortPosition } from './graphFrame';
 import { GlobalState } from '../globalState';
 import { IDisplayManager } from './display/displayManager';
+import { Observable } from 'babylonjs/Misc/observable';
+import { Nullable } from 'babylonjs/types';
+import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
 
 export class FrameNodePort extends NodePort {
     private _onFramePortMoveUpObservable = new Observable<FrameNodePort>();

@@ -60696,17 +60696,15 @@ declare module BABYLON {
         indices?: number[];
     }
     /**
-     * Helper class to render one or more effects
+     * Helper class to render one or more effects.
+     * You can access the previous rendering in your shader by declaring a sampler named textureSampler
      */
     export class EffectRenderer {
         private engine;
         private static _DefaultOptions;
         private _vertexBuffers;
         private _indexBuffer;
-        private _ringBufferIndex;
-        private _ringScreenBuffer;
         private _fullscreenViewport;
-        private _getNextFrameBuffer;
         /**
          * Creates an effect renderer
          * @param engine the engine to use for rendering
@@ -60734,12 +60732,13 @@ declare module BABYLON {
          * Draws a full screen quad.
          */
         draw(): void;
+        private isRenderTargetTexture;
         /**
          * renders one or more effects to a specified texture
-         * @param effectWrappers list of effects to renderer
-         * @param outputTexture texture to draw to, if null it will render to the screen
+         * @param effectWrapper the effect to renderer
+         * @param outputTexture texture to draw to, if null it will render to the screen.
          */
-        render(effectWrappers: Array<EffectWrapper> | EffectWrapper, outputTexture?: Nullable<Texture>): void;
+        render(effectWrapper: EffectWrapper, outputTexture?: Nullable<InternalTexture | RenderTargetTexture>): void;
         /**
          * Disposes of the effect renderer
          */
