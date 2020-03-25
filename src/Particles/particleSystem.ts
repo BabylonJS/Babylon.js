@@ -750,7 +750,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * @returns the current particle system
      */
     public removeStartSizeGradient(gradient: number): IParticleSystem {
-        this._removeFactorGradient(this._emitRateGradients, gradient);
+        this._removeFactorGradient(this._startSizeGradients, gradient);
 
         return this;
     }
@@ -789,6 +789,34 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         return this._rampGradients;
     }
 
+    /** Force the system to rebuild all gradients that need to be resync */
+    public forceRefreshGradients() {
+        this._syncRampGradientTexture();
+    }
+
+    private _syncRampGradientTexture() {
+        if (!this._rampGradients) {
+            return;
+        }
+
+        this._rampGradients.sort((a, b) => {
+            if (a.gradient < b.gradient) {
+                return -1;
+            } else if (a.gradient > b.gradient) {
+                return 1;
+            }
+
+            return 0;
+        });
+
+        if (this._rampGradientsTexture) {
+            this._rampGradientsTexture.dispose();
+            this._rampGradientsTexture = null;
+        }
+
+        this._createRampGradientTexture();
+    }
+
     /**
      * Adds a new ramp gradient used to remap particle colors
      * @param gradient defines the gradient to use (between 0 and 1)
@@ -803,22 +831,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         let rampGradient = new Color3Gradient(gradient, color);
         this._rampGradients.push(rampGradient);
 
-        this._rampGradients.sort((a, b) => {
-            if (a.gradient < b.gradient) {
-                return -1;
-            } else if (a.gradient > b.gradient) {
-                return 1;
-            }
-
-            return 0;
-        });
-
-        if (this._rampGradientsTexture) {
-            this._rampGradientsTexture.dispose();
-            (<any>this._rampGradientsTexture) = null;
-        }
-
-        this._createRampGradientTexture();
+        this._syncRampGradientTexture();
 
         return this;
     }
@@ -830,7 +843,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      */
     public removeRampGradient(gradient: number): ParticleSystem {
         this._removeGradientAndTexture(gradient, this._rampGradients, this._rampGradientsTexture);
-        (<any>this._rampGradientsTexture) = null;
+        this._rampGradientsTexture = null;
 
         if (this._rampGradients && this._rampGradients.length > 0) {
             this._createRampGradientTexture();
@@ -1817,6 +1830,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
 
         if (this._rampGradientsTexture) {
+            if (!this._rampGradients || !this._rampGradients.length) {
+                this._rampGradientsTexture.dispose();
+                this._rampGradientsTexture = null;
+            }
             effect.setTexture("rampSampler", this._rampGradientsTexture);
         }
 
@@ -2068,13 +2085,14 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     }
 
     /**
-     * Serializes the particle system to a JSON object.
+     * Serializes the particle system to a JSON object
+     * @param serializeTexture defines if the texture must be serialized as well
      * @returns the JSON object
      */
-    public serialize(): any {
+    public serialize(serializeTexture = false): any {
         var serializationObject: any = {};
 
-        ParticleSystem._Serialize(serializationObject, this);
+        ParticleSystem._Serialize(serializationObject, this, serializeTexture);
 
         serializationObject.textureMask = this.textureMask.asArray();
         serializationObject.customShader = this.customShader;
@@ -2102,7 +2120,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     }
 
     /** @hidden */
-    public static _Serialize(serializationObject: any, particleSystem: IParticleSystem) {
+    public static _Serialize(serializationObject: any, particleSystem: IParticleSystem, serializeTexture: boolean) {
         serializationObject.name = particleSystem.name;
         serializationObject.id = particleSystem.id;
 
@@ -2123,8 +2141,12 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
 
         if (particleSystem.particleTexture) {
-            serializationObject.textureName = particleSystem.particleTexture.name;
-            serializationObject.invertY = particleSystem.particleTexture._invertY;
+            if (serializeTexture) {
+                serializationObject.texture = particleSystem.particleTexture.serialize();
+            } else {
+                serializationObject.textureName = particleSystem.particleTexture.name;
+                serializationObject.invertY = particleSystem.particleTexture._invertY;
+            }
         }
 
         serializationObject.isLocal = particleSystem.isLocal;
@@ -2185,6 +2207,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 if (colorGradient.color2) {
                     serializedGradient.color2 = colorGradient.color2.asArray();
+                } else {
+                    serializedGradient.color2 = colorGradient.color1.asArray();
                 }
 
                 serializationObject.colorGradients.push(serializedGradient);
@@ -2217,6 +2241,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 if (colorRemapGradient.factor2 !== undefined) {
                     serializedGradient.factor2 = colorRemapGradient.factor2;
+                } else {
+                    serializedGradient.factor2 = colorRemapGradient.factor1;
                 }
 
                 serializationObject.colorRemapGradients.push(serializedGradient);
@@ -2235,6 +2261,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 if (alphaRemapGradient.factor2 !== undefined) {
                     serializedGradient.factor2 = alphaRemapGradient.factor2;
+                } else {
+                    serializedGradient.factor2 = alphaRemapGradient.factor1;
                 }
 
                 serializationObject.alphaRemapGradients.push(serializedGradient);
@@ -2253,6 +2281,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 if (sizeGradient.factor2 !== undefined) {
                     serializedGradient.factor2 = sizeGradient.factor2;
+                } else {
+                    serializedGradient.factor2 = sizeGradient.factor1;
                 }
 
                 serializationObject.sizeGradients.push(serializedGradient);
@@ -2271,6 +2301,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 if (angularSpeedGradient.factor2 !== undefined) {
                     serializedGradient.factor2 = angularSpeedGradient.factor2;
+                } else {
+                    serializedGradient.factor2 = angularSpeedGradient.factor1;
                 }
 
                 serializationObject.angularSpeedGradients.push(serializedGradient);
@@ -2289,6 +2321,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 if (velocityGradient.factor2 !== undefined) {
                     serializedGradient.factor2 = velocityGradient.factor2;
+                } else {
+                    serializedGradient.factor2 = velocityGradient.factor1;
                 }
 
                 serializationObject.velocityGradients.push(serializedGradient);
@@ -2307,6 +2341,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 if (dragGradient.factor2 !== undefined) {
                     serializedGradient.factor2 = dragGradient.factor2;
+                } else {
+                    serializedGradient.factor2 = dragGradient.factor1;
                 }
 
                 serializationObject.dragGradients.push(serializedGradient);
@@ -2325,6 +2361,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 if (emitRateGradient.factor2 !== undefined) {
                     serializedGradient.factor2 = emitRateGradient.factor2;
+                } else {
+                    serializedGradient.factor2 = emitRateGradient.factor1;
                 }
 
                 serializationObject.emitRateGradients.push(serializedGradient);
@@ -2343,6 +2381,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 if (startSizeGradient.factor2 !== undefined) {
                     serializedGradient.factor2 = startSizeGradient.factor2;
+                } else {
+                    serializedGradient.factor2 = startSizeGradient.factor1;
                 }
 
                 serializationObject.startSizeGradients.push(serializedGradient);
@@ -2361,6 +2401,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 if (lifeTimeGradient.factor2 !== undefined) {
                     serializedGradient.factor2 = lifeTimeGradient.factor2;
+                } else {
+                    serializedGradient.factor2 = lifeTimeGradient.factor1;
                 }
 
                 serializationObject.lifeTimeGradients.push(serializedGradient);
@@ -2379,6 +2421,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 if (limitVelocityGradient.factor2 !== undefined) {
                     serializedGradient.factor2 = limitVelocityGradient.factor2;
+                } else {
+                    serializedGradient.factor2 = limitVelocityGradient.factor1;
                 }
 
                 serializationObject.limitVelocityGradients.push(serializedGradient);
@@ -2395,7 +2439,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     /** @hidden */
     public static _Parse(parsedParticleSystem: any, particleSystem: IParticleSystem, scene: Scene, rootUrl: string) {
         // Texture
-        if (parsedParticleSystem.textureName) {
+        if (parsedParticleSystem.texture) {
+            particleSystem.particleTexture = Texture.Parse(parsedParticleSystem.texture, scene, rootUrl) as Texture;
+        } else if (parsedParticleSystem.textureName) {
             particleSystem.particleTexture = new Texture(rootUrl + parsedParticleSystem.textureName, scene, false, parsedParticleSystem.invertY !== undefined ? parsedParticleSystem.invertY : true);
             particleSystem.particleTexture.name = parsedParticleSystem.textureName;
         }

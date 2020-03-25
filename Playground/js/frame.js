@@ -118,7 +118,9 @@ run = function () {
                 if (scene.activeCamera || scene.activeCameras.length > 0) {
                     scene.render();
                 }
-                if (fpsLabel) {
+                if (fpsLabel && !(scene.activeCamera && 
+                    scene.activeCamera.getClassName && 
+                    scene.activeCamera.getClassName() === 'WebXRCamera')) {
                     fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
                 }
             }.bind(this));

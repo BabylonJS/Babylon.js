@@ -213,11 +213,37 @@ $line-padding-left: 2px;
                     }
                 }
 
+                .color-picker {
+                    height: calc(100% - 8px);
+                    margin: 4px;
+                    width: 100%;
+
+                    .color-rect {
+                        height: calc(100% - 4px);
+                        border: 2px white solid;
+                        cursor: pointer;
+                        min-height: 18px;
+                    }
+
+                    .color-picker-cover {
+                        position: fixed;
+                        top: 0px;
+                        right: 0px;
+                        bottom: 0px;
+                        left: 0px;
+                        z-index: 100;
+                    }
+
+                    .color-picker-float {
+                        position: absolute;  
+                    }                
+                }
+
                 .linkButtonLine {
                     padding-left: $line-padding-left;
                     height: 30px;
                     display: grid;
-                    grid-template-columns: 1fr auto;
+                    grid-template-columns: 1fr auto 20px;
 
                     .link {
                         grid-column: 1;
@@ -252,6 +278,12 @@ $line-padding-left: 2px;
                             border: 1px solid rgb(51, 122, 183);
                             outline: 0px;
                         } 
+                    }
+
+                    .link-icon{
+                        grid-column: 3;
+                        display: grid;
+                        align-content: center;
                     }
                 }
 
@@ -328,6 +360,15 @@ $line-padding-left: 2px;
                         .step {
                             grid-row: 1;
                             grid-column: 1;
+                        }
+
+                        .color1 {
+                            height: 100%;
+                        }
+
+                        .color2{
+                            height: 100%;
+                            padding-left: 5px;
                         }
                             
                         .factor1 {
@@ -834,6 +875,7 @@ $line-padding-left: 2px;
 
                         .color3 {
                             grid-column: 2;
+                            width: 50px;
                             
                             display: flex;
                             align-items: center;   

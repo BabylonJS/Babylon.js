@@ -19,32 +19,66 @@ interface IFactorGradientStepGridComponent {
     codeRecorderPropertyName: string,
 }
 
-export class FactorGradientStepGridComponent extends React.Component<IFactorGradientStepGridComponent, {gradient: number}> {
+export class FactorGradientStepGridComponent extends React.Component<IFactorGradientStepGridComponent, {gradient: number, factor1: string, factor2?: string}> {
 
     constructor(props: IFactorGradientStepGridComponent) {
         super(props);
 
-        this.state={gradient: props.gradient.gradient};
+        this.state={gradient: props.gradient.gradient, factor1: this.props.gradient.factor1.toString(), factor2: this.props.gradient.factor2?.toString()};
     }
 
-    updateFactor1(factor: number) {
-        this.props.gradient.factor1 = factor;
+    shouldComponentUpdate(nextProps: IFactorGradientStepGridComponent, nextState: {gradient: number, factor1: string, factor2?: string}) {
+        if (nextProps.gradient !== this.props.gradient) {
+            nextState.gradient = nextProps.gradient.gradient;
+            nextState.factor1 = nextProps.gradient.factor1.toString();
+            nextState.factor2 = nextProps.gradient.factor2?.toString();
+        }
+
+        return true;
+    }
+
+    updateFactor1(valueString: string) {
+        if (/[^0-9\.\-]/g.test(valueString)) {
+            return;
+        }
+
+        let valueAsNumber = parseFloat(valueString);
+
+        this.setState({factor1: valueString});
+
+        if (isNaN(valueAsNumber)) {
+            return;
+        }
+
+        this.props.gradient.factor1 = valueAsNumber;
 
         this.props.globalState.onCodeChangedObservable.notifyObservers({
             object: this.props.host,
-            code: `TARGET.${this.props.codeRecorderPropertyName}.factor1 = ${factor};`
+            code: `TARGET.${this.props.codeRecorderPropertyName}.factor1 = ${valueAsNumber};`
         });                 
 
         this.props.onUpdateGradient();
         this.forceUpdate();
     }    
 
-    updateFactor2(factor: number) {
-        this.props.gradient.factor2 = factor;
+    updateFactor2(valueString: string) {
+        if (/[^0-9\.\-]/g.test(valueString)) {
+            return;
+        }
+
+        let valueAsNumber = parseFloat(valueString);
+
+        this.setState({factor2: valueString});
+
+        if (isNaN(valueAsNumber)) {
+            return;
+        }
+
+        this.props.gradient.factor2 = valueAsNumber;
 
         this.props.globalState.onCodeChangedObservable.notifyObservers({
             object: this.props.host,
-            code: `TARGET.${this.props.codeRecorderPropertyName}.factor2 = ${factor};`
+            code: `TARGET.${this.props.codeRecorderPropertyName}.factor2 = ${valueAsNumber};`
         });         
 
         this.props.onUpdateGradient();
@@ -89,14 +123,14 @@ export class FactorGradientStepGridComponent extends React.Component<IFactorGrad
                     {`#${this.props.lineIndex}`}
                 </div>
                 <div className="factor1">
-                    <input type="number" step={"0.01"} className="numeric-input" value={gradient.factor1} onBlur={() => this.unlock()} onFocus={() => this.lock()}
-                        onChange={evt => this.updateFactor1(parseFloat(evt.target.value))} />
+                    <input type="number" step={"0.01"} className="numeric-input" value={this.state.factor1} onBlur={() => this.unlock()} onFocus={() => this.lock()}
+                        onChange={evt => this.updateFactor1(evt.target.value)} />
                 </div>
                 {
                     this.props.host instanceof ParticleSystem &&
                     <div className="factor2">
-                        <input type="number" step={"0.01"} className={"numeric-input" + ((gradient.factor1 === gradient.factor2 || gradient.factor2 === undefined) ? " grayed" : "")} value={gradient.factor2} onBlur={() => this.unlock()} onFocus={() => this.lock()} 
-                            onChange={evt => this.updateFactor2(parseFloat(evt.target.value))} />
+                        <input type="number" step={"0.01"} className={"numeric-input" + ((this.state.factor1 === this.state.factor2 || gradient.factor2 === undefined) ? " grayed" : "")} value={this.state.factor2} onBlur={() => this.unlock()} onFocus={() => this.lock()} 
+                            onChange={evt => this.updateFactor2(evt.target.value)} />
                     </div>
                 }
                 <div className="step-value">
@@ -107,7 +141,7 @@ export class FactorGradientStepGridComponent extends React.Component<IFactorGrad
                         onPointerUp={evt => this.onPointerUp()}
                         onChange={evt => this.updateGradient(parseFloat(evt.target.value))} />
                 </div>
-                <div className="gradient-delete" onClick={() => this.props.onDelete()}>
+                <div className="gradient-delete hoverIcon" onClick={() => this.props.onDelete()}>
                     <FontAwesomeIcon icon={faTrash} />
                 </div>
             </div>
