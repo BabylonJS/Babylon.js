@@ -4298,7 +4298,10 @@ export class ThinEngine {
             requester = window;
         }
 
-        if (requester.requestAnimationFrame) {
+        if (requester.requestPostAnimationFrame) {
+            return requester.requestPostAnimationFrame(func);
+        }
+        else if (requester.requestAnimationFrame) {
             return requester.requestAnimationFrame(func);
         }
         else if (requester.msRequestAnimationFrame) {
