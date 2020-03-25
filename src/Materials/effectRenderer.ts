@@ -1,5 +1,5 @@
 import { Nullable } from '../types';
-import { Texture } from '../Materials/Textures/texture';
+import { RenderTargetTexture } from '../Materials/Textures/renderTargetTexture';
 import { ThinEngine } from '../Engines/thinEngine';
 import { VertexBuffer } from '../Meshes/buffer';
 import { Viewport } from '../Maths/math.viewport';
@@ -12,6 +12,7 @@ import "../Engines/Extensions/engine.renderTarget";
 
 // Prevents ES6 Crash if not imported.
 import "../Shaders/postprocess.vertex";
+import { InternalTexture } from './Textures';
 
 /**
  * Effect Render Options
@@ -25,19 +26,6 @@ export interface IEffectRendererOptions {
      * Defines the indices.
      */
     indices?: number[];
-    /**
-     * width of the textures created by the effect renderer. By default, textures are created the same size than the canvas
-     */
-    textureWidth?: number;
-    /**
-     * height of the textures created by the effect renderer. By default, textures are created the same size than the canvas
-     */
-    textureHeight?: number;
-     /**
-     * Flip between the two internal textures for input/output and does not use the outputTexture parameter of the render function
-     * To get the texture used for the latest rendering, read the outputTexture property
-     */
-    useInternalTexturesOnly?: boolean;
 }
 
 /**
@@ -49,68 +37,12 @@ export class EffectRenderer {
     private static _DefaultOptions: IEffectRendererOptions = {
         positions: [1, 1, -1, 1, -1, -1, 1, -1],
         indices: [0, 1, 2, 0, 2, 3],
-        useInternalTexturesOnly: false,
     };
 
     private _vertexBuffers: {[key: string]: VertexBuffer};
     private _indexBuffer: DataBuffer;
 
-    private _ringBufferIndex = 0;
-    private _ringScreenBuffer: Nullable<Array<Texture>> = null;
     private _fullscreenViewport = new Viewport(0, 0, 1, 1);
-
-    private _outputTexture: Nullable<Texture>;
-    /**
-     * Get the texture used for the latest rendering. If useInternalTexturesOnly is false and you passed null
-     * to the render function, you will get null here
-     */
-    public get outputTexture(): Nullable<Texture> {
-        return this._outputTexture;
-    }
-
-    /**
-     * width of the textures created by the effect renderer. By default, textures are created the same size than the canvas
-     */
-    public textureWidth: number | undefined;
-    /**
-     * height of the textures created by the effect renderer. By default, textures are created the same size than the canvas
-     */
-    public textureHeight: number | undefined;
-
-    /**
-     * Flip between the two internal textures for input/output and does not use the outputTexture parameter of the render function
-     * To get the texture used for the latest rendering, use outputTexture. In this mode, you can use the previous rendering texture
-     * with a sampler name textureSampler in your shader
-     */
-    public useInternalTexturesOnly: boolean = false;
-
-    private _getNextFrameBuffer(incrementIndex = true) {
-        if (!this._ringScreenBuffer) {
-            this._ringScreenBuffer = [];
-            for (var i = 0; i < 2; i++) {
-                var internalTexture = this.engine.createRenderTargetTexture(
-                    {
-                        width: this.textureWidth ?? this.engine.getRenderWidth(true),
-                        height: this.textureHeight ?? this.engine.getRenderHeight(true),
-                    },
-                    {
-                        generateDepthBuffer: false,
-                        generateStencilBuffer: false,
-                        generateMipMaps: false,
-                        samplingMode: Constants.TEXTURE_NEAREST_NEAREST,
-                    },
-                );
-                var texture = new Texture("", null);
-                texture._texture = internalTexture;
-                this._ringScreenBuffer.push(texture);
-            }
-        }
-        var ret = this._ringScreenBuffer[this._ringBufferIndex];
-        if (incrementIndex) {
-            this._ringBufferIndex = (this._ringBufferIndex + 1) % 2;
-        }
-        return ret;
-    }
 
     /**
      * Creates an effect renderer
@@ -122,10 +54,6 @@ export class EffectRenderer {
             ...EffectRenderer._DefaultOptions,
             ...options,
         };
-
-        this.textureWidth = options.textureWidth;
-        this.textureHeight = options.textureHeight;
-        this.useInternalTexturesOnly = options.useInternalTexturesOnly ?? false;
 
         this._vertexBuffers = {
             [VertexBuffer.PositionKind]: new VertexBuffer(engine, options.positions!, VertexBuffer.PositionKind, false, false, 2),
@@ -168,79 +96,47 @@ export class EffectRenderer {
         this.engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, 6);
     }
 
+    private isRenderTargetTexture(texture: InternalTexture | RenderTargetTexture): texture is RenderTargetTexture  {
+        return (texture as RenderTargetTexture).renderList !== undefined;
+    }
+
     /**
      * renders one or more effects to a specified texture
-     * @param effectWrappers list of effects to renderer
+     * @param effectWrapper the effect to renderer
      * @param outputTexture texture to draw to, if null it will render to the screen. Note that this parameter is not used if useInternalTexturesOnly is true
-     * @returns returns the texture used for the latest rendering
      */
-    public render(effectWrappers: Array<EffectWrapper> | EffectWrapper, outputTexture: Nullable<Texture> = null): Nullable<Texture> {
-        if (!Array.isArray(effectWrappers)) {
-            effectWrappers = [effectWrappers];
-        }
-
-        // Ensure all effects are ready
-        for (var wrapper of effectWrappers) {
-            if (!wrapper.effect.isReady()) {
-                return null;
-            }
+    public render(effectWrapper: EffectWrapper, outputTexture: Nullable<InternalTexture | RenderTargetTexture> = null) {
+        // Ensure effect is ready
+        if (!effectWrapper.effect.isReady()) {
+            return ;
         }
 
         // No need here for full screen render.
         this.engine.depthCullingState.depthTest = false;
         this.engine.stencilState.stencilTest = false;
 
-        var renderTo = outputTexture;
+        // Reset state
+        this.setViewport();
 
-        effectWrappers.forEach((effectWrapper, i) => {
-            renderTo = outputTexture;
+        const out = outputTexture === null ? null : this.isRenderTargetTexture(outputTexture) ? outputTexture.getInternalTexture()! : outputTexture;
 
-            // for any next effect make it's input the output of the previous effect
-            if (this.useInternalTexturesOnly || i !== 0) {
-                effectWrapper.effect.onBindObservable.addOnce(() => {
-                    effectWrapper.effect.setTexture("textureSampler", this._getNextFrameBuffer(false));
-                });
-            }
+        if (out) {
+            this.engine.bindFramebuffer(out);
+        }
 
-            // Set the output to the next screenbuffer
-            if (this.useInternalTexturesOnly || (effectWrappers as Array<EffectWrapper>).length > 1 && i != (effectWrappers as Array<EffectWrapper>).length - 1) {
-                renderTo = this._getNextFrameBuffer();
-            } else {
-                renderTo = outputTexture;
-            }
+        this.applyEffectWrapper(effectWrapper);
 
-            // Reset state
-            this.setViewport();
+        this.draw();
 
-            if (renderTo) {
-                this.engine.bindFramebuffer(renderTo.getInternalTexture()!);
-            }
-
-            this.applyEffectWrapper(effectWrapper);
-
-            this.draw();
-
-            if (renderTo) {
-                this.engine.unBindFramebuffer(renderTo.getInternalTexture()!);
-            }
-        });
-
-        this._outputTexture = renderTo;
-
-        return renderTo;
+        if (out) {
+            this.engine.unBindFramebuffer(out);
+        }
     }
 
     /**
      * Disposes of the effect renderer
      */
     dispose() {
-        if (this._ringScreenBuffer) {
-            this._ringScreenBuffer.forEach((b) => {
-                b.dispose();
-            });
-            this._ringScreenBuffer = null;
-        }
-
         var vertexBuffer = this._vertexBuffers[VertexBuffer.PositionKind];
         if (vertexBuffer) {
             vertexBuffer.dispose();
