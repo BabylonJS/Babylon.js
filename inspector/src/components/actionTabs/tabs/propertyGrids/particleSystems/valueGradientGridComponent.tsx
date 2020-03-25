@@ -9,7 +9,6 @@ import { ColorGradientStepGridComponent } from './colorGradientStepGridComponent
 import { Color4, Color3 } from 'babylonjs/Maths/math.color';
 import { LinkButtonComponent } from '../../../lines/linkButtonComponent';
 import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
-import { GPUParticleSystem } from 'babylonjs/Particles/gpuParticleSystem';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
 export enum GradientGridMode {
@@ -43,11 +42,7 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
 
         if (index > -1) {
             gradients.splice(index, 1);
-            this.forceUpdate();
-
-            if (this.props.host instanceof GPUParticleSystem) {
-                this.props.host.forceRefreshGradients();
-            }
+            this.updateAndSync();
 
             this.props.globalState.onCodeChangedObservable.notifyObservers({
                 object: this.props.host,
@@ -86,9 +81,7 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
                 break;              
         }
 
-        if (this.props.host instanceof GPUParticleSystem) {
-            this.props.host.forceRefreshGradients();
-        }
+        this.props.host.forceRefreshGradients();
 
         this.forceUpdate();
     }
@@ -126,9 +119,7 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
     }
 
     updateAndSync() {
-        if (this.props.host instanceof GPUParticleSystem) {
-            this.props.host.forceRefreshGradients();
-        }
+        this.props.host.forceRefreshGradients();
         
         this.forceUpdate();         
     }
@@ -145,11 +136,7 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
                             icon={faTrash}
                             onIconClick={() => {
                                 gradients!.length = 0;
-                                this.forceUpdate();
-
-                                if (this.props.host instanceof GPUParticleSystem) {
-                                    this.props.host.forceRefreshGradients();
-                                }
+                                this.updateAndSync();
                     
                                 this.props.globalState.onCodeChangedObservable.notifyObservers({
                                     object: this.props.host,
