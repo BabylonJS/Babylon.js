@@ -53978,6 +53978,11 @@ declare module BABYLON {
          */
         protected _shouldRenderMesh(mesh: Mesh): boolean;
         /**
+         * Adds specific effects defines.
+         * @param defines The defines to add specifics to.
+         */
+        protected _addCustomEffectDefines(defines: string[]): void;
+        /**
          * Sets the required values for both the emissive texture and and the main color.
          */
         protected _setEmissiveTextureAndColor(mesh: Mesh, subMesh: SubMesh, material: Material): void;
