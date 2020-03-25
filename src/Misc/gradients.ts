@@ -113,6 +113,13 @@ export class GradientHelper {
      * @param updateFunc defines the callback function used to get the final value from the selected gradients
      */
     public static GetCurrentGradient(ratio: number, gradients: IValueGradient[], updateFunc: (current: IValueGradient, next: IValueGradient, scale: number) => void) {
+
+        // Use last index if over
+        if (gradients[0].gradient > ratio) {
+            updateFunc(gradients[0], gradients[0], 1.0);
+            return;
+        }
+
         for (var gradientIndex = 0; gradientIndex < gradients.length - 1; gradientIndex++) {
             let currentGradient = gradients[gradientIndex];
             let nextGradient = gradients[gradientIndex + 1];

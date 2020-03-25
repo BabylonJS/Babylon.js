@@ -57,7 +57,19 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
     }
 
     shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState) {
-        return nextProps.value.toHexString() !== this.props.value.toHexString() 
+        let diffProps = nextProps.value.toHexString() !== this.props.value.toHexString();
+
+        if (diffProps) {
+            nextState.color =  {
+                r: nextProps.value.r * 255,
+                g: nextProps.value.g * 255,
+                b: nextProps.value.b * 255,
+                a: nextProps instanceof Color4 ? nextProps.a * 100 : 100,
+            };
+            nextState.hex = nextProps.value.toHexString();
+        }
+
+        return diffProps
             || nextProps.disableAlpha !== this.props.disableAlpha 
             || nextState.hex !== this.state.hex
             || nextState.pickerEnabled !== this.state.pickerEnabled;
@@ -84,7 +96,12 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
                 {
                     this.state.pickerEnabled &&
                     <>
-                        <div className="color-picker-cover" onClick={() => this.setState({pickerEnabled: false})}>
+                        <div className="color-picker-cover" onClick={(evt) => {
+                                if (evt.target !== this._floatRef.current?.ownerDocument?.querySelector(".color-picker-cover")) {
+                                    return;
+                                }
+                                this.setState({pickerEnabled: false});
+                            }}>
                             <div className="color-picker-float" ref={this._floatRef}>
                                 <SketchPicker color={color} 
                                     disableAlpha={this.props.disableAlpha}
