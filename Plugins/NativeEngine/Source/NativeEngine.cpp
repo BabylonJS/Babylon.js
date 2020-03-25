@@ -221,9 +221,9 @@ namespace Babylon
             bgfx::TextureFormat::RGBA8,
             bgfx::TextureFormat::RGBA32F};
 
-        static_assert(bimg::TextureFormat::Count == bgfx::TextureFormat::Count);
-        static_assert(bimg::TextureFormat::RGBA8 == bgfx::TextureFormat::RGBA8);
-        static_assert(bimg::TextureFormat::RGB8 == bgfx::TextureFormat::RGB8);
+        static_assert(static_cast<bgfx::TextureFormat::Enum>(bimg::TextureFormat::Count) == bgfx::TextureFormat::Count);
+        static_assert(static_cast<bgfx::TextureFormat::Enum>(bimg::TextureFormat::RGBA8) == bgfx::TextureFormat::RGBA8);
+        static_assert(static_cast<bgfx::TextureFormat::Enum>(bimg::TextureFormat::RGB8) == bgfx::TextureFormat::RGB8);
 
         bgfx::TextureFormat::Enum Cast(bimg::TextureFormat::Enum format)
         {

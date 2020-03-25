@@ -5,7 +5,7 @@ android {
     compileSdkVersion 28
 
     defaultConfig {
-        applicationId 'com.android.testapp'
+        applicationId 'com.android.babylonnative.playground'
         minSdkVersion "${platformVersion}"
         targetSdkVersion 28
         externalNativeBuild {

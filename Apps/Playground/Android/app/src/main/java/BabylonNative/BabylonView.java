@@ -1,14 +1,10 @@
 package BabylonNative;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 
 public class BabylonView extends SurfaceView implements SurfaceHolder.Callback2, View.OnTouchListener {
     private static final String TAG = "BabylonView";
@@ -17,12 +13,12 @@ public class BabylonView extends SurfaceView implements SurfaceHolder.Callback2,
 
     public BabylonView(Context context, ViewDelegate viewDelegate) {
         super(context);
-        
+
         SurfaceHolder holder = getHolder();
         holder.addCallback(this);
         setOnTouchListener(this);
         this.mViewDelegate = viewDelegate;
-        
+
         BabylonNative.Wrapper.initEngine(context.getResources().getAssets());
     }
 
@@ -75,8 +71,7 @@ public class BabylonView extends SurfaceView implements SurfaceHolder.Callback2,
     }
 
     @Override
-    public boolean onTouch(View v, MotionEvent event)
-    {
+    public boolean onTouch(View v, MotionEvent event) {
         float mX = event.getX();
         float mY = event.getY();
         switch (event.getAction()) {

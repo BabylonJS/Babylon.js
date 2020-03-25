@@ -1,4 +1,3 @@
 <resources>
-    <string name="appviewer_activity">appviewer</string>
-
+    <string name="playground_activity">Babylon Native Playground</string>
 </resources>

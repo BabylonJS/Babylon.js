@@ -149,7 +149,7 @@ namespace Babylon
             bgfx::setViewRect(ViewId, 0, 0, Width, Height);
         }
 
-        bgfx::FrameBufferHandle FrameBuffer{BGFX_INVALID_HANDLE};
+        bgfx::FrameBufferHandle FrameBuffer{bgfx::kInvalidHandle};
         bgfx::ViewId ViewId{};
         ViewClearState ViewClearState;
         uint16_t Width{};
@@ -213,7 +213,7 @@ namespace Babylon
     {
         uint8_t Stage{};
         // uninitilized bgfx resource is BGFX_INVALID_HANDLE. 0 can be a valid handle.
-        bgfx::UniformHandle Handle{BGFX_INVALID_HANDLE};
+        bgfx::UniformHandle Handle{bgfx::kInvalidHandle};
     };
 
     struct TextureData final
@@ -226,7 +226,7 @@ namespace Babylon
             }
         }
 
-        bgfx::TextureHandle Texture{BGFX_INVALID_HANDLE};
+        bgfx::TextureHandle Texture{bgfx::kInvalidHandle};
         uint32_t Width{0};
         uint32_t Height{0};
         uint32_t Flags{0};

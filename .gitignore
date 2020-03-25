@@ -1,2 +1,5 @@
 /Build
 .DS_Store
+
+# TODO: temporary until we figure out how to deal with V8 on Android
+/Dependencies/v8

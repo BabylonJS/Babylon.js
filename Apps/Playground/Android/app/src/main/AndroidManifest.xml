@@ -15,14 +15,13 @@
 -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.android.appviewer">
-  <uses-feature android:glEsVersion="0x00030000" android:required="true" />
+          package="com.android.babylonnative.playground">
   <application
       android:allowBackup="false"
       android:fullBackupContent="false"
       android:icon="@mipmap/ic_launcher"
-      android:label="@string/appviewer_activity">
-    <activity android:name="AndroidViewAppActivity"
+      android:label="@string/playground_activity">
+    <activity android:name="PlaygroundActivity"
               android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
               android:launchMode="singleTask"
               android:configChanges="orientation|keyboardHidden|screenSize">
@@ -33,18 +32,21 @@
       <intent-filter >
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
-        <data android:scheme="file" />
+        <data android:scheme="file"
+            android:host="*" />
         <data android:pathPattern=".*\\.glb" />
       </intent-filter>
       <intent-filter >
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
-        <data android:scheme="content" />
+        <data android:scheme="content"
+            android:host="*" />
         <data android:mimeType="*/*" />
         <data android:pathPattern=".*\\.glb" />
       </intent-filter>
     </activity>
   </application>
+  <uses-feature android:glEsVersion="0x00030000" android:required="true" />
   <uses-permission android:name="android.permission.INTERNET" />
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />

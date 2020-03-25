@@ -16,12 +16,12 @@
 [submodule "bgfx.cmake"]
 	path = Dependencies/bgfx.cmake
 	url = https://github.com/BabylonJS/bgfx.cmake
-[submodule "Library/Dependencies/ios-cmake"]
+[submodule "Dependencies/ios-cmake"]
 	path = Dependencies/ios-cmake
 	url = https://github.com/leetal/ios-cmake.git
-[submodule "Library/Dependencies/xr/Dependencies/OpenXR-SDK"]
+[submodule "Dependencies/xr/Dependencies/OpenXR-SDK"]
 	path = Dependencies/xr/Dependencies/OpenXR-SDK
 	url = https://github.com/KhronosGroup/OpenXR-SDK
-[submodule "Library/Dependencies/openssl/openssl"]
+[submodule "Dependencies/openssl/openssl"]
 	path = Dependencies/openssl/openssl
 	url = https://github.com/openssl/openssl.git
