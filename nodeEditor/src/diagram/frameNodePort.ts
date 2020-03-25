@@ -53,35 +53,10 @@ export class FrameNodePort extends NodePort {
 
     public constructor(portContainer: HTMLElement, public connectionPoint: NodeMaterialConnectionPoint, public node: GraphNode, globalState: GlobalState, isInput: boolean, framePortId: number) {
         super(portContainer, connectionPoint,node, globalState);
-        this._element = portContainer.ownerDocument!.createElement("div");
-        this._element.classList.add("port");
-        portContainer.appendChild(this._element);
-        this._globalState = globalState;
 
         this._portLabel = portContainer.children[0];
         this._isInput = isInput;
         this._framePortId = framePortId;
-
-
-        this._img = portContainer.ownerDocument!.createElement("img");
-        this._element.appendChild(this._img );
-
-        (this._element as any).port = this;
-
-        // Drag support
-        this._element.ondragstart= () => false;
-
-        this._onCandidateLinkMovedObserver = globalState.onCandidateLinkMoved.add(coords => {
-            const rect = this._element.getBoundingClientRect();
-
-            if (!coords || rect.left > coords.x || rect.right < coords.x || rect.top > coords.y || rect.bottom < coords.y) {
-                this._element.classList.remove("selected"); 
-                return;
-            }
-
-            this._element.classList.add("selected"); 
-            this._globalState.onCandidatePortSelectedObservable.notifyObservers(this);
-        });
 
         this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add((selection) => {
             if (selection === this) {
