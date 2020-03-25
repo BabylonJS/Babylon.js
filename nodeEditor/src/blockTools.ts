@@ -62,6 +62,8 @@ import { DerivativeBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/deriva
 import { RefractBlock } from 'babylonjs/Materials/Node/Blocks/refractBlock';
 import { ReflectBlock } from 'babylonjs/Materials/Node/Blocks/reflectBlock';
 import { DesaturateBlock } from 'babylonjs/Materials/Node/Blocks/desaturateBlock';
+import { PBRMetallicRoughnessBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/pbrMetallicRoughnessBlock';
+import { SheenBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/sheenBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
@@ -432,7 +434,11 @@ export class BlockTools {
 
                 return transformBlock;
             }              
-        }
+            case "PBRMetallicRoughnessBlock":
+                return new PBRMetallicRoughnessBlock("PBRMetallicRoughness");
+            case "SheenBlock":
+                return new SheenBlock("Sheen");
+            }
 
         return null;
     }
