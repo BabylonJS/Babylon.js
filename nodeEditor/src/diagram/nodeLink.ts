@@ -4,11 +4,12 @@ import { NodePort } from './nodePort';
 import { Nullable } from 'babylonjs/types';
 import { Observer, Observable } from 'babylonjs/Misc/observable';
 import { GraphFrame } from './graphFrame';
+import { FrameNodePort } from './frameNodePort';
 
 export class NodeLink {
     private _graphCanvas: GraphCanvasComponent;
-    private _portA: NodePort;
-    private _portB?: NodePort;
+    private _portA: NodePort | FrameNodePort;
+    private _portB?: NodePort | FrameNodePort;
     private _nodeA: GraphNode;
     private _nodeB?: GraphNode;
     private _path: SVGPathElement;
