@@ -33,7 +33,6 @@ void InitializeXMLHttpRequest(Babylon::JsRuntime& runtime)
 @synthesize _urlSession;
 @synthesize _httpMethod;
 @synthesize _url;
-//@synthesize _urlString;
 @synthesize _async;
 @synthesize _requestHeaders;
 @synthesize _responseHeaders;
@@ -76,7 +75,6 @@ static Babylon::JsRuntime* _runtime = nil;
     // TODO should throw an error if called with wrong arguments
     self._httpMethod = httpMethod;
     self._url = [NSURL URLWithString:url];
-    //self._urlString = [[NSString alloc]initWithString:url];
     self._async = async;
     self.readyState = @(XMLHttpRequestOPENED);
 }
@@ -90,7 +88,6 @@ static Babylon::JsRuntime* _runtime = nil;
 }
 
 - (void)send:(id)data {
-    //self._url = [NSURL URLWithString:self._urlString];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:self._url];
     for (NSString *name in _requestHeaders) {
         [request setValue:_requestHeaders[name] forHTTPHeaderField:name];
