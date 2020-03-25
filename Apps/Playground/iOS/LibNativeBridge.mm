@@ -12,8 +12,6 @@
 std::unique_ptr<Babylon::AppRuntime> runtime{};
 std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
 
-
-
 @implementation LibNativeBridge
 
 - (instancetype)init
