@@ -1,5 +1,6 @@
 import { Nullable } from '../types';
-import { RenderTargetTexture } from '../Materials/Textures/renderTargetTexture';
+import { InternalTexture } from './Textures/internalTexture';
+import { RenderTargetTexture } from './Textures/renderTargetTexture';
 import { ThinEngine } from '../Engines/thinEngine';
 import { VertexBuffer } from '../Meshes/buffer';
 import { Viewport } from '../Maths/math.viewport';
@@ -8,11 +9,8 @@ import { Observable } from '../Misc/observable';
 import { Effect } from './effect';
 import { DataBuffer } from '../Meshes/dataBuffer';
 
-import "../Engines/Extensions/engine.renderTarget";
-
 // Prevents ES6 Crash if not imported.
 import "../Shaders/postprocess.vertex";
-import { InternalTexture } from './Textures';
 
 /**
  * Effect Render Options
@@ -103,7 +101,7 @@ export class EffectRenderer {
     /**
      * renders one or more effects to a specified texture
      * @param effectWrapper the effect to renderer
-     * @param outputTexture texture to draw to, if null it will render to the screen. Note that this parameter is not used if useInternalTexturesOnly is true
+     * @param outputTexture texture to draw to, if null it will render to the screen.
      */
     public render(effectWrapper: EffectWrapper, outputTexture: Nullable<InternalTexture | RenderTargetTexture> = null) {
         // Ensure effect is ready
