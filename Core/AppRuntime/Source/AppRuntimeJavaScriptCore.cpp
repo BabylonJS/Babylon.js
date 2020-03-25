@@ -1,6 +1,6 @@
 #include "AppRuntime.h"
 
-#include <JavaScriptCore/JavaScriptCore.h>
+#include <JavaScriptCore/JavaScript.h>
 
 namespace Babylon
 {

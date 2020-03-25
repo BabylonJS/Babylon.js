@@ -60,55 +60,63 @@ namespace Babylon
 
         std::thread{[taskCompletionSource, url = std::move(url)] () mutable
         {
-            DataT data{};
-
-            // TODO : this is a workaround for asset loading on Android. To remove when the plugin system is in place.
-#if (ANDROID)
-            AAsset* asset = AAssetManager_open(g_assetMgrNative, url.c_str(),
-                AASSET_MODE_UNKNOWN);
-            if (asset)
+            try
             {
-                size_t size = AAsset_getLength64(asset);
-                data.resize(size);
-                AAsset_read(asset, data.data(), size);
-                AAsset_close(asset);
-                return std::move(data);
-            }
-#endif
+                DataT data{};
 
-            auto curl = curl_easy_init();
-            if (curl)
-            {
-                curl_easy_setopt(curl, CURLOPT_URL, url.data());
-                curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-
-                curl_write_callback callback = [](char* buffer, size_t size, size_t nitems, void* userData) {
-                    auto& data = *static_cast<DataT*>(userData);
-                    data.insert(data.end(), buffer, buffer + nitems);
-                    return nitems;
-                };
-
-                curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, callback);
-                curl_easy_setopt(curl, CURLOPT_WRITEDATA, &data);
-
+                // TODO : this is a workaround for asset loading on Android. To remove when the plugin system is in place.
 #if (ANDROID)
-                /*
-                * /!\ warning! this is a security issue
-                * https://github.com/BabylonJS/BabylonNative/issues/96
-                */
-                curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0);
-                curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
-#endif
-
-                auto result = curl_easy_perform(curl);
-                if (result != CURLE_OK)
+                AAsset* asset = AAssetManager_open(g_assetMgrNative, url.c_str(),
+                    AASSET_MODE_UNKNOWN);
+                if (asset)
                 {
-                    throw std::exception();
+                    size_t size = AAsset_getLength64(asset);
+                    data.resize(size);
+                    AAsset_read(asset, data.data(), size);
+                    AAsset_close(asset);
+                    taskCompletionSource.complete(std::move(data));
+                    return;
                 }
+#endif
 
-                curl_easy_cleanup(curl);
+                auto curl = curl_easy_init();
+                if (curl)
+                {
+                    curl_easy_setopt(curl, CURLOPT_URL, url.data());
+                    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 
-                taskCompletionSource.complete(std::move(data));
+                    curl_write_callback callback = [](char* buffer, size_t size, size_t nitems, void* userData) {
+                        auto& data = *static_cast<DataT*>(userData);
+                        data.insert(data.end(), buffer, buffer + nitems);
+                        return nitems;
+                    };
+
+                    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, callback);
+                    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &data);
+
+#if (ANDROID)
+                    /*
+                    * /!\ warning! this is a security issue
+                    * https://github.com/BabylonJS/BabylonNative/issues/96
+                    */
+                    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0);
+                    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
+#endif
+
+                    auto result = curl_easy_perform(curl);
+                    if (result != CURLE_OK)
+                    {
+                        throw std::exception();
+                    }
+
+                    curl_easy_cleanup(curl);
+
+                    taskCompletionSource.complete(std::move(data));
+                }
+            }
+            catch (...)
+            {
+                taskCompletionSource.complete(arcana::make_unexpected(std::current_exception()));
             }
         } }.detach();
 

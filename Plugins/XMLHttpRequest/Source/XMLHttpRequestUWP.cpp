@@ -12,8 +12,7 @@ namespace Babylon
     arcana::task<void, std::exception_ptr> XMLHttpRequest::SendAsync()
     {
         // clang-format off
-        return SendAsyncImpl()
-            .then(arcana::inline_scheduler, arcana::cancellation::none(), [url = m_url, responseType = m_responseType, this](arcana::expected<void, std::exception_ptr> result)
+        return SendAsyncImpl().then(arcana::inline_scheduler, arcana::cancellation::none(), [this, url = m_url, responseType = m_responseType](arcana::expected<void, std::exception_ptr> result)
         {
             if (result.has_error())
             {
@@ -29,14 +28,13 @@ namespace Babylon
                 std::replace(localPath.begin(), localPath.end(), '/', '\\');
                 // TODO: decode escaped url characters
 
-                // TODO: handle errors
                 return arcana::create_task<std::exception_ptr>(winrt::Windows::Storage::StorageFile::GetFileFromPathAsync(localPath))
                     .then(arcana::inline_scheduler, arcana::cancellation::none(), [responseType = std::move(responseType), this](const winrt::Windows::Storage::StorageFile& file)
                 {
                     if (responseType.empty() || responseType == XMLHttpRequestTypes::ResponseType::Text)
                     {
                         return arcana::create_task<std::exception_ptr>(winrt::Windows::Storage::FileIO::ReadTextAsync(file))
-                            .then(arcana::inline_scheduler, arcana::cancellation::none(), [this](const winrt::hstring& text)
+                            .then(m_runtimeScheduler, arcana::cancellation::none(), [this](const winrt::hstring& text)
                         {
                             m_responseText = winrt::to_string(text);
                         });
@@ -44,7 +42,7 @@ namespace Babylon
                     else if (responseType == XMLHttpRequestTypes::ResponseType::ArrayBuffer)
                     {
                         return arcana::create_task<std::exception_ptr>(winrt::Windows::Storage::FileIO::ReadBufferAsync(file))
-                            .then(arcana::inline_scheduler, arcana::cancellation::none(), [this](const winrt::Windows::Storage::Streams::IBuffer& buffer)
+                            .then(m_runtimeScheduler, arcana::cancellation::none(), [this](const winrt::Windows::Storage::Streams::IBuffer& buffer)
                         {
                             std::byte* bytes;
                             auto bufferByteAccess = buffer.as<::Windows::Storage::Streams::IBufferByteAccess>();
@@ -58,7 +56,7 @@ namespace Babylon
                     {
                         throw std::logic_error("Unexpected response type.");
                     }
-                }).then(arcana::inline_scheduler, arcana::cancellation::none(), [this, url = std::move(url)]
+                }).then(m_runtimeScheduler, arcana::cancellation::none(), [this, url = std::move(url)]
                 {
                     m_responseURL = url;
                     m_status = HTTPStatusCode::Ok;

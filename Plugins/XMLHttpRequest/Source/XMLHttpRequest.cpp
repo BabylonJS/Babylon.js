@@ -52,7 +52,7 @@ namespace Babylon
 
     XMLHttpRequest::XMLHttpRequest(const Napi::CallbackInfo& info)
         : Napi::ObjectWrap<XMLHttpRequest>{info}
-        , m_runtime{JsRuntime::GetFromJavaScript(info.Env())}
+        , m_runtimeScheduler{JsRuntime::GetFromJavaScript(info.Env())}
         , m_rootUrl{info.Env().Global().Get(JsRuntime::JS_NATIVE_NAME).ToObject().Get(JS_ROOT_URL_NAME).ToString()}
     {
     }
@@ -137,10 +137,8 @@ namespace Babylon
 
     void XMLHttpRequest::Send(const Napi::CallbackInfo& info)
     {
-        m_runtime.Dispatch(std::function<arcana::task<void, std::exception_ptr>(Napi::Env)>{
-            [this](Napi::Env) {
-                return SendAsync();
-            }});
+        // TODO: Handle exceptions
+        SendAsync();
     }
 
     // TODO: Make this just be SendAsync() once the UWP file access bug is fixed.
@@ -148,33 +146,29 @@ namespace Babylon
     {
         if (m_responseType.empty() || m_responseType == XMLHttpRequestTypes::ResponseType::Text)
         {
-            return LoadTextAsync(m_url).then(arcana::inline_scheduler, arcana::cancellation::none(), [this](const std::string& data) {
-                m_runtime.Dispatch([this, data = data](Napi::Env) {
-                    // check UTF-8 BOM encoding
-                    if (data.size() >= 3 && data[0] == '\xEF' && data[1] == '\xBB' && data[2] == '\xBF')
-                    {
-                        m_responseText = data.substr(3);
-                    }
-                    else
-                    {
-                        // UTF8 encoding
-                        m_responseText = std::move(data);
-                    }
+            return LoadTextAsync(m_url).then(m_runtimeScheduler, arcana::cancellation::none(), [this](std::string data) {
+                // check UTF-8 BOM encoding
+                if (data.size() >= 3 && data[0] == '\xEF' && data[1] == '\xBB' && data[2] == '\xBF')
+                {
+                    m_responseText = data.substr(3);
+                }
+                else
+                {
+                    // UTF8 encoding
+                    m_responseText = std::move(data);
+                }
 
-                    m_status = HTTPStatusCode::Ok;
-                    SetReadyState(ReadyState::Done);
-                });
+                m_status = HTTPStatusCode::Ok;
+                SetReadyState(ReadyState::Done);
             });
         }
         else if (m_responseType == XMLHttpRequestTypes::ResponseType::ArrayBuffer)
         {
-            return LoadBinaryAsync(m_url).then(arcana::inline_scheduler, arcana::cancellation::none(), [this](const std::vector<uint8_t>& data) {
-                m_runtime.Dispatch([this, data = data](Napi::Env) {
-                    m_response = Napi::Persistent(Napi::ArrayBuffer::New(Env(), data.size()));
-                    memcpy(m_response.Value().Data(), data.data(), data.size());
-                    m_status = HTTPStatusCode::Ok;
-                    SetReadyState(ReadyState::Done);
-                });
+            return LoadBinaryAsync(m_url).then(m_runtimeScheduler, arcana::cancellation::none(), [this](std::vector<uint8_t> data) {
+                m_response = Napi::Persistent(Napi::ArrayBuffer::New(Env(), data.size()));
+                memcpy(m_response.Value().Data(), data.data(), data.size());
+                m_status = HTTPStatusCode::Ok;
+                SetReadyState(ReadyState::Done);
             });
         }
         else
@@ -197,5 +191,4 @@ namespace Babylon
             }
         }
     }
-
 }

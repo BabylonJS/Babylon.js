@@ -1,6 +1,9 @@
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# -------------------------------- BabylonNativeCMakeFunctions --------------------------------
+add_subdirectory(BabylonNativeCMakeFunctions)
+
 # -------------------------------- arcana --------------------------------
 # Dependencies: none
 add_subdirectory(arcana.cpp)
@@ -79,7 +82,6 @@ endif()
 # Dependencies: none
 add_subdirectory(napi)
 set_property(TARGET napi PROPERTY FOLDER Dependencies)
-set(BABYLON_NATIVE_DEPENDENCIES ${NAPI_DEPENDENCIES} PARENT_SCOPE)
 
 # -------------------------------- SPIRV-Cross --------------------------------
 # Dependencies: none

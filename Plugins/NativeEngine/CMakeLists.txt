@@ -34,7 +34,7 @@ add_library(NativeEngine ${SOURCES})
 
 target_include_directories(NativeEngine PUBLIC "Include")
 
-target_link_libraries(NativeEngine
+target_link_to_dependencies(NativeEngine
     PUBLIC JsRuntime
     PRIVATE arcana
     PRIVATE bgfx
@@ -46,16 +46,16 @@ target_link_libraries(NativeEngine
     PRIVATE NativeWindow)
 
 if(XR)
-    target_link_libraries(NativeEngine
+    target_link_to_dependencies(NativeEngine
         PRIVATE xr)
     target_compile_definitions(NativeEngine PRIVATE NATIVE_ENGINE_XR)
 endif()
 
 if(WIN32 OR WINDOWS_STORE)
-    target_link_libraries(NativeEngine
+    target_link_to_dependencies(NativeEngine
         PRIVATE "d3dcompiler.lib")
 elseif(APPLE)
-    target_link_libraries(NativeEngine
+    target_link_to_dependencies(NativeEngine
         PRIVATE spirv-cross-msl)
 elseif(ANDROID)
     # Nothing to do.

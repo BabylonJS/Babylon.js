@@ -7,7 +7,7 @@ add_library(ScriptLoader ${SOURCES})
 target_include_directories(ScriptLoader PRIVATE "Include/Babylon")
 target_include_directories(ScriptLoader INTERFACE "Include")
 
-target_link_libraries(ScriptLoader 
+target_link_to_dependencies(ScriptLoader 
     PUBLIC JsRuntime
     PRIVATE arcana
     PRIVATE BabylonNativeUtils)

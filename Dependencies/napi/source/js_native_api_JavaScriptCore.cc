@@ -1,11 +1,14 @@
 #include <napi/js_native_api.h>
 #include <napi/js_native_api_types.h>
-#include "JavaScriptCore/JavaScriptCore.h"
+#include "JavaScriptCore/JavaScript.h"
 #include "js_native_api_JavaScriptCore.h"
 #include <string>
 #include <vector>
 #include <map>
 #include <napi/napi.h>
+
+#include <algorithm>
+#include <cassert>
 
 struct FunctionTableEntry {
   napi_callback cb;
@@ -461,10 +464,10 @@ bool JSCSetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyNa
   }
       
   size_t stringSize = JSStringGetMaximumUTF8CStringSize(propertyName);
-  std::unique_ptr<char> cstr = std::make_unique<char>(stringSize);
-  JSStringGetUTF8CString(propertyName, cstr.get(), stringSize);
-    
-  auto propertyIter = iter->second->properties.find(std::string(cstr.get()));
+  std::string string(stringSize, '\0');
+  JSStringGetUTF8CString(propertyName, string.data(), stringSize);
+  
+  auto propertyIter = iter->second->properties.find(string);
   if (propertyIter == iter->second->properties.end()) {
      return RaiseException(ctx, exception, "JavaScriptCore : property not found in function table.");
   }
@@ -494,10 +497,10 @@ JSValueRef JSCGetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef prop
   }
     
   size_t stringSize = JSStringGetMaximumUTF8CStringSize(propertyName);
-  std::unique_ptr<char> cstr = std::make_unique<char>(stringSize);
-  JSStringGetUTF8CString(propertyName, cstr.get(), stringSize);
+  std::string string(stringSize, '\0');
+  JSStringGetUTF8CString(propertyName, string.data(), stringSize);
   
-  auto propertyIter = iter->second->properties.find(std::string(cstr.get()));
+  auto propertyIter = iter->second->properties.find(string);
   if (propertyIter == iter->second->properties.end()) {
     return RaiseException(ctx, exception, "JavaScriptCore : property not found for object in function table.");
   }

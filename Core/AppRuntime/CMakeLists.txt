@@ -10,12 +10,10 @@ set(SOURCES
 
 add_library(AppRuntime ${SOURCES})
 
-set_target_properties(AppRuntime PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${BABYLON_NATIVE_PLATFORM}_${ARCH}")
-
 target_include_directories(AppRuntime PRIVATE "Include/Babylon")
 target_include_directories(AppRuntime INTERFACE "Include")
 
-target_link_libraries(AppRuntime
+target_link_to_dependencies(AppRuntime
     PRIVATE arcana
     PUBLIC JsRuntime)
 
@@ -23,4 +21,3 @@ target_compile_definitions(AppRuntime
     PRIVATE NOMINMAX)
 
 set_property(TARGET AppRuntime PROPERTY FOLDER Core)
-    
