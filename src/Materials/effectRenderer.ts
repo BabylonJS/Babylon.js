@@ -82,6 +82,8 @@ export class EffectRenderer {
      * @param effectWrapper Defines the effect to draw with
      */
     public applyEffectWrapper(effectWrapper: EffectWrapper): void {
+        this.engine.depthCullingState.depthTest = false;
+        this.engine.stencilState.stencilTest = false;
         this.engine.enableEffect(effectWrapper.effect);
         this.bindBuffers(effectWrapper.effect);
         effectWrapper.onApplyObservable.notifyObservers({});
@@ -108,10 +110,6 @@ export class EffectRenderer {
         if (!effectWrapper.effect.isReady()) {
             return ;
         }
-
-        // No need here for full screen render.
-        this.engine.depthCullingState.depthTest = false;
-        this.engine.stencilState.stencilTest = false;
 
         // Reset state
         this.setViewport();
