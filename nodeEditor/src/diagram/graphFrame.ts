@@ -8,6 +8,7 @@ import { Color3 } from 'babylonjs/Maths/math.color';
 import { NodePort } from './nodePort';
 import { SerializationTools } from '../serializationTools';
 import { StringTools } from '../stringTools';
+import { FrameNodePort } from './frameNodePort';
 
 enum ResizingDirection {
         Right,
@@ -51,9 +52,10 @@ export class GraphFrame {
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null;
     private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | GraphFrame | NodePort>>>;
+    private _onGraphNodeRemovalObserver: Nullable<Observer<GraphNode>>; 
     private _isCollapsed = false;
-    private _frameInPorts: NodePort[] = [];
-    private _frameOutPorts: NodePort[] = [];
+    private _frameInPorts: FrameNodePort[] = [];
+    private _frameOutPorts: FrameNodePort[] = [];
     private _controlledPorts: NodePort[] = []; // Ports on Nodes that are shown on outside of frame
     private _id: number;
     private _comments: string;
@@ -78,21 +80,17 @@ export class GraphFrame {
     }
 
     private _createInputPort(port: NodePort, node: GraphNode) {
-        let localPort = NodePort.CreatePortElement(port.connectionPoint, node, this._inputPortContainer, null, this._ownerCanvas.globalState, true, this.id, GraphFrame._FramePortCounter++)
+        let localPort = FrameNodePort.CreateFrameNodePortElement(port.connectionPoint, node, this._inputPortContainer, null, this._ownerCanvas.globalState, true, GraphFrame._FramePortCounter++)
         this._frameInPorts.push(localPort);
 
         port.delegatedPort = localPort;
         this._controlledPorts.push(port);
-        localPort.onFramePortMoveUpObservable.add((nodePort: NodePort) => {
-            if(this.id === nodePort.frameId) {
+        localPort.onFramePortMoveUpObservable.add((nodePort: FrameNodePort) => {
                 this.moveFramePortUp(nodePort);
-            }
         });
 
-        localPort.onFramePortMoveDownObservable.add((nodePort: NodePort) => {
-            if(this.id === nodePort.frameId) {
+        localPort.onFramePortMoveDownObservable.add((nodePort: FrameNodePort) => {
                 this.moveFramePortDown(nodePort);
-            }
         })
     }
 
@@ -118,23 +116,19 @@ export class GraphFrame {
 
                         for (var link of node.links) {
                             if (link.portA === port && this.nodes.indexOf(link.nodeB!) === -1) {
-                                let localPort: NodePort;
+                                let localPort: FrameNodePort;
 
                                 if (!portAdded) {
                                     portAdded = true;
-                                    localPort = NodePort.CreatePortElement(port.connectionPoint, link.nodeB!, this._outputPortContainer, null, this._ownerCanvas.globalState, false, this.id, GraphFrame._FramePortCounter++);
+                                    localPort = FrameNodePort.CreateFrameNodePortElement(port.connectionPoint, link.nodeB!, this._outputPortContainer, null, this._ownerCanvas.globalState, false, GraphFrame._FramePortCounter++);
                                     this._frameOutPorts.push(localPort);
 
-                                    localPort.onFramePortMoveUpObservable.add((nodePort: NodePort) => {
-                                        if(this.id === nodePort.frameId) {
+                                    localPort.onFramePortMoveUpObservable.add((nodePort: FrameNodePort) => {
                                             this.moveFramePortUp(nodePort);
-                                        }
                                     });
                             
-                                    localPort.onFramePortMoveDownObservable.add((nodePort: NodePort) => {
-                                        if(this.id === nodePort.frameId) {
+                                    localPort.onFramePortMoveDownObservable.add((nodePort: FrameNodePort) => {
                                             this.moveFramePortDown(nodePort);
-                                        }
                                     })
                                 } else {
                                     localPort = this.ports.filter(p => p.connectionPoint === port.connectionPoint)[0];
@@ -146,21 +140,17 @@ export class GraphFrame {
                             }
                         }
                     } else {
-                        let localPort = NodePort.CreatePortElement(port.connectionPoint, node, this._outputPortContainer, null, this._ownerCanvas.globalState, false, this.id, GraphFrame._FramePortCounter++)
+                        let localPort = FrameNodePort.CreateFrameNodePortElement(port.connectionPoint, node, this._outputPortContainer, null, this._ownerCanvas.globalState, false, GraphFrame._FramePortCounter++)
                         this._frameOutPorts.push(localPort);
                         port.delegatedPort = localPort;
                         this._controlledPorts.push(port);
 
-                        localPort.onFramePortMoveUpObservable.add((nodePort: NodePort) => {
-                            if(this.id === nodePort.frameId) {
+                        localPort.onFramePortMoveUpObservable.add((nodePort: FrameNodePort) => {
                                 this.moveFramePortUp(nodePort);
-                            }
                         });
                 
-                        localPort.onFramePortMoveDownObservable.add((nodePort: NodePort) => {
-                            if(this.id === nodePort.frameId) {
+                        localPort.onFramePortMoveDownObservable.add((nodePort: FrameNodePort) => {
                                 this.moveFramePortDown(nodePort);
-                            }
                         });
                     }
                 }
@@ -493,7 +483,17 @@ export class GraphFrame {
             } else {
                 this.element.classList.remove("selected");
             }
-        }); 
+        });
+
+        this._onGraphNodeRemovalObserver = canvas.globalState.onGraphNodeRemovalObservable.add((node: GraphNode) => {
+            // remove node from this._nodes
+            const index = this._nodes.indexOf(node);
+            if (index === -1) {
+                return;
+            } else {
+                this._nodes.splice(index, 1);
+            }
+        });
 
         this._commentsElement = document.createElement('div');
         this._commentsElement.className = 'frame-comments';
@@ -510,7 +510,7 @@ export class GraphFrame {
 
     public refresh() {
         this._nodes = [];
-        this._ownerCanvas.globalState.onFrameCreated.notifyObservers(this);
+        this._ownerCanvas.globalState.onFrameCreatedObservable.notifyObservers(this);
     }
 
     public addNode(node: GraphNode) {
@@ -617,7 +617,7 @@ export class GraphFrame {
         evt.stopPropagation();
     }
 
-    private moveFramePortUp(nodePort: NodePort){
+    private moveFramePortUp(nodePort: FrameNodePort){
         if(nodePort.isInput) {
             if(this._inputPortContainer.children.length < 2) {
                 return;
@@ -634,7 +634,7 @@ export class GraphFrame {
 
     }
 
-    private _movePortUp(elementsArray: ChildNode[], nodePort: NodePort) {
+    private _movePortUp(elementsArray: ChildNode[], nodePort: FrameNodePort) {
         // update UI
         const indexInElementArray = (elementsArray as HTMLElement[]).findIndex(elem => elem.dataset.framePortId === `${nodePort.framePortId}`)
         if(indexInElementArray === 0){
@@ -656,7 +656,7 @@ export class GraphFrame {
         }
     }
     
-    private moveFramePortDown(nodePort: NodePort){
+    private moveFramePortDown(nodePort: FrameNodePort){
         if(nodePort.isInput) {
             if(this._inputPortContainer.children.length < 2) {
                 return;
@@ -672,7 +672,7 @@ export class GraphFrame {
         }
     }
 
-    private _movePortDown(elementsArray: ChildNode[], nodePort: NodePort) {
+    private _movePortDown(elementsArray: ChildNode[], nodePort: FrameNodePort) {
         // update UI
         const indexInElementArray = (elementsArray as HTMLElement[]).findIndex(elem => elem.dataset.framePortId === `${nodePort.framePortId}`)
         if(indexInElementArray === elementsArray.length -1){
@@ -1195,6 +1195,10 @@ export class GraphFrame {
 
         if (this._onSelectionChangedObserver) {
             this._ownerCanvas.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
+        }
+
+        if(this._onGraphNodeRemovalObserver) {
+            this._ownerCanvas.globalState.onGraphNodeRemovalObservable.remove(this._onGraphNodeRemovalObserver);
         }
 
         this.element.parentElement!.removeChild(this.element);
