@@ -99,5 +99,8 @@
 - Fix freeze (infinite loop) when disposing a scene that loaded some specific gLTF files ([Popov72](https://github.com/Popov72)
 
 - Fix submesh recreation when it should not ([Popov72](https://github.com/Popov72)
+- Fix bug in NME where deleting a node from a frame would not remove its ports on the outside of a frame
 
 ## Breaking changes
+
+- `EffectRenderer.render` now takes a `RenderTargetTexture` or an `InternalTexture` as the output texture and only a single `EffectWrapper` for its first argument ([Popov72](https://github.com/Popov72))
