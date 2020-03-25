@@ -19,6 +19,9 @@ export class StringTools {
      * @returns Boolean indicating whether the suffix was found (true) or not (false)
      */
     public static StartsWith(str: string, suffix: string): boolean {
+        if (!str) {
+            return false;
+        }
         return str.indexOf(suffix) === 0;
     }
 

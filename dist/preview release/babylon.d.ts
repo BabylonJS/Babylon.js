@@ -11888,6 +11888,9 @@ declare module BABYLON {
          * @returns the list of ramp gradients
          */
         getRampGradients(): Nullable<Array<Color3Gradient>>;
+        /** Force the system to rebuild all gradients that need to be resync */
+        forceRefreshGradients(): void;
+        private _syncRampGradientTexture;
         /**
          * Adds a new ramp gradient used to remap particle colors
          * @param gradient defines the gradient to use (between 0 and 1)
@@ -12004,12 +12007,13 @@ declare module BABYLON {
          */
         clone(name: string, newEmitter: any): ParticleSystem;
         /**
-         * Serializes the particle system to a JSON object.
+         * Serializes the particle system to a JSON object
+         * @param serializeTexture defines if the texture must be serialized as well
          * @returns the JSON object
          */
-        serialize(): any;
+        serialize(serializeTexture?: boolean): any;
         /** @hidden */
-        static _Serialize(serializationObject: any, particleSystem: IParticleSystem): void;
+        static _Serialize(serializationObject: any, particleSystem: IParticleSystem, serializeTexture: boolean): void;
         /** @hidden */
         static _Parse(parsedParticleSystem: any, particleSystem: IParticleSystem, scene: Scene, rootUrl: string): void;
         /**
@@ -13247,14 +13251,17 @@ declare module BABYLON {
          */
         clone(name: string, newEmitter: any): Nullable<IParticleSystem>;
         /**
-         * Serializes the particle system to a JSON object.
+         * Serializes the particle system to a JSON object
+         * @param serializeTexture defines if the texture must be serialized as well
          * @returns the JSON object
          */
-        serialize(): any;
+        serialize(serializeTexture: boolean): any;
         /**
          * Rebuild the particle system
          */
         rebuild(): void;
+        /** Force the system to rebuild all gradients that need to be resync */
+        forceRefreshGradients(): void;
         /**
          * Starts the particle system and begins to emit
          * @param delay defines the delay in milliseconds before starting the system (0 by default)
@@ -53971,6 +53978,11 @@ declare module BABYLON {
          */
         protected _shouldRenderMesh(mesh: Mesh): boolean;
         /**
+         * Adds specific effects defines.
+         * @param defines The defines to add specifics to.
+         */
+        protected _addCustomEffectDefines(defines: string[]): void;
+        /**
          * Sets the required values for both the emissive texture and and the main color.
          */
         protected _setEmissiveTextureAndColor(mesh: Mesh, subMesh: SubMesh, material: Material): void;
@@ -55750,7 +55762,6 @@ declare module BABYLON {
          * @param impostor imposter to match
          */
         private _softbodyOrClothStep;
-        private _tmpVector;
         private _tmpMatrix;
         /**
          * Applies an impulse on the imposter
@@ -63245,7 +63256,7 @@ declare module BABYLON {
          */
         addColorGradient(gradient: number, color1: Color4, color2?: Color4): GPUParticleSystem;
         private _refreshColorGradient;
-        /** Force the system to rebuild all gradients */
+        /** Force the system to rebuild all gradients that need to be resync */
         forceRefreshGradients(): void;
         /**
          * Remove a specific color gradient
@@ -63477,10 +63488,11 @@ declare module BABYLON {
          */
         clone(name: string, newEmitter: any): GPUParticleSystem;
         /**
-         * Serializes the particle system to a JSON object.
+         * Serializes the particle system to a JSON object
+         * @param serializeTexture defines if the texture must be serialized as well
          * @returns the JSON object
          */
-        serialize(): any;
+        serialize(serializeTexture?: boolean): any;
         /**
          * Parses a JSON object to create a GPU particle system.
          * @param parsedParticleSystem The JSON object to parse
@@ -63533,9 +63545,10 @@ declare module BABYLON {
         dispose(): void;
         /**
          * Serialize the set into a JSON compatible object
+         * @param serializeTexture defines if the texture must be serialized as well
          * @returns a JSON compatible representation of the set
          */
-        serialize(): any;
+        serialize(serializeTexture?: boolean): any;
         /**
          * Parse a new ParticleSystemSet from a serialized source
          * @param data defines a JSON compatible representation of the set

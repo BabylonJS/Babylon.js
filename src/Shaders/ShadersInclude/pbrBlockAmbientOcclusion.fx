@@ -22,11 +22,11 @@ void ambientOcclusionBlock(
             ambientOcclusionColorMap = vec3(ambientOcclusionColorMap.r, ambientOcclusionColorMap.r, ambientOcclusionColorMap.r);
         #endif
         ambientOcclusionColor = mix(ambientOcclusionColor, ambientOcclusionColorMap, vAmbientInfos.z);
+
+        #if DEBUGMODE > 0
+            outParams.ambientOcclusionColorMap = ambientOcclusionColorMap;
+        #endif
     #endif
 
     outParams.ambientOcclusionColor = ambientOcclusionColor;
-
-    #if DEBUGMODE > 0
-        outParams.ambientOcclusionColorMap = ambientOcclusionColorMap;
-    #endif
 }
