@@ -512,6 +512,14 @@ export class HighlightLayer extends EffectLayer {
     }
 
     /**
+     * Adds specific effects defines.
+     * @param defines The defines to add specifics to.
+     */
+    protected _addCustomEffectDefines(defines: string[]): void {
+        defines.push("#define HIGHLIGHT");
+    }
+
+    /**
      * Sets the required values for both the emissive texture and and the main color.
      */
     protected _setEmissiveTextureAndColor(mesh: Mesh, subMesh: SubMesh, material: Material): void {
