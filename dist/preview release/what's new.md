@@ -1,6 +1,7 @@
 # 4.2.0
 
 ## Major updates
+
 - Added particle editor to the Inspector ([Deltakosh](https://github.com/deltakosh)
 
 ## Updates
@@ -13,7 +14,6 @@
 
 - Simplified code contributions by fully automating the dev setup with gitpod ([nisarhassan12](https://github.com/nisarhassan12))
 - Add a `CascadedShadowMap.IsSupported` method and log an error instead of throwing an exception when CSM is not supported ([Popov72](https://github.com/Popov72))
-
 
 ### Engine
 
@@ -44,8 +44,10 @@
 ### Loaders
 
 - Added support for glTF mesh instancing extension ([#7521](https://github.com/BabylonJS/Babylon.js/issues/7521)) ([drigax](https://github.com/Drigax))
+- Get the list of cameras retrieved from a gLTF file when loaded through the asset container ([Popov72](https://github.com/Popov72))
 
 ### Navigation
+
 - export/load prebuilt binary navigation mesh ([cedricguillemet](https://github.com/cedricguillemet))
 
 ### Materials
@@ -56,16 +58,20 @@
 - Added to `FresnelParameters` constructor options and equals method ([brianzinn](https://github.com/brianzinn))
 - Added `AddAttribute` to `CustomMaterial` and `PBRCustomMaterial` ([Popov72](https://github.com/Popov72))
 - `setTexture` and `setTextureArray` from `ShaderMaterial` take now a `BaseTexture` as input instead of a `Texture`, allowing to pass a `CubeTexture` ([Popov72](https://github.com/Popov72))
+- Allow parenthesis usage in `#if` expressions in shader code ([Popov72](https://github.com/Popov72))
 
 ### WebXR
 
 - Added optional ray and mesh selection predicates to `WebXRControllerPointerSelection` ([Exolun](https://github.com/Exolun))
 - Implemented the new WebXR HitTest API ([#7364](https://github.com/BabylonJS/Babylon.js/issues/7364)) ([RaananW](https://github.com/RaananW))
+- Playground doesn't update FPS when in XR in main and frame ([#7875](https://github.com/BabylonJS/Babylon.js/issues/7875)) ([RaananW](https://github.com/RaananW))
 
 ### Collisions
+
 - Added an option to optimize collision detection performance ([jsdream](https://github.com/jsdream)) - [PR](https://github.com/BabylonJS/Babylon.js/pull/7810)
 
 ### Animation
+
 - Added support for Additive Animation Blending. Existing animations can be converted to additive using the new MakeAnimationAdditive method for Skeletons, AnimationGroups and Animations. Animations can be played additively using the new isAdditive input parameter to the begin animation methods. ([c-morten](https://github.com/c-morten))
 
 ## Bugs
@@ -83,9 +89,17 @@
 - Fix bug in `Plane.transform` when matrix passed in is not a pure rotation ([Popov72](https://github.com/Popov72)
 - Fix bug in PBR when anisotropy is enabled and no bump texture is provided ([Popov72](https://github.com/Popov72)
 - Fix horizon occlusion in PBR materials ([Popov72](https://github.com/Popov72)
+- Fix wrong relative position in applyImpulse/applyForce for ammojs plugin ([cedricguillemet](https://github.com/cedricguillemet))
 - Fixed delay calculation in Animatable.goToFrame when speedRatio != 1 ([Reimund Järnfors](https://github.com/reimund)
 - Fix bug in PBR when translucency is enabled and an irradiance texture is provided ([Popov72](https://github.com/Popov72)
 - Fix bug in PBR with translucency when irradiance texture is 2D ([Popov72](https://github.com/Popov72)
 - Fix bug in PBR when specific combinations of parameters are used ([Popov72](https://github.com/Popov72)
+- Fix texture being inverted on the Y axis by default when using TextureAsset or AssetManager ([broederj](https://github.com/broederj))
+- Fix `TexturePacker` cross-origin image requests, fix falsy default options ([ludevik](https://github.com/ludevik))
+- Fix freeze (infinite loop) when disposing a scene that loaded some specific gLTF files ([Popov72](https://github.com/Popov72)
+
+- Fix submesh recreation when it should not ([Popov72](https://github.com/Popov72)
 
 ## Breaking changes
+
+- `EffectRenderer.render` now takes a `RenderTargetTexture` or an `InternalTexture` as the output texture and only a single `EffectWrapper` for its first argument ([Popov72](https://github.com/Popov72))

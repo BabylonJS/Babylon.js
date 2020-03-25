@@ -592,10 +592,15 @@ export class Texture extends BaseTexture {
      */
     public serialize(): any {
         let savedName = this.name;
+
         if (!Texture.SerializeBuffers) {
             if (StringTools.StartsWith(this.name, "data:")) {
                 this.name = "";
             }
+        }
+
+        if (StringTools.StartsWith(this.name, "data:") && this.url === this.name) {
+            this.url = "";
         }
 
         var serializationObject = super.serialize();
@@ -705,7 +710,7 @@ export class Texture extends BaseTexture {
                 } else {
                     let url = rootUrl + parsedTexture.name;
 
-                    if (Texture.UseSerializedUrlIfAny && parsedTexture.url) {
+                    if (StringTools.StartsWith(parsedTexture.url, "data:") || (Texture.UseSerializedUrlIfAny && parsedTexture.url)) {
                         url = parsedTexture.url;
                     }
                     texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY);

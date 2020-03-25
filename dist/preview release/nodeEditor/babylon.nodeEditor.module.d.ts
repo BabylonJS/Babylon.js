@@ -606,6 +606,35 @@ declare module "babylonjs-node-editor/components/propertyTab/properties/vector2P
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-node-editor/sharedComponents/colorPickerComponent" {
+    import * as React from "react";
+    import { Color4, Color3 } from 'babylonjs/Maths/math.color';
+    export interface IColorPickerComponentProps {
+        value: Color4 | Color3;
+        onColorChanged: (newOne: string) => void;
+        disableAlpha?: boolean;
+    }
+    interface IColorPickerComponentState {
+        pickerEnabled: boolean;
+        color: {
+            r: number;
+            g: number;
+            b: number;
+            a?: number;
+        };
+        hex: string;
+    }
+    export class ColorPickerLineComponent extends React.Component<IColorPickerComponentProps, IColorPickerComponentState> {
+        private _floatRef;
+        private _floatHostRef;
+        constructor(props: IColorPickerComponentProps);
+        syncPositions(): void;
+        shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState): boolean;
+        componentDidUpdate(): void;
+        componentDidMount(): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-node-editor/sharedComponents/color3LineComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
@@ -1499,6 +1528,8 @@ declare module "babylonjs-node-editor/components/propertyTab/propertyTabComponen
         load(file: File): void;
         save(): void;
         customSave(): void;
+        saveToSnippetServer(): void;
+        loadFromSnippet(): void;
         render(): JSX.Element;
     }
 }
@@ -1668,7 +1699,7 @@ declare module "babylonjs-node-editor/graphEditor" {
 }
 declare module "babylonjs-node-editor/sharedComponents/popup" {
     export class Popup {
-        static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): import("babylonjs/types").Nullable<HTMLDivElement>;
+        static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
         private static _CopyStyles;
     }
 }
@@ -2198,6 +2229,33 @@ declare module NODEEDITOR {
         inputBlock: BABYLON.InputBlock;
     }
     export class Vector2PropertyTabComponent extends React.Component<IVector2PropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export interface IColorPickerComponentProps {
+        value: BABYLON.Color4 | BABYLON.Color3;
+        onColorChanged: (newOne: string) => void;
+        disableAlpha?: boolean;
+    }
+    interface IColorPickerComponentState {
+        pickerEnabled: boolean;
+        color: {
+            r: number;
+            g: number;
+            b: number;
+            a?: number;
+        };
+        hex: string;
+    }
+    export class ColorPickerLineComponent extends React.Component<IColorPickerComponentProps, IColorPickerComponentState> {
+        private _floatRef;
+        private _floatHostRef;
+        constructor(props: IColorPickerComponentProps);
+        syncPositions(): void;
+        shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState): boolean;
+        componentDidUpdate(): void;
+        componentDidMount(): void;
         render(): JSX.Element;
     }
 }
@@ -2951,6 +3009,8 @@ declare module NODEEDITOR {
         load(file: File): void;
         save(): void;
         customSave(): void;
+        saveToSnippetServer(): void;
+        loadFromSnippet(): void;
         render(): JSX.Element;
     }
 }
@@ -3103,7 +3163,7 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class Popup {
-        static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): Nullable<HTMLDivElement>;
+        static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
         private static _CopyStyles;
     }
 }

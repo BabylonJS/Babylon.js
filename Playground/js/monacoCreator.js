@@ -27,6 +27,18 @@ class MonacoCreator {
         this.addOnMonacoLoadedCallback(
             function () {
                 this.parent.main.run();
+
+                // Register a global observable for inspector to request code changes
+                window.Playground = {
+                    onRequestCodeChangeObservable: new BABYLON.Observable()
+                }
+
+                window.Playground.onRequestCodeChangeObservable.add((options) => {
+                    let code = this.getCode();
+                    code = code.replace(options.regex, options.replace);
+
+                    this.setCode(code);
+                });
             },
             this
         );

@@ -1183,6 +1183,10 @@ declare module BABYLON {
         isTrue(preprocessors: {
             [key: string]: string;
         }): boolean;
+        private static _OperatorPriority;
+        private static _Stack;
+        static postfixToInfix(postfix: string[]): string;
+        static infixToPostfix(infix: string): string[];
     }
 }
 declare module BABYLON {
@@ -11884,6 +11888,9 @@ declare module BABYLON {
          * @returns the list of ramp gradients
          */
         getRampGradients(): Nullable<Array<Color3Gradient>>;
+        /** Force the system to rebuild all gradients that need to be resync */
+        forceRefreshGradients(): void;
+        private _syncRampGradientTexture;
         /**
          * Adds a new ramp gradient used to remap particle colors
          * @param gradient defines the gradient to use (between 0 and 1)
@@ -12000,12 +12007,13 @@ declare module BABYLON {
          */
         clone(name: string, newEmitter: any): ParticleSystem;
         /**
-         * Serializes the particle system to a JSON object.
+         * Serializes the particle system to a JSON object
+         * @param serializeTexture defines if the texture must be serialized as well
          * @returns the JSON object
          */
-        serialize(): any;
+        serialize(serializeTexture?: boolean): any;
         /** @hidden */
-        static _Serialize(serializationObject: any, particleSystem: IParticleSystem): void;
+        static _Serialize(serializationObject: any, particleSystem: IParticleSystem, serializeTexture: boolean): void;
         /** @hidden */
         static _Parse(parsedParticleSystem: any, particleSystem: IParticleSystem, scene: Scene, rootUrl: string): void;
         /**
@@ -13243,14 +13251,17 @@ declare module BABYLON {
          */
         clone(name: string, newEmitter: any): Nullable<IParticleSystem>;
         /**
-         * Serializes the particle system to a JSON object.
+         * Serializes the particle system to a JSON object
+         * @param serializeTexture defines if the texture must be serialized as well
          * @returns the JSON object
          */
-        serialize(): any;
+        serialize(serializeTexture: boolean): any;
         /**
          * Rebuild the particle system
          */
         rebuild(): void;
+        /** Force the system to rebuild all gradients that need to be resync */
+        forceRefreshGradients(): void;
         /**
          * Starts the particle system and begins to emit
          * @param delay defines the delay in milliseconds before starting the system (0 by default)
@@ -48517,18 +48528,18 @@ declare module BABYLON {
         protected readonly _mapping: {
             buttons: string[];
             buttonMeshNames: {
-                'trigger': string;
-                'menu': string;
-                'grip': string;
-                'thumbstick': string;
-                'trackpad': string;
+                trigger: string;
+                menu: string;
+                grip: string;
+                thumbstick: string;
+                trackpad: string;
             };
             buttonObservableNames: {
-                'trigger': string;
-                'menu': string;
-                'grip': string;
-                'thumbstick': string;
-                'trackpad': string;
+                trigger: string;
+                menu: string;
+                grip: string;
+                thumbstick: string;
+                trackpad: string;
             };
             axisMeshNames: string[];
             pointingPoseMeshName: string;
@@ -48636,18 +48647,18 @@ declare module BABYLON {
         protected readonly _mapping: {
             buttons: string[];
             buttonMeshNames: {
-                'trigger': string;
-                'menu': string;
-                'grip': string;
-                'thumbstick': string;
-                'trackpad': string;
+                trigger: string;
+                menu: string;
+                grip: string;
+                thumbstick: string;
+                trackpad: string;
             };
             buttonObservableNames: {
-                'trigger': string;
-                'menu': string;
-                'grip': string;
-                'thumbstick': string;
-                'trackpad': string;
+                trigger: string;
+                menu: string;
+                grip: string;
+                thumbstick: string;
+                trackpad: string;
             };
             axisMeshNames: string[];
             pointingPoseMeshName: string;
@@ -51197,6 +51208,139 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export var pbrIBLFunctions: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockAlbedoOpacity: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockReflectivity: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockAmbientOcclusion: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockAlphaFresnel: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockAnisotropic: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockReflection: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockSheen: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockClearcoat: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockSubSurface: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockNormalGeometric: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockNormalFinal: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockGeometryInfo: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockReflectance0: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockReflectance: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockDirectLighting: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockFinalLitComponents: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockFinalUnlitComponents: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockFinalColorComposition: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var pbrBlockImageProcessing: {
         name: string;
         shader: string;
     };
@@ -55613,7 +55757,6 @@ declare module BABYLON {
          * @param impostor imposter to match
          */
         private _softbodyOrClothStep;
-        private _tmpVector;
         private _tmpMatrix;
         /**
          * Applies an impulse on the imposter
@@ -57445,6 +57588,10 @@ declare module BABYLON {
         /** Get the inspector from bundle or global */
         private _getGlobalNodeMaterialEditor;
         /**
+         * Snippet ID if the material was created from the snippet server
+         */
+        snippetId: string;
+        /**
          * Gets or sets data used by visual editor
          * @see https://nme.babylonjs.com
          */
@@ -57703,9 +57850,10 @@ declare module BABYLON {
          * @param snippetId defines the snippet to load
          * @param scene defines the hosting scene
          * @param rootUrl defines the root URL to use to load textures and relative dependencies
+         * @param nodeMaterial defines a node material to update (instead of creating a new one)
          * @returns a promise that will resolve to the new node material
          */
-        static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl?: string): Promise<NodeMaterial>;
+        static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl?: string, nodeMaterial?: NodeMaterial): Promise<NodeMaterial>;
         /**
          * Creates a new node material set to default basic configuration
          * @param name defines the name of the material
@@ -63103,7 +63251,7 @@ declare module BABYLON {
          */
         addColorGradient(gradient: number, color1: Color4, color2?: Color4): GPUParticleSystem;
         private _refreshColorGradient;
-        /** Force the system to rebuild all gradients */
+        /** Force the system to rebuild all gradients that need to be resync */
         forceRefreshGradients(): void;
         /**
          * Remove a specific color gradient
@@ -63335,10 +63483,11 @@ declare module BABYLON {
          */
         clone(name: string, newEmitter: any): GPUParticleSystem;
         /**
-         * Serializes the particle system to a JSON object.
+         * Serializes the particle system to a JSON object
+         * @param serializeTexture defines if the texture must be serialized as well
          * @returns the JSON object
          */
-        serialize(): any;
+        serialize(serializeTexture?: boolean): any;
         /**
          * Parses a JSON object to create a GPU particle system.
          * @param parsedParticleSystem The JSON object to parse
@@ -63391,9 +63540,10 @@ declare module BABYLON {
         dispose(): void;
         /**
          * Serialize the set into a JSON compatible object
+         * @param serializeTexture defines if the texture must be serialized as well
          * @returns a JSON compatible representation of the set
          */
-        serialize(): any;
+        serialize(serializeTexture?: boolean): any;
         /**
          * Parse a new ParticleSystemSet from a serialized source
          * @param data defines a JSON compatible representation of the set
@@ -63440,12 +63590,22 @@ declare module BABYLON {
          */
         static ExportSet(systems: IParticleSystem[]): ParticleSystemSet;
         /**
-         * Creates a node material from a snippet saved by the node material editor
+         * Creates a particle system from a snippet saved in a remote file
+         * @param name defines the name of the  particle system to create
+         * @param url defines the url to load from
+         * @param scene defines the hosting scene
+         * @param gpu If the system will use gpu
+         * @param rootUrl defines the root URL to use to load textures and relative dependencies
+         * @returns a promise that will resolve to the new  particle system
+         */
+        static ParseFromFileAsync(name: string, url: string, scene: Scene, gpu?: boolean, rootUrl?: string): Promise<IParticleSystem>;
+        /**
+         * Creates a particle system from a snippet saved by the particle system editor
          * @param snippetId defines the snippet to load
          * @param scene defines the hosting scene
          * @param gpu If the system will use gpu
          * @param rootUrl defines the root URL to use to load textures and relative dependencies
-         * @returns a promise that will resolve to the new node material
+         * @returns a promise that will resolve to the new particle system
          */
         static CreateFromSnippetAsync(snippetId: string, scene: Scene, gpu?: boolean, rootUrl?: string): Promise<IParticleSystem>;
     }
@@ -63897,6 +64057,28 @@ declare module BABYLON {
          * @hidden
          */
         constructor(id: number, posFunction: Nullable<(particle: CloudPoint, i?: number, s?: number) => void>);
+    }
+}
+declare module BABYLON {
+    /**
+     * Represents a set of particle systems working together to create a specific effect
+     */
+    export class ParticleSystemDebugger implements IDisposable {
+        /**
+         * Defines the particle system to debug
+         */
+        system: IParticleSystem;
+        /**
+         * Creates a new particle system debugger
+         * @param system defines the particle system to debug
+         */
+        constructor(
+        /**
+         * Defines the particle system to debug
+         */
+        system: IParticleSystem);
+        /** Clear all the resources */
+        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -67962,9 +68144,9 @@ declare module BABYLON {
          */
         noMipmap?: boolean | undefined;
         /**
-         * Defines if texture must be inverted on Y axis (default is false)
+         * Defines if texture must be inverted on Y axis (default is true)
          */
-        invertY?: boolean | undefined;
+        invertY: boolean;
         /**
          * Defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
          */
@@ -67986,7 +68168,7 @@ declare module BABYLON {
          * @param name defines the name of the task
          * @param url defines the location of the file to load
          * @param noMipmap defines if mipmap should not be generated (default is false)
-         * @param invertY defines if texture must be inverted on Y axis (default is false)
+         * @param invertY defines if texture must be inverted on Y axis (default is true)
          * @param samplingMode defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
          */
         constructor(
@@ -68003,9 +68185,9 @@ declare module BABYLON {
          */
         noMipmap?: boolean | undefined, 
         /**
-         * Defines if texture must be inverted on Y axis (default is false)
+         * Defines if texture must be inverted on Y axis (default is true)
          */
-        invertY?: boolean | undefined, 
+        invertY?: boolean, 
         /**
          * Defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
          */
@@ -69982,52 +70164,52 @@ declare module BABYLON {
     export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionController {
         protected readonly _mapping: {
             defaultButton: {
-                "valueNodeName": string;
-                "unpressedNodeName": string;
-                "pressedNodeName": string;
+                valueNodeName: string;
+                unpressedNodeName: string;
+                pressedNodeName: string;
             };
             defaultAxis: {
-                "valueNodeName": string;
-                "minNodeName": string;
-                "maxNodeName": string;
+                valueNodeName: string;
+                minNodeName: string;
+                maxNodeName: string;
             };
             buttons: {
                 "xr-standard-trigger": {
-                    "rootNodeName": string;
-                    "componentProperty": string;
-                    "states": string[];
+                    rootNodeName: string;
+                    componentProperty: string;
+                    states: string[];
                 };
                 "xr-standard-squeeze": {
-                    "rootNodeName": string;
-                    "componentProperty": string;
-                    "states": string[];
+                    rootNodeName: string;
+                    componentProperty: string;
+                    states: string[];
                 };
                 "xr-standard-touchpad": {
-                    "rootNodeName": string;
-                    "labelAnchorNodeName": string;
-                    "touchPointNodeName": string;
+                    rootNodeName: string;
+                    labelAnchorNodeName: string;
+                    touchPointNodeName: string;
                 };
                 "xr-standard-thumbstick": {
-                    "rootNodeName": string;
-                    "componentProperty": string;
-                    "states": string[];
+                    rootNodeName: string;
+                    componentProperty: string;
+                    states: string[];
                 };
             };
             axes: {
                 "xr-standard-touchpad": {
                     "x-axis": {
-                        "rootNodeName": string;
+                        rootNodeName: string;
                     };
                     "y-axis": {
-                        "rootNodeName": string;
+                        rootNodeName: string;
                     };
                 };
                 "xr-standard-thumbstick": {
                     "x-axis": {
-                        "rootNodeName": string;
+                        rootNodeName: string;
                     };
                     "y-axis": {
-                        "rootNodeName": string;
+                        rootNodeName: string;
                     };
                 };
             };

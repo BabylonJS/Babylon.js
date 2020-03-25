@@ -677,6 +677,21 @@
             "referenceImage": "pbr_refraction.png"
         },
         {
+            "title": "PBR shader code coverage #1",
+            "playgroundId": "#QI7TL3#16",
+            "referenceImage": "pbr_codecoverage1.png"
+        },
+        {
+            "title": "PBR shader code coverage #2",
+            "playgroundId": "#QI7TL3#17",
+            "referenceImage": "pbr_codecoverage2.png"
+        },
+        {
+            "title": "PBR shader code coverage #3",
+            "playgroundId": "#QI7TL3#18",
+            "referenceImage": "pbr_codecoverage3.png"
+        },
+                {
             "title": "Texture cache",
             "playgroundId": "#20OAV9#237",
             "referenceImage": "texture cache.png"

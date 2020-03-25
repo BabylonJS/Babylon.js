@@ -306,6 +306,33 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export interface IColorPickerComponentProps {
+        value: BABYLON.Color4 | BABYLON.Color3;
+        onColorChanged: (newOne: string) => void;
+        disableAlpha?: boolean;
+    }
+    interface IColorPickerComponentState {
+        pickerEnabled: boolean;
+        color: {
+            r: number;
+            g: number;
+            b: number;
+            a?: number;
+        };
+        hex: string;
+    }
+    export class ColorPickerLineComponent extends React.Component<IColorPickerComponentProps, IColorPickerComponentState> {
+        private _floatRef;
+        private _floatHostRef;
+        constructor(props: IColorPickerComponentProps);
+        syncPositions(): void;
+        shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState): boolean;
+        componentDidUpdate(): void;
+        componentDidMount(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     export interface IColor3LineComponentProps {
         label: string;
         target: any;
@@ -1497,10 +1524,17 @@ declare module INSPECTOR {
     }
     export class FactorGradientStepGridComponent extends React.Component<IFactorGradientStepGridComponent, {
         gradient: number;
+        factor1: string;
+        factor2?: string;
     }> {
         constructor(props: IFactorGradientStepGridComponent);
-        updateFactor1(factor: number): void;
-        updateFactor2(factor: number): void;
+        shouldComponentUpdate(nextProps: IFactorGradientStepGridComponent, nextState: {
+            gradient: number;
+            factor1: string;
+            factor2?: string;
+        }): boolean;
+        updateFactor1(valueString: string): void;
+        updateFactor2(valueString: string): void;
         updateGradient(gradient: number): void;
         onPointerUp(): void;
         lock(): void;
@@ -1540,6 +1574,7 @@ declare module INSPECTOR {
         buttonLabel: string;
         url?: string;
         onClick: () => void;
+        onIconClick?: () => void;
     }
     export class LinkButtonComponent extends React.Component<ILinkButtonComponentProps> {
         constructor(props: ILinkButtonComponentProps);
@@ -2145,7 +2180,7 @@ declare module INSPECTOR {
         private static _CreateSceneExplorer;
         private static _CreateActionTabs;
         private static _CreateEmbedHost;
-        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): BABYLON.Nullable<HTMLDivElement>;
+        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
         static get IsVisible(): boolean;
         static EarlyAttachToLoader(): void;
         static Show(scene: BABYLON.Scene, userOptions: Partial<BABYLON.IInspectorOptions>): void;

@@ -394,7 +394,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
         // Update graph
         let dagreNodes = graph.nodes().map(node => graph.node(node));
-        dagreNodes.forEach(dagreNode => {
+        dagreNodes.forEach((dagreNode: any) => {
             if (dagreNode.type === "node") {
                 for (var node of this._nodes) {
                     if (node.id === dagreNode.id) {

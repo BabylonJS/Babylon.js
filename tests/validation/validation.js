@@ -33,6 +33,7 @@ function compare(renderData, referenceCanvas, threshold, errorRatio) {
         referenceData.data[index] = 255;
         referenceData.data[index + 1] *= 0.5;
         referenceData.data[index + 2] *= 0.5;
+        referenceData.data[index + 3] = 255;
         differencesCount++;
     }
 
