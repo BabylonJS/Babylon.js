@@ -5,6 +5,7 @@ import { NumericInputComponent } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { Color3 } from 'babylonjs/Maths/math.color';
+import { ColorPickerLineComponent } from './colorPickerComponent';
 
 const copyIcon: string = require("./copy.svg");
 
@@ -136,7 +137,6 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
     render() {
 
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
-        const colorAsColor3 = this.state.color.getClassName() === "Color3" ? this.state.color : new Color3(this.state.color.r, this.state.color.g, this.state.color.b);
 
         return (
             <div className="color3Line">
@@ -145,7 +145,9 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
                         {this.props.label}
                     </div>
                     <div className="color3">
-                        <input type="color" value={colorAsColor3.toHexString()} onChange={(evt) => this.onChange(evt.target.value)} />
+                        <ColorPickerLineComponent value={this.state.color} disableAlpha={true} onColorChanged={color => {
+                            this.onChange(color);
+                        }} />                             
                     </div>
                     <div className="copy hoverIcon" onClick={() => this.copyToClipboard()} title="Copy to clipboard">
                         <img src={copyIcon} alt=""/>

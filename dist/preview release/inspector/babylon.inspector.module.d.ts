@@ -345,6 +345,35 @@ declare module "babylonjs-inspector/components/actionTabs/lines/numericInputComp
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/lines/colorPickerComponent" {
+    import * as React from "react";
+    import { Color4, Color3 } from 'babylonjs/Maths/math.color';
+    export interface IColorPickerComponentProps {
+        value: Color4 | Color3;
+        onColorChanged: (newOne: string) => void;
+        disableAlpha?: boolean;
+    }
+    interface IColorPickerComponentState {
+        pickerEnabled: boolean;
+        color: {
+            r: number;
+            g: number;
+            b: number;
+            a?: number;
+        };
+        hex: string;
+    }
+    export class ColorPickerLineComponent extends React.Component<IColorPickerComponentProps, IColorPickerComponentState> {
+        private _floatRef;
+        private _floatHostRef;
+        constructor(props: IColorPickerComponentProps);
+        syncPositions(): void;
+        shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState): boolean;
+        componentDidUpdate(): void;
+        componentDidMount(): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/lines/color3LineComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
@@ -1950,10 +1979,17 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
     }
     export class FactorGradientStepGridComponent extends React.Component<IFactorGradientStepGridComponent, {
         gradient: number;
+        factor1: string;
+        factor2?: string;
     }> {
         constructor(props: IFactorGradientStepGridComponent);
-        updateFactor1(factor: number): void;
-        updateFactor2(factor: number): void;
+        shouldComponentUpdate(nextProps: IFactorGradientStepGridComponent, nextState: {
+            gradient: number;
+            factor1: string;
+            factor2?: string;
+        }): boolean;
+        updateFactor1(valueString: string): void;
+        updateFactor2(valueString: string): void;
         updateGradient(gradient: number): void;
         onPointerUp(): void;
         lock(): void;
@@ -3033,6 +3069,33 @@ declare module INSPECTOR {
             value: string;
         }): boolean;
         updateValue(evt: any): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    export interface IColorPickerComponentProps {
+        value: BABYLON.Color4 | BABYLON.Color3;
+        onColorChanged: (newOne: string) => void;
+        disableAlpha?: boolean;
+    }
+    interface IColorPickerComponentState {
+        pickerEnabled: boolean;
+        color: {
+            r: number;
+            g: number;
+            b: number;
+            a?: number;
+        };
+        hex: string;
+    }
+    export class ColorPickerLineComponent extends React.Component<IColorPickerComponentProps, IColorPickerComponentState> {
+        private _floatRef;
+        private _floatHostRef;
+        constructor(props: IColorPickerComponentProps);
+        syncPositions(): void;
+        shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState): boolean;
+        componentDidUpdate(): void;
+        componentDidMount(): void;
         render(): JSX.Element;
     }
 }
@@ -4228,10 +4291,17 @@ declare module INSPECTOR {
     }
     export class FactorGradientStepGridComponent extends React.Component<IFactorGradientStepGridComponent, {
         gradient: number;
+        factor1: string;
+        factor2?: string;
     }> {
         constructor(props: IFactorGradientStepGridComponent);
-        updateFactor1(factor: number): void;
-        updateFactor2(factor: number): void;
+        shouldComponentUpdate(nextProps: IFactorGradientStepGridComponent, nextState: {
+            gradient: number;
+            factor1: string;
+            factor2?: string;
+        }): boolean;
+        updateFactor1(valueString: string): void;
+        updateFactor2(valueString: string): void;
         updateGradient(gradient: number): void;
         onPointerUp(): void;
         lock(): void;

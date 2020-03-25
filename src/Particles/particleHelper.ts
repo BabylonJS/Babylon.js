@@ -117,12 +117,48 @@ export class ParticleHelper {
     }
 
     /**
-     * Creates a node material from a snippet saved by the node material editor
+     * Creates a particle system from a snippet saved in a remote file
+     * @param name defines the name of the  particle system to create
+     * @param url defines the url to load from
+     * @param scene defines the hosting scene
+     * @param gpu If the system will use gpu
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a promise that will resolve to the new  particle system
+     */
+    public static ParseFromFileAsync(name: string, url: string, scene: Scene, gpu: boolean = false, rootUrl: string = ""): Promise<IParticleSystem> {
+
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        let serializationObject = JSON.parse(request.responseText);
+                        let output: IParticleSystem;
+
+                        if (gpu) {
+                            output = GPUParticleSystem.Parse(serializationObject, scene, rootUrl);
+                        } else {
+                            output = ParticleSystem.Parse(serializationObject, scene, rootUrl);
+                        }
+                        resolve(output);
+                    } else {
+                        reject("Unable to load the particle system");
+                    }
+                }
+            });
+
+            request.open("GET", url);
+            request.send();
+        });
+    }
+
+    /**
+     * Creates a particle system from a snippet saved by the particle system editor
      * @param snippetId defines the snippet to load
      * @param scene defines the hosting scene
      * @param gpu If the system will use gpu
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
-     * @returns a promise that will resolve to the new node material
+     * @returns a promise that will resolve to the new particle system
      */
     public static CreateFromSnippetAsync(snippetId: string, scene: Scene, gpu: boolean = false, rootUrl: string = ""): Promise<IParticleSystem> {
         return new Promise((resolve, reject) => {
