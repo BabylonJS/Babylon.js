@@ -341,7 +341,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             var worldPoint = this._tmpAmmoVectorA;
             var impulse = this._tmpAmmoVectorB;
 
-            // Convert contactPoint relative to body position
+            // Convert contactPoint relative to center of mass
             if (impostor.object && impostor.object.getWorldMatrix) {
                 contactPoint.subtractInPlace(impostor.object.getWorldMatrix().getTranslation());
             }
@@ -368,7 +368,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             var worldPoint = this._tmpAmmoVectorA;
             var impulse = this._tmpAmmoVectorB;
 
-            // Convert contactPoint relative to body position
+            // Convert contactPoint relative to center of mass
             if (impostor.object && impostor.object.getWorldMatrix) {
                 contactPoint.subtractInPlace(impostor.object.getWorldMatrix().getTranslation());
             }
