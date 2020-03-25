@@ -31,4 +31,5 @@ if(WINDOWS_STORE)
         PUBLIC "Kernel32.lib")
 endif()
 
-set_property(TARGET XMLHttpRequest PROPERTY FOLDER Plugins/Babylon)
+set_property(TARGET XMLHttpRequest PROPERTY FOLDER Plugins)
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})

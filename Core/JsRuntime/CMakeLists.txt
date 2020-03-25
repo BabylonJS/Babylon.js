@@ -1,6 +1,5 @@
 set(SOURCES
     "Include/Babylon/JsRuntime.h"
-    "Include/Babylon/JsRuntimeScheduler.h"
     "Source/JsRuntime.cpp")
 
 add_library(JsRuntime ${SOURCES})
@@ -12,3 +11,4 @@ target_link_to_dependencies(JsRuntime
     PUBLIC napi)
 
 set_property(TARGET JsRuntime PROPERTY FOLDER Core)
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})

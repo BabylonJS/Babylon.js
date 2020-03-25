@@ -110,7 +110,7 @@ if(NOT APPLE)
         set(CURL_CA_PATH "none" CACHE PATH "Path to SSL CA Certificate Directory")
     endif()
 
-    if(WIN32 OR WINDOWS_STORE)
+    if(WIN32)
         set(CMAKE_USE_WINSSL ON CACHE BOOL "Set cURL to use WinSSL by default.")
     else()
         set(CMAKE_USE_WINSSL OFF CACHE BOOL "Set cURL to use WinSSL by default.")

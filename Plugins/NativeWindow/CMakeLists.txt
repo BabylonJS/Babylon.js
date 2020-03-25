@@ -12,4 +12,5 @@ target_link_to_dependencies(NativeWindow
     PUBLIC BabylonNativeUtils
     PUBLIC JsRuntime)
 
-set_property(TARGET NativeWindow PROPERTY FOLDER Plugins/Babylon)
+set_property(TARGET NativeWindow PROPERTY FOLDER Plugins)
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})

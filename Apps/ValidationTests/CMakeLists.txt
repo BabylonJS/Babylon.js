@@ -1,52 +1,33 @@
-set(SCRIPTS "Scripts/validation_native.js")
+if(NOT WIN32 OR WINDOWS_STORE)
+    message(FATAL_ERROR "Unsupported platform: ${CMAKE_SYSTEM_NAME}")
+endif()
+
 set(BABYLONSCRIPTS 
     "../BabylonScripts/babylon.glTF2FileLoader.js"
     "../BabylonScripts/babylon.max.js"
     "../BabylonScripts/babylonjs.materials.js")
 
+set(SCRIPTS
+    "Scripts/validation_native.js")
+
 set(SOURCES
-    ${SCRIPTS}
-    ${BABYLONSCRIPTS}
-    "Shared/TestUtils.h")
-if(WIN32 AND NOT WINDOWS_STORE)
-    set(SOURCES
-        ${SOURCES}
-        "Win32/App.cpp"
-        "Win32/App.h"
-        "Win32/App.ico"
-        "Win32/App.rc"
-        "Win32/Resource.h"
-        "Win32/small.ico"
-        "Win32/targetver.h")
-endif()
+    "Shared/TestUtils.h"
+    "Win32/App.cpp"
+    "Win32/App.h"
+    "Win32/App.ico"
+    "Win32/App.rc"
+    "Win32/Resource.h"
+    "Win32/small.ico"
+    "Win32/targetver.h")
 
-if(WIN32)
-    set(WIN32_EXECUTABLE TRUE)
-    add_executable(ValidationTests WIN32 ${SOURCES} ${RESOURCE_FILES})
-elseif()
-    message(FATAL_ERROR "Unrecognized platform for ValidationTests: ${CMAKE_SYSTEM_NAME}")
-endif()
-
-source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/.." FILES ${SOURCES})
+set(WIN32_EXECUTABLE TRUE)
+add_executable(ValidationTests WIN32 ${BABYLONSCRIPTS} ${SCRIPTS} ${SOURCES})
 
 target_compile_definitions(ValidationTests PRIVATE UNICODE)
 target_compile_definitions(ValidationTests PRIVATE _UNICODE)
 
-if(WINDOWS_STORE)
-    target_compile_options(ValidationTests PRIVATE /ZW)
-    target_compile_options(ValidationTests PRIVATE /await)
-endif()
+target_include_directories(ValidationTests PRIVATE "Source" ".")
 
-if(WIN32)
-    set(TEST_DEPENDENCY "${CMAKE_CURRENT_SOURCE_DIR}/../../Dependencies/bgfx.cmake/bx/include/compat/msvc"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../../Dependencies/bgfx.cmake/bgfx/include"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../../Dependencies/bgfx.cmake/bx/include"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../../Dependencies/bgfx.cmake/bimg/include")
-endif()
-
-target_include_directories(ValidationTests PRIVATE "Source" "." ${TEST_DEPENDENCY})
-
-target_link_to_dependencies(ValidationTests PRIVATE ${ADDITIONAL_LIBRARIES})
 target_link_to_dependencies(ValidationTests
     PRIVATE bgfx
     PRIVATE bimg
@@ -67,6 +48,7 @@ foreach(script ${SCRIPTS} ${BABYLONSCRIPTS})
         MAIN_DEPENDENCY "${CMAKE_CURRENT_SOURCE_DIR}/${script}")
 endforeach()
 
-foreach(dependency ${BABYLON_NATIVE_DEPENDENCIES})
-    add_custom_command(TARGET ValidationTests POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different ${dependency} $<TARGET_FILE_DIR:ValidationTests>)
-endforeach(dependency)
+set_property(TARGET ValidationTests PROPERTY FOLDER Apps)
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/../BabylonScripts PREFIX Scripts FILES ${BABYLONSCRIPTS})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SCRIPTS})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})

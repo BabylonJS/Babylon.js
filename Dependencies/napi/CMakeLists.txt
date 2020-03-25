@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.12)
 project(napi)
 
 # Set per-platform defaults.
-if (WIN32 OR WINDOWS_STORE)
+if (WIN32)
     set(NAPI_JAVASCRIPT_ENGINE "Chakra" CACHE STRING "JavaScript engine for N-API.")
 elseif (ANDROID)
     set(NAPI_JAVASCRIPT_ENGINE "V8" CACHE STRING "JavaScript engine for N-API.")
@@ -97,3 +97,5 @@ if(NOT TARGET javascript_engine)
     endif()
 endif()
 target_link_to_dependencies(napi PUBLIC javascript_engine)
+
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})
