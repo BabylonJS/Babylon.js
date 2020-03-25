@@ -14,7 +14,6 @@
 
 - Simplified code contributions by fully automating the dev setup with gitpod ([nisarhassan12](https://github.com/nisarhassan12))
 - Add a `CascadedShadowMap.IsSupported` method and log an error instead of throwing an exception when CSM is not supported ([Popov72](https://github.com/Popov72))
-- Extend `EffectRenderer` (set texture width/height, use internal textures only) ([Popov72](https://github.com/Popov72))
 
 ### Engine
 
@@ -102,3 +101,5 @@
 - Fix submesh recreation when it should not ([Popov72](https://github.com/Popov72)
 
 ## Breaking changes
+
+- `EffectRenderer.render` now takes a `RenderTargetTexture` or an `InternalTexture` as the output texture and only a single `EffectWrapper` for its first argument ([Popov72](https://github.com/Popov72))
