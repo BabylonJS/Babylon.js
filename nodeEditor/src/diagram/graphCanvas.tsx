@@ -14,6 +14,7 @@ import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { GraphFrame } from './graphFrame';
 import { IEditorData } from '../nodeLocationInfo';
+import { FrameNodePort } from './frameNodePort';
 
 require("./graphCanvas.scss");
 
@@ -47,7 +48,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _selectedLink: Nullable<NodeLink> = null;
     private _selectedPort: Nullable<NodePort> = null;
     private _candidateLink: Nullable<NodeLink> = null;
-    private _candidatePort: Nullable<NodePort> = null;
+    private _candidatePort: Nullable<NodePort | FrameNodePort> = null;
     private _gridSize = 20;
     private _selectionBox: Nullable<HTMLDivElement> = null;   
     private _selectedFrame: Nullable<GraphFrame> = null;   
@@ -195,19 +196,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             }
         });
 
-        props.globalState.onCandidatePortSelected.add(port => {
+        props.globalState.onCandidatePortSelectedObservable.add(port => {
             this._candidatePort = port;
         });
-
-        props.globalState.onFramePortMoveUpObserver.add((nodePort: NodePort) => {
-            const frame = this._frames.find(frame => frame.id === nodePort.frameId);
-            frame?.moveFramePortUp(nodePort);
-        });
-
-        props.globalState.onFramePortMoveDownObserver.add((nodePort: NodePort) => {
-            const frame = this._frames.find(frame => frame.id === nodePort.frameId);
-            frame?.moveFramePortDown(nodePort);
-        })
 
         props.globalState.onGridSizeChanged.add(() => {
             this.gridSize = DataStorage.ReadNumber("GridSize", 20);
@@ -608,7 +599,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 this.processCandidatePort();          
                 this.props.globalState.onCandidateLinkMoved.notifyObservers(null);
             } else { // is a click event on NodePort
-                if(this._candidateLink.portA.frameId !== null) { //only on Frame Ports
+                if(this._candidateLink.portA instanceof FrameNodePort) { //only on Frame Ports
                     this.props.globalState.onSelectionChangedObservable.notifyObservers(this._candidateLink.portA);
                 }
             }
