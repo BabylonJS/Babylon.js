@@ -104,30 +104,31 @@ endif()
 
 # -------------------------------- curl --------------------------------
 # Dependencies: openssl (indirect), 
-if(APPLE OR ANDROID)
-    set(CURL_CA_BUNDLE "none" CACHE FILEPATH "Path to SSL CA Certificate Bundle")
-    set(CURL_CA_PATH "none" CACHE PATH "Path to SSL CA Certificate Directory")
-endif()
+if(NOT APPLE)
+    if(ANDROID)
+        set(CURL_CA_BUNDLE "none" CACHE FILEPATH "Path to SSL CA Certificate Bundle")
+        set(CURL_CA_PATH "none" CACHE PATH "Path to SSL CA Certificate Directory")
+    endif()
 
-if(APPLE)
-    set(CMAKE_USE_SECTRANSP ON CACHE BOOL "enable Apple OS native SSL/TLS")
-elseif(WIN32 OR WINDOWS_STORE)
-    set(CMAKE_USE_WINSSL ON CACHE BOOL "Set cURL to use WinSSL by default.")
-else()
-    set(CMAKE_USE_WINSSL OFF CACHE BOOL "Set cURL to use WinSSL by default.")
-endif()
+    if(WIN32 OR WINDOWS_STORE)
+        set(CMAKE_USE_WINSSL ON CACHE BOOL "Set cURL to use WinSSL by default.")
+    else()
+        set(CMAKE_USE_WINSSL OFF CACHE BOOL "Set cURL to use WinSSL by default.")
+    endif()
 
-add_subdirectory(curl)
-set_property(TARGET libcurl PROPERTY FOLDER Dependencies)
+    add_subdirectory(curl)
+    set_property(TARGET libcurl PROPERTY FOLDER Dependencies)
 
-# TODO: Certain parts of cURL's functionality are gated behind WINAPI checks
-# that cause the functionality to become unavailable in UWP. Find a better way 
-# to ensure that functionality is enabled, then remove the following workaround.
-if(WINDOWS_STORE)
-    target_compile_definitions(libcurl PRIVATE "WINAPI_PARTITION_DESKTOP=1")
+    # TODO: Certain parts of cURL's functionality are gated behind WINAPI checks
+    # that cause the functionality to become unavailable in UWP. Find a better way 
+    # to ensure that functionality is enabled, then remove the following workaround.
+    if(WINDOWS_STORE)
+        target_compile_definitions(libcurl PRIVATE "WINAPI_PARTITION_DESKTOP=1")
+    endif()
 endif()
 
 # -------------------------------- BabylonNativeUtils --------------------------------
-# Dependencies: arcana, curl
+# Dependencies: arcana, curl (not for Apple)
+
 add_subdirectory(BabylonNativeUtils)
 set_property(TARGET BabylonNativeUtils PROPERTY FOLDER Dependencies)

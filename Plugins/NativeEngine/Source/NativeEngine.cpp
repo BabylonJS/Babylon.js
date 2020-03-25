@@ -616,7 +616,7 @@ namespace Babylon
                 const spirv_cross::ShaderResources resources = compiler.get_shader_resources();
                 assert(resources.uniform_buffers.size() == 1);
                 const spirv_cross::Resource& uniformBuffer = resources.uniform_buffers[0];
-#if (BGFX_CONFIG_RENDERER_METAL)
+#if __APPLE__
                 // with metal, we bind images and not samplers
                 const spirv_cross::SmallVector<spirv_cross::Resource>& samplers = resources.separate_images;
 #else

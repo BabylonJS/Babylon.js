@@ -1,7 +1,6 @@
 #include "ScriptLoader.h"
 
 #include <Babylon/NetworkUtils.h>
-
 #include <arcana/threading/task.h>
 
 namespace Babylon

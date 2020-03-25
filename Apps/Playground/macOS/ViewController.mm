@@ -7,6 +7,7 @@
 #import <Babylon/ScriptLoader.h>
 #import <Babylon/XMLHttpRequest.h>
 #import <Shared/InputManager.h>
+#import "Babylon/XMLHttpRequestApple.h"
 
 std::unique_ptr<Babylon::AppRuntime> runtime{};
 std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
@@ -15,7 +16,6 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-
 }
 
 - (void)viewDidAppear {
@@ -29,15 +29,6 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
         std::string rootUrl = [[NSString stringWithFormat:@"file://%s", [resourceUrl fileSystemRepresentation]] UTF8String];
         runtime = std::make_unique<Babylon::AppRuntime>(std::move(rootUrl));
     }
-    
-    // Initialize console plugin
-    runtime->Dispatch([](Napi::Env env)
-    {
-        Babylon::Console::CreateInstance(env, [](const char* message, auto)
-        {
-            NSLog(@"%s", message);
-        });
-    });
     
     // Initialize NativeWindow plugin
     NSSize size = [self view].frame.size;
@@ -53,7 +44,7 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
     Babylon::InitializeNativeEngine(*runtime, windowPtr, width, height);
     
     // Initialize XMLHttpRequest plugin.
-    Babylon::InitializeXMLHttpRequest(*runtime, runtime->RootUrl());
+    InitializeXMLHttpRequest(*runtime);
 
     inputBuffer = std::make_unique<InputManager::InputBuffer>(*runtime);
     InputManager::Initialize(*runtime, *inputBuffer);
