@@ -55757,7 +55757,6 @@ declare module BABYLON {
          * @param impostor imposter to match
          */
         private _softbodyOrClothStep;
-        private _tmpVector;
         private _tmpMatrix;
         /**
          * Applies an impulse on the imposter
