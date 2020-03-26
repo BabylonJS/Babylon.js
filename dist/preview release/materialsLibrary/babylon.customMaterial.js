@@ -7,7 +7,7 @@
 		exports["babylonjs-materials"] = factory(require("babylonjs"));
 	else
 		root["MATERIALS"] = factory(root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Materials_effect__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_decorators__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -369,7 +369,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ShaderSpecialParts", function() { return ShaderSpecialParts; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CustomMaterial", function() { return CustomMaterial; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Materials/effect");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/decorators");
 /* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__);
 
 
@@ -442,17 +442,17 @@ var CustomMaterial = /** @class */ (function (_super) {
     };
     CustomMaterial.prototype.Builder = function (shaderName, uniforms, uniformBuffers, samplers, defines, attributes) {
         var _this = this;
+        if (attributes && this._customAttributes && this._customAttributes.length > 0) {
+            attributes.push.apply(attributes, this._customAttributes);
+        }
+        this.ReviewUniform("uniform", uniforms);
+        this.ReviewUniform("sampler", samplers);
         if (this._isCreatedShader) {
             return this._createdShaderName;
         }
         this._isCreatedShader = false;
         CustomMaterial.ShaderIndexer++;
         var name = "custom_" + CustomMaterial.ShaderIndexer;
-        if (attributes && this._customAttributes && this._customAttributes.length > 0) {
-            attributes.push.apply(attributes, this._customAttributes);
-        }
-        this.ReviewUniform("uniform", uniforms);
-        this.ReviewUniform("sampler", samplers);
         var fn_afterBind = this._afterBind.bind(this);
         this._afterBind = function (m, e) {
             if (!e) {
@@ -614,7 +614,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ShaderAlebdoParts", function() { return ShaderAlebdoParts; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PBRCustomMaterial", function() { return PBRCustomMaterial; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Materials/effect");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/decorators");
 /* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__);
 
 
@@ -681,17 +681,17 @@ var PBRCustomMaterial = /** @class */ (function (_super) {
     };
     PBRCustomMaterial.prototype.Builder = function (shaderName, uniforms, uniformBuffers, samplers, defines, attributes) {
         var _this = this;
+        if (attributes && this._customAttributes && this._customAttributes.length > 0) {
+            attributes.push.apply(attributes, this._customAttributes);
+        }
+        this.ReviewUniform("uniform", uniforms);
+        this.ReviewUniform("sampler", samplers);
         if (this._isCreatedShader) {
             return this._createdShaderName;
         }
         this._isCreatedShader = false;
         PBRCustomMaterial.ShaderIndexer++;
         var name = "custom_" + PBRCustomMaterial.ShaderIndexer;
-        if (attributes && this._customAttributes && this._customAttributes.length > 0) {
-            attributes.push.apply(attributes, this._customAttributes);
-        }
-        this.ReviewUniform("uniform", uniforms);
-        this.ReviewUniform("sampler", samplers);
         var fn_afterBind = this._afterBind.bind(this);
         this._afterBind = function (m, e) {
             if (!e) {
@@ -861,14 +861,14 @@ if (typeof globalObject !== "undefined") {
 
 /***/ }),
 
-/***/ "babylonjs/Materials/effect":
+/***/ "babylonjs/Misc/decorators":
 /*!****************************************************************************************************!*\
   !*** external {"root":"BABYLON","commonjs":"babylonjs","commonjs2":"babylonjs","amd":"babylonjs"} ***!
   \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Materials_effect__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_decorators__;
 
 /***/ })
 
