@@ -66327,6 +66327,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 __webpack_require__(/*! ./sceneExplorer.scss */ "./components/sceneExplorer/sceneExplorer.scss");
 var SceneExplorerFilterComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SceneExplorerFilterComponent, _super);
@@ -66527,7 +66528,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
                 pipelineContextMenus.push({
                     label: "Add new SSAO2 Rendering Pipeline",
                     action: function () {
-                        var newPipeline = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["SSAORenderingPipeline"]("SSAO2 rendering pipeline", scene, 1, [scene.activeCamera]);
+                        var newPipeline = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["SSAO2RenderingPipeline"]("SSAO2 rendering pipeline", scene, 1, [scene.activeCamera]);
                         _this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
                     }
                 });
