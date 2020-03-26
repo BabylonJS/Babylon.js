@@ -4114,6 +4114,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Setting properties
         meshSubclass.checkCollisions = source.checkCollisions;
+        meshSubclass.overrideMaterialSideOrientation = source.overrideMaterialSideOrientation;
 
         // Cleaning
         if (disposeSource) {

@@ -98,5 +98,6 @@
 - Fix freeze (infinite loop) when disposing a scene that loaded some specific gLTF files ([Popov72](https://github.com/Popov72)
 
 - Fix submesh recreation when it should not ([Popov72](https://github.com/Popov72)
+- Fix mesh winding order inversion when merging meshes with overridden side orientation ([drigax](https://github.com/Drigax))
 
 ## Breaking changes
