@@ -57589,6 +57589,8 @@ declare module BABYLON {
         static EditorURL: string;
         /** Define the Url to load snippets */
         static SnippetUrl: string;
+        /** Gets or sets a boolean indicating that node materials should not deserialize textures from json / snippet content */
+        static IgnoreTexturesAtLoadTime: boolean;
         private BJSNODEMATERIALEDITOR;
         /** Get the inspector from bundle or global */
         private _getGlobalNodeMaterialEditor;
