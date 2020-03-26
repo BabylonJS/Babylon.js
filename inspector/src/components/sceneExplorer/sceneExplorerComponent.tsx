@@ -21,6 +21,7 @@ import { SSAORenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pi
 import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
 import { ParticleHelper } from 'babylonjs/Particles/particleHelper';
 import { GPUParticleSystem } from 'babylonjs/Particles/gpuParticleSystem';
+import { SSAO2RenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline';
 
 require("./sceneExplorer.scss");
 
@@ -278,7 +279,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 pipelineContextMenus.push({
                     label: "Add new SSAO2 Rendering Pipeline",
                     action: () => {
-                        let newPipeline = new SSAORenderingPipeline("SSAO2 rendering pipeline", scene, 1, [scene.activeCamera!]);
+                        let newPipeline = new SSAO2RenderingPipeline("SSAO2 rendering pipeline", scene, 1, [scene.activeCamera!]);
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
                     }
                 });
