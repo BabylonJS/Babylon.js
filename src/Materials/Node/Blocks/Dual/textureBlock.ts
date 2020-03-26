@@ -407,7 +407,7 @@ export class TextureBlock extends NodeMaterialBlock {
 
         this.convertToGammaSpace = serializationObject.convertToGammaSpace;
 
-        if (serializationObject.texture) {
+        if (serializationObject.texture && !NodeMaterial.IgnoreTexturesAtLoadTime) {
             rootUrl = serializationObject.texture.url.indexOf("data:") === 0 ? "" : rootUrl;
             this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl) as Texture;
         }
