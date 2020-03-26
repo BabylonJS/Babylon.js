@@ -108,6 +108,13 @@ export class CustomMaterial extends StandardMaterial {
 
     public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines, attributes?: string[]): string {
 
+        if (attributes && this._customAttributes && this._customAttributes.length > 0) {
+            attributes.push(...this._customAttributes);
+        }
+
+        this.ReviewUniform("uniform", uniforms);
+        this.ReviewUniform("sampler", samplers);
+
         if (this._isCreatedShader) {
             return this._createdShaderName;
         }
@@ -115,13 +122,6 @@ export class CustomMaterial extends StandardMaterial {
 
         CustomMaterial.ShaderIndexer++;
         var name: string = "custom_" + CustomMaterial.ShaderIndexer;
-
-        if (attributes && this._customAttributes && this._customAttributes.length > 0) {
-            attributes.push(...this._customAttributes);
-        }
-
-        this.ReviewUniform("uniform", uniforms);
-        this.ReviewUniform("sampler", samplers);
 
         var fn_afterBind = this._afterBind.bind(this);
         this._afterBind = (m, e) => {
