@@ -181,7 +181,7 @@ export class GraphFrame {
             }
 
             for(let i = 0; i < this._frameOutPorts.length; i++) {
-                const port = this._frameInPorts[i];
+                const port = this._frameOutPorts[i];
                 if(i === 0){
                     port.framePortPosition = FramePortPosition.Top
                 } else if(i === this._frameInPorts.length -1){
