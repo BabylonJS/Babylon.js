@@ -11888,6 +11888,9 @@ declare module BABYLON {
          * @returns the list of ramp gradients
          */
         getRampGradients(): Nullable<Array<Color3Gradient>>;
+        /** Force the system to rebuild all gradients that need to be resync */
+        forceRefreshGradients(): void;
+        private _syncRampGradientTexture;
         /**
          * Adds a new ramp gradient used to remap particle colors
          * @param gradient defines the gradient to use (between 0 and 1)
@@ -13257,6 +13260,8 @@ declare module BABYLON {
          * Rebuild the particle system
          */
         rebuild(): void;
+        /** Force the system to rebuild all gradients that need to be resync */
+        forceRefreshGradients(): void;
         /**
          * Starts the particle system and begins to emit
          * @param delay defines the delay in milliseconds before starting the system (0 by default)
@@ -53973,6 +53978,11 @@ declare module BABYLON {
          */
         protected _shouldRenderMesh(mesh: Mesh): boolean;
         /**
+         * Adds specific effects defines.
+         * @param defines The defines to add specifics to.
+         */
+        protected _addCustomEffectDefines(defines: string[]): void;
+        /**
          * Sets the required values for both the emissive texture and and the main color.
          */
         protected _setEmissiveTextureAndColor(mesh: Mesh, subMesh: SubMesh, material: Material): void;
@@ -55752,7 +55762,6 @@ declare module BABYLON {
          * @param impostor imposter to match
          */
         private _softbodyOrClothStep;
-        private _tmpVector;
         private _tmpMatrix;
         /**
          * Applies an impulse on the imposter
@@ -60687,17 +60696,15 @@ declare module BABYLON {
         indices?: number[];
     }
     /**
-     * Helper class to render one or more effects
+     * Helper class to render one or more effects.
+     * You can access the previous rendering in your shader by declaring a sampler named textureSampler
      */
     export class EffectRenderer {
         private engine;
         private static _DefaultOptions;
         private _vertexBuffers;
         private _indexBuffer;
-        private _ringBufferIndex;
-        private _ringScreenBuffer;
         private _fullscreenViewport;
-        private _getNextFrameBuffer;
         /**
          * Creates an effect renderer
          * @param engine the engine to use for rendering
@@ -60725,12 +60732,13 @@ declare module BABYLON {
          * Draws a full screen quad.
          */
         draw(): void;
+        private isRenderTargetTexture;
         /**
          * renders one or more effects to a specified texture
-         * @param effectWrappers list of effects to renderer
-         * @param outputTexture texture to draw to, if null it will render to the screen
+         * @param effectWrapper the effect to renderer
+         * @param outputTexture texture to draw to, if null it will render to the screen.
          */
-        render(effectWrappers: Array<EffectWrapper> | EffectWrapper, outputTexture?: Nullable<Texture>): void;
+        render(effectWrapper: EffectWrapper, outputTexture?: Nullable<InternalTexture | RenderTargetTexture>): void;
         /**
          * Disposes of the effect renderer
          */
@@ -63247,7 +63255,7 @@ declare module BABYLON {
          */
         addColorGradient(gradient: number, color1: Color4, color2?: Color4): GPUParticleSystem;
         private _refreshColorGradient;
-        /** Force the system to rebuild all gradients */
+        /** Force the system to rebuild all gradients that need to be resync */
         forceRefreshGradients(): void;
         /**
          * Remove a specific color gradient

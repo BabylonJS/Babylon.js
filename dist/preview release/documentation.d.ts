@@ -11888,6 +11888,9 @@ declare module BABYLON {
          * @returns the list of ramp gradients
          */
         getRampGradients(): Nullable<Array<Color3Gradient>>;
+        /** Force the system to rebuild all gradients that need to be resync */
+        forceRefreshGradients(): void;
+        private _syncRampGradientTexture;
         /**
          * Adds a new ramp gradient used to remap particle colors
          * @param gradient defines the gradient to use (between 0 and 1)
@@ -13257,6 +13260,8 @@ declare module BABYLON {
          * Rebuild the particle system
          */
         rebuild(): void;
+        /** Force the system to rebuild all gradients that need to be resync */
+        forceRefreshGradients(): void;
         /**
          * Starts the particle system and begins to emit
          * @param delay defines the delay in milliseconds before starting the system (0 by default)
@@ -55752,7 +55757,6 @@ declare module BABYLON {
          * @param impostor imposter to match
          */
         private _softbodyOrClothStep;
-        private _tmpVector;
         private _tmpMatrix;
         /**
          * Applies an impulse on the imposter
@@ -63247,7 +63251,7 @@ declare module BABYLON {
          */
         addColorGradient(gradient: number, color1: Color4, color2?: Color4): GPUParticleSystem;
         private _refreshColorGradient;
-        /** Force the system to rebuild all gradients */
+        /** Force the system to rebuild all gradients that need to be resync */
         forceRefreshGradients(): void;
         /**
          * Remove a specific color gradient
