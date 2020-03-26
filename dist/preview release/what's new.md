@@ -101,6 +101,7 @@
 - Fix submesh recreation when it should not ([Popov72](https://github.com/Popov72)
 - Fix `CustomMaterial` and `PBRCustomMaterial` not setting uniforms / samplers / attributes ([Popov72](https://github.com/Popov72)
 - Fix bug in NME where deleting a node from a frame would not remove its ports on the outside of a frame
+- Fix mesh winding order inversion when merging meshes with overridden side orientation ([drigax](https://github.com/Drigax))
 
 ## Breaking changes
 
