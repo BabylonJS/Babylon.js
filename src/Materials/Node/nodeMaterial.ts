@@ -125,6 +125,9 @@ export class NodeMaterial extends PushMaterial {
     /** Define the Url to load snippets */
     public static SnippetUrl = "https://snippet.babylonjs.com";
 
+    /** Gets or sets a boolean indicating that node materials should not deserialize textures from json / snippet content */
+    public static IgnoreTexturesAtLoadTime = false;
+
     private BJSNODEMATERIALEDITOR = this._getGlobalNodeMaterialEditor();
 
     /** Get the inspector from bundle or global */
@@ -283,13 +286,19 @@ export class NodeMaterial extends PushMaterial {
      * @returns the required block or null if not found
      */
     public getBlockByName(name: string) {
+        let result = null;
         for (var block of this.attachedBlocks) {
             if (block.name === name) {
-                return block;
+                if (!result) {
+                    result = block;
+                } else {
+                    Tools.Warn("More than one block was found with the name `" + name + "`");
+                    return result;
+                }
             }
         }
 
-        return null;
+        return result;
     }
 
     /**
