@@ -7,18 +7,18 @@ import { Observer } from 'babylonjs/Misc/observable';
 import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { IDisplayManager } from './display/displayManager';
 import { GraphNode } from './graphNode';
+import { NodeLink } from './nodeLink';
+import { GraphFrame } from './graphFrame';
+import { FrameNodePort } from './frameNodePort';
 
 export class NodePort {
-    private _element: HTMLDivElement;
-    private _img: HTMLImageElement;
-    private _globalState: GlobalState;
-    private _onCandidateLinkMovedObserver: Nullable<Observer<Nullable<Vector2>>>;
-    private _portLabel: Element;
-    private _frameId: Nullable<number>
-    private _isInput: boolean;
-    private _framePortId: Nullable<number>;
-
-    public delegatedPort: Nullable<NodePort> = null;
+    protected _element: HTMLDivElement;
+    protected _img: HTMLImageElement;
+    protected _globalState: GlobalState;
+    protected _onCandidateLinkMovedObserver: Nullable<Observer<Nullable<Vector2>>>;
+    protected _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | GraphFrame | NodePort | FrameNodePort>>>;  
+    
+    public delegatedPort: Nullable<FrameNodePort> = null;
 
     public get element(): HTMLDivElement {
         if (this.delegatedPort) {
@@ -26,26 +26,6 @@ export class NodePort {
         }
 
         return this._element;
-    }
-
-    public get frameId() {
-        return this._frameId;
-    }
-
-    public get isInput() {
-        return this._isInput;
-    }
-
-    public get portLabel() {
-        return this._portLabel.innerHTML;
-    }
-
-    public get framePortId() {
-        return this._framePortId;
-    }
-
-    public set portLabel(newLabel: string) {
-        this._portLabel.innerHTML = newLabel;
     }
 
     public refresh() {
@@ -72,18 +52,11 @@ export class NodePort {
         }
     }
 
-    public constructor(portContainer: HTMLElement, public connectionPoint: NodeMaterialConnectionPoint, public node: GraphNode, globalState: GlobalState, isInput: boolean, frameId: Nullable<number>, framePortId: number | undefined) {
+    public constructor(portContainer: HTMLElement, public connectionPoint: NodeMaterialConnectionPoint, public node: GraphNode, globalState: GlobalState) {
         this._element = portContainer.ownerDocument!.createElement("div");
         this._element.classList.add("port");
         portContainer.appendChild(this._element);
         this._globalState = globalState;
-
-        this._portLabel = portContainer.children[0];
-        this._frameId = frameId
-        this._isInput = isInput;
-        if(framePortId !== undefined) {
-            this._framePortId = framePortId;
-        }
 
         this._img = portContainer.ownerDocument!.createElement("img");
         this._element.appendChild(this._img );
@@ -102,7 +75,7 @@ export class NodePort {
             }
 
             this._element.classList.add("selected"); 
-            this._globalState.onCandidatePortSelected.notifyObservers(this);
+            this._globalState.onCandidatePortSelectedObservable.notifyObservers(this);
         });
 
         this.refresh();
@@ -110,17 +83,19 @@ export class NodePort {
 
     public dispose() {
         this._globalState.onCandidateLinkMoved.remove(this._onCandidateLinkMovedObserver);
+
+        if (this._onSelectionChangedObserver) {
+            this._globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
+        }
     }
 
     public static CreatePortElement(connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement, 
-            displayManager: Nullable<IDisplayManager>, globalState: GlobalState, isInput: boolean,  frameId: Nullable<number> = null, framePortId: number | undefined) {
+            displayManager: Nullable<IDisplayManager>, globalState: GlobalState) {
         let portContainer = root.ownerDocument!.createElement("div");
         let block = connectionPoint.ownerBlock;
 
         portContainer.classList.add("portLine");
-        if(framePortId !== null) {
-            portContainer.dataset.framePortId = `${framePortId}`;
-        }
+
         root.appendChild(portContainer);
 
         if (!displayManager || displayManager.shouldDisplayPortLabels(block)) {
@@ -130,6 +105,6 @@ export class NodePort {
             portContainer.appendChild(portLabel);
         }
     
-        return new NodePort(portContainer, connectionPoint, node, globalState, isInput, frameId, framePortId);
+        return new NodePort(portContainer, connectionPoint, node, globalState);
     }
 }
