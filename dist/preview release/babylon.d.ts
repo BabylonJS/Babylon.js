@@ -59422,7 +59422,6 @@ declare module BABYLON {
         private _blurHPostProcess;
         private _blurVPostProcess;
         private _ssaoCombinePostProcess;
-        private _firstUpdate;
         /**
          * Gets active scene
          */
@@ -60201,14 +60200,6 @@ declare module BABYLON {
       */
     export class RadiosityEffectsManager {
         /**
-          * If true, uses hemicube instead of hemispherical projection
-          */
-        useHemicube: boolean;
-        /**
-          * If true, uses depth instead of surface id for visibility
-          */
-        useDepthCompare: boolean;
-        /**
           * Effect for visibility
           */
         visibilityEffect: Effect;
@@ -60228,6 +60219,10 @@ declare module BABYLON {
           * Effect to dilate the lightmap. Useful to avoid seams.
           */
         dilateEffect: Effect;
+        /**
+          * Effect to tonemap the lightmap. Necessary to map the dynamic range into 0;1.
+          */
+        radiosityPostProcessEffect: Effect;
         private _vertexBuffer;
         private _indexBuffer;
         private _scene;
@@ -60237,7 +60232,7 @@ declare module BABYLON {
           * @param useHemicube If true, uses hemicube instead of hemispherical projection
           * @param useDepthCompare If true, uses depth instead of surface id for visibility
           */
-        constructor(scene: Scene, useHemicube: boolean, useDepthCompare: boolean);
+        constructor(scene: Scene);
         /**
           * Gets a screen quad vertex buffer
           */
@@ -60279,6 +60274,11 @@ declare module BABYLON {
          * @returns true if the dilate effect is ready
          */
         isDilateEffectReady(): boolean;
+        /**
+         * Checks the ready state of the tonemap effect
+         * @returns true if the tonemap effect is ready
+         */
+        isRadiosityPostProcessReady(): boolean;
     }
 }
 declare module BABYLON {
@@ -60399,6 +60399,7 @@ declare module BABYLON {
         near?: number;
         far?: number;
         bias?: number;
+        normalBias?: number;
     }
     /**
      * Radiosity Renderer
@@ -60408,15 +60409,6 @@ declare module BABYLON {
      * Can be used as direct light baking, or radiosity light baking solution
      */
     export class RadiosityRenderer {
-        /**
-         * Uses depth rather than surface id to determine visibility
-         */
-        useDepthCompare: boolean;
-        /**
-         * Uses hemicube for visibility rather than spherical projection.
-         * Set to true for a more precise visibility rendering, but increases drastically radiosity render time
-         */
-        useHemicube: boolean;
         /**
          * Meshes involved in the radiosity solution process. Scene meshes that are not in this list will be ignored,
          * and therefore will not occlude or receive radiance.
@@ -60449,6 +60441,7 @@ declare module BABYLON {
         private _near;
         private _far;
         private _bias;
+        private _normalBias;
         private _frameBuffer0;
         private _frameBuffer1;
         private _patchOffset;
@@ -60456,6 +60449,7 @@ declare module BABYLON {
         private _currentPatch;
         private _currentRenderedMap;
         private _nextShooterTexture;
+        private _patchMapsUnbuilt;
         private _patchMaps;
         private _meshMap;
         private _isBuildingPatches;
@@ -60484,6 +60478,7 @@ declare module BABYLON {
          */
         createMaps(): void;
         private renderToRadiosityTexture;
+        private swap;
         private cleanAfterRender;
         /**
          * Gathers radiance for a limited duration
@@ -60493,6 +60488,7 @@ declare module BABYLON {
          */
         gatherFor(duration: number, energyLeftThreshold?: number): boolean;
         private getNextPatches;
+        private postProcessLightmap;
         /**
          * Bakes only direct light on lightmaps
          * @returns true if energy has been shot. (false meaning that there was no emitter)
@@ -60513,14 +60509,13 @@ declare module BABYLON {
         private consumeEnergyInTexture;
         private nextShooter;
         private dilate;
+        private toneMap;
         private buildPatchesForSubMesh;
         private updatePatches;
         private renderSubMesh;
         private buildVisibilityMapCube;
         private _setCubeVisibilityUniforms;
         private renderVisibilityMapCube;
-        private setVisibilityUniforms;
-        private buildVisibilityMap;
         /**
          * Disposes of the radiosity renderer.
          */
@@ -62565,6 +62560,20 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export var blurPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var radiosityPostProcessPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var radiosityPostProcessVertexShader: {
         name: string;
         shader: string;
     };

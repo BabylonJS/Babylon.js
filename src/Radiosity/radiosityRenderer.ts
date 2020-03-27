@@ -18,7 +18,7 @@ import { RadiosityUtils } from "./radiosityUtils";
 import { RadiosityEffectsManager } from "./radiosityEffectsManager";
 
 import { Nullable } from "../types";
-import { Tools } from "../misc/tools";
+// import { Tools } from "../misc/tools";
 
 /**
  * Patch, infinitesimal unit when discretizing surfaces

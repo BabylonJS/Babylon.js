@@ -102,7 +102,7 @@ void main()
 		// range check & accumulate:
 	   difference = depthSign * samplePosition.z - sampleDepth;
 	   float rangeCheck = 1.0 - smoothstep(correctedRadius*0.5, correctedRadius, difference);
-	   occlusion += (difference >= 0.0 ? 1.0 : 0.0) * rangeCheck;
+	   occlusion += (difference >= 0.05 ? 1.0 : 0.0) * rangeCheck;
 	}
 	occlusion = occlusion*(1.0 - smoothstep(maxZ * 0.75, maxZ, depth));
 	float ao = 1.0 - totalStrength * occlusion * samplesFactor;
