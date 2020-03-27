@@ -880,10 +880,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         const defines = <PBRMaterialDefines>subMesh._materialDefines;
-        if (!this.checkReadyOnEveryCall && subMesh.effect) {
-            if (defines._renderId === this.getScene().getRenderId()) {
-                return true;
-            }
+        if (this._isReadyForSubMesh(subMesh)) {
+            return true;
         }
 
         const scene = this.getScene();

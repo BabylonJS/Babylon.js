@@ -134,7 +134,6 @@ export class LavaMaterial extends PushMaterial {
     public maxSimultaneousLights: number;
 
     private _scaledDiffuse = new Color3();
-    private _renderId: number;
 
     constructor(name: string, scene: Scene) {
         super(name, scene);
@@ -167,10 +166,8 @@ export class LavaMaterial extends PushMaterial {
         var defines = <LavaMaterialDefines>subMesh._materialDefines;
         var scene = this.getScene();
 
-        if (!this.checkReadyOnEveryCall && subMesh.effect) {
-            if (this._renderId === scene.getRenderId()) {
-                return true;
-            }
+        if (this._isReadyForSubMesh(subMesh)) {
+            return true;
         }
 
         var engine = scene.getEngine();
@@ -286,7 +283,7 @@ export class LavaMaterial extends PushMaterial {
             return false;
         }
 
-        this._renderId = scene.getRenderId();
+        defines._renderId = scene.getRenderId();
         subMesh.effect._wasPreviouslyReady = true;
 
         return true;
