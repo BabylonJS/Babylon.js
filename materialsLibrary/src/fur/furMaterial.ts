@@ -298,7 +298,7 @@ export class FurMaterial extends PushMaterial {
             return false;
         }
 
-        this._renderId = scene.getRenderId();
+        defines._renderId = scene.getRenderId();
         subMesh.effect._wasPreviouslyReady = true;
 
         return true;
