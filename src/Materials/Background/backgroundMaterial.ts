@@ -665,7 +665,7 @@ export class BackgroundMaterial extends PushMaterial {
 
         var scene = this.getScene();
         var defines = <BackgroundMaterialDefines>subMesh._materialDefines;
-        
+
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
