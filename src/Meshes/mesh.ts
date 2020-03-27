@@ -2814,6 +2814,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns a new InstancedMesh
      */
     public createInstance(name: string): InstancedMesh {
+        this.makeGeometryUnique();
+
         return Mesh._instancedMeshFactory(name, this);
     }
 

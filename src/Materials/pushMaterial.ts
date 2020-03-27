@@ -55,7 +55,6 @@ export class PushMaterial extends Material {
         return false;
     }
 
-
     /**
     * Binds the given world matrix to the active effect
     *
