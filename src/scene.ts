@@ -3980,7 +3980,9 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         // Restore back buffer
         this.activeCamera = currentActiveCamera;
-        this._bindFrameBuffer();
+        if (this._activeCamera && this._activeCamera.cameraRigMode !== Camera.RIG_MODE_CUSTOM) {
+            this._bindFrameBuffer();
+        }
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
 
         for (let step of this._beforeClearStage) {
