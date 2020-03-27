@@ -285,6 +285,11 @@ declare module BABYLON {
          */
         static IsNavigatorAvailable(): boolean;
         /**
+         * Check if the document object exists
+         * @returns true if the document object exists
+         */
+        static IsDocumentAvailable(): boolean;
+        /**
          * Extracts text content from a DOM element hierarchy
          * @param element defines the root element
          * @returns a string
