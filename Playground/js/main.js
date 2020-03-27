@@ -72,7 +72,7 @@ compileAndRun = function (parent, fpsLabel) {
                 });
             }
 
-            var zipVariables = "var engine = null;\r\nvar scene = null;\r\n";
+            var zipVariables = "var engine = null;\r\nvar scene = null;\r\nvar sceneToRender = null;\r\n";
             var defaultEngineZip = "var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true }); }";
 
             if (code.indexOf("createEngine") !== -1) {
@@ -85,10 +85,6 @@ compileAndRun = function (parent, fpsLabel) {
                 checkCamera = false;
             } else if (code.indexOf("createScene") !== -1) { // createScene
                 createSceneFunction = "createScene";
-            } else if (code.indexOf("CreateScene") !== -1) { // CreateScene
-                createSceneFunction = "CreateScene";
-            } else if (code.indexOf("createscene") !== -1) { // createscene
-                createSceneFunction = "createscene";
             }
 
             if (!createSceneFunction) {
@@ -125,11 +121,14 @@ compileAndRun = function (parent, fpsLabel) {
                     return;
                 }
 
+                let sceneToRenderCode = 'sceneToRender = scene';
+
                 // if scene returns a promise avoid checks
                 if (scene.then) {
                     checkCamera = false;
                     checkSceneCount = false;
-                }
+                    sceneToRenderCode = 'scene.then(returnedScene => { sceneToRender = returnedScene; });\r\n';
+                } 
 
                 var createEngineZip = (createEngineFunction === "createEngine") ?
                     zipVariables :
@@ -137,7 +136,8 @@ compileAndRun = function (parent, fpsLabel) {
 
                 parent.zipTool.zipCode =
                     createEngineZip + ";\r\n" +
-                    code;
+                    code + ";\r\n" +
+                    sceneToRenderCode;
             }
 
             engine = engine;
