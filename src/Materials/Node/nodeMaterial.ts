@@ -730,10 +730,8 @@ export class NodeMaterial extends PushMaterial {
         }
 
         var defines = <NodeMaterialDefines>subMesh._materialDefines;
-        if (!this.checkReadyOnEveryCall && subMesh.effect) {
-            if (defines._renderId === scene.getRenderId()) {
-                return true;
-            }
+        if (this._isReadyForSubMesh(subMesh)) {
+            return true;
         }
 
         var engine = scene.getEngine();
