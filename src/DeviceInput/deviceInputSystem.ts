@@ -2,19 +2,12 @@ import { Engine } from '../Engines/engine';
 import { Nullable } from '../types';
 
 /**
- * DeviceInputSystem
  * This class will take all inputs from Keyboard, Mouse, and
  * any Gamepads and provide a polling system that all devices
  * will use.  This class assumes that there will only be one
  * pointer device and one keyboard.
  */
 export class DeviceInputSystem {
-    // Public Members
-    /** Constant string reference for mouse/pointer */
-    public static readonly POINTER_DEVICE: string = "Pointer";
-    /** Constant string reference for keyboard */
-    public static readonly KEYBOARD_DEVICE: string = "Keyboard";
-
     // Private Members
     private _inputs: Map<string, Array<number>> = new Map();
     private _onDeviceConnected: (deviceName: string) => void = () => { };
@@ -37,10 +30,9 @@ export class DeviceInputSystem {
 
     // Public functions
     /**
-     * pollInput: Checks for current device input value, given an id and input index
+     * Checks for current device input value, given an id and input index
      * @param deviceName Id of connected device
      * @param inputIndex Index of device input
-     *
      * @returns Current value of input
      */
     public pollInput(deviceName: string, inputIndex: number): number {
@@ -60,7 +52,7 @@ export class DeviceInputSystem {
     }
 
     /**
-     * onDeviceConnected: When a device is connected, perform user specified function
+     * When a device is connected, perform user specified function
      * @param callback Callback function to use when a device is connected
      */
     public onDeviceConnected(callback: (deviceName: string) => void): void {
@@ -68,7 +60,7 @@ export class DeviceInputSystem {
     }
 
     /**
-     * onDeviceDisconnected: When a device is disconnected, perform user specified function
+     * When a device is disconnected, perform user specified function
      * @param callback Callback function to use when a device is disconnected
      */
     public onDeviceDisconnected(callback: (deviceName: string) => void): void {
@@ -77,7 +69,7 @@ export class DeviceInputSystem {
 
     // Private functions
     /**
-     * registerDevice: Add device and inputs to device map
+     * Add device and inputs to device map
      * @param deviceName Assigned name of device (may be SN)
      * @param numberOfInputs Number of input entries to create for given device
      */
@@ -93,7 +85,7 @@ export class DeviceInputSystem {
     }
 
     /**
-     * deregisterDevice: Given a specific device name, remove that device from the device map
+     * Given a specific device name, remove that device from the device map
      * @param deviceName Name of device to be removed
      */
     private deregisterDevice(deviceName: string) {
@@ -101,7 +93,7 @@ export class DeviceInputSystem {
     }
 
     /**
-     * handleKeyActions: Handle all actions that come from keyboard interaction
+     * Handle all actions that come from keyboard interaction
      */
     private handleKeyActions() {
         window.addEventListener("keydown", (evt) => {
@@ -126,7 +118,7 @@ export class DeviceInputSystem {
     }
 
     /**
-     * handleMouseActions: Handle all actions that come from mouse interaction
+     * Handle all actions that come from mouse interaction
      */
     private handleMouseActions() {
         this._elementToAttachTo?.addEventListener("pointermove", (evt) => {
@@ -169,7 +161,7 @@ export class DeviceInputSystem {
     }
 
     /**
-     * handleGamepadActions: Handle all actions that come from gamepad interaction
+     * Handle all actions that come from gamepad interaction
      */
     private handleGamepadActions() {
         window.addEventListener("gamepadconnected", (evt: any) => {
@@ -186,7 +178,7 @@ export class DeviceInputSystem {
     }
 
     /**
-     * updateDevices: Update all non-event based devices with each frame
+     * Update all non-event based devices with each frame
      */
     private updateDevices() {
         // Gamepads
@@ -222,4 +214,10 @@ export class DeviceInputSystem {
     private getGamePads(): (Gamepad | null)[] {
         return navigator.getGamepads();
     }
+
+    // Static
+    /** POINTER_DEVICE */
+    public static readonly POINTER_DEVICE: string = "Pointer";
+    /** KEYBOARD_DEVICE */
+    public static readonly KEYBOARD_DEVICE: string = "Keyboard";
 }
