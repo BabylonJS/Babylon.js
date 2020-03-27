@@ -85,6 +85,10 @@ compileAndRun = function (parent, fpsLabel) {
                 checkCamera = false;
             } else if (code.indexOf("createScene") !== -1) { // createScene
                 createSceneFunction = "createScene";
+            } else if (code.indexOf("CreateScene") !== -1) { // CreateScene
+                createSceneFunction = "CreateScene";
+            } else if (code.indexOf("createscene") !== -1) { // createscene
+                createSceneFunction = "createscene";
             }
 
             if (!createSceneFunction) {
