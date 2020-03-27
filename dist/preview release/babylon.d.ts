@@ -26298,6 +26298,7 @@ declare module BABYLON {
         constructor(name: string, scene: Scene);
         getEffect(): Effect;
         isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
+        protected _isReadyForSubMesh(subMesh: SubMesh): boolean;
         /**
         * Binds the given world matrix to the active effect
         *
