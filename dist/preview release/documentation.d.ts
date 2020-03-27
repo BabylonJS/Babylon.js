@@ -21974,6 +21974,8 @@ declare module BABYLON {
          * @returns the new Geometry
          */
         static CreateGeometryForMesh(mesh: Mesh): Geometry;
+        /** Get the list of meshes using this geometry */
+        get meshes(): Mesh[];
         /**
          * Creates a new geometry
          * @param id defines the unique ID

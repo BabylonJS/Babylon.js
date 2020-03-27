@@ -1338,6 +1338,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (!this._geometry) {
             return this;
         }
+
+        if (this._geometry.meshes.length === 1) {
+            return this;
+        }
+
         var oldGeometry = this._geometry;
         var geometry = this._geometry.copy(Geometry.RandomId());
         oldGeometry.releaseForMesh(this, true);
