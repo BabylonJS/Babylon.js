@@ -9,7 +9,7 @@ namespace Babylon
 {
     class WorkQueue;
 
-    class AppRuntime final : public JsRuntime
+    class AppRuntime final
     {
     public:
         AppRuntime(std::string rootUrl);
@@ -23,20 +23,6 @@ namespace Babylon
         void Dispatch(std::function<void(Napi::Env)> callback);
 
     private:
-        // This secondary constructor exists to resolve a timing issue with the construction
-        // of the JsRuntime. Because JsRuntime's contract requires that its dispatch function
-        // be valid and safe at the moment its constructor is called, the AppRuntime's work
-        // queue (which powers the dispatch function) must exist before the JsRuntime
-        // constructor is called. However, because AppRuntime inherits from JsRuntime, by
-        // by default the base class must be initialized before the members of the inheriting
-        // class -- relevantly m_workQueue. In short, the work queue must exist before
-        // m_workQueue can be initialized. The solution to this is to create the work queue
-        // separately within a forwarding constructor, then have the JsRuntime's dispatcher
-        // function simply capture a reference directly to the underlying work queue. The
-        // unique_ptr containing the work queue can then be moved so that it is owned by
-        // m_workQueue.
-        AppRuntime(std::string, std::unique_ptr<WorkQueue>);
-
         // These three methods are the mechanism by which platform- and JavaScript-specific
         // code can be "injected" into the execution of the JavaScript thread. These three
         // functions are implemented in separate files, thus allowing implementations to be

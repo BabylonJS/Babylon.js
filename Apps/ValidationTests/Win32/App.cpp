@@ -66,34 +66,31 @@ namespace
         runtime = std::make_unique<Babylon::AppRuntime>(GetUrlFromPath(GetModulePath().parent_path().parent_path()));
 
         // Initialize console plugin.
-        runtime->Dispatch([](Napi::Env env)
+        runtime->Dispatch([rect, hWnd](Napi::Env env)
         {
             Babylon::Console::CreateInstance(env, [](const char* message, auto)
             {
                 OutputDebugStringA(message);
             });
-        });
 
-        // Initialize NativeWindow plugin.
-        auto width = static_cast<float>(rect.right - rect.left);
-        auto height = static_cast<float>(rect.bottom - rect.top);
-        runtime->Dispatch([hWnd, width, height](Napi::Env env)
-        {
+            // Initialize NativeWindow plugin.
+            auto width = static_cast<float>(rect.right - rect.left);
+            auto height = static_cast<float>(rect.bottom - rect.top);
             Babylon::NativeWindow::Initialize(env, hWnd, width, height);
-        });
 
-        // Initialize NativeEngine plugin.
-        Babylon::InitializeNativeEngine(*runtime, hWnd, width, height);
+            auto& jsRuntime = Babylon::JsRuntime::GetFromJavaScript(env);
 
-        // Initialize XMLHttpRequest plugin.
-        Babylon::InitializeXMLHttpRequest(*runtime, runtime->RootUrl());
+            // Initialize NativeEngine plugin.
+            Babylon::InitializeGraphics(hWnd, width, height);
+            Babylon::InitializeNativeEngine(env);
 
-        runtime->Dispatch([hWnd](Napi::Env env)
-        {
+            // Initialize XMLHttpRequest plugin.
+            Babylon::InitializeXMLHttpRequest(env, runtime->RootUrl());
+
             Babylon::TestUtils::CreateInstance(env, hWnd);
         });
 
-        Babylon::ScriptLoader loader{ *runtime, runtime->RootUrl() };
+        Babylon::ScriptLoader loader{*runtime, runtime->RootUrl()};
         loader.LoadScript("Scripts/babylon.max.js");
         loader.LoadScript("Scripts/babylon.glTF2FileLoader.js");
         loader.LoadScript("Scripts/babylonjs.materials.js");

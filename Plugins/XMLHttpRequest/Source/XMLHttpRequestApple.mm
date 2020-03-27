@@ -9,13 +9,11 @@ void bytesDeallocator(void* ptr, void* context)
     free(ptr);
 }
 
-void InitializeXMLHttpRequest(Babylon::JsRuntime& runtime)
+void InitializeXMLHttpRequest(Napi::Env env)
 {
-    runtime.Dispatch([&runtime](Napi::Env env)
-    {
-        JSGlobalContextRef globalContext = Napi::GetContext<JSGlobalContextRef>(env);
-        [[XMLHttpRequest new] extend:globalContext:&runtime];
-    });
+    auto& runtime = Babylon::JsRuntime::GetFromJavaScript(env);
+    JSGlobalContextRef globalContext = Napi::GetContext<JSGlobalContextRef>(env);
+    [[XMLHttpRequest new] extend:globalContext:&runtime];
 }
 
 @implementation XMLHttpRequest {

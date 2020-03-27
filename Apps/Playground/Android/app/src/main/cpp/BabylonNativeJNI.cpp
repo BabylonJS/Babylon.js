@@ -60,7 +60,10 @@ Java_BabylonNative_Wrapper_surfaceCreated(JNIEnv* env, jobject obj, jobject surf
     {
         runtime = std::make_unique<Babylon::AppRuntime>("");
 
-        runtime->Dispatch([](Napi::Env env)
+        ANativeWindow *window = ANativeWindow_fromSurface(env, surface);
+        int32_t width  = ANativeWindow_getWidth(window);
+        int32_t height = ANativeWindow_getHeight(window);
+        runtime->Dispatch([window, width, height](Napi::Env env)
         {
             Babylon::Console::CreateInstance(env, [](const char* message, Babylon::Console::LogLevel level)
             {
@@ -77,23 +80,19 @@ Java_BabylonNative_Wrapper_surfaceCreated(JNIEnv* env, jobject obj, jobject surf
                     break;
                 }
             });
-        });
 
-        ANativeWindow *window = ANativeWindow_fromSurface(env, surface);
-        int32_t width  = ANativeWindow_getWidth(window);
-        int32_t height = ANativeWindow_getHeight(window);
-        runtime->Dispatch([window, width, height](Napi::Env env)
-        {
             Babylon::NativeWindow::Initialize(env, window, width, height);
+
+            Babylon::InitializeNativeEngine(env);
+
+            Babylon::InitializeGraphics(window, width, height);
+            Babylon::InitializeXMLHttpRequest(env, runtime->RootUrl());
+
+            auto& jsRuntime = Babylon::JsRuntime::GetFromJavaScript(env);
+
+            inputBuffer = std::make_unique<InputManager::InputBuffer>(jsRuntime);
+            InputManager::Initialize(jsRuntime, *inputBuffer);
         });
-
-        Babylon::InitializeNativeEngine(*runtime, window, width, height);
-
-        // Initialize XMLHttpRequest plugin.
-        Babylon::InitializeXMLHttpRequest(*runtime, runtime->RootUrl());
-
-        inputBuffer = std::make_unique<InputManager::InputBuffer>(*runtime);
-        InputManager::Initialize(*runtime, *inputBuffer);
 
         loader = std::make_unique<Babylon::ScriptLoader>(*runtime, runtime->RootUrl());
         loader->Eval("document = {}", "");
@@ -111,7 +110,10 @@ Java_BabylonNative_Wrapper_surfaceChanged(JNIEnv* env, jobject obj, jint width, 
     if (runtime)
     {
         ANativeWindow *window = ANativeWindow_fromSurface(env, surface);
-        Babylon::ReinitializeNativeEngine(*runtime, window, static_cast<size_t>(width), static_cast<size_t>(height));
+        runtime->Dispatch([window, width, height](Napi::Env env)
+        {
+            Babylon::ReinitializeNativeEngine(env, window, static_cast<size_t>(width), static_cast<size_t>(height));
+        });
     }
 }
 

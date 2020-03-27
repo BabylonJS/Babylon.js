@@ -36,18 +36,21 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
     float height = size.height;
     NSWindow* nativeWindow = [[self view] window];
     void* windowPtr = (__bridge void*)nativeWindow;
+    Babylon::InitializeGraphics(windowPtr, width, height);
+
     runtime->Dispatch([windowPtr, width, height](Napi::Env env)
     {
         Babylon::NativeWindow::Initialize(env, windowPtr, width, height);
-    });
     
-    Babylon::InitializeNativeEngine(*runtime, windowPtr, width, height);
-    
-    // Initialize XMLHttpRequest plugin.
-    InitializeXMLHttpRequest(*runtime);
+        Babylon::InitializeNativeEngine(env);
+        
+        InitializeXMLHttpRequest(env);
 
-    inputBuffer = std::make_unique<InputManager::InputBuffer>(*runtime);
-    InputManager::Initialize(*runtime, *inputBuffer);
+        auto& jsRuntime = Babylon::JsRuntime::GetFromJavaScript(env);
+
+        inputBuffer = std::make_unique<InputManager::InputBuffer>(jsRuntime);
+        InputManager::Initialize(jsRuntime, *inputBuffer);
+    });
     
     Babylon::ScriptLoader loader{ *runtime, runtime->RootUrl() };
     loader.Eval("document = {}", "");

@@ -5,15 +5,12 @@
 namespace Babylon
 {
     AppRuntime::AppRuntime(std::string rootUrl)
-        : AppRuntime(std::move(rootUrl), std::make_unique<WorkQueue>([this] { RunPlatformTier(); }))
+        : m_rootUrl{std::move(rootUrl)}
+        , m_workQueue{std::make_unique<WorkQueue>([this] { RunPlatformTier(); })}
     {
-    }
-
-    AppRuntime::AppRuntime(std::string rootUrl, std::unique_ptr<WorkQueue> workQueue)
-        : JsRuntime([workQueue = workQueue.get()](auto func) { workQueue->Append(std::move(func)); })
-        , m_rootUrl{std::move(rootUrl)}
-        , m_workQueue{std::move(workQueue)}
-    {
+        Dispatch([this](Napi::Env env) {
+            JsRuntime::CreateForJavaScript(env, [this](auto func) { m_workQueue->Append(std::move(func)); });
+        });
     }
 
     AppRuntime::~AppRuntime()

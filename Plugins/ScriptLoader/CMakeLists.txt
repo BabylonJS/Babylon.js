@@ -8,7 +8,7 @@ target_include_directories(ScriptLoader PRIVATE "Include/Babylon")
 target_include_directories(ScriptLoader INTERFACE "Include")
 
 target_link_to_dependencies(ScriptLoader
-    PUBLIC JsRuntime
+    PUBLIC napi
     PRIVATE arcana
     PRIVATE BabylonNativeUtils)
 

@@ -9,37 +9,31 @@
 
 namespace Babylon
 {
-    void InitializeNativeEngine(JsRuntime& runtime, void* windowPtr, size_t width, size_t height)
+    void InitializeGraphics(void* windowPtr, size_t width, size_t height)
     {
-#if (ANDROID)
-        runtime.Dispatch([windowPtr, width, height](Napi::Env env) {
-            NativeEngine::InitializeWindow(windowPtr, width, height);
-        });
-#else
         NativeEngine::InitializeWindow(windowPtr, width, height);
-#endif
-        runtime.Dispatch([](Napi::Env env) {
-            NativeEngine::Initialize(env);
-#ifdef NATIVE_ENGINE_XR
-            InitializeNativeXr(env);
-#endif
-        });
     }
 
-    void ReinitializeNativeEngine(JsRuntime& runtime, void* windowPtr, size_t width, size_t height)
+    void InitializeNativeEngine(Napi::Env env)
     {
-        runtime.Dispatch([windowPtr, width, height](Napi::Env env) {
-            bgfx::PlatformData pd;
-            pd.ndt = nullptr;
-            pd.nwh = windowPtr;
-            pd.context = nullptr;
-            pd.backBuffer = nullptr;
-            pd.backBufferDS = nullptr;
-            bgfx::setPlatformData(pd);
-            bgfx::reset(width, height);
+        NativeEngine::Initialize(env);
+#ifdef NATIVE_ENGINE_XR
+        InitializeNativeXr(env);
+#endif
+    }
 
-            auto& window = NativeWindow::GetFromJavaScript(env);
-            window.Resize(width, height);
-        });
+    void ReinitializeNativeEngine(Napi::Env env, void* windowPtr, size_t width, size_t height)
+    {
+        bgfx::PlatformData pd;
+        pd.ndt = nullptr;
+        pd.nwh = windowPtr;
+        pd.context = nullptr;
+        pd.backBuffer = nullptr;
+        pd.backBufferDS = nullptr;
+        bgfx::setPlatformData(pd);
+        bgfx::reset(width, height);
+
+        auto& window = NativeWindow::GetFromJavaScript(env);
+        window.Resize(width, height);
     }
 }
