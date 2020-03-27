@@ -26298,6 +26298,7 @@ declare module BABYLON {
         constructor(name: string, scene: Scene);
         getEffect(): Effect;
         isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
+        protected _isReadyForSubMesh(subMesh: SubMesh): boolean;
         /**
         * Binds the given world matrix to the active effect
         *
@@ -79691,7 +79692,6 @@ declare module BABYLON {
         disableLighting: boolean;
         private _maxSimultaneousLights;
         maxSimultaneousLights: number;
-        private _renderId;
         constructor(name: string, scene: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
@@ -79846,7 +79846,6 @@ declare module BABYLON {
         diffuseColor: BABYLON.Color3;
         speed: number;
         private _scaledDiffuse;
-        private _renderId;
         private _lastTime;
         constructor(name: string, scene: BABYLON.Scene);
         needAlphaBlending(): boolean;
@@ -79901,7 +79900,6 @@ declare module BABYLON {
         maxSimultaneousLights: number;
         highLevelFur: boolean;
         _meshes: BABYLON.AbstractMesh[];
-        private _renderId;
         private _furTime;
         constructor(name: string, scene: BABYLON.Scene);
         get furTime(): number;
@@ -79951,7 +79949,6 @@ declare module BABYLON {
         smoothness: number;
         private _disableLighting;
         disableLighting: boolean;
-        private _renderId;
         constructor(name: string, scene: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
@@ -80021,7 +80018,6 @@ declare module BABYLON {
         private _opacityTexture;
         opacityTexture: BABYLON.BaseTexture;
         private _gridControl;
-        private _renderId;
         /**
          * constructor
          * @param name The name given to the material in order to identify it afterwards.
@@ -80079,7 +80075,6 @@ declare module BABYLON {
         private _maxSimultaneousLights;
         maxSimultaneousLights: number;
         private _scaledDiffuse;
-        private _renderId;
         constructor(name: string, scene: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
@@ -80148,7 +80143,6 @@ declare module BABYLON {
         disableLighting: boolean;
         private _maxSimultaneousLights;
         maxSimultaneousLights: number;
-        private _renderId;
         constructor(name: string, scene: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
@@ -80188,7 +80182,6 @@ declare module BABYLON {
         disableLighting: boolean;
         private _maxSimultaneousLights;
         maxSimultaneousLights: number;
-        private _renderId;
         constructor(name: string, scene: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaBlendingForMesh(mesh: BABYLON.AbstractMesh): boolean;
@@ -80222,7 +80215,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     export class ShadowOnlyMaterial extends BABYLON.PushMaterial {
-        private _renderId;
         private _activeLight;
         constructor(name: string, scene: BABYLON.Scene);
         shadowColor: BABYLON.Color3;
@@ -80262,7 +80254,6 @@ declare module BABYLON {
         disableLighting: boolean;
         private _maxSimultaneousLights;
         maxSimultaneousLights: number;
-        private _renderId;
         constructor(name: string, scene: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
@@ -80349,7 +80340,6 @@ declare module BABYLON {
          */
         cameraOffset: BABYLON.Vector3;
         private _cameraPosition;
-        private _renderId;
         /**
          * Instantiates a new sky material.
          * This material allows to create dynamic and texture free
@@ -80464,7 +80454,6 @@ declare module BABYLON {
         disableLighting: boolean;
         private _maxSimultaneousLights;
         maxSimultaneousLights: number;
-        private _renderId;
         constructor(name: string, scene: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
@@ -80518,7 +80507,6 @@ declare module BABYLON {
         disableLighting: boolean;
         private _maxSimultaneousLights;
         maxSimultaneousLights: number;
-        private _renderId;
         constructor(name: string, scene: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
@@ -80628,7 +80616,6 @@ declare module BABYLON {
         private _reflectionTransform;
         private _lastTime;
         private _lastDeltaTime;
-        private _renderId;
         private _useLogarithmicDepth;
         private _waitingRenderList;
         private _imageProcessingConfiguration;
