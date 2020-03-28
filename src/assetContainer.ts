@@ -488,19 +488,27 @@ export class AssetContainer extends AbstractScene {
         let _targetConverter = targetConverter ? targetConverter : (target: any) => {
             let node = null;
 
-            // Remove _primitive and get change things like "Foot.L" to "FootL"
-            const name = target.name.split(".").join("").split("_")[0];
+            const targetProperty = target.animations.length ? target.animations[0].targetProperty : "";
+            /* 
+                BabylonJS adds special naming to targets that are children of nodes. 
+                This name attempts to remove that special naming to get the parent nodes name in case the target
+                can't be found in the node tree
+            
+                Ex: Torso_primitive0 likely points to a Mesh primitive. We take away primitive0 and are left with "Torso" which is the name 
+                of the primitive's parent.
+            */
+            const name = target.name.split(".").join("").split("_primitive")[0];
 
-            switch (target.animations.length ? target.animations[0].targetProperty : "") {
-            case "position":
-            case "rotationQuaternion":
-                node = scene.getTransformNodeByName(name);
-                break;
-            case "influence":
-                node = scene.getMorphTargetByName(name);
-                break;
-            default:
-                node = scene.getNodeByName(name);
+            switch (targetProperty) {
+                case "position":
+                case "rotationQuaternion":
+                    node = scene.getTransformNodeByName(target.name) || scene.getTransformNodeByName(name);
+                    break;
+                case "influence":
+                    node = scene.getMorphTargetByName(target.name) || scene.getMorphTargetByName(name);
+                    break;
+                default:
+                    node = scene.getNodeByName(target.name) || scene.getNodeByName(name);
             }
 
             return node;
