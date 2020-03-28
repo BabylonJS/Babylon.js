@@ -3203,7 +3203,6 @@ export class Scene extends AbstractScene implements IAnimatable {
         return null;
     }
 
-
     /**
      * Gets a morph target using a given name (if many are found, this function will pick the first one)
      * @param name defines the name to search for
