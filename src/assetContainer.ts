@@ -489,12 +489,12 @@ export class AssetContainer extends AbstractScene {
             let node = null;
 
             const targetProperty = target.animations.length ? target.animations[0].targetProperty : "";
-            /* 
-                BabylonJS adds special naming to targets that are children of nodes. 
+            /*
+                BabylonJS adds special naming to targets that are children of nodes.
                 This name attempts to remove that special naming to get the parent nodes name in case the target
                 can't be found in the node tree
-            
-                Ex: Torso_primitive0 likely points to a Mesh primitive. We take away primitive0 and are left with "Torso" which is the name 
+
+                Ex: Torso_primitive0 likely points to a Mesh primitive. We take away primitive0 and are left with "Torso" which is the name
                 of the primitive's parent.
             */
             const name = target.name.split(".").join("").split("_primitive")[0];
