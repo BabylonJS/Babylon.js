@@ -3203,6 +3203,25 @@ export class Scene extends AbstractScene implements IAnimatable {
         return null;
     }
 
+
+    /**
+     * Gets a morph target using a given name (if many are found, this function will pick the first one)
+     * @param name defines the name to search for
+     * @return the found morph target or null if not found at all.
+     */
+    public getMorphTargetByName(name: string): Nullable<MorphTarget> {
+        for (let managerIndex = 0; managerIndex < this.morphTargetManagers.length; ++managerIndex) {
+            const morphTargetManager = this.morphTargetManagers[managerIndex];
+            for (let index = 0; index < morphTargetManager.numTargets; ++index) {
+                const target = morphTargetManager.getTarget(index);
+                if (target.name === name) {
+                    return target;
+                }
+            }
+        }
+        return null;
+    }
+
     /**
      * Gets a boolean indicating if the given mesh is active
      * @param mesh defines the mesh to look for

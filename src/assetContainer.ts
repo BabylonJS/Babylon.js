@@ -485,7 +485,26 @@ export class AssetContainer extends AbstractScene {
             return;
         }
 
-        let _targetConverter = targetConverter ? targetConverter : (target: any) => { return scene.getBoneByName(target.name) || scene.getNodeByName(target.name); };
+        let _targetConverter = targetConverter ? targetConverter : (target: any) => { 
+            let node = null;
+
+            // Remove _primitive and get change things like "Foot.L" to "FootL"
+            const name = target.name.split(".").join("").split("_")[0]
+
+            switch (target.animations.length ? target.animations[0].targetProperty : "") {
+            case "position":
+            case "rotationQuaternion":
+                node = scene.getTransformNodeByName(name);
+                break;
+            case "influence":
+                node = scene.getMorphTargetByName(name);
+                break;
+            default:
+                node = scene.getNodeByName(name);
+            }
+
+            return node;
+        };
 
         // Copy new node animations
         let nodesInAC = this.getNodes();
