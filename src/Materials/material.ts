@@ -144,6 +144,11 @@ export class Material implements IAnimatable {
     public static readonly MATERIAL_ALPHATESTANDBLEND = 3;
 
     /**
+     * Custom callback helping to override the default shader used in the material.
+     */
+    public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines, attributes?: string[]) => string;
+
+    /**
      * The ID of the material
      */
     @serialize()
