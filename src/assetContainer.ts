@@ -485,11 +485,11 @@ export class AssetContainer extends AbstractScene {
             return;
         }
 
-        let _targetConverter = targetConverter ? targetConverter : (target: any) => { 
+        let _targetConverter = targetConverter ? targetConverter : (target: any) => {
             let node = null;
 
             // Remove _primitive and get change things like "Foot.L" to "FootL"
-            const name = target.name.split(".").join("").split("_")[0]
+            const name = target.name.split(".").join("").split("_")[0];
 
             switch (target.animations.length ? target.animations[0].targetProperty : "") {
             case "position":
