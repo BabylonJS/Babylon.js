@@ -1,6 +1,6 @@
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { Effect } from "babylonjs/Materials/effect";
-import { PBRMaterialDefines } from "babylonjs/Materials/PBR/pbrBaseMaterial";
+import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
@@ -102,7 +102,7 @@ export class PBRCustomMaterial extends PBRMaterial {
         return arr;
     }
 
-    public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: PBRMaterialDefines, attributes?: string[]): string {
+    public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines, attributes?: string[]): string {
 
         if (attributes && this._customAttributes && this._customAttributes.length > 0) {
             attributes.push(...this._customAttributes);

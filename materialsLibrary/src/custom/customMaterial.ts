@@ -1,6 +1,6 @@
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { Effect } from "babylonjs/Materials/effect";
-import { StandardMaterialDefines } from "babylonjs/Materials/standardMaterial";
+import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
@@ -106,7 +106,7 @@ export class CustomMaterial extends StandardMaterial {
         return arr;
     }
 
-    public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines, attributes?: string[]): string {
+    public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines, attributes?: string[]): string {
 
         if (attributes && this._customAttributes && this._customAttributes.length > 0) {
             attributes.push(...this._customAttributes);
