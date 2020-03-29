@@ -6,8 +6,10 @@ declare type MaterialDefines = import("../Materials/materialDefines").MaterialDe
 
 declare module "../Meshes/subMesh" {
     export interface SubMesh {
+        /** Switch the current effect to be the regular effect for this sub mesh */
         switchToRegularEffect: () => void;
 
+        /** Switch the current effect to be the shadow depth effect for this sub mesh */
         switchToShadowDepthEffect: () => void;
 
         /** @hidden */
