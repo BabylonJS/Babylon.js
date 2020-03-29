@@ -1,3 +1,7 @@
+#if SM_FLOAT == 0
+	#include<packingFunctions>
+#endif
+
 varying float vDepthMetricSM;
 
 #ifdef SM_USEDISTANCE == 1
