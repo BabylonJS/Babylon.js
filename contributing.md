@@ -45,7 +45,7 @@ You can use Gitpod (A free online VS Code like IDE) for contributing online. Wit
 
 so that you can start straight away.
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/from-referrer/)
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/BabylonJS/Babylon.js)
 
 ## Pull requests
 
