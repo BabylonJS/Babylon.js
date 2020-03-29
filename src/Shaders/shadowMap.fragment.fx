@@ -1,8 +1,4 @@
-﻿#ifndef SM_FLOAT
-	#include<packingFunctions>
-#endif
-
-#include<shadowMapFragmentDeclaration>
+﻿#include<shadowMapFragmentDeclaration>
 
 #ifdef ALPHATEST
 varying vec2 vUV;
