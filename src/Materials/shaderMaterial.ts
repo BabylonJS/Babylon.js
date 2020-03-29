@@ -3,7 +3,7 @@ import { Scene } from "../scene";
 import { Matrix, Vector3, Vector2, Vector4 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { BaseSubMesh } from "../Meshes/subMesh";
+import { SubMesh, BaseSubMesh } from "../Meshes/subMesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
@@ -571,14 +571,26 @@ export class ShaderMaterial extends Material {
             defines.push("#define ALPHATEST");
         }
 
+        let shaderName = this._shaderPath,
+            uniforms = this._options.uniforms,
+            uniformBuffers = this._options.uniformBuffers,
+            samplers = this._options.samplers;
+
+        if (this.customShaderNameResolve) {
+            uniforms = uniforms.slice();
+            uniformBuffers = uniformBuffers.slice();
+            samplers = samplers.slice();
+            shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines, attribs);
+        }
+
         var previousEffect = this._effect;
         var join = defines.join("\n");
 
-        this._effect = engine.createEffect(this._shaderPath, <IEffectCreationOptions>{
+        this._effect = engine.createEffect(shaderName, <IEffectCreationOptions>{
             attributes: attribs,
-            uniformsNames: this._options.uniforms,
-            uniformBuffersNames: this._options.uniformBuffers,
-            samplers: this._options.samplers,
+            uniformsNames: uniforms,
+            uniformBuffersNames: uniformBuffers,
+            samplers: samplers,
             defines: join,
             fallbacks: fallbacks,
             onCompiled: this.onCompiled,
@@ -624,6 +636,16 @@ export class ShaderMaterial extends Material {
             this._effect.setMatrix("worldViewProjection", this._cachedWorldViewProjectionMatrix);
 
         }
+    }
+
+    /**
+     * Binds the submesh to this material by preparing the effect and shader to draw
+     * @param world defines the world transformation matrix
+     * @param mesh defines the mesh containing the submesh
+     * @param subMesh defines the submesh to bind the material to
+     */
+    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
+        this.bind(world, mesh);
     }
 
     /**
