@@ -15,6 +15,7 @@ let shader = \`##SHADER_PLACEHOLDER##\`;
 
 Effect.##SHADERSTORE_PLACEHOLDER##[name] = shader;
 ##EXPORT_PLACEHOLDER##
+// tata
 `;
 
 
@@ -92,6 +93,7 @@ function main(isCore) {
             let includeText = "";
             const includes = getIncludes(fxData);
             includes.forEach((entry) => {
+                //entry = entry.replace(/(\/ShadersInclude)\1+/g, "/ShadersInclude");
                 if (isCore) {
                     includeText = includeText + `import "./ShadersInclude/${entry}";
 `;
@@ -109,6 +111,7 @@ function main(isCore) {
             if (isCore) {
                 if (isInclude) {
                     effectLocation = "../../Materials/effect";
+                    includeText = includeText.replace(/ShadersInclude\//g, "");
                 }
                 else {
                     effectLocation = "../Materials/effect";
