@@ -106,7 +106,7 @@ export class CustomMaterial extends StandardMaterial {
         return arr;
     }
 
-    public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines, attributes?: string[]): string {
+    public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[]): string {
 
         if (attributes && this._customAttributes && this._customAttributes.length > 0) {
             attributes.push(...this._customAttributes);

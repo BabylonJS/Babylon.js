@@ -20,7 +20,7 @@ declare module "../Materials/material" {
         /** @hidden */
         _customShadowDepthMaterial: Nullable<Material>;
         /** @hidden */
-        _customShadowDepthOldNameResolve: Nullable<(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines, attributes?: string[]) => string>;
+        _customShadowDepthOldNameResolve: Nullable<(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[]) => string>;
         /** @hidden */
         _setupCustomShadowDepthMaterial: () => void;
         /** @hidden */
@@ -59,6 +59,10 @@ Object.defineProperty(Material.prototype, "customShadowDepthMaterial", {
     configurable: true
 });
 
+function isMaterialDefines(defines:  MaterialDefines | string[]): defines is MaterialDefines {
+    return (defines as any)._keys !== undefined;
+}
+
 Material.prototype._setupCustomShadowDepthMaterial = function() {
     const mat = this._customShadowDepthMaterial;
 
@@ -68,19 +72,25 @@ Material.prototype._setupCustomShadowDepthMaterial = function() {
 
     this._customShadowDepthOldNameResolve = mat.customShaderNameResolve?.bind(mat);
 
-    mat.customShaderNameResolve = (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines, attributes?: string[]) => {
+    mat.customShaderNameResolve = (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[]) => {
         if (this._customShadowDepthDefines) {
-            for (let i = 0; i < this._customShadowDepthDefines.length; ++i) {
-                const define = this._customShadowDepthDefines[i],
-                        offset = 8,
-                        spacePos = define.indexOf(" ", offset),
-                        name = define.substring(offset, spacePos !== -1 ? spacePos : define.length),
-                        value = spacePos === -1 ? true : define.substring(spacePos + 1);
-
-                if (defines[name] === undefined) {
-                    (defines as any)._keys.push(name);
+            if (!isMaterialDefines(defines)) {
+                for (let i = 0; i < this._customShadowDepthDefines.length; ++i) {
+                    defines.push(this._customShadowDepthDefines[i]);
                 }
-                defines[name] = value;
+            } else {
+                for (let i = 0; i < this._customShadowDepthDefines.length; ++i) {
+                    const define = this._customShadowDepthDefines[i],
+                            offset = 8,
+                            spacePos = define.indexOf(" ", offset),
+                            name = define.substring(offset, spacePos !== -1 ? spacePos : define.length),
+                            value = spacePos === -1 ? true : define.substring(spacePos + 1);
+
+                    if (defines[name] === undefined) {
+                        (defines as any)._keys.push(name);
+                    }
+                    defines[name] = value;
+                }
             }
         }
 

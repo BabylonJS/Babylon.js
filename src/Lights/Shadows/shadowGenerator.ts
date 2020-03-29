@@ -1018,6 +1018,17 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect): void {
+        if (effect.getUniform("viewProjection")) {
+            effect.setMatrix("viewProjection", this.getTransformMatrix());
+        }
+
+        if (effect.getUniform("view")) {
+            effect.setMatrix("view", this._viewMatrix);
+        }
+
+        if (effect.getUniform("projection")) {
+            effect.setMatrix("projection", this._projectionMatrix);
+        }
     }
 
     protected _renderSubMeshForShadowMap(subMesh: SubMesh): void {
@@ -1052,7 +1063,11 @@ export class ShadowGenerator implements IShadowGenerator {
                 subMesh.switchToShadowDepthEffect();
             }
 
-            const effect = customShadowDepthMat ? subMesh.effect! : this._effect;
+            let effect = customShadowDepthMat ? subMesh.effect! : this._effect;
+
+            if (!effect && customShadowDepthMat) {
+                effect = customShadowDepthMat.getEffect()!; // ShaderMaterial case where the effect is not stored on the sub mesh
+            }
 
             engine.enableEffect(effect);
 
