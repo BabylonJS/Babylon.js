@@ -1107,9 +1107,9 @@ export class ShadowGenerator implements IShadowGenerator {
 
                 // Clip planes
                 MaterialHelper.BindClipPlane(effect, scene);
-
-                this._bindCustomEffectForRenderSubMeshForShadowMap(subMesh, effect);
             }
+
+            this._bindCustomEffectForRenderSubMeshForShadowMap(subMesh, effect);
 
             if (this.forceBackFacesOnly) {
                 engine.setState(true, 0, false, true);
