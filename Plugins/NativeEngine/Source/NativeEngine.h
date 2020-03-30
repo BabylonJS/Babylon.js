@@ -6,6 +6,7 @@
 #include <Babylon/TicketedCollection.h>
 
 #include <Babylon/JsRuntime.h>
+#include <Babylon/JsRuntimeScheduler.h>
 
 #include <napi/napi.h>
 
@@ -17,6 +18,8 @@
 #include <gsl/gsl>
 
 #include <assert.h>
+
+#include <arcana/threading/cancellation.h>
 
 namespace Babylon
 {
@@ -220,13 +223,13 @@ namespace Babylon
     {
         ~TextureData()
         {
-            if (bgfx::isValid(Texture))
+            if (bgfx::isValid(Handle))
             {
-                bgfx::destroy(Texture);
+                bgfx::destroy(Handle);
             }
         }
 
-        bgfx::TextureHandle Texture{bgfx::kInvalidHandle};
+        bgfx::TextureHandle Handle{bgfx::kInvalidHandle};
         uint32_t Width{0};
         uint32_t Height{0};
         uint32_t Flags{0};
@@ -315,6 +318,9 @@ namespace Babylon
         void EndFrame();
 
     private:
+        void Dispose();
+
+        void Dispose(const Napi::CallbackInfo& info);
         Napi::Value GetEngine(const Napi::CallbackInfo& info); // TODO: Hack, temporary method. Remove as part of the change to get rid of NapiBridge.
         void RequestAnimationFrame(const Napi::CallbackInfo& info);
         Napi::Value CreateVertexArray(const Napi::CallbackInfo& info);
@@ -356,9 +362,9 @@ namespace Babylon
         void SetFloat3(const Napi::CallbackInfo& info);
         void SetFloat4(const Napi::CallbackInfo& info);
         Napi::Value CreateTexture(const Napi::CallbackInfo& info);
-        Napi::Value LoadTexture(const Napi::CallbackInfo& info);
-        Napi::Value LoadCubeTexture(const Napi::CallbackInfo& info);
-        Napi::Value LoadCubeTextureWithMips(const Napi::CallbackInfo& info);
+        void LoadTexture(const Napi::CallbackInfo& info);
+        void LoadCubeTexture(const Napi::CallbackInfo& info);
+        void LoadCubeTextureWithMips(const Napi::CallbackInfo& info);
         Napi::Value GetTextureWidth(const Napi::CallbackInfo& info);
         Napi::Value GetTextureHeight(const Napi::CallbackInfo& info);
         void SetTextureSampling(const Napi::CallbackInfo& info);
@@ -382,11 +388,12 @@ namespace Babylon
         Napi::Value GetFramebufferData(const Napi::CallbackInfo& info);
 
         void UpdateSize(size_t width, size_t height);
-        void DispatchAnimationFrameAsync(Napi::FunctionReference callback);
 
         Napi::Value DecodeImage(const Napi::CallbackInfo& info);
         Napi::Value GetImageData(const Napi::CallbackInfo& info);
         Napi::Value EncodeImage(const Napi::CallbackInfo& info);
+
+        arcana::cancellation_source m_cancelSource{};
 
         ShaderCompiler m_shaderCompiler;
 
@@ -394,6 +401,7 @@ namespace Babylon
         TicketedCollection<std::unique_ptr<ProgramData>> m_programDataCollection{};
 
         JsRuntime& m_runtime;
+        JsRuntimeScheduler m_runtimeScheduler;
 
         bx::DefaultAllocator m_allocator;
         uint64_t m_engineState;

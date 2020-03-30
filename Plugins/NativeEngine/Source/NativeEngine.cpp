@@ -1,6 +1,10 @@
 #include "NativeEngine.h"
 
+#include <arcana/threading/task.h>
+#include <arcana/threading/task_schedulers.h>
+
 #include <napi/env.h>
+#include <napi/napi-shared-reference.h>
 
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
@@ -57,22 +61,6 @@ namespace Babylon
             bytes.insert(bytes.end(), ptr, ptr + stride);
         }
 
-        void FlipYInImageBytes(gsl::span<uint8_t> bytes, size_t rowCount, size_t rowPitch)
-        {
-            std::vector<uint8_t> buffer{};
-            buffer.reserve(rowPitch);
-
-            for (size_t row = 0; row < rowCount / 2; row++)
-            {
-                auto frontPtr = bytes.data() + (row * rowPitch);
-                auto backPtr = bytes.data() + ((rowCount - row - 1) * rowPitch);
-
-                std::memcpy(buffer.data(), frontPtr, rowPitch);
-                std::memcpy(frontPtr, backPtr, rowPitch);
-                std::memcpy(backPtr, buffer.data(), rowPitch);
-            }
-        }
-
         void AppendUniformBuffer(std::vector<uint8_t>& bytes, const spirv_cross::Compiler& compiler, const spirv_cross::Resource& uniformBuffer, bool isFragment)
         {
             const uint8_t fragmentBit = (isFragment ? BGFX_UNIFORM_FRAGMENTBIT : 0);
@@ -123,8 +111,6 @@ namespace Babylon
 
         void AppendSamplers(std::vector<uint8_t>& bytes, const spirv_cross::Compiler& compiler, const spirv_cross::SmallVector<spirv_cross::Resource>& samplers, bool isFragment, std::unordered_map<std::string, UniformInfo>& cache)
         {
-            const uint8_t fragmentBit = (isFragment ? BGFX_UNIFORM_FRAGMENTBIT : 0);
-
             for (const spirv_cross::Resource& sampler : samplers)
             {
                 AppendBytes(bytes, static_cast<uint8_t>(sampler.name.size()));
@@ -235,6 +221,25 @@ namespace Babylon
             return static_cast<bimg::TextureFormat::Enum>(format);
         }
 
+        void FlipY(bimg::ImageContainer* image)
+        {
+            uint8_t* bytes = static_cast<uint8_t*>(image->m_data);
+            uint32_t rowCount = image->m_height;
+            uint32_t rowPitch = image->m_size / image->m_height;
+
+            std::vector<uint8_t> buffer(rowPitch);
+
+            for (size_t row = 0; row < rowCount / 2; row++)
+            {
+                auto frontPtr = bytes + (row * rowPitch);
+                auto backPtr = bytes + ((rowCount - row - 1) * rowPitch);
+
+                std::memcpy(buffer.data(), frontPtr, rowPitch);
+                std::memcpy(frontPtr, backPtr, rowPitch);
+                std::memcpy(backPtr, buffer.data(), rowPitch);
+            }
+        }
+
         void GenerateMips(bx::AllocatorI* allocator, bimg::ImageContainer** image)
         {
             bimg::ImageContainer* input = *image;
@@ -258,28 +263,45 @@ namespace Babylon
             *image = output;
         }
 
-        void CreateTextureFromImage(bx::AllocatorI* allocator, TextureData* textureData, bimg::ImageContainer* image, bool invertY, bool generateMips)
+        void CreateTextureFromImage(bx::AllocatorI* allocator, TextureData* texture, bimg::ImageContainer* image)
         {
-            if (invertY)
-            {
-                FlipYInImageBytes(gsl::make_span(static_cast<uint8_t*>(image->m_data), image->m_size), image->m_height, image->m_size / image->m_height);
-            }
-
-            if (generateMips)
-            {
-                GenerateMips(allocator, &image);
-            }
-
-            auto releaseFn = [](void* ptr, void* userData)
-            {
+            auto releaseFn = [](void* ptr, void* userData) {
                 bimg::imageFree(static_cast<bimg::ImageContainer*>(userData));
             };
 
             auto mem = bgfx::makeRef(image->m_data, image->m_size, releaseFn, image);
 
-            textureData->Texture = bgfx::createTexture2D(image->m_width, image->m_height, generateMips, 1, Cast(image->m_format), 0, mem);
-            textureData->Width = image->m_width;
-            textureData->Height = image->m_height;
+            texture->Handle = bgfx::createTexture2D(image->m_width, image->m_height, (image->m_numMips > 1), 1, Cast(image->m_format), BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE, mem);
+            texture->Width = image->m_width;
+            texture->Height = image->m_height;
+        }
+
+        void CreateCubeTextureFromImages(TextureData* texture, const std::vector<bimg::ImageContainer*>& images, bool hasMips)
+        {
+            const bimg::ImageContainer* firstImage = images.front();
+            uint32_t width = firstImage->m_width;
+            uint32_t height = firstImage->m_height;
+            bgfx::TextureFormat::Enum format = Cast(firstImage->m_format);
+
+            uint32_t totalSize = 0;
+            for (auto image : images)
+            {
+                totalSize += image->m_size;
+            }
+
+            // Combine all the faces into one chunk.
+            const bgfx::Memory* mem = bgfx::alloc(totalSize);
+            uint8_t* ptr = mem->data;
+            for (bimg::ImageContainer* image : images)
+            {
+                std::memcpy(ptr, image->m_data, image->m_size);
+                ptr += image->m_size;
+                bimg::imageFree(image);
+            }
+
+            texture->Handle = bgfx::createTextureCube(width, hasMips, 1, format, BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE, mem);
+            texture->Width = width;
+            texture->Height = height;
         }
     }
 
@@ -313,6 +335,7 @@ namespace Babylon
             env,
             JS_CLASS_NAME,
             {
+                InstanceMethod("dispose", &NativeEngine::Dispose),
                 InstanceMethod("getEngine", &NativeEngine::GetEngine),
                 InstanceMethod("requestAnimationFrame", &NativeEngine::RequestAnimationFrame),
                 InstanceMethod("createVertexArray", &NativeEngine::CreateVertexArray),
@@ -394,6 +417,7 @@ namespace Babylon
     NativeEngine::NativeEngine(const Napi::CallbackInfo& info, NativeWindow& nativeWindow)
         : Napi::ObjectWrap<NativeEngine>{info}
         , m_runtime{JsRuntime::GetFromJavaScript(info.Env())}
+        , m_runtimeScheduler{m_runtime}
         , m_currentProgram{nullptr}
         , m_engineState{BGFX_STATE_DEFAULT}
         , m_resizeCallbackTicket{nativeWindow.AddOnResizeCallback([this](size_t width, size_t height) { this->UpdateSize(width, height); })}
@@ -403,10 +427,7 @@ namespace Babylon
 
     NativeEngine::~NativeEngine()
     {
-        // This collection contains bgfx data, so it must be cleared before bgfx::shutdown is called.
-        m_programDataCollection.Clear();
-
-        bgfx::shutdown();
+        Dispose();
     }
 
     void NativeEngine::UpdateSize(size_t width, size_t height)
@@ -432,6 +453,21 @@ namespace Babylon
         return m_frameBufferManager;
     }
 
+    void NativeEngine::Dispose()
+    {
+        m_cancelSource.cancel();
+
+        // This collection contains bgfx data, so it must be cleared before bgfx::shutdown is called.
+        m_programDataCollection.Clear();
+
+        bgfx::shutdown();
+    }
+
+    void NativeEngine::Dispose(const Napi::CallbackInfo& info)
+    {
+        Dispose();
+    }
+
     // NativeEngine definitions
     Napi::Value NativeEngine::GetEngine(const Napi::CallbackInfo& info)
     {
@@ -440,7 +476,11 @@ namespace Babylon
 
     void NativeEngine::RequestAnimationFrame(const Napi::CallbackInfo& info)
     {
-        DispatchAnimationFrameAsync(Napi::Persistent(info[0].As<Napi::Function>()));
+        auto callback = info[0].As<Napi::Function>();
+        m_runtime.Dispatch([this, callbackRef = Napi::Shared(callback)](Napi::Env) {
+            callbackRef.Value().Call({});
+            EndFrame();
+        });
     }
 
     Napi::Value NativeEngine::CreateVertexArray(const Napi::CallbackInfo& info)
@@ -1004,122 +1044,137 @@ namespace Babylon
         return data;
     }
 
-    Napi::Value NativeEngine::LoadTexture(const Napi::CallbackInfo& info)
+    void NativeEngine::LoadTexture(const Napi::CallbackInfo& info)
     {
-        const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
-        const auto buffer = info[1].As<Napi::ArrayBuffer>();
+        const auto texture = info[0].As<Napi::External<TextureData>>().Data();
+        const auto data = info[1].As<Napi::TypedArray>();
         const auto generateMips = info[2].As<Napi::Boolean>().Value();
         const auto invertY = info[3].As<Napi::Boolean>().Value();
+        const auto onSuccess = info[4].As<Napi::Function>();
+        const auto onError = info[5].As<Napi::Function>();
 
-        bimg::ImageContainer* image = bimg::imageParse(&m_allocator, buffer.Data(), static_cast<uint32_t>(buffer.ByteLength()));
-        CreateTextureFromImage(&m_allocator, textureData, image, invertY, generateMips);
+        const auto dataSpan = gsl::make_span(static_cast<uint8_t*>(data.ArrayBuffer().Data()) + data.ByteOffset(), data.ByteLength());
 
-        return Napi::Value::From(info.Env(), bgfx::isValid(textureData->Texture));
+        arcana::make_task(arcana::threadpool_scheduler, m_cancelSource,
+            [this, dataSpan, generateMips, invertY]() {
+                bimg::ImageContainer* image = bimg::imageParse(&m_allocator, dataSpan.data(), dataSpan.size());
+                if (invertY)
+                {
+                    FlipY(image);
+                }
+                if (generateMips)
+                {
+                    GenerateMips(&m_allocator, &image);
+                }
+                return image;
+            })
+            .then(m_runtimeScheduler, m_cancelSource, [this, texture, dataRef = Napi::Shared(data)](bimg::ImageContainer* image) {
+                CreateTextureFromImage(&m_allocator, texture, image);
+            })
+            .then(arcana::inline_scheduler, m_cancelSource, [this, onSuccessRef = Napi::Shared(onSuccess)]() {
+                onSuccessRef.Value().Call({Napi::Value::From(Env(), true)});
+            })
+            .then(arcana::inline_scheduler, m_cancelSource, [this, onErrorRef = Napi::Shared(onError)](arcana::expected<void, std::exception_ptr> result) {
+                if (result.has_error())
+                {
+                    onErrorRef.Value().Call({Napi::Value::From(Env(), true)});
+                }
+            });
     }
 
-    Napi::Value NativeEngine::LoadCubeTexture(const Napi::CallbackInfo& info)
+    void NativeEngine::LoadCubeTexture(const Napi::CallbackInfo& info)
     {
-        const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
-        const auto imageDataArray = info[1].As<Napi::Array>();
+        const auto texture = info[0].As<Napi::External<TextureData>>().Data();
+        const auto data = info[1].As<Napi::Array>();
         const auto generateMips = info[2].As<Napi::Boolean>().Value();
+        const auto onSuccess = info[3].As<Napi::Function>();
+        const auto onError = info[4].As<Napi::Function>();
 
-        // Load images and generate mips if requested.
-        uint32_t totalSize = 0;
-        std::array<bimg::ImageContainer*, 6> images{};
-        for (uint32_t face = 0; face < 6; face++)
+        std::array<arcana::task<bimg::ImageContainer*, std::exception_ptr>, 6> tasks;
+        for (uint32_t face = 0; face < data.Length(); face++)
         {
-            const auto imageData = imageDataArray[face].As<Napi::TypedArray>();
-            bimg::ImageContainer* image = bimg::imageParse(&m_allocator,
-                static_cast<uint8_t*>(imageData.ArrayBuffer().Data()) + imageData.ByteOffset(),
-                static_cast<uint32_t>(imageData.ByteLength()));
-
-            if (generateMips)
-            {
-                GenerateMips(&m_allocator, &image);
-            }
-
-            totalSize += image->m_size;
-            images[face] = image;
+            const auto typedArray = data[face].As<Napi::TypedArray>();
+            const auto dataSpan = gsl::make_span(static_cast<uint8_t*>(typedArray.ArrayBuffer().Data()) + typedArray.ByteOffset(), typedArray.ByteLength());
+            tasks[face] = arcana::make_task(arcana::threadpool_scheduler, m_cancelSource, [this, dataSpan, generateMips]() {
+                bimg::ImageContainer* image = bimg::imageParse(&m_allocator, dataSpan.data(), dataSpan.size());
+                if (generateMips)
+                {
+                    GenerateMips(&m_allocator, &image);
+                }
+                return image;
+            });
         }
 
-        // Combine all the faces into one chunk and create a cube texture.
-        const bgfx::Memory* mem = bgfx::alloc(totalSize);
-        uint8_t* ptr = mem->data;
-        for (bimg::ImageContainer* image : images)
-        {
-            std::memcpy(ptr, image->m_data, image->m_size);
-            ptr += image->m_size;
-            bimg::imageFree(image);
-        }
-
-        const bimg::ImageContainer* firstImage = images.front();
-        textureData->Texture = bgfx::createTextureCube(firstImage->m_width, firstImage->m_numMips != 0, 1, Cast(firstImage->m_format), BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE, mem);
-        textureData->Width = firstImage->m_width;
-        textureData->Height = firstImage->m_height;
-
-        return Napi::Value::From(info.Env(), bgfx::isValid(textureData->Texture));
+        arcana::when_all(gsl::make_span(tasks))
+            .then(m_runtimeScheduler, m_cancelSource,
+                [this, texture, dataRef = Napi::Shared(data), generateMips](const std::vector<bimg::ImageContainer*>& images) {
+                    CreateCubeTextureFromImages(texture, images, generateMips);
+                })
+            .then(arcana::inline_scheduler, m_cancelSource, [this, onSuccessRef = Napi::Shared(onSuccess)]() {
+                onSuccessRef.Value().Call({Napi::Value::From(Env(), true)});
+            })
+            .then(arcana::inline_scheduler, m_cancelSource, [this, onErrorRef = Napi::Shared(onError)](arcana::expected<void, std::exception_ptr> result) {
+                if (result.has_error())
+                {
+                    onErrorRef.Value().Call({Napi::Value::From(Env(), true)});
+                }
+            });
     }
 
-    Napi::Value NativeEngine::LoadCubeTextureWithMips(const Napi::CallbackInfo& info)
+    void NativeEngine::LoadCubeTextureWithMips(const Napi::CallbackInfo& info)
     {
-        const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
-        const auto mipLevelsArray = info[1].As<Napi::Array>();
+        const auto texture = info[0].As<Napi::External<TextureData>>().Data();
+        const auto data = info[1].As<Napi::Array>();
+        const auto onSuccess = info[2].As<Napi::Function>();
+        const auto onError = info[3].As<Napi::Function>();
 
-        // Load images for each mip level and faces.
-        uint32_t totalSize = 0;
-        std::vector<std::array<bimg::ImageContainer*, 6>> images{mipLevelsArray.Length()};
-        for (uint32_t mipLevel = 0; mipLevel < mipLevelsArray.Length(); mipLevel++)
+        const auto numMips = data.Length();
+        std::vector<arcana::task<bimg::ImageContainer*, std::exception_ptr>> tasks(6 * numMips);
+        for (uint32_t mip = 0; mip < numMips; mip++)
         {
-            auto& faceImages = images[mipLevel];
-            const auto facesArray = mipLevelsArray[mipLevel].As<Napi::Array>();
+            const auto faceData = data[mip].As<Napi::Array>();
             for (uint32_t face = 0; face < 6; face++)
             {
-                const auto imageData = facesArray[face].As<Napi::TypedArray>();
-                bimg::ImageContainer* image = bimg::imageParse(&m_allocator,
-                    static_cast<uint8_t*>(imageData.ArrayBuffer().Data()) + imageData.ByteOffset(),
-                    static_cast<uint32_t>(imageData.ByteLength()));
-
-                faceImages[face] = image;
-                totalSize += static_cast<uint32_t>(image->m_size);
+                const auto typedArray = faceData[face].As<Napi::TypedArray>();
+                const auto dataSpan = gsl::make_span(static_cast<uint8_t*>(typedArray.ArrayBuffer().Data()) + typedArray.ByteOffset(), typedArray.ByteLength());
+                tasks[(face * numMips) + mip] = arcana::make_task(arcana::threadpool_scheduler, m_cancelSource, [this, dataSpan]() {
+                    bimg::ImageContainer* image = bimg::imageParse(&m_allocator, dataSpan.data(), dataSpan.size());
+                    FlipY(image);
+                    return image;
+                });
             }
         }
 
-        const bgfx::Memory* mem = bgfx::alloc(totalSize);
-        uint8_t* ptr = mem->data;
-        for (uint32_t face = 0; face < 6; face++)
-        {
-            for (uint32_t mipLevel = 0; mipLevel < images.size(); mipLevel++)
-            {
-                const bimg::ImageContainer* image = images[mipLevel][face];
-                std::memcpy(ptr, image->m_data, image->m_size);
-                FlipYInImageBytes(gsl::make_span(ptr, image->m_size), image->m_height, image->m_size / image->m_height);
-                ptr += image->m_size;
-            }
-        }
-
-        const bimg::ImageContainer* firstImage = images.front().front();
-        textureData->Texture = bgfx::createTextureCube(firstImage->m_width, true, 1, Cast(firstImage->m_format), BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE, mem);
-        textureData->Width = firstImage->m_width;
-        textureData->Height = firstImage->m_height;
-
-        return Napi::Value::From(info.Env(), bgfx::isValid(textureData->Texture));
+        arcana::when_all(gsl::make_span(tasks))
+            .then(m_runtimeScheduler, m_cancelSource, [this, texture, dataRef = Napi::Shared(data)](std::vector<bimg::ImageContainer*> images) {
+                CreateCubeTextureFromImages(texture, images, true);
+            })
+            .then(m_runtimeScheduler, m_cancelSource, [this, onSuccessRef = Napi::Shared(onSuccess)]() {
+                onSuccessRef.Value().Call({Napi::Value::From(Env(), true)});
+            })
+            .then(arcana::inline_scheduler, m_cancelSource, [this, onErrorRef = Napi::Shared(onError)](arcana::expected<void, std::exception_ptr> result) {
+                if (result.has_error())
+                {
+                    onErrorRef.Value().Call({Napi::Value::From(Env(), true)});
+                }
+            });
     }
 
     Napi::Value NativeEngine::GetTextureWidth(const Napi::CallbackInfo& info)
     {
-        const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
-        return Napi::Value::From(info.Env(), textureData->Width);
+        const auto texture = info[0].As<Napi::External<TextureData>>().Data();
+        return Napi::Value::From(info.Env(), texture->Width);
     }
 
     Napi::Value NativeEngine::GetTextureHeight(const Napi::CallbackInfo& info)
     {
-        const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
-        return Napi::Value::From(info.Env(), textureData->Height);
+        const auto texture = info[0].As<Napi::External<TextureData>>().Data();
+        return Napi::Value::From(info.Env(), texture->Height);
     }
 
     void NativeEngine::SetTextureSampling(const Napi::CallbackInfo& info)
     {
-        const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
+        const auto texture = info[0].As<Napi::External<TextureData>>().Data();
         auto filter = static_cast<uint32_t>(info[1].As<Napi::Number>().Uint32Value());
 
         constexpr std::array<uint32_t, 12> bgfxFiltering = {
@@ -1136,21 +1191,21 @@ namespace Babylon
             0,                                                                        // mag = linear and min = linear and mip = none
             BGFX_SAMPLER_MIN_POINT};                                                  // mag = linear and min = nearest and mip = none
 
-        textureData->Flags &= ~(BGFX_SAMPLER_MIN_MASK | BGFX_SAMPLER_MAG_MASK | BGFX_SAMPLER_MIP_MASK);
+        texture->Flags &= ~(BGFX_SAMPLER_MIN_MASK | BGFX_SAMPLER_MAG_MASK | BGFX_SAMPLER_MIP_MASK);
 
-        if (textureData->AnisotropicLevel > 1)
+        if (texture->AnisotropicLevel > 1)
         {
-            textureData->Flags |= BGFX_SAMPLER_MIN_ANISOTROPIC | BGFX_SAMPLER_MAG_ANISOTROPIC;
+            texture->Flags |= BGFX_SAMPLER_MIN_ANISOTROPIC | BGFX_SAMPLER_MAG_ANISOTROPIC;
         }
         else
         {
-            textureData->Flags |= bgfxFiltering[filter];
+            texture->Flags |= bgfxFiltering[filter];
         }
     }
 
     void NativeEngine::SetTextureWrapMode(const Napi::CallbackInfo& info)
     {
-        const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
+        const auto texture = info[0].As<Napi::External<TextureData>>().Data();
         auto addressModeU = static_cast<uint32_t>(info[1].As<Napi::Number>().Uint32Value());
         auto addressModeV = static_cast<uint32_t>(info[2].As<Napi::Number>().Uint32Value());
         auto addressModeW = static_cast<uint32_t>(info[3].As<Napi::Number>().Uint32Value());
@@ -1161,42 +1216,42 @@ namespace Babylon
             (bgfxSamplers[addressModeV] << BGFX_SAMPLER_V_SHIFT) +
             (bgfxSamplers[addressModeW] << BGFX_SAMPLER_W_SHIFT);
 
-        textureData->Flags &= ~(BGFX_SAMPLER_U_MASK | BGFX_SAMPLER_V_MASK | BGFX_SAMPLER_W_MASK);
-        textureData->Flags |= addressMode;
+        texture->Flags &= ~(BGFX_SAMPLER_U_MASK | BGFX_SAMPLER_V_MASK | BGFX_SAMPLER_W_MASK);
+        texture->Flags |= addressMode;
     }
 
     void NativeEngine::SetTextureAnisotropicLevel(const Napi::CallbackInfo& info)
     {
-        const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
+        const auto texture = info[0].As<Napi::External<TextureData>>().Data();
         const auto value = info[1].As<Napi::Number>().Uint32Value();
 
-        textureData->AnisotropicLevel = value;
+        texture->AnisotropicLevel = value;
 
         // if Anisotropic is set to 0 after being >1, then set texture flags back to linear
-        textureData->Flags &= ~(BGFX_SAMPLER_MIN_MASK | BGFX_SAMPLER_MAG_MASK | BGFX_SAMPLER_MIP_MASK);
+        texture->Flags &= ~(BGFX_SAMPLER_MIN_MASK | BGFX_SAMPLER_MAG_MASK | BGFX_SAMPLER_MIP_MASK);
         if (value)
         {
-            textureData->Flags |= BGFX_SAMPLER_MIN_ANISOTROPIC | BGFX_SAMPLER_MAG_ANISOTROPIC;
+            texture->Flags |= BGFX_SAMPLER_MIN_ANISOTROPIC | BGFX_SAMPLER_MAG_ANISOTROPIC;
         }
     }
 
     void NativeEngine::SetTexture(const Napi::CallbackInfo& info)
     {
         const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
-        const auto textureData = info[1].As<Napi::External<TextureData>>().Data();
+        const auto texture = info[1].As<Napi::External<TextureData>>().Data();
 
-        bgfx::setTexture(uniformData->Stage, uniformData->Handle, textureData->Texture, textureData->Flags);
+        bgfx::setTexture(uniformData->Stage, uniformData->Handle, texture->Handle, texture->Flags);
     }
 
     void NativeEngine::DeleteTexture(const Napi::CallbackInfo& info)
     {
-        const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
-        delete textureData;
+        const auto texture = info[0].As<Napi::External<TextureData>>().Data();
+        delete texture;
     }
 
     Napi::Value NativeEngine::CreateFrameBuffer(const Napi::CallbackInfo& info)
     {
-        const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
+        const auto texture = info[0].As<Napi::External<TextureData>>().Data();
         uint16_t width = static_cast<uint16_t>(info[1].As<Napi::Number>().Uint32Value());
         uint16_t height = static_cast<uint16_t>(info[2].As<Napi::Number>().Uint32Value());
         uint32_t formatIndex = info[3].As<Napi::Number>().Uint32Value();
@@ -1236,7 +1291,7 @@ namespace Babylon
             frameBufferHandle = bgfx::createFrameBuffer(static_cast<uint8_t>(attachments.size()), attachments.data(), true);
         }
 
-        textureData->Texture = bgfx::getTexture(frameBufferHandle);
+        texture->Handle = bgfx::getTexture(frameBufferHandle);
 
         return Napi::External<FrameBufferData>::New(info.Env(), m_frameBufferManager.CreateNew(frameBufferHandle, width, height));
     }
@@ -1383,18 +1438,6 @@ namespace Babylon
         s_bgfxCallback.m_screenShotBitmap.clear();
 
         return Napi::External<ImageData>::New(info.Env(), imageData);
-    }
-
-    void NativeEngine::DispatchAnimationFrameAsync(Napi::FunctionReference callback)
-    {
-        // The purpose of encapsulating the callbackPtr in a std::shared_ptr is because, under the hood, the lambda is
-        // put into a kind of function which requires a copy constructor for all of its captured variables.  Because
-        // the Napi::FunctionReference is not copyable, this breaks when trying to capture the callback directly, so we
-        // wrap it in a std::shared_ptr to allow the capture to function correctly.
-        m_runtime.Dispatch([this, callbackPtr = std::make_shared<Napi::FunctionReference>(std::move(callback))](Napi::Env) {
-            callbackPtr->Call({});
-            EndFrame();
-        });
     }
 
     void NativeEngine::EndFrame()

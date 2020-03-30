@@ -777,6 +777,13 @@ var KHR_materials_sheen = /** @class */ (function () {
                 babylonMaterial.sheen.texture = texture;
             }));
         }
+        if (properties.roughnessFactor !== undefined) {
+            babylonMaterial.sheen.roughness = properties.roughnessFactor;
+        }
+        else {
+            babylonMaterial.sheen.roughness = 0;
+        }
+        babylonMaterial.sheen.albedoScaling = true;
         return Promise.all(promises).then(function () { });
     };
     return KHR_materials_sheen;
@@ -935,6 +942,113 @@ var KHR_materials_unlit = /** @class */ (function () {
 }());
 
 _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].RegisterExtension(NAME, function (loader) { return new KHR_materials_unlit(loader); });
+
+
+/***/ }),
+
+/***/ "./glTF/2.0/Extensions/KHR_mesh_instancing.ts":
+/*!****************************************************!*\
+  !*** ./glTF/2.0/Extensions/KHR_mesh_instancing.ts ***!
+  \****************************************************/
+/*! exports provided: KHR_mesh_instancing */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "KHR_mesh_instancing", function() { return KHR_mesh_instancing; });
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/tools");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _glTFLoader__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../glTFLoader */ "./glTF/2.0/glTFLoader.ts");
+
+
+
+var NAME = "KHR_mesh_instancing";
+/**
+ * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1691)
+ * [Playground Sample](//TODO)
+ * !!! Experimental Extension Subject to Changes !!!
+ */
+var KHR_mesh_instancing = /** @class */ (function () {
+    /** @hidden */
+    function KHR_mesh_instancing(loader) {
+        /**
+         * The name of this extension.
+         */
+        this.name = NAME;
+        this._loader = loader;
+        this.enabled = this._loader.isExtensionUsed(NAME);
+    }
+    /** @hidden */
+    KHR_mesh_instancing.prototype.dispose = function () {
+        delete this._loader;
+    };
+    /** @hidden */
+    KHR_mesh_instancing.prototype.loadNodeAsync = function (context, node, assign) {
+        var _this = this;
+        return _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].LoadExtensionAsync(context, node, this.name, function (extensionContext, extension) {
+            return _this._loader.loadNodeAsync("#/nodes/" + node.index, node, function (babylonTransformNode) {
+                var promises = new Array();
+                var instanceCount = null;
+                var loadAttribute = function (attribute, assignBufferFunc) {
+                    if (extension.attributes[attribute] == undefined) {
+                        return;
+                    }
+                    var accessor = _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["ArrayItem"].Get(extensionContext + "/attributes/" + attribute, _this._loader.gltf.accessors, extension.attributes[attribute]);
+                    if (instanceCount === null) {
+                        instanceCount = accessor.count;
+                    }
+                    else if (instanceCount !== accessor.count) {
+                        throw new Error(extensionContext + "/attributes: Instance buffer accessors do not have the same count.");
+                    }
+                    promises.push(_this._loader._loadFloatAccessorAsync("/accessors/" + accessor.bufferView, accessor).then(function (data) {
+                        assignBufferFunc(data);
+                    }));
+                };
+                var translationBuffer = null;
+                var rotationBuffer = null;
+                var scaleBuffer = null;
+                loadAttribute("TRANSLATION", function (data) { translationBuffer = data; });
+                loadAttribute("ROTATION", function (data) { rotationBuffer = data; });
+                loadAttribute("SCALE", function (data) { scaleBuffer = data; });
+                return Promise.all(promises).then(function () {
+                    if (instanceCount) {
+                        var instanceName = "";
+                        var instance = null;
+                        var digitLength = instanceCount.toString().length;
+                        for (var i = 0; i < instanceCount; ++i) {
+                            if (node._primitiveBabylonMeshes) {
+                                for (var j = 0; j < node._primitiveBabylonMeshes.length; ++j) {
+                                    var babylonMeshPrimitive = node._primitiveBabylonMeshes[j];
+                                    instanceName = (babylonMeshPrimitive.name || babylonMeshPrimitive.id) + "_" + babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["StringTools"].PadNumber(i, digitLength);
+                                    if (babylonMeshPrimitive.isAnInstance) {
+                                        instance = babylonMeshPrimitive.sourceMesh.createInstance(instanceName);
+                                    }
+                                    else if (babylonMeshPrimitive.createInstance) {
+                                        instance = babylonMeshPrimitive.createInstance(instanceName);
+                                    }
+                                    if (instance) {
+                                        instance.setParent(babylonMeshPrimitive);
+                                        translationBuffer ? babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArrayToRef(translationBuffer, i * 3, instance.position)
+                                            : instance.position.set(0, 0, 0);
+                                        rotationBuffer ? babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Quaternion"].FromArrayToRef(rotationBuffer, i * 4, instance.rotationQuaternion)
+                                            : instance.rotationQuaternion.set(0, 0, 0, 1);
+                                        scaleBuffer ? babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArrayToRef(scaleBuffer, i * 3, instance.scaling)
+                                            : instance.scaling.set(1, 1, 1);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    assign(babylonTransformNode);
+                    return babylonTransformNode;
+                });
+            });
+        });
+    };
+    return KHR_mesh_instancing;
+}());
+
+_glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].RegisterExtension(NAME, function (loader) { return new KHR_mesh_instancing(loader); });
 
 
 /***/ }),
@@ -1778,7 +1892,7 @@ _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].RegisterExtension(NAME, f
 /*!**************************************!*\
   !*** ./glTF/2.0/Extensions/index.ts ***!
   \**************************************/
-/*! exports provided: EXT_lights_image_based, KHR_draco_mesh_compression, KHR_lights, KHR_materials_pbrSpecularGlossiness, KHR_materials_unlit, KHR_materials_clearcoat, KHR_materials_sheen, KHR_materials_specular, KHR_mesh_quantization, KHR_texture_basisu, KHR_texture_transform, MSFT_audio_emitter, MSFT_lod, MSFT_minecraftMesh, MSFT_sRGBFactors, ExtrasAsMetadata */
+/*! exports provided: EXT_lights_image_based, KHR_draco_mesh_compression, KHR_lights, KHR_materials_pbrSpecularGlossiness, KHR_materials_unlit, KHR_materials_clearcoat, KHR_materials_sheen, KHR_materials_specular, KHR_mesh_instancing, KHR_mesh_quantization, KHR_texture_basisu, KHR_texture_transform, MSFT_audio_emitter, MSFT_lod, MSFT_minecraftMesh, MSFT_sRGBFactors, ExtrasAsMetadata */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1807,29 +1921,33 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _KHR_materials_specular__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./KHR_materials_specular */ "./glTF/2.0/Extensions/KHR_materials_specular.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_specular", function() { return _KHR_materials_specular__WEBPACK_IMPORTED_MODULE_7__["KHR_materials_specular"]; });
 
-/* harmony import */ var _KHR_mesh_quantization__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./KHR_mesh_quantization */ "./glTF/2.0/Extensions/KHR_mesh_quantization.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_mesh_quantization", function() { return _KHR_mesh_quantization__WEBPACK_IMPORTED_MODULE_8__["KHR_mesh_quantization"]; });
+/* harmony import */ var _KHR_mesh_instancing__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./KHR_mesh_instancing */ "./glTF/2.0/Extensions/KHR_mesh_instancing.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_mesh_instancing", function() { return _KHR_mesh_instancing__WEBPACK_IMPORTED_MODULE_8__["KHR_mesh_instancing"]; });
 
-/* harmony import */ var _KHR_texture_basisu__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./KHR_texture_basisu */ "./glTF/2.0/Extensions/KHR_texture_basisu.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_texture_basisu", function() { return _KHR_texture_basisu__WEBPACK_IMPORTED_MODULE_9__["KHR_texture_basisu"]; });
+/* harmony import */ var _KHR_mesh_quantization__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./KHR_mesh_quantization */ "./glTF/2.0/Extensions/KHR_mesh_quantization.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_mesh_quantization", function() { return _KHR_mesh_quantization__WEBPACK_IMPORTED_MODULE_9__["KHR_mesh_quantization"]; });
 
-/* harmony import */ var _KHR_texture_transform__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./KHR_texture_transform */ "./glTF/2.0/Extensions/KHR_texture_transform.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_texture_transform", function() { return _KHR_texture_transform__WEBPACK_IMPORTED_MODULE_10__["KHR_texture_transform"]; });
+/* harmony import */ var _KHR_texture_basisu__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./KHR_texture_basisu */ "./glTF/2.0/Extensions/KHR_texture_basisu.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_texture_basisu", function() { return _KHR_texture_basisu__WEBPACK_IMPORTED_MODULE_10__["KHR_texture_basisu"]; });
 
-/* harmony import */ var _MSFT_audio_emitter__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./MSFT_audio_emitter */ "./glTF/2.0/Extensions/MSFT_audio_emitter.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_audio_emitter", function() { return _MSFT_audio_emitter__WEBPACK_IMPORTED_MODULE_11__["MSFT_audio_emitter"]; });
+/* harmony import */ var _KHR_texture_transform__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./KHR_texture_transform */ "./glTF/2.0/Extensions/KHR_texture_transform.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_texture_transform", function() { return _KHR_texture_transform__WEBPACK_IMPORTED_MODULE_11__["KHR_texture_transform"]; });
 
-/* harmony import */ var _MSFT_lod__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./MSFT_lod */ "./glTF/2.0/Extensions/MSFT_lod.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_lod", function() { return _MSFT_lod__WEBPACK_IMPORTED_MODULE_12__["MSFT_lod"]; });
+/* harmony import */ var _MSFT_audio_emitter__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./MSFT_audio_emitter */ "./glTF/2.0/Extensions/MSFT_audio_emitter.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_audio_emitter", function() { return _MSFT_audio_emitter__WEBPACK_IMPORTED_MODULE_12__["MSFT_audio_emitter"]; });
 
-/* harmony import */ var _MSFT_minecraftMesh__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./MSFT_minecraftMesh */ "./glTF/2.0/Extensions/MSFT_minecraftMesh.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_minecraftMesh", function() { return _MSFT_minecraftMesh__WEBPACK_IMPORTED_MODULE_13__["MSFT_minecraftMesh"]; });
+/* harmony import */ var _MSFT_lod__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./MSFT_lod */ "./glTF/2.0/Extensions/MSFT_lod.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_lod", function() { return _MSFT_lod__WEBPACK_IMPORTED_MODULE_13__["MSFT_lod"]; });
 
-/* harmony import */ var _MSFT_sRGBFactors__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./MSFT_sRGBFactors */ "./glTF/2.0/Extensions/MSFT_sRGBFactors.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_sRGBFactors", function() { return _MSFT_sRGBFactors__WEBPACK_IMPORTED_MODULE_14__["MSFT_sRGBFactors"]; });
+/* harmony import */ var _MSFT_minecraftMesh__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./MSFT_minecraftMesh */ "./glTF/2.0/Extensions/MSFT_minecraftMesh.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_minecraftMesh", function() { return _MSFT_minecraftMesh__WEBPACK_IMPORTED_MODULE_14__["MSFT_minecraftMesh"]; });
 
-/* harmony import */ var _ExtrasAsMetadata__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./ExtrasAsMetadata */ "./glTF/2.0/Extensions/ExtrasAsMetadata.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ExtrasAsMetadata", function() { return _ExtrasAsMetadata__WEBPACK_IMPORTED_MODULE_15__["ExtrasAsMetadata"]; });
+/* harmony import */ var _MSFT_sRGBFactors__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./MSFT_sRGBFactors */ "./glTF/2.0/Extensions/MSFT_sRGBFactors.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_sRGBFactors", function() { return _MSFT_sRGBFactors__WEBPACK_IMPORTED_MODULE_15__["MSFT_sRGBFactors"]; });
+
+/* harmony import */ var _ExtrasAsMetadata__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./ExtrasAsMetadata */ "./glTF/2.0/Extensions/ExtrasAsMetadata.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ExtrasAsMetadata", function() { return _ExtrasAsMetadata__WEBPACK_IMPORTED_MODULE_16__["ExtrasAsMetadata"]; });
+
 
 
 
@@ -3210,6 +3328,7 @@ var GLTFLoader = /** @class */ (function () {
         }
         return accessor._data;
     };
+    /** @hidden */
     GLTFLoader.prototype._loadFloatAccessorAsync = function (context, accessor) {
         return this._loadAccessorAsync(context, accessor, Float32Array);
     };
@@ -4007,7 +4126,7 @@ _glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFFileLoader"]._CreateGLTF2Loade
 /*!***************************!*\
   !*** ./glTF/2.0/index.ts ***!
   \***************************/
-/*! exports provided: ArrayItem, GLTFLoader, EXT_lights_image_based, KHR_draco_mesh_compression, KHR_lights, KHR_materials_pbrSpecularGlossiness, KHR_materials_unlit, KHR_materials_clearcoat, KHR_materials_sheen, KHR_materials_specular, KHR_mesh_quantization, KHR_texture_basisu, KHR_texture_transform, MSFT_audio_emitter, MSFT_lod, MSFT_minecraftMesh, MSFT_sRGBFactors, ExtrasAsMetadata */
+/*! exports provided: ArrayItem, GLTFLoader, EXT_lights_image_based, KHR_draco_mesh_compression, KHR_lights, KHR_materials_pbrSpecularGlossiness, KHR_materials_unlit, KHR_materials_clearcoat, KHR_materials_sheen, KHR_materials_specular, KHR_mesh_instancing, KHR_mesh_quantization, KHR_texture_basisu, KHR_texture_transform, MSFT_audio_emitter, MSFT_lod, MSFT_minecraftMesh, MSFT_sRGBFactors, ExtrasAsMetadata */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4033,6 +4152,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_sheen", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_1__["KHR_materials_sheen"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_specular", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_1__["KHR_materials_specular"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_mesh_instancing", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_1__["KHR_mesh_instancing"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_mesh_quantization", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_1__["KHR_mesh_quantization"]; });
 
