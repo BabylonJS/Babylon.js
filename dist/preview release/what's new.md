@@ -105,6 +105,7 @@
 - Fix mesh winding order inversion when merging meshes with overridden side orientation ([drigax](https://github.com/Drigax))
 - Fixed a rendering issue with GearVR in WebXR mode ([RaananW](https://github.com/RaananW))
 - Fixed error when downloading async createScene function in playground ([#7926](https://github.com/BabylonJS/Babylon.js/issues/7926)) ([RaananW](https://github.com/RaananW))
+- Fix issue where ThinEngine.prototype.createDynamicEngine is undefined when using VideoTexture with es6 packages ([rvadhavk](https://github.com/rvadhavk))
 
 ## Breaking changes
 
