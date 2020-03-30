@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Napi/env.h>
+#include <napi/env.h>
 
 #include <string>
 
