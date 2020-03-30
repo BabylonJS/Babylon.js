@@ -797,6 +797,12 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
         this._shadowMap.onBeforeRenderObservable.add((layer: number) => {
             this._currentLayer = layer;
+            if (this._scene.getSceneUniformBuffer().useUbo) {
+                const sceneUBO = this._scene.getSceneUniformBuffer();
+                sceneUBO.updateMatrix("viewProjection", this.getCascadeTransformMatrix(layer)!);
+                sceneUBO.updateMatrix("view", this.getCascadeViewMatrix(layer)!);
+                sceneUBO.update();
+            }
         });
 
         this._shadowMap.onBeforeBindObservable.add(() => {
@@ -810,13 +816,21 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     }
 
     protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect): void {
-        effect.setMatrix("viewProjection", this.getCascadeTransformMatrix(this._currentLayer)!);
+        if (effect.getUniform("viewProjection")) {
+            effect.setMatrix("viewProjection", this.getCascadeTransformMatrix(this._currentLayer)!);
+        }
+
+        if (effect.getUniform("view")) {
+            effect.setMatrix("view", this.getCascadeViewMatrix(this._currentLayer)!);
+        }
+
+        if (effect.getUniform("projection")) {
+            effect.setMatrix("projection", this.getCascadeProjectionMatrix(this._currentLayer)!);
+        }
     }
 
     protected _isReadyCustomDefines(defines: any, subMesh: SubMesh, useInstances: boolean): void {
-        if (this._depthClamp && this._filter !== ShadowGenerator.FILTER_PCSS) {
-            defines.push("#define DEPTHCLAMP");
-        }
+        defines.push("#define SM_DEPTHCLAMP " + (this._depthClamp && this._filter !== ShadowGenerator.FILTER_PCSS ? "1" : "0"));
     }
 
     /**
