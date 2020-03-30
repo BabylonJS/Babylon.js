@@ -13,5 +13,9 @@
         "build": "gulp --max-old-space-size=8192 --tsLintFix",
         "start": "gulp run --max-old-space-size=8192",
         "start-public-ssl": "gulp run --max-old-space-size=8192 --public --ssl"
+    },
+    "dependencies": {
+        "webpack": "^4.41.0",
+        "webpack-stream": "^5.2.1"
     }
 }

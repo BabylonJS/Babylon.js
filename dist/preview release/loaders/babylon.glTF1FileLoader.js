@@ -96,6 +96,37 @@ return /******/ (function(modules) { // webpackBootstrap
 /************************************************************************/
 /******/ ({
 
+/***/ "../../Tools/Gulp/node_modules/webpack/buildin/global.js":
+/*!***********************************!*\
+  !*** (webpack)/buildin/global.js ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || new Function("return this")();
+} catch (e) {
+	// This works if the window reference is available
+	if (typeof window === "object") g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+
 /***/ "../../node_modules/tslib/tslib.es6.js":
 /*!***********************************************************!*\
   !*** E:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
@@ -321,37 +352,6 @@ function __importStar(mod) {
 function __importDefault(mod) {
     return (mod && mod.__esModule) ? mod : { default: mod };
 }
-
-
-/***/ }),
-
-/***/ "../../node_modules/webpack/buildin/global.js":
-/*!***********************************!*\
-  !*** (webpack)/buildin/global.js ***!
-  \***********************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-var g;
-
-// This works in non-strict mode
-g = (function() {
-	return this;
-})();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || new Function("return this")();
-} catch (e) {
-	// This works if the window reference is available
-	if (typeof window === "object") g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
 
 
 /***/ }),
@@ -3687,7 +3687,7 @@ if (typeof globalObject !== "undefined") {
 
 
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../node_modules/webpack/buildin/global.js */ "../../node_modules/webpack/buildin/global.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../Tools/Gulp/node_modules/webpack/buildin/global.js */ "../../Tools/Gulp/node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 
@@ -3717,7 +3717,7 @@ if (typeof globalObject !== "undefined") {
 }
 
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../node_modules/webpack/buildin/global.js */ "../../node_modules/webpack/buildin/global.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../Tools/Gulp/node_modules/webpack/buildin/global.js */ "../../Tools/Gulp/node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 
@@ -3725,7 +3725,7 @@ if (typeof globalObject !== "undefined") {
 /*!******************************************!*\
   !*** ./legacy/legacy-glTF1FileLoader.ts ***!
   \******************************************/
-/*! exports provided: GLTF1, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode, GLTFLoaderState, GLTFFileLoader, GLTFValidation */
+/*! exports provided: GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode, GLTFLoaderState, GLTFFileLoader, GLTFValidation, GLTF1 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";

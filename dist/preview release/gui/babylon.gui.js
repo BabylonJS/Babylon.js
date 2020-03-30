@@ -96,6 +96,37 @@ return /******/ (function(modules) { // webpackBootstrap
 /************************************************************************/
 /******/ ({
 
+/***/ "../../Tools/Gulp/node_modules/webpack/buildin/global.js":
+/*!***********************************!*\
+  !*** (webpack)/buildin/global.js ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || new Function("return this")();
+} catch (e) {
+	// This works if the window reference is available
+	if (typeof window === "object") g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+
 /***/ "../../node_modules/tslib/tslib.es6.js":
 /*!***********************************************************!*\
   !*** E:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
@@ -321,37 +352,6 @@ function __importStar(mod) {
 function __importDefault(mod) {
     return (mod && mod.__esModule) ? mod : { default: mod };
 }
-
-
-/***/ }),
-
-/***/ "../../node_modules/webpack/buildin/global.js":
-/*!***********************************!*\
-  !*** (webpack)/buildin/global.js ***!
-  \***********************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-var g;
-
-// This works in non-strict mode
-g = (function() {
-	return this;
-})();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || new Function("return this")();
-} catch (e) {
-	// This works if the window reference is available
-	if (typeof window === "object") g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
 
 
 /***/ }),
@@ -13075,7 +13075,7 @@ babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredT
 /*!*********************!*\
   !*** ./2D/index.ts ***!
   \*********************/
-/*! exports provided: AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, Button, Checkbox, ColorPicker, Container, Control, Ellipse, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name */
+/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -16495,7 +16495,7 @@ var GUI3DManager = /** @class */ (function () {
 /*!*********************!*\
   !*** ./3D/index.ts ***!
   \*********************/
-/*! exports provided: GUI3DManager, Vector3WithInfo, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial */
+/*! exports provided: AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial, GUI3DManager, Vector3WithInfo */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -16957,30 +16957,12 @@ var Vector3WithInfo = /** @class */ (function (_super) {
 /*!******************!*\
   !*** ./index.ts ***!
   \******************/
-/*! exports provided: AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, GUI3DManager, Vector3WithInfo, Button, Checkbox, ColorPicker, Container, Control, Ellipse, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial */
+/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial, GUI3DManager, Vector3WithInfo */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _2D__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./2D */ "./2D/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "AdvancedDynamicTexture", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["AdvancedDynamicTexture"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "AdvancedDynamicTextureInstrumentation", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["AdvancedDynamicTextureInstrumentation"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Vector2WithInfo", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Vector2WithInfo"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Matrix2D", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Matrix2D"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Measure", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Measure"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MultiLinePoint", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["MultiLinePoint"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Style", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Style"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ValueAndUnit", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["ValueAndUnit"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "XmlLoader", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["XmlLoader"]; });
-
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Button", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Button"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Checkbox", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Checkbox"]; });
@@ -17045,11 +17027,25 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "name", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["name"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "AdvancedDynamicTexture", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["AdvancedDynamicTexture"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "AdvancedDynamicTextureInstrumentation", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["AdvancedDynamicTextureInstrumentation"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Vector2WithInfo", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Vector2WithInfo"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Matrix2D", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Matrix2D"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Measure", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Measure"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MultiLinePoint", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["MultiLinePoint"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Style", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["Style"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ValueAndUnit", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["ValueAndUnit"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "XmlLoader", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["XmlLoader"]; });
+
 /* harmony import */ var _3D__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./3D */ "./3D/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GUI3DManager", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["GUI3DManager"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Vector3WithInfo", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["Vector3WithInfo"]; });
-
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "AbstractButton3D", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["AbstractButton3D"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Button3D", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["Button3D"]; });
@@ -17078,6 +17074,10 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentMaterial", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["FluentMaterial"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GUI3DManager", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["GUI3DManager"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Vector3WithInfo", function() { return _3D__WEBPACK_IMPORTED_MODULE_1__["Vector3WithInfo"]; });
+
 
 
 
@@ -17088,34 +17088,12 @@ __webpack_require__.r(__webpack_exports__);
 /*!**************************!*\
   !*** ./legacy/legacy.ts ***!
   \**************************/
-/*! exports provided: AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, GUI3DManager, Vector3WithInfo, Button, Checkbox, ColorPicker, Container, Control, Ellipse, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial */
+/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial, GUI3DManager, Vector3WithInfo */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../index */ "./index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "AdvancedDynamicTexture", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["AdvancedDynamicTexture"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "AdvancedDynamicTextureInstrumentation", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["AdvancedDynamicTextureInstrumentation"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Vector2WithInfo", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["Vector2WithInfo"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Matrix2D", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["Matrix2D"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Measure", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["Measure"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MultiLinePoint", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["MultiLinePoint"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Style", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["Style"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ValueAndUnit", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["ValueAndUnit"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "XmlLoader", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["XmlLoader"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GUI3DManager", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["GUI3DManager"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Vector3WithInfo", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["Vector3WithInfo"]; });
-
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Button", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["Button"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Checkbox", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["Checkbox"]; });
@@ -17180,6 +17158,24 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "name", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["name"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "AdvancedDynamicTexture", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["AdvancedDynamicTexture"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "AdvancedDynamicTextureInstrumentation", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["AdvancedDynamicTextureInstrumentation"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Vector2WithInfo", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["Vector2WithInfo"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Matrix2D", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["Matrix2D"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Measure", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["Measure"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MultiLinePoint", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["MultiLinePoint"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Style", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["Style"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ValueAndUnit", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["ValueAndUnit"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "XmlLoader", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["XmlLoader"]; });
+
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "AbstractButton3D", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["AbstractButton3D"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Button3D", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["Button3D"]; });
@@ -17208,6 +17204,10 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FluentMaterial", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["FluentMaterial"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GUI3DManager", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["GUI3DManager"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Vector3WithInfo", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["Vector3WithInfo"]; });
+
 
 /**
  * Legacy support, defining window.BABYLON.GUI (global variable).
@@ -17222,7 +17222,7 @@ if (typeof globalObject !== "undefined") {
 }
 
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../node_modules/webpack/buildin/global.js */ "../../node_modules/webpack/buildin/global.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../Tools/Gulp/node_modules/webpack/buildin/global.js */ "../../Tools/Gulp/node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 
