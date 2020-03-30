@@ -1803,10 +1803,10 @@ napi_status napi_reference_ref(napi_env env, napi_ref ref, uint32_t* result) {
   CHECK_ARG(env, ref);
   auto info = reinterpret_cast<RefInfo*>(ref);
   if (info->count++ == 0) {
-      CHECK_JSRT(env, JsAddRef(info->value, nullptr));
+    CHECK_JSRT(env, JsAddRef(info->value, nullptr));
   }
   if (result != nullptr) {
-      *result = info->count;
+    *result = info->count;
   }
   return napi_ok;
 }
@@ -1820,7 +1820,7 @@ napi_status napi_reference_unref(napi_env env, napi_ref ref, uint32_t* result) {
   CHECK_ARG(env, ref);
   auto info = reinterpret_cast<RefInfo*>(ref);
   if (--info->count == 0) {
-      CHECK_JSRT(env, JsRelease(info->value, nullptr));
+    CHECK_JSRT(env, JsRelease(info->value, nullptr));
   }
   if (result != nullptr) {
     *result = info->count;

@@ -124,19 +124,43 @@ napi_status napi_create_reference(napi_env env,
                   uint32_t initial_refcount,
                   napi_ref* result) {
   auto value = reinterpret_cast<JSValueRef>(v);
-  auto info = new RefInfo
+  auto info = new RefInfo{ value, initial_refcount };
+  if (info->count != 0)
   {
-    value,
-    initial_refcount
-  };
-  
+    JSValueProtect(env->m_globalContext, value);
+  }
   *result = reinterpret_cast<napi_ref>(info);
   return napi_ok;
 }
 
 napi_status napi_delete_reference(napi_env env, napi_ref ref) {
   auto info = reinterpret_cast<RefInfo*>(ref);
+  if (info->count != 0) {
+    JSValueUnprotect(env->m_globalContext, info->value);
+  }
   delete info;
+  return napi_ok;
+}
+
+napi_status napi_reference_ref(napi_env env, napi_ref ref, uint32_t* result) {
+  auto info = reinterpret_cast<RefInfo*>(ref);
+  if (info->count++ == 0) {
+    JSValueProtect(env->m_globalContext, info->value);
+  }
+  if (result != nullptr) {
+    *result = info->count;
+  }
+  return napi_ok;
+}
+
+napi_status napi_reference_unref(napi_env env, napi_ref ref, uint32_t* result) {
+  auto info = reinterpret_cast<RefInfo*>(ref);
+  if (--info->count == 0) {
+    JSValueUnprotect(env->m_globalContext, info->value);
+  }
+  if (result != nullptr) {
+    *result = info->count;
+  }
   return napi_ok;
 }
 
