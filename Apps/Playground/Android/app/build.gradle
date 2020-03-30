@@ -8,6 +8,8 @@ def jsEngineLibName = 'jsc'
 if (project.hasProperty('JSEngine')) {
     jsEngineLibName = project.property('JSEngine')
 }
+println "**************************"
+println "${jsEngineLibName}"
 
 def platformVersion = 21
 android {
@@ -145,7 +147,7 @@ task copyFilesJSHeaders {
     {
         from "${rootDir}/node_modules/v8-android/dist/include"
         include "*"
-        into "${jsEngineIncDir}/v8/include"
+        into "${jsEngineIncDir}/v8"
     }
 }
 
