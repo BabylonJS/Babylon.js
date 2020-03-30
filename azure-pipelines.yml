@@ -202,7 +202,8 @@ jobs:
     inputs:
         workingDirectory: 'Apps/Playground/Android'
         gradleWrapperFile: 'Apps/Playground/Android/gradlew'
-        gradleOptions: '-Xmx1536m -PJSEngine=v8android'
+        gradleOptions: '-Xmx1536m'
+        options: '-PJSEngine=v8android'
         publishJUnitResults: false
         tasks: 'assembleDebug'
     displayName: 'Build androidV8'
@@ -229,7 +230,8 @@ jobs:
     inputs:
         workingDirectory: 'Apps/Playground/Android'
         gradleWrapperFile: 'Apps/Playground/Android/gradlew'
-        gradleOptions: '-Xmx1536m -PJSEngine=jsc'
+        gradleOptions: '-Xmx1536m'
+        options: '-PJSEngine=jsc'
         publishJUnitResults: false
         tasks: 'assembleDebug'
     displayName: 'Build androidJSC'
