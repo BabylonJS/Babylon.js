@@ -1468,6 +1468,7 @@ declare module "babylonjs-node-editor/globalState" {
         onGridSizeChanged: Observable<void>;
         previewMeshType: PreviewMeshType;
         previewMeshFile: File;
+        listOfCustomPreviewMeshFiles: File[];
         rotatePreview: boolean;
         backgroundColor: Color4;
         backFaceCulling: boolean;
@@ -2992,6 +2993,7 @@ declare module NODEEDITOR {
         onGridSizeChanged: BABYLON.Observable<void>;
         previewMeshType: PreviewMeshType;
         previewMeshFile: File;
+        listOfCustomPreviewMeshFiles: File[];
         rotatePreview: boolean;
         backgroundColor: BABYLON.Color4;
         backFaceCulling: boolean;

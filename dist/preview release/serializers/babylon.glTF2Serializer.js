@@ -96,6 +96,37 @@ return /******/ (function(modules) { // webpackBootstrap
 /************************************************************************/
 /******/ ({
 
+/***/ "../../Tools/Gulp/node_modules/webpack/buildin/global.js":
+/*!***********************************!*\
+  !*** (webpack)/buildin/global.js ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || new Function("return this")();
+} catch (e) {
+	// This works if the window reference is available
+	if (typeof window === "object") g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+
 /***/ "../../node_modules/tslib/tslib.es6.js":
 /*!***********************************************************!*\
   !*** E:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
@@ -321,37 +352,6 @@ function __importStar(mod) {
 function __importDefault(mod) {
     return (mod && mod.__esModule) ? mod : { default: mod };
 }
-
-
-/***/ }),
-
-/***/ "../../node_modules/webpack/buildin/global.js":
-/*!***********************************!*\
-  !*** (webpack)/buildin/global.js ***!
-  \***********************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-var g;
-
-// This works in non-strict mode
-g = (function() {
-	return this;
-})();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || new Function("return this")();
-} catch (e) {
-	// This works if the window reference is available
-	if (typeof window === "object") g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
 
 
 /***/ }),
@@ -4512,7 +4512,7 @@ var _GLTFUtilities = /** @class */ (function () {
 /*!***************************!*\
   !*** ./glTF/2.0/index.ts ***!
   \***************************/
-/*! exports provided: GLTFData, GLTF2Export, _GLTFAnimation, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, _GLTFUtilities, KHR_texture_transform, KHR_lights_punctual, KHR_materials_sheen */
+/*! exports provided: _GLTFAnimation, GLTFData, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, GLTF2Export, _GLTFUtilities, KHR_texture_transform, KHR_lights_punctual, KHR_materials_sheen */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4601,7 +4601,7 @@ var __IGLTFExporterExtension = 0; // I am here to allow dts to be created
 /*!******************************************!*\
   !*** ./legacy/legacy-glTF2Serializer.ts ***!
   \******************************************/
-/*! exports provided: __IGLTFExporterExtension, GLTFData, GLTF2Export, _GLTFAnimation, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, _GLTFUtilities, KHR_texture_transform, KHR_lights_punctual, KHR_materials_sheen */
+/*! exports provided: __IGLTFExporterExtension, _GLTFAnimation, GLTFData, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, GLTF2Export, _GLTFUtilities, KHR_texture_transform, KHR_lights_punctual, KHR_materials_sheen */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4613,11 +4613,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _glTF_2_0__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../glTF/2.0 */ "./glTF/2.0/index.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "__IGLTFExporterExtension", function() { return _glTF_glTFFileExporter__WEBPACK_IMPORTED_MODULE_0__["__IGLTFExporterExtension"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GLTFData", function() { return _glTF_2_0__WEBPACK_IMPORTED_MODULE_4__["GLTFData"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GLTF2Export", function() { return _glTF_2_0__WEBPACK_IMPORTED_MODULE_4__["GLTF2Export"]; });
-
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_GLTFAnimation", function() { return _glTF_2_0__WEBPACK_IMPORTED_MODULE_4__["_GLTFAnimation"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GLTFData", function() { return _glTF_2_0__WEBPACK_IMPORTED_MODULE_4__["GLTFData"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_Exporter", function() { return _glTF_2_0__WEBPACK_IMPORTED_MODULE_4__["_Exporter"]; });
 
@@ -4626,6 +4624,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "__IGLTFExporterExtensionV2", function() { return _glTF_2_0__WEBPACK_IMPORTED_MODULE_4__["__IGLTFExporterExtensionV2"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_GLTFMaterialExporter", function() { return _glTF_2_0__WEBPACK_IMPORTED_MODULE_4__["_GLTFMaterialExporter"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GLTF2Export", function() { return _glTF_2_0__WEBPACK_IMPORTED_MODULE_4__["GLTF2Export"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_GLTFUtilities", function() { return _glTF_2_0__WEBPACK_IMPORTED_MODULE_4__["_GLTFUtilities"]; });
 
@@ -4679,7 +4679,7 @@ if (typeof globalObject !== "undefined") {
 
 
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../node_modules/webpack/buildin/global.js */ "../../node_modules/webpack/buildin/global.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../Tools/Gulp/node_modules/webpack/buildin/global.js */ "../../Tools/Gulp/node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 
