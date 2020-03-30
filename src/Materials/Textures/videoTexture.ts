@@ -7,6 +7,7 @@ import { Engine } from "../../Engines/engine";
 import { Texture } from "../../Materials/Textures/texture";
 
 import "../../Engines/Extensions/engine.videoTexture";
+import "../../Engines/Extensions/engine.dynamicTexture";
 
 /**
  * Settings for finer control over video usage
