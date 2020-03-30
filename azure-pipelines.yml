@@ -180,7 +180,7 @@ jobs:
       msbuildArgs: '/p:AppxPackageSigningEnabled=false'
     displayName: 'Build UWP_x86'
 
-- job: android-V8
+- job: androidV8
   pool:
     vmImage: 'macOS-10.14'
     
@@ -205,9 +205,9 @@ jobs:
         gradleOptions: '-Xmx1536m -PJSEngine=v8android'
         publishJUnitResults: false
         tasks: 'assembleDebug'
-    displayName: 'Build android-V8'
+    displayName: 'Build androidV8'
 
-- job: android-JSC
+- job: androidJSC
   pool:
     vmImage: 'macOS-10.14'
     
@@ -232,4 +232,4 @@ jobs:
         gradleOptions: '-Xmx1536m -PJSEngine=jsc'
         publishJUnitResults: false
         tasks: 'assembleDebug'
-    displayName: 'Build android-JSC'
+    displayName: 'Build androidJSC'
