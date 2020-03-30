@@ -30,7 +30,7 @@ interface IAnimationGridComponentProps {
 export class AnimationGridComponent extends React.Component<IAnimationGridComponentProps, { currentFrame: number }> {
     private _animations: Nullable<Animation[]> = null;
     private _ranges: AnimationRange[];
-    private _runningAnimatable: Nullable<Animatable>;
+    private _mainAnimatable: Nullable<Animatable>;
     private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
     private _isPlaying = false;
     private timelineRef: React.RefObject<SliderLineComponent>;
@@ -89,19 +89,19 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
 
         if (this._isPlaying) {
             this.props.scene.stopAnimation(this.props.animatable);
-            this._runningAnimatable = null;
+            this._mainAnimatable = null;
         } else {
-            this._runningAnimatable = this.props.scene.beginAnimation(this.props.animatable, this._animationControl.from, this._animationControl.to, this._animationControl.loop);
+            this._mainAnimatable = this.props.scene.beginAnimation(this.props.animatable, this._animationControl.from, this._animationControl.to, this._animationControl.loop);
         }
         this.forceUpdate();
     }
 
     componentDidMount() {
         this._onBeforeRenderObserver = this.props.scene.onBeforeRenderObservable.add(() => {
-            if (!this._isPlaying || !this._runningAnimatable) {
+            if (!this._isPlaying || !this._mainAnimatable) {
                 return;
             }
-            this.setState({ currentFrame: this._runningAnimatable.masterFrame });
+            this.setState({ currentFrame: this._mainAnimatable.masterFrame });
         });
     }
 
@@ -113,11 +113,11 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
     }
 
     onCurrentFrameChange(value: number) {
-        if (!this._runningAnimatable) {
+        if (!this._mainAnimatable) {
             return;
         }
 
-        this._runningAnimatable.goToFrame(value);
+        this._mainAnimatable.goToFrame(value);
         this.setState({ currentFrame: value });
     }
 
@@ -128,14 +128,14 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
         let animatablesForTarget = this.props.scene.getAllAnimatablesByTarget(animatable);
         this._isPlaying = animatablesForTarget.length > 0;
 
-        if (this._isPlaying && !this._runningAnimatable) {
-            this._runningAnimatable = animatablesForTarget[0];
+        if (this._isPlaying && !this._mainAnimatable) {
+            this._mainAnimatable = animatablesForTarget[0];
         }
 
-        if (this._runningAnimatable) {
-            this._animationControl.from = this._runningAnimatable.fromFrame;
-            this._animationControl.to = this._runningAnimatable.toFrame;
-            this._animationControl.loop = this._runningAnimatable.loopAnimation;
+        if (this._mainAnimatable) {
+            this._animationControl.from = this._mainAnimatable.fromFrame;
+            this._animationControl.to = this._mainAnimatable.toFrame;
+            this._animationControl.loop = this._mainAnimatable.loopAnimation;
         }
 
         let animations = animatable.animations;
@@ -150,7 +150,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                                 return (
                                     <ButtonLineComponent key={range.name} label={range.name}
                                         onClick={() => {
-                                            this._runningAnimatable = null;
+                                            this._mainAnimatable = null;
                                             this.props.scene.beginAnimation(animatable, range.from, range.to, true)
                                         }} />
                                 );
