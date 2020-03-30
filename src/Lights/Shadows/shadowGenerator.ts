@@ -1018,17 +1018,11 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect): void {
-        if (effect.getUniform("viewProjection")) {
-            effect.setMatrix("viewProjection", this.getTransformMatrix());
-        }
+        effect.setMatrix("viewProjection", this.getTransformMatrix());
 
-        if (effect.getUniform("view")) {
-            effect.setMatrix("view", this._viewMatrix);
-        }
+        effect.setMatrix("view", this._viewMatrix);
 
-        if (effect.getUniform("projection")) {
-            effect.setMatrix("projection", this._projectionMatrix);
-        }
+        effect.setMatrix("projection", this._projectionMatrix);
     }
 
     protected _renderSubMeshForShadowMap(subMesh: SubMesh): void {

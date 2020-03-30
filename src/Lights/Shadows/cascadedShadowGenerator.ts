@@ -816,17 +816,11 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     }
 
     protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect): void {
-        if (effect.getUniform("viewProjection")) {
-            effect.setMatrix("viewProjection", this.getCascadeTransformMatrix(this._currentLayer)!);
-        }
+        effect.setMatrix("viewProjection", this.getCascadeTransformMatrix(this._currentLayer)!);
 
-        if (effect.getUniform("view")) {
-            effect.setMatrix("view", this.getCascadeViewMatrix(this._currentLayer)!);
-        }
+        effect.setMatrix("view", this.getCascadeViewMatrix(this._currentLayer)!);
 
-        if (effect.getUniform("projection")) {
-            effect.setMatrix("projection", this.getCascadeProjectionMatrix(this._currentLayer)!);
-        }
+        effect.setMatrix("projection", this.getCascadeProjectionMatrix(this._currentLayer)!);
     }
 
     protected _isReadyCustomDefines(defines: any, subMesh: SubMesh, useInstances: boolean): void {
