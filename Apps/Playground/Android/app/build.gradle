@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 
 def jsEngineBaseDir = "${buildDir}/JS"
-def jsEngineIncDir = "${jsEngineBaseDir}/include"
+def jsEngineIncDir = "${jsEngineBaseDir}/include/V8"
 def jsEngineLibDir = "${rootDir}/app/src/main/jniLibs"
 
-def jsEngineLibName = "jsc"
+def jsEngineLibName = "V8"
 if (project.hasProperty("JSEngine")) {
     jsEngineLibName = project.property("JSEngine")
     if ("${jsEngineLibName}" == "jsc" ) {
-        jsEngineIncDir = "${jsEngineBaseDir}/include/V8"
+        jsEngineIncDir = "${jsEngineBaseDir}/include"
     }
 }
 

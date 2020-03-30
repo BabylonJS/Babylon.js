@@ -30,13 +30,6 @@ else()
     set(NAPI_JAVASCRIPT_ENGINE "V8")
 endif()
 
-
-message("**********************************")
-message("${ANDROID_JSENGINE_LIBPATH}")
-message("${ANDROID_JSENGINE_LIBNAME}")
-message("${ANDROID_JSENGINE_INCPATH}")
-message("**********************************")
-
 add_library(javascript_engine SHARED IMPORTED GLOBAL)
 set_target_properties(javascript_engine PROPERTIES IMPORTED_LOCATION "${ANDROID_JSENGINE_LIBPATH}/${ANDROID_ABI}/lib${ANDROID_JSENGINE_LIBNAME}.so")
 target_include_directories(javascript_engine INTERFACE "${ANDROID_JSENGINE_INCPATH}")
