@@ -12,11 +12,9 @@ namespace Babylon
         constexpr auto JS_ROOT_URL_NAME = "RootUrl";
     }
 
-    void InitializeXMLHttpRequest(JsRuntime& runtime, std::string rootUrl)
+    void InitializeXMLHttpRequest(Napi::Env env, std::string rootUrl)
     {
-        runtime.Dispatch([rootUrl = std::move(rootUrl)](Napi::Env env) {
-            XMLHttpRequest::Initialize(env, rootUrl.data());
-        });
+        XMLHttpRequest::Initialize(env, rootUrl.data());
     }
 
     void XMLHttpRequest::Initialize(Napi::Env env, const char* rootUrl)

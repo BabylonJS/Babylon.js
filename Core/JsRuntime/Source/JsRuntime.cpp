@@ -8,34 +8,27 @@ namespace Babylon
         static constexpr auto JS_WINDOW_NAME = "window";
     }
 
-    JsRuntime::JsRuntime(DispatchFunctionT dispatchFunction)
-        : JsRuntime(std::move(dispatchFunction), [](Napi::Env, JsRuntime*) {})
-    {
-    }
-
-    JsRuntime::JsRuntime(DispatchFunctionT dispatchFunction, DeleterT deleter)
+    JsRuntime::JsRuntime(Napi::Env env, DispatchFunctionT dispatchFunction)
         : m_dispatchFunction{std::move(dispatchFunction)}
     {
-        Dispatch([this, deleter = std::move(deleter)](Napi::Env env) mutable {
-            auto global = env.Global();
+        auto global = env.Global();
 
-            if (global.Get(JS_WINDOW_NAME).IsUndefined())
-            {
-                global.Set(JS_WINDOW_NAME, global);
-            }
+        if (global.Get(JS_WINDOW_NAME).IsUndefined())
+        {
+            global.Set(JS_WINDOW_NAME, global);
+        }
 
-            auto jsNative = Napi::Object::New(env);
-            global.Set(JS_NATIVE_NAME, jsNative);
+        auto jsNative = Napi::Object::New(env);
+        global.Set(JS_NATIVE_NAME, jsNative);
 
-            Napi::Value jsRuntime = Napi::External<JsRuntime>::New(env, this, std::move(deleter));
-            jsNative.Set(JS_RUNTIME_NAME, jsRuntime);
-        });
+        Napi::Value jsRuntime = Napi::External<JsRuntime>::New(env, this, [](Napi::Env, JsRuntime* runtime) { delete runtime; });
+        jsNative.Set(JS_RUNTIME_NAME, jsRuntime);
     }
 
-    void JsRuntime::Initialize(Napi::Env env, DispatchFunctionT dispatchFunction)
+    JsRuntime& JsRuntime::CreateForJavaScript(Napi::Env env, DispatchFunctionT dispatchFunction)
     {
-        DeleterT deleter = [](Napi::Env, JsRuntime* runtime) { delete runtime; };
-        new JsRuntime(std::move(dispatchFunction), std::move(deleter));
+        auto* runtime = new JsRuntime(env, std::move(dispatchFunction));
+        return *runtime;
     }
 
     JsRuntime& JsRuntime::GetFromJavaScript(Napi::Env env)

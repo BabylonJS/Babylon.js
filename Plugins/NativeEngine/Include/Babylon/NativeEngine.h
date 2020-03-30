@@ -1,10 +1,12 @@
 #pragma once
 
-#include <Babylon/JsRuntime.h>
+#include <napi/env.h>
 
 namespace Babylon
 {
-    void InitializeNativeEngine(JsRuntime& runtime, void* windowPtr, size_t width, size_t height);
+    void InitializeGraphics(void* windowPtr, size_t width, size_t height);
 
-    void ReinitializeNativeEngine(JsRuntime& runtime, void* windowPtr, size_t width, size_t height);
+    void InitializeNativeEngine(Napi::Env env);
+
+    void ReinitializeNativeEngine(Napi::Env env, void* windowPtr, size_t width, size_t height);
 }

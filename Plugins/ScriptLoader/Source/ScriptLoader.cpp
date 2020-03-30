@@ -7,8 +7,8 @@ namespace Babylon
 {
     struct ScriptLoader::Impl
     {
-        Impl(JsRuntime& runtime, std::string rootUrl)
-            : Runtime{runtime}
+        Impl(DispatchFunctionT dispatchFunction, std::string rootUrl)
+            : DispatchFunction{std::move(dispatchFunction)}
             , RootUrl{std::move(rootUrl)}
             , Task{arcana::task_from_result<std::exception_ptr>()}
         {
@@ -19,9 +19,9 @@ namespace Babylon
             auto absoluteUrl = GetAbsoluteUrl(url, RootUrl);
             auto loadUrlTask = LoadTextAsync(std::move(absoluteUrl));
             arcana::task_completion_source<void, std::exception_ptr> completionSource{};
-            auto loadScriptTask = arcana::when_all(loadUrlTask, Task).then(arcana::inline_scheduler, arcana::cancellation::none(), [& runtime = Runtime, url = std::move(url), completionSource](const std::tuple<std::string, arcana::void_placeholder>& args) mutable {
+            auto loadScriptTask = arcana::when_all(loadUrlTask, Task).then(arcana::inline_scheduler, arcana::cancellation::none(), [dispatchFunction = DispatchFunction, url = std::move(url), completionSource](const std::tuple<std::string, arcana::void_placeholder>& args) mutable {
                 std::string source = std::get<0>(args);
-                runtime.Dispatch([source = std::move(source), url = std::move(url), completionSource = std::move(completionSource)](Napi::Env env) mutable {
+                dispatchFunction([source = std::move(source), url = std::move(url), completionSource = std::move(completionSource)](Napi::Env env) mutable {
                     Napi::Eval(env, source.data(), url.data());
                     completionSource.complete();
                 });
@@ -32,8 +32,8 @@ namespace Babylon
         void Eval(std::string source, std::string url)
         {
             arcana::task_completion_source<void, std::exception_ptr> completionSource{};
-            auto evalTask = Task.then(arcana::inline_scheduler, arcana::cancellation::none(), [& runtime = Runtime, source = std::move(source), url = std::move(url), completionSource]() mutable {
-                runtime.Dispatch([source = std::move(source), url = std::move(url), completionSource = std::move(completionSource)](Napi::Env env) mutable {
+            auto evalTask = Task.then(arcana::inline_scheduler, arcana::cancellation::none(), [dispatchFunction = DispatchFunction, source = std::move(source), url = std::move(url), completionSource]() mutable {
+                dispatchFunction([source = std::move(source), url = std::move(url), completionSource = std::move(completionSource)](Napi::Env env) mutable {
                     Napi::Eval(env, source.data(), url.data());
                     completionSource.complete();
                 });
@@ -41,13 +41,13 @@ namespace Babylon
             Task = completionSource.as_task();
         }
 
-        JsRuntime& Runtime;
+        DispatchFunctionT DispatchFunction{};
         const std::string RootUrl{};
         arcana::task<void, std::exception_ptr> Task{};
     };
 
-    ScriptLoader::ScriptLoader(JsRuntime& runtime, std::string rootUrl)
-        : m_impl{std::make_unique<ScriptLoader::Impl>(runtime, std::move(rootUrl))}
+    ScriptLoader::ScriptLoader(DispatchFunctionT dispatchFunction, std::string rootUrl)
+        : m_impl{std::make_unique<ScriptLoader::Impl>(std::move(dispatchFunction), std::move(rootUrl))}
     {
     }
 

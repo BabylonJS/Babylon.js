@@ -1,10 +1,10 @@
 #pragma once
 
-#include <Babylon/JsRuntime.h>
+#include <Napi/env.h>
 
 #include <string>
 
 namespace Babylon
 {
-    void InitializeXMLHttpRequest(JsRuntime& runtime, std::string rootUrl);
+    void InitializeXMLHttpRequest(Napi::Env env, std::string rootUrl);
 }

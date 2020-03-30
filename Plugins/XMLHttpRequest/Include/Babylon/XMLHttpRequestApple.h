@@ -9,7 +9,7 @@
 typedef void (^ CompletionHandlerFunction)();
 typedef void (^ CompletionHandler)(CompletionHandlerFunction);
 
-void InitializeXMLHttpRequest(Babylon::JsRuntime& runtime);
+void InitializeXMLHttpRequest(Napi::Env);
 
 typedef NS_ENUM(NSUInteger , ReadyState) {
     XMLHttpRequestUNSENT =0,	// open()has not been called yet.

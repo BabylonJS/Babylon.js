@@ -153,6 +153,9 @@ concurrency::task<void> App::RestartRuntimeAsync(Windows::Foundation::Rect bound
         m_runtime = std::make_unique<Babylon::AppRuntime>(std::move(rootUrl));
     }
 
+    // Ensure this is properly uninitialized since it depends on state of the runtime.
+    m_inputBuffer.reset();
+
     // Create the console plugin.
     m_runtime->Dispatch([](Napi::Env env)
     {
@@ -168,21 +171,24 @@ concurrency::task<void> App::RestartRuntimeAsync(Windows::Foundation::Rect bound
     size_t width = static_cast<size_t>(bounds.Width * m_displayScale);
     size_t height = static_cast<size_t>(bounds.Height * m_displayScale);
     auto* windowPtr = reinterpret_cast<ABI::Windows::UI::Core::ICoreWindow*>(CoreWindow::GetForCurrentThread());
-    m_runtime->Dispatch([windowPtr, width, height](Napi::Env env)
+    m_runtime->Dispatch([&runtime = m_runtime, &inputBuffer = m_inputBuffer, windowPtr, width, height](Napi::Env env)
     {
         Babylon::NativeWindow::Initialize(env, windowPtr, width, height);
+
+        auto& jsRuntime = Babylon::JsRuntime::GetFromJavaScript(env);
+        
+        // Initialize NativeEngine plugin.
+        Babylon::InitializeGraphics(windowPtr, width, height);
+        Babylon::InitializeNativeEngine(env);
+
+        // Initialize XMLHttpRequest plugin.
+        Babylon::InitializeXMLHttpRequest(env, runtime->RootUrl());
+
+        inputBuffer = std::make_unique<InputManager::InputBuffer>(jsRuntime);
+        InputManager::Initialize(jsRuntime, *inputBuffer);
     });
 
-    // Initialize NativeEngine plugin.
-    Babylon::InitializeNativeEngine(*m_runtime, windowPtr, width, height);
-
-    // Initialize XMLHttpRequest plugin.
-    Babylon::InitializeXMLHttpRequest(*m_runtime, m_runtime->RootUrl());
-
-    m_inputBuffer = std::make_unique<InputManager::InputBuffer>(*m_runtime);
-    InputManager::Initialize(*m_runtime, *m_inputBuffer);
-
-    Babylon::ScriptLoader loader{ *m_runtime, m_runtime->RootUrl() };
+    Babylon::ScriptLoader loader{*m_runtime, m_runtime->RootUrl()};
     loader.Eval("document = {}", "");
     loader.LoadScript(appUrl + "/Scripts/ammo.js");
     loader.LoadScript(appUrl + "/Scripts/recast.js");
@@ -198,7 +204,7 @@ concurrency::task<void> App::RestartRuntimeAsync(Windows::Foundation::Rect bound
     {
         for (unsigned int idx = 0; idx < m_fileActivatedArgs->Files->Size; idx++)
         {
-            auto file = static_cast<Windows::Storage::IStorageFile^>(m_fileActivatedArgs->Files->GetAt(idx));
+            auto file = static_cast<Windows::Storage::IStorageFile ^>(m_fileActivatedArgs->Files->GetAt(idx));
             const auto path = winrt::to_string(file->Path->Data());
             auto text = co_await Windows::Storage::FileIO::ReadTextAsync(file);
             // TODO m_runtime->Eval(winrt::to_string(text->Data()), path);
@@ -254,18 +260,27 @@ void App::OnWindowClosed(CoreWindow^ sender, CoreWindowEventArgs^ args)
 
 void App::OnPointerMoved(CoreWindow^, PointerEventArgs^ args)
 {
-    const auto& point = args->CurrentPoint->RawPosition;
-    m_inputBuffer->SetPointerPosition(static_cast<int>(point.X), static_cast<int>(point.Y));
+    if (m_inputBuffer != nullptr)
+    {
+        const auto& point = args->CurrentPoint->RawPosition;
+        m_inputBuffer->SetPointerPosition(static_cast<int>(point.X), static_cast<int>(point.Y));
+    }
 }
 
 void App::OnPointerPressed(CoreWindow^, PointerEventArgs^)
 {
-    m_inputBuffer->SetPointerDown(true);
+    if (m_inputBuffer != nullptr)
+    {
+        m_inputBuffer->SetPointerDown(true);
+    }
 }
 
 void App::OnPointerReleased(CoreWindow^, PointerEventArgs^)
 {
-    m_inputBuffer->SetPointerDown(false);
+    if (m_inputBuffer != nullptr)
+    {
+        m_inputBuffer->SetPointerDown(false);
+    }
 }
 
 void App::OnKeyPressed(CoreWindow^ window, KeyEventArgs^ args)
