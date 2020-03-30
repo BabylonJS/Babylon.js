@@ -1,14 +1,12 @@
 apply plugin: 'com.android.application'
 
-
-
 def jsEngineBaseDir = "${buildDir}/JS"
 def jsEngineIncDir = "${jsEngineBaseDir}/include"
 def jsEngineLibDir = "${rootDir}/app/src/main/jniLibs"
 
-def jsEngineLibName = System.getProperty("JSEngine")
-if (jsEngineLibName == '') {
-    jsEngineLibName = "jsc"
+def jsEngineLibName = 'jsc'
+if (project.hasProperty('JSEngine')) {
+    jsEngineLibName = $JSEngine
 }
 
 def platformVersion = 21
@@ -120,7 +118,7 @@ task extractJSEngineLibraries() {
                 from zipTree(f)
                 into jsEngineLibDir
                 include "jni/**/*"
-                // remove 'jni/''
+                // remove 'jni/'
                 eachFile { fcd ->
                     fcd.relativePath = new RelativePath(true, fcd.relativePath.segments.drop(1))  
                 }
