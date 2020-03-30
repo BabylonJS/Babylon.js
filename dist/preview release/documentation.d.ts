@@ -36985,6 +36985,12 @@ declare module BABYLON {
          */
         getMorphTargetById(id: string): Nullable<MorphTarget>;
         /**
+         * Gets a morph target using a given name (if many are found, this function will pick the first one)
+         * @param name defines the name to search for
+         * @return the found morph target or null if not found at all.
+         */
+        getMorphTargetByName(name: string): Nullable<MorphTarget>;
+        /**
          * Gets a boolean indicating if the given mesh is active
          * @param mesh defines the mesh to look for
          * @returns true if the mesh is in the active list
