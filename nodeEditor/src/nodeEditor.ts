@@ -6,8 +6,8 @@ import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial"
 import { Popup } from "../src/sharedComponents/popup"
 import { SerializationTools } from './serializationTools';
 import { Observable } from 'babylonjs/Misc/observable';
-import { DataStorage } from 'babylonjs';
 import { PreviewMeshType } from './components/preview/previewMeshType';
+import { DataStorage } from 'babylonjs/Misc/dataStorage';
 /**
  * Interface used to specify creation options for the node editor
  */
