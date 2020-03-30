@@ -6,7 +6,7 @@ def jsEngineLibDir = "${rootDir}/app/src/main/jniLibs"
 
 def jsEngineLibName = 'jsc'
 if (project.hasProperty('JSEngine')) {
-    jsEngineLibName = $JSEngine
+    jsEngineLibName = project.property('JSEngine')
 }
 
 def platformVersion = 21
