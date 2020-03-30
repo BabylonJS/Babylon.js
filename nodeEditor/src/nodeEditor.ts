@@ -6,6 +6,8 @@ import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial"
 import { Popup } from "../src/sharedComponents/popup"
 import { SerializationTools } from './serializationTools';
 import { Observable } from 'babylonjs/Misc/observable';
+import { DataStorage } from 'babylonjs';
+import { PreviewMeshType } from './components/preview/previewMeshType';
 /**
  * Interface used to specify creation options for the node editor
  */
@@ -75,7 +77,13 @@ export class NodeEditor {
                 if (popupWindow) {
                     popupWindow.close();
                 }
+
             };
+        }
+        window.onbeforeunload = () => {
+            if(DataStorage.ReadNumber("PreviewMeshType", PreviewMeshType.Box) === PreviewMeshType.Custom){
+                DataStorage.WriteNumber("PreviewMeshType", PreviewMeshType.Box)
+            }
         }
     }
 }
