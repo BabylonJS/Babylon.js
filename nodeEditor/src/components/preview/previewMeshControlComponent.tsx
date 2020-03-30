@@ -50,7 +50,9 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
             this.props.globalState.onPreviewCommandActivated.notifyObservers();        
             this.forceUpdate();
         }
-        (ReactDOM.findDOMNode(this.refs["file-picker"]) as HTMLInputElement).value = "";
+        if(this.filePickerRef.current){
+            this.filePickerRef.current.value = ""
+        }
     }
 
     onPopUp() {
