@@ -90,8 +90,8 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             return;
         }
 
-        this.raiseOnPropertyChanged(valueAsNumber, this._store);
         this.props.target[this.props.propertyName] = valueAsNumber;
+        this.raiseOnPropertyChanged(valueAsNumber, this._store);
 
         this._store = valueAsNumber;
     }
