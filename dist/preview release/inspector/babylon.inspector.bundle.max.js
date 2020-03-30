@@ -56547,8 +56547,8 @@ var FloatLineComponent = /** @class */ (function (_super) {
         if (isNaN(valueAsNumber)) {
             return;
         }
-        this.raiseOnPropertyChanged(valueAsNumber, this._store);
         this.props.target[this.props.propertyName] = valueAsNumber;
+        this.raiseOnPropertyChanged(valueAsNumber, this._store);
         this._store = valueAsNumber;
     };
     FloatLineComponent.prototype.lock = function () {
@@ -58715,20 +58715,20 @@ var AnimationGridComponent = /** @class */ (function (_super) {
         this._isPlaying = this.props.scene.getAllAnimatablesByTarget(animatable).length > 0;
         if (this._isPlaying) {
             this.props.scene.stopAnimation(this.props.animatable);
-            this._runningAnimatable = null;
+            this._mainAnimatable = null;
         }
         else {
-            this._runningAnimatable = this.props.scene.beginAnimation(this.props.animatable, this._animationControl.from, this._animationControl.to, this._animationControl.loop);
+            this._mainAnimatable = this.props.scene.beginAnimation(this.props.animatable, this._animationControl.from, this._animationControl.to, this._animationControl.loop);
         }
         this.forceUpdate();
     };
     AnimationGridComponent.prototype.componentDidMount = function () {
         var _this = this;
         this._onBeforeRenderObserver = this.props.scene.onBeforeRenderObservable.add(function () {
-            if (!_this._isPlaying || !_this._runningAnimatable) {
+            if (!_this._isPlaying || !_this._mainAnimatable) {
                 return;
             }
-            _this.setState({ currentFrame: _this._runningAnimatable.masterFrame });
+            _this.setState({ currentFrame: _this._mainAnimatable.masterFrame });
         });
     };
     AnimationGridComponent.prototype.componentWillUnmount = function () {
@@ -58738,11 +58738,17 @@ var AnimationGridComponent = /** @class */ (function (_super) {
         }
     };
     AnimationGridComponent.prototype.onCurrentFrameChange = function (value) {
-        if (!this._runningAnimatable) {
+        if (!this._mainAnimatable) {
             return;
         }
-        this._runningAnimatable.goToFrame(value);
+        this._mainAnimatable.goToFrame(value);
         this.setState({ currentFrame: value });
+    };
+    AnimationGridComponent.prototype.onChangeFromOrTo = function () {
+        this.playOrPause();
+        if (this._isPlaying) {
+            this.playOrPause();
+        }
     };
     AnimationGridComponent.prototype.render = function () {
         var _this = this;
@@ -58750,20 +58756,20 @@ var AnimationGridComponent = /** @class */ (function (_super) {
         var animatableAsAny = this.props.animatable;
         var animatablesForTarget = this.props.scene.getAllAnimatablesByTarget(animatable);
         this._isPlaying = animatablesForTarget.length > 0;
-        if (this._isPlaying && !this._runningAnimatable) {
-            this._runningAnimatable = animatablesForTarget[0];
-        }
-        if (this._runningAnimatable) {
-            this._animationControl.from = this._runningAnimatable.fromFrame;
-            this._animationControl.to = this._runningAnimatable.toFrame;
-            this._animationControl.loop = this._runningAnimatable.loopAnimation;
+        if (this._isPlaying && !this._mainAnimatable) {
+            this._mainAnimatable = animatablesForTarget[0];
+            if (this._mainAnimatable) {
+                this._animationControl.from = this._mainAnimatable.fromFrame;
+                this._animationControl.to = this._mainAnimatable.toFrame;
+                this._animationControl.loop = this._mainAnimatable.loopAnimation;
+            }
         }
         var animations = animatable.animations;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             this._ranges.length > 0 &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ANIMATION RANGES" }, this._ranges.map(function (range) {
                     return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { key: range.name, label: range.name, onClick: function () {
-                            _this._runningAnimatable = null;
+                            _this._mainAnimatable = null;
                             _this.props.scene.beginAnimation(animatable, range.from, range.to, true);
                         } }));
                 })),
@@ -58776,28 +58782,28 @@ var AnimationGridComponent = /** @class */ (function (_super) {
                                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { label: "#" + i + " >", value: anim.targetProperty })));
                         })),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ANIMATION GENERAL CONTROL" },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "From", target: this._animationControl, propertyName: "from" }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "To", target: this._animationControl, propertyName: "to" }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { lockObject: this.props.lockObject, isInteger: true, label: "From", target: this._animationControl, propertyName: "from", onChange: function () { return _this.onChangeFromOrTo(); } }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { lockObject: this.props.lockObject, isInteger: true, label: "To", target: this._animationControl, propertyName: "to", onChange: function () { return _this.onChangeFromOrTo(); } }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Loop", onSelect: function (value) { return _this._animationControl.loop = value; }, isSelected: function () { return _this._animationControl.loop; } }),
                         this._isPlaying &&
                             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { ref: this.timelineRef, label: "Current frame", minimum: this._animationControl.from, maximum: this._animationControl.to, step: (this._animationControl.to - this._animationControl.from) / 1000.0, directValue: this.state.currentFrame, onInput: function (value) { return _this.onCurrentFrameChange(value); } }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: this._isPlaying ? "Stop" : "Play", onClick: function () { return _this.playOrPause(); } }))),
-            (this._ranges.length > 0 || this._animations && this._animations.length > 0) &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ANIMATION OVERRIDE" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Enable override", onSelect: function (value) {
-                            if (value) {
-                                animatableAsAny.animationPropertiesOverride = new babylonjs_Animations_animationPropertiesOverride__WEBPACK_IMPORTED_MODULE_5__["AnimationPropertiesOverride"]();
-                                animatableAsAny.animationPropertiesOverride.blendingSpeed = 0.05;
-                            }
-                            else {
-                                animatableAsAny.animationPropertiesOverride = null;
-                            }
-                            _this.forceUpdate();
-                        }, isSelected: function () { return animatableAsAny.animationPropertiesOverride != null; }, onValueChanged: function () { return _this.forceUpdate(); } }),
-                    animatableAsAny.animationPropertiesOverride != null &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Enable blending", target: animatableAsAny.animationPropertiesOverride, propertyName: "enableBlending", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Blending speed", target: animatableAsAny.animationPropertiesOverride, propertyName: "blendingSpeed", minimum: 0, maximum: 0.1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })))));
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: this._isPlaying ? "Stop" : "Play", onClick: function () { return _this.playOrPause(); } }),
+                        (this._ranges.length > 0 || this._animations && this._animations.length > 0) &&
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Enable override", onSelect: function (value) {
+                                        if (value) {
+                                            animatableAsAny.animationPropertiesOverride = new babylonjs_Animations_animationPropertiesOverride__WEBPACK_IMPORTED_MODULE_5__["AnimationPropertiesOverride"]();
+                                            animatableAsAny.animationPropertiesOverride.blendingSpeed = 0.05;
+                                        }
+                                        else {
+                                            animatableAsAny.animationPropertiesOverride = null;
+                                        }
+                                        _this.forceUpdate();
+                                    }, isSelected: function () { return animatableAsAny.animationPropertiesOverride != null; }, onValueChanged: function () { return _this.forceUpdate(); } }),
+                                animatableAsAny.animationPropertiesOverride != null &&
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+                                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Enable blending", target: animatableAsAny.animationPropertiesOverride, propertyName: "enableBlending", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Blending speed", target: animatableAsAny.animationPropertiesOverride, propertyName: "blendingSpeed", minimum: 0, maximum: 0.1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })))))));
     };
     return AnimationGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));

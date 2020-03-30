@@ -598,7 +598,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     }> {
         private _animations;
         private _ranges;
-        private _runningAnimatable;
+        private _mainAnimatable;
         private _onBeforeRenderObserver;
         private _isPlaying;
         private timelineRef;
@@ -608,6 +608,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         componentDidMount(): void;
         componentWillUnmount(): void;
         onCurrentFrameChange(value: number): void;
+        onChangeFromOrTo(): void;
         render(): JSX.Element;
     }
 }
@@ -3290,7 +3291,7 @@ declare module INSPECTOR {
     }> {
         private _animations;
         private _ranges;
-        private _runningAnimatable;
+        private _mainAnimatable;
         private _onBeforeRenderObserver;
         private _isPlaying;
         private timelineRef;
@@ -3300,6 +3301,7 @@ declare module INSPECTOR {
         componentDidMount(): void;
         componentWillUnmount(): void;
         onCurrentFrameChange(value: number): void;
+        onChangeFromOrTo(): void;
         render(): JSX.Element;
     }
 }
