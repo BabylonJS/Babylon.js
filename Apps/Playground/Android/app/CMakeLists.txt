@@ -25,9 +25,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
 if (${ANDROID_JSENGINE_LIBNAME} STREQUAL "jsc")
-    set(NAPI_JAVASCRIPT_ENGINE "JavaScriptCore")
+    set(NAPI_JAVASCRIPT_ENGINE "JavaScriptCore" CACHE STRING "JavaScript engine for N-API.")
 else()
-    set(NAPI_JAVASCRIPT_ENGINE "V8")
+    set(NAPI_JAVASCRIPT_ENGINE "V8" CACHE STRING "JavaScript engine for N-API.")
 endif()
 
 add_library(javascript_engine SHARED IMPORTED GLOBAL)
