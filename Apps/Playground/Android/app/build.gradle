@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 
 def jsEngineBaseDir = "${buildDir}/JS"
-def jsEngineIncDir = "${jsEngineBaseDir}/include/JavaScriptCore"
+def jsEngineIncDir = "${jsEngineBaseDir}/include"
 def jsEngineLibDir = "${rootDir}/app/src/main/jniLibs"
 
 def jsEngineLibName = "jsc"
 if (project.hasProperty("JSEngine")) {
     jsEngineLibName = project.property("JSEngine")
     if ("${jsEngineLibName}" == "jsc" ) {
-        jsEngineIncDir = "${jsEngineBaseDir}/include/v8"
+        jsEngineIncDir = "${jsEngineBaseDir}/include/V8"
     }
 }
 
@@ -142,13 +142,13 @@ task copyFilesJSHeaders {
     {
         from "${rootDir}/node_modules/jsc-android/dist/include"
         include "*"
-        into "${jsEngineIncDir}"
+        into "${jsEngineIncDir}/JavaScriptCore"
     }
     copy
     {
         from "${rootDir}/node_modules/v8-android/dist/include"
         include "*"
-        into "${jsEngineIncDir}"
+        into "${jsEngineIncDir}/V8"
     }
 }
 
