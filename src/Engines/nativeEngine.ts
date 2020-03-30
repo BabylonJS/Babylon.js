@@ -17,14 +17,16 @@ import { IColor4Like } from '../Maths/math.like';
 import { Scene } from "../scene";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
 import { IPipelineContext } from './IPipelineContext';
-import { WebRequest } from '../Misc/webRequest';
 import { NativeShaderProcessor } from './Native/nativeShaderProcessor';
 import { Logger } from "../Misc/logger";
 import { Constants } from './constants';
 import { ThinEngine, ISceneLike } from './thinEngine';
 import { IWebRequest } from '../Misc/interfaces/iWebRequest';
+import { EngineStore } from './engineStore';
 
 interface INativeEngine {
+    dispose(): void;
+
     requestAnimationFrame(callback: () => void): void;
 
     createVertexArray(): any;
@@ -72,9 +74,9 @@ interface INativeEngine {
     setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
 
     createTexture(): WebGLTexture;
-    loadTexture(texture: WebGLTexture, buffer: ArrayBuffer | ArrayBufferView | Blob, generateMips: boolean, invertY: boolean): boolean;
-    loadCubeTexture(texture: WebGLTexture, data: Array<ArrayBufferView>, generateMips: boolean): boolean;
-    loadCubeTextureWithMips(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>): boolean;
+    loadTexture(texture: WebGLTexture, data: ArrayBufferView, generateMips: boolean, invertY: boolean, onSuccess: () => void, onError: () => void): void;
+    loadCubeTexture(texture: WebGLTexture, data: Array<ArrayBufferView>, generateMips: boolean, onSuccess: () => void, onError: () => void): void;
+    loadCubeTextureWithMips(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, onSuccess: () => void, onError: () => void): void;
     getTextureWidth(texture: WebGLTexture): number;
     getTextureHeight(texture: WebGLTexture): number;
     setTextureSampling(texture: WebGLTexture, filter: number): void; // filter is a NativeFilter.XXXX value.
@@ -266,6 +268,11 @@ export class NativeEngine extends Engine {
 
         // Shader processor
         this._shaderProcessor = new NativeShaderProcessor();
+    }
+
+    public dispose(): void {
+        super.dispose();
+        this._native.dispose();
     }
 
     /**
@@ -851,7 +858,7 @@ export class NativeEngine extends Engine {
     /**
      * Usually called from Texture.ts.
      * Passed information to create a WebGLTexture
-     * @param urlArg defines a value which contains one of the following:
+     * @param url defines a value which contains one of the following:
      * * A conventional http URL, e.g. 'http://...' or 'file://...'
      * * A base64 string of in-line texture data, e.g. 'data:image/jpg;base64,/...'
      * * An indicator that data being passed using the buffer parameter, e.g. 'data:mytexture.jpg'
@@ -868,15 +875,21 @@ export class NativeEngine extends Engine {
      * @param mimeType defines an optional mime type
      * @returns a InternalTexture for assignment back into BABYLON.Texture
      */
-    public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+    public createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
         forcedExtension: Nullable<string> = null, mimeType?: string): InternalTexture {
-        var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
-        var fromData = url.substr(0, 5) === "data:";
-        var fromBlob = url.substr(0, 5) === "blob:";
+        url = url || "";
+        const fromData = url.substr(0, 5) === "data:";
+        //const fromBlob = url.substr(0, 5) === "blob:";
+        const isBase64 = fromData && url.indexOf(";base64,") !== -1;
 
         let texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Url);
+
+        const originalUrl = url;
+        if (this._transformTextureUrl && !isBase64 && !fallback && !buffer) {
+            url = this._transformTextureUrl(url);
+        }
 
         // establish the file extension, if possible
         var lastDot = url.lastIndexOf('.');
@@ -915,54 +928,33 @@ export class NativeEngine extends Engine {
                 scene._removePendingData(texture);
             }
 
-            if (onLoadObserver) {
-                texture.onLoadedObservable.remove(onLoadObserver);
-            }
-            if (Tools.UseFallbackTexture) {
-                this.createTexture(Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
-            }
+            if (url === originalUrl) {
+                if (onLoadObserver) {
+                    texture.onLoadedObservable.remove(onLoadObserver);
+                }
 
-            if (onError) {
-                onError(message || "Unknown error", exception);
+                if (EngineStore.UseFallbackTexture) {
+                    this.createTexture(EngineStore.FallbackTexture, noMipmap, texture.invertY, scene, samplingMode, null, onError, buffer, texture);
+                }
+
+                if (onError) {
+                    onError((message || "Unknown error") + (EngineStore.UseFallbackTexture ? " - Fallback texture was used" : ""), exception);
+                }
+            }
+            else {
+                // fall back to the original url if the transformed url fails to load
+                Logger.Warn(`Failed to load ${url}, falling back to ${originalUrl}`);
+                this.createTexture(originalUrl, noMipmap, texture.invertY, scene, samplingMode, onLoad, onError, buffer, texture, format, forcedExtension, mimeType);
             }
         };
 
         // processing for non-image formats
         if (loader) {
             throw new Error("Loading textures from IInternalTextureLoader not yet implemented.");
-            // var callback = (data: string | ArrayBuffer) => {
-            //     loader!.loadData(data as ArrayBuffer, texture, (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => {
-            //         this._prepareWebGLTexture(texture, scene, width, height, invertY, !loadMipmap, isCompressed, () => {
-            //                 done();
-            //                 return false;
-            //             },
-            //             samplingMode);
-            //     });
-            // }
-
-            // if (!buffer) {
-            //     this._loadFile(url, callback, undefined, scene ? scene.database : undefined, true, (request?: XMLHttpRequest, exception?: any) => {
-            //         onInternalError("Unable to load " + (request ? request.responseURL : url, exception));
-            //     });
-            // } else {
-            //     callback(buffer as ArrayBuffer);
-            // }
         } else {
-            var onload = (data: string | ArrayBuffer | Blob, responseURL?: string) => {
-                if (typeof (data) === "string") {
-                    throw new Error("Loading textures from string data not yet implemented.");
-                }
-
-                if (fromBlob && !this.doNotHandleContextLost) {
-                    // We need to store the image if we need to rebuild the texture
-                    // in case of a webgl context lost
-                    texture._buffer = data;
-                }
-
-                let webGLTexture = texture._webGLTexture;
-
+            const onload = (data: ArrayBufferView) => {
+                const webGLTexture = texture._webGLTexture;
                 if (!webGLTexture) {
-                    //  this.resetTextureCache();
                     if (scene) {
                         scene._removePendingData(texture);
                     }
@@ -970,42 +962,47 @@ export class NativeEngine extends Engine {
                     return;
                 }
 
-                if (!this._native.loadTexture(webGLTexture, data, !noMipmap, invertY)) {
+                this._native.loadTexture(webGLTexture, data, !noMipmap, invertY, () => {
+                    texture.baseWidth = this._native.getTextureWidth(webGLTexture);
+                    texture.baseHeight = this._native.getTextureHeight(webGLTexture);
+                    texture.width = texture.baseWidth;
+                    texture.height = texture.baseHeight;
+                    texture.isReady = true;
+
+                    var filter = this._getSamplingFilter(samplingMode);
+                    this._native.setTextureSampling(webGLTexture, filter);
+
+                    if (scene) {
+                        scene._removePendingData(texture);
+                    }
+
+                    texture.onLoadedObservable.notifyObservers(texture);
+                    texture.onLoadedObservable.clear();
+                }, () => {
                     throw new Error("Could not load a native texture.");
-                }
-
-                texture.baseWidth = this._native.getTextureWidth(webGLTexture);
-                texture.baseHeight = this._native.getTextureHeight(webGLTexture);
-                texture.width = texture.baseWidth;
-                texture.height = texture.baseHeight;
-                texture.isReady = true;
-
-                var filter = this._getSamplingFilter(samplingMode);
-
-                this._native.setTextureSampling(webGLTexture, filter);
-
-                // this.resetTextureCache();
-                if (scene) {
-                    scene._removePendingData(texture);
-                }
-
-                texture.onLoadedObservable.notifyObservers(texture);
-                texture.onLoadedObservable.clear();
+                });
             };
 
-            if (buffer instanceof ArrayBuffer) {
-                onload(buffer);
-            } else if (ArrayBuffer.isView(buffer)) {
-                onload(buffer.buffer);
-            } else if (buffer instanceof Blob) {
-                throw new Error("Loading texture from Blob not yet implemented.");
-            } else if (!fromData) {
-                let onLoadFileError = (request?: WebRequest, exception?: any) => {
-                    onInternalError("Failed to retrieve " + url + ".", exception);
-                };
-                Tools.LoadFile(url, onload, undefined, undefined, /*useArrayBuffer*/true, onLoadFileError);
-            } else {
-                onload(Tools.DecodeBase64(buffer as string));
+            if (fromData) {
+                if (buffer instanceof ArrayBuffer) {
+                    onload(new Uint8Array(buffer));
+                } else if (ArrayBuffer.isView(buffer)) {
+                    onload(buffer);
+                } else if (typeof buffer === "string") {
+                    onload(new Uint8Array(Tools.DecodeBase64(buffer)));
+                } else {
+                    throw new Error("Unsupported buffer type");
+                }
+            }
+            else {
+                if (isBase64) {
+                    onload(new Uint8Array(Tools.DecodeBase64(url)));
+                }
+                else {
+                    this._loadFile(url, (data) => onload(new Uint8Array(data as ArrayBuffer)), undefined, undefined, true, (request?: IWebRequest, exception?: any) => {
+                        onInternalError("Unable to load " + (request ? request.responseURL : url, exception));
+                    });
+                }
             }
         }
 
@@ -1084,15 +1081,17 @@ export class NativeEngine extends Engine {
                 texture.getEngine().updateTextureSamplingMode(Texture.TRILINEAR_SAMPLINGMODE, texture);
                 texture._isRGBD = true;
                 texture.invertY = true;
-                if (!this._native.loadCubeTextureWithMips(texture._webGLTexture!, imageData)) {
-                    throw new Error("Could not load a native cube texture.");
-                }
 
-                texture.isReady = true;
-                if (onLoad) {
-                    onLoad();
-                }
+                this._native.loadCubeTextureWithMips(texture._webGLTexture!, imageData, () => {
+                    texture.isReady = true;
+                    if (onLoad) {
+                        onLoad();
+                    }
+                }, () => {
+                    throw new Error("Could not load a native cube texture.");
+                });
             };
+
             if (files && files.length === 6) {
                 throw new Error(`Multi-file loading not allowed on env files.`);
             }
@@ -1114,7 +1113,9 @@ export class NativeEngine extends Engine {
             // Reorder from [+X, +Y, +Z, -X, -Y, -Z] to [+X, -X, +Y, -Y, +Z, -Z].
             const reorderedFiles = [files[0], files[3], files[1], files[4], files[2], files[5]];
             Promise.all(reorderedFiles.map((file) => Tools.LoadFileAsync(file).then((data) => new Uint8Array(data as ArrayBuffer)))).then((data) => {
-                this._native.loadCubeTexture(texture._webGLTexture!, data, !noMipmap);
+                return new Promise((resolve, reject) => {
+                    this._native.loadCubeTexture(texture._webGLTexture!, data, !noMipmap, resolve, reject);
+                });
             }).then(() => {
                 texture.isReady = true;
                 if (onLoad) {
