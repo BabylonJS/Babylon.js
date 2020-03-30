@@ -5,7 +5,6 @@ import { Color3, Color4 } from 'babylonjs/Maths/math.color';
 import { PreviewMeshType } from './previewMeshType';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
-import * as ReactDOM from 'react-dom';
 
 const popUpIcon: string = require("./svgs/popOut.svg");
 const colorPicker: string = require("./svgs/colorPicker.svg");
@@ -47,7 +46,8 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
 
             this.props.globalState.previewMeshFile = file;
             this.props.globalState.previewMeshType = PreviewMeshType.Custom;
-            this.props.globalState.onPreviewCommandActivated.notifyObservers();        
+            this.props.globalState.onPreviewCommandActivated.notifyObservers();
+            this.props.globalState.listOfCustomPreviewMeshFiles = [file];       
             this.forceUpdate();
         }
         if(this.filePickerRef.current){
@@ -92,7 +92,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
             { label: "Load...", value: PreviewMeshType.Custom + 1 }
         ];
 
-        if (this.props.globalState.previewMeshType === PreviewMeshType.Custom) {
+        if (this.props.globalState.listOfCustomPreviewMeshFiles.length > 0) {
             meshTypeOptions.splice(0, 0, {
                 label: "Custom", value: PreviewMeshType.Custom
             });
