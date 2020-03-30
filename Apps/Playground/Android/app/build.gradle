@@ -1,10 +1,16 @@
 apply plugin: 'com.android.application'
 
+// When no project property is set for Gradle ('-PJSEngine=')
+// default JS engine is set to v8android
+// JSEngine property can be:
+// - jsc for JavaScriptCore
+// - v8android for V8
+
 def jsEngineBaseDir = "${buildDir}/JS"
 def jsEngineIncDir = "${jsEngineBaseDir}/include/V8"
 def jsEngineLibDir = "${rootDir}/app/src/main/jniLibs"
 
-def jsEngineLibName = "v8"
+def jsEngineLibName = "v8android"
 if (project.hasProperty("JSEngine")) {
     jsEngineLibName = project.property("JSEngine")
     if ("${jsEngineLibName}" == "jsc" ) {
@@ -142,12 +148,12 @@ task copyFilesJSHeaders {
     {
         from "${rootDir}/node_modules/jsc-android/dist/include"
         include "*"
-        into "${jsEngineIncDir}/JavaScriptCore"
+        into "${jsEngineBaseDir}/include"
     }
     copy
     {
         from "${rootDir}/node_modules/v8-android/dist/include"
-        include "*"
+        include "**/*"
         into "${jsEngineIncDir}"
     }
 }
