@@ -148,7 +148,7 @@ task copyFilesJSHeaders {
     {
         from "${rootDir}/node_modules/jsc-android/dist/include"
         include "*"
-        into "${jsEngineBaseDir}/include"
+        into "${jsEngineBaseDir}/include/JavaScriptCore"
     }
     copy
     {
