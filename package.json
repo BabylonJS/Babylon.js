@@ -103,7 +103,7 @@
         "webpack-bundle-analyzer": "^3.1.0",
         "webpack-cli": "^3.3.9",
         "webpack-dev-server": "^3.1.14",
-        "webpack-stream": "5.1.0",
+        "webpack-stream": "5.0.0",
         "xhr2": "^0.1.4",
         "xmlbuilder": "8.2.2",
         "react-color": "^2.18.0",
