@@ -4,7 +4,7 @@ def jsEngineBaseDir = "${buildDir}/JS"
 def jsEngineIncDir = "${jsEngineBaseDir}/include/V8"
 def jsEngineLibDir = "${rootDir}/app/src/main/jniLibs"
 
-def jsEngineLibName = "V8"
+def jsEngineLibName = "v8"
 if (project.hasProperty("JSEngine")) {
     jsEngineLibName = project.property("JSEngine")
     if ("${jsEngineLibName}" == "jsc" ) {
@@ -148,7 +148,7 @@ task copyFilesJSHeaders {
     {
         from "${rootDir}/node_modules/v8-android/dist/include"
         include "*"
-        into "${jsEngineIncDir}/V8"
+        into "${jsEngineIncDir}"
     }
 }
 
