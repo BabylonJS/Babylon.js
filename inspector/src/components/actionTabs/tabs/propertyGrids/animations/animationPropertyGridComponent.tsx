@@ -3,20 +3,20 @@ import * as React from "react";
 import { Observable, Observer } from "babylonjs/Misc/observable";
 import { Scene } from "babylonjs/scene";
 
-import { PropertyChangedEvent } from "../../../propertyChangedEvent";
-import { ButtonLineComponent } from "../../lines/buttonLineComponent";
-import { LineContainerComponent } from "../../lineContainerComponent";
-import { SliderLineComponent } from "../../lines/sliderLineComponent";
-import { LockObject } from "./lockObject";
-import { GlobalState } from '../../../globalState';
+import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
+import { ButtonLineComponent } from "../../../lines/buttonLineComponent";
+import { LineContainerComponent } from "../../../lineContainerComponent";
+import { SliderLineComponent } from "../../../lines/sliderLineComponent";
+import { LockObject } from "../lockObject";
+import { GlobalState } from '../../../../globalState';
 import { Animation } from 'babylonjs/Animations/animation';
 import { Animatable } from 'babylonjs/Animations/animatable';
 import { AnimationPropertiesOverride } from 'babylonjs/Animations/animationPropertiesOverride';
 import { AnimationRange } from 'babylonjs/Animations/animationRange';
-import { CheckBoxLineComponent } from '../../lines/checkBoxLineComponent';
+import { CheckBoxLineComponent } from '../../../lines/checkBoxLineComponent';
 import { Nullable } from 'babylonjs/types';
-import { FloatLineComponent } from '../../lines/floatLineComponent';
-import { TextLineComponent } from '../../lines/textLineComponent';
+import { FloatLineComponent } from '../../../lines/floatLineComponent';
+import { TextLineComponent } from '../../../lines/textLineComponent';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 
 interface IAnimationGridComponentProps {
@@ -30,16 +30,15 @@ interface IAnimationGridComponentProps {
 export class AnimationGridComponent extends React.Component<IAnimationGridComponentProps, { currentFrame: number }> {
     private _animations: Nullable<Animation[]> = null;
     private _ranges: AnimationRange[];
+    private _runningAnimatable: Nullable<Animatable>;
+    private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
+    private _isPlaying = false;
+    private timelineRef: React.RefObject<SliderLineComponent>;
     private _animationControl = {
         from: 0,
         to: 0,
         loop: false
     }
-    private _runningAnimatable: Nullable<Animatable>;
-    private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
-    private _isPlaying = false;
-    private timelineRef: React.RefObject<SliderLineComponent>;
-
 
     constructor(props: IAnimationGridComponentProps) {
         super(props);
@@ -58,6 +57,10 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                     this._animations!.push(...animatable.animations);
                 }
             });
+
+            if (animatableAsAny.animations) {                
+                this._animations!.push(...animatableAsAny.animations);
+            }
 
             // Extract from and to
             if (this._animations && this._animations.length) {
@@ -135,8 +138,56 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
             this._animationControl.loop = this._runningAnimatable.loopAnimation;
         }
 
+        let animations = animatable.animations;
+
         return (
             <div>
+                {
+                    this._ranges.length > 0 &&
+                    <LineContainerComponent globalState={this.props.globalState} title="ANIMATION RANGES">
+                        {
+                            this._ranges.map(range => {
+                                return (
+                                    <ButtonLineComponent key={range.name} label={range.name}
+                                        onClick={() => {
+                                            this._runningAnimatable = null;
+                                            this.props.scene.beginAnimation(animatable, range.from, range.to, true)
+                                        }} />
+                                );
+                            })
+                        }
+                    </LineContainerComponent>
+                }
+                {
+                    animations && animations.length > 0 &&
+                    <>
+                        <LineContainerComponent globalState={this.props.globalState} title="ANIMATIONS">
+                            <TextLineComponent label="Count" value={animations.length.toString()} />
+                            {
+                                animations.map((anim, i) => {
+                                    return (
+                                        <>
+                                            <TextLineComponent label={"#" + i + " >"} value={anim.targetProperty} />
+                                        </>           
+                                    )
+                                })
+                            }
+                        </LineContainerComponent>
+                        <LineContainerComponent globalState={this.props.globalState} title="ANIMATION GENERAL CONTROL">
+                            <FloatLineComponent lockObject={this.props.lockObject} label="From" target={this._animationControl} propertyName="from" />
+                            <FloatLineComponent lockObject={this.props.lockObject} label="To" target={this._animationControl} propertyName="to" />
+                            <CheckBoxLineComponent label="Loop" onSelect={value => this._animationControl.loop = value} isSelected={() => this._animationControl.loop} />
+                            {
+                                this._isPlaying &&
+                                <SliderLineComponent ref={this.timelineRef} label="Current frame" minimum={this._animationControl.from} maximum={this._animationControl.to}
+                                    step={(this._animationControl.to - this._animationControl.from) / 1000.0} directValue={this.state.currentFrame}
+                                    onInput={value => this.onCurrentFrameChange(value)}
+                                />
+                            }                         
+                            <ButtonLineComponent label={this._isPlaying ? "Stop" : "Play"} onClick={() => this.playOrPause()} />                        
+                        </LineContainerComponent>    
+                    </>
+                }
                 {
                     (this._ranges.length > 0 || this._animations && this._animations.length > 0) &&
                     <LineContainerComponent globalState={this.props.globalState} title="ANIMATION OVERRIDE">
@@ -157,39 +208,6 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                                 <CheckBoxLineComponent label="Enable blending" target={animatableAsAny.animationPropertiesOverride} propertyName="enableBlending" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                                 <SliderLineComponent label="Blending speed" target={animatableAsAny.animationPropertiesOverride} propertyName="blendingSpeed" minimum={0} maximum={0.1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             </div>
-                        }
-                    </LineContainerComponent>
-                }
-                {
-                    this._ranges.length > 0 &&
-                    <LineContainerComponent globalState={this.props.globalState} title="ANIMATION RANGES">
-                        {
-                            this._ranges.map(range => {
-                                return (
-                                    <ButtonLineComponent key={range.name} label={range.name}
-                                        onClick={() => {
-                                            this._runningAnimatable = null;
-                                            this.props.scene.beginAnimation(animatable, range.from, range.to, true)
-                                        }} />
-                                );
-                            })
-                        }
-                    </LineContainerComponent>
-                }
-                {
-                    this._animations && this._animations.length > 0 &&
-                    <LineContainerComponent globalState={this.props.globalState} title="ANIMATIONS">
-                        <TextLineComponent label="Count" value={this._animations.length.toString()} />
-                        <FloatLineComponent lockObject={this.props.lockObject} label="From" target={this._animationControl} propertyName="from" />
-                        <FloatLineComponent lockObject={this.props.lockObject} label="To" target={this._animationControl} propertyName="to" />
-                        <CheckBoxLineComponent label="Loop" onSelect={value => this._animationControl.loop = value} isSelected={() => this._animationControl.loop} />
-                        <ButtonLineComponent label={this._isPlaying ? "Stop" : "Play"} onClick={() => this.playOrPause()} />
-                        {
-                            this._isPlaying &&
-                            <SliderLineComponent ref={this.timelineRef} label="Current frame" minimum={this._animationControl.from} maximum={this._animationControl.to}
-                                step={(this._animationControl.to - this._animationControl.from) / 1000.0} directValue={this.state.currentFrame}
-                                onInput={value => this.onCurrentFrameChange(value)}
-                            />
                         }
                     </LineContainerComponent>
                 }
