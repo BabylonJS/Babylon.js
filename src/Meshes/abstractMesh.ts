@@ -785,7 +785,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         var isIn = light.isEnabled() && light.canAffectMesh(this);
 
         var index = this._lightSources.indexOf(light);
-
+        var removed = false;
         if (index === -1) {
             if (!isIn) {
                 return;
@@ -795,10 +795,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             if (isIn) {
                 return;
             }
+            removed = true;
             this._lightSources.splice(index, 1);
         }
 
-        this._markSubMeshesAsLightDirty();
+        this._markSubMeshesAsLightDirty(removed);
     }
 
     /** @hidden */
