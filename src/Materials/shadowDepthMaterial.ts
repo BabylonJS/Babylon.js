@@ -24,7 +24,7 @@ export class ShadowDepthMaterial {
     }
 
     public getEffect(subMesh: Nullable<SubMesh>): Nullable<Effect> {
-        return this._subMeshToEffect.get(subMesh)?.depthEffect ?? null;
+        return this._subMeshToEffect.get(subMesh)?.depthEffect ?? this._subMeshToEffect.get(null)?.depthEffect ?? null;
     }
 
     public isReadyForSubMesh(subMesh: SubMesh, defines: string[]): boolean {
@@ -37,7 +37,7 @@ export class ShadowDepthMaterial {
     }
 
     private _makeEffect(subMesh: Nullable<SubMesh>, defines: string[]): Nullable<Effect> {
-        const params = this._subMeshToEffect.get(subMesh);
+        const params = this._subMeshToEffect.get(subMesh) ?? this._subMeshToEffect.get(null);
 
         if (!params) {
             return null;
