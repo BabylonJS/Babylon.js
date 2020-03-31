@@ -373,7 +373,7 @@ export class SpriteManager implements ISpriteManager {
             sprite._xOffset = (sprite.cellIndex - offset * rowSize) * this.cellWidth / baseSize.width;
             sprite._yOffset = offset * this.cellHeight / baseSize.height;
             sprite._xSize = this.cellWidth;
-            sprite._ySize = this.cellHeight;            
+            sprite._ySize = this.cellHeight;
             this._vertexData[arrayOffset + 10] = sprite._xOffset;
             this._vertexData[arrayOffset + 11] = sprite._yOffset;
             this._vertexData[arrayOffset + 12] = this.cellWidth / baseSize.width;
@@ -396,9 +396,9 @@ export class SpriteManager implements ISpriteManager {
             this._textureContent = new Uint8Array(textureSize.width * textureSize.height * 4);
             this._spriteTexture.readPixels(0, 0, this._textureContent);
         }
-        
+
         let contactPoint = TmpVectors.Vector3[0];
-        
+
         contactPoint.copyFrom(ray.direction);
 
         contactPoint.normalize();
@@ -412,14 +412,11 @@ export class SpriteManager implements ISpriteManager {
         let angle = sprite.angle;
         let rotatedU = 0.5 + (contactPointU * Math.cos(angle) - contactPointV * Math.sin(angle));
         let rotatedV = 0.5 + (contactPointU * Math.sin(angle) + contactPointV * Math.cos(angle));
-        
+
         let u = (sprite._xOffset * textureSize.width + rotatedU * sprite._xSize) | 0;
         let v = (sprite._yOffset * textureSize.height +  rotatedV * sprite._ySize) | 0;
 
         let alpha = this._textureContent![(u + v * textureSize.width) * 4 + 3];
-
-        console.log((contactPoint.x - min.x) / (max.x - min.x), 1.0 - (contactPoint.y - min.y) / (max.y - min.y))
-        console.log(u, v, alpha)
 
         return (alpha > 0.5);
     }
@@ -468,7 +465,7 @@ export class SpriteManager implements ISpriteManager {
 
                     if (!this._checkTextureAlpha(sprite, ray, distance, min, max)) {
                         continue;
-                    }   
+                    }
 
                     distance = currentDistance;
                     currentSprite = sprite;
