@@ -5,6 +5,8 @@ import { SubMesh } from "../Meshes/subMesh";
 import { Material } from "../Materials/material";
 import { _TypeStore } from "../Misc/typeStore";
 import { Effect, IEffectCreationOptions } from './effect';
+import { AbstractMesh } from '../Meshes/abstractMesh';
+import { Node } from '../Node';
 
 export class ShadowDepthMaterial {
 
@@ -12,13 +14,31 @@ export class ShadowDepthMaterial {
     private _baseMaterial: Material;
     private _onEffectCreatedObserver: Nullable<Observer<{ effect: Effect, subMesh: Nullable<SubMesh>}>>;
     private _subMeshToEffect: Map<Nullable<SubMesh>, { origEffect: Effect, depthEffect: Nullable<Effect>, depthDefines: string }>;
+    private _meshes: Map<AbstractMesh, Nullable<Observer<Node>>>;
 
     constructor(baseMaterial: Material, scene: Scene) {
         this._scene = scene;
         this._baseMaterial = baseMaterial;
         this._subMeshToEffect = new Map();
+        this._meshes = new Map();
 
         this._onEffectCreatedObserver = this._baseMaterial.onEffectCreatedObservable.add((params: { effect: Effect, subMesh: Nullable<SubMesh> }) => {
+            const mesh = params.subMesh?.getMesh();
+
+            if (mesh && !this._meshes.has(mesh)) {
+                this._meshes.set(mesh,
+                    mesh.onDisposeObservable.add((mesh: Node) => {
+                        const iterator = this._subMeshToEffect.keys();
+                        for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
+                            const subMesh = key.value;
+                            if (subMesh?.getMesh() === mesh as AbstractMesh) {
+                                this._subMeshToEffect.delete(subMesh);
+                            }
+                        }
+                    })
+                );
+            }
+
             this._subMeshToEffect.set(params.subMesh, { origEffect: params.effect, depthEffect: null, depthDefines: "" });
         });
     }
@@ -34,6 +54,13 @@ export class ShadowDepthMaterial {
     public dispose(): void {
         this._baseMaterial.onEffectCreatedObservable.remove(this._onEffectCreatedObserver);
         this._onEffectCreatedObserver = null;
+
+        const iterator = this._meshes.entries();
+        for (let entry = iterator.next(); entry.done !== true; entry = iterator.next()) {
+            const [mesh, observer] = entry.value;
+
+            mesh.onDisposeObservable.remove(observer);
+        }
     }
 
     private _makeEffect(subMesh: Nullable<SubMesh>, defines: string[]): Nullable<Effect> {
