@@ -1051,17 +1051,9 @@ export class ShadowGenerator implements IShadowGenerator {
 
         var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
         if (this.isReady(subMesh, hardwareInstancedRendering)) {
-            const customShadowDepthMat = renderingMesh.material?.customShadowDepthMaterial;
+            const shadowDepthMat = renderingMesh.material?.shadowDepthMaterial;
 
-            if (customShadowDepthMat) {
-                subMesh.switchToShadowDepthEffect();
-            }
-
-            let effect = customShadowDepthMat ? subMesh.effect! : this._effect;
-
-            if (!effect && customShadowDepthMat) {
-                effect = customShadowDepthMat.getEffect()!; // ShaderMaterial case where the effect is not stored on the sub mesh
-            }
+            let effect = shadowDepthMat?.getEffect(subMesh) ?? this._effect;
 
             engine.enableEffect(effect);
 
@@ -1080,8 +1072,8 @@ export class ShadowGenerator implements IShadowGenerator {
                 effect.setFloat2("depthValuesSM", this.getLight().getDepthMinZ(scene.activeCamera), this.getLight().getDepthMinZ(scene.activeCamera) + this.getLight().getDepthMaxZ(scene.activeCamera));
             }
 
-            if (customShadowDepthMat) {
-                customShadowDepthMat.bindForSubMesh(effectiveMesh.getWorldMatrix(), renderingMesh, subMesh);
+            if (shadowDepthMat) {
+                material.bindForSubMesh(effectiveMesh.getWorldMatrix(), renderingMesh, subMesh, effect);
             } else {
                 effect.setMatrix("viewProjection", this.getTransformMatrix());
                 // Alpha test
@@ -1139,10 +1131,6 @@ export class ShadowGenerator implements IShadowGenerator {
             // Observables
             this.onAfterShadowMapRenderObservable.notifyObservers(effect);
             this.onAfterShadowMapRenderMeshObservable.notifyObservers(renderingMesh);
-
-            if (customShadowDepthMat) {
-                subMesh.switchToRegularEffect();
-            }
         } else {
             // Need to reset refresh rate of the shadowMap
             if (this._shadowMap) {
@@ -1268,24 +1256,14 @@ export class ShadowGenerator implements IShadowGenerator {
      */
     public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
         const material = subMesh.getMaterial(),
-              customShadowDepthMaterial = material?.customShadowDepthMaterial;
+              shadowDepthMaterial = material?.shadowDepthMaterial;
 
         const defines: string[] = [];
 
         this._prepareShadowDefines(subMesh, useInstances, defines);
 
-        if (material && customShadowDepthMaterial) {
-            material.customShadowDepthDefines = defines;
-
-            if (material.customShadowDepthUniforms.length === 0) {
-                material.customShadowDepthUniforms = ["biasAndScaleSM", "depthValuesSM", "lightDataSM"];
-            }
-
-            subMesh.switchToShadowDepthEffect();
-
-            const isReady = customShadowDepthMaterial.isReadyForSubMesh(subMesh.getRenderingMesh(), subMesh, useInstances);
-
-            subMesh.switchToRegularEffect();
+        if (material && shadowDepthMaterial) {
+            const isReady = shadowDepthMaterial.isReadyForSubMesh(subMesh, defines);
 
             if (!isReady) {
                 return false;
