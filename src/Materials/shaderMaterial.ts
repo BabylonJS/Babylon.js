@@ -8,11 +8,12 @@ import { VertexBuffer } from "../Meshes/buffer";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { MaterialHelper } from "./materialHelper";
-import { IEffectCreationOptions } from "./effect";
+import { IEffectCreationOptions, Effect } from "./effect";
 import { Material } from "./material";
 import { _TypeStore } from '../Misc/typeStore';
 import { Color3, Color4 } from '../Maths/math.color';
 import { EffectFallbacks } from './effectFallbacks';
+import { Nullable } from '../types';
 
 /**
  * Defines the options associated with the creation of a shader material.
@@ -757,6 +758,11 @@ export class ShaderMaterial extends Material {
         }
 
         this._afterBind(mesh);
+    }
+
+    protected _afterBind(mesh?: Mesh): void {
+        super._afterBind(mesh);
+        this.getScene()._cachedEffect = this._effect;
     }
 
     /**

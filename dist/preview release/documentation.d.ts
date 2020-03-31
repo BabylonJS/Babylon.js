@@ -74197,6 +74197,8 @@ declare module BABYLON.GUI {
         private _barImageHeight;
         private _horizontalBarImageHeight;
         private _verticalBarImageHeight;
+        private _oldWindowContentsWidth;
+        private _oldWindowContentsHeight;
         /**
          * Gets the horizontal scrollbar
          */
