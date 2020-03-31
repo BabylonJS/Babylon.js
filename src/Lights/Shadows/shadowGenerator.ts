@@ -1073,7 +1073,9 @@ export class ShadowGenerator implements IShadowGenerator {
             }
 
             if (shadowDepthMat) {
-                material.bindForSubMesh(effectiveMesh.getWorldMatrix(), renderingMesh, subMesh, effect);
+                subMesh._effectOverride = effect;
+                material.bindForSubMesh(effectiveMesh.getWorldMatrix(), renderingMesh, subMesh);
+                subMesh._effectOverride = null;
             } else {
                 effect.setMatrix("viewProjection", this.getTransformMatrix());
                 // Alpha test

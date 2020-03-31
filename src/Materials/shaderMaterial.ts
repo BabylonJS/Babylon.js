@@ -653,10 +653,9 @@ export class ShaderMaterial extends Material {
      * @param world defines the world transformation matrix
      * @param mesh defines the mesh containing the submesh
      * @param subMesh defines the submesh to bind the material to
-     * @param effectOverride - If provided, use this effect instead of internal effect
      */
-    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh, effectOverride?: Nullable<Effect>): void {
-        this.bind(world, mesh, effectOverride);
+    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
+        this.bind(world, mesh, subMesh._effectOverride ?? this._effect);
     }
 
     /**

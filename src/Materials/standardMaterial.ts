@@ -1290,9 +1290,8 @@ export class StandardMaterial extends PushMaterial {
      * @param world defines the world transformation matrix
      * @param mesh defines the mesh containing the submesh
      * @param subMesh defines the submesh to bind the material to
-     * @param effectOverride - If provided, use this effect instead of the submesh effect
      */
-    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh, effectOverride?: Nullable<Effect>): void {
+    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
         var defines = <StandardMaterialDefines>subMesh._materialDefines;
@@ -1300,7 +1299,7 @@ export class StandardMaterial extends PushMaterial {
             return;
         }
 
-        var effect = effectOverride ?? subMesh.effect;
+        var effect = subMesh._effectOverride ?? subMesh.effect;
         if (!effect) {
             return;
         }
