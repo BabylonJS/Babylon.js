@@ -1,0 +1,16 @@
+{
+  "name": "BabylonNative-android",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "jsc-android": "^241213.1.0",
+    "v8-android": "^7.8.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT"
+}

@@ -24,6 +24,18 @@ set(BABYLON_NATIVE_PLATFORM "Android")
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
+if (${ANDROID_JSENGINE_LIBNAME} STREQUAL "jsc")
+    set(NAPI_JAVASCRIPT_ENGINE "JavaScriptCore" CACHE STRING "JavaScript engine for N-API.")
+elseif (${ANDROID_JSENGINE_LIBNAME} STREQUAL "v8android")
+    set(NAPI_JAVASCRIPT_ENGINE "V8" CACHE STRING "JavaScript engine for N-API.")
+else()
+    message(FATAL_ERROR "Unrecognized JS engine: ${ANDROID_JSENGINE_LIBNAME}")
+endif()
+
+add_library(javascript_engine SHARED IMPORTED GLOBAL)
+set_target_properties(javascript_engine PROPERTIES IMPORTED_LOCATION "${ANDROID_JSENGINE_LIBPATH}/${ANDROID_ABI}/lib${ANDROID_JSENGINE_LIBNAME}.so")
+target_include_directories(javascript_engine INTERFACE "${ANDROID_JSENGINE_INCPATH}")
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/src/")
 
 set(BABYLON_NATIVE_PLAYGROUND_DIR "${CMAKE_CURRENT_LIST_DIR}/../..")
@@ -51,7 +63,7 @@ target_link_libraries(BabylonNativeJNI
         NativeWindow
         ScriptLoader
         XMLHttpRequest
-        ${CMAKE_CURRENT_LIST_DIR}/src/main/jniLibs/${CMAKE_ANDROID_ARCH_ABI}/libv8.so)
+        JsRuntime)
 
 configure_file(
     "${ANDROID_NDK}/sources/cxx-stl/llvm-libc++/libs/${ANDROID_ABI}/libc++_shared.so"

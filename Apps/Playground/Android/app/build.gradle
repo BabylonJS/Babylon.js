@@ -1,5 +1,23 @@
 apply plugin: 'com.android.application'
 
+// When no project property is set for Gradle ('-PJSEngine=')
+// default JS engine is set to v8android
+// JSEngine property can be:
+// - jsc for JavaScriptCore
+// - v8android for V8
+
+def jsEngineBaseDir = "${buildDir}/JS"
+def jsEngineIncDir = "${jsEngineBaseDir}/include/V8"
+def jsEngineLibDir = "${rootDir}/app/src/main/jniLibs"
+
+def jsEngineLibName = "v8android"
+if (project.hasProperty("JSEngine")) {
+    jsEngineLibName = project.property("JSEngine")
+    if ("${jsEngineLibName}" == "jsc" ) {
+        jsEngineIncDir = "${jsEngineBaseDir}/include"
+    }
+}
+
 def platformVersion = 21
 android {
     compileSdkVersion 28
@@ -30,7 +48,10 @@ android {
                         '-DCURL_DISABLE_SMTP=ON',
                         '-DENABLE_GLSLANG_BINARIES=OFF',
                         '-DSPIRV_CROSS_CLI=OFF',
-                        '-DHAVE_LIBIDN2=OFF'
+                        '-DHAVE_LIBIDN2=OFF',
+                        "-DANDROID_JSENGINE_LIBPATH=${jsEngineLibDir}",
+                        "-DANDROID_JSENGINE_LIBNAME=${jsEngineLibName}",
+                        "-DANDROID_JSENGINE_INCPATH=${jsEngineIncDir}"
             }
         }
     }
@@ -64,4 +85,79 @@ task copyFiles {
     }
 }
 
+repositories {
+    mavenLocal()
+    maven {
+        // Android JSC is installed from npm
+        url "$rootDir/node_modules/jsc-android/dist"
+    }
+    maven {
+        // Android V8 is installed from npm
+        url "$rootDir/node_modules/v8-android/dist"
+    }
+    google()
+    jcenter()
+}
+
+configurations 
+{ 
+    jscAndroid
+    v8Android 
+}
+
+dependencies {
+    jscAndroid 'org.webkit:android-jsc:+'
+    v8Android 'org.chromium:v8-android:+'
+}
+
+// Extracts the shared libraries from aars in the natives configuration.
+// This is done so that NDK builds can access these libraries.
+task extractJSEngineLibraries() {
+    // Always extract, this insures the native libs are updated if the version changes.
+    outputs.upToDateWhen { false }
+    def jsconfig
+    if ("${jsEngineLibName}" == "jsc" ) {
+        jsconfig = configurations.jscAndroid
+    } else {
+        jsconfig = configurations.v8Android
+    }
+    doFirst {
+        jsconfig.files.each { f ->
+            copy {
+                from zipTree(f)
+                into jsEngineLibDir
+                include "jni/**/*"
+                // remove 'jni/'
+                eachFile { fcd ->
+                    fcd.relativePath = new RelativePath(true, fcd.relativePath.segments.drop(1))  
+                }
+                includeEmptyDirs = false
+            }
+        }
+    }
+}
+
+tasks.whenTaskAdded { task ->
+    if (task.name.contains("external") && !task.name.contains("Clean")) {
+        task.dependsOn(extractJSEngineLibraries)
+    }
+}
+
+task copyFilesJSHeaders {
+    copy
+    {
+        from "${rootDir}/node_modules/jsc-android/dist/include"
+        include "*"
+        into "${jsEngineBaseDir}/include/JavaScriptCore"
+    }
+    copy
+    {
+        from "${rootDir}/node_modules/v8-android/dist/include"
+        include "**/*"
+        into "${jsEngineIncDir}"
+    }
+}
+
 preBuild.dependsOn(copyFiles)
+preBuild.dependsOn(copyFilesJSHeaders)
+
