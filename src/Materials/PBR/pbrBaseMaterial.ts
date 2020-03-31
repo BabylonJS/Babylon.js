@@ -1609,9 +1609,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * @param world - The world matrix.
      * @param mesh - The BJS mesh.
      * @param subMesh - A submesh of the BJS mesh.
-     * @param effectOverride - If provided, use this effect instead of the submesh effect
      */
-    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh, effectOverride?: Nullable<Effect>): void {
+    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
         var defines = <PBRMaterialDefines>subMesh._materialDefines;
@@ -1619,7 +1618,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             return;
         }
 
-        var effect = effectOverride ?? subMesh.effect;
+        var effect = subMesh._effectOverride ?? subMesh.effect;
 
         if (!effect) {
             return;

@@ -27,6 +27,8 @@ export class BaseSubMesh {
     public _materialDefines: Nullable<MaterialDefines> = null;
     /** @hidden */
     public _materialEffect: Nullable<Effect> = null;
+    /** @hidden */
+    public _effectOverride: Nullable<Effect> = null;
 
     /**
      * Gets material defines used by the effect associated to the sub mesh
