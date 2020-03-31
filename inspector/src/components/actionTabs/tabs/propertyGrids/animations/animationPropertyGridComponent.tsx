@@ -170,11 +170,12 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                     <>
                         <LineContainerComponent globalState={this.props.globalState} title="ANIMATIONS">
                             <TextLineComponent label="Count" value={animations.length.toString()} />
+                            <ButtonLineComponent label="Edit" onClick={() => {}} />
                             {
                                 animations.map((anim, i) => {
                                     return (
                                         <>
-                                            <TextLineComponent label={"#" + i + " >"} value={anim.targetProperty} />
+                                            <TextLineComponent key={i} label={"#" + i + " >"} value={anim.targetProperty} />
                                         </>           
                                     )
                                 })
