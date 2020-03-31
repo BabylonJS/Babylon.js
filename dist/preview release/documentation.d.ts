@@ -15683,6 +15683,7 @@ declare module BABYLON {
          * @param mesh defines the mesh to bind the material to
          */
         bind(world: Matrix, mesh?: Mesh): void;
+        protected _afterBind(mesh?: Mesh): void;
         /**
          * Gets the active textures from the material
          * @returns an array of textures
@@ -74197,6 +74198,8 @@ declare module BABYLON.GUI {
         private _barImageHeight;
         private _horizontalBarImageHeight;
         private _verticalBarImageHeight;
+        private _oldWindowContentsWidth;
+        private _oldWindowContentsHeight;
         /**
          * Gets the horizontal scrollbar
          */
