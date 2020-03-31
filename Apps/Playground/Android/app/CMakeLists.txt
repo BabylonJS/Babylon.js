@@ -26,8 +26,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
 if (${ANDROID_JSENGINE_LIBNAME} STREQUAL "jsc")
     set(NAPI_JAVASCRIPT_ENGINE "JavaScriptCore" CACHE STRING "JavaScript engine for N-API.")
-else()
+elseif (${ANDROID_JSENGINE_LIBNAME} STREQUAL "v8android")
     set(NAPI_JAVASCRIPT_ENGINE "V8" CACHE STRING "JavaScript engine for N-API.")
+else()
+    message(FATAL_ERROR "Unrecognized JS engine: ${ANDROID_JSENGINE_LIBNAME}")
 endif()
 
 add_library(javascript_engine SHARED IMPORTED GLOBAL)
