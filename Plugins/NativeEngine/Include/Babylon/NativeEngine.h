@@ -9,4 +9,6 @@ namespace Babylon
     void InitializeNativeEngine(Napi::Env env);
 
     void ReinitializeNativeEngine(Napi::Env env, void* windowPtr, size_t width, size_t height);
+
+    void DeinitializeGraphics();
 }

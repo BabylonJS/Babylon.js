@@ -36,4 +36,9 @@ namespace Babylon
         auto& window = NativeWindow::GetFromJavaScript(env);
         window.Resize(width, height);
     }
+
+    void DeinitializeGraphics()
+    {
+        NativeEngine::DeinitializeWindow();
+    }
 }

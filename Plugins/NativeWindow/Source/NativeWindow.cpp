@@ -27,10 +27,26 @@ namespace Babylon
         auto jsWindow = constructor.New({Napi::External<void>::New(env, windowPtr), Napi::Number::From(env, width), Napi::Number::From(env, height)});
 
         jsNative.Set(JS_NATIVE_WINDOW_NAME, jsWindow);
-        global.Set(JS_SET_TIMEOUT_NAME, Napi::Function::New(env, &NativeWindow::SetTimeout, JS_SET_TIMEOUT_NAME, NativeWindow::Unwrap(jsWindow)));
-        global.Set(JS_A_TO_B_NAME, Napi::Function::New(env, &NativeWindow::DecodeBase64, JS_A_TO_B_NAME));
-        global.Set(JS_ADD_EVENT_LISTENER_NAME, Napi::Function::New(env, &NativeWindow::AddEventListener, JS_ADD_EVENT_LISTENER_NAME));
-        global.Set(JS_REMOVE_EVENT_LISTENER_NAME, Napi::Function::New(env, &NativeWindow::RemoveEventListener, JS_REMOVE_EVENT_LISTENER_NAME));
+
+        if (global.Get(JS_SET_TIMEOUT_NAME).IsUndefined())
+        {
+            global.Set(JS_SET_TIMEOUT_NAME, Napi::Function::New(env, &NativeWindow::SetTimeout, JS_SET_TIMEOUT_NAME, NativeWindow::Unwrap(jsWindow)));
+        }
+
+        if (global.Get(JS_A_TO_B_NAME).IsUndefined())
+        {
+            global.Set(JS_A_TO_B_NAME, Napi::Function::New(env, &NativeWindow::DecodeBase64, JS_A_TO_B_NAME));
+        }
+
+        if (global.Get(JS_ADD_EVENT_LISTENER_NAME).IsUndefined())
+        {
+            global.Set(JS_ADD_EVENT_LISTENER_NAME, Napi::Function::New(env, &NativeWindow::AddEventListener, JS_ADD_EVENT_LISTENER_NAME));
+        }
+
+        if (global.Get(JS_REMOVE_EVENT_LISTENER_NAME).IsUndefined())
+        {
+            global.Set(JS_REMOVE_EVENT_LISTENER_NAME, Napi::Function::New(env, &NativeWindow::RemoveEventListener, JS_REMOVE_EVENT_LISTENER_NAME));
+        }
     }
 
     NativeWindow& NativeWindow::GetFromJavaScript(Napi::Env env)

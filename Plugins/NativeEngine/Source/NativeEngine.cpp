@@ -326,6 +326,11 @@ namespace Babylon
         bgfx::touch(0);
     }
 
+    void NativeEngine::DeinitializeWindow()
+    {
+        bgfx::shutdown();
+    }
+
     void NativeEngine::Initialize(Napi::Env env)
     {
         // Initialize the JavaScript side.
@@ -459,8 +464,6 @@ namespace Babylon
 
         // This collection contains bgfx data, so it must be cleared before bgfx::shutdown is called.
         m_programDataCollection.Clear();
-
-        bgfx::shutdown();
     }
 
     void NativeEngine::Dispose(const Napi::CallbackInfo& info)
