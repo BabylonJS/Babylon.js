@@ -351,6 +351,19 @@ export class Material implements IAnimatable {
         return this._onUnBindObservable;
     }
 
+    protected _onEffectCreatedObservable: Nullable<Observable<{ effect: Effect, subMesh: Nullable<SubMesh>}>>;
+
+    /**
+    * An event triggered when the effect is (re)created
+    */
+    public get onEffectCreatedObservable(): Observable<{ effect: Effect, subMesh: Nullable<SubMesh>}> {
+        if (!this._onEffectCreatedObservable) {
+            this._onEffectCreatedObservable = new Observable<{effect: Effect, subMesh: Nullable<SubMesh>}>();
+        }
+
+        return this._onEffectCreatedObservable;
+    }
+
     /**
      * Stores the value of the alpha mode
      */
@@ -1277,6 +1290,10 @@ export class Material implements IAnimatable {
 
         if (this._onUnBindObservable) {
             this._onUnBindObservable.clear();
+        }
+
+        if (this._onEffectCreatedObservable) {
+            this._onEffectCreatedObservable.clear();
         }
     }
 
