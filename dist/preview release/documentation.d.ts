@@ -10024,6 +10024,7 @@ declare module BABYLON {
         private _spriteMap;
         /** True when packed cell data from JSON file is ready*/
         private _packedAndReady;
+        private _textureContent;
         /**
         * An event triggered when the manager is disposed.
         */
@@ -10079,6 +10080,7 @@ declare module BABYLON {
         name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode?: number, fromPacked?: boolean, spriteJSON?: any | null);
         private _makePacked;
         private _appendSpriteVertex;
+        private _checkTextureAlpha;
         /**
          * Intersects the sprites with a ray
          * @param ray defines the ray to intersect with
@@ -18073,6 +18075,16 @@ declare module BABYLON {
         animations: Animation[];
         /** Gets or sets a boolean indicating if the sprite can be picked */
         isPickable: boolean;
+        /** Gets or sets a boolean indicating that sprite texture alpha will be used for precise picking (false by default) */
+        useAlphaForPicking: boolean;
+        /** @hidden */
+        _xOffset: number;
+        /** @hidden */
+        _yOffset: number;
+        /** @hidden */
+        _xSize: number;
+        /** @hidden */
+        _ySize: number;
         /**
          * Gets or sets the associated action manager
          */
@@ -48010,6 +48022,7 @@ declare module BABYLON {
         private readonly INVALID_HANDLE;
         getHardwareScalingLevel(): number;
         constructor();
+        dispose(): void;
         /**
          * Can be used to override the current requestAnimationFrame requester.
          * @hidden
@@ -48156,7 +48169,7 @@ declare module BABYLON {
         /**
          * Usually called from Texture.ts.
          * Passed information to create a WebGLTexture
-         * @param urlArg defines a value which contains one of the following:
+         * @param url defines a value which contains one of the following:
          * * A conventional http URL, e.g. 'http://...' or 'file://...'
          * * A base64 string of in-line texture data, e.g. 'data:image/jpg;base64,/...'
          * * An indicator that data being passed using the buffer parameter, e.g. 'data:mytexture.jpg'
@@ -48173,7 +48186,7 @@ declare module BABYLON {
          * @param mimeType defines an optional mime type
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string): InternalTexture;
+        createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string): InternalTexture;
         /**
          * Creates a cube texture
          * @param rootUrl defines the url where the files to load is located

@@ -36,6 +36,10 @@
 - Added flag to TargetCamera to invert rotation direction and multiplier to adjust speed ([Exolun](https://github.com/Exolun))
 - Added upwards and downwards keyboard input to `FreeCamera` ([Pheater](https://github.com/pheater))
 
+### Sprites
+
+- Added support for 'sprite.useAlphaForPicking` to enable precise picking using sprite alpha ([Deltakosh](https://github.com/deltakosh) 
+
 ### Physics
 
 - Ammo.js IDL exposed property update and raycast vehicle stablization support ([MackeyK24](https://github.com/MackeyK24))
@@ -75,6 +79,10 @@
 ### Animation
 
 - Added support for Additive Animation Blending. Existing animations can be converted to additive using the new MakeAnimationAdditive method for Skeletons, AnimationGroups and Animations. Animations can be played additively using the new isAdditive input parameter to the begin animation methods. ([c-morten](https://github.com/c-morten))
+
+### Build
+
+- Fixed an issue with gulp webpack, webpack stream and the viewer ([RaananW](https://github.com/RaananW))
 
 ## Bugs
 

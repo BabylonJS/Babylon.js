@@ -10024,6 +10024,7 @@ declare module BABYLON {
         private _spriteMap;
         /** True when packed cell data from JSON file is ready*/
         private _packedAndReady;
+        private _textureContent;
         /**
         * An event triggered when the manager is disposed.
         */
@@ -10079,6 +10080,7 @@ declare module BABYLON {
         name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode?: number, fromPacked?: boolean, spriteJSON?: any | null);
         private _makePacked;
         private _appendSpriteVertex;
+        private _checkTextureAlpha;
         /**
          * Intersects the sprites with a ray
          * @param ray defines the ray to intersect with
@@ -18073,6 +18075,16 @@ declare module BABYLON {
         animations: Animation[];
         /** Gets or sets a boolean indicating if the sprite can be picked */
         isPickable: boolean;
+        /** Gets or sets a boolean indicating that sprite texture alpha will be used for precise picking (false by default) */
+        useAlphaForPicking: boolean;
+        /** @hidden */
+        _xOffset: number;
+        /** @hidden */
+        _yOffset: number;
+        /** @hidden */
+        _xSize: number;
+        /** @hidden */
+        _ySize: number;
         /**
          * Gets or sets the associated action manager
          */
