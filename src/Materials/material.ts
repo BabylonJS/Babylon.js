@@ -857,8 +857,9 @@ export class Material implements IAnimatable {
      * @param world defines the world transformation matrix
      * @param mesh defines the mesh containing the submesh
      * @param subMesh defines the submesh to bind the material to
+     * @param effectOverride - If provided, use this effect instead of the submesh effect
      */
-    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
+    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh, effectOverride?: Nullable<Effect>): void {
     }
 
     /**
