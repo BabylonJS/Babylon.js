@@ -655,7 +655,7 @@ export class ShaderMaterial extends Material {
      * @param subMesh defines the submesh to bind the material to
      */
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        this.bind(world, mesh, subMesh._effectOverride ?? this._effect);
+        this.bind(world, mesh, subMesh._effectOverride);
     }
 
     /**

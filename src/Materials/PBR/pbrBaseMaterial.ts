@@ -1618,7 +1618,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             return;
         }
 
-        var effect = subMesh._effectOverride ?? subMesh.effect;
+        var effect = subMesh.effect;
 
         if (!effect) {
             return;

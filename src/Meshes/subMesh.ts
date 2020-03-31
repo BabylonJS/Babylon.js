@@ -48,7 +48,7 @@ export class BaseSubMesh {
      * Gets associated effect
      */
     public get effect(): Nullable<Effect> {
-        return this._materialEffect;
+        return this._effectOverride ?? this._materialEffect;
     }
 
     /**
