@@ -31,7 +31,9 @@ import "../Shaders/default.fragment";
 import "../Shaders/default.vertex";
 import { Constants } from "../Engines/constants";
 import { EffectFallbacks } from './effectFallbacks';
-import { IEffectCreationOptions } from './effect';
+import { Effect, IEffectCreationOptions } from './effect';
+
+const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
 /** @hidden */
 export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
@@ -1175,6 +1177,12 @@ export class StandardMaterial extends PushMaterial {
             }, engine);
 
             if (effect) {
+                if (this._onEffectCreatedObservable) {
+                    onCreatedEffectParameters.effect = effect;
+                    onCreatedEffectParameters.subMesh = subMesh;
+                    this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
+                }
+
                 // Use previous effect while new one is compiling
                 if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
                     effect = previousEffect;

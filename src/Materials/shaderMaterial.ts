@@ -1,4 +1,5 @@
 import { SerializationHelper } from "../Misc/decorators";
+import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Matrix, Vector3, Vector2, Vector4 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -8,11 +9,13 @@ import { VertexBuffer } from "../Meshes/buffer";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { MaterialHelper } from "./materialHelper";
-import { IEffectCreationOptions } from "./effect";
+import { Effect, IEffectCreationOptions } from "./effect";
 import { Material } from "./material";
 import { _TypeStore } from '../Misc/typeStore';
 import { Color3, Color4 } from '../Maths/math.color';
 import { EffectFallbacks } from './effectFallbacks';
+
+const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
 /**
  * Defines the options associated with the creation of a shader material.
@@ -596,6 +599,11 @@ export class ShaderMaterial extends Material {
             onCompiled: this.onCompiled,
             onError: this.onError
         }, engine);
+
+        if (this._onEffectCreatedObservable) {
+            onCreatedEffectParameters.effect = this._effect;
+            this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
+        }
 
         if (!this._effect.isReady()) {
             return false;
