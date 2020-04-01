@@ -3,6 +3,7 @@
 ## Major updates
 
 - Added particle editor to the Inspector ([Deltakosh](https://github.com/deltakosh)
+- Added the `ShadowDepthWrapper` class to support accurate shadow generation for custom as well as node material shaders ([Popov72](https://github.com/Popov72))
 
 ## Updates
 
