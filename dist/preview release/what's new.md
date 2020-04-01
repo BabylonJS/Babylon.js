@@ -3,6 +3,7 @@
 ## Major updates
 
 - Added particle editor to the Inspector ([Deltakosh](https://github.com/deltakosh)
+- Added the `ShadowDepthWrapper` class to support accurate shadow generation for custom as well as node material shaders ([Popov72](https://github.com/Popov72))
 
 ## Updates
 
@@ -64,7 +65,6 @@
 - Added `AddAttribute` to `CustomMaterial` and `PBRCustomMaterial` ([Popov72](https://github.com/Popov72))
 - `setTexture` and `setTextureArray` from `ShaderMaterial` take now a `BaseTexture` as input instead of a `Texture`, allowing to pass a `CubeTexture` ([Popov72](https://github.com/Popov72))
 - Allow parenthesis usage in `#if` expressions in shader code ([Popov72](https://github.com/Popov72))
-- Added the `ShadowDepthWrapper` class to support accurate shadow generation even for custom shaders ([Popov72](https://github.com/Popov72))
 
 ### WebXR
 
