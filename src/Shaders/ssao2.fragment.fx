@@ -5,25 +5,6 @@ uniform float near;
 uniform float far;
 uniform float radius;
 
-float scales[16] = float[16](
-0.1,
-0.11406250000000001,
-0.131640625,
-0.15625,
-0.187890625,
-0.2265625,
-0.272265625,
-0.325,
-0.384765625,
-0.4515625,
-0.525390625,
-0.60625,
-0.694140625,
-0.7890625,
-0.891015625,
-1.0
-);
-
 varying vec2 vUV;
 
 float perspectiveDepthToViewZ( const in float invClipZ, const in float near, const in float far ) {
@@ -42,7 +23,7 @@ float viewZToOrthographicDepth( const in float viewZ, const in float near, const
 uniform sampler2D randomSampler;
 uniform sampler2D normalSampler;
 
-uniform float randTextureTiles;
+uniform vec2 randTextureTiles;
 uniform float samplesFactor;
 uniform vec3 sampleSphere[SAMPLES];
 

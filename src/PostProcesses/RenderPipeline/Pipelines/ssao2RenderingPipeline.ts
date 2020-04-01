@@ -376,7 +376,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             }
 
             effect.setArray3("sampleSphere", this._sampleSphere);
-            effect.setFloat("randTextureTiles", 32.0);
+            effect.setFloat2("randTextureTiles", this._ssaoPostProcess.width / this._randomTexture.getSize().width, this._ssaoPostProcess.height / this._randomTexture.getSize().height);
             effect.setFloat("samplesFactor", 1 / this.samples);
             effect.setFloat("totalStrength", this.totalStrength);
             effect.setFloat2("texelSize", 1 / this._ssaoPostProcess.width, 1 / this._ssaoPostProcess.height);
@@ -411,7 +411,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     }
 
     private _createRandomTexture(): void {
-        var size = 128;
+        var size = 8;
 
         this._randomTexture = new DynamicTexture("SSAORandomTexture", size, this._scene, false, Texture.TRILINEAR_SAMPLINGMODE);
         this._randomTexture.wrapU = Texture.WRAP_ADDRESSMODE;
