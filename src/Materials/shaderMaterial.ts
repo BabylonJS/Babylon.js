@@ -799,6 +799,11 @@ export class ShaderMaterial extends Material {
         this._afterBind(mesh);
     }
 
+    protected _afterBind(mesh?: Mesh): void {
+        super._afterBind(mesh);
+        this.getScene()._cachedEffect = this._effect;
+    }
+
     /**
      * Gets the active textures from the material
      * @returns an array of textures

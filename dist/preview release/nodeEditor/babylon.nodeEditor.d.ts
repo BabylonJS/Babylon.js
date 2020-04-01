@@ -1209,6 +1209,7 @@ declare module NODEEDITOR {
         onGridSizeChanged: BABYLON.Observable<void>;
         previewMeshType: PreviewMeshType;
         previewMeshFile: File;
+        listOfCustomPreviewMeshFiles: File[];
         rotatePreview: boolean;
         backgroundColor: BABYLON.Color4;
         backFaceCulling: boolean;

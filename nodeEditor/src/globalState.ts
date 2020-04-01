@@ -43,6 +43,7 @@ export class GlobalState {
     onGridSizeChanged = new Observable<void>();
     previewMeshType: PreviewMeshType;
     previewMeshFile: File;
+    listOfCustomPreviewMeshFiles: File[] = [];
     rotatePreview: boolean;
     backgroundColor: Color4;
     backFaceCulling: boolean;

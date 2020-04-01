@@ -102,6 +102,7 @@ declare module INSPECTOR {
         onLink?: () => void;
         url?: string;
         ignoreValue?: boolean;
+        additionalClass?: string;
     }
     export class TextLineComponent extends React.Component<ITextLineComponentProps> {
         constructor(props: ITextLineComponentProps);
@@ -477,6 +478,65 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IFloatLineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        lockObject?: LockObject;
+        onChange?: (newValue: number) => void;
+        isInteger?: boolean;
+        replaySourceReplacement?: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        additionalClass?: string;
+        step?: string;
+        digits?: number;
+        useEuler?: boolean;
+    }
+    export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        private _store;
+        constructor(props: IFloatLineComponentProps);
+        componentWillUnmount(): void;
+        shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
+        updateValue(valueString: string): void;
+        lock(): void;
+        unlock(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IAnimationGridComponentProps {
+        globalState: GlobalState;
+        animatable: BABYLON.IAnimatable;
+        scene: BABYLON.Scene;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class AnimationGridComponent extends React.Component<IAnimationGridComponentProps, {
+        currentFrame: number;
+    }> {
+        private _animations;
+        private _ranges;
+        private _mainAnimatable;
+        private _onBeforeRenderObserver;
+        private _isPlaying;
+        private timelineRef;
+        private _animationControl;
+        constructor(props: IAnimationGridComponentProps);
+        playOrPause(): void;
+        componentDidMount(): void;
+        componentWillUnmount(): void;
+        onCurrentFrameChange(value: number): void;
+        onChangeFromOrTo(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface ICommonMaterialPropertyGridComponentProps {
         globalState: GlobalState;
         material: BABYLON.Material;
@@ -584,38 +644,6 @@ declare module INSPECTOR {
         componentDidMount(): void;
         componentDidUpdate(): void;
         updatePreview(): void;
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    interface IFloatLineComponentProps {
-        label: string;
-        target: any;
-        propertyName: string;
-        lockObject?: LockObject;
-        onChange?: (newValue: number) => void;
-        isInteger?: boolean;
-        replaySourceReplacement?: string;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-        additionalClass?: string;
-        step?: string;
-        digits?: number;
-        useEuler?: boolean;
-    }
-    export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
-        value: string;
-    }> {
-        private _localChange;
-        private _store;
-        constructor(props: IFloatLineComponentProps);
-        componentWillUnmount(): void;
-        shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
-            value: string;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: number, previousValue: number): void;
-        updateValue(valueString: string): void;
-        lock(): void;
-        unlock(): void;
         render(): JSX.Element;
     }
 }
@@ -1210,32 +1238,6 @@ declare module INSPECTOR {
     }
     export class SSAO2RenderingPipelinePropertyGridComponent extends React.Component<ISSAO2RenderingPipelinePropertyGridComponentProps> {
         constructor(props: ISSAO2RenderingPipelinePropertyGridComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    interface IAnimationGridComponentProps {
-        globalState: GlobalState;
-        animatable: BABYLON.IAnimatable;
-        scene: BABYLON.Scene;
-        lockObject: LockObject;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-    }
-    export class AnimationGridComponent extends React.Component<IAnimationGridComponentProps, {
-        currentFrame: number;
-    }> {
-        private _animations;
-        private _ranges;
-        private _animationControl;
-        private _runningAnimatable;
-        private _onBeforeRenderObserver;
-        private _isPlaying;
-        private timelineRef;
-        constructor(props: IAnimationGridComponentProps);
-        playOrPause(): void;
-        componentDidMount(): void;
-        componentWillUnmount(): void;
-        onCurrentFrameChange(value: number): void;
         render(): JSX.Element;
     }
 }
