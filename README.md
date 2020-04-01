@@ -24,7 +24,7 @@ this list is not exhaustive.
 
 - Developing Babylon Native on the following platforms: Windows 10, macOS.
 - Building and running the libraries and demo apps for the following platforms: Win32,
-UWP, macOS, iOS.
+UWP, macOS, iOS, Android.
 - Loading and executing JavaScript code on all supported platforms.
 - Loading and rendering glTF objects on all supported platforms.
 - Network requests (including accessing local files using the `file://` protocol) 
@@ -213,7 +213,7 @@ these capabilities are set to their correct state by the additional CMake variab
 the following command:
 
 ```
-cmake -G Xcode -DCMAKE_TOOLCHAIN_FILE=../Dependencies/ios-cmake/ios.toolchain.cmake -DPLATFORM=OS64COMBINED -DENABLE_ARC=0 -DDEPLOYMENT_TARGET=12 -DHTTP_ONLY=OFF -DCMAKE_USE_OPENSSL=OFF -DBUILD_CURL_EXE=OFF -DBUILD_CURL_TESTS=OFF -DCURL_STATICLIB=ON -DUSE_UNIX_SOCKETS=0 -DHAVE_FSETXATTR=0 -DHAVE_LIBSOCKET=0 -DCURL_DISABLE_FTP=OFF -DCURL_DISABLE_LDAP=ON -DCURL_DISABLE_TELNET=ON -DCURL_DISABLE_DICT=ON -DCURL_DISABLE_TFTP=ON -DCURL_DISABLE_IMAP=ON -DCURL_DISABLE_POP3=ON -DCURL_DISABLE_SMTP=ON -DENABLE_GLSLANG_BINARIES=OFF -DSPIRV_CROSS_CLI=OFF -DHAVE_LIBIDN2=OFF ..
+cmake -G Xcode -DCMAKE_TOOLCHAIN_FILE=../Dependencies/ios-cmake/ios.toolchain.cmake -DPLATFORM=OS64COMBINED -DENABLE_ARC=0 -DDEPLOYMENT_TARGET=12 -DENABLE_GLSLANG_BINARIES=OFF -DSPIRV_CROSS_CLI=OFF
 ```
 
 CMake will generate a new `BabylonNative.xcodeproj` file in your working directory.
@@ -231,6 +231,36 @@ the top-left corner of the Xcode window. For example, to build and run the Playg
 demo app, click on the project selector and find "Playground" in the list of possible
 selections. The "Play" button will subsequently allow you to build, run, and debug
 the selected Babylon Native demo app.
+
+### **Building on Windows, Targeting Android**
+
+**Required Tools:** 
+[Android Studio](https://developer.android.com/studio), [Nodejs](https://nodejs.org/en/download/)
+
+Only building with AndroidStudio is supported. CMake is not used directly. Instead, 
+Gradle is used for building and CMake is automatically invocated for building the native part.
+An .apk that can be executed on your device or simulator is the output.
+First step is to install the Javascript engines dependencies. This is done by nodejs npm 
+package system.
+
+```
+cd Apps\Playground\Android
+npm install
+```
+
+Babylon Native on Android supports two Javascript engines: V8 and JavaScriptCore. V8 is used 
+by default if no engine is specified. To change the engine to JavaScriptCore, open the file 
+*Apps\Playground\Android\gradle.properties* and add the following line:
+
+```
+JSEngine=jsc
+```
+
+Once the npm packages are installed, with AndroidStudio, open the project located at *Apps\Playground\Android*.
+Then in the menu, select Run->Run 'app'.
+If you don't have an Android device plugged in or no Android image in the Android simulator,
+that option will be greyed and inaccessible.
+Instructions and tips on how to install the simulator are [available here](Documentation/AndroidSimulator.md).
 
 ## Development Notes
 
