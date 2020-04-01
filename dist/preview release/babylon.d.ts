@@ -9475,6 +9475,7 @@ declare module BABYLON {
         length?: number);
         /**
          * Checks if the ray intersects a box
+         * This does not account for the ray lenght by design to improve perfs.
          * @param minimum bound of the box
          * @param maximum bound of the box
          * @param intersectionTreshold extra extend to be added to the box in all direction
@@ -9483,6 +9484,7 @@ declare module BABYLON {
         intersectsBoxMinMax(minimum: DeepImmutable<Vector3>, maximum: DeepImmutable<Vector3>, intersectionTreshold?: number): boolean;
         /**
          * Checks if the ray intersects a box
+         * This does not account for the ray lenght by design to improve perfs.
          * @param box the bounding box to check
          * @param intersectionTreshold extra extend to be added to the BoundingBox in all direction
          * @returns if the box was hit
