@@ -22,7 +22,6 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
     [super viewDidAppear];
 
     // Create the AppRuntime
-    runtime.reset();
     {
         NSBundle *main = [NSBundle mainBundle];
         NSURL * resourceUrl = [main resourceURL];
@@ -60,6 +59,14 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
     loader.LoadScript("babylon.glTF2FileLoader.js");
     loader.LoadScript("babylonjs.materials.js");
     loader.LoadScript("experience.js");
+}
+
+- (void)viewDidDisappear {
+    [super viewDidDisappear];
+
+    inputBuffer.reset();
+    runtime.reset();
+    Babylon::DeinitializeGraphics();
 }
 
 - (void)setRepresentedObject:(id)representedObject {
