@@ -214,7 +214,7 @@ export class ShadowDepthWrapper {
             uniformsNames: uniforms,
             uniformBuffersNames: origEffect.getUniformBuffersNames(),
             samplers: origEffect.getSamplers(),
-            defines: join,
+            defines: join + "\n" + origEffect.defines,
             indexParameters: origEffect.getIndexParameters(),
         }, this._scene.getEngine());
 
