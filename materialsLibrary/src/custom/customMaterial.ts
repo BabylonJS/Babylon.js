@@ -43,6 +43,9 @@ export class ShaderSpecialParts {
     // normalUpdated
     public Vertex_Before_NormalUpdated: string;
 
+    // worldPosComputed
+    public Vertex_After_WorldPosComputed: string;
+
     // mainEnd
     public Vertex_MainEnd: string;
 }
@@ -139,6 +142,7 @@ export class CustomMaterial extends StandardMaterial {
             .replace('#define CUSTOM_VERTEX_MAIN_BEGIN', (this.CustomParts.Vertex_MainBegin ? this.CustomParts.Vertex_MainBegin : ""))
             .replace('#define CUSTOM_VERTEX_UPDATE_POSITION', (this.CustomParts.Vertex_Before_PositionUpdated ? this.CustomParts.Vertex_Before_PositionUpdated : ""))
             .replace('#define CUSTOM_VERTEX_UPDATE_NORMAL', (this.CustomParts.Vertex_Before_NormalUpdated ? this.CustomParts.Vertex_Before_NormalUpdated : ""))
+            .replace('#define CUSTOM_VERTEX_UPDATE_WORLDPOS', (this.CustomParts.Vertex_After_WorldPosComputed ? this.CustomParts.Vertex_After_WorldPosComputed : ""))
             .replace('#define CUSTOM_VERTEX_MAIN_END', (this.CustomParts.Vertex_MainEnd ? this.CustomParts.Vertex_MainEnd : ""));
 
         Effect.ShadersStore[name + "PixelShader"] = this.FragmentShader
@@ -259,6 +263,11 @@ export class CustomMaterial extends StandardMaterial {
 
     public Vertex_Before_NormalUpdated(shaderPart: string): CustomMaterial {
         this.CustomParts.Vertex_Before_NormalUpdated = shaderPart.replace("result", "normalUpdated");
+        return this;
+    }
+
+    public Vertex_After_WorldPosComputed(shaderPart: string): CustomMaterial {
+        this.CustomParts.Vertex_After_WorldPosComputed = shaderPart;
         return this;
     }
 
