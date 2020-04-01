@@ -18,4 +18,4 @@ export * from "./uniformBuffer";
 export * from "./materialFlags";
 export * from "./Node/index";
 export * from "./effectRenderer";
-export * from "./shadowDepthMaterial";
+export * from "./shadowDepthWrapper";

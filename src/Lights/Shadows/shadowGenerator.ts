@@ -1051,9 +1051,9 @@ export class ShadowGenerator implements IShadowGenerator {
 
         var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
         if (this.isReady(subMesh, hardwareInstancedRendering)) {
-            const shadowDepthMat = renderingMesh.material?.shadowDepthMaterial;
+            const shadowDepthWrapper = renderingMesh.material?.shadowDepthWrapper;
 
-            let effect = shadowDepthMat?.getEffect(subMesh) ?? this._effect;
+            let effect = shadowDepthWrapper?.getEffect(subMesh, this) ?? this._effect;
 
             engine.enableEffect(effect);
 
@@ -1072,7 +1072,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 effect.setFloat2("depthValuesSM", this.getLight().getDepthMinZ(scene.activeCamera), this.getLight().getDepthMinZ(scene.activeCamera) + this.getLight().getDepthMaxZ(scene.activeCamera));
             }
 
-            if (shadowDepthMat) {
+            if (shadowDepthWrapper) {
                 subMesh._effectOverride = effect;
                 material.bindForSubMesh(effectiveMesh.getWorldMatrix(), renderingMesh, subMesh);
                 subMesh._effectOverride = null;
@@ -1258,16 +1258,14 @@ export class ShadowGenerator implements IShadowGenerator {
      */
     public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
         const material = subMesh.getMaterial(),
-              shadowDepthMaterial = material?.shadowDepthMaterial;
+              shadowDepthWrapper = material?.shadowDepthWrapper;
 
         const defines: string[] = [];
 
         this._prepareShadowDefines(subMesh, useInstances, defines);
 
-        if (material && shadowDepthMaterial) {
-            const isReady = shadowDepthMaterial.isReadyForSubMesh(subMesh, defines);
-
-            if (!isReady) {
+        if (shadowDepthWrapper) {
+            if (!shadowDepthWrapper.isReadyForSubMesh(subMesh, defines, this, useInstances)) {
                 return false;
             }
         } else {

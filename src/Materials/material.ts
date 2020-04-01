@@ -19,7 +19,7 @@ import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { IInspectable } from '../Misc/iInspectable';
 import { Plane } from '../Maths/math.plane';
-import { ShadowDepthMaterial } from './shadowDepthMaterial';
+import { ShadowDepthWrapper } from './shadowDepthWrapper';
 
 declare type Mesh = import("../Meshes/mesh").Mesh;
 declare type Animation = import("../Animations/animation").Animation;
@@ -152,7 +152,7 @@ export class Material implements IAnimatable {
     /**
      * Custom shadow depth material to use for shadow rendering instead of the in-built one
      */
-    public shadowDepthMaterial: Nullable<ShadowDepthMaterial> = null;
+    public shadowDepthWrapper: Nullable<ShadowDepthWrapper> = null;
 
     /**
      * The ID of the material
