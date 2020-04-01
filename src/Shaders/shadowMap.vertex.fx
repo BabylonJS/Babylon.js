@@ -37,6 +37,9 @@ vec3 positionUpdated = position;
 #ifdef UV1
     vec2 uvUpdated = uv;
 #endif  
+#ifdef NORMAL	
+	vec3 normalUpdated = normal;
+#endif
 
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 
@@ -44,6 +47,16 @@ vec3 positionUpdated = position;
 #include<bonesVertex>
 
 vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
+
+#ifdef NORMAL
+    mat3 normWorldSM = mat3(finalWorld);
+
+    #ifdef NONUNIFORMSCALING
+        normWorldSM = transposeMat3(inverseMat3(normWorldSM));
+    #endif
+
+    vec3 vNormalW = normalize(normWorldSM * normalUpdated);
+#endif
 
 #include<shadowMapVertexNormalBias>
 
