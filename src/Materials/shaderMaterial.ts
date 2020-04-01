@@ -90,6 +90,7 @@ export class ShaderMaterial extends Material {
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _renderId: number;
     private _multiview: boolean = false;
+    private _cachedDefines: string;
 
     /**
      * Instantiate a new shader material.
@@ -589,23 +590,27 @@ export class ShaderMaterial extends Material {
         var previousEffect = this._effect;
         var join = defines.join("\n");
 
-        this._effect = engine.createEffect(shaderName, <IEffectCreationOptions>{
-            attributes: attribs,
-            uniformsNames: uniforms,
-            uniformBuffersNames: uniformBuffers,
-            samplers: samplers,
-            defines: join,
-            fallbacks: fallbacks,
-            onCompiled: this.onCompiled,
-            onError: this.onError
-        }, engine);
+        if (this._cachedDefines !== join) {
+            this._cachedDefines = join;
 
-        if (this._onEffectCreatedObservable) {
-            onCreatedEffectParameters.effect = this._effect;
-            this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
+            this._effect = engine.createEffect(shaderName, <IEffectCreationOptions>{
+                attributes: attribs,
+                uniformsNames: uniforms,
+                uniformBuffersNames: uniformBuffers,
+                samplers: samplers,
+                defines: join,
+                fallbacks: fallbacks,
+                onCompiled: this.onCompiled,
+                onError: this.onError
+            }, engine);
+
+            if (this._onEffectCreatedObservable) {
+                onCreatedEffectParameters.effect = this._effect;
+                this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
+            }
         }
 
-        if (!this._effect.isReady()) {
+        if (!this._effect?.isReady() ?? true) {
             return false;
         }
 
