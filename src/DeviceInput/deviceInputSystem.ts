@@ -2,7 +2,7 @@ import { Engine } from '../Engines/engine';
 import { Nullable } from '../types';
 
 /**
- * This class will take all inputs from Keyboard, Mouse, and
+ * This class will take all inputs from Keyboard, Pointer, and
  * any Gamepads and provide a polling system that all devices
  * will use.  This class assumes that there will only be one
  * pointer device and one keyboard.
@@ -13,8 +13,10 @@ export class DeviceInputSystem {
     private _onDeviceConnected: (deviceName: string) => void = () => { };
     private _onDeviceDisconnected: (deviceName: string) => void = () => { };
     private _keyboardActive: boolean = false;
-    private _mouseActive: boolean = false;
+    private _pointerActive: boolean = false;
     private _elementToAttachTo: Nullable<HTMLElement>;
+    private _maxKeyCodes : number = 222;
+    private _maxPointerButtons : number = 5;
 
     /**
      * Default Constructor
@@ -23,7 +25,7 @@ export class DeviceInputSystem {
     constructor(elementToAttachTo: Nullable<HTMLElement>) {
         this._elementToAttachTo = elementToAttachTo;
         this.handleKeyActions();
-        this.handleMouseActions();
+        this.handlePointerActions();
         this.handleGamepadActions();
         this.updateDevices();
     }
@@ -99,7 +101,7 @@ export class DeviceInputSystem {
         window.addEventListener("keydown", (evt) => {
             if (!this._keyboardActive) {
                 this._keyboardActive = true;
-                this.registerDevice(DeviceInputSystem.KEYBOARD_DEVICE, 222);
+                this.registerDevice(DeviceInputSystem.KEYBOARD_DEVICE, this._maxKeyCodes);
                 this._onDeviceConnected(DeviceInputSystem.KEYBOARD_DEVICE);
             }
 
@@ -118,44 +120,44 @@ export class DeviceInputSystem {
     }
 
     /**
-     * Handle all actions that come from mouse interaction
+     * Handle all actions that come from pointer interaction
      */
-    private handleMouseActions() {
+    private handlePointerActions() {
         this._elementToAttachTo?.addEventListener("pointermove", (evt) => {
-            if (!this._mouseActive) {
-                this._mouseActive = true;
-                this.registerDevice(DeviceInputSystem.POINTER_DEVICE, 5);
+            if (!this._pointerActive) {
+                this._pointerActive = true;
+                this.registerDevice(DeviceInputSystem.POINTER_DEVICE, this._maxPointerButtons);
                 this._onDeviceConnected(DeviceInputSystem.POINTER_DEVICE);
             }
 
-            let mouseX = this._inputs.get(DeviceInputSystem.POINTER_DEVICE);
-            if (mouseX) {
-                mouseX[0] = evt.clientX;
+            let pointerX = this._inputs.get(DeviceInputSystem.POINTER_DEVICE);
+            if (pointerX) {
+                pointerX[0] = evt.clientX;
             }
 
-            let mouseY = this._inputs.get(DeviceInputSystem.POINTER_DEVICE);
-            if (mouseY) {
-                mouseY[1] = evt.clientY;
+            let pointerY = this._inputs.get(DeviceInputSystem.POINTER_DEVICE);
+            if (pointerY) {
+                pointerY[1] = evt.clientY;
             }
         });
 
         this._elementToAttachTo?.addEventListener("pointerdown", (evt) => {
-            if (!this._mouseActive) {
-                this._mouseActive = true;
-                this.registerDevice(DeviceInputSystem.POINTER_DEVICE, 5);
+            if (!this._pointerActive) {
+                this._pointerActive = true;
+                this.registerDevice(DeviceInputSystem.POINTER_DEVICE, this._maxPointerButtons);
                 this._onDeviceConnected(DeviceInputSystem.POINTER_DEVICE);
             }
 
-            let mouseButton = this._inputs.get(DeviceInputSystem.POINTER_DEVICE);
-            if (mouseButton) {
-                mouseButton[evt.button] = 1;
+            let pointerButton = this._inputs.get(DeviceInputSystem.POINTER_DEVICE);
+            if (pointerButton) {
+                pointerButton[evt.button] = 1;
             }
         });
 
         this._elementToAttachTo?.addEventListener("pointerup", (evt) => {
-            let mouseButton = this._inputs.get(DeviceInputSystem.POINTER_DEVICE);
-            if (mouseButton) {
-                mouseButton[evt.button] = 0;
+            let pointerButton = this._inputs.get(DeviceInputSystem.POINTER_DEVICE);
+            if (pointerButton) {
+                pointerButton[evt.button] = 0;
             }
         });
     }
