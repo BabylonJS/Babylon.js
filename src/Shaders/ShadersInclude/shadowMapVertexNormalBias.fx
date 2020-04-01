@@ -1,12 +1,12 @@
 // Normal inset Bias.
 #if SM_NORMALBIAS == 1
-    mat3 normalWorldSM = mat3(finalWorld);
+    mat3 normWorldSM = mat3(finalWorld);
 
     #ifdef NONUNIFORMSCALING
-        normalWorldSM = transposeMat3(inverseMat3(normalWorldSM));
+        normWorldSM = transposeMat3(inverseMat3(normWorldSM));
     #endif
 
-    vec3 worldNorSM = normalize(normalWorldSM * normal);
+    vec3 worldNorSM = normalize(normWorldSM * normal);
 
     #if SM_DIRECTIONINLIGHTDATA == 1
         vec3 worldLightDirSM = normalize(-lightDataSM.xyz);
