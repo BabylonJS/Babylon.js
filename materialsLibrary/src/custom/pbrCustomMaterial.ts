@@ -89,20 +89,20 @@ export class PBRCustomMaterial extends PBRMaterial {
 
     public ReviewUniform(name: string, arr: string[]): string[] {
         if (name == "uniform") {
-            for (var ind = 0;ind < this._newUniforms.length ;ind ++ ) {
-                if (  this._customUniform[ind].indexOf('sampler') == -1) {
+            for (var ind = 0; ind < this._newUniforms.length ; ind ++) {
+                if (this._customUniform[ind].indexOf('sampler') == -1) {
                     arr.push(this._newUniforms[ind]);
                 }
             }
         }
         if (name == "sampler") {
-            for (var ind = 0;ind < this._newUniforms.length ;ind ++ ) {
-                if ( this._customUniform[ind].indexOf('sampler') != -1) {
+            for (var ind = 0; ind < this._newUniforms.length ; ind ++) {
+                if (this._customUniform[ind].indexOf('sampler') != -1) {
                     arr.push(this._newUniforms[ind]);
                 }
             }
         }
-        return arr; 
+        return arr;
     }
 
     public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[]): string {

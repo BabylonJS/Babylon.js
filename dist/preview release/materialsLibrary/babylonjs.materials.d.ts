@@ -60,6 +60,7 @@ declare module BABYLON {
         Vertex_MainBegin: string;
         Vertex_Before_PositionUpdated: string;
         Vertex_Before_NormalUpdated: string;
+        Vertex_After_WorldPosComputed: string;
         Vertex_MainEnd: string;
     }
     export class CustomMaterial extends BABYLON.StandardMaterial {
@@ -76,7 +77,7 @@ declare module BABYLON {
         VertexShader: string;
         AttachAfterBind(mesh: BABYLON.Mesh, effect: BABYLON.Effect): void;
         ReviewUniform(name: string, arr: string[]): string[];
-        Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: BABYLON.StandardMaterialDefines, attributes?: string[]): string;
+        Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: BABYLON.MaterialDefines | string[], attributes?: string[]): string;
         constructor(name: string, scene: BABYLON.Scene);
         AddUniform(name: string, kind: string, param: any): CustomMaterial;
         AddAttribute(name: string): CustomMaterial;
@@ -93,6 +94,7 @@ declare module BABYLON {
         Vertex_MainBegin(shaderPart: string): CustomMaterial;
         Vertex_Before_PositionUpdated(shaderPart: string): CustomMaterial;
         Vertex_Before_NormalUpdated(shaderPart: string): CustomMaterial;
+        Vertex_After_WorldPosComputed(shaderPart: string): CustomMaterial;
         Vertex_MainEnd(shaderPart: string): CustomMaterial;
     }
 }
@@ -114,6 +116,7 @@ declare module BABYLON {
         Vertex_MainBegin: string;
         Vertex_Before_PositionUpdated: string;
         Vertex_Before_NormalUpdated: string;
+        Vertex_After_WorldPosComputed: string;
         Vertex_MainEnd: string;
     }
     export class PBRCustomMaterial extends BABYLON.PBRMaterial {
@@ -130,7 +133,7 @@ declare module BABYLON {
         VertexShader: string;
         AttachAfterBind(mesh: BABYLON.Mesh, effect: BABYLON.Effect): void;
         ReviewUniform(name: string, arr: string[]): string[];
-        Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: BABYLON.PBRMaterialDefines, attributes?: string[]): string;
+        Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: BABYLON.MaterialDefines | string[], attributes?: string[]): string;
         constructor(name: string, scene: BABYLON.Scene);
         AddUniform(name: string, kind: string, param: any): PBRCustomMaterial;
         AddAttribute(name: string): PBRCustomMaterial;
@@ -149,6 +152,7 @@ declare module BABYLON {
         Vertex_MainBegin(shaderPart: string): PBRCustomMaterial;
         Vertex_Before_PositionUpdated(shaderPart: string): PBRCustomMaterial;
         Vertex_Before_NormalUpdated(shaderPart: string): PBRCustomMaterial;
+        Vertex_After_WorldPosComputed(shaderPart: string): PBRCustomMaterial;
         Vertex_MainEnd(shaderPart: string): PBRCustomMaterial;
     }
 }
