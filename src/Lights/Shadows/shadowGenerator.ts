@@ -1017,12 +1017,12 @@ export class ShadowGenerator implements IShadowGenerator {
         }
     }
 
-    protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect): void {
-        effect.setMatrix("viewProjection", this.getTransformMatrix());
+    protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any): void {
+        effect.setMatrix(matriceNames?.viewProjection ?? "viewProjection", this.getTransformMatrix());
 
-        effect.setMatrix("view", this._viewMatrix);
+        effect.setMatrix(matriceNames?.view ?? "view", this._viewMatrix);
 
-        effect.setMatrix("projection", this._projectionMatrix);
+        effect.setMatrix(matriceNames?.projection ?? "projection", this._projectionMatrix);
     }
 
     protected _renderSubMeshForShadowMap(subMesh: SubMesh): void {
@@ -1112,7 +1112,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 MaterialHelper.BindClipPlane(effect, scene);
             }
 
-            this._bindCustomEffectForRenderSubMeshForShadowMap(subMesh, effect);
+            this._bindCustomEffectForRenderSubMeshForShadowMap(subMesh, effect, shadowDepthWrapper?._matriceNames);
 
             if (this.forceBackFacesOnly) {
                 engine.setState(true, 0, false, true);

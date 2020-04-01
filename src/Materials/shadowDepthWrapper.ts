@@ -60,6 +60,9 @@ export class ShadowDepthWrapper {
     private _subMeshToDepthEffect: MapMap<Nullable<SubMesh>, ShadowGenerator, { depthEffect: Nullable<Effect>, depthDefines: string, token: string }>; // key is (subMesh + shadowGenerator)
     private _meshes: Map<AbstractMesh, Nullable<Observer<Node>>>;
 
+    /** @hidden */
+    public _matriceNames: any;
+
     /**
      * Instantiate a new shadow depth wrapper.
      * It works by injecting some specific code in the vertex/fragment shaders of the base material and is used by a shadow generator to
@@ -77,6 +80,14 @@ export class ShadowDepthWrapper {
         this._subMeshToEffect = new Map();
         this._subMeshToDepthEffect = new MapMap();
         this._meshes = new Map();
+
+        const prefix = baseMaterial.getClassName() === "NodeMaterial" ? "u_" : "";
+
+        this._matriceNames = {
+            "view": prefix + "view",
+            "projection": prefix + "projection",
+            "viewProjection": prefix + "viewProjection",
+        };
 
         // Register for onEffectCreated to store the effect of the base material when it is (re)generated. This effect will be used
         // to create the depth effect later on
