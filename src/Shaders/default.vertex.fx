@@ -1,4 +1,4 @@
-#include<__decl__defaultVertex>
+﻿#include<__decl__defaultVertex>
 // Attributes
 
 #define CUSTOM_VERTEX_BEGIN
@@ -133,6 +133,9 @@ void main(void) {
 
 	vNormalW = normalize(normalWorld * normalUpdated);
 #endif
+
+#define CUSTOM_VERTEX_UPDATE_WORLDPOS
+
 #ifdef MULTIVIEW
 	if (gl_ViewID_OVR == 0u) {
 		gl_Position = viewProjection * worldPos;

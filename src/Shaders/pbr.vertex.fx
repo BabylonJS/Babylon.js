@@ -1,4 +1,4 @@
-precision highp float;
+﻿precision highp float;
 
 #include<__decl__pbrVertex>
 
@@ -187,6 +187,8 @@ void main(void) {
         vEnvironmentIrradiance = computeEnvironmentIrradiance(reflectionVector);
     #endif
 #endif
+
+#define CUSTOM_VERTEX_UPDATE_WORLDPOS
 
 #ifdef MULTIVIEW
 	if (gl_ViewID_OVR == 0u) {
