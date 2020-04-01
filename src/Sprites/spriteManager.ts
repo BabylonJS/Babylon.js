@@ -98,6 +98,8 @@ export class SpriteManager implements ISpriteManager {
     /** True when packed cell data from JSON file is ready*/
     private _packedAndReady: boolean = false;
 
+    private _textureContent: Nullable<Uint8Array>;
+
     /**
     * An event triggered when the manager is disposed.
     */
@@ -138,6 +140,7 @@ export class SpriteManager implements ISpriteManager {
 
     public set texture(value: Texture) {
         this._spriteTexture = value;
+        this._textureContent = null;
     }
 
     private _blendMode = Constants.ALPHA_COMBINE;
@@ -352,10 +355,14 @@ export class SpriteManager implements ISpriteManager {
             if (typeof (num) === "number" && isFinite(num) && Math.floor(num) === num) {
                 sprite.cellRef = this._spriteMap[sprite.cellIndex];
             }
-            this._vertexData[arrayOffset + 10] = this._cellData[sprite.cellRef].frame.x / baseSize.width;
-            this._vertexData[arrayOffset + 11] = this._cellData[sprite.cellRef].frame.y / baseSize.height;
-            this._vertexData[arrayOffset + 12] = this._cellData[sprite.cellRef].frame.w / baseSize.width;
-            this._vertexData[arrayOffset + 13] = this._cellData[sprite.cellRef].frame.h / baseSize.height;
+            sprite._xOffset = this._cellData[sprite.cellRef].frame.x / baseSize.width;
+            sprite._yOffset = this._cellData[sprite.cellRef].frame.y / baseSize.height;
+            sprite._xSize = this._cellData[sprite.cellRef].frame.w;
+            sprite._ySize = this._cellData[sprite.cellRef].frame.h;
+            this._vertexData[arrayOffset + 10] = sprite._xOffset;
+            this._vertexData[arrayOffset + 11] = sprite._yOffset;
+            this._vertexData[arrayOffset + 12] = sprite._xSize / baseSize.width;
+            this._vertexData[arrayOffset + 13] = sprite._ySize / baseSize.height;
         }
         else {
             if (!sprite.cellIndex) {
@@ -363,8 +370,12 @@ export class SpriteManager implements ISpriteManager {
             }
             var rowSize = baseSize.width / this.cellWidth;
             var offset = (sprite.cellIndex / rowSize) >> 0;
-            this._vertexData[arrayOffset + 10] = (sprite.cellIndex - offset * rowSize) * this.cellWidth / baseSize.width;
-            this._vertexData[arrayOffset + 11] = offset * this.cellHeight / baseSize.height;
+            sprite._xOffset = (sprite.cellIndex - offset * rowSize) * this.cellWidth / baseSize.width;
+            sprite._yOffset = offset * this.cellHeight / baseSize.height;
+            sprite._xSize = this.cellWidth;
+            sprite._ySize = this.cellHeight;
+            this._vertexData[arrayOffset + 10] = sprite._xOffset;
+            this._vertexData[arrayOffset + 11] = sprite._yOffset;
             this._vertexData[arrayOffset + 12] = this.cellWidth / baseSize.width;
             this._vertexData[arrayOffset + 13] = this.cellHeight / baseSize.height;
         }
@@ -373,6 +384,41 @@ export class SpriteManager implements ISpriteManager {
         this._vertexData[arrayOffset + 15] = sprite.color.g;
         this._vertexData[arrayOffset + 16] = sprite.color.b;
         this._vertexData[arrayOffset + 17] = sprite.color.a;
+    }
+
+    private _checkTextureAlpha(sprite: Sprite, ray: Ray, distance: number, min: Vector3, max: Vector3) {
+        if (!sprite.useAlphaForPicking || !this._spriteTexture) {
+            return true;
+        }
+
+        let textureSize = this._spriteTexture.getSize();
+        if (!this._textureContent) {
+            this._textureContent = new Uint8Array(textureSize.width * textureSize.height * 4);
+            this._spriteTexture.readPixels(0, 0, this._textureContent);
+        }
+
+        let contactPoint = TmpVectors.Vector3[0];
+
+        contactPoint.copyFrom(ray.direction);
+
+        contactPoint.normalize();
+        contactPoint.scaleInPlace(distance);
+        contactPoint.addInPlace(ray.origin);
+
+        let contactPointU = ((contactPoint.x - min.x) / (max.x - min.x)) - 0.5;
+        let contactPointV = (1.0 - (contactPoint.y - min.y) / (max.y - min.y)) - 0.5;
+
+        // Rotate
+        let angle = sprite.angle;
+        let rotatedU = 0.5 + (contactPointU * Math.cos(angle) - contactPointV * Math.sin(angle));
+        let rotatedV = 0.5 + (contactPointU * Math.sin(angle) + contactPointV * Math.cos(angle));
+
+        let u = (sprite._xOffset * textureSize.width + rotatedU * sprite._xSize) | 0;
+        let v = (sprite._yOffset * textureSize.height +  rotatedV * sprite._ySize) | 0;
+
+        let alpha = this._textureContent![(u + v * textureSize.width) * 4 + 3];
+
+        return (alpha > 0.5);
     }
 
     /**
@@ -416,6 +462,11 @@ export class SpriteManager implements ISpriteManager {
                 var currentDistance = Vector3.Distance(cameraSpacePosition, ray.origin);
 
                 if (distance > currentDistance) {
+
+                    if (!this._checkTextureAlpha(sprite, ray, currentDistance, min, max)) {
+                        continue;
+                    }
+
                     distance = currentDistance;
                     currentSprite = sprite;
 
@@ -487,6 +538,10 @@ export class SpriteManager implements ISpriteManager {
 
             if (ray.intersectsBoxMinMax(min, max)) {
                 distance = Vector3.Distance(cameraSpacePosition, ray.origin);
+
+                if (!this._checkTextureAlpha(sprite, ray, distance, min, max)) {
+                    continue;
+                }
 
                 var result = new PickingInfo();
                 results.push(result);
@@ -611,6 +666,8 @@ export class SpriteManager implements ISpriteManager {
             this._spriteTexture.dispose();
             (<any>this._spriteTexture) = null;
         }
+
+        this._textureContent = null;
 
         // Remove from scene
         var index = this._scene.spriteManagers.indexOf(this);
