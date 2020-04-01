@@ -12,11 +12,15 @@ export class DeviceInputSystem {
     private _inputs: Map<string, Array<number>> = new Map();
     private _onDeviceConnected: (deviceName: string) => void = () => { };
     private _onDeviceDisconnected: (deviceName: string) => void = () => { };
+    private _pointerIds: Array<number> = [];
+    private _activeTouchNumber: number = 0;
     private _keyboardActive: boolean = false;
-    private _pointerActive: boolean = false;
+    private _mouseActive: boolean = false;
+    private _touchActive: boolean = false;
     private _elementToAttachTo: Nullable<HTMLElement>;
-    private _maxKeyCodes : number = 222;
-    private _maxPointerButtons : number = 5;
+    private _maxKeyCodes: number = 222;
+    private _maxMouseInputs: number = 7;
+    private _maxTouchInputs: number = 3;
 
     /**
      * Default Constructor
@@ -124,40 +128,83 @@ export class DeviceInputSystem {
      */
     private handlePointerActions() {
         this._elementToAttachTo?.addEventListener("pointermove", (evt) => {
-            if (!this._pointerActive) {
-                this._pointerActive = true;
-                this.registerDevice(DeviceInputSystem.POINTER_DEVICE, this._maxPointerButtons);
-                this._onDeviceConnected(DeviceInputSystem.POINTER_DEVICE);
-            }
+            if (evt.pointerType == "mouse") {
+                if (!this._mouseActive) {
+                    this._mouseActive = true;
+                    this.registerDevice(DeviceInputSystem.MOUSE_DEVICE, this._maxMouseInputs);
+                    this._onDeviceConnected(DeviceInputSystem.MOUSE_DEVICE);
+                }
 
-            let pointerX = this._inputs.get(DeviceInputSystem.POINTER_DEVICE);
-            if (pointerX) {
-                pointerX[0] = evt.clientX;
-            }
+                let pointerX = this._inputs.get(DeviceInputSystem.MOUSE_DEVICE);
+                if (pointerX) {
+                    pointerX[0] = evt.clientX;
+                }
 
-            let pointerY = this._inputs.get(DeviceInputSystem.POINTER_DEVICE);
-            if (pointerY) {
-                pointerY[1] = evt.clientY;
+                let pointerY = this._inputs.get(DeviceInputSystem.MOUSE_DEVICE);
+                if (pointerY) {
+                    pointerY[1] = evt.clientY;
+                }
+            }
+            else if (evt.pointerType == "touch") {
+                let touchIndex = this._pointerIds.lastIndexOf(evt.pointerId);
+                let pointerX = this._inputs.get(`${DeviceInputSystem.TOUCH_DEVICE}-${touchIndex}`);
+                if (pointerX) {
+                    pointerX[0] = evt.clientX;
+                }
+
+                let pointerY = this._inputs.get(`${DeviceInputSystem.TOUCH_DEVICE}-${touchIndex}`);
+                if (pointerY) {
+                    pointerY[1] = evt.clientY;
+                }
             }
         });
 
         this._elementToAttachTo?.addEventListener("pointerdown", (evt) => {
-            if (!this._pointerActive) {
-                this._pointerActive = true;
-                this.registerDevice(DeviceInputSystem.POINTER_DEVICE, this._maxPointerButtons);
-                this._onDeviceConnected(DeviceInputSystem.POINTER_DEVICE);
-            }
+            if (evt.pointerType == "mouse") {
+                if (!this._mouseActive) {
+                    this._mouseActive = true;
+                    this.registerDevice(DeviceInputSystem.MOUSE_DEVICE, this._maxMouseInputs);
+                    this._onDeviceConnected(DeviceInputSystem.MOUSE_DEVICE);
+                }
 
-            let pointerButton = this._inputs.get(DeviceInputSystem.POINTER_DEVICE);
-            if (pointerButton) {
-                pointerButton[evt.button] = 1;
+                let mouseButton = this._inputs.get(DeviceInputSystem.MOUSE_DEVICE);
+                if (mouseButton) {
+                    mouseButton[evt.button + 2] = 1;
+                }
+            }
+            else if (evt.pointerType == "touch" && this._activeTouchNumber < this._maxTouchInputs) {
+                if (!this._touchActive) {
+                    this._touchActive = true;
+                    this._pointerIds.push(evt.pointerId);
+
+                    // Initialize all potential touch inputs
+                    for (var i = 0; i < this._maxTouchInputs; i++) {
+                        this.registerDevice(`${DeviceInputSystem.TOUCH_DEVICE}-${i}`, this._maxTouchInputs);
+                        this._onDeviceConnected(`${DeviceInputSystem.TOUCH_DEVICE}-${i}`);
+                    }
+                }
+
+                let touchButton = this._inputs.get(`${DeviceInputSystem.TOUCH_DEVICE}-${this._pointerIds.lastIndexOf(evt.pointerId)}`);
+                if (touchButton) {
+                    touchButton[this._activeTouchNumber++] = 1;
+                }
             }
         });
 
         this._elementToAttachTo?.addEventListener("pointerup", (evt) => {
-            let pointerButton = this._inputs.get(DeviceInputSystem.POINTER_DEVICE);
-            if (pointerButton) {
-                pointerButton[evt.button] = 0;
+            if (evt.pointerType == "mouse") {
+                let mouseButton = this._inputs.get(DeviceInputSystem.MOUSE_DEVICE);
+                if (mouseButton) {
+                    mouseButton[evt.button + 2] = 0;
+                }
+            }
+            else if (evt.pointerType == "touch") {
+                let touchIndex = this._pointerIds.lastIndexOf(evt.pointerId);
+                let touchButton = this._inputs.get(`${DeviceInputSystem.TOUCH_DEVICE}-${touchIndex}`);
+                if (touchButton) {
+                    this._pointerIds.splice(touchIndex, 1);
+                    touchButton[--this._activeTouchNumber] = 0;
+                }
             }
         });
     }
@@ -218,8 +265,10 @@ export class DeviceInputSystem {
     }
 
     // Static
-    /** POINTER_DEVICE */
-    public static readonly POINTER_DEVICE: string = "Pointer";
+    /** MOUSE_DEVICE */
+    public static readonly MOUSE_DEVICE: string = "Mouse";
+    /** TOUCH_DEVICE */
+    public static readonly TOUCH_DEVICE: string = "Touch";
     /** KEYBOARD_DEVICE */
     public static readonly KEYBOARD_DEVICE: string = "Keyboard";
 }
