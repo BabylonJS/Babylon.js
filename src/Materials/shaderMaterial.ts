@@ -796,7 +796,11 @@ export class ShaderMaterial extends Material {
             }
         }
 
+        const seffect = this._effect;
+
+        this._effect = effect; // make sure the active effect is the right one if there are some observers for onBind that would need to get the current effect
         this._afterBind(mesh);
+        this._effect = seffect;
     }
 
     protected _afterBind(mesh?: Mesh): void {
