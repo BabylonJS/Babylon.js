@@ -3,12 +3,13 @@
 ## Major updates
 
 - Added particle editor to the Inspector ([Deltakosh](https://github.com/deltakosh)
+- Added the `ShadowDepthWrapper` class to support accurate shadow generation for custom as well as node material shaders ([Popov72](https://github.com/Popov72))
 
 ## Updates
 
 ### General
 
-- Refactored React refs from old string API to React.createRef() API ([Kyle Belfort](https://github.com/belfortk)
+- Refactored React refs from old string API to React.createRef() API ([belfortk](https://github.com/belfortk)
 
 - Scale on one axis for `BoundingBoxGizmo` ([cedricguillemet](https://github.com/cedricguillemet))
 
@@ -22,8 +23,8 @@
 
 ### NME
 
-- Frames are now resizable from the corners ([Kyle Belfort](https://github.com/belfortk)
-- Can now rename and re-order frame inputs and outputs ([Kyle Belfort](https://github.com/belfortk)
+- Frames are now resizable from the corners ([belfortk](https://github.com/belfortk)
+- Can now rename and re-order frame inputs and outputs ([belfortk](https://github.com/belfortk)
 
 ### Inspector
 
@@ -42,6 +43,7 @@
 
 ### Physics
 
+- Fixed time steps or delta time with sub time step for Oimo.js and Cannon.js ([cedricguillemet](https://github.com/cedricguillemet))
 - Ammo.js IDL exposed property update and raycast vehicle stablization support ([MackeyK24](https://github.com/MackeyK24))
 - Recast.js plugin nav mesh and crowd agent to ref performance optimizations. ([MackeyK24](https://github.com/MackeyK24))
 
@@ -71,6 +73,7 @@
 - Implemented the new WebXR HitTest API ([#7364](https://github.com/BabylonJS/Babylon.js/issues/7364)) ([RaananW](https://github.com/RaananW))
 - Playground doesn't update FPS when in XR in main and frame ([#7875](https://github.com/BabylonJS/Babylon.js/issues/7875)) ([RaananW](https://github.com/RaananW))
 - Added support for teleportation using pointer events ([RaananW](https://github.com/RaananW))
+- AR reference space type recommendation changed to 'unbounded' ([#7959](https://github.com/BabylonJS/Babylon.js/issues/7959)) ([RaananW](https://github.com/RaananW))
 
 ### Collisions
 
@@ -89,7 +92,7 @@
 - Fix infinite loop in `GlowLayer.unReferenceMeshFromUsingItsOwnMaterial` ([Popov72](https://github.com/Popov72)
 - Fix picking issue in the Solid Particle System when MultiMaterial is enabled ([jerome](https://github.com/jbousquie))
 - `QuadraticErrorSimplification` was not exported ([RaananW](https://github.com/Raananw)
-- Fix NME Frames bug where collapsing and moving a frame removed the nodes inside ([Kyle Belfort](https://github.com/belfortk)
+- Fix NME Frames bug where collapsing and moving a frame removed the nodes inside ([belfortk](https://github.com/belfortk)
 - Fix moving / disappearing controls when freezing/unfreezing the ScrollViewer ([Popov72](https://github.com/Popov72)
 - Fix: when using instances, master mesh (if displayed) does not have correct instance buffer values ([Popov72](https://github.com/Popov72)
 - Exit XR will only trigger only if state is IN_XR ([RaananW](https://github.com/RaananW))
@@ -116,7 +119,10 @@
 - Fixed error when downloading async createScene function in playground ([#7926](https://github.com/BabylonJS/Babylon.js/issues/7926)) ([RaananW](https://github.com/RaananW))
 - Fix issue where ThinEngine.prototype.createDynamicEngine is undefined when using VideoTexture with es6 packages ([rvadhavk](https://github.com/rvadhavk))
 - Fix [issue](https://forum.babylonjs.com/t/virtualjoystick-needs-to-set-style-touch-action-none-explicitly/9562) that canvas for `VirtualJoystick` does not have `touch-action: "none"` set by default ([joergplewe](https://github.com/joergplewe))
-- Fix [issue](https://github.com/BabylonJS/Babylon.js/issues/7943) that prevented user from re-loading custom meshes
+- Fix [issue](https://github.com/BabylonJS/Babylon.js/issues/7943) that prevented user from re-loading custom meshes([belfortk](https://github.com/belfortk))
+- Fix bug in NME where collapsed frames didn't redraw output links to outside nodes([belfortk](https://github.com/belfortk))
+- Fix bug in NME where links were not redrawn after moving frame port ([belfortk](https://github.com/belfortk))
+- Fix bugs in NME that were causing inconsistent behavior displaying Move Node Up and Down buttons on frame ports([belfortk](https://github.com/belfortk))
 
 ## Breaking changes
 
