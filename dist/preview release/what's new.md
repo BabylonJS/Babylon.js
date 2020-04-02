@@ -31,6 +31,8 @@
 - Handle PBR colors as colors in linear space ([Popov72](https://github.com/Popov72))
 - Allow removing textures ([Popov72](https://github.com/Popov72))
 - Edit all textures (anisotropic, clear coat, sheen, ...) for the PBR materials ([Popov72](https://github.com/Popov72))
+- Added right click options to create PBR and Standard Materials ([Deltakosh](https://github.com/deltakosh)
+- Added support for recording GIF ([Deltakosh](https://github.com/deltakosh)
 
 ### Cameras
 
