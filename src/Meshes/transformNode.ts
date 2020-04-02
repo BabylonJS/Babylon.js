@@ -520,6 +520,8 @@ export class TransformNode extends Node {
             this.position.y = absolutePositionY;
             this.position.z = absolutePositionZ;
         }
+
+        this._absolutePosition.copyFrom(absolutePosition);
         return this;
     }
 

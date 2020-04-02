@@ -22,6 +22,18 @@ export interface IGraphCanvasComponentProps {
     globalState: GlobalState
 }
 
+export type FramePortData = {
+    frame: GraphFrame,
+    port: FrameNodePort
+}
+
+export const isFramePortData = (variableToCheck: any): variableToCheck is FramePortData => {
+    if (variableToCheck) {
+        return (variableToCheck as FramePortData).port !== undefined;
+    }
+    else return false;
+}
+
 export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentProps> {
     private readonly MinZoom = 0.1;
     private readonly MaxZoom = 4;
@@ -186,12 +198,16 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     } else {                    
                         this._selectedNodes = [selection];
                     }
-                }
-                else {
+                } else if(selection instanceof NodePort){
                     this._selectedNodes = [];
                     this._selectedFrame = null;
                     this._selectedLink = null;
                     this._selectedPort = selection;
+                } else {
+                    this._selectedNodes = [];
+                    this._selectedFrame = null;
+                    this._selectedLink = null;
+                    this._selectedPort = selection.port;
                 }
             }
         });
@@ -599,8 +615,16 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 this.processCandidatePort();          
                 this.props.globalState.onCandidateLinkMoved.notifyObservers(null);
             } else { // is a click event on NodePort
-                if(this._candidateLink.portA instanceof FrameNodePort) { //only on Frame Ports
-                    this.props.globalState.onSelectionChangedObservable.notifyObservers(this._candidateLink.portA);
+                if(this._candidateLink.portA instanceof FrameNodePort) { //only on Frame Node Ports
+                    const port = this._candidateLink.portA;
+                    const frame = this.frames.find((frame: GraphFrame) => frame.id === port.parentFrameId);
+                    if (frame) {
+                        const data: FramePortData = {
+                            frame,
+                            port
+                        }
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers(data);
+                    }
                 }
             }
             this._candidateLink.dispose();

@@ -1167,36 +1167,6 @@ export class Engine extends ThinEngine {
         this._bindTexture(channel, postProcess ? postProcess._outputTexture : null);
     }
 
-    /** @hidden */
-    public _convertRGBtoRGBATextureData(rgbData: any, width: number, height: number, textureType: number): ArrayBufferView {
-        // Create new RGBA data container.
-        var rgbaData: any;
-        if (textureType === Constants.TEXTURETYPE_FLOAT) {
-            rgbaData = new Float32Array(width * height * 4);
-        }
-        else {
-            rgbaData = new Uint32Array(width * height * 4);
-        }
-
-        // Convert each pixel.
-        for (let x = 0; x < width; x++) {
-            for (let y = 0; y < height; y++) {
-                let index = (y * width + x) * 3;
-                let newIndex = (y * width + x) * 4;
-
-                // Map Old Value to new value.
-                rgbaData[newIndex + 0] = rgbData[index + 0];
-                rgbaData[newIndex + 1] = rgbData[index + 1];
-                rgbaData[newIndex + 2] = rgbData[index + 2];
-
-                // Add fully opaque alpha channel.
-                rgbaData[newIndex + 3] = 1;
-            }
-        }
-
-        return rgbaData;
-    }
-
     protected _rebuildBuffers(): void {
         // Index / Vertex
         for (var scene of this.scenes) {

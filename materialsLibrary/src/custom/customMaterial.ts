@@ -65,7 +65,7 @@ export class CustomMaterial extends StandardMaterial {
     public VertexShader: string;
 
     public AttachAfterBind(mesh: Mesh, effect: Effect) {
-        for (var el in this._newUniformInstances) {
+         for (var el in this._newUniformInstances) {
             var ea = el.toString().split('-');
             if (ea[0] == 'vec2') {
                 effect.setVector2(ea[1], this._newUniformInstances[el]);
@@ -93,14 +93,14 @@ export class CustomMaterial extends StandardMaterial {
 
     public ReviewUniform(name: string, arr: string[]): string[] {
         if (name == "uniform") {
-            for (var ind in this._newUniforms) {
+            for (var ind = 0; ind < this._newUniforms.length ; ind ++) {
                 if (this._customUniform[ind].indexOf('sampler') == -1) {
                     arr.push(this._newUniforms[ind]);
                 }
             }
         }
         if (name == "sampler") {
-            for (var ind in this._newUniforms) {
+            for (var ind = 0; ind < this._newUniforms.length ; ind ++) {
                 if (this._customUniform[ind].indexOf('sampler') != -1) {
                     arr.push(this._newUniforms[ind]);
                 }
