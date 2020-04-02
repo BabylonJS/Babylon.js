@@ -20,3 +20,5 @@
 #else
     gl_FragColor = pack(depthSM);
 #endif
+
+    return;
