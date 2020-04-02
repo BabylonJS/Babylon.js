@@ -1,6 +1,3 @@
-import { Engine } from '../Engines/engine';
-import { Nullable } from '../types';
-
 /**
  * This class will take all inputs from Keyboard, Pointer, and
  * any Gamepads and provide a polling system that all devices
@@ -8,6 +5,14 @@ import { Nullable } from '../types';
  * pointer device and one keyboard.
  */
 export class DeviceInputSystem {
+    // Static
+    /** MOUSE_DEVICE */
+    public static readonly MOUSE_DEVICE: string = "Mouse";
+    /** TOUCH_DEVICE */
+    public static readonly TOUCH_DEVICE: string = "Touch";
+    /** KEYBOARD_DEVICE */
+    public static readonly KEYBOARD_DEVICE: string = "Keyboard";
+
     // Private Members
     private _inputs: Map<string, Array<number>> = new Map();
     private _onDeviceConnected: (deviceName: string) => void = () => { };
@@ -17,7 +22,7 @@ export class DeviceInputSystem {
     private _keyboardActive: boolean = false;
     private _mouseActive: boolean = false;
     private _touchActive: boolean = false;
-    private _elementToAttachTo: Nullable<HTMLElement>;
+    private _elementToAttachTo: HTMLElement;
     private _maxKeyCodes: number = 222;
     private _maxMouseInputs: number = 7;
     private _maxTouchInputs: number = 3;
@@ -26,12 +31,11 @@ export class DeviceInputSystem {
      * Default Constructor
      * @param elementToAttachTo - element to attach events to (usually canvas)
      */
-    constructor(elementToAttachTo: Nullable<HTMLElement>) {
+    constructor(elementToAttachTo: HTMLElement) {
         this._elementToAttachTo = elementToAttachTo;
         this.handleKeyActions();
         this.handlePointerActions();
         this.handleGamepadActions();
-        this.updateDevices();
     }
 
     // Public functions
@@ -42,15 +46,14 @@ export class DeviceInputSystem {
      * @returns Current value of input
      */
     public pollInput(deviceName: string, inputIndex: number): number {
-        if (this._inputs.has(deviceName)) {
-            var device = this._inputs.get(deviceName);
+        const device = this._inputs.get(deviceName);
 
-            if (device![inputIndex] != undefined) {
-                return device![inputIndex];
-            }
-            else {
-                throw `Unable to find input ${inputIndex} on device ${deviceName}`;
-            }
+        if (device && device![inputIndex] != undefined) {
+            this.updateDevices();
+            return device![inputIndex];
+        }
+        else if (device){
+            throw `Unable to find input ${inputIndex} on device ${deviceName}`;
         }
         else {
             throw `Unable to find device ${deviceName}`;
@@ -81,7 +84,7 @@ export class DeviceInputSystem {
      */
     private registerDevice(deviceName: string, numberOfInputs: number) {
         if (!this._inputs.has(deviceName)) {
-            var device: Array<number> = [];
+            const device = new Array<number>(numberOfInputs);
             for (var i = 0; i < numberOfInputs; i++) {
                 device.push(0);
             }
@@ -248,7 +251,7 @@ export class DeviceInputSystem {
      */
     private updateDevices() {
         // Gamepads
-        var gamepads = this.getGamePads();
+        var gamepads = navigator.getGamepads();
 
         for (var j = 0; j < gamepads.length; j++) {
             let gp = gamepads[j];
@@ -269,23 +272,5 @@ export class DeviceInputSystem {
                 }
             }
         }
-
-        Engine.QueueNewFrame(() => { this.updateDevices(); });
     }
-
-    /**
-     * getGamePads: returns all gamepads
-     * @returns array with active gamepads
-     */
-    private getGamePads(): (Gamepad | null)[] {
-        return navigator.getGamepads();
-    }
-
-    // Static
-    /** MOUSE_DEVICE */
-    public static readonly MOUSE_DEVICE: string = "Mouse";
-    /** TOUCH_DEVICE */
-    public static readonly TOUCH_DEVICE: string = "Touch";
-    /** KEYBOARD_DEVICE */
-    public static readonly KEYBOARD_DEVICE: string = "Keyboard";
 }
