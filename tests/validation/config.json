@@ -818,6 +818,11 @@
             "title": "Visibility",
             "playgroundId": "#PXC9CF#2",
             "referenceImage": "visibility.png"
+        },
+        {
+            "title": "GLTF Extension EXT_mesh_gpu_instancing",
+            "playgroundId": "#QFIGLW#3",
+            "referenceImage": "gltfExtensionExtMeshGpuInstancingTest.png"
         }
     ]
 }
