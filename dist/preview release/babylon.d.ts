@@ -21043,6 +21043,10 @@ declare module BABYLON {
         private _meshes;
         /** @hidden */
         _matriceNames: any;
+        /** Gets the standalone status of the wrapper */
+        get standalone(): boolean;
+        /** Gets the base material the wrapper is built upon */
+        get baseMaterial(): Material;
         /**
          * Instantiate a new shadow depth wrapper.
          * It works by injecting some specific code in the vertex/fragment shaders of the base material and is used by a shadow generator to
@@ -55599,11 +55603,13 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export class OimoJSPlugin implements IPhysicsEnginePlugin {
+        private _useDeltaForWorldStep;
         world: any;
         name: string;
         BJSOIMO: any;
         private _raycastResult;
-        constructor(iterations?: number, oimoInjection?: any);
+        private _fixedTimeStep;
+        constructor(_useDeltaForWorldStep?: boolean, iterations?: number, oimoInjection?: any);
         setGravity(gravity: Vector3): void;
         setTimeStep(timeStep: number): void;
         getTimeStep(): number;
