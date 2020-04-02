@@ -34,6 +34,7 @@ export class Ray {
     // Methods
     /**
      * Checks if the ray intersects a box
+     * This does not account for the ray lenght by design to improve perfs.
      * @param minimum bound of the box
      * @param maximum bound of the box
      * @param intersectionTreshold extra extend to be added to the box in all direction
@@ -135,6 +136,7 @@ export class Ray {
 
     /**
      * Checks if the ray intersects a box
+     * This does not account for the ray lenght by design to improve perfs.
      * @param box the bounding box to check
      * @param intersectionTreshold extra extend to be added to the BoundingBox in all direction
      * @returns if the box was hit
