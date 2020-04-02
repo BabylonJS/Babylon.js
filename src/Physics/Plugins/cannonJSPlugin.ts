@@ -54,7 +54,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
     }
 
     public executeStep(delta: number): void {
-        this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta : 0, 3);
+        this.world.step(this._useDeltaForWorldStep ? delta : this._fixedTimeStep);
         this._removeMarkedPhysicsBodiesFromWorld();
     }
 
