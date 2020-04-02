@@ -1,5 +1,6 @@
 import { Scene } from '../scene';
 import { Nullable } from '../types';
+import { Observable } from "../Misc/observable";
 
 /**
  * This class will take all inputs from Keyboard, Pointer, and
@@ -16,10 +17,18 @@ export class DeviceInputSystem {
     /** KEYBOARD_DEVICE */
     public static readonly KEYBOARD_DEVICE: string = "Keyboard";
 
+    /**
+     * Observable to be triggered when a device is connected
+     */
+    public onDeviceConnectedObservable = new Observable<string>();
+
+    /**
+     * Observable to be triggered when a device is disconnected
+     */
+    public onDeviceDisconnectedObservable = new Observable<string>();
+
     // Private Members
     private _inputs: { [key: string]: Array<number> } = {};
-    private _onDeviceConnected: (deviceName: string) => void = () => { };
-    private _onDeviceDisconnected: (deviceName: string) => void = () => { };
     private _pointerIds: Array<number> = [];
     private _activeTouchNumber: number = 0;
     private _keyboardActive: boolean = false;
@@ -63,22 +72,6 @@ export class DeviceInputSystem {
         }
     }
 
-    /**
-     * When a device is connected, perform user specified function
-     * @param callback Callback function to use when a device is connected
-     */
-    public onDeviceConnected(callback: (deviceName: string) => void): void {
-        this._onDeviceConnected = callback;
-    }
-
-    /**
-     * When a device is disconnected, perform user specified function
-     * @param callback Callback function to use when a device is disconnected
-     */
-    public onDeviceDisconnected(callback: (deviceName: string) => void): void {
-        this._onDeviceDisconnected = callback;
-    }
-
     // Private functions
     /**
      * Add device and inputs to device map
@@ -93,6 +86,7 @@ export class DeviceInputSystem {
             }
 
             this._inputs[deviceName] = device;
+            this.onDeviceConnectedObservable.notifyObservers(deviceName);
         }
     }
 
@@ -100,8 +94,11 @@ export class DeviceInputSystem {
      * Given a specific device name, remove that device from the device map
      * @param deviceName Name of device to be removed
      */
-    private deregisterDevice(deviceName: string) {
-        delete this._inputs[deviceName];
+    private unregisterDevice(deviceName: string) {
+        if (this._inputs[deviceName]) {
+            delete this._inputs[deviceName];
+            this.onDeviceDisconnectedObservable.notifyObservers(deviceName);
+        }
     }
 
     /**
@@ -112,7 +109,6 @@ export class DeviceInputSystem {
             if (!this._keyboardActive) {
                 this._keyboardActive = true;
                 this.registerDevice(DeviceInputSystem.KEYBOARD_DEVICE, this._maxKeyCodes);
-                this._onDeviceConnected(DeviceInputSystem.KEYBOARD_DEVICE);
             }
 
             let kbKey = this._inputs[DeviceInputSystem.KEYBOARD_DEVICE];
@@ -138,7 +134,6 @@ export class DeviceInputSystem {
                 if (!this._mouseActive) {
                     this._mouseActive = true;
                     this.registerDevice(DeviceInputSystem.MOUSE_DEVICE, this._maxMouseInputs);
-                    this._onDeviceConnected(DeviceInputSystem.MOUSE_DEVICE);
                 }
 
                 let pointer = this._inputs[DeviceInputSystem.MOUSE_DEVICE];
@@ -162,7 +157,6 @@ export class DeviceInputSystem {
                 if (!this._mouseActive) {
                     this._mouseActive = true;
                     this.registerDevice(DeviceInputSystem.MOUSE_DEVICE, this._maxMouseInputs);
-                    this._onDeviceConnected(DeviceInputSystem.MOUSE_DEVICE);
                 }
 
                 let mouseButton = this._inputs[DeviceInputSystem.MOUSE_DEVICE];
@@ -180,7 +174,6 @@ export class DeviceInputSystem {
                     // Initialize all potential touch inputs
                     for (let i = 0; i < this._maxTouchInputs; i++) {
                         this.registerDevice(`${DeviceInputSystem.TOUCH_DEVICE}-${i}`, this._maxTouchInputs);
-                        this._onDeviceConnected(`${DeviceInputSystem.TOUCH_DEVICE}-${i}`);
                     }
                 }
 
@@ -208,8 +201,7 @@ export class DeviceInputSystem {
                     this._pointerIds.splice(touchIndex, 1);
 
                     // Push values of touch inputs down
-                    for (let i = touchIndex; i < this._activeTouchNumber; i++)
-                    {
+                    for (let i = touchIndex; i < this._activeTouchNumber; i++) {
                         let nextTouch = this._inputs[`${DeviceInputSystem.TOUCH_DEVICE}-${i + 1}`];
                         let currentTouch = this._inputs[`${DeviceInputSystem.TOUCH_DEVICE}-${i}`];
 
@@ -218,8 +210,7 @@ export class DeviceInputSystem {
                             currentTouch[1] = nextTouch[1];
                             currentTouch[2] = nextTouch[2];
                         }
-                        else if (currentTouch)
-                        {
+                        else if (currentTouch) {
                             currentTouch[0] = 0;
                             currentTouch[1] = 0;
                             currentTouch[2] = 0;
@@ -239,13 +230,11 @@ export class DeviceInputSystem {
         window.addEventListener("gamepadconnected", (evt: any) => {
             const deviceName = `${evt.gamepad.id}-${evt.gamepad.index}`;
             this.registerDevice(deviceName, evt.gamepad.buttons.length + evt.gamepad.axes.length);
-            this._onDeviceConnected(deviceName);
         });
 
         window.addEventListener("gamepaddisconnected", (evt: any) => {
             const deviceName = `${evt.gamepad.id}-${evt.gamepad.index}`;
-            this.deregisterDevice(deviceName);
-            this._onDeviceDisconnected(deviceName);
+            this.unregisterDevice(deviceName);
         });
     }
 
