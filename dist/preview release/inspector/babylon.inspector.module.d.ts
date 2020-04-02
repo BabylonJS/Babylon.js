@@ -2194,14 +2194,21 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/toolsTabComponent
     export class ToolsTabComponent extends PaneComponent {
         private _videoRecorder;
         private _screenShotSize;
+        private _gifOptions;
         private _useWidthHeight;
         private _isExporting;
+        private _gifWorkerBlob;
+        private _gifRecorder;
+        private _previousRenderingScale;
+        private _crunchingGIF;
         constructor(props: IPaneComponentProps);
         componentDidMount(): void;
         componentWillUnmount(): void;
         captureScreenshot(): void;
         captureRender(): void;
         recordVideo(): void;
+        recordGIFInternal(): void;
+        recordGIF(): void;
         importAnimations(event: any): void;
         shouldExport(node: Node): boolean;
         exportGLTF(): void;
@@ -4480,14 +4487,21 @@ declare module INSPECTOR {
     export class ToolsTabComponent extends PaneComponent {
         private _videoRecorder;
         private _screenShotSize;
+        private _gifOptions;
         private _useWidthHeight;
         private _isExporting;
+        private _gifWorkerBlob;
+        private _gifRecorder;
+        private _previousRenderingScale;
+        private _crunchingGIF;
         constructor(props: IPaneComponentProps);
         componentDidMount(): void;
         componentWillUnmount(): void;
         captureScreenshot(): void;
         captureRender(): void;
         recordVideo(): void;
+        recordGIFInternal(): void;
+        recordGIF(): void;
         importAnimations(event: any): void;
         shouldExport(node: BABYLON.Node): boolean;
         exportGLTF(): void;
