@@ -63,6 +63,16 @@ export class ShadowDepthWrapper {
     /** @hidden */
     public _matriceNames: any;
 
+    /** Gets the standalone status of the wrapper */
+    public get standalone(): boolean {
+        return this._options?.standalone ?? false;
+    }
+
+    /** Gets the base material the wrapper is built upon */
+    public get baseMaterial(): Material {
+        return this._baseMaterial;
+    }
+
     /**
      * Instantiate a new shadow depth wrapper.
      * It works by injecting some specific code in the vertex/fragment shaders of the base material and is used by a shadow generator to
@@ -134,7 +144,7 @@ export class ShadowDepthWrapper {
      * @returns a boolean indicating that the submesh is ready or not
      */
     public isReadyForSubMesh(subMesh: SubMesh, defines: string[], shadowGenerator: ShadowGenerator, useInstances: boolean): boolean {
-        if (this._options?.standalone) {
+        if (this.standalone) {
             // will ensure the effect is (re)created for the base material
             this._baseMaterial.isReadyForSubMesh(subMesh.getMesh(), subMesh, useInstances);
         }
