@@ -125,6 +125,7 @@
 - Fix bug in NME where collapsed frames didn't redraw output links to outside nodes([belfortk](https://github.com/belfortk))
 - Fix bug in NME where links were not redrawn after moving frame port ([belfortk](https://github.com/belfortk))
 - Fix bugs in NME that were causing inconsistent behavior displaying Move Node Up and Down buttons on frame ports([belfortk](https://github.com/belfortk))
+- Fix bug in `ShaderMaterial` when using morph targets ([Popov72](https://github.com/Popov72)
 
 ## Breaking changes
 
