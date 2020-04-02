@@ -463,7 +463,7 @@ export class SpriteManager implements ISpriteManager {
 
                 if (distance > currentDistance) {
 
-                    if (!this._checkTextureAlpha(sprite, ray, distance, min, max)) {
+                    if (!this._checkTextureAlpha(sprite, ray, currentDistance, min, max)) {
                         continue;
                     }
 
