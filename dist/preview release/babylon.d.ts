@@ -9344,6 +9344,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var shadowMapFragmentDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var clipPlaneFragmentDeclaration: {
         name: string;
         shader: string;
@@ -9352,6 +9359,13 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export var clipPlaneFragment: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var shadowMapFragment: {
         name: string;
         shader: string;
     };
@@ -9400,6 +9414,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var shadowMapVertexDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var clipPlaneVertexDeclaration: {
         name: string;
         shader: string;
@@ -9422,6 +9443,20 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export var bonesVertex: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var shadowMapVertexNormalBias: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var shadowMapVertexMetric: {
         name: string;
         shader: string;
     };
@@ -15478,6 +15513,7 @@ declare module BABYLON {
         private _cachedWorldViewProjectionMatrix;
         private _renderId;
         private _multiview;
+        private _cachedDefines;
         /**
          * Instantiate a new shader material.
          * The ShaderMaterial object has the necessary methods to pass data from your scene to the Vertex and Fragment Shaders and returns a material that can be applied to any mesh.
@@ -15677,14 +15713,23 @@ declare module BABYLON {
         /**
          * Binds the world matrix to the material
          * @param world defines the world transformation matrix
+         * @param effectOverride - If provided, use this effect instead of internal effect
          */
-        bindOnlyWorldMatrix(world: Matrix): void;
+        bindOnlyWorldMatrix(world: Matrix, effectOverride?: Nullable<Effect>): void;
+        /**
+         * Binds the submesh to this material by preparing the effect and shader to draw
+         * @param world defines the world transformation matrix
+         * @param mesh defines the mesh containing the submesh
+         * @param subMesh defines the submesh to bind the material to
+         */
+        bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         /**
          * Binds the material to the mesh
          * @param world defines the world transformation matrix
          * @param mesh defines the mesh to bind the material to
+         * @param effectOverride - If provided, use this effect instead of internal effect
          */
-        bind(world: Matrix, mesh?: Mesh): void;
+        bind(world: Matrix, mesh?: Mesh, effectOverride?: Nullable<Effect>): void;
         protected _afterBind(mesh?: Mesh): void;
         /**
          * Gets the active textures from the material
@@ -16745,7 +16790,7 @@ declare module BABYLON {
         protected _initializeShadowMap(): void;
         protected _initializeBlurRTTAndPostProcesses(): void;
         protected _renderForShadowMap(opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void;
-        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect): void;
+        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any): void;
         protected _renderSubMeshForShadowMap(subMesh: SubMesh): void;
         protected _applyFilterValues(): void;
         /**
@@ -16765,6 +16810,7 @@ declare module BABYLON {
             useInstances: boolean;
         }>): Promise<void>;
         protected _isReadyCustomDefines(defines: any, subMesh: SubMesh, useInstances: boolean): void;
+        private _prepareShadowDefines;
         /**
          * Determine wheter the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
          * @param subMesh The submesh we want to render in the shadow map
@@ -20956,6 +21002,82 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Class used to manipulate GUIDs
+     */
+    export class GUID {
+        /**
+         * Implementation from http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/2117523#answer-2117523
+         * Be aware Math.random() could cause collisions, but:
+         * "All but 6 of the 128 bits of the ID are randomly generated, which means that for any two ids, there's a 1 in 2^^122 (or 5.3x10^^36) chance they'll collide"
+         * @returns a pseudo random id
+         */
+        static RandomId(): string;
+    }
+}
+declare module BABYLON {
+    /**
+     * Options to be used when creating a shadow depth material
+     */
+    export interface IIOptionShadowDepthMaterial {
+        /** Variables in the vertex shader code that need to have their names remapped.
+         * The format is: ["var_name", "var_remapped_name", "var_name", "var_remapped_name", ...]
+         * "var_name" should be either: worldPos or vNormalW
+         * So, if the variable holding the world position in your vertex shader is not named worldPos, you must tell the system
+         * the name to use instead by using: ["worldPos", "myWorldPosVar"] assuming the variable is named myWorldPosVar in your code.
+         * If the normal must also be remapped: ["worldPos", "myWorldPosVar", "vNormalW", "myWorldNormal"]
+        */
+        remappedVariables?: string[];
+        /** Set standalone to true if the base material wrapped by ShadowDepthMaterial is not used for a regular object but for depth shadow generation only */
+        standalone?: boolean;
+    }
+    /**
+     * Class that can be used to wrap a base material to generate accurate shadows when using custom vertex/fragment code in the base material
+     */
+    export class ShadowDepthWrapper {
+        private _scene;
+        private _options?;
+        private _baseMaterial;
+        private _onEffectCreatedObserver;
+        private _subMeshToEffect;
+        private _subMeshToDepthEffect;
+        private _meshes;
+        /** @hidden */
+        _matriceNames: any;
+        /**
+         * Instantiate a new shadow depth wrapper.
+         * It works by injecting some specific code in the vertex/fragment shaders of the base material and is used by a shadow generator to
+         * generate the shadow depth map. For more information, please refer to the documentation:
+         * https://doc.babylonjs.com/babylon101/shadows
+         * @param baseMaterial Material to wrap
+         * @param scene Define the scene the material belongs to
+         * @param options Options used to create the wrapper
+         */
+        constructor(baseMaterial: Material, scene: Scene, options?: IIOptionShadowDepthMaterial);
+        /**
+         * Gets the effect to use to generate the depth map
+         * @param subMesh subMesh to get the effect for
+         * @param shadowGenerator shadow generator to get the effect for
+         * @returns the effect to use to generate the depth map for the subMesh + shadow generator specified
+         */
+        getEffect(subMesh: Nullable<SubMesh>, shadowGenerator: ShadowGenerator): Nullable<Effect>;
+        /**
+         * Specifies that the submesh is ready to be used for depth rendering
+         * @param subMesh submesh to check
+         * @param defines the list of defines to take into account when checking the effect
+         * @param shadowGenerator combined with subMesh, it defines the effect to check
+         * @param useInstances specifies that instances should be used
+         * @returns a boolean indicating that the submesh is ready or not
+         */
+        isReadyForSubMesh(subMesh: SubMesh, defines: string[], shadowGenerator: ShadowGenerator, useInstances: boolean): boolean;
+        /**
+         * Disposes the resources
+         */
+        dispose(): void;
+        private _makeEffect;
+    }
+}
+declare module BABYLON {
+    /**
      * Options for compiling materials.
      */
     export interface IMaterialCompilationOptions {
@@ -21057,6 +21179,14 @@ declare module BABYLON {
          * They are also discarded below the alpha cutoff threshold to improve performances.
          */
         static readonly MATERIAL_ALPHATESTANDBLEND: number;
+        /**
+         * Custom callback helping to override the default shader used in the material.
+         */
+        customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[]) => string;
+        /**
+         * Custom shadow depth material to use for shadow rendering instead of the in-built one
+         */
+        shadowDepthWrapper: Nullable<ShadowDepthWrapper>;
         /**
          * The ID of the material
          */
@@ -21180,6 +21310,17 @@ declare module BABYLON {
         * An event triggered when the material is unbound
         */
         get onUnBindObservable(): Observable<Material>;
+        protected _onEffectCreatedObservable: Nullable<Observable<{
+            effect: Effect;
+            subMesh: Nullable<SubMesh>;
+        }>>;
+        /**
+        * An event triggered when the effect is (re)created
+        */
+        get onEffectCreatedObservable(): Observable<{
+            effect: Effect;
+            subMesh: Nullable<SubMesh>;
+        }>;
         /**
          * Stores the value of the alpha mode
          */
@@ -21681,6 +21822,8 @@ declare module BABYLON {
         _materialDefines: Nullable<MaterialDefines>;
         /** @hidden */
         _materialEffect: Nullable<Effect>;
+        /** @hidden */
+        _effectOverride: Nullable<Effect>;
         /**
          * Gets material defines used by the effect associated to the sub mesh
          */
@@ -27029,10 +27172,6 @@ declare module BABYLON {
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
         set cameraColorCurves(value: Nullable<ColorCurves>);
-        /**
-         * Custom callback helping to override the default shader used in the material.
-         */
-        customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines, attributes?: string[]) => string;
         protected _renderTargets: SmartArray<RenderTargetTexture>;
         protected _worldViewProjectionMatrix: Matrix;
         protected _globalAmbientColor: Color3;
@@ -29948,20 +30087,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Class used to manipulate GUIDs
-     */
-    export class GUID {
-        /**
-         * Implementation from http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/2117523#answer-2117523
-         * Be aware Math.random() could cause collisions, but:
-         * "All but 6 of the 128 bits of the ID are randomly generated, which means that for any two ids, there's a 1 in 2^^122 (or 5.3x10^^36) chance they'll collide"
-         * @returns a pseudo random id
-         */
-        static RandomId(): string;
-    }
-}
-declare module BABYLON {
-    /**
      * Base class of all the textures in babylon.
      * It groups all the common properties the materials, post process, lights... might need
      * in order to make a correct use of the texture.
@@ -30422,6 +30547,7 @@ declare module BABYLON {
         private static _uniqueIdSeed;
         private _engine;
         private _uniformBuffersNames;
+        private _uniformBuffersNamesList;
         private _uniformsNames;
         private _samplerList;
         private _samplers;
@@ -30523,9 +30649,24 @@ declare module BABYLON {
         getUniform(uniformName: string): Nullable<WebGLUniformLocation>;
         /**
          * Returns an array of sampler variable names
-         * @returns The array of sampler variable neames.
+         * @returns The array of sampler variable names.
          */
         getSamplers(): string[];
+        /**
+         * Returns an array of uniform variable names
+         * @returns The array of uniform variable names.
+         */
+        getUniformNames(): string[];
+        /**
+         * Returns an array of uniform buffer variable names
+         * @returns The array of uniform buffer variable names.
+         */
+        getUniformBuffersNames(): string[];
+        /**
+         * Returns the index parameters used to create the effect
+         * @returns The index parameters object
+         */
+        getIndexParameters(): any;
         /**
          * The error from the last compilation.
          * @returns the error string.
@@ -30543,6 +30684,14 @@ declare module BABYLON {
         executeWhenCompiled(func: (effect: Effect) => void): void;
         private _checkIsReady;
         private _loadShader;
+        /**
+         * Gets the vertex shader source code of this effect
+         */
+        get vertexSourceCode(): string;
+        /**
+         * Gets the fragment shader source code of this effect
+         */
+        get fragmentSourceCode(): string;
         /**
          * Recompiles the webGL program
          * @param vertexSourceCode The source code for the vertex shader.
@@ -51955,10 +52104,6 @@ declare module BABYLON {
          * Defines the SubSurface parameters for the material.
          */
         readonly subSurface: PBRSubSurfaceConfiguration;
-        /**
-         * Custom callback helping to override the default shader used in the material.
-         */
-        customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: PBRMaterialDefines, attributes?: string[]) => string;
         protected _rebuildInParallel: boolean;
         /**
          * Instantiates a new PBRMaterial instance.
@@ -54969,7 +55114,7 @@ declare module BABYLON {
         protected _initializeGenerator(): void;
         protected _createTargetRenderTexture(): void;
         protected _initializeShadowMap(): void;
-        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect): void;
+        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any): void;
         protected _isReadyCustomDefines(defines: any, subMesh: SubMesh, useInstances: boolean): void;
         /**
          * Prepare all the defines in a material relying on a shadow map at the specified light index.
