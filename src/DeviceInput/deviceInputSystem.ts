@@ -135,26 +135,18 @@ export class DeviceInputSystem {
                     this._onDeviceConnected(DeviceInputSystem.MOUSE_DEVICE);
                 }
 
-                let pointerX = this._inputs.get(DeviceInputSystem.MOUSE_DEVICE);
-                if (pointerX) {
-                    pointerX[0] = evt.clientX;
-                }
-
-                let pointerY = this._inputs.get(DeviceInputSystem.MOUSE_DEVICE);
-                if (pointerY) {
-                    pointerY[1] = evt.clientY;
+                let pointer = this._inputs.get(DeviceInputSystem.MOUSE_DEVICE);
+                if (pointer) {
+                    pointer[0] = evt.clientX;
+                    pointer[1] = evt.clientY;
                 }
             }
             else if (evt.pointerType == "touch") {
                 let touchIndex = this._pointerIds.lastIndexOf(evt.pointerId);
-                let pointerX = this._inputs.get(`${DeviceInputSystem.TOUCH_DEVICE}-${touchIndex}`);
-                if (pointerX) {
-                    pointerX[0] = evt.clientX;
-                }
-
-                let pointerY = this._inputs.get(`${DeviceInputSystem.TOUCH_DEVICE}-${touchIndex}`);
-                if (pointerY) {
-                    pointerY[1] = evt.clientY;
+                let pointer = this._inputs.get(`${DeviceInputSystem.TOUCH_DEVICE}-${touchIndex}`);
+                if (pointer) {
+                    pointer[0] = evt.clientX;
+                    pointer[1] = evt.clientY;
                 }
             }
         });
@@ -169,13 +161,15 @@ export class DeviceInputSystem {
 
                 let mouseButton = this._inputs.get(DeviceInputSystem.MOUSE_DEVICE);
                 if (mouseButton) {
+                    mouseButton[0] = evt.clientX;
+                    mouseButton[1] = evt.clientY;
                     mouseButton[evt.button + 2] = 1;
                 }
             }
             else if (evt.pointerType == "touch" && this._activeTouchNumber < this._maxTouchInputs) {
+                this._pointerIds.push(evt.pointerId);
                 if (!this._touchActive) {
                     this._touchActive = true;
-                    this._pointerIds.push(evt.pointerId);
 
                     // Initialize all potential touch inputs
                     for (var i = 0; i < this._maxTouchInputs; i++) {
@@ -186,7 +180,10 @@ export class DeviceInputSystem {
 
                 let touchButton = this._inputs.get(`${DeviceInputSystem.TOUCH_DEVICE}-${this._pointerIds.lastIndexOf(evt.pointerId)}`);
                 if (touchButton) {
-                    touchButton[this._activeTouchNumber++] = 1;
+                    touchButton[0] = evt.clientX;
+                    touchButton[1] = evt.clientY;
+                    touchButton[2] = 1;
+                    this._activeTouchNumber++;
                 }
             }
         });
@@ -203,7 +200,27 @@ export class DeviceInputSystem {
                 let touchButton = this._inputs.get(`${DeviceInputSystem.TOUCH_DEVICE}-${touchIndex}`);
                 if (touchButton) {
                     this._pointerIds.splice(touchIndex, 1);
-                    touchButton[--this._activeTouchNumber] = 0;
+
+                    // Push values of touch inputs down
+                    for (var i = touchIndex; i < this._activeTouchNumber; i++)
+                    {
+                        let nextTouch = this._inputs.get(`${DeviceInputSystem.TOUCH_DEVICE}-${i+1}`);
+                        let currentTouch = this._inputs.get(`${DeviceInputSystem.TOUCH_DEVICE}-${i}`);
+
+                        if (currentTouch && nextTouch){
+                            currentTouch[0] = nextTouch[0];
+                            currentTouch[1] = nextTouch[1];
+                            currentTouch[2] = nextTouch[2];
+                        }
+                        else if (currentTouch)
+                        {
+                            currentTouch[0] = 0;
+                            currentTouch[1] = 0;
+                            currentTouch[2] = 0;
+                        }
+                    }
+
+                    --this._activeTouchNumber;
                 }
             }
         });
