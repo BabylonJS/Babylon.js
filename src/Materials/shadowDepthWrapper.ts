@@ -215,7 +215,7 @@ export class ShadowDepthWrapper {
 
         fragmentCode = fragmentCode.replace(/void\s+?main/g, Effect.IncludesShadersStore["shadowMapFragmentDeclaration"] + "\r\nvoid main");
         if (fragmentCode.indexOf("#define SHADOWDEPTH_FRAGMENT") !== -1) {
-            fragmentCode = vertexCode.replace(/#define SHADOWDEPTH_FRAGMENT/g, fragmentBlockCode);
+            fragmentCode = fragmentCode.replace(/#define SHADOWDEPTH_FRAGMENT/g, fragmentBlockCode);
         } else {
             fragmentCode = fragmentCode.replace(/}\s*$/g, fragmentBlockCode + "\r\n}");
         }
