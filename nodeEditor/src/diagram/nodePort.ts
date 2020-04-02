@@ -10,13 +10,14 @@ import { GraphNode } from './graphNode';
 import { NodeLink } from './nodeLink';
 import { GraphFrame } from './graphFrame';
 import { FrameNodePort } from './frameNodePort';
+import { FramePortData } from './graphCanvas';
 
 export class NodePort {
     protected _element: HTMLDivElement;
     protected _img: HTMLImageElement;
     protected _globalState: GlobalState;
     protected _onCandidateLinkMovedObserver: Nullable<Observer<Nullable<Vector2>>>;
-    protected _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | GraphFrame | NodePort | FrameNodePort>>>;  
+    protected _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;  
     
     public delegatedPort: Nullable<FrameNodePort> = null;
 

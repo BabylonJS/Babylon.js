@@ -12,13 +12,14 @@ import { NodePort } from './diagram/nodePort';
 import { NodeLink } from './diagram/nodeLink';
 import { GraphFrame } from './diagram/graphFrame';
 import { FrameNodePort } from './diagram/frameNodePort';
+import { FramePortData } from './diagram/graphCanvas';
 
 export class GlobalState {
     nodeMaterial: NodeMaterial;
     hostElement: HTMLElement;
     hostDocument: HTMLDocument;
     hostWindow: Window;
-    onSelectionChangedObservable = new Observable<Nullable<GraphNode | NodeLink | GraphFrame | NodePort>>();
+    onSelectionChangedObservable = new Observable<Nullable<GraphNode | NodeLink | GraphFrame | NodePort | FramePortData>>();
     onRebuildRequiredObservable = new Observable<void>();
     onBuiltObservable = new Observable<void>();
     onResetRequiredObservable = new Observable<void>();
