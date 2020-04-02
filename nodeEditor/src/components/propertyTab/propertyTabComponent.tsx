@@ -26,8 +26,9 @@ import { Vector2LineComponent } from '../../sharedComponents/vector2LineComponen
 import { Vector3LineComponent } from '../../sharedComponents/vector3LineComponent';
 import { Vector4LineComponent } from '../../sharedComponents/vector4LineComponent';
 import { Observer } from 'babylonjs/Misc/observable';
-import { FrameNodePort } from '../../diagram/frameNodePort';
 import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
+import { FrameNodePort } from '../../diagram/frameNodePort';
+import { isFramePortData } from '../../diagram/graphCanvas';
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
@@ -49,8 +50,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 this.setState({ currentNode: selection, currentFrame: null, currentFrameNodePort: null });
             } else if (selection instanceof GraphFrame) {
                 this.setState({ currentNode: null, currentFrame: selection, currentFrameNodePort: null });
-            } else if(selection instanceof FrameNodePort) {
-                this.setState({ currentNode: null, currentFrame: null, currentFrameNodePort: selection });
+            } else if(isFramePortData(selection)) {
+                this.setState({ currentNode: null, currentFrame: selection.frame, currentFrameNodePort: selection.port });
             } else {
                 this.setState({ currentNode: null, currentFrame: null, currentFrameNodePort: null });
             }
@@ -243,16 +244,16 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 </div>
             );
         }
+        
+        if (this.state.currentFrameNodePort && this.state.currentFrame) {
+            return (
+                <FrameNodePortPropertyTabComponent globalState={this.props.globalState} frame={this.state.currentFrame} frameNodePort={this.state.currentFrameNodePort}/>
+            );
+        }
 
         if (this.state.currentFrame) {
             return (
                 <FramePropertyTabComponent globalState={this.props.globalState} frame={this.state.currentFrame}/>
-            );
-        }
-
-        if (this.state.currentFrameNodePort) {
-            return (
-                <FrameNodePortPropertyTabComponent globalState={this.props.globalState} frameNodePort={this.state.currentFrameNodePort}/>
             );
         }
 
