@@ -145,6 +145,10 @@ export class CustomMaterial extends StandardMaterial {
             .replace('#define CUSTOM_VERTEX_UPDATE_WORLDPOS', (this.CustomParts.Vertex_After_WorldPosComputed ? this.CustomParts.Vertex_After_WorldPosComputed : ""))
             .replace('#define CUSTOM_VERTEX_MAIN_END', (this.CustomParts.Vertex_MainEnd ? this.CustomParts.Vertex_MainEnd : ""));
 
+        if (this.CustomParts.Vertex_After_WorldPosComputed) {
+            Effect.ShadersStore[name + "VertexShader"] = Effect.ShadersStore[name + "VertexShader"].replace('#define CUSTOM_VERTEX_UPDATE_WORLDPOS', this.CustomParts.Vertex_After_WorldPosComputed);
+        }
+
         Effect.ShadersStore[name + "PixelShader"] = this.FragmentShader
             .replace('#define CUSTOM_FRAGMENT_BEGIN', (this.CustomParts.Fragment_Begin ? this.CustomParts.Fragment_Begin : ""))
             .replace('#define CUSTOM_FRAGMENT_MAIN_BEGIN', (this.CustomParts.Fragment_MainBegin ? this.CustomParts.Fragment_MainBegin : ""))
