@@ -41,7 +41,7 @@ export class DeviceInputSystem {
 
     /**
      * Default Constructor
-     * @param elementToAttachTo - element to attach events to (usually canvas)
+     * @param scene - scene object to check for canvas
      */
     constructor(scene: Scene) {
         this._elementToAttachTo = scene.getEngine().getInputElement();
