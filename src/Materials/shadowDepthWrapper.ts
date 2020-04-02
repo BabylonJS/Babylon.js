@@ -204,7 +204,7 @@ export class ShadowDepthWrapper {
               fragmentBlockCode = Effect.IncludesShadersStore["shadowMapFragment"];
 
         vertexCode = vertexCode.replace(/void\s+?main/g, Effect.IncludesShadersStore["shadowMapVertexDeclaration"] + "\r\nvoid main");
-        vertexCode = vertexCode.replace(/#define SHADOWDEPTH_NORMALBIAS/g, vertexNormalBiasCode);
+        vertexCode = vertexCode.replace(/#define SHADOWDEPTH_NORMALBIAS|#define CUSTOM_VERTEX_UPDATE_WORLDPOS/g, vertexNormalBiasCode);
 
         if (vertexCode.indexOf("#define SHADOWDEPTH_METRIC") !== -1) {
             vertexCode = vertexCode.replace(/#define SHADOWDEPTH_METRIC/g, vertexMetricCode);
