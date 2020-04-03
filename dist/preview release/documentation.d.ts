@@ -2758,14 +2758,16 @@ declare module BABYLON {
         static Down(): Vector3;
         /**
          * Returns a new Vector3 set to (0.0, 0.0, 1.0)
+         * @param rightHandedSystem is the scene right-handed (negative z)
          * @returns a new forward Vector3
          */
-        static Forward(): Vector3;
+        static Forward(rightHandedSystem?: boolean): Vector3;
         /**
          * Returns a new Vector3 set to (0.0, 0.0, -1.0)
+         * @param rightHandedSystem is the scene right-handed (negative-z)
          * @returns a new forward Vector3
          */
-        static Backward(): Vector3;
+        static Backward(rightHandedSystem?: boolean): Vector3;
         /**
          * Returns a new Vector3 set to (1.0, 0.0, 0.0)
          * @returns a new right Vector3
