@@ -1,6 +1,6 @@
     float depthSM = vDepthMetricSM;
 
-#if SM_DEPTHCLAMP == 1
+#if defined(SM_DEPTHCLAMP) &&  SM_DEPTHCLAMP == 1
     #if SM_USEDISTANCE == 1
         depthSM = clamp(((length(vPositionWSM - lightDataSM) + depthValuesSM.x) / (depthValuesSM.y)) + biasAndScaleSM.x, 0.0, 1.0);
     #else
