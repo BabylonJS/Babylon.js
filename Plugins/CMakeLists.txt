@@ -1,8 +1,7 @@
-add_subdirectory(Console)
 add_subdirectory(NativeWindow)
 add_subdirectory(ScriptLoader)
 add_subdirectory(XMLHttpRequest)
 
-# Add NativeEngine plugin
+# Add NativeEngine
 # Dependencies: NativeWindow
 add_subdirectory(NativeEngine)

@@ -12,10 +12,10 @@ else()
 endif()
 
 set(SOURCES
-    "Include/Babylon/NativeEngine.h"
+    "Include/Babylon/Plugins/NativeEngine.h"
     "Source/BgfxCallback.cpp"
     "Source/BgfxCallback.h"
-    "Source/InitializeNativeEngine.cpp"
+    "Source/NativeEngineAPI.cpp"
     "Source/NativeEngine.cpp"
     "Source/NativeEngine.h"
     "Source/ResourceLimits.cpp"
@@ -43,7 +43,7 @@ target_link_to_dependencies(NativeEngine
     PRIVATE glslang
     PRIVATE SPIRV
     PRIVATE spirv-cross-hlsl
-    PRIVATE NativeWindow)
+    PRIVATE NativeWindowInternal)
 
 if(XR)
     target_link_to_dependencies(NativeEngine

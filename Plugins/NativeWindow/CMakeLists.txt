@@ -1,16 +1,24 @@
 set(SOURCES
-    "Include/Babylon/NativeWindow.h"
+    "Include/Babylon/Plugins/NativeWindow.h"
+    "Source/NativeWindow.h"
     "Source/NativeWindow.cpp")
 
 add_library(NativeWindow ${SOURCES})
 
-target_include_directories(NativeWindow PRIVATE "Include/Babylon")
-target_include_directories(NativeWindow INTERFACE "Include")
+target_include_directories(NativeWindow
+    PUBLIC "Include")
 
 target_link_to_dependencies(NativeWindow 
-    PRIVATE base-n
-    PUBLIC BabylonNativeUtils
-    PUBLIC JsRuntime)
+    PUBLIC napi
+    PRIVATE BabylonNativeUtils
+    PRIVATE JsRuntime)
 
 set_property(TARGET NativeWindow PROPERTY FOLDER Plugins)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})
+
+add_library(NativeWindowInternal INTERFACE)
+target_include_directories(NativeWindowInternal INTERFACE "Source")
+target_link_to_dependencies(NativeWindowInternal
+    INTERFACE NativeWindow
+    INTERFACE BabylonNativeUtils
+    INTERFACE JsRuntime)

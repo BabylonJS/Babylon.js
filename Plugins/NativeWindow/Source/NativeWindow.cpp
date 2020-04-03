@@ -1,16 +1,12 @@
 #include "NativeWindow.h"
 
-#include <basen.hpp>
+#include <chrono>
 
-namespace Babylon
+namespace Babylon::Plugins::Internal
 {
     namespace
     {
         constexpr auto JS_CLASS_NAME = "NativeWindow";
-        constexpr auto JS_SET_TIMEOUT_NAME = "setTimeout";
-        constexpr auto JS_A_TO_B_NAME = "atob";
-        constexpr auto JS_ADD_EVENT_LISTENER_NAME = "addEventListener";
-        constexpr auto JS_REMOVE_EVENT_LISTENER_NAME = "removeEventListener";
     }
 
     void NativeWindow::Initialize(Napi::Env env, void* windowPtr, size_t width, size_t height)
@@ -27,26 +23,6 @@ namespace Babylon
         auto jsWindow = constructor.New({Napi::External<void>::New(env, windowPtr), Napi::Number::From(env, width), Napi::Number::From(env, height)});
 
         jsNative.Set(JS_NATIVE_WINDOW_NAME, jsWindow);
-
-        if (global.Get(JS_SET_TIMEOUT_NAME).IsUndefined())
-        {
-            global.Set(JS_SET_TIMEOUT_NAME, Napi::Function::New(env, &NativeWindow::SetTimeout, JS_SET_TIMEOUT_NAME, NativeWindow::Unwrap(jsWindow)));
-        }
-
-        if (global.Get(JS_A_TO_B_NAME).IsUndefined())
-        {
-            global.Set(JS_A_TO_B_NAME, Napi::Function::New(env, &NativeWindow::DecodeBase64, JS_A_TO_B_NAME));
-        }
-
-        if (global.Get(JS_ADD_EVENT_LISTENER_NAME).IsUndefined())
-        {
-            global.Set(JS_ADD_EVENT_LISTENER_NAME, Napi::Function::New(env, &NativeWindow::AddEventListener, JS_ADD_EVENT_LISTENER_NAME));
-        }
-
-        if (global.Get(JS_REMOVE_EVENT_LISTENER_NAME).IsUndefined())
-        {
-            global.Set(JS_REMOVE_EVENT_LISTENER_NAME, Napi::Function::New(env, &NativeWindow::RemoveEventListener, JS_REMOVE_EVENT_LISTENER_NAME));
-        }
     }
 
     NativeWindow& NativeWindow::GetFromJavaScript(Napi::Env env)
@@ -95,48 +71,20 @@ namespace Babylon
     {
         return m_height;
     }
+}
 
-    void NativeWindow::SetTimeout(const Napi::CallbackInfo& info)
+namespace Babylon::Plugins::NativeWindow
+{
+    using NativeWindow = Babylon::Plugins::Internal::NativeWindow;
+
+    void Initialize(Napi::Env env, void* windowPtr, size_t width, size_t height)
     {
-        auto function = Napi::Persistent(info[0].As<Napi::Function>());
-        auto milliseconds = std::chrono::milliseconds{info[1].As<Napi::Number>().Int32Value()};
-
-        auto& nativeWindow = *static_cast<NativeWindow*>(info.Data());
-
-        nativeWindow.RecursiveWaitOrCall(std::make_shared<Napi::FunctionReference>(std::move(function)), std::chrono::system_clock::now() + milliseconds);
+        NativeWindow::Initialize(env, windowPtr, width, height);
     }
 
-    Napi::Value NativeWindow::DecodeBase64(const Napi::CallbackInfo& info)
+    void UpdateSize(Napi::Env env, size_t width, size_t height)
     {
-        std::string encodedData = info[0].As<Napi::String>().Utf8Value();
-        std::u16string decodedData;
-        bn::decode_b64(encodedData.begin(), encodedData.end(), std::back_inserter(decodedData));
-        return Napi::Value::From(info.Env(), decodedData);
-    }
-
-    void NativeWindow::AddEventListener(const Napi::CallbackInfo& info)
-    {
-        // TODO: handle events
-    }
-
-    void NativeWindow::RemoveEventListener(const Napi::CallbackInfo& info)
-    {
-        // TODO: handle events
-    }
-
-    void NativeWindow::RecursiveWaitOrCall(
-        std::shared_ptr<Napi::FunctionReference> function,
-        std::chrono::system_clock::time_point whenToRun)
-    {
-        if (std::chrono::system_clock::now() >= whenToRun)
-        {
-            function->Call({});
-        }
-        else
-        {
-            m_runtime.Dispatch([this, function = std::move(function), whenToRun](Napi::Env) {
-                RecursiveWaitOrCall(std::move(function), whenToRun);
-            });
-        }
+        auto& window = NativeWindow::GetFromJavaScript(env);
+        window.Resize(static_cast<size_t>(width), static_cast<size_t>(height));
     }
 }

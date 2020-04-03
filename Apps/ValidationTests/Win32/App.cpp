@@ -13,9 +13,10 @@
 #include <Shared/TestUtils.h>
 
 #include <Babylon/AppRuntime.h>
-#include <Babylon/Console.h>
-#include <Babylon/NativeWindow.h>
-#include <Babylon/NativeEngine.h>
+#include <Babylon/Polyfills/Console.h>
+#include <Babylon/Plugins/NativeEngine.h>
+#include <Babylon/Plugins/NativeWindow.h>
+#include <Babylon/Polyfills/Window.h>
 #include <Babylon/ScriptLoader.h>
 #include <Babylon/XMLHttpRequest.h>
 
@@ -63,27 +64,27 @@ namespace
         }
 
         runtime.reset();
-        Babylon::DeinitializeGraphics();
+        Babylon::Plugins::NativeEngine::DeinitializeGraphics();
         runtime = std::make_unique<Babylon::AppRuntime>(GetUrlFromPath(GetModulePath().parent_path().parent_path()));
 
         // Initialize console plugin.
         runtime->Dispatch([rect, hWnd](Napi::Env env)
         {
-            Babylon::Console::CreateInstance(env, [](const char* message, auto)
+            Babylon::Polyfills::Console::Initialize(env, [](const char* message, auto)
             {
                 OutputDebugStringA(message);
             });
 
+            Babylon::Polyfills::Window::Initialize(env);
+
             // Initialize NativeWindow plugin.
             auto width = static_cast<float>(rect.right - rect.left);
             auto height = static_cast<float>(rect.bottom - rect.top);
-            Babylon::NativeWindow::Initialize(env, hWnd, width, height);
-
-            auto& jsRuntime = Babylon::JsRuntime::GetFromJavaScript(env);
+            Babylon::Plugins::NativeWindow::Initialize(env, hWnd, width, height);
 
             // Initialize NativeEngine plugin.
-            Babylon::InitializeGraphics(hWnd, width, height);
-            Babylon::InitializeNativeEngine(env);
+            Babylon::Plugins::NativeEngine::InitializeGraphics(hWnd, width, height);
+            Babylon::Plugins::NativeEngine::Initialize(env);
 
             // Initialize XMLHttpRequest plugin.
             Babylon::InitializeXMLHttpRequest(env, runtime->RootUrl());
@@ -234,8 +235,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 size_t height = static_cast<size_t>(HIWORD(lParam));
                 runtime->Dispatch([width, height](Napi::Env env)
                 {
-                    auto& window = Babylon::NativeWindow::GetFromJavaScript(env);
-                    window.Resize(width, height);
+                    Babylon::Plugins::NativeWindow::UpdateSize(env, width, height);
                 });
             }
             break;
@@ -243,7 +243,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_DESTROY:
         {
             runtime.reset();
-            Babylon::DeinitializeGraphics();
+            Babylon::Plugins::NativeEngine::DeinitializeGraphics();
             PostQuitMessage(0);
             break;
         }

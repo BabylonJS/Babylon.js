@@ -415,11 +415,11 @@ namespace Babylon
     }
 
     NativeEngine::NativeEngine(const Napi::CallbackInfo& info)
-        : NativeEngine(info, NativeWindow::GetFromJavaScript(info.Env()))
+        : NativeEngine(info, Plugins::Internal::NativeWindow::GetFromJavaScript(info.Env()))
     {
     }
 
-    NativeEngine::NativeEngine(const Napi::CallbackInfo& info, NativeWindow& nativeWindow)
+    NativeEngine::NativeEngine(const Napi::CallbackInfo& info, Plugins::Internal::NativeWindow& nativeWindow)
         : Napi::ObjectWrap<NativeEngine>{info}
         , m_runtime{JsRuntime::GetFromJavaScript(info.Env())}
         , m_runtimeScheduler{m_runtime}

@@ -1,12 +1,13 @@
 #pragma once
 
-#include <Babylon/NativeWindow.h>
 #include "ShaderCompiler.h"
 #include "BgfxCallback.h"
-#include <Babylon/TicketedCollection.h>
 
 #include <Babylon/JsRuntime.h>
 #include <Babylon/JsRuntimeScheduler.h>
+#include <Babylon/TicketedCollection.h>
+
+#include <NativeWindow.h>
 
 #include <napi/napi.h>
 
@@ -307,7 +308,7 @@ namespace Babylon
 
     public:
         NativeEngine(const Napi::CallbackInfo& info);
-        NativeEngine(const Napi::CallbackInfo& info, NativeWindow& nativeWindow);
+        NativeEngine(const Napi::CallbackInfo& info, Plugins::Internal::NativeWindow& nativeWindow);
         ~NativeEngine();
 
         static void InitializeWindow(void* nativeWindowPtr, uint32_t width, uint32_t height);
@@ -410,7 +411,7 @@ namespace Babylon
         static inline BgfxCallback s_bgfxCallback{};
         FrameBufferManager m_frameBufferManager{};
 
-        NativeWindow::OnResizeCallbackTicket m_resizeCallbackTicket;
+        Plugins::Internal::NativeWindow::NativeWindow::OnResizeCallbackTicket m_resizeCallbackTicket;
 
         template<int size, typename arrayType>
         void SetTypeArrayN(const Napi::CallbackInfo& info);

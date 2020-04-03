@@ -1,8 +1,9 @@
 #include "App.h"
 
-#include <Babylon/Console.h>
-#include <Babylon/NativeEngine.h>
-#include <Babylon/NativeWindow.h>
+#include <Babylon/Plugins/NativeEngine.h>
+#include <Babylon/Plugins/NativeWindow.h>
+#include <Babylon/Polyfills/Console.h>
+#include <Babylon/Polyfills/Window.h>
 #include <Babylon/ScriptLoader.h>
 #include <Babylon/XMLHttpRequest.h>
 
@@ -120,7 +121,7 @@ void App::Uninitialize()
     if (m_runtime)
     {
         m_runtime.reset();
-        Babylon::DeinitializeGraphics();
+        Babylon::Plugins::NativeEngine::DeinitializeGraphics();
     }
 }
 
@@ -162,14 +163,8 @@ concurrency::task<void> App::RestartRuntimeAsync(Windows::Foundation::Rect bound
         m_runtime = std::make_unique<Babylon::AppRuntime>(std::move(rootUrl));
     }
 
-    // Create the console plugin.
-    m_runtime->Dispatch([](Napi::Env env)
-    {
-        Babylon::Console::CreateInstance(env, [](const char* message, auto)
-        {
-            OutputDebugStringA(message);
-        });
-    });
+    // Ensure this is properly uninitialized since it depends on state of the runtime.
+    m_inputBuffer.reset();
 
     // Initialize NativeWindow plugin.
     DisplayInformation^ displayInformation = DisplayInformation::GetForCurrentView();
@@ -179,17 +174,23 @@ concurrency::task<void> App::RestartRuntimeAsync(Windows::Foundation::Rect bound
     auto* windowPtr = reinterpret_cast<ABI::Windows::UI::Core::ICoreWindow*>(CoreWindow::GetForCurrentThread());
     m_runtime->Dispatch([&runtime = m_runtime, &inputBuffer = m_inputBuffer, windowPtr, width, height](Napi::Env env)
     {
-        Babylon::NativeWindow::Initialize(env, windowPtr, width, height);
+        Babylon::Polyfills::Console::Initialize(env, [](const char* message, auto)
+        {
+            OutputDebugStringA(message);
+        });
 
-        auto& jsRuntime = Babylon::JsRuntime::GetFromJavaScript(env);
-        
+        Babylon::Polyfills::Window::Initialize(env);
+
+        Babylon::Plugins::NativeWindow::Initialize(env, windowPtr, width, height);
+
         // Initialize NativeEngine plugin.
-        Babylon::InitializeGraphics(windowPtr, width, height);
-        Babylon::InitializeNativeEngine(env);
+        Babylon::Plugins::NativeEngine::InitializeGraphics(windowPtr, width, height);
+        Babylon::Plugins::NativeEngine::Initialize(env);
 
         // Initialize XMLHttpRequest plugin.
         Babylon::InitializeXMLHttpRequest(env, runtime->RootUrl());
 
+        auto& jsRuntime = Babylon::JsRuntime::GetFromJavaScript(env);
         inputBuffer = std::make_unique<InputManager::InputBuffer>(jsRuntime);
         InputManager::Initialize(jsRuntime, *inputBuffer);
     });
@@ -248,8 +249,7 @@ void App::OnWindowSizeChanged(CoreWindow^ /*sender*/, WindowSizeChangedEventArgs
     size_t height = static_cast<size_t>(args->Size.Height * m_displayScale);
     m_runtime->Dispatch([width, height](Napi::Env env)
     {
-        auto& window = Babylon::NativeWindow::GetFromJavaScript(env);
-        window.Resize(width, height);
+        Babylon::Plugins::NativeWindow::UpdateSize(env, width, height);
     });
 }
 

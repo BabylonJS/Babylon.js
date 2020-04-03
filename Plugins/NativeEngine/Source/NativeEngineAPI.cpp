@@ -1,28 +1,28 @@
-#include <Babylon/NativeEngine.h>
+#include <Babylon/Plugins/NativeEngine.h>
 #include "NativeEngine.h"
 
-#include <Babylon/NativeWindow.h>
+#include <NativeWindow.h>
 
 #ifdef NATIVE_ENGINE_XR
 #include "NativeXr.h"
 #endif
 
-namespace Babylon
+namespace Babylon::Plugins::NativeEngine
 {
     void InitializeGraphics(void* windowPtr, size_t width, size_t height)
     {
-        NativeEngine::InitializeWindow(windowPtr, width, height);
+        Babylon::NativeEngine::InitializeWindow(windowPtr, width, height);
     }
 
-    void InitializeNativeEngine(Napi::Env env)
+    void Initialize(Napi::Env env)
     {
-        NativeEngine::Initialize(env);
+        Babylon::NativeEngine::Initialize(env);
 #ifdef NATIVE_ENGINE_XR
         InitializeNativeXr(env);
 #endif
     }
 
-    void ReinitializeNativeEngine(Napi::Env env, void* windowPtr, size_t width, size_t height)
+    void Reinitialize(Napi::Env env, void* windowPtr, size_t width, size_t height)
     {
         bgfx::PlatformData pd;
         pd.ndt = nullptr;
@@ -33,12 +33,12 @@ namespace Babylon
         bgfx::setPlatformData(pd);
         bgfx::reset(width, height);
 
-        auto& window = NativeWindow::GetFromJavaScript(env);
+        auto& window = Plugins::Internal::NativeWindow::GetFromJavaScript(env);
         window.Resize(width, height);
     }
 
     void DeinitializeGraphics()
     {
-        NativeEngine::DeinitializeWindow();
+        Babylon::NativeEngine::DeinitializeWindow();
     }
 }

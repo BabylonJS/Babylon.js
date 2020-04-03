@@ -10,10 +10,11 @@
 #include <Shared/InputManager.h>
 
 #include <Babylon/AppRuntime.h>
-#include <Babylon/Console.h>
-#include <Babylon/NativeEngine.h>
-#include <Babylon/NativeWindow.h>
+#include <Babylon/Polyfills/Console.h>
+#include <Babylon/Plugins/NativeEngine.h>
+#include <Babylon/Plugins/NativeWindow.h>
 #include <Babylon/ScriptLoader.h>
+#include <Babylon/Polyfills/Window.h>
 #include <Babylon/XMLHttpRequest.h>
 
 #define MAX_LOADSTRING 100
@@ -94,24 +95,26 @@ namespace
 
         // Initialize console plugin.
         runtime->Dispatch([rect, hWnd](Napi::Env env) {
-            auto& jsRuntime = Babylon::JsRuntime::GetFromJavaScript(env);
 
-            Babylon::Console::CreateInstance(env, [](const char* message, auto) {
+            Babylon::Polyfills::Console::Initialize(env, [](const char* message, auto) {
                 OutputDebugStringA(message);
             });
+
+            Babylon::Polyfills::Window::Initialize(env);
 
             // Initialize NativeWindow plugin.
             auto width = static_cast<float>(rect.right - rect.left);
             auto height = static_cast<float>(rect.bottom - rect.top);
-            Babylon::NativeWindow::Initialize(env, hWnd, width, height);
+            Babylon::Plugins::NativeWindow::Initialize(env, hWnd, width, height);
 
             // Initialize NativeEngine plugin.
-            Babylon::InitializeGraphics(hWnd, width, height);
-            Babylon::InitializeNativeEngine(env);
+            Babylon::Plugins::NativeEngine::InitializeGraphics(hWnd, width, height);
+            Babylon::Plugins::NativeEngine::Initialize(env);
 
             // Initialize XMLHttpRequest plugin.
             Babylon::InitializeXMLHttpRequest(env, runtime->RootUrl());
 
+            auto& jsRuntime = Babylon::JsRuntime::GetFromJavaScript(env);
             inputBuffer = std::make_unique<InputManager::InputBuffer>(jsRuntime);
             InputManager::Initialize(jsRuntime, *inputBuffer);
         });
@@ -142,8 +145,7 @@ namespace
     void UpdateWindowSize(float width, float height)
     {
         runtime->Dispatch([width, height](Napi::Env env) {
-            auto& window = Babylon::NativeWindow::GetFromJavaScript(env);
-            window.Resize(static_cast<size_t>(width), static_cast<size_t>(height));
+            Babylon::Plugins::NativeWindow::UpdateSize(env, width, height);
         });
     }
 }

@@ -33,9 +33,10 @@ target_link_to_dependencies(ValidationTests
     PRIVATE bimg
     PRIVATE bx
     PRIVATE AppRuntime
-    PRIVATE Console
     PRIVATE NativeEngine
     PRIVATE NativeWindow
+    PRIVATE Console
+    PRIVATE Window
     PRIVATE ScriptLoader
     PRIVATE XMLHttpRequest)
 

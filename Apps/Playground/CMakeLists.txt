@@ -101,9 +101,10 @@ target_include_directories(Playground PRIVATE "Source" ".")
 
 target_link_to_dependencies(Playground
     PRIVATE AppRuntime
-    PRIVATE Console
-    PRIVATE NativeEngine
     PRIVATE NativeWindow
+    PRIVATE NativeEngine
+    PRIVATE Console
+    PRIVATE Window
     PRIVATE ScriptLoader
     PRIVATE XMLHttpRequest
     ${ADDITIONAL_LIBRARIES})

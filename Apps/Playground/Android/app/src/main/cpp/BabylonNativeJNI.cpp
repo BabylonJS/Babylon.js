@@ -9,9 +9,10 @@
 #include <android/log.h>
 
 #include <Babylon/AppRuntime.h>
-#include <Babylon/Console.h>
-#include <Babylon/NativeEngine.h>
-#include <Babylon/NativeWindow.h>
+#include <Babylon/Plugins/NativeEngine.h>
+#include <Babylon/Plugins/NativeWindow.h>
+#include <Babylon/Polyfills/Console.h>
+#include <Babylon/Polyfills/Window.h>
 #include <Babylon/ScriptLoader.h>
 #include <Babylon/XMLHttpRequest.h>
 #include <InputManager.h>
@@ -51,7 +52,7 @@ Java_BabylonNative_Wrapper_finishEngine(JNIEnv* env, jobject obj)
     loader.reset();
     inputBuffer.reset();
     runtime.reset();
-    Babylon::DeinitializeGraphics();
+    Babylon::Plugins::NativeEngine::DeinitializeGraphics();
 }
 
 JNIEXPORT void JNICALL
@@ -66,31 +67,31 @@ Java_BabylonNative_Wrapper_surfaceCreated(JNIEnv* env, jobject obj, jobject surf
         int32_t height = ANativeWindow_getHeight(window);
         runtime->Dispatch([window, width, height](Napi::Env env)
         {
-            Babylon::Console::CreateInstance(env, [](const char* message, Babylon::Console::LogLevel level)
+            Babylon::Polyfills::Console::Initialize(env, [](const char* message, Babylon::Polyfills::Console::LogLevel level)
             {
                 switch (level)
                 {
-                case Babylon::Console::LogLevel::Log:
+                case Babylon::Polyfills::Console::LogLevel::Log:
                     __android_log_write(ANDROID_LOG_INFO, "BabylonNative", message);
                     break;
-                case Babylon::Console::LogLevel::Warn:
+                case Babylon::Polyfills::Console::LogLevel::Warn:
                     __android_log_write(ANDROID_LOG_WARN, "BabylonNative", message);
                     break;
-                case Babylon::Console::LogLevel::Error:
+                case Babylon::Polyfills::Console::LogLevel::Error:
                     __android_log_write(ANDROID_LOG_ERROR, "BabylonNative", message);
                     break;
                 }
             });
 
-            Babylon::NativeWindow::Initialize(env, window, width, height);
+            Babylon::Polyfills::Window::Initialize(env);
 
-            Babylon::InitializeNativeEngine(env);
+            Babylon::Plugins::NativeWindow::Initialize(env, window, width, height);
+            Babylon::Plugins::NativeEngine::InitializeGraphics(window, width, height);
+            Babylon::Plugins::NativeEngine::Initialize(env);
 
-            Babylon::InitializeGraphics(window, width, height);
             Babylon::InitializeXMLHttpRequest(env, runtime->RootUrl());
 
             auto& jsRuntime = Babylon::JsRuntime::GetFromJavaScript(env);
-
             inputBuffer = std::make_unique<InputManager::InputBuffer>(jsRuntime);
             InputManager::Initialize(jsRuntime, *inputBuffer);
         });
@@ -113,7 +114,7 @@ Java_BabylonNative_Wrapper_surfaceChanged(JNIEnv* env, jobject obj, jint width, 
         ANativeWindow *window = ANativeWindow_fromSurface(env, surface);
         runtime->Dispatch([window, width, height](Napi::Env env)
         {
-            Babylon::ReinitializeNativeEngine(env, window, static_cast<size_t>(width), static_cast<size_t>(height));
+            Babylon::Plugins::NativeEngine::Reinitialize(env, window, static_cast<size_t>(width), static_cast<size_t>(height));
         });
     }
 }

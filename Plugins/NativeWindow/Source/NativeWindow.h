@@ -1,13 +1,9 @@
 #pragma once
 
 #include <Babylon/JsRuntime.h>
-#include <Babylon/TicketedCollection.h> // TODO: Having this publicly exposed and be in BabylonNativeUtils causes arcana to be publicly exposed. Consider alternatives.
+#include <Babylon/TicketedCollection.h>
 
-#include <napi/napi.h>
-
-#include <chrono>
-
-namespace Babylon
+namespace Babylon::Plugins::Internal
 {
     class NativeWindow : public Napi::ObjectWrap<NativeWindow>
     {
@@ -36,12 +32,5 @@ namespace Babylon
         size_t m_height{};
 
         TicketedCollection<OnResizeCallback> m_onResizeCallbacks{};
-
-        static void SetTimeout(const Napi::CallbackInfo& info);
-        static Napi::Value DecodeBase64(const Napi::CallbackInfo& info);
-        static void AddEventListener(const Napi::CallbackInfo& info);
-        static void RemoveEventListener(const Napi::CallbackInfo& info);
-
-        void RecursiveWaitOrCall(std::shared_ptr<Napi::FunctionReference> function, std::chrono::system_clock::time_point whenToRun);
     };
 }
