@@ -7,7 +7,7 @@
     gl_Position.z += biasAndScaleSM.x * gl_Position.w;
 #endif
 
-#if SM_DEPTHCLAMP == 1
+#if defined(SM_DEPTHCLAMP) &&  SM_DEPTHCLAMP == 1
     zSM = gl_Position.z;
     gl_Position.z = 0.0;
 #elif SM_USEDISTANCE == 0
