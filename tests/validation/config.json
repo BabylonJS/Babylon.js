@@ -358,7 +358,7 @@
         },
         {
             "title": "Shadow depth wrappers",
-            "playgroundId": "#PNQRY1#4",
+            "playgroundId": "#PNQRY1#5",
             "referenceImage": "shadowDepthWrappers.png",
             "renderCount": 20,
             "replace": "incrementTime = true, incrementTime = false"
