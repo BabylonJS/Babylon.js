@@ -460,7 +460,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                                 if (!controllerData.teleportationState.backwards) {
                                     controllerData.teleportationState.backwards = true;
                                     // teleport backwards ONCE
-                                    this._tmpVector.set(0, 0, this.backwardsTeleportationDistance!);
+                                    this._tmpVector.set(0, 0, this.backwardsTeleportationDistance * (this._xrSessionManager.scene.useRightHandedSystem ? -1.0 : 1.0));
                                     this._tmpVector.rotateByQuaternionToRef(this._options.xrInput.xrCamera.rotationQuaternion!, this._tmpVector);
                                     this._tmpVector.addInPlace(this._options.xrInput.xrCamera.position);
                                     this._options.xrInput.xrCamera.position.subtractToRef(this._tmpVector, this._tmpVector);
