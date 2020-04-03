@@ -450,18 +450,10 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                             }
                         });
                     } else {
-                        controllerData.onButtonChangedObserver = movementController.onButtonStateChangedObservable.add(() => {
-                            if (this._currentTeleportationControllerId === controllerData.xrController.uniqueId && controllerData.teleportationState.forward && !movementController.touched) {
-                                this._teleportForward(xrController.uniqueId);
-                            }
-                        });
                         // use thumbstick (or touchpad if thumbstick not available)
                         controllerData.onAxisChangedObserver = movementController.onAxisValueChangedObservable.add((axesData) => {
                             if (axesData.y <= 0.7 && controllerData.teleportationState.backwards) {
-                                //if (this._currentTeleportationControllerId === controllerData.xrController.uniqueId) {
                                 controllerData.teleportationState.backwards = false;
-                                //this._currentTeleportationControllerId = "";
-                                //}
                             }
                             if (axesData.y > 0.7 && !controllerData.teleportationState.forward && this.backwardsMovementEnabled && !this.snapPointsOnly) {
                                 // teleport backwards
@@ -512,6 +504,12 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                                 }
                             } else {
                                 controllerData.teleportationState.rotating = false;
+                            }
+
+                            if (axesData.x === 0 && axesData.y === 0) {
+                                if (controllerData.teleportationState.forward) {
+                                    this._teleportForward(xrController.uniqueId);
+                                }
                             }
                         });
                     }
@@ -721,6 +719,9 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
 
     private _teleportForward(controllerId: string) {
         const controllerData = this._controllers[controllerId];
+        if (!controllerData.teleportationState.forward) {
+            return;
+        }
         controllerData.teleportationState.forward = false;
         this._currentTeleportationControllerId = "";
         if (this.snapPointsOnly && !this._snappedToPoint) {
