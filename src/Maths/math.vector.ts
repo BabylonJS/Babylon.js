@@ -1435,6 +1435,7 @@ export class Vector3 {
     }
     /**
      * Returns a new Vector3 set to (0.0, 0.0, 1.0)
+     * @param rightHandedSystem is the scene right-handed (negative z)
      * @returns a new forward Vector3
      */
     public static Forward(rightHandedSystem: boolean = false): Vector3 {
@@ -1442,6 +1443,7 @@ export class Vector3 {
     }
     /**
      * Returns a new Vector3 set to (0.0, 0.0, -1.0)
+     * @param rightHandedSystem is the scene right-handed (negative-z)
      * @returns a new forward Vector3
      */
     public static Backward(rightHandedSystem: boolean = false): Vector3 {
