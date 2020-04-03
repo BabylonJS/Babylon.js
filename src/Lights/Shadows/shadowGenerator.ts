@@ -1059,6 +1059,8 @@ export class ShadowGenerator implements IShadowGenerator {
 
             renderingMesh._bind(subMesh, effect, material.fillMode);
 
+            this.getTransformMatrix(); // make sur _cachedDirection et _cachedPosition are up to date
+
             effect.setFloat3("biasAndScaleSM", this.bias, this.normalBias, this.depthScale);
 
             if (this.getLight().getTypeID() === Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
