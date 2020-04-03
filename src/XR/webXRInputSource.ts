@@ -141,7 +141,7 @@ export class WebXRInputSource {
         const object = gripIfAvailable && this.grip ? this.grip : this.pointer;
         let worldMatrix = object.computeWorldMatrix();
         worldMatrix.decompose(undefined, this._tmpQuaternion, undefined);
-        this._tmpVector.set(0, 0, 1);
+        this._tmpVector.set(0, 0, (this._scene.useRightHandedSystem ? -1.0 : 1.0));
         this._tmpVector.rotateByQuaternionToRef(this._tmpQuaternion, this._tmpVector);
         result.origin.copyFrom(object.absolutePosition);
         result.direction.copyFrom(this._tmpVector);
