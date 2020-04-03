@@ -123,11 +123,12 @@
 - Fixed error when downloading async createScene function in playground ([#7926](https://github.com/BabylonJS/Babylon.js/issues/7926)) ([RaananW](https://github.com/RaananW))
 - Fix issue where ThinEngine.prototype.createDynamicEngine is undefined when using VideoTexture with es6 packages ([rvadhavk](https://github.com/rvadhavk))
 - Fix [issue](https://forum.babylonjs.com/t/virtualjoystick-needs-to-set-style-touch-action-none-explicitly/9562) that canvas for `VirtualJoystick` does not have `touch-action: "none"` set by default ([joergplewe](https://github.com/joergplewe))
-- Fix [issue](https://github.com/BabylonJS/Babylon.js/issues/7943) that prevented user from re-loading custom meshes([belfortk](https://github.com/belfortk))
-- Fix bug in NME where collapsed frames didn't redraw output links to outside nodes([belfortk](https://github.com/belfortk))
+- Fix [issue](https://github.com/BabylonJS/Babylon.js/issues/7943) that prevented user from re-loading custom meshes ([belfortk](https://github.com/belfortk))
+- Fix bug in NME where collapsed frames didn't redraw output links to outside nodes ([belfortk](https://github.com/belfortk))
 - Fix bug in NME where links were not redrawn after moving frame port ([belfortk](https://github.com/belfortk))
-- Fix bugs in NME that were causing inconsistent behavior displaying Move Node Up and Down buttons on frame ports([belfortk](https://github.com/belfortk))
+- Fix bugs in NME that were causing inconsistent behavior displaying Move Node Up and Down buttons on frame ports ([belfortk](https://github.com/belfortk))
 - Fix bug in `ShaderMaterial` when using morph targets ([Popov72](https://github.com/Popov72)
+- Fix bug in playground where child NME windows would not close before page unload events ([belfortk](https://github.com/belfortk)
 
 ## Breaking changes
 
