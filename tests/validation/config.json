@@ -358,10 +358,9 @@
         },
         {
             "title": "Shadow depth wrappers",
-            "playgroundId": "#PNQRY1#5",
+            "playgroundId": "#PNQRY1#9",
             "referenceImage": "shadowDepthWrappers.png",
-            "renderCount": 20,
-            "replace": "incrementTime = true, incrementTime = false"
+            "renderCount": 20
         },
         {
             "title": "Displacement map",
