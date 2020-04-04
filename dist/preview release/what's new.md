@@ -3,7 +3,7 @@
 ## Major updates
 
 - Added particle editor to the Inspector ([Deltakosh](https://github.com/deltakosh)
-- Added the `ShadowDepthWrapper` class to support accurate shadow generation for custom as well as node material shaders ([Popov72](https://github.com/Popov72))
+- Added the `ShadowDepthWrapper` class to support accurate shadow generation for custom as well as node material shaders. [Doc](https://doc.babylonjs.com/babylon101/shadows#custom-shadow-map-shaders) ([Popov72](https://github.com/Popov72))
 
 ## Updates
 
@@ -31,6 +31,8 @@
 - Handle PBR colors as colors in linear space ([Popov72](https://github.com/Popov72))
 - Allow removing textures ([Popov72](https://github.com/Popov72))
 - Edit all textures (anisotropic, clear coat, sheen, ...) for the PBR materials ([Popov72](https://github.com/Popov72))
+- Added right click options to create PBR and Standard Materials ([Deltakosh](https://github.com/deltakosh)
+- Added support for recording GIF ([Deltakosh](https://github.com/deltakosh)
 
 ### Cameras
 
@@ -74,6 +76,8 @@
 - Playground doesn't update FPS when in XR in main and frame ([#7875](https://github.com/BabylonJS/Babylon.js/issues/7875)) ([RaananW](https://github.com/RaananW))
 - Added support for teleportation using pointer events ([RaananW](https://github.com/RaananW))
 - AR reference space type recommendation changed to 'unbounded' ([#7959](https://github.com/BabylonJS/Babylon.js/issues/7959)) ([RaananW](https://github.com/RaananW))
+- Teleportation plugin doesn't use the touched to finish teleportation ([#7916](https://github.com/BabylonJS/Babylon.js/issues/7916)) ([RaananW](https://github.com/RaananW))
+- Support for pointer selection and teleportation in right handed systems ([#7967](https://github.com/BabylonJS/Babylon.js/issues/7967)) ([RaananW](https://github.com/RaananW))
 
 ### Collisions
 
@@ -123,6 +127,7 @@
 - Fix bug in NME where collapsed frames didn't redraw output links to outside nodes([belfortk](https://github.com/belfortk))
 - Fix bug in NME where links were not redrawn after moving frame port ([belfortk](https://github.com/belfortk))
 - Fix bugs in NME that were causing inconsistent behavior displaying Move Node Up and Down buttons on frame ports([belfortk](https://github.com/belfortk))
+- Fix bug in `ShaderMaterial` when using morph targets ([Popov72](https://github.com/Popov72)
 
 ## Breaking changes
 

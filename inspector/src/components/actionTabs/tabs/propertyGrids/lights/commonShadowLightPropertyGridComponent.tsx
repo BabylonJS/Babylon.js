@@ -41,7 +41,9 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
 
         scene.meshes.forEach((m) => {
             generator.addShadowCaster(m);
-            m.receiveShadows = true;
+            if (!m.isAnInstance) {
+                m.receiveShadows = true;
+            }
         });
 
         this.forceUpdate();

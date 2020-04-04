@@ -27,7 +27,7 @@ var buildViewerLibrary = function (library, settings, out) {
         wpConfig.mode = "development";
     }
 
-    let wpBuild = webpackStream(wpConfig, webpack);
+    let wpBuild = webpackStream({ config: wpConfig }, webpack);
 
     //shoud dtsBundle create the declaration?
     if (settings.build.dtsBundle) {
