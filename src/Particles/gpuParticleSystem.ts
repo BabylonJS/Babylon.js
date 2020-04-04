@@ -1378,10 +1378,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             var emitterPosition = (<Vector3>this.emitter);
             emitterWM = Matrix.Translation(emitterPosition.x, emitterPosition.y, emitterPosition.z);
         }
-        if (this.isLocal) {
+
+        if (!this.isLocal) {
             this._updateEffect.setMatrix("emitterWM", emitterWM);
-        } else {
-            this._renderEffect.setMatrix("emitterWM", emitterWM);
         }
 
         // Bind source VAO
@@ -1405,6 +1404,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             this._renderEffect.setTexture("textureSampler", this.particleTexture);
             this._renderEffect.setVector2("translationPivot", this.translationPivot);
             this._renderEffect.setVector3("worldOffset", this.worldOffset);
+            if (this.isLocal) {
+                this._renderEffect.setMatrix("emitterWM", emitterWM);
+            }
             if (this._colorGradientsTexture) {
                 this._renderEffect.setTexture("colorGradientSampler", this._colorGradientsTexture);
             } else {
