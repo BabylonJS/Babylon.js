@@ -153,9 +153,9 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                     this._ranges.length > 0 &&
                     <LineContainerComponent globalState={this.props.globalState} title="ANIMATION RANGES">
                         {
-                            this._ranges.map(range => {
+                            this._ranges.map((range, i) => {
                                 return (
-                                    <ButtonLineComponent key={range.name} label={range.name}
+                                    <ButtonLineComponent key={range.name + i} label={range.name}
                                         onClick={() => {
                                             this._mainAnimatable = null;
                                             this.props.scene.beginAnimation(animatable, range.from, range.to, true)
@@ -174,9 +174,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                             {
                                 animations.map((anim, i) => {
                                     return (
-                                        <>
-                                            <TextLineComponent key={i} label={"#" + i + " >"} value={anim.targetProperty} />
-                                        </>           
+                                        <TextLineComponent key={anim.targetProperty + i} label={"#" + i + " >"} value={anim.targetProperty} />
                                     )
                                 })
                             }
