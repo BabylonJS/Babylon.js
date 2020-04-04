@@ -62,10 +62,8 @@ void main()
 	float difference;
 
 	for (int i = 0; i < SAMPLES; ++i) {
-		// get sample position:
-	   float scale = float(i) / float(SAMPLES); 
-	   scale = mix(0.1, 1.0, scale * scale);
-	   vec3 samplePosition = scale * tbn * sampleSphere[(i + int(random.y * 16.0)) % 16];
+		// get sample position
+	   vec3 samplePosition = tbn * sampleSphere[(i + int(random.y * float(SAMPLES))) % SAMPLES];
 	   samplePosition = samplePosition * correctedRadius + origin;
 	  
 		// project sample position:
@@ -83,7 +81,7 @@ void main()
 		// range check & accumulate:
 	   difference = depthSign * samplePosition.z - sampleDepth;
 	   float rangeCheck = 1.0 - smoothstep(correctedRadius*0.5, correctedRadius, difference);
-	   occlusion += (difference >= 0.05 ? 1.0 : 0.0) * rangeCheck;
+	   occlusion += (difference >= 0.0005 ? 1.0 : 0.0) * rangeCheck;
 	}
 	occlusion = occlusion*(1.0 - smoothstep(maxZ * 0.75, maxZ, depth));
 	float ao = 1.0 - totalStrength * occlusion * samplesFactor;

@@ -9,6 +9,7 @@ uniform sampler2D randomSampler;
 uniform float randTextureTiles;
 uniform float samplesFactor;
 uniform vec3 sampleSphere[SAMPLES];
+uniform float scales[SAMPLES];
 
 uniform float totalStrength;
 uniform float radius;

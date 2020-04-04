@@ -59450,6 +59450,7 @@ declare module BABYLON {
         private _radicalInverse_VdC;
         private _hammersley;
         private _hemisphereSample_uniform;
+        private applyScale;
         private _generateHemisphere;
         private _createSSAOPostProcess;
         private _createSSAOCombinePostProcess;

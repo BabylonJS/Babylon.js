@@ -333,6 +333,13 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         return new Vector3(Math.cos(phi) * sinTheta, Math.sin(phi) * sinTheta, cosTheta);
     }
 
+    private applyScale(v: Vector3, fraction: number) {
+        // can be overloaded
+        // return v.scaleInPlace(Math.max(0.05, fraction * fraction))
+        return v.scaleInPlace(Math.max(0.05,fraction * fraction * fraction));
+    }
+
+
     private _generateHemisphere(): number[] {
         var numSamples = this.samples;
         var result = [];
@@ -347,6 +354,8 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
                 vector = this._hemisphereSample_uniform(rand[0], rand[1]);
             }
 
+            this.applyScale(vector, i / numSamples);
+
             result.push(vector.x, vector.y, vector.z);
             i++;
         }
@@ -358,7 +367,6 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         var numSamples = this.samples;
 
         this._sampleSphere = this._generateHemisphere();
-
         this._ssaoPostProcess = new PostProcess("ssao2", "ssao2",
             [
                 "sampleSphere", "samplesFactor", "randTextureTiles", "totalStrength", "radius",
