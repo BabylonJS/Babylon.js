@@ -2,6 +2,6 @@
 
 @interface ViewController : NSViewController
 
-
+-(IBAction) refresh:(id)sender;
 @end
 

@@ -19,8 +19,19 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
     [super viewDidLoad];
 }
 
-- (void)viewDidAppear {
-    [super viewDidAppear];
+- (void)refreshBabylon {
+    // reset
+    runtime.reset();
+    inputBuffer.reset();
+
+    // parse command line arguments
+    NSArray *arguments = [[NSProcessInfo processInfo] arguments];
+    arguments = [arguments subarrayWithRange:NSMakeRange(1, arguments.count - 1)];
+    __block std::vector<std::string> scripts;
+    scripts.reserve([arguments count]);
+    [arguments enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        scripts.push_back([obj UTF8String]);
+    }];
 
     // Create the AppRuntime
     {
@@ -59,7 +70,26 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
     loader.LoadScript("babylon.max.js");
     loader.LoadScript("babylon.glTF2FileLoader.js");
     loader.LoadScript("babylonjs.materials.js");
-    loader.LoadScript("experience.js");
+    
+    if (scripts.empty())
+    {
+        loader.LoadScript("experience.js");
+    }
+    else
+    {
+        for (const auto& script : scripts)
+        {
+            loader.LoadScript(script);
+        }
+
+        loader.LoadScript("playground_runner.js");
+    }
+}
+
+- (void)viewDidAppear {
+    [super viewDidAppear];
+    
+    [self refreshBabylon];
 }
 
 - (void)viewDidDisappear {
@@ -110,6 +140,11 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
     {
         inputBuffer->SetPointerDown(false);
     }
+}
+
+-(IBAction) refresh:(id)sender
+{
+    [self refreshBabylon];
 }
 
 @end

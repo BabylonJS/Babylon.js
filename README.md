@@ -172,6 +172,8 @@ project. Build and run this app by pressing the green "Play" button or by pressi
 **Required Tools:** [Xcode 11](https://developer.apple.com/xcode/) or newer, 
 [Python 3.0](https://www.python.org/) or newer (required by dependencies)
 
+This has been tested on MacOS Catalina (10.15).
+
 For macOS development, CMake by default will generate a Makefile. It may be possible
 to build Babylon Native for macOS using this approach, but at present only the Xcode
 method is supported. To generate an Xcode project using CMake, you must specify the
@@ -202,6 +204,8 @@ the selected Babylon Native demo app.
 **Required Tools:** [Xcode 11](https://developer.apple.com/xcode/) or newer, 
 [Python 3.0](https://www.python.org/) or newer (required by dependencies)
 
+This has been tested on MacOS Catalina (10.15) and iOS 13.
+
 For macOS development, CMake by default will generate a Makefile. It may be possible
 to build Babylon Native for macOS using this approach, but at present only the Xcode
 method is supported. To generate an Xcode project using CMake, you must specify the
@@ -213,7 +217,7 @@ these capabilities are set to their correct state by the additional CMake variab
 the following command:
 
 ```
-cmake -G Xcode -DCMAKE_TOOLCHAIN_FILE=../Dependencies/ios-cmake/ios.toolchain.cmake -DPLATFORM=OS64COMBINED -DENABLE_ARC=0 -DDEPLOYMENT_TARGET=12 -DENABLE_GLSLANG_BINARIES=OFF -DSPIRV_CROSS_CLI=OFF
+cmake -G Xcode -DCMAKE_TOOLCHAIN_FILE=../Dependencies/ios-cmake/ios.toolchain.cmake -DPLATFORM=OS64COMBINED -DENABLE_ARC=0 -DDEPLOYMENT_TARGET=12 -DENABLE_GLSLANG_BINARIES=OFF -DSPIRV_CROSS_CLI=OFF ..
 ```
 
 CMake will generate a new `BabylonNative.xcodeproj` file in your working directory.
@@ -236,6 +240,8 @@ the selected Babylon Native demo app.
 
 **Required Tools:** 
 [Android Studio](https://developer.android.com/studio), [Nodejs](https://nodejs.org/en/download/)
+
+The minimal requirement target is Android 5.0 with an OpenGL ES 3.0 compatible GPU.
 
 Only building with AndroidStudio is supported. CMake is not used directly. Instead, 
 Gradle is used for building and CMake is automatically invocated for building the native part.
