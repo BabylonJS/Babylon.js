@@ -140,7 +140,11 @@ void main() {
 		rotatedCorner.z = 0.;
 
 		// Expand position
-		vec4 viewPosition = view * vec4((position + worldOffset), 1.0) + rotatedCorner;
+		#ifdef LOCAL
+			vec4 viewPosition = view * vec4(((emitterWM * vec4(position, 1.0)).xyz + worldOffset), 1.0) + rotatedCorner;
+		#else
+			vec4 viewPosition = view * vec4((position + worldOffset), 1.0) + rotatedCorner;
+		#endif
 	#endif
 
 #else
