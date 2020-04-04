@@ -1,6 +1,5 @@
-import { Scene } from '../scene';
-import { Nullable } from '../types';
 import { Observable } from "../Misc/observable";
+import { Engine } from '../Engines/engine';
 
 /**
  * This class will take all inputs from Keyboard, Pointer, and
@@ -34,20 +33,34 @@ export class DeviceInputSystem {
     private _keyboardActive: boolean = false;
     private _mouseActive: boolean = false;
     private _touchActive: boolean = false;
-    private _elementToAttachTo: Nullable<HTMLElement>;
-    private _maxKeyCodes: number = 222;
-    private _maxMouseInputs: number = 7;
-    private _maxTouchInputs: number = 3;
+    private _elementToAttachTo: HTMLElement;
+
+    private _keyboardDownEvent = (evt: any) => {};
+    private _keyboardUpEvent = (evt: any) => {};
+
+    private _pointerMoveEvent = (evt: any) => {};
+    private _pointerDownEvent = (evt: any) => {};
+    private _pointerUpEvent = (evt: any) => {};
+
+    private _gamepadConnectedEvent = (evt: any) => {};
+    private _gamepadDisconnectedEvent = (evt: any) => {};
+
+    private static _MAX_KEYCODES: number = 222;
+    private static _MAX_MOUSE_INPUTS: number = 7;
+    private static _MAX_TOUCH_INPUTS: number = 3;
 
     /**
      * Default Constructor
-     * @param scene - scene object to check for canvas
+     * @param engine - engine to pull input element from
      */
-    constructor(scene: Scene) {
-        this._elementToAttachTo = scene.getEngine().getInputElement();
-        this.handleKeyActions();
-        this.handlePointerActions();
-        this.handleGamepadActions();
+    constructor(engine: Engine) {
+        const inputElement = engine.getInputElement();
+        if (inputElement) {
+            this._elementToAttachTo = inputElement;
+            this._handleKeyActions();
+            this._handlePointerActions();
+            this._handleGamepadActions();
+        }
     }
 
     // Public functions
@@ -57,19 +70,44 @@ export class DeviceInputSystem {
      * @param inputIndex Index of device input
      * @returns Current value of input
      */
-    public pollInput(deviceName: string, inputIndex: number): number {
+    public pollInput(deviceName: string, inputIndex: number): number | undefined {
         const device = this._inputs[deviceName];
 
-        if (device && device![inputIndex] != undefined) {
-            this.updateDevices();
-            return device![inputIndex];
+        if (!device || device[inputIndex] === undefined)
+        {
+            return undefined;
         }
-        else if (device) {
-            throw `Unable to find input ${inputIndex} on device ${deviceName}`;
+
+        this._updateDevice(deviceName, inputIndex);
+        return device[inputIndex];
+    }
+
+    /**
+     * Dispose of all the eventlisteners and clears the observables
+     */
+    public dispose()
+    {
+        this.onDeviceConnectedObservable.clear();
+        this.onDeviceDisconnectedObservable.clear();
+
+        // Keyboard Events
+        if (this._keyboardActive)
+        {
+            window.removeEventListener("keydown", this._keyboardDownEvent);
+            window.removeEventListener("keyup", this._keyboardUpEvent);
         }
-        else {
-            throw `Unable to find device ${deviceName}`;
+
+        // Pointer Events
+        if (this._mouseActive || this._touchActive)
+        {
+            this._elementToAttachTo.removeEventListener("pointermove", this._pointerMoveEvent);
+            this._elementToAttachTo.removeEventListener("pointerdown", this._pointerDownEvent);
+            this._elementToAttachTo.removeEventListener("pointerup", this._pointerUpEvent);
         }
+
+        // Gamepad Events
+        window.removeEventListener("gamepadconnected", this._gamepadConnectedEvent);
+        window.removeEventListener("gamepaddisconnected", this._gamepadDisconnectedEvent);
     }
 
     // Private functions
@@ -78,10 +116,12 @@ export class DeviceInputSystem {
      * @param deviceName Assigned name of device (may be SN)
      * @param numberOfInputs Number of input entries to create for given device
      */
-    private registerDevice(deviceName: string, numberOfInputs: number) {
+    private _registerDevice(deviceName: string, numberOfInputs: number) {
         if (!this._inputs[deviceName]) {
             const device = new Array<number>(numberOfInputs);
-            for (let i = 0; i < numberOfInputs; i++) {
+
+            for (let i = 0; i < numberOfInputs; i++)
+            {
                 device[i] = 0;
             }
 
@@ -94,7 +134,7 @@ export class DeviceInputSystem {
      * Given a specific device name, remove that device from the device map
      * @param deviceName Name of device to be removed
      */
-    private unregisterDevice(deviceName: string) {
+    private _unregisterDevice(deviceName: string) {
         if (this._inputs[deviceName]) {
             delete this._inputs[deviceName];
             this.onDeviceDisconnectedObservable.notifyObservers(deviceName);
@@ -104,47 +144,50 @@ export class DeviceInputSystem {
     /**
      * Handle all actions that come from keyboard interaction
      */
-    private handleKeyActions() {
-        window.addEventListener("keydown", (evt) => {
+    private _handleKeyActions() {
+        this._keyboardDownEvent = ((evt) => {
             if (!this._keyboardActive) {
                 this._keyboardActive = true;
-                this.registerDevice(DeviceInputSystem.KEYBOARD_DEVICE, this._maxKeyCodes);
+                this._registerDevice(DeviceInputSystem.KEYBOARD_DEVICE, DeviceInputSystem._MAX_KEYCODES);
             }
 
-            let kbKey = this._inputs[DeviceInputSystem.KEYBOARD_DEVICE];
+            const kbKey = this._inputs[DeviceInputSystem.KEYBOARD_DEVICE];
             if (kbKey) {
                 kbKey[evt.keyCode] = 1;
             }
         });
 
-        window.addEventListener("keyup", (evt) => {
-            let kbKey = this._inputs[DeviceInputSystem.KEYBOARD_DEVICE];
+        this._keyboardUpEvent = ((evt) => {
+            const kbKey = this._inputs[DeviceInputSystem.KEYBOARD_DEVICE];
             if (kbKey) {
                 kbKey[evt.keyCode] = 0;
             }
         });
+
+        window.addEventListener("keydown", this._keyboardDownEvent);
+        window.addEventListener("keyup", this._keyboardUpEvent);
     }
 
     /**
      * Handle all actions that come from pointer interaction
      */
-    private handlePointerActions() {
-        this._elementToAttachTo?.addEventListener("pointermove", (evt) => {
+    private _handlePointerActions() {
+        this._pointerMoveEvent = ((evt) => {
             if (evt.pointerType == "mouse") {
                 if (!this._mouseActive) {
                     this._mouseActive = true;
-                    this.registerDevice(DeviceInputSystem.MOUSE_DEVICE, this._maxMouseInputs);
+                    this._registerDevice(DeviceInputSystem.MOUSE_DEVICE, DeviceInputSystem._MAX_MOUSE_INPUTS);
                 }
 
-                let pointer = this._inputs[DeviceInputSystem.MOUSE_DEVICE];
+                const pointer = this._inputs[DeviceInputSystem.MOUSE_DEVICE];
                 if (pointer) {
                     pointer[0] = evt.clientX;
                     pointer[1] = evt.clientY;
                 }
             }
             else if (evt.pointerType == "touch") {
-                let touchIndex = this._pointerIds.lastIndexOf(evt.pointerId);
-                let pointer = this._inputs[`${DeviceInputSystem.TOUCH_DEVICE}-${touchIndex}`];
+                const touchIndex = this._pointerIds.lastIndexOf(evt.pointerId);
+                const pointer = this._inputs[`${DeviceInputSystem.TOUCH_DEVICE}-${touchIndex}`];
                 if (pointer) {
                     pointer[0] = evt.clientX;
                     pointer[1] = evt.clientY;
@@ -152,32 +195,32 @@ export class DeviceInputSystem {
             }
         });
 
-        this._elementToAttachTo?.addEventListener("pointerdown", (evt) => {
+        this._pointerDownEvent = ((evt) => {
             if (evt.pointerType == "mouse") {
                 if (!this._mouseActive) {
                     this._mouseActive = true;
-                    this.registerDevice(DeviceInputSystem.MOUSE_DEVICE, this._maxMouseInputs);
+                    this._registerDevice(DeviceInputSystem.MOUSE_DEVICE, DeviceInputSystem._MAX_MOUSE_INPUTS);
                 }
 
-                let mouseButton = this._inputs[DeviceInputSystem.MOUSE_DEVICE];
+                const mouseButton = this._inputs[DeviceInputSystem.MOUSE_DEVICE];
                 if (mouseButton) {
                     mouseButton[0] = evt.clientX;
                     mouseButton[1] = evt.clientY;
                     mouseButton[evt.button + 2] = 1;
                 }
             }
-            else if (evt.pointerType == "touch" && this._activeTouchNumber < this._maxTouchInputs) {
+            else if (evt.pointerType == "touch" && this._activeTouchNumber < DeviceInputSystem._MAX_TOUCH_INPUTS) {
                 this._pointerIds.push(evt.pointerId);
                 if (!this._touchActive) {
                     this._touchActive = true;
 
                     // Initialize all potential touch inputs
-                    for (let i = 0; i < this._maxTouchInputs; i++) {
-                        this.registerDevice(`${DeviceInputSystem.TOUCH_DEVICE}-${i}`, this._maxTouchInputs);
+                    for (let i = 0; i < DeviceInputSystem._MAX_TOUCH_INPUTS; i++) {
+                        this._registerDevice(`${DeviceInputSystem.TOUCH_DEVICE}-${i}`, DeviceInputSystem._MAX_TOUCH_INPUTS);
                     }
                 }
 
-                let touchButton = this._inputs[`${DeviceInputSystem.TOUCH_DEVICE}-${this._pointerIds.lastIndexOf(evt.pointerId)}`];
+                const touchButton = this._inputs[`${DeviceInputSystem.TOUCH_DEVICE}-${this._pointerIds.lastIndexOf(evt.pointerId)}`];
                 if (touchButton) {
                     touchButton[0] = evt.clientX;
                     touchButton[1] = evt.clientY;
@@ -187,23 +230,23 @@ export class DeviceInputSystem {
             }
         });
 
-        this._elementToAttachTo?.addEventListener("pointerup", (evt) => {
+        this._pointerUpEvent = ((evt) => {
             if (evt.pointerType == "mouse") {
-                let mouseButton = this._inputs[DeviceInputSystem.MOUSE_DEVICE];
+                const mouseButton = this._inputs[DeviceInputSystem.MOUSE_DEVICE];
                 if (mouseButton) {
                     mouseButton[evt.button + 2] = 0;
                 }
             }
             else if (evt.pointerType == "touch") {
-                let touchIndex = this._pointerIds.lastIndexOf(evt.pointerId);
-                let touchButton = this._inputs[`${DeviceInputSystem.TOUCH_DEVICE}-${touchIndex}`];
+                const touchIndex = this._pointerIds.lastIndexOf(evt.pointerId);
+                const touchButton = this._inputs[`${DeviceInputSystem.TOUCH_DEVICE}-${touchIndex}`];
                 if (touchButton) {
                     this._pointerIds.splice(touchIndex, 1);
 
                     // Push values of touch inputs down
                     for (let i = touchIndex; i < this._activeTouchNumber; i++) {
-                        let nextTouch = this._inputs[`${DeviceInputSystem.TOUCH_DEVICE}-${i + 1}`];
-                        let currentTouch = this._inputs[`${DeviceInputSystem.TOUCH_DEVICE}-${i}`];
+                        const nextTouch = this._inputs[`${DeviceInputSystem.TOUCH_DEVICE}-${i + 1}`];
+                        const currentTouch = this._inputs[`${DeviceInputSystem.TOUCH_DEVICE}-${i}`];
 
                         if (currentTouch && nextTouch) {
                             currentTouch[0] = nextTouch[0];
@@ -221,46 +264,50 @@ export class DeviceInputSystem {
                 }
             }
         });
+
+        this._elementToAttachTo.addEventListener("pointermove", this._pointerMoveEvent);
+        this._elementToAttachTo.addEventListener("pointerdown", this._pointerDownEvent);
+        this._elementToAttachTo.addEventListener("pointerup", this._pointerUpEvent);
     }
 
     /**
      * Handle all actions that come from gamepad interaction
      */
-    private handleGamepadActions() {
-        window.addEventListener("gamepadconnected", (evt: any) => {
+    private _handleGamepadActions() {
+        this._gamepadConnectedEvent = ((evt: any) => {
             const deviceName = `${evt.gamepad.id}-${evt.gamepad.index}`;
-            this.registerDevice(deviceName, evt.gamepad.buttons.length + evt.gamepad.axes.length);
+            this._registerDevice(deviceName, evt.gamepad.buttons.length + evt.gamepad.axes.length);
         });
 
-        window.addEventListener("gamepaddisconnected", (evt: any) => {
+        this._gamepadDisconnectedEvent = ((evt: any) => {
             const deviceName = `${evt.gamepad.id}-${evt.gamepad.index}`;
-            this.unregisterDevice(deviceName);
+            this._unregisterDevice(deviceName);
         });
+
+        window.addEventListener("gamepadconnected", this._gamepadConnectedEvent);
+        window.addEventListener("gamepaddisconnected", this._gamepadDisconnectedEvent);
     }
 
     /**
      * Update all non-event based devices with each frame
      */
-    private updateDevices() {
+    private _updateDevice(deviceName: string, inputIndex: number) {
         // Gamepads
         const gamepads = navigator.getGamepads();
 
-        for (let j = 0; j < gamepads.length; j++) {
-            let gp = gamepads[j];
+        // Look for current gamepad and get updated values
+        for (let i = 0; i < gamepads.length; i++) {
+            const gp = gamepads[i];
+            if (gp && deviceName == `${gp.id}-${gp.index}`)
+            {
+                const device = this._inputs[deviceName];
 
-            if (gp) {
-                for (let i = 0; i < gp.buttons.length; i++) {
-                    let button = this._inputs[`${gp.id}-${gp.index}`];
-                    if (button) {
-                        button[i] = gp.buttons[i].value;
-                    }
+                if (inputIndex >= gp.buttons.length)
+                {
+                    device[inputIndex] = gp.axes[inputIndex - gp.buttons.length].valueOf();
                 }
-
-                for (let i = 0; i < gp.axes.length; i++) {
-                    let axis = this._inputs[`${gp.id}-${gp.index}`];
-                    if (axis) {
-                        axis[i + gp.buttons.length] = gp.axes[i].valueOf();
-                    }
+                else {
+                    device[inputIndex] = gp.buttons[inputIndex].value;
                 }
             }
         }
