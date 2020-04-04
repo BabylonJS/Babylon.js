@@ -121,15 +121,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     /**
      * Specifies if the particles are updated in emitter local space or world space.
-     * This is always false for GPU particles
      */
-    public get isLocal() {
-        return false;
-    }
-
-    public set isLocal(value: boolean) {
-        // Ignore
-    }
+    public isLocal = false;
 
     /**
      * Is this system ready to be used/rendered
@@ -1065,6 +1058,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             defines += "\n#define NOISE";
         }
 
+        if (this.isLocal) {
+            defines += "\n#define LOCAL";
+        }
+
         if (this._updateEffect && this._updateEffectOptions.defines === defines) {
             return;
         }
@@ -1134,6 +1131,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             defines = "\n#define BLENDMULTIPLYMODE";
         }
 
+        if (this.isLocal) {
+            defines += "\n#define LOCAL";
+        }
+
         if (this._isBillboardBased) {
             defines += "\n#define BILLBOARD";
 
@@ -1167,7 +1168,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             return;
         }
 
-        var uniforms = ["worldOffset", "view", "projection", "colorDead", "invView", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "sheetInfos", "translationPivot", "eyePosition"];
+        var uniforms = ["emitterWM", "worldOffset", "view", "projection", "colorDead", "invView", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "sheetInfos", "translationPivot", "eyePosition"];
         var samplers = ["textureSampler", "colorGradientSampler"];
 
         if (ImageProcessingConfiguration) {
@@ -1377,7 +1378,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             var emitterPosition = (<Vector3>this.emitter);
             emitterWM = Matrix.Translation(emitterPosition.x, emitterPosition.y, emitterPosition.z);
         }
-        this._updateEffect.setMatrix("emitterWM", emitterWM);
+        if (this.isLocal) {
+            this._updateEffect.setMatrix("emitterWM", emitterWM);
+        } else {
+            this._renderEffect.setMatrix("emitterWM", emitterWM);
+        }
 
         // Bind source VAO
         this._engine.bindVertexArrayObject(this._updateVAO[this._targetIndex], null);

@@ -4,6 +4,9 @@ uniform mat4 view;
 uniform mat4 projection;
 uniform vec2 translationPivot;
 uniform vec3 worldOffset;
+#ifdef LOCAL
+uniform mat4 emitterWM;
+#endif
 
 // Particles state
 in vec3 position;
@@ -58,8 +61,11 @@ vec3 rotate(vec3 yaxis, vec3 rotatedCorner) {
 	mat3 rotMatrix =  mat3(row0, row1, row2);
 
 	vec3 alignedCorner = rotMatrix * rotatedCorner;
-
-	return (position + worldOffset) + alignedCorner;
+	#ifdef LOCAL
+		return ((emitterWM * vec4(position, 1.0)).xyz + worldOffset) + alignedCorner;
+	#else
+		return (position + worldOffset) + alignedCorner;
+	#endif
 }
 
 #ifdef BILLBOARDSTRETCHED
@@ -75,7 +81,11 @@ vec3 rotateAlign(vec3 toCamera, vec3 rotatedCorner) {
 	mat3 rotMatrix =  mat3(row0, row1, row2);
 
 	vec3 alignedCorner = rotMatrix * rotatedCorner;
-	return (position + worldOffset) + alignedCorner;
+	#ifdef LOCAL
+		return ((emitterWM * vec4(position, 1.0)).xyz + worldOffset) + alignedCorner;
+	#else
+		return (position + worldOffset) + alignedCorner;
+	#endif
 }
 #endif
 
