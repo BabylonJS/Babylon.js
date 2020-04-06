@@ -398,40 +398,44 @@ var CustomMaterial = /** @class */ (function (_super) {
         return _this;
     }
     CustomMaterial.prototype.AttachAfterBind = function (mesh, effect) {
-        for (var el in this._newUniformInstances) {
-            var ea = el.toString().split('-');
-            if (ea[0] == 'vec2') {
-                effect.setVector2(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'vec3') {
-                effect.setVector3(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'vec4') {
-                effect.setVector4(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'mat4') {
-                effect.setMatrix(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'float') {
-                effect.setFloat(ea[1], this._newUniformInstances[el]);
+        if (this._newUniformInstances) {
+            for (var el in this._newUniformInstances) {
+                var ea = el.toString().split('-');
+                if (ea[0] == 'vec2') {
+                    effect.setVector2(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'vec3') {
+                    effect.setVector3(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'vec4') {
+                    effect.setVector4(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'mat4') {
+                    effect.setMatrix(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'float') {
+                    effect.setFloat(ea[1], this._newUniformInstances[el]);
+                }
             }
         }
-        for (var el in this._newSamplerInstances) {
-            var ea = el.toString().split('-');
-            if (ea[0] == 'sampler2D' && this._newSamplerInstances[el].isReady && this._newSamplerInstances[el].isReady()) {
-                effect.setTexture(ea[1], this._newSamplerInstances[el]);
+        if (this._newSamplerInstances) {
+            for (var el in this._newSamplerInstances) {
+                var ea = el.toString().split('-');
+                if (ea[0] == 'sampler2D' && this._newSamplerInstances[el].isReady && this._newSamplerInstances[el].isReady()) {
+                    effect.setTexture(ea[1], this._newSamplerInstances[el]);
+                }
             }
         }
     };
     CustomMaterial.prototype.ReviewUniform = function (name, arr) {
-        if (name == "uniform") {
+        if (name == "uniform" && this._newUniforms) {
             for (var ind = 0; ind < this._newUniforms.length; ind++) {
                 if (this._customUniform[ind].indexOf('sampler') == -1) {
                     arr.push(this._newUniforms[ind]);
                 }
             }
         }
-        if (name == "sampler") {
+        if (name == "sampler" && this._newUniforms) {
             for (var ind = 0; ind < this._newUniforms.length; ind++) {
                 if (this._customUniform[ind].indexOf('sampler') != -1) {
                     arr.push(this._newUniforms[ind]);
@@ -491,12 +495,12 @@ var CustomMaterial = /** @class */ (function (_super) {
         if (!this._customUniform) {
             this._customUniform = new Array();
             this._newUniforms = new Array();
-            this._newSamplerInstances = new Array();
-            this._newUniformInstances = new Array();
+            this._newSamplerInstances = {};
+            this._newUniformInstances = {};
         }
         if (param) {
             if (kind.indexOf("sampler") == -1) {
-                this._newUniformInstances[kind + "-" + name] = param;
+                this._newSamplerInstances[kind + "-" + name] = param;
             }
             else {
                 this._newUniformInstances[kind + "-" + name] = param;
@@ -644,40 +648,44 @@ var PBRCustomMaterial = /** @class */ (function (_super) {
         return _this;
     }
     PBRCustomMaterial.prototype.AttachAfterBind = function (mesh, effect) {
-        for (var el in this._newUniformInstances) {
-            var ea = el.toString().split('-');
-            if (ea[0] == 'vec2') {
-                effect.setVector2(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'vec3') {
-                effect.setVector3(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'vec4') {
-                effect.setVector4(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'mat4') {
-                effect.setMatrix(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'float') {
-                effect.setFloat(ea[1], this._newUniformInstances[el]);
+        if (this._newUniformInstances) {
+            for (var el in this._newUniformInstances) {
+                var ea = el.toString().split('-');
+                if (ea[0] == 'vec2') {
+                    effect.setVector2(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'vec3') {
+                    effect.setVector3(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'vec4') {
+                    effect.setVector4(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'mat4') {
+                    effect.setMatrix(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'float') {
+                    effect.setFloat(ea[1], this._newUniformInstances[el]);
+                }
             }
         }
-        for (var el in this._newSamplerInstances) {
-            var ea = el.toString().split('-');
-            if (ea[0] == 'sampler2D' && this._newSamplerInstances[el].isReady && this._newSamplerInstances[el].isReady()) {
-                effect.setTexture(ea[1], this._newSamplerInstances[el]);
+        if (this._newSamplerInstances) {
+            for (var el in this._newSamplerInstances) {
+                var ea = el.toString().split('-');
+                if (ea[0] == 'sampler2D' && this._newSamplerInstances[el].isReady && this._newSamplerInstances[el].isReady()) {
+                    effect.setTexture(ea[1], this._newSamplerInstances[el]);
+                }
             }
         }
     };
     PBRCustomMaterial.prototype.ReviewUniform = function (name, arr) {
-        if (name == "uniform") {
+        if (name == "uniform" && this._newUniforms) {
             for (var ind = 0; ind < this._newUniforms.length; ind++) {
                 if (this._customUniform[ind].indexOf('sampler') == -1) {
                     arr.push(this._newUniforms[ind]);
                 }
             }
         }
-        if (name == "sampler") {
+        if (name == "sampler" && this._newUniforms) {
             for (var ind = 0; ind < this._newUniforms.length; ind++) {
                 if (this._customUniform[ind].indexOf('sampler') != -1) {
                     arr.push(this._newUniforms[ind]);
@@ -739,12 +747,12 @@ var PBRCustomMaterial = /** @class */ (function (_super) {
         if (!this._customUniform) {
             this._customUniform = new Array();
             this._newUniforms = new Array();
-            this._newSamplerInstances = new Array();
-            this._newUniformInstances = new Array();
+            this._newSamplerInstances = {};
+            this._newUniformInstances = {};
         }
         if (param) {
             if (kind.indexOf("sampler") == -1) {
-                this._newUniformInstances[kind + "-" + name] = param;
+                this._newSamplerInstances[kind + "-" + name] = param;
             }
             else {
                 this._newUniformInstances[kind + "-" + name] = param;

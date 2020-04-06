@@ -66906,11 +66906,11 @@ var NodeEditor = /** @class */ (function () {
                 }
             };
         }
-        window.onbeforeunload = function () {
+        window.addEventListener('beforeunload', function () {
             if (babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_7__["DataStorage"].ReadNumber("PreviewMeshType", _components_preview_previewMeshType__WEBPACK_IMPORTED_MODULE_6__["PreviewMeshType"].Box) === _components_preview_previewMeshType__WEBPACK_IMPORTED_MODULE_6__["PreviewMeshType"].Custom) {
                 babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_7__["DataStorage"].WriteNumber("PreviewMeshType", _components_preview_previewMeshType__WEBPACK_IMPORTED_MODULE_6__["PreviewMeshType"].Box);
             }
-        };
+        });
     };
     return NodeEditor;
 }());

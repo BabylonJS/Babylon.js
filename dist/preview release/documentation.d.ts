@@ -16792,7 +16792,7 @@ declare module BABYLON {
         protected _initializeShadowMap(): void;
         protected _initializeBlurRTTAndPostProcesses(): void;
         protected _renderForShadowMap(opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void;
-        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any): void;
+        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any, mesh: AbstractMesh): void;
         protected _renderSubMeshForShadowMap(subMesh: SubMesh): void;
         protected _applyFilterValues(): void;
         /**
@@ -55061,7 +55061,7 @@ declare module BABYLON {
         protected _initializeGenerator(): void;
         protected _createTargetRenderTexture(): void;
         protected _initializeShadowMap(): void;
-        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any): void;
+        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any, mesh: AbstractMesh): void;
         protected _isReadyCustomDefines(defines: any, subMesh: SubMesh, useInstances: boolean): void;
         /**
          * Prepare all the defines in a material relying on a shadow map at the specified light index.
@@ -79865,8 +79865,12 @@ declare module BABYLON {
         _createdShaderName: string;
         _customUniform: string[];
         _newUniforms: string[];
-        _newUniformInstances: any[];
-        _newSamplerInstances: BABYLON.Texture[];
+        _newUniformInstances: {
+            [name: string]: any;
+        };
+        _newSamplerInstances: {
+            [name: string]: BABYLON.Texture;
+        };
         _customAttributes: string[];
         FragmentShader: string;
         VertexShader: string;
@@ -79921,8 +79925,12 @@ declare module BABYLON {
         _createdShaderName: string;
         _customUniform: string[];
         _newUniforms: string[];
-        _newUniformInstances: any[];
-        _newSamplerInstances: BABYLON.Texture[];
+        _newUniformInstances: {
+            [name: string]: any;
+        };
+        _newSamplerInstances: {
+            [name: string]: BABYLON.Texture;
+        };
         _customAttributes: string[];
         FragmentShader: string;
         VertexShader: string;
