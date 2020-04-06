@@ -306,6 +306,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         let downTriggered = false;
         controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
             if (!controllerData.pick) { return; }
+            controllerData.laserPointer.material!.alpha = 0;
             discMesh.isVisible = false;
             if (controllerData.pick.hit) {
                 if (!this._pickingMoved(oldPick, controllerData.pick)) {
@@ -502,8 +503,9 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         if (oldPick.pickedMesh !== newPick.pickedMesh) { return true; }
         oldPick.pickedPoint?.subtractToRef(newPick.pickedPoint, this._tmpVectorForPickCompare);
         this._tmpVectorForPickCompare.set(Math.abs(this._tmpVectorForPickCompare.x), Math.abs(this._tmpVectorForPickCompare.y), Math.abs(this._tmpVectorForPickCompare.z));
-        const delta = (this._options.gazeModePointerMovedFactor || 1) * 0.01 / newPick.distance;
+        const delta = (this._options.gazeModePointerMovedFactor || 1) * 0.01 * newPick.distance;
         const length = this._tmpVectorForPickCompare.length();
+        console.log(delta, length, newPick.distance);
         if (length > delta) { return true; }
         return false;
     }

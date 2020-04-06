@@ -39,6 +39,8 @@ import "../../Shaders/pbr.fragment";
 import "../../Shaders/pbr.vertex";
 import { EffectFallbacks } from '../effectFallbacks';
 
+const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
+
 /**
  * Manages the defines for the PBR Material.
  * @hidden
@@ -745,11 +747,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public readonly subSurface = new PBRSubSurfaceConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
 
-    /**
-     * Custom callback helping to override the default shader used in the material.
-     */
-    public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: PBRMaterialDefines, attributes?: string[]) => string;
-
     protected _rebuildInParallel = false;
 
     /**
@@ -880,10 +877,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         const defines = <PBRMaterialDefines>subMesh._materialDefines;
-        if (!this.checkReadyOnEveryCall && subMesh.effect) {
-            if (defines._renderId === this.getScene().getRenderId()) {
-                return true;
-            }
+        if (this._isReadyForSubMesh(subMesh)) {
+            return true;
         }
 
         const scene = this.getScene();
@@ -989,6 +984,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         let effect = this._prepareEffect(mesh, defines, this.onCompiled, this.onError, useInstances);
 
         if (effect) {
+            if (this._onEffectCreatedObservable) {
+                onCreatedEffectParameters.effect = effect;
+                onCreatedEffectParameters.subMesh = subMesh;
+                this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
+            }
+
             // Use previous effect while new one is compiling
             if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
                 effect = previousEffect;
@@ -1515,6 +1516,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         const defines = new PBRMaterialDefines();
         const effect = this._prepareEffect(mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane)!;
+        if (this._onEffectCreatedObservable) {
+            onCreatedEffectParameters.effect = effect;
+            onCreatedEffectParameters.subMesh = null;
+            this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
+        }
         if (effect.isReady()) {
             if (onCompiled) {
                 onCompiled(this);

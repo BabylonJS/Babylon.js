@@ -11,13 +11,15 @@ import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { NodePort } from './diagram/nodePort';
 import { NodeLink } from './diagram/nodeLink';
 import { GraphFrame } from './diagram/graphFrame';
+import { FrameNodePort } from './diagram/frameNodePort';
+import { FramePortData } from './diagram/graphCanvas';
 
 export class GlobalState {
     nodeMaterial: NodeMaterial;
     hostElement: HTMLElement;
     hostDocument: HTMLDocument;
     hostWindow: Window;
-    onSelectionChangedObservable = new Observable<Nullable<GraphNode | NodeLink | GraphFrame | NodePort>>();
+    onSelectionChangedObservable = new Observable<Nullable<GraphNode | NodeLink | GraphFrame | NodePort | FramePortData>>();
     onRebuildRequiredObservable = new Observable<void>();
     onBuiltObservable = new Observable<void>();
     onResetRequiredObservable = new Observable<void>();
@@ -35,14 +37,14 @@ export class GlobalState {
     onAnimationCommandActivated = new Observable<void>();
     onCandidateLinkMoved = new Observable<Nullable<Vector2>>();
     onSelectionBoxMoved = new Observable<ClientRect | DOMRect>();
-    onFrameCreated = new Observable<GraphFrame>();
-    onCandidatePortSelected = new Observable<Nullable<NodePort>>();
-    onFramePortMoveUpObserver = new Observable<NodePort>();
-    onFramePortMoveDownObserver = new Observable<NodePort>();
+    onFrameCreatedObservable = new Observable<GraphFrame>();
+    onCandidatePortSelectedObservable = new Observable<Nullable<NodePort | FrameNodePort>>();
+    onGraphNodeRemovalObservable = new Observable<GraphNode>();
     onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
     onGridSizeChanged = new Observable<void>();
     previewMeshType: PreviewMeshType;
     previewMeshFile: File;
+    listOfCustomPreviewMeshFiles: File[] = [];
     rotatePreview: boolean;
     backgroundColor: Color4;
     backFaceCulling: boolean;

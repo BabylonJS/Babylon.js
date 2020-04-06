@@ -14,11 +14,24 @@ import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { GraphFrame } from './graphFrame';
 import { IEditorData } from '../nodeLocationInfo';
+import { FrameNodePort } from './frameNodePort';
 
 require("./graphCanvas.scss");
 
 export interface IGraphCanvasComponentProps {
     globalState: GlobalState
+}
+
+export type FramePortData = {
+    frame: GraphFrame,
+    port: FrameNodePort
+}
+
+export const isFramePortData = (variableToCheck: any): variableToCheck is FramePortData => {
+    if (variableToCheck) {
+        return (variableToCheck as FramePortData).port !== undefined;
+    }
+    else return false;
 }
 
 export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentProps> {
@@ -47,7 +60,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _selectedLink: Nullable<NodeLink> = null;
     private _selectedPort: Nullable<NodePort> = null;
     private _candidateLink: Nullable<NodeLink> = null;
-    private _candidatePort: Nullable<NodePort> = null;
+    private _candidatePort: Nullable<NodePort | FrameNodePort> = null;
     private _gridSize = 20;
     private _selectionBox: Nullable<HTMLDivElement> = null;   
     private _selectedFrame: Nullable<GraphFrame> = null;   
@@ -185,29 +198,23 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     } else {                    
                         this._selectedNodes = [selection];
                     }
-                }
-                else {
+                } else if(selection instanceof NodePort){
                     this._selectedNodes = [];
                     this._selectedFrame = null;
                     this._selectedLink = null;
                     this._selectedPort = selection;
+                } else {
+                    this._selectedNodes = [];
+                    this._selectedFrame = null;
+                    this._selectedLink = null;
+                    this._selectedPort = selection.port;
                 }
             }
         });
 
-        props.globalState.onCandidatePortSelected.add(port => {
+        props.globalState.onCandidatePortSelectedObservable.add(port => {
             this._candidatePort = port;
         });
-
-        props.globalState.onFramePortMoveUpObserver.add((nodePort: NodePort) => {
-            const frame = this._frames.find(frame => frame.id === nodePort.frameId);
-            frame?.moveFramePortUp(nodePort);
-        });
-
-        props.globalState.onFramePortMoveDownObserver.add((nodePort: NodePort) => {
-            const frame = this._frames.find(frame => frame.id === nodePort.frameId);
-            frame?.moveFramePortDown(nodePort);
-        })
 
         props.globalState.onGridSizeChanged.add(() => {
             this.gridSize = DataStorage.ReadNumber("GridSize", 20);
@@ -608,8 +615,16 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 this.processCandidatePort();          
                 this.props.globalState.onCandidateLinkMoved.notifyObservers(null);
             } else { // is a click event on NodePort
-                if(this._candidateLink.portA.frameId !== null) { //only on Frame Ports
-                    this.props.globalState.onSelectionChangedObservable.notifyObservers(this._candidateLink.portA);
+                if(this._candidateLink.portA instanceof FrameNodePort) { //only on Frame Node Ports
+                    const port = this._candidateLink.portA;
+                    const frame = this.frames.find((frame: GraphFrame) => frame.id === port.parentFrameId);
+                    if (frame) {
+                        const data: FramePortData = {
+                            frame,
+                            port
+                        }
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers(data);
+                    }
                 }
             }
             this._candidateLink.dispose();

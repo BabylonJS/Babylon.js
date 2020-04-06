@@ -84,7 +84,7 @@ var buildExternalLibrariesMultiEntry = function(libraries, settings, isMin) {
     }
 
     // Generate minified file.
-    let wpBuild = webpackStream(wpConfig, webpack);
+    let wpBuild = webpackStream({ config: wpConfig }, webpack);
     return wpBuild.pipe(gulp.dest(outputDirectory));
 }
 

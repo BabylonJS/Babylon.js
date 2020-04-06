@@ -44,6 +44,9 @@ export class ScrollViewer extends Rectangle {
     private _barImageHeight: number = 1;
     private _horizontalBarImageHeight: number = 1;
     private _verticalBarImageHeight: number = 1;
+    private _oldWindowContentsWidth: number = 0;
+    private _oldWindowContentsHeight: number = 0;
+
     /**
      * Gets the horizontal scrollbar
      */
@@ -261,6 +264,8 @@ export class ScrollViewer extends Rectangle {
         super._postMeasure();
 
         this._updateScroller();
+
+        this._setWindowPosition(false);
     }
 
     /**
@@ -556,10 +561,17 @@ export class ScrollViewer extends Rectangle {
         vb.backgroundImage = value;
     }
 
-    private _setWindowPosition(): void {
+    private _setWindowPosition(force = true): void {
         let ratio = this.host.idealRatio;
         let windowContentsWidth = this._window._currentMeasure.width;
         let windowContentsHeight = this._window._currentMeasure.height;
+
+        if (!force && this._oldWindowContentsWidth === windowContentsWidth && this._oldWindowContentsHeight === windowContentsHeight) {
+            return;
+        }
+
+        this._oldWindowContentsWidth = windowContentsWidth;
+        this._oldWindowContentsHeight = windowContentsHeight;
 
         const _endLeft = this._clientWidth - windowContentsWidth;
         const _endTop = this._clientHeight - windowContentsHeight;
