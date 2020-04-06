@@ -31,7 +31,9 @@ import "../Shaders/default.fragment";
 import "../Shaders/default.vertex";
 import { Constants } from "../Engines/constants";
 import { EffectFallbacks } from './effectFallbacks';
-import { IEffectCreationOptions } from './effect';
+import { Effect, IEffectCreationOptions } from './effect';
+
+const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
 /** @hidden */
 export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
@@ -662,11 +664,6 @@ export class StandardMaterial extends PushMaterial {
         this._imageProcessingConfiguration.colorCurves = value;
     }
 
-    /**
-     * Custom callback helping to override the default shader used in the material.
-     */
-    public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines, attributes?: string[]) => string;
-
     protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
     protected _worldViewProjectionMatrix = Matrix.Zero();
     protected _globalAmbientColor = new Color3(0, 0, 0);
@@ -799,10 +796,8 @@ export class StandardMaterial extends PushMaterial {
 
         var scene = this.getScene();
         var defines = <StandardMaterialDefines>subMesh._materialDefines;
-        if (!this.checkReadyOnEveryCall && subMesh.effect) {
-            if (defines._renderId === scene.getRenderId()) {
-                return true;
-            }
+        if (this._isReadyForSubMesh(subMesh)) {
+            return true;
         }
 
         var engine = scene.getEngine();
@@ -1182,6 +1177,12 @@ export class StandardMaterial extends PushMaterial {
             }, engine);
 
             if (effect) {
+                if (this._onEffectCreatedObservable) {
+                    onCreatedEffectParameters.effect = effect;
+                    onCreatedEffectParameters.subMesh = subMesh;
+                    this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
+                }
+
                 // Use previous effect while new one is compiling
                 if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
                     effect = previousEffect;

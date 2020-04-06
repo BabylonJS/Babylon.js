@@ -29,6 +29,9 @@ import { TextureBlock } from './Blocks/Dual/textureBlock';
 import { ReflectionTextureBlock } from './Blocks/Dual/reflectionTextureBlock';
 import { EffectFallbacks } from '../effectFallbacks';
 import { WebRequest } from '../../Misc/webRequest';
+import { Effect } from '../effect';
+
+const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
 // declare NODEEDITOR namespace for compilation issue
 declare var NODEEDITOR: any;
@@ -124,6 +127,9 @@ export class NodeMaterial extends PushMaterial {
 
     /** Define the Url to load snippets */
     public static SnippetUrl = "https://snippet.babylonjs.com";
+
+    /** Gets or sets a boolean indicating that node materials should not deserialize textures from json / snippet content */
+    public static IgnoreTexturesAtLoadTime = false;
 
     private BJSNODEMATERIALEDITOR = this._getGlobalNodeMaterialEditor();
 
@@ -283,13 +289,19 @@ export class NodeMaterial extends PushMaterial {
      * @returns the required block or null if not found
      */
     public getBlockByName(name: string) {
+        let result = null;
         for (var block of this.attachedBlocks) {
             if (block.name === name) {
-                return block;
+                if (!result) {
+                    result = block;
+                } else {
+                    Tools.Warn("More than one block was found with the name `" + name + "`");
+                    return result;
+                }
             }
         }
 
-        return null;
+        return result;
     }
 
     /**
@@ -721,10 +733,8 @@ export class NodeMaterial extends PushMaterial {
         }
 
         var defines = <NodeMaterialDefines>subMesh._materialDefines;
-        if (!this.checkReadyOnEveryCall && subMesh.effect) {
-            if (defines._renderId === scene.getRenderId()) {
-                return true;
-            }
+        if (this._isReadyForSubMesh(subMesh)) {
+            return true;
         }
 
         var engine = scene.getEngine();
@@ -811,6 +821,12 @@ export class NodeMaterial extends PushMaterial {
             }, engine);
 
             if (effect) {
+                if (this._onEffectCreatedObservable) {
+                    onCreatedEffectParameters.effect = effect;
+                    onCreatedEffectParameters.subMesh = subMesh;
+                    this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
+                }
+
                 // Use previous effect while new one is compiling
                 if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
                     effect = previousEffect;

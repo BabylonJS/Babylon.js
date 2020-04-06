@@ -353,10 +353,14 @@
         },
         {
             "title": "point light shadows",
-            "scriptToRun": "/Demos/PointLightShadowMap/pointLightShadows.js",
-            "functionToCall": "CreatePointLightShadowScene",
-            "referenceImage": "pointLightShadows.png",
-            "replace": "/ground, /Ground"
+            "playgroundId": "#XDNVAY#1",
+            "referenceImage": "pointLightShadows.png"
+        },
+        {
+            "title": "Shadow depth wrappers",
+            "playgroundId": "#PNQRY1#9",
+            "referenceImage": "shadowDepthWrappers.png",
+            "renderCount": 20
         },
         {
             "title": "Displacement map",

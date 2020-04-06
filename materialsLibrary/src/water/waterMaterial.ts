@@ -199,8 +199,6 @@ export class WaterMaterial extends PushMaterial {
     private _lastTime: number = 0;
     private _lastDeltaTime: number = 0;
 
-    private _renderId: number;
-
     private _useLogarithmicDepth: boolean;
 
     private _waitingRenderList: Nullable<string[]>;
@@ -316,10 +314,8 @@ export class WaterMaterial extends PushMaterial {
         var defines = <WaterMaterialDefines>subMesh._materialDefines;
         var scene = this.getScene();
 
-        if (!this.checkReadyOnEveryCall && subMesh.effect) {
-            if (this._renderId === scene.getRenderId()) {
-                return true;
-            }
+        if (this._isReadyForSubMesh(subMesh)) {
+            return true;
         }
 
         var engine = scene.getEngine();
@@ -483,7 +479,7 @@ export class WaterMaterial extends PushMaterial {
             return false;
         }
 
-        this._renderId = scene.getRenderId();
+        defines._renderId = scene.getRenderId();
         subMesh.effect._wasPreviouslyReady = true;
 
         return true;
