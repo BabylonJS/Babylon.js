@@ -28,6 +28,9 @@ import { _DevTools } from '../../Misc/devTools';
 import { EffectFallbacks } from '../../Materials/effectFallbacks';
 import { RenderingManager } from '../../Rendering/renderingManager';
 
+const tmpMatrix = new Matrix(),
+      tmpMatrix2 = new Matrix();
+
 /**
  * Defines the options associated with the creation of a custom shader for a shadow generator.
  */
@@ -1017,12 +1020,22 @@ export class ShadowGenerator implements IShadowGenerator {
         }
     }
 
-    protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any): void {
+    protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any, mesh: AbstractMesh): void {
         effect.setMatrix(matriceNames?.viewProjection ?? "viewProjection", this.getTransformMatrix());
 
         effect.setMatrix(matriceNames?.view ?? "view", this._viewMatrix);
 
         effect.setMatrix(matriceNames?.projection ?? "projection", this._projectionMatrix);
+
+        const world = mesh.getWorldMatrix();
+
+        world.multiplyToRef(this.getTransformMatrix(), tmpMatrix);
+
+        effect.setMatrix(matriceNames?.worldViewProjection ?? "worldViewProjection", tmpMatrix);
+
+        world.multiplyToRef(this._viewMatrix, tmpMatrix2);
+
+        effect.setMatrix(matriceNames?.worldView ?? "worldView", tmpMatrix2);
     }
 
     protected _renderSubMeshForShadowMap(subMesh: SubMesh): void {
@@ -1058,6 +1071,8 @@ export class ShadowGenerator implements IShadowGenerator {
             engine.enableEffect(effect);
 
             renderingMesh._bind(subMesh, effect, material.fillMode);
+
+            this.getTransformMatrix(); // make sur _cachedDirection et _cachedPosition are up to date
 
             effect.setFloat3("biasAndScaleSM", this.bias, this.normalBias, this.depthScale);
 
@@ -1116,7 +1131,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 MaterialHelper.BindClipPlane(effect, scene);
             }
 
-            this._bindCustomEffectForRenderSubMeshForShadowMap(subMesh, effect, shadowDepthWrapper?._matriceNames);
+            this._bindCustomEffectForRenderSubMeshForShadowMap(subMesh, effect, shadowDepthWrapper?._matriceNames, effectiveMesh);
 
             if (this.forceBackFacesOnly) {
                 engine.setState(true, 0, false, true);

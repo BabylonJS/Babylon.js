@@ -985,7 +985,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         for (var light of this.lightSources) {
             let generator = light.getShadowGenerator();
 
-            if (generator) {
+            if (generator && (!generator.getShadowMap()?.renderList || generator.getShadowMap()?.renderList && generator.getShadowMap()?.renderList?.indexOf(this) !== -1)) {
                 for (var subMesh of this.subMeshes) {
                     if (!generator.isReady(subMesh, hardwareInstancedRendering)) {
                         return false;

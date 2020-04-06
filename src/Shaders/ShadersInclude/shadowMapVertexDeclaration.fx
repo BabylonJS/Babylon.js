@@ -11,6 +11,6 @@ varying float vDepthMetricSM;
     varying vec3 vPositionWSM;
 #endif
 
-#if SM_DEPTHCLAMP == 1
+#if defined(SM_DEPTHCLAMP) &&  SM_DEPTHCLAMP == 1
     varying float zSM;
 #endif

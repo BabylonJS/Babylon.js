@@ -450,25 +450,17 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                             }
                         });
                     } else {
-                        controllerData.onButtonChangedObserver = movementController.onButtonStateChangedObservable.add(() => {
-                            if (this._currentTeleportationControllerId === controllerData.xrController.uniqueId && controllerData.teleportationState.forward && !movementController.touched) {
-                                this._teleportForward(xrController.uniqueId);
-                            }
-                        });
                         // use thumbstick (or touchpad if thumbstick not available)
                         controllerData.onAxisChangedObserver = movementController.onAxisValueChangedObservable.add((axesData) => {
                             if (axesData.y <= 0.7 && controllerData.teleportationState.backwards) {
-                                //if (this._currentTeleportationControllerId === controllerData.xrController.uniqueId) {
                                 controllerData.teleportationState.backwards = false;
-                                //this._currentTeleportationControllerId = "";
-                                //}
                             }
                             if (axesData.y > 0.7 && !controllerData.teleportationState.forward && this.backwardsMovementEnabled && !this.snapPointsOnly) {
                                 // teleport backwards
                                 if (!controllerData.teleportationState.backwards) {
                                     controllerData.teleportationState.backwards = true;
                                     // teleport backwards ONCE
-                                    this._tmpVector.set(0, 0, this.backwardsTeleportationDistance!);
+                                    this._tmpVector.set(0, 0, this.backwardsTeleportationDistance * (this._xrSessionManager.scene.useRightHandedSystem ? -1.0 : 1.0));
                                     this._tmpVector.rotateByQuaternionToRef(this._options.xrInput.xrCamera.rotationQuaternion!, this._tmpVector);
                                     this._tmpVector.addInPlace(this._options.xrInput.xrCamera.position);
                                     this._options.xrInput.xrCamera.position.subtractToRef(this._tmpVector, this._tmpVector);
@@ -512,6 +504,12 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                                 }
                             } else {
                                 controllerData.teleportationState.rotating = false;
+                            }
+
+                            if (axesData.x === 0 && axesData.y === 0) {
+                                if (controllerData.teleportationState.forward) {
+                                    this._teleportForward(xrController.uniqueId);
+                                }
                             }
                         });
                     }
@@ -721,6 +719,9 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
 
     private _teleportForward(controllerId: string) {
         const controllerData = this._controllers[controllerId];
+        if (!controllerData.teleportationState.forward) {
+            return;
+        }
         controllerData.teleportationState.forward = false;
         this._currentTeleportationControllerId = "";
         if (this.snapPointsOnly && !this._snappedToPoint) {
