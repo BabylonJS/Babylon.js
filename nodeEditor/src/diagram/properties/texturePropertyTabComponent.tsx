@@ -189,6 +189,12 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                         }}/>
                     }
                     {
+                        texture && !isInReflectionMode &&
+                        <CheckBoxLineComponent label="Convert to linear space" propertyName="convertToLinearSpace" target={this.props.block} onValueChanged={() => {                        
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }}/>
+                    }
+                    {
                         texture && isInReflectionMode &&
                         <OptionsLineComponent label="Reflection mode" options={reflectionModeOptions} target={texture} propertyName="coordinatesMode" onSelect={(value: any) => {
                             texture.coordinatesMode = value;
