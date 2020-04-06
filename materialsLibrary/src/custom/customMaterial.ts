@@ -92,14 +92,14 @@ export class CustomMaterial extends StandardMaterial {
     }
 
     public ReviewUniform(name: string, arr: string[]): string[] {
-        if (name == "uniform") {
+        if (this._newUniforms && name == "uniform") {
             for (var ind = 0; ind < this._newUniforms.length ; ind ++) {
                 if (this._customUniform[ind].indexOf('sampler') == -1) {
                     arr.push(this._newUniforms[ind]);
                 }
             }
         }
-        if (name == "sampler") {
+        if (this._newUniforms && name == "sampler") {
             for (var ind = 0; ind < this._newUniforms.length ; ind ++) {
                 if (this._customUniform[ind].indexOf('sampler') != -1) {
                     arr.push(this._newUniforms[ind]);
