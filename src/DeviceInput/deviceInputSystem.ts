@@ -70,7 +70,7 @@ export class DeviceInputSystem {
      * @param inputIndex Index of device input
      * @returns Current value of input
      */
-    public pollInput(deviceName: string, inputIndex: number): number | undefined {
+    public pollInput(deviceName: string, inputIndex: number): number {
         const device = this._inputs[deviceName];
 
         if (!device) {
