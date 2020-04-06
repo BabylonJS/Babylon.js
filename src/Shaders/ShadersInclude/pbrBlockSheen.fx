@@ -71,7 +71,7 @@
         float sheenIntensity = vSheenColor.a;
 
         #ifdef SHEEN_TEXTURE
-            vec4 sheenMapData = texture2D(sheenSampler, vSheenUV + uvOffset) * vSheenInfos.y;
+            vec4 sheenMapData = toLinearSpace(texture2D(sheenSampler, vSheenUV + uvOffset)) * vSheenInfos.y;
             sheenIntensity *= sheenMapData.a;
             #if DEBUGMODE > 0
                 outParams.sheenMapData = sheenMapData;
@@ -86,7 +86,7 @@
         #else
             vec3 sheenColor = vSheenColor.rgb;
             #ifdef SHEEN_TEXTURE
-                sheenColor.rgb *= toLinearSpace(sheenMapData.rgb);
+                sheenColor.rgb *= sheenMapData.rgb;
             #endif
             
             #ifdef SHEEN_ROUGHNESS
