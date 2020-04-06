@@ -13,7 +13,9 @@ import { _TypeStore } from '../../../../Misc/typeStore';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { Effect, IEffectCreationOptions } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
+import { PBRBaseMaterial } from '../../../PBR/pbrBaseMaterial';
 import { Scene } from '../../../../scene';
+import { AmbientOcclusionBlock } from './ambientOcclusionBlock';
 
 export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     private _lightId: number;
@@ -38,6 +40,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this.registerInput("roughness", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("metalRoughText", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("opacityTexture", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("ambientColor", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("ambientOcclusion", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("reflection", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("sheen", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
@@ -108,28 +111,32 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         return this._inputs[9];
     }
 
-    public get ambientOcclusionParams(): NodeMaterialConnectionPoint {
+    public get ambientColor(): NodeMaterialConnectionPoint {
         return this._inputs[10];
     }
 
-    public get reflectionParams(): NodeMaterialConnectionPoint {
+    public get ambientOcclusionParams(): NodeMaterialConnectionPoint {
         return this._inputs[11];
     }
 
-    public get sheenParams(): NodeMaterialConnectionPoint {
+    public get reflectionParams(): NodeMaterialConnectionPoint {
         return this._inputs[12];
     }
 
-    public get clearcoatParams(): NodeMaterialConnectionPoint {
+    public get sheenParams(): NodeMaterialConnectionPoint {
         return this._inputs[13];
     }
 
-    public get subSurfaceParams(): NodeMaterialConnectionPoint {
+    public get clearcoatParams(): NodeMaterialConnectionPoint {
         return this._inputs[14];
     }
 
-    public get anisotropyParams(): NodeMaterialConnectionPoint {
+    public get subSurfaceParams(): NodeMaterialConnectionPoint {
         return this._inputs[15];
+    }
+
+    public get anisotropyParams(): NodeMaterialConnectionPoint {
+        return this._inputs[16];
     }
 
     public get ambient(): NodeMaterialConnectionPoint {
@@ -193,6 +200,22 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+        defines.setValue("PBR", true);
+
+        // Albedo & Opacity
+        if (this.baseTexture.isConnected) {
+            defines.setValue("ALBEDO", true);
+        }
+
+        if (this.opacityTexture.isConnected) {
+            defines.setValue("OPACITY", true);
+        }
+
+        // Ambient occlusion
+        const aoBlock = this.ambientOcclusionParams.connectedPoint?.ownerBlock as Nullable<AmbientOcclusionBlock>;
+
+        defines.setValue("AMBIENT", aoBlock?.texture.isConnected ?? false);
+
         if (!defines._areLightsDirty) {
             return;
         }
@@ -203,6 +226,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             // Lights
             MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, nodeMaterial.maxSimultaneousLights);
             defines._needNormals = true;
+
+            defines.setValue("SPECULARTERM", false); //!! DBG
 
             // Multiview
             //MaterialHelper.PrepareDefinesForMultiview(scene, defines);
@@ -220,14 +245,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             if (state.needRebuild) {
                 defines.rebuild();
             }
-        }
-
-        if (this.baseTexture.isConnected) {
-            defines.setValue("ALBEDO", true);
-        }
-
-        if (this.opacityTexture.isConnected) {
-            defines.setValue("OPACITY", true);
         }
     }
 
@@ -389,6 +406,16 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         //
         // code
         //
+        const vLightingIntensity = "vec4(1.)";
+
+        const aoBlock = this.ambientOcclusionParams.connectedPoint?.ownerBlock as Nullable<AmbientOcclusionBlock>;
+        const aoColor = this.ambientColor.isConnected ? this.ambientColor.associatedVariableName : "vec3(0., 0., 0.)";
+        let aoDirectLightIntensity = aoBlock?.directLightIntensity.isConnected ? aoBlock.directLightIntensity.associatedVariableName : PBRBaseMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS.toString();
+
+        if (!aoBlock?.directLightIntensity.isConnected && aoDirectLightIntensity.charAt(aoDirectLightIntensity.length - 1) !== '.') {
+            aoDirectLightIntensity += ".";
+        }
+
         if (this._lightId === 0) {
             // _____________________________ Geometry Information ____________________________
             if (state._registerTempVariable("viewDirectionW")) {
@@ -432,19 +459,20 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             // _____________________________ AO  _______________________________
             state.compilationString += `ambientOcclusionOutParams aoOut;\r\n`;
 
-            const aoBlock = this.ambientOcclusionParams.connectedPoint?.ownerBlock;
-            const aoTexture = "";//this.ambientOcclusion.isConnected ? this.aoTexture.associatedVariableName : "";
+            const aoTexture = aoBlock?.texture.isConnected ? aoBlock.texture.associatedVariableName : "vec2(0., 0.)";
+            const aoLevel = "1.";
+            const aoIntensity = aoBlock?.intensity.isConnected ? aoBlock.intensity.associatedVariableName : "1.";
 
             state.compilationString += `ambientOcclusionBlock(
-                    #ifdef AMBIENT
-                        ${aoTexture},
-                        vec2(1., 1.),
-                    #endif
-                        aoOut
-                    );\r\n`;
+                #ifdef AMBIENT
+                    ${aoTexture},
+                    vec4(0., ${aoLevel}, ${aoIntensity}, 0.),
+                #endif
+                    aoOut
+                );\r\n`;
 
             // _____________________________ Direct Lighting Info __________________________________
-            //state.compilationString += state._emitCodeFromInclude("pbrBlockDirectLighting", comments);
+            state.compilationString += state._emitCodeFromInclude("pbrBlockDirectLighting", comments);
         }
 
         /*if (this.light) {
@@ -457,24 +485,34 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             state.compilationString += state._emitCodeFromInclude("lightFragment", comments, {
                 repeatKey: "maxSimultaneousLights"
             });
-        }
+        }*/
 
         // _____________________________ Compute Final Lit and Unlit Components ________________________
-        state.compilationString += state._emitCodeFromInclude("pbrBlockFinalLitComponents", comments);
+        //state.compilationString += state._emitCodeFromInclude("pbrBlockFinalLitComponents", comments);
 
-        state.compilationString += state._emitCodeFromInclude("pbrBlockFinalUnlitComponents", comments);
+        state.compilationString += state._emitCodeFromInclude("pbrBlockFinalUnlitComponents", comments, {
+            replaceStrings: [
+                { search: /vec3 finalEmissive[\s\S]*?finalEmissive\*=vLightingIntensity\.y;/g, replace: "" },
+                { search: /vAmbientColor/g, replace: aoColor },
+                { search: /vLightingIntensity/g, replace: vLightingIntensity },
+                { search: /vAmbientInfos\.w/g, replace: aoDirectLightIntensity },
+            ]
+        });
 
-        state.compilationString += state._emitCodeFromInclude("pbrBlockFinalColorComposition", comments);*/
+        state.compilationString += state._emitCodeFromInclude("pbrBlockFinalColorComposition", comments, {
+            replaceStrings: [
+                { search: /finalEmissive/g, replace: "vec3(0.)" },
+            ]
+        });
 
         if (this.lighting.hasEndpoints) {
-            state.compilationString += this._declareOutput(this.lighting, state) + ` = vec4(surfaceAlbedo, alpha);\r\n`;
+            state.compilationString += this._declareOutput(this.lighting, state) + ` = finalColor;\r\n`;
         }
 
         if (this.shadow.hasEndpoints) {
             state.compilationString += this._declareOutput(this.shadow, state) + ` = shadow;\r\n`;
         }
 
-        console.log(this.sheenParams);
         (window as any).sheenParams = this.sheenParams;
         return this;
     }

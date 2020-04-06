@@ -12,7 +12,7 @@ interface INodeListComponentProps {
 
 export class NodeListComponent extends React.Component<INodeListComponentProps, {filter: string}> {
 
-    private static _Tooltips:{[key: string]: string} = {
+    private static _Tooltips: {[key: string]: string} = {
         "BonesBlock": "Provides a world matrix for each vertex, based on skeletal (bone/joint) animation",
         "MorphTargetsBlock": "Provides the final positions, normals, tangents, and uvs based on morph targets in a mesh",
         "AddBlock": "Adds the left and right inputs of the same type together",
@@ -79,7 +79,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "CameraPositionBlock": "Outputs a Vector3 position of the active scene camera",
         "FogBlock": "Applies fog to the scene with an increasing opacity based on distance from the camera",
         "FogColorBlock": "The system value for fog color pulled from the scene",
-        "ImageProcessingBlock": "Provides access to all of the Babylon image processing properties",        
+        "ImageProcessingBlock": "Provides access to all of the Babylon image processing properties",
         "LightBlock": "Outputs diffuse and specular contributions from one or more scene lights",
         "LightInformationBlock": "Provides the direction, color and intensity of a selected light based on its world position",
         "ReflectionTextureBlock": "Creates a reflection from the input texture",
@@ -115,11 +115,12 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "SimplexPerlin3DBlock": "Creates a type of gradient noise with few directional artifacts.",
         "WorleyNoise3DBlock": "Creates a random pattern resembling cells.",
         "ReflectBlock": "Outputs the direction of the input vector reflected across the surface normal.",
-        "RefractBlock": "Outputs a direction simulating a deflection of the input vector.", 
+        "RefractBlock": "Outputs a direction simulating a deflection of the input vector.",
         "Rotate2dBlock": "Rotates UV coordinates around the W axis.",
         "PBRMetallicRoughnessBlock": "PBR metallic/roughness material",
-        "SheenBlock": "Sheen block"
-    }
+        "SheenBlock": "Sheen block",
+        "AmbientOcclusionBlock": "Ambient occlusion block"
+    };
 
     constructor(props: INodeListComponentProps) {
         super(props);
@@ -134,34 +135,34 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
     render() {
         // Block types used to create the menu from
         const allBlocks = {
-            
+
             Animation: ["BonesBlock", "MorphTargetsBlock"],
             Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
             Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "ReflectionTextureBlock", "TimeBlock", "DeltaTimeBlock"],
             Interpolation: ["LerpBlock", "StepBlock", "SmoothStepBlock", "NLerpBlock"],
-            Math__Standard: ["AddBlock", "DivideBlock", "MaxBlock", "MinBlock", "MultiplyBlock", "NegateBlock", "OneMinusBlock", "ReciprocalBlock", "ScaleBlock", "SignBlock", "SqrtBlock", "SubtractBlock"], 
+            Math__Standard: ["AddBlock", "DivideBlock", "MaxBlock", "MinBlock", "MultiplyBlock", "NegateBlock", "OneMinusBlock", "ReciprocalBlock", "ScaleBlock", "SignBlock", "SqrtBlock", "SubtractBlock"],
             Math__Scientific: ["AbsBlock", "ArcCosBlock", "ArcSinBlock", "ArcTanBlock", "ArcTan2Block", "CosBlock", "DegreesToRadiansBlock", "ExpBlock", "Exp2Block", "FractBlock", "LogBlock", "PowBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "SinBlock", "SquareWaveBlock", "TanBlock", "TriangleWaveBlock"],
             Math__Vector: ["CrossBlock", "DerivativeBlock", "DistanceBlock", "DotBlock", "FresnelBlock", "LengthBlock", "ReflectBlock", "RefractBlock", "Rotate2dBlock", "TransformBlock", ],
             Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock"],
-            Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock" , "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"], 
+            Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock" , "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"],
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
-            PBR: ["PBRMetallicRoughnessBlock", "SheenBlock"],
+            PBR: ["AmbientOcclusionBlock", "PBRMetallicRoughnessBlock", "SheenBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
             Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock"],
-        }
+        };
 
         // Create node menu
-        var blockMenu = []
+        var blockMenu = [];
         for (var key in allBlocks) {
             var blockList = (allBlocks as any)[key].filter((b: string) => !this.state.filter || b.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)
             .sort((a: string, b: string) => a.localeCompare(b))
             .map((block: any, i: number) => {
                 let tooltip = NodeListComponent._Tooltips[block] || "";
 
-                return <DraggableLineComponent key={block} data={block} tooltip={tooltip}/>
+                return <DraggableLineComponent key={block} data={block} tooltip={tooltip}/>;
             });
 
             if (blockList.length) {
@@ -178,9 +179,9 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 <div className="panes">
                     <div className="pane">
                         <div className="filter">
-                            <input type="text" placeholder="Filter" 
+                            <input type="text" placeholder="Filter"
                                 onFocus={() => this.props.globalState.blockKeyboardEvents = true}
-                                onBlur={evt => {
+                                onBlur={(evt) => {
                                     this.props.globalState.blockKeyboardEvents = false;
                                 }}
                                 onChange={(evt) => this.filterContent(evt.target.value)} />

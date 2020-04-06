@@ -7,3 +7,4 @@ export * from "./frontFacingBlock";
 export * from "./derivativeBlock";
 export * from "./pbrMetallicRoughnessBlock";
 export * from "./sheenBlock";
+export * from "./ambientOcclusionBlock";
