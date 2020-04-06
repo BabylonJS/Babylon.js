@@ -17,7 +17,7 @@ interface IEXTMeshGpuInstancing {
 
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1691)
- * [Playground Sample](https://playground.babylonjs.com/#QFIGLW#3)
+ * [Playground Sample](https://playground.babylonjs.com/#QFIGLW#9)
  * !!! Experimental Extension Subject to Changes !!!
  */
 export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
