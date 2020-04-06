@@ -12,6 +12,6 @@ varying float vDepthMetricSM;
 uniform vec3 biasAndScaleSM;
 uniform vec2 depthValuesSM;
 
-#if SM_DEPTHCLAMP == 1
+#if defined(SM_DEPTHCLAMP) &&  SM_DEPTHCLAMP == 1
     varying float zSM;
 #endif

@@ -93,6 +93,10 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
     }
 
     prepareDataToRead(value: number) {
+        if (value === null) {
+            value = 0;
+        }
+
         if (this.props.useEuler) {
             return Tools.ToDegrees(value);
         }

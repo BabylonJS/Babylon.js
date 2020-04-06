@@ -528,6 +528,8 @@ export class ShaderMaterial extends Material {
         }
 
         // Bones
+        let numInfluencers = 0;
+
         if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
             attribs.push(VertexBuffer.MatricesIndicesKind);
             attribs.push(VertexBuffer.MatricesWeightsKind);
@@ -538,7 +540,9 @@ export class ShaderMaterial extends Material {
 
             const skeleton = mesh.skeleton;
 
-            defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
+            numInfluencers = mesh.numBoneInfluencers;
+
+            defines.push("#define NUM_BONE_INFLUENCERS " + numInfluencers);
             fallbacks.addCPUSkinningFallback(0, mesh);
 
             if (skeleton.isUsingTextureForMatrices) {
@@ -601,7 +605,8 @@ export class ShaderMaterial extends Material {
                 defines: join,
                 fallbacks: fallbacks,
                 onCompiled: this.onCompiled,
-                onError: this.onError
+                onError: this.onError,
+                indexParameters: { maxSimultaneousMorphTargets: numInfluencers }
             }, engine);
 
             if (this._onEffectCreatedObservable) {

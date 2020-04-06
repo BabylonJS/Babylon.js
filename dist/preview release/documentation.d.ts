@@ -2758,14 +2758,16 @@ declare module BABYLON {
         static Down(): Vector3;
         /**
          * Returns a new Vector3 set to (0.0, 0.0, 1.0)
+         * @param rightHandedSystem is the scene right-handed (negative z)
          * @returns a new forward Vector3
          */
-        static Forward(): Vector3;
+        static Forward(rightHandedSystem?: boolean): Vector3;
         /**
          * Returns a new Vector3 set to (0.0, 0.0, -1.0)
+         * @param rightHandedSystem is the scene right-handed (negative-z)
          * @returns a new forward Vector3
          */
-        static Backward(): Vector3;
+        static Backward(rightHandedSystem?: boolean): Vector3;
         /**
          * Returns a new Vector3 set to (1.0, 0.0, 0.0)
          * @returns a new right Vector3
@@ -16790,7 +16792,7 @@ declare module BABYLON {
         protected _initializeShadowMap(): void;
         protected _initializeBlurRTTAndPostProcesses(): void;
         protected _renderForShadowMap(opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void;
-        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any): void;
+        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any, mesh: AbstractMesh): void;
         protected _renderSubMeshForShadowMap(subMesh: SubMesh): void;
         protected _applyFilterValues(): void;
         /**
@@ -55059,7 +55061,7 @@ declare module BABYLON {
         protected _initializeGenerator(): void;
         protected _createTargetRenderTexture(): void;
         protected _initializeShadowMap(): void;
-        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any): void;
+        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any, mesh: AbstractMesh): void;
         protected _isReadyCustomDefines(defines: any, subMesh: SubMesh, useInstances: boolean): void;
         /**
          * Prepare all the defines in a material relying on a shadow map at the specified light index.
@@ -79863,8 +79865,12 @@ declare module BABYLON {
         _createdShaderName: string;
         _customUniform: string[];
         _newUniforms: string[];
-        _newUniformInstances: any[];
-        _newSamplerInstances: BABYLON.Texture[];
+        _newUniformInstances: {
+            [name: string]: any;
+        };
+        _newSamplerInstances: {
+            [name: string]: BABYLON.Texture;
+        };
         _customAttributes: string[];
         FragmentShader: string;
         VertexShader: string;
@@ -79919,8 +79925,12 @@ declare module BABYLON {
         _createdShaderName: string;
         _customUniform: string[];
         _newUniforms: string[];
-        _newUniformInstances: any[];
-        _newSamplerInstances: BABYLON.Texture[];
+        _newUniformInstances: {
+            [name: string]: any;
+        };
+        _newSamplerInstances: {
+            [name: string]: BABYLON.Texture;
+        };
         _customAttributes: string[];
         FragmentShader: string;
         VertexShader: string;
