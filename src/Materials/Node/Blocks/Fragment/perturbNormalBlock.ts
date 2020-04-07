@@ -10,6 +10,7 @@ import { InputBlock } from '../Input/inputBlock';
 import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
 import { Scene } from '../../../../scene';
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 
 import "../../../../Shaders/ShadersInclude/bumpFragmentFunctions";
 import "../../../../Shaders/ShadersInclude/bumpFragment";
@@ -21,8 +22,10 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
     private _tangentSpaceParameterName = "";
 
     /** Gets or sets a boolean indicating that normal should be inverted on X axis */
+    @editableInPropertyPage("Invert X axis", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": false }})
     public invertX = false;
     /** Gets or sets a boolean indicating that normal should be inverted on Y axis */
+    @editableInPropertyPage("Invert Y axis", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": false }})
     public invertY = false;
 
     /**

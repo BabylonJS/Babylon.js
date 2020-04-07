@@ -3,7 +3,9 @@ import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialB
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
+//import { Nullable } from "../../../../types";
 import { _TypeStore } from '../../../../Misc/typeStore';
+import { editableInPropertyPage } from "../../nodeMaterialDecorator";
 
 export class SheenBlock extends NodeMaterialBlock {
 
@@ -14,10 +16,12 @@ export class SheenBlock extends NodeMaterialBlock {
         this.registerInput("intensity", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("roughness", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("albedoScaling", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
 
         this.registerOutput("sheen", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
     }
+
+    @editableInPropertyPage("Albedo scaling")
+    public albedoScaling: boolean = false;
 
     /**
      * Gets the current class name
@@ -43,12 +47,8 @@ export class SheenBlock extends NodeMaterialBlock {
         return this._inputs[3];
     }
 
-    public get albedoScaling(): NodeMaterialConnectionPoint {
-        return this._inputs[4];
-    }
-
     public get sheen(): NodeMaterialConnectionPoint {
-        return this._outputs[5];
+        return this._outputs[0];
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {

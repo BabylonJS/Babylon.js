@@ -16,6 +16,7 @@ import { Mesh } from '../../../../Meshes/mesh';
 import { PBRBaseMaterial } from '../../../PBR/pbrBaseMaterial';
 import { Scene } from '../../../../scene';
 import { AmbientOcclusionBlock } from './ambientOcclusionBlock';
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 
 export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     private _lightId: number;
@@ -62,6 +63,21 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this.registerOutput("shadow", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
 
     }
+
+    @editableInPropertyPage("Alpha from albedo", PropertyTypeForEdition.Boolean, "TRANSPARENCY")
+    public useAlphaFromAlbedoTexture: boolean = false;
+
+    @editableInPropertyPage("Alpha Testing", PropertyTypeForEdition.Boolean, "TRANSPARENCY")
+    public useAlphaTest: boolean = false;
+
+    @editableInPropertyPage("Alpha CutOff", PropertyTypeForEdition.Float, "TRANSPARENCY", { min: 0, max: 1})
+    public alphaTestCutoff: number = 0.4;
+
+    @editableInPropertyPage("Alpha blending", PropertyTypeForEdition.Boolean, "TRANSPARENCY")
+    public useAlphaBlending: boolean = false;
+
+    @editableInPropertyPage("Get alpha from opacity texture RGB", PropertyTypeForEdition.Boolean, "TRANSPARENCY")
+    public opacityRGB: boolean = false;
 
     /**
      * Gets the current class name
@@ -513,7 +529,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             state.compilationString += this._declareOutput(this.shadow, state) + ` = shadow;\r\n`;
         }
 
-        (window as any).sheenParams = this.sheenParams;
+        (window as any).sheenParams = this.sheenParams.connectedPoint?.ownerBlock;
         return this;
     }
 
