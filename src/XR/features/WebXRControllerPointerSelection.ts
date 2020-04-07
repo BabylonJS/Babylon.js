@@ -115,14 +115,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             tmpRay: Ray;
             // event support
             eventListeners?: {[event in XREventType]?: ((event: XRInputSourceEvent) => void)};
-            //  {
-            //     selectstart: (event: XRInputSourceEvent) => void;
-            //     selectend: (event: XRInputSourceEvent) => void;
-            //     select?: (event: XRInputSourceEvent) => void;
-            //     squeeze?: (event: XRInputSourceEvent) => void;
-            //     squeezestart?: (event: XRInputSourceEvent) => void;
-            //     squeezeend?: (event: XRInputSourceEvent) => void;
-            // }
         };
     } = {};
     private _scene: Scene;
