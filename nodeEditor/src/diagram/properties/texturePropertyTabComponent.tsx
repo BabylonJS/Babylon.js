@@ -15,7 +15,7 @@ import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponen
 import { IPropertyComponentProps } from './propertyComponentProps';
 import { ReflectionTextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/reflectionTextureBlock';
 import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/textureBlock';
-import { GenericPropertyTabComponent } from './genericNodePropertyComponent';
+import { GeneralPropertyTabComponent } from './genericNodePropertyComponent';
 
 export class TexturePropertyTabComponent extends React.Component<IPropertyComponentProps, {isEmbedded: boolean, loadAsCubeTexture: boolean}> {
 
@@ -177,7 +177,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
         
         return (
             <div>                
-                <GenericPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
+                <GeneralPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
                 <LineContainerComponent title="PROPERTIES">
                     <CheckBoxLineComponent label="Auto select UV" propertyName="autoSelectUV" target={this.props.block} onValueChanged={() => {                        
                         this.props.globalState.onUpdateRequiredObservable.notifyObservers();

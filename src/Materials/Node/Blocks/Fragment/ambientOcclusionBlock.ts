@@ -3,6 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialB
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 import { _TypeStore } from '../../../../Misc/typeStore';
 
 export class AmbientOcclusionBlock extends NodeMaterialBlock {
@@ -16,6 +17,9 @@ export class AmbientOcclusionBlock extends NodeMaterialBlock {
 
         this.registerOutput("ambientOcclusion", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
     }
+
+    @editableInPropertyPage("Ambient in gray scale", PropertyTypeForEdition.Boolean, "AMBIENT")
+    public useAmbientInGrayScale: boolean = false;
 
     /**
      * Gets the current class name
