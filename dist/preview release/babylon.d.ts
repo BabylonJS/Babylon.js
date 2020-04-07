@@ -71040,6 +71040,19 @@ type XREye =
     | "left"
     | "right";
 
+type XREventType =
+    | "devicechange"
+    | "visibilitychange"
+    | "end"
+    | "inputsourceschange"
+    | "select"
+    | "selectstart"
+    | "selectend"
+    | "squeeze"
+    | "squeezestart"
+    | "squeezeend"
+    | "reset";
+
 interface XRSpace extends EventTarget {
 
 }
