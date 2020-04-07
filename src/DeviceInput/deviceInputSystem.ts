@@ -78,7 +78,6 @@ export class DeviceInputSystem implements IDisposable {
 
         if (device[inputIndex] === undefined) {
             throw `Unable to find input ${inputIndex} on device ${deviceName}`;
-
         }
         return device[inputIndex];
     }
@@ -225,9 +224,7 @@ export class DeviceInputSystem implements IDisposable {
         this._gamepadConnectedEvent = ((evt: any) => {
             const deviceName = `${evt.gamepad.id}-${evt.gamepad.index}`;
             this._registerDevice(deviceName, evt.gamepad.buttons.length + evt.gamepad.axes.length);
-            if (!this._gamepads) {
-                this._gamepads = new Array<string>(evt.gamepad.index + 1);
-            }
+            this._gamepads = this._gamepads || new Array<string>(evt.gamepad.index + 1);
             this._gamepads[evt.gamepad.index] = deviceName;
         });
 
@@ -249,8 +246,7 @@ export class DeviceInputSystem implements IDisposable {
         const gamepads = navigator.getGamepads();
 
         // Look for current gamepad and get updated values
-        for (let i = 0; i < gamepads.length; i++) {
-            const gp = gamepads[i];
+        for (const gp of gamepads) {
             if (gp && deviceName == this._gamepads[gp.index]) {
                 const device = this._inputs[deviceName];
 
