@@ -504,7 +504,7 @@ export class TargetCamera extends Camera {
         var newFocalTarget = TargetCamera._TargetFocalPoint.addInPlace(this.position);
 
         Matrix.TranslationToRef(-newFocalTarget.x, -newFocalTarget.y, -newFocalTarget.z, TargetCamera._TargetTransformMatrix);
-        TargetCamera._TargetTransformMatrix.multiplyToRef(Matrix.RotationY(halfSpace), TargetCamera._RigCamTransformMatrix);
+        TargetCamera._TargetTransformMatrix.multiplyToRef(Matrix.RotationAxis(rigCamera.upVector, halfSpace), TargetCamera._RigCamTransformMatrix);
         Matrix.TranslationToRef(newFocalTarget.x, newFocalTarget.y, newFocalTarget.z, TargetCamera._TargetTransformMatrix);
 
         TargetCamera._RigCamTransformMatrix.multiplyToRef(TargetCamera._TargetTransformMatrix, TargetCamera._RigCamTransformMatrix);
