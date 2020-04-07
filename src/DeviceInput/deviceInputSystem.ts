@@ -1,6 +1,7 @@
 import { Observable } from "../Misc/observable";
 import { Engine } from '../Engines/engine';
 import { IDisposable } from '../scene';
+import { Nullable } from '../types';
 
 /**
  * This class will take all inputs from Keyboard, Pointer, and
@@ -26,7 +27,7 @@ export class DeviceInputSystem implements IDisposable {
     public onDeviceDisconnectedObservable = new Observable<string>();
 
     // Private Members
-    private _inputs: { [key: string]: Array<number> } = {};
+    private _inputs: { [key: string]: Array<Nullable<number>> } = {};
     private _gamepads: Array<string>;
     private _keyboardActive: boolean = false;
     private _pointerActive: boolean = false;
@@ -66,7 +67,7 @@ export class DeviceInputSystem implements IDisposable {
      * @param inputIndex Index of device input
      * @returns Current value of input
      */
-    public pollInput(deviceName: string, inputIndex: number): number {
+    public pollInput(deviceName: string, inputIndex: number): Nullable<number> {
         const device = this._inputs[deviceName];
 
         if (!device) {
@@ -77,6 +78,7 @@ export class DeviceInputSystem implements IDisposable {
 
         if (device[inputIndex] === undefined) {
             throw `Unable to find input ${inputIndex} on device ${deviceName}`;
+
         }
         return device[inputIndex];
     }
@@ -112,9 +114,13 @@ export class DeviceInputSystem implements IDisposable {
      * @param deviceName Assigned name of device (may be SN)
      * @param numberOfInputs Number of input entries to create for given device
      */
-    private _registerDevice(deviceName: string, numberOfInputs: number, defaultInputs: Array<number> = new Array<number>(numberOfInputs)) {
+    private _registerDevice(deviceName: string, numberOfInputs: number) {
         if (!this._inputs[deviceName]) {
-            const device = defaultInputs;
+            const device = new Array<Nullable<number>>(numberOfInputs);
+
+            for (let i = 0; i < numberOfInputs; i++) {
+                device[i] = null;
+            }
 
             this._inputs[deviceName] = device;
             this.onDeviceConnectedObservable.notifyObservers(deviceName);
@@ -137,14 +143,9 @@ export class DeviceInputSystem implements IDisposable {
      */
     private _handleKeyActions() {
         this._keyboardDownEvent = ((evt) => {
-            if (!this._inputs[DeviceInputSystem.KEYBOARD_DEVICE]) {
-                const defaultInputs = new Array<number>(DeviceInputSystem._MAX_KEYCODES);
-                for (let i = 0; i < DeviceInputSystem._MAX_KEYCODES; i++) {
-                    defaultInputs[i] = 0;
-                }
-                defaultInputs[evt.keyCode] = 1;
-
-                this._registerDevice(DeviceInputSystem.KEYBOARD_DEVICE, DeviceInputSystem._MAX_KEYCODES, defaultInputs);
+            if (!this._keyboardActive) {
+                this._keyboardActive = true;
+                this._registerDevice(DeviceInputSystem.KEYBOARD_DEVICE, DeviceInputSystem._MAX_KEYCODES);
             }
 
             const kbKey = this._inputs[DeviceInputSystem.KEYBOARD_DEVICE];
@@ -172,14 +173,7 @@ export class DeviceInputSystem implements IDisposable {
             const deviceName = `${DeviceInputSystem.POINTER_DEVICE}-${evt.pointerId}`;
             if (!this._pointerActive) {
                 this._pointerActive = true;
-                const defaultInputs = [evt.clientX, evt.clientY, 0];
-                if (evt.pointerId == 1) { // Push additonal values for mouse only
-                    for (let i = 3; i < DeviceInputSystem._MAX_POINTER_INPUTS; i++) {
-                        defaultInputs.push(0);
-                    }
-                }
-
-                this._registerDevice(deviceName, DeviceInputSystem._MAX_POINTER_INPUTS, defaultInputs);
+                this._registerDevice(deviceName, DeviceInputSystem._MAX_POINTER_INPUTS);
             }
 
             const pointer = this._inputs[deviceName];
@@ -194,14 +188,7 @@ export class DeviceInputSystem implements IDisposable {
             const deviceName = `${DeviceInputSystem.POINTER_DEVICE}-${evt.pointerId}`;
             if (!this._pointerActive) {
                 this._pointerActive = true;
-                const defaultInputs = [evt.clientX, evt.clientY, 0];
-                if (evt.pointerId == 1) { // Push additonal values for mouse only
-                    for (let i = 3; i < DeviceInputSystem._MAX_POINTER_INPUTS; i++) {
-                        defaultInputs.push(0);
-                    }
-                }
-                defaultInputs[evt.button + 2] = 1;
-                this._registerDevice(deviceName, DeviceInputSystem._MAX_POINTER_INPUTS, defaultInputs);
+                this._registerDevice(deviceName, DeviceInputSystem._MAX_POINTER_INPUTS);
             }
 
             const pointer = this._inputs[deviceName];
