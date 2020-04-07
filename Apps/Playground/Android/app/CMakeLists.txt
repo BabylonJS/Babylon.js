@@ -60,6 +60,7 @@ target_link_libraries(BabylonNativeJNI
         AppRuntime
         NativeEngine
         NativeWindow
+        Platform
         Console
         Window
         ScriptLoader

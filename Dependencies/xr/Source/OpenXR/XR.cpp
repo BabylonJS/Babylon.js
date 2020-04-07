@@ -24,7 +24,7 @@ namespace xr
                 {
                     if (!TryEnableExtension(extensionName, extensionProperties))
                     {
-                        throw Exception{ "Required extension not supported" };
+                        throw std::runtime_error{ "Required extension not supported" };
                     }
                 }
 
@@ -68,15 +68,6 @@ namespace xr
 
             return swapchainImageIndex;
         };
-    }
-
-    Exception::Exception(const char* message)
-        : m_message{ message }
-    {}
-
-    const char* Exception::what() const noexcept
-    {
-        return m_message.c_str();
     }
 
     class System::Impl
@@ -146,7 +137,7 @@ namespace xr
             }
             else if(!XR_SUCCEEDED(result))
             {
-                throw Exception{ "SystemId initialization failed with unexpected result type." };
+                throw std::runtime_error{ "SystemId initialization failed with unexpected result type." };
             }
 
             // Find the available environment blend modes.
@@ -473,7 +464,7 @@ namespace xr
                 std::end(SUPPORTED_COLOR_FORMATS));
             if (colorFormatPtr == std::end(swapchainFormats))
             {
-                throw Exception{ "No runtime swapchain format is supported for color." };
+                throw std::runtime_error{ "No runtime swapchain format is supported for color." };
             }
 
             auto depthFormatPtr = std::find_first_of(
@@ -483,7 +474,7 @@ namespace xr
                 std::end(SUPPORTED_DEPTH_FORMATS));
             if (depthFormatPtr == std::end(swapchainFormats))
             {
-                throw Exception{ "No runtime swapchain format is supported for depth." };
+                throw std::runtime_error{ "No runtime swapchain format is supported for depth." };
             }
 
             colorFormat = static_cast<SwapchainFormat>(*colorFormatPtr);
@@ -559,26 +550,38 @@ namespace xr
         }
     };
 
+    struct System::Session::Frame::Impl
+    {
+        Impl(Session::Impl& sessionImpl)
+            : sessionImpl{sessionImpl}
+        {
+        }
+
+        Session::Impl& sessionImpl;
+        bool shouldRender{};
+        int64_t displayTime{};
+    };
+
     System::Session::Frame::Frame(Session::Impl& sessionImpl)
         : Views{ sessionImpl.RenderResources.ActiveFrameViews }
         , InputSources{ sessionImpl.ActionResources.ActiveInputSources }
-        , m_sessionImpl{ sessionImpl }
+        , m_impl{ std::make_unique<System::Session::Frame::Impl>(sessionImpl) }
     {
-        auto session = m_sessionImpl.Session;
+        auto session = m_impl->sessionImpl.Session;
 
         XrFrameWaitInfo frameWaitInfo{ XR_TYPE_FRAME_WAIT_INFO };
         XrFrameState frameState{ XR_TYPE_FRAME_STATE };
         XrCheck(xrWaitFrame(session, &frameWaitInfo, &frameState));
-        m_shouldRender = frameState.shouldRender;
-        m_displayTime = frameState.predictedDisplayTime;
+        m_impl->shouldRender = frameState.shouldRender;
+        m_impl->displayTime = frameState.predictedDisplayTime;
 
         XrFrameBeginInfo frameBeginInfo{ XR_TYPE_FRAME_BEGIN_INFO };
         XrCheck(xrBeginFrame(session, &frameBeginInfo));
 
-        auto& renderResources = m_sessionImpl.RenderResources;
+        auto& renderResources = m_impl->sessionImpl.RenderResources;
 
         // Only render when session is visible. otherwise submit zero layers
-        if (m_shouldRender)
+        if (m_impl->shouldRender)
         {
             uint32_t viewCapacityInput = static_cast<uint32_t>(renderResources.Views.size());
             uint32_t viewCountOutput;
@@ -586,8 +589,8 @@ namespace xr
             XrViewState viewState{ XR_TYPE_VIEW_STATE };
             XrViewLocateInfo viewLocateInfo{ XR_TYPE_VIEW_LOCATE_INFO };
             viewLocateInfo.viewConfigurationType = System::Impl::VIEW_CONFIGURATION_TYPE;
-            viewLocateInfo.displayTime = m_displayTime;
-            viewLocateInfo.space = m_sessionImpl.SceneSpace;
+            viewLocateInfo.displayTime = m_impl->displayTime;
+            viewLocateInfo.space = m_impl->sessionImpl.SceneSpace;
             XrCheck(xrLocateViews(session, &viewLocateInfo, &viewState, viewCapacityInput, &viewCountOutput, renderResources.Views.data()));
             assert(viewCountOutput == viewCapacityInput);
             assert(viewCountOutput == renderResources.ConfigViews.size());
@@ -595,7 +598,7 @@ namespace xr
             assert(viewCountOutput == renderResources.DepthSwapchains.size());
         
             renderResources.ProjectionLayerViews.resize(viewCountOutput);
-            if (m_sessionImpl.HmdImpl.Extensions->DepthExtensionSupported)
+            if (m_impl->sessionImpl.HmdImpl.Extensions->DepthExtensionSupported)
             {
                 renderResources.DepthInfoViews.resize(viewCountOutput);
             }
@@ -664,13 +667,13 @@ namespace xr
             }
 
             // Locate all the things.
-            auto& actionResources = m_sessionImpl.ActionResources;
+            auto& actionResources = m_impl->sessionImpl.ActionResources;
 
             std::vector<XrActiveActionSet> activeActionSets = { { actionResources.ActionSet, XR_NULL_PATH } };
             XrActionsSyncInfo syncInfo{ XR_TYPE_ACTIONS_SYNC_INFO };
             syncInfo.countActiveActionSets = (uint32_t)activeActionSets.size();
             syncInfo.activeActionSets = activeActionSets.data();
-            XrCheck(xrSyncActions(m_sessionImpl.Session, &syncInfo));
+            XrCheck(xrSyncActions(m_impl->sessionImpl.Session, &syncInfo));
 
             InputSources.resize(actionResources.CONTROLLER_SUBACTION_PATH_PREFIXES.size());
             for (size_t idx = 0; idx < InputSources.size(); ++idx)
@@ -679,7 +682,7 @@ namespace xr
                 {
                     XrSpace space = actionResources.ControllerGripPoseSpaces[idx];
                     XrSpaceLocation location{ XR_TYPE_SPACE_LOCATION };
-                    XrCheck(xrLocateSpace(space, m_sessionImpl.SceneSpace, m_displayTime, &location));
+                    XrCheck(xrLocateSpace(space, m_impl->sessionImpl.SceneSpace, m_impl->displayTime, &location));
 
                     constexpr XrSpaceLocationFlags RequiredFlags =
                         XR_SPACE_LOCATION_POSITION_VALID_BIT |
@@ -706,7 +709,7 @@ namespace xr
                 {
                     XrSpace space = actionResources.ControllerAimPoseSpaces[idx];
                     XrSpaceLocation location{ XR_TYPE_SPACE_LOCATION };
-                    XrCheck(xrLocateSpace(space, m_sessionImpl.SceneSpace, m_displayTime, &location));
+                    XrCheck(xrLocateSpace(space, m_impl->sessionImpl.SceneSpace, m_impl->displayTime, &location));
 
                     constexpr XrSpaceLocationFlags RequiredFlags =
                         XR_SPACE_LOCATION_POSITION_VALID_BIT |
@@ -742,9 +745,9 @@ namespace xr
         // must not go out of scope before xrEndFrame() is called.
         XrCompositionLayerProjection layer{ XR_TYPE_COMPOSITION_LAYER_PROJECTION };
 
-        if (m_shouldRender)
+        if (m_impl->shouldRender)
         {
-            auto& renderResources = m_sessionImpl.RenderResources;
+            auto& renderResources = m_impl->sessionImpl.RenderResources;
         
             XrSwapchainImageReleaseInfo releaseInfo{ XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO };
 
@@ -763,7 +766,7 @@ namespace xr
             // But mixed reality capture has alpha blend mode display and use alpha channel to blend content to environment.
             layer.layerFlags = XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT;
         
-            layer.space = m_sessionImpl.SceneSpace;
+            layer.space = m_impl->sessionImpl.SceneSpace;
             layer.viewCount = static_cast<uint32_t>(renderResources.ProjectionLayerViews.size());
             layer.views = renderResources.ProjectionLayerViews.data();
         
@@ -785,11 +788,11 @@ namespace xr
 
         // Submit the composition layers for the predicted display time.
         XrFrameEndInfo frameEndInfo{ XR_TYPE_FRAME_END_INFO };
-        frameEndInfo.displayTime = m_displayTime;
-        frameEndInfo.environmentBlendMode = m_sessionImpl.HmdImpl.EnvironmentBlendMode;
-        frameEndInfo.layerCount = m_shouldRender ? 1 : 0;
+        frameEndInfo.displayTime = m_impl->displayTime;
+        frameEndInfo.environmentBlendMode = m_impl->sessionImpl.HmdImpl.EnvironmentBlendMode;
+        frameEndInfo.layerCount = m_impl->shouldRender ? 1 : 0;
         frameEndInfo.layers = &layersPtr;
-        XrAssert(xrEndFrame(m_sessionImpl.Session, &frameEndInfo));
+        XrAssert(xrEndFrame(m_impl->sessionImpl.Session, &frameEndInfo));
     }
 
     System::System(const char* appName)

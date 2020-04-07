@@ -44,10 +44,10 @@ public class BabylonView extends SurfaceView implements SurfaceHolder.Callback2,
      * not normally called or subclassed by clients of BabylonView.
      */
     public void surfaceCreated(SurfaceHolder holder) {
-        BabylonNative.Wrapper.surfaceCreated(getHolder().getSurface());
+        BabylonNative.Wrapper.surfaceCreated(getHolder().getSurface(), this.getContext());
         if (!this.mViewReady) {
             this.mViewDelegate.onViewReady();
-            mViewReady = true;
+            this.mViewReady = true;
         }
     }
 
@@ -76,8 +76,6 @@ public class BabylonView extends SurfaceView implements SurfaceHolder.Callback2,
         float mY = event.getY();
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                BabylonNative.Wrapper.setTouchInfo(mX, mY, true);
-                break;
             case MotionEvent.ACTION_MOVE:
                 BabylonNative.Wrapper.setTouchInfo(mX, mY, true);
                 break;

@@ -10,70 +10,111 @@
 #include <algorithm>
 #include <cassert>
 
-struct FunctionTableEntry {
-  napi_callback cb;
-  void* data;
-};
+namespace {
+  struct FunctionTableEntry {
+    napi_callback cb;
+    void* data;
+  };
 
-struct FunctionTableProperty {
-  napi_callback getter;
-  napi_callback setter;
-  void* data;
-};
+  struct FunctionTableProperty {
+    napi_callback getter;
+    napi_callback setter;
+    void* data;
+  };
 
-struct FunctionTable {
-  napi_env env;
-  std::vector<FunctionTableEntry> table;
-  std::map<std::string, FunctionTableProperty> properties;
-};
+  struct FunctionTable {
+    napi_env env;
+    std::vector<FunctionTableEntry> table;
+    std::map<std::string, FunctionTableProperty> properties;
+  };
 
-struct ClassTable {
-  napi_callback cb;
-  void* data;
-  JSClassRef classRef;
-  napi_env env;
-  FunctionTable FunctionTable;
-};
+  struct ClassTable {
+    napi_callback cb;
+    void* data;
+    JSClassRef classRef;
+    napi_env env;
+    FunctionTable FunctionTable;
+  };
 
-struct CallbackInfo {
-  napi_value newTarget;
-  napi_value thisArg;
-  napi_value* argv;
-  void* data;
-  uint16_t argc;
-  bool isConstructCall{ false };
-};
+  struct CallbackInfo {
+    napi_value newTarget;
+    napi_value thisArg;
+    napi_value* argv;
+    void* data;
+    uint16_t argc;
+    bool isConstructCall{ false };
+  };
 
-struct RefInfo {
-  JSValueRef value;
-  uint32_t count;
-};
+  struct RefInfo {
+    JSValueRef value;
+    uint32_t count;
+  };
 
-std::map<JSObjectRef, ClassTable*> constructorCB;
-std::map<JSValueRef, FunctionTable*> FunctionTables;
+  std::map<JSObjectRef, ClassTable*> constructorCB;
+  std::map<JSValueRef, FunctionTable*> FunctionTables;
 
-void DumpException(napi_env env, JSValueRef exception) {
-  char errorStr[1024];
-  size_t errorStrSize{ 0 };
+  void DumpException(napi_env env, JSValueRef exception) {
+    char errorStr[1024];
+    size_t errorStrSize{ 0 };
 
-  if (!JSValueIsNull(env->m_globalContext, exception)) {
-    // Getting error string
-    if (JSValueIsString(env->m_globalContext, exception)) {
-      OpaqueJSValue* ncstr = const_cast<OpaqueJSValue*>(exception);
-      /*size_t length =*/ JSStringGetUTF8CString(reinterpret_cast<JSStringRef>(ncstr), errorStr, sizeof(errorStr));
-    } else {
-      OpaqueJSValue *exceptionValue = const_cast<OpaqueJSValue*>(exception);
-      napi_get_value_string_utf8(env, reinterpret_cast<napi_value>(exceptionValue), errorStr, sizeof(errorStr), &errorStrSize);
+    if (!JSValueIsNull(env->m_globalContext, exception)) {
+      // Getting error string
+      if (JSValueIsString(env->m_globalContext, exception)) {
+        OpaqueJSValue* ncstr = const_cast<OpaqueJSValue*>(exception);
+        /*size_t length =*/ JSStringGetUTF8CString(reinterpret_cast<JSStringRef>(ncstr), errorStr, sizeof(errorStr));
+      } else {
+        OpaqueJSValue *exceptionValue = const_cast<OpaqueJSValue*>(exception);
+        napi_get_value_string_utf8(env, reinterpret_cast<napi_value>(exceptionValue), errorStr, sizeof(errorStr), &errorStrSize);
+      }
     }
   }
-}
 
-std::string GetUTF8String(JSStringRef string) {
-  size_t maxSize = JSStringGetMaximumUTF8CStringSize(string);
-  std::string str(maxSize - 1, '\0');
-  size_t size = JSStringGetUTF8CString(string, str.data(), maxSize);
-  str.resize(size - 1);
-  return std::move(str);
+  std::string GetUTF8String(JSStringRef string) {
+    size_t maxSize = JSStringGetMaximumUTF8CStringSize(string);
+    std::string str(maxSize - 1, '\0');
+    size_t size = JSStringGetUTF8CString(string, str.data(), maxSize);
+    str.resize(size - 1);
+    return std::move(str);
+  }
+
+  void CreatePromise(JSContextRef context, JSObjectRef* promise, JSObjectRef* resolve, JSObjectRef* reject)
+  {
+    JSObjectRef global = JSContextGetGlobalObject(context);
+
+    JSStringRef propertyName = JSStringCreateWithUTF8CString("Promise");
+    JSObjectRef constructor = JSValueToObject(context, JSObjectGetProperty(context, global, propertyName, nullptr), nullptr);
+    JSStringRelease(propertyName);
+
+    struct CallbackStruct {
+        static JSValueRef Callback(JSContextRef context, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
+            CallbackStruct& cbs = *reinterpret_cast<CallbackStruct*>(JSObjectGetPrivate(function));
+            *cbs.resolve = JSValueToObject(context, arguments[0], nullptr);
+            *cbs.reject = JSValueToObject(context, arguments[1], nullptr);
+        }
+
+        JSObjectRef* resolve{};
+        JSObjectRef* reject{};
+    } cbs{ resolve, reject };
+
+    JSObjectRef executor = JSObjectMakeFunctionWithCallback(context, nullptr, &CallbackStruct::Callback);
+    JSObjectSetPrivate(executor, &cbs);
+
+    JSValueRef args[] = { executor };
+    *promise = JSObjectCallAsConstructor(context, constructor, 2, args, nullptr);
+  }
+
+  napi_status ConcludeDeferred(napi_env env, napi_deferred deferred, const char* property, napi_value result) {
+    napi_value container, resolver, js_null;
+    napi_ref ref = reinterpret_cast<napi_ref>(deferred);
+
+    CHECK_NAPI(napi_get_reference_value(env, ref, &container));
+    CHECK_NAPI(napi_get_named_property(env, container, property, &resolver));
+    CHECK_NAPI(napi_get_null(env, &js_null));
+    CHECK_NAPI(napi_call_function(env, js_null, resolver, 1, &result, nullptr));
+    CHECK_NAPI(napi_delete_reference(env, ref));
+
+    return napi_ok;
+  }
 }
 
 napi_status napi_get_value_bool(napi_env env, napi_value v, bool* result) {
@@ -379,6 +420,12 @@ napi_status napi_create_object(napi_env env, napi_value* result) {
   }
   JSObjectRef jsObject = JSObjectMake(env->m_globalContext, classDef, nullptr);
   *result = reinterpret_cast<napi_value>(jsObject);
+  return napi_ok;
+}
+
+napi_status napi_create_array(napi_env env, napi_value* result) {
+  JSObjectRef array = JSObjectMakeArray(env->m_globalContext, 0, nullptr, nullptr);
+  *result = reinterpret_cast<napi_value>(array);
   return napi_ok;
 }
 
@@ -701,13 +748,15 @@ napi_status napi_define_class(napi_env env,
 napi_status napi_get_array_length(napi_env env,
                   napi_value v,
                   uint32_t* result) {
+  JSStringRef lengthStr = JSStringCreateWithUTF8CString("length");
   assert(JSValueIsArray(env->m_globalContext, reinterpret_cast<JSObjectRef>(v)));
-  assert(JSObjectHasProperty(env->m_globalContext, reinterpret_cast<JSObjectRef>(v), JSStringCreateWithUTF8CString("length")));
+  assert(JSObjectHasProperty(env->m_globalContext, reinterpret_cast<JSObjectRef>(v), lengthStr));
   
-  JSValueRef lengthValue = JSObjectGetProperty(env->m_globalContext, reinterpret_cast<JSObjectRef>(v), JSStringCreateWithUTF8CString("length"), nullptr);
+  JSValueRef lengthValue = JSObjectGetProperty(env->m_globalContext, reinterpret_cast<JSObjectRef>(v), lengthStr, nullptr);
   double length = JSValueToNumber(env->m_globalContext, lengthValue, nullptr);
-  
+
   *result = uint32_t(length);
+  JSStringRelease(lengthStr);
   return napi_ok;
 }
 
@@ -895,17 +944,53 @@ napi_status napi_get_typedarray_info(napi_env env,
   return napi_ok;
 }
 
+NAPI_EXTERN napi_status napi_create_promise(napi_env env,
+                                            napi_deferred* deferred,
+                                            napi_value* promise) {
+    JSContextRef context = env->m_globalContext;
+
+    JSObjectRef js_promise;
+    JSObjectRef resolve;
+    JSObjectRef reject;
+    CreatePromise(context, &js_promise, &resolve, &reject);
+    *promise = reinterpret_cast<napi_value>(js_promise);
+
+    napi_ref ref;
+    napi_value js_deferred = reinterpret_cast<napi_value>(JSObjectMake(context, nullptr, nullptr));
+    CHECK_NAPI(napi_set_named_property(env, js_deferred, "resolve", reinterpret_cast<napi_value>(resolve)));
+    CHECK_NAPI(napi_set_named_property(env, js_deferred, "reject", reinterpret_cast<napi_value>(reject)));
+    CHECK_NAPI(napi_create_reference(env, js_deferred, 1, &ref));
+    *deferred = reinterpret_cast<napi_deferred>(ref);
+
+    return napi_ok;
+}
+
+napi_status napi_resolve_deferred(napi_env env,
+                                  napi_deferred deferred,
+                                  napi_value resolution) {
+  return ConcludeDeferred(env, deferred, "resolve", resolution);
+}
+
+napi_status napi_reject_deferred(napi_env env,
+                                 napi_deferred deferred,
+                                 napi_value rejection) {
+  return ConcludeDeferred(env, deferred, "reject", rejection);
+}
+
 napi_status napi_run_script(napi_env env,
               napi_value script,
               const char* sourceUrl,
               napi_value* result) {
-  JSStringRef statement = reinterpret_cast<JSStringRef>(script);
+  JSStringRef scriptStr = JSValueToStringCopy(env->m_globalContext, reinterpret_cast<JSValueRef>(script), nullptr);
+  JSStringRef sourceUrlStr = JSStringCreateWithUTF8CString(sourceUrl);
   JSValueRef exception;
-  OpaqueJSValue *retValue = const_cast<OpaqueJSValue*>(JSEvaluateScript(env->m_globalContext, statement, nullptr, JSStringCreateWithUTF8CString(sourceUrl), 1, &exception));
+  OpaqueJSValue *retValue = const_cast<OpaqueJSValue*>(JSEvaluateScript(env->m_globalContext, scriptStr, nullptr, sourceUrlStr, 1, &exception));
   if (!retValue) {
     DumpException(env, exception);
   }
   *result = reinterpret_cast<napi_value>(retValue);
+  JSStringRelease(sourceUrlStr);
+  JSStringRelease(scriptStr);
   return napi_ok;
 }
 
@@ -989,6 +1074,18 @@ napi_status napi_set_named_property(napi_env env,
   JSStringRef propertyName = JSStringCreateWithUTF8CString(utf8name);
   JSValueRef jsValue = reinterpret_cast<JSValueRef>(value);
   JSObjectSetProperty(context, jsObject, propertyName, jsValue, kJSPropertyAttributeNone, nullptr);
+  JSStringRelease(propertyName);
+  return napi_ok;
+}
+
+napi_status napi_has_named_property(napi_env env,
+                                    napi_value object,
+                                    const char* utf8name,
+                                    bool* result) {
+  auto context = env->m_globalContext;
+  JSObjectRef jsObject = reinterpret_cast<JSObjectRef>(object);
+  JSStringRef propertyName = JSStringCreateWithUTF8CString(utf8name);
+  *result = JSObjectHasProperty(context, jsObject, propertyName);
   JSStringRelease(propertyName);
   return napi_ok;
 }

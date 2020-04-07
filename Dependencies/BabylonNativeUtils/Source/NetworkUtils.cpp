@@ -5,7 +5,7 @@
 // TODO : this is a workaround for asset loading on Android. To remove when the plugin system is in place.
 #if (ANDROID)
 #include <android/asset_manager.h>
-extern AAssetManager* g_assetMgrNative;
+extern AAssetManager* g_assetManager;
 #endif
 
 namespace Babylon
@@ -14,8 +14,7 @@ namespace Babylon
     {
         // TODO : this is a workaround for asset loading on Android. To remove when the plugin system is in place.
 #if (ANDROID)
-        AAsset* asset = AAssetManager_open(g_assetMgrNative, url.c_str(),
-            AASSET_MODE_UNKNOWN);
+        AAsset* asset = AAssetManager_open(g_assetManager, url.c_str(), AASSET_MODE_UNKNOWN);
         if (asset)
         {
             return url;
@@ -66,8 +65,7 @@ namespace Babylon
 
                 // TODO : this is a workaround for asset loading on Android. To remove when the plugin system is in place.
 #if (ANDROID)
-                AAsset* asset = AAssetManager_open(g_assetMgrNative, url.c_str(),
-                    AASSET_MODE_UNKNOWN);
+                AAsset* asset = AAssetManager_open(g_assetManager, url.c_str(), AASSET_MODE_UNKNOWN);
                 if (asset)
                 {
                     size_t size = AAsset_getLength64(asset);

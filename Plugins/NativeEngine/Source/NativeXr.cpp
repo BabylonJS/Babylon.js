@@ -8,6 +8,10 @@
 
 #include <set>
 
+#ifdef ANDROID
+#include <Babylon/Platform.h>
+#endif
+
 namespace
 {
     bgfx::TextureFormat::Enum XrTextureFormatToBgfxFormat(xr::TextureFormat format)
@@ -121,7 +125,7 @@ namespace
         constexpr std::array<const char*, 2> HANDEDNESS_STRINGS{
             "left",
             "right"};
-        constexpr char* TARGET_RAY_MODE{"tracked-pointer"};
+        constexpr const char* TARGET_RAY_MODE{"tracked-pointer"};
 
         auto jsInputSource = Napi::Object::New(env);
         jsInputSource.Set("handedness", Napi::String::New(env, HANDEDNESS_STRINGS[static_cast<size_t>(inputSource.Handedness)]));
@@ -143,10 +147,10 @@ namespace Babylon
     class NativeXr
     {
     public:
-        NativeXr::NativeXr();
+        NativeXr();
         ~NativeXr();
 
-        void BeginSession(); // TODO: Make this asynchronous.
+        void BeginSession(Napi::Env env); // TODO: Make this asynchronous.
         void EndSession();   // TODO: Make this asynchronous.
 
         auto ActiveFrameBuffers() const
@@ -225,17 +229,23 @@ namespace Babylon
     }
 
     // TODO: Make this asynchronous.
-    void NativeXr::BeginSession()
+    void NativeXr::BeginSession(Napi::Env env)
     {
         assert(m_session == nullptr);
         assert(m_frame == nullptr);
 
         if (!m_system.IsInitialized())
         {
+#ifdef ANDROID
+            const auto& platform = Platform::GetFromJavaScript(env);
+            auto result = m_system.TryInitialize(platform.Env(), platform.AppContext());
+            assert(result);
+#else
             while (!m_system.TryInitialize())
             {
                 // do nothing
             }
+#endif
         }
 
         m_session = std::make_unique<xr::System::Session>(m_system, bgfx::getInternalData()->context);
@@ -491,17 +501,17 @@ namespace Babylon
 
             void Update(const xr::System::Session::Frame::Space& space, bool isViewSpace)
             {
-                auto pos = m_position.Value();
-                pos.Set("x", space.Position.X);
-                pos.Set("y", space.Position.Y);
-                pos.Set("z", space.Position.Z);
-                pos.Set("w", 1.f);
+                auto position = m_position.Value();
+                position.Set("x", space.Position.X);
+                position.Set("y", space.Position.Y);
+                position.Set("z", space.Position.Z);
+                position.Set("w", 1.f);
 
-                auto or = m_orientation.Value();
-                or.Set("x", space.Orientation.X);
-                or.Set("y", space.Orientation.Y);
-                or.Set("z", space.Orientation.Z);
-                or.Set("w", space.Orientation.W);
+                auto orientation = m_orientation.Value();
+                orientation.Set("x", space.Orientation.X);
+                orientation.Set("y", space.Orientation.Y);
+                orientation.Set("z", space.Orientation.Z);
+                orientation.Set("w", space.Orientation.W);
 
                 std::memcpy(m_matrix.Value().Data(), CreateTransformMatrix(space, isViewSpace).data(), m_matrix.Value().ByteLength());
             }
@@ -845,7 +855,7 @@ namespace Babylon
                 auto jsSession = info.Env().Global().Get(JS_CLASS_NAME).As<Napi::Function>().New({info[0]});
                 auto& session = *XRSession::Unwrap(jsSession);
 
-                session.m_xr.BeginSession();
+                session.m_xr.BeginSession(info.Env());
 
                 auto deferred = Napi::Promise::Deferred::New(info.Env());
                 deferred.Resolve(jsSession);
@@ -862,7 +872,7 @@ namespace Babylon
                 assert(info[0].As<Napi::String>().Utf8Value() == XRSessionType::IMMERSIVE_VR);
             }
 
-            void SetEngine(Napi::Object& jsEngine)
+            void SetEngine(Napi::Object jsEngine)
             {
                 m_xr.SetEngine(jsEngine);
             }
@@ -973,7 +983,8 @@ namespace Babylon
                     else
                     {
                         // Ensure the correct spaces are associated with the existing input source.
-                        SetXRInputSourceSpaces(found->second.Value(), inputSource);
+                        auto val = found->second.Value();
+                        SetXRInputSourceSpaces(val, inputSource);
                     }
                 }
                 for (const auto& [id, ref] : m_idToInputSource)

@@ -1,5 +1,6 @@
 package BabylonNative;
 
+import android.content.Context;
 import android.content.res.AssetManager;
 import android.view.Surface;
 
@@ -15,7 +16,7 @@ public class Wrapper {
 
     public static native void finishEngine();
 
-    public static native void surfaceCreated(Surface surface);
+    public static native void surfaceCreated(Surface surface, Context appContext);
 
     public static native void surfaceChanged(int width, int height, Surface surface);
 

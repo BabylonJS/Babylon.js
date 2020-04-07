@@ -3,7 +3,7 @@ if(APPLE)
     set(XR OFF)
 elseif(ANDROID)
     set(GRAPHICS_API "OpenGL")
-    set(XR OFF)
+    set(XR ON)
 elseif(WIN32)
     set(GRAPHICS_API "D3D")
     set(XR ON)
@@ -55,7 +55,8 @@ if(APPLE)
     target_link_to_dependencies(NativeEngine
         PRIVATE spirv-cross-msl)
 elseif(ANDROID)
-    # Nothing to do.
+    target_link_libraries(NativeEngine
+        PRIVATE Platform)
 elseif(WIN32)
     target_link_to_dependencies(NativeEngine
         PRIVATE "d3dcompiler.lib")

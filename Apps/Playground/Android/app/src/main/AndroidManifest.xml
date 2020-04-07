@@ -45,8 +45,10 @@
         <data android:pathPattern=".*\\.glb" />
       </intent-filter>
     </activity>
+    <meta-data android:name="com.google.ar.core" android:value="optional" />
   </application>
   <uses-feature android:glEsVersion="0x00030000" android:required="true" />
+  <uses-permission android:name="android.permission.CAMERA"/>
   <uses-permission android:name="android.permission.INTERNET" />
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />

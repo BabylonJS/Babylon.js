@@ -6,6 +6,7 @@
 #include <openxr/openxr_platform.h>
 
 #include <assert.h>
+#include <stdexcept>
 
 namespace xr
 {
@@ -80,7 +81,7 @@ namespace xr
     {
         if (XR_FAILED(result))
         {
-            throw Exception{ GetXrResultName(result) };
+            throw std::runtime_error{ GetXrResultName(result) };
         }
     }
 

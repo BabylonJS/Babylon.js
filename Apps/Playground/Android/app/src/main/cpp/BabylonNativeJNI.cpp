@@ -8,6 +8,7 @@
 #include <android/native_window_jni.h> // requires ndk r5 or newer
 #include <android/log.h>
 
+#include <Babylon/Platform.h>
 #include <Babylon/AppRuntime.h>
 #include <Babylon/Plugins/NativeEngine.h>
 #include <Babylon/Plugins/NativeWindow.h>
@@ -20,10 +21,11 @@
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
 
-extern "C" {
-    JNIEXPORT void JNICALL Java_BabylonNative_Wrapper_initEngine(JNIEnv* env, jobject obj, jobject assetMgr, jobject appContext);
+extern "C"
+{
+    JNIEXPORT void JNICALL Java_BabylonNative_Wrapper_initEngine(JNIEnv* env, jobject obj, jobject assetManager);
     JNIEXPORT void JNICALL Java_BabylonNative_Wrapper_finishEngine(JNIEnv* env, jobject obj);
-    JNIEXPORT void JNICALL Java_BabylonNative_Wrapper_surfaceCreated(JNIEnv* env, jobject obj, jobject surface);
+    JNIEXPORT void JNICALL Java_BabylonNative_Wrapper_surfaceCreated(JNIEnv* env, jobject obj, jobject surface, jobject appContext);
     JNIEXPORT void JNICALL Java_BabylonNative_Wrapper_activityOnPause(JNIEnv* env);
     JNIEXPORT void JNICALL Java_BabylonNative_Wrapper_activityOnResume(JNIEnv* env);
     JNIEXPORT void JNICALL Java_BabylonNative_Wrapper_surfaceChanged(JNIEnv* env, jobject obj, jint width, jint height, jobject surface);
@@ -32,40 +34,53 @@ extern "C" {
     JNIEXPORT void JNICALL Java_BabylonNative_Wrapper_setTouchInfo(JNIEnv* env, jobject obj, jfloat dx, jfloat dy, jboolean down);
 };
 
-std::unique_ptr<Babylon::AppRuntime> runtime{};
-std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
-std::unique_ptr<Babylon::ScriptLoader> loader{};
+namespace
+{
+    std::unique_ptr<Babylon::AppRuntime> g_runtime{};
+    std::unique_ptr<InputManager::InputBuffer> g_inputBuffer{};
+    std::unique_ptr<Babylon::ScriptLoader> g_scriptLoader{};
+}
 
-AAssetManager *g_assetMgrNative = nullptr;
+// TODO : this is a workaround for asset loading on Android. To remove when the plugin system is in place.
+AAssetManager* g_assetManager = nullptr;
 
 JNIEXPORT void JNICALL
-Java_BabylonNative_Wrapper_initEngine(JNIEnv* env, jobject obj,
-                                      jobject assetMgr, jobject appContext)
+Java_BabylonNative_Wrapper_initEngine(JNIEnv* env, jobject obj, jobject assetManager)
 {
-    auto asset_manager = AAssetManager_fromJava(env, assetMgr);
-    g_assetMgrNative = asset_manager;
+    // TODO : this is a workaround for asset loading on Android. To remove when the plugin system is in place.
+    g_assetManager = AAssetManager_fromJava(env, assetManager);
 }
 
 JNIEXPORT void JNICALL
 Java_BabylonNative_Wrapper_finishEngine(JNIEnv* env, jobject obj)
 {
-    loader.reset();
-    inputBuffer.reset();
-    runtime.reset();
+    g_scriptLoader.reset();
+    g_inputBuffer.reset();
+    g_runtime.reset();
     Babylon::Plugins::NativeEngine::DeinitializeGraphics();
 }
 
 JNIEXPORT void JNICALL
-Java_BabylonNative_Wrapper_surfaceCreated(JNIEnv* env, jobject obj, jobject surface)
+Java_BabylonNative_Wrapper_surfaceCreated(JNIEnv* env, jobject obj, jobject surface, jobject appContext)
 {
-    if (!runtime)
+    if (!g_runtime)
     {
-        runtime = std::make_unique<Babylon::AppRuntime>("");
+        g_runtime = std::make_unique<Babylon::AppRuntime>("");
 
-        ANativeWindow *window = ANativeWindow_fromSurface(env, surface);
+        JavaVM* javaVM{};
+        if (env->GetJavaVM(&javaVM) != JNI_OK)
+        {
+            throw std::runtime_error("Failed to get Java VM");
+        }
+
+        // TODO: This should be cleaned up via env->DeleteGlobalRef
+        auto globalAppContext = env->NewGlobalRef(appContext);
+
+        ANativeWindow* window = ANativeWindow_fromSurface(env, surface);
         int32_t width  = ANativeWindow_getWidth(window);
         int32_t height = ANativeWindow_getHeight(window);
-        runtime->Dispatch([window, width, height](Napi::Env env)
+
+        g_runtime->Dispatch([javaVM, globalAppContext, window, width, height](Napi::Env env)
         {
             Babylon::Polyfills::Console::Initialize(env, [](const char* message, Babylon::Polyfills::Console::LogLevel level)
             {
@@ -83,36 +98,40 @@ Java_BabylonNative_Wrapper_surfaceCreated(JNIEnv* env, jobject obj, jobject surf
                 }
             });
 
-            Babylon::Polyfills::Window::Initialize(env);
+            Babylon::Platform::Initialize(env, javaVM, globalAppContext);
 
             Babylon::Plugins::NativeWindow::Initialize(env, window, width, height);
+
             Babylon::Plugins::NativeEngine::InitializeGraphics(window, width, height);
             Babylon::Plugins::NativeEngine::Initialize(env);
 
-            Babylon::InitializeXMLHttpRequest(env, runtime->RootUrl());
+            Babylon::Polyfills::Window::Initialize(env);
+
+            Babylon::InitializeXMLHttpRequest(env, g_runtime->RootUrl());
 
             auto& jsRuntime = Babylon::JsRuntime::GetFromJavaScript(env);
-            inputBuffer = std::make_unique<InputManager::InputBuffer>(jsRuntime);
-            InputManager::Initialize(jsRuntime, *inputBuffer);
+
+            g_inputBuffer = std::make_unique<InputManager::InputBuffer>(jsRuntime);
+            InputManager::Initialize(jsRuntime, *g_inputBuffer);
         });
 
-        loader = std::make_unique<Babylon::ScriptLoader>(*runtime, runtime->RootUrl());
-        loader->Eval("document = {}", "");
-        loader->LoadScript("Scripts/ammo.js");
-        loader->LoadScript("Scripts/recast.js");
-        loader->LoadScript("Scripts/babylon.max.js");
-        loader->LoadScript("Scripts/babylon.glTF2FileLoader.js");
-        loader->LoadScript("Scripts/babylonjs.materials.js");
+        g_scriptLoader = std::make_unique<Babylon::ScriptLoader>(*g_runtime, g_runtime->RootUrl());
+        g_scriptLoader->Eval("document = {}", "");
+        g_scriptLoader->LoadScript("Scripts/ammo.js");
+        g_scriptLoader->LoadScript("Scripts/recast.js");
+        g_scriptLoader->LoadScript("Scripts/babylon.max.js");
+        g_scriptLoader->LoadScript("Scripts/babylon.glTF2FileLoader.js");
+        g_scriptLoader->LoadScript("Scripts/babylonjs.materials.js");
     }
 }
 
 JNIEXPORT void JNICALL
 Java_BabylonNative_Wrapper_surfaceChanged(JNIEnv* env, jobject obj, jint width, jint height, jobject surface)
 {
-    if (runtime)
+    if (g_runtime)
     {
         ANativeWindow *window = ANativeWindow_fromSurface(env, surface);
-        runtime->Dispatch([window, width, height](Napi::Env env)
+        g_runtime->Dispatch([window, width, height](Napi::Env env)
         {
             Babylon::Plugins::NativeEngine::Reinitialize(env, window, static_cast<size_t>(width), static_cast<size_t>(height));
         });
@@ -122,49 +141,49 @@ Java_BabylonNative_Wrapper_surfaceChanged(JNIEnv* env, jobject obj, jint width, 
 JNIEXPORT void JNICALL
 Java_BabylonNative_Wrapper_loadScript(JNIEnv* env, jobject obj, jstring path)
 {
-    if (loader)
+    if (g_scriptLoader)
     {
         jboolean iscopy;
-        loader->LoadScript(env->GetStringUTFChars(path, &iscopy));
+        g_scriptLoader->LoadScript(env->GetStringUTFChars(path, &iscopy));
     }
 }
 
 JNIEXPORT void JNICALL
 Java_BabylonNative_Wrapper_eval(JNIEnv* env, jobject obj, jstring source, jstring sourceURL)
 {
-    if (runtime)
+    if (g_runtime)
     {
         jboolean iscopy;
         std::string url = env->GetStringUTFChars(sourceURL, &iscopy);
         std::string src = env->GetStringUTFChars(source, &iscopy);
-        loader->Eval(std::move(src), std::move(url));
+        g_scriptLoader->Eval(std::move(src), std::move(url));
     }
 }
 
 JNIEXPORT void JNICALL
 Java_BabylonNative_Wrapper_setTouchInfo(JNIEnv* env, jobject obj, jfloat x, jfloat y, jboolean down)
 {
-    if (inputBuffer != nullptr)
+    if (g_inputBuffer != nullptr)
     {
-        inputBuffer->SetPointerPosition(x, y);
-        inputBuffer->SetPointerDown(down);
+        g_inputBuffer->SetPointerPosition(x, y);
+        g_inputBuffer->SetPointerDown(down);
     }
 }
 
 JNIEXPORT void JNICALL
 Java_BabylonNative_Wrapper_activityOnPause(JNIEnv* env)
 {
-    if (runtime)
+    if (g_runtime)
     {
-        runtime->Suspend();
+        g_runtime->Suspend();
     }
 }
 
 JNIEXPORT void JNICALL
 Java_BabylonNative_Wrapper_activityOnResume(JNIEnv* env)
 {
-    if (runtime)
+    if (g_runtime)
     {
-        runtime->Resume();
+        g_runtime->Resume();
     }
 }

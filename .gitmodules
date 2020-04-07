@@ -25,3 +25,6 @@
 [submodule "Dependencies/openssl/openssl"]
 	path = Dependencies/openssl/openssl
 	url = https://github.com/openssl/openssl.git
+[submodule "Dependencies/xr/Dependencies/arcore-android-sdk"]
+	path = Dependencies/xr/Dependencies/arcore-android-sdk
+	url = https://github.com/google-ar/arcore-android-sdk

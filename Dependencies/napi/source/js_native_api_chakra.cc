@@ -2312,9 +2312,9 @@ napi_status napi_get_version(napi_env env, uint32_t* result) {
   return napi_ok;
 }
 
-NAPI_EXTERN napi_status napi_create_promise(napi_env env,
-                                            napi_deferred* deferred,
-                                            napi_value* promise) {
+napi_status napi_create_promise(napi_env env,
+                                napi_deferred* deferred,
+                                napi_value* promise) {
   CHECK_ARG(env, deferred);
   CHECK_ARG(env, promise);
 
@@ -2340,21 +2340,21 @@ NAPI_EXTERN napi_status napi_create_promise(napi_env env,
   return napi_ok;
 }
 
-NAPI_EXTERN napi_status napi_resolve_deferred(napi_env env,
-                                              napi_deferred deferred,
-                                              napi_value resolution) {
+napi_status napi_resolve_deferred(napi_env env,
+                                  napi_deferred deferred,
+                                  napi_value resolution) {
   return ConcludeDeferred(env, deferred, "resolve", resolution);
 }
 
-NAPI_EXTERN napi_status napi_reject_deferred(napi_env env,
-                                             napi_deferred deferred,
-                                             napi_value rejection) {
+napi_status napi_reject_deferred(napi_env env,
+                                 napi_deferred deferred,
+                                 napi_value rejection) {
   return ConcludeDeferred(env, deferred, "reject", rejection);
 }
 
-NAPI_EXTERN napi_status napi_is_promise(napi_env env,
-                                        napi_value promise,
-                                        bool* is_promise) {
+napi_status napi_is_promise(napi_env env,
+                            napi_value promise,
+                            bool* is_promise) {
   CHECK_ARG(env, promise);
   CHECK_ARG(env, is_promise);
 
