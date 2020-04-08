@@ -4434,6 +4434,22 @@ export class Scene extends AbstractScene implements IAnimatable {
         return pi;
     }
 
+    /** Launch a ray to try to pick a mesh in the scene using only bounding information of the main mesh (not using submeshes)
+     * @param x position on screen
+     * @param y position on screen
+     * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
+     * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
+     * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+     * @returns a PickingInfo (Please note that some info will not be set like distance, bv, bu and everything that cannot be capture by only using bounding infos)
+     */
+    public pickWithBoundingInfo(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean,
+        fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
+        // Dummy info if picking as not been imported
+        const pi = new PickingInfo();
+        pi._pickingUnavailable = true;
+        return pi;
+    }
+
     /** Use the given ray to pick a mesh in the scene
      * @param ray The ray to use to pick meshes
      * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must have isPickable set to true
