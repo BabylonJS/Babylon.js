@@ -87,7 +87,7 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
         this.rebuild();
     }
 
-    public setValue(name: string, value: boolean) {
+    public setValue(name: string, value: any) {
         if (this[name] === undefined) {
             this._keys.push(name);
         }
