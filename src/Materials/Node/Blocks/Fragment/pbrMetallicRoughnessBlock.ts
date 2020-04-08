@@ -82,6 +82,15 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     public opacityRGB: boolean = false;
 
     /**
+     * Initialize the block and prepare the context for build
+     * @param state defines the state that will be used for the build
+     */
+    public initialize(state: NodeMaterialBuildState) {
+        state._excludeVariableName("surfaceAlbedo");
+        state._excludeVariableName("alpha");
+    }
+
+    /**
      * Gets the current class name
      * @returns the class name
      */
@@ -228,6 +237,12 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         if (this.opacityTexture.isConnected) {
             defines.setValue("OPACITY", true);
         }
+
+        defines.setValue("ALPHABLEND", this.useAlphaBlending);
+        defines.setValue("ALPHAFROMALBEDO", this.useAlphaFromAlbedoTexture);
+        defines.setValue("ALPHATEST", this.useAlphaTest);
+        defines.setValue("ALPHATESTVALUE", this.alphaTestCutoff);
+        defines.setValue("OPACITYRGB", this.opacityRGB);
 
         // Ambient occlusion
         const aoBlock = this.ambientOcclusionParams.connectedPoint?.ownerBlock as Nullable<AmbientOcclusionBlock>;
