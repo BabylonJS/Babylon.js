@@ -15,6 +15,7 @@
 
 - Simplified code contributions by fully automating the dev setup with gitpod ([nisarhassan12](https://github.com/nisarhassan12))
 - Add a `CascadedShadowMap.IsSupported` method and log an error instead of throwing an exception when CSM is not supported ([Popov72](https://github.com/Popov72))
+- Added initial code for DeviceInputSystem ([PolygonalSun](https://github.com/PolygonalSun))
 
 ### Engine
 
@@ -37,6 +38,7 @@
 
 ### Cameras
 
+- Fixed up vector not correctly handled with stereoscopic rig ([cedricguillemet](https://github.com/cedricguillemet))
 - Added flag to TargetCamera to invert rotation direction and multiplier to adjust speed ([Exolun](https://github.com/Exolun))
 - Added upwards and downwards keyboard input to `FreeCamera` ([Pheater](https://github.com/pheater))
 
@@ -80,7 +82,7 @@
 - AR reference space type recommendation changed to 'unbounded' ([#7959](https://github.com/BabylonJS/Babylon.js/issues/7959)) ([RaananW](https://github.com/RaananW))
 - Teleportation plugin doesn't use the touched to finish teleportation ([#7916](https://github.com/BabylonJS/Babylon.js/issues/7916)) ([RaananW](https://github.com/RaananW))
 - Support for pointer selection and teleportation in right handed systems ([#7967](https://github.com/BabylonJS/Babylon.js/issues/7967)) ([RaananW](https://github.com/RaananW))
-- Pointer Selection feature now uses `selectstart` and `selectend` events when gamepad is not present ([#7989](https://github.com/BabylonJS/Babylon.js/issues/7989)) ([RaananW](https://github.com/RaananW))
+- Pointer Selection feature now uses `selectstart` and `selectend` events when gamepad and motion controller are not present ([#7989](https://github.com/BabylonJS/Babylon.js/issues/7989)) ([RaananW](https://github.com/RaananW))
 
 ### Collisions
 
@@ -132,6 +134,7 @@
 - Fix bugs in NME that were causing inconsistent behavior displaying Move Node Up and Down buttons on frame ports ([belfortk](https://github.com/belfortk))
 - Fix bug in `ShaderMaterial` when using morph targets ([Popov72](https://github.com/Popov72)
 - Fix bug in playground where child NME windows would not close before page unload events ([belfortk](https://github.com/belfortk)
+- Fixed an issue with stereoscopic rendering ([#8000](https://github.com/BabylonJS/Babylon.js/issues/8000)) ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 
