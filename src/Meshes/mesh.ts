@@ -2825,7 +2825,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns the current mesh
      */
     public synchronizeInstances(): Mesh {
-        if (this._geometry && this._geometry.meshes.length !== 1) {
+        if (this._geometry && this._geometry.meshes.length !== 1 && this.instances.length) {
             this.makeGeometryUnique();
         }
 
