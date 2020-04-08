@@ -735,9 +735,15 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             }
 
             // No destination so let's spin a new input block
-            let inputBlock = new InputBlock(NodeMaterialBlockConnectionPointTypes[this._candidateLink!.portA.connectionPoint.type], undefined, this._candidateLink!.portA.connectionPoint.type);
+            let pointName = "output", inputBlock;
+            let customInputBlock = this._candidateLink!.portA.connectionPoint.createCustomInputBlock();
+            if (!customInputBlock) {
+                inputBlock = new InputBlock(NodeMaterialBlockConnectionPointTypes[this._candidateLink!.portA.connectionPoint.type], undefined, this._candidateLink!.portA.connectionPoint.type);
+            } else {
+                [inputBlock, pointName] = customInputBlock;
+            }
             this.props.globalState.nodeMaterial.attachedBlocks.push(inputBlock);
-            pointA = inputBlock.output;
+            pointA = inputBlock[pointName];
             nodeA = this.appendBlock(inputBlock);
             
             nodeA.x = this._dropPointX - 200;

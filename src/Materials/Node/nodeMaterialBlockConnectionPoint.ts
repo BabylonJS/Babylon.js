@@ -287,6 +287,15 @@ export class NodeMaterialConnectionPoint {
     }
 
     /**
+     * Creates a block suitable to be used as an input for this input point.
+     * If null is returned, a block based on the point type will be created.
+     * @returns The returned string parameter is the name of the output point of NodeMaterialBlock (first parameter of the returned array) that can be connected to the input
+     */
+    public createCustomInputBlock(): Nullable<[NodeMaterialBlock, string]> {
+        return null;
+    }
+
+    /**
      * Creates a new connection point
      * @param name defines the connection point name
      * @param ownerBlock defines the block hosting this connection point
