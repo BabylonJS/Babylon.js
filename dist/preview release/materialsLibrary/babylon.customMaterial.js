@@ -7,7 +7,7 @@
 		exports["babylonjs-materials"] = factory(require("babylonjs"));
 	else
 		root["MATERIALS"] = factory(root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Materials_effect__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_decorators__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -369,7 +369,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ShaderSpecialParts", function() { return ShaderSpecialParts; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CustomMaterial", function() { return CustomMaterial; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Materials/effect");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/decorators");
 /* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__);
 
 
@@ -398,41 +398,45 @@ var CustomMaterial = /** @class */ (function (_super) {
         return _this;
     }
     CustomMaterial.prototype.AttachAfterBind = function (mesh, effect) {
-        for (var el in this._newUniformInstances) {
-            var ea = el.toString().split('-');
-            if (ea[0] == 'vec2') {
-                effect.setVector2(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'vec3') {
-                effect.setVector3(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'vec4') {
-                effect.setVector4(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'mat4') {
-                effect.setMatrix(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'float') {
-                effect.setFloat(ea[1], this._newUniformInstances[el]);
+        if (this._newUniformInstances) {
+            for (var el in this._newUniformInstances) {
+                var ea = el.toString().split('-');
+                if (ea[0] == 'vec2') {
+                    effect.setVector2(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'vec3') {
+                    effect.setVector3(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'vec4') {
+                    effect.setVector4(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'mat4') {
+                    effect.setMatrix(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'float') {
+                    effect.setFloat(ea[1], this._newUniformInstances[el]);
+                }
             }
         }
-        for (var el in this._newSamplerInstances) {
-            var ea = el.toString().split('-');
-            if (ea[0] == 'sampler2D' && this._newSamplerInstances[el].isReady && this._newSamplerInstances[el].isReady()) {
-                effect.setTexture(ea[1], this._newSamplerInstances[el]);
+        if (this._newSamplerInstances) {
+            for (var el in this._newSamplerInstances) {
+                var ea = el.toString().split('-');
+                if (ea[0] == 'sampler2D' && this._newSamplerInstances[el].isReady && this._newSamplerInstances[el].isReady()) {
+                    effect.setTexture(ea[1], this._newSamplerInstances[el]);
+                }
             }
         }
     };
     CustomMaterial.prototype.ReviewUniform = function (name, arr) {
-        if (name == "uniform") {
-            for (var ind in this._newUniforms) {
+        if (name == "uniform" && this._newUniforms) {
+            for (var ind = 0; ind < this._newUniforms.length; ind++) {
                 if (this._customUniform[ind].indexOf('sampler') == -1) {
                     arr.push(this._newUniforms[ind]);
                 }
             }
         }
-        if (name == "sampler") {
-            for (var ind in this._newUniforms) {
+        if (name == "sampler" && this._newUniforms) {
+            for (var ind = 0; ind < this._newUniforms.length; ind++) {
                 if (this._customUniform[ind].indexOf('sampler') != -1) {
                     arr.push(this._newUniforms[ind]);
                 }
@@ -471,6 +475,9 @@ var CustomMaterial = /** @class */ (function (_super) {
             .replace('#define CUSTOM_VERTEX_UPDATE_POSITION', (this.CustomParts.Vertex_Before_PositionUpdated ? this.CustomParts.Vertex_Before_PositionUpdated : ""))
             .replace('#define CUSTOM_VERTEX_UPDATE_NORMAL', (this.CustomParts.Vertex_Before_NormalUpdated ? this.CustomParts.Vertex_Before_NormalUpdated : ""))
             .replace('#define CUSTOM_VERTEX_MAIN_END', (this.CustomParts.Vertex_MainEnd ? this.CustomParts.Vertex_MainEnd : ""));
+        if (this.CustomParts.Vertex_After_WorldPosComputed) {
+            babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore[name + "VertexShader"] = babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore[name + "VertexShader"].replace('#define CUSTOM_VERTEX_UPDATE_WORLDPOS', this.CustomParts.Vertex_After_WorldPosComputed);
+        }
         babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore[name + "PixelShader"] = this.FragmentShader
             .replace('#define CUSTOM_FRAGMENT_BEGIN', (this.CustomParts.Fragment_Begin ? this.CustomParts.Fragment_Begin : ""))
             .replace('#define CUSTOM_FRAGMENT_MAIN_BEGIN', (this.CustomParts.Fragment_MainBegin ? this.CustomParts.Fragment_MainBegin : ""))
@@ -488,12 +495,12 @@ var CustomMaterial = /** @class */ (function (_super) {
         if (!this._customUniform) {
             this._customUniform = new Array();
             this._newUniforms = new Array();
-            this._newSamplerInstances = new Array();
-            this._newUniformInstances = new Array();
+            this._newSamplerInstances = {};
+            this._newUniformInstances = {};
         }
         if (param) {
             if (kind.indexOf("sampler") == -1) {
-                this._newUniformInstances[kind + "-" + name] = param;
+                this._newSamplerInstances[kind + "-" + name] = param;
             }
             else {
                 this._newUniformInstances[kind + "-" + name] = param;
@@ -562,6 +569,10 @@ var CustomMaterial = /** @class */ (function (_super) {
         this.CustomParts.Vertex_Before_NormalUpdated = shaderPart.replace("result", "normalUpdated");
         return this;
     };
+    CustomMaterial.prototype.Vertex_After_WorldPosComputed = function (shaderPart) {
+        this.CustomParts.Vertex_After_WorldPosComputed = shaderPart;
+        return this;
+    };
     CustomMaterial.prototype.Vertex_MainEnd = function (shaderPart) {
         this.CustomParts.Vertex_MainEnd = shaderPart;
         return this;
@@ -614,7 +625,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ShaderAlebdoParts", function() { return ShaderAlebdoParts; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PBRCustomMaterial", function() { return PBRCustomMaterial; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Materials/effect");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/decorators");
 /* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__);
 
 
@@ -637,41 +648,45 @@ var PBRCustomMaterial = /** @class */ (function (_super) {
         return _this;
     }
     PBRCustomMaterial.prototype.AttachAfterBind = function (mesh, effect) {
-        for (var el in this._newUniformInstances) {
-            var ea = el.toString().split('-');
-            if (ea[0] == 'vec2') {
-                effect.setVector2(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'vec3') {
-                effect.setVector3(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'vec4') {
-                effect.setVector4(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'mat4') {
-                effect.setMatrix(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'float') {
-                effect.setFloat(ea[1], this._newUniformInstances[el]);
+        if (this._newUniformInstances) {
+            for (var el in this._newUniformInstances) {
+                var ea = el.toString().split('-');
+                if (ea[0] == 'vec2') {
+                    effect.setVector2(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'vec3') {
+                    effect.setVector3(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'vec4') {
+                    effect.setVector4(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'mat4') {
+                    effect.setMatrix(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'float') {
+                    effect.setFloat(ea[1], this._newUniformInstances[el]);
+                }
             }
         }
-        for (var el in this._newSamplerInstances) {
-            var ea = el.toString().split('-');
-            if (ea[0] == 'sampler2D' && this._newSamplerInstances[el].isReady && this._newSamplerInstances[el].isReady()) {
-                effect.setTexture(ea[1], this._newSamplerInstances[el]);
+        if (this._newSamplerInstances) {
+            for (var el in this._newSamplerInstances) {
+                var ea = el.toString().split('-');
+                if (ea[0] == 'sampler2D' && this._newSamplerInstances[el].isReady && this._newSamplerInstances[el].isReady()) {
+                    effect.setTexture(ea[1], this._newSamplerInstances[el]);
+                }
             }
         }
     };
     PBRCustomMaterial.prototype.ReviewUniform = function (name, arr) {
-        if (name == "uniform") {
-            for (var ind in this._newUniforms) {
+        if (name == "uniform" && this._newUniforms) {
+            for (var ind = 0; ind < this._newUniforms.length; ind++) {
                 if (this._customUniform[ind].indexOf('sampler') == -1) {
                     arr.push(this._newUniforms[ind]);
                 }
             }
         }
-        if (name == "sampler") {
-            for (var ind in this._newUniforms) {
+        if (name == "sampler" && this._newUniforms) {
+            for (var ind = 0; ind < this._newUniforms.length; ind++) {
                 if (this._customUniform[ind].indexOf('sampler') != -1) {
                     arr.push(this._newUniforms[ind]);
                 }
@@ -710,6 +725,9 @@ var PBRCustomMaterial = /** @class */ (function (_super) {
             .replace('#define CUSTOM_VERTEX_UPDATE_POSITION', (this.CustomParts.Vertex_Before_PositionUpdated ? this.CustomParts.Vertex_Before_PositionUpdated : ""))
             .replace('#define CUSTOM_VERTEX_UPDATE_NORMAL', (this.CustomParts.Vertex_Before_NormalUpdated ? this.CustomParts.Vertex_Before_NormalUpdated : ""))
             .replace('#define CUSTOM_VERTEX_MAIN_END', (this.CustomParts.Vertex_MainEnd ? this.CustomParts.Vertex_MainEnd : ""));
+        if (this.CustomParts.Vertex_After_WorldPosComputed) {
+            babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore[name + "VertexShader"] = babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore[name + "VertexShader"].replace('#define CUSTOM_VERTEX_UPDATE_WORLDPOS', this.CustomParts.Vertex_After_WorldPosComputed);
+        }
         babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore[name + "PixelShader"] = this.FragmentShader
             .replace('#define CUSTOM_FRAGMENT_BEGIN', (this.CustomParts.Fragment_Begin ? this.CustomParts.Fragment_Begin : ""))
             .replace('#define CUSTOM_FRAGMENT_MAIN_BEGIN', (this.CustomParts.Fragment_MainBegin ? this.CustomParts.Fragment_MainBegin : ""))
@@ -729,12 +747,12 @@ var PBRCustomMaterial = /** @class */ (function (_super) {
         if (!this._customUniform) {
             this._customUniform = new Array();
             this._newUniforms = new Array();
-            this._newSamplerInstances = new Array();
-            this._newUniformInstances = new Array();
+            this._newSamplerInstances = {};
+            this._newUniformInstances = {};
         }
         if (param) {
             if (kind.indexOf("sampler") == -1) {
-                this._newUniformInstances[kind + "-" + name] = param;
+                this._newSamplerInstances[kind + "-" + name] = param;
             }
             else {
                 this._newUniformInstances[kind + "-" + name] = param;
@@ -811,6 +829,10 @@ var PBRCustomMaterial = /** @class */ (function (_super) {
         this.CustomParts.Vertex_Before_NormalUpdated = shaderPart.replace("result", "normalUpdated");
         return this;
     };
+    PBRCustomMaterial.prototype.Vertex_After_WorldPosComputed = function (shaderPart) {
+        this.CustomParts.Vertex_After_WorldPosComputed = shaderPart;
+        return this;
+    };
     PBRCustomMaterial.prototype.Vertex_MainEnd = function (shaderPart) {
         this.CustomParts.Vertex_MainEnd = shaderPart;
         return this;
@@ -861,14 +883,14 @@ if (typeof globalObject !== "undefined") {
 
 /***/ }),
 
-/***/ "babylonjs/Materials/effect":
+/***/ "babylonjs/Misc/decorators":
 /*!****************************************************************************************************!*\
   !*** external {"root":"BABYLON","commonjs":"babylonjs","commonjs2":"babylonjs","amd":"babylonjs"} ***!
   \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Materials_effect__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_decorators__;
 
 /***/ })
 

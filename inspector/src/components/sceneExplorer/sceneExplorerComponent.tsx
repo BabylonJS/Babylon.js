@@ -22,6 +22,8 @@ import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
 import { ParticleHelper } from 'babylonjs/Particles/particleHelper';
 import { GPUParticleSystem } from 'babylonjs/Particles/gpuParticleSystem';
 import { SSAO2RenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline';
+import { StandardMaterial } from 'babylonjs/Materials/standardMaterial';
+import { PBRMaterial } from 'babylonjs/Materials/PBR/pbrMaterial';
 
 require("./sceneExplorer.scss");
 
@@ -311,6 +313,20 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
 
         // Materials
         let materialsContextMenus: { label: string, action: () => void }[] = [];
+        materialsContextMenus.push({
+            label: "Add new standard material",
+            action: () => {
+                let newStdMaterial = new StandardMaterial("Standard material", scene);
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(newStdMaterial);
+            }
+        });        
+        materialsContextMenus.push({
+            label: "Add new PBR material",
+            action: () => {
+                let newPBRMaterial = new PBRMaterial("PBR material", scene);
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(newPBRMaterial);
+            }
+        });        
         materialsContextMenus.push({
             label: "Add new node material",
             action: () => {

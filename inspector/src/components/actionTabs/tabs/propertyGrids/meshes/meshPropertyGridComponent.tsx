@@ -29,6 +29,7 @@ import { AbstractMesh } from 'babylonjs/Meshes/abstractMesh';
 import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
 import { PropertiesLineComponent } from '../../../lines/propertiesLineComponent';
+import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
 
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;
@@ -403,6 +404,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     </LineContainerComponent>
 
                 }
+                <AnimationGridComponent globalState={this.props.globalState} animatable={mesh} scene={mesh.getScene()} lockObject={this.props.lockObject} />
                 <LineContainerComponent globalState={this.props.globalState} title="ADVANCED" closed={true}>
                     {
                         mesh.useBones &&

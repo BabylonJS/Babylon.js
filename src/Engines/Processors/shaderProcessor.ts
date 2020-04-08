@@ -288,6 +288,7 @@ export class ShaderProcessor {
         var match = regex.exec(sourceCode);
 
         var returnValue = new String(sourceCode);
+        var keepProcessing = false;
 
         while (match != null) {
             var includeFile = match[1];
@@ -352,6 +353,8 @@ export class ShaderProcessor {
 
                 // Replace
                 returnValue = returnValue.replace(match[0], includeContent);
+
+                keepProcessing = keepProcessing || includeContent.indexOf("#include<") >= 0;
             } else {
                 var includeShaderUrl = options.shadersRepository + "ShadersInclude/" + includeFile + ".fx";
 
@@ -365,7 +368,11 @@ export class ShaderProcessor {
             match = regex.exec(sourceCode);
         }
 
-        callback(returnValue);
+        if (keepProcessing) {
+            this._ProcessIncludes(returnValue.toString(), options, callback);
+        } else {
+            callback(returnValue);
+        }
     }
 
     /**

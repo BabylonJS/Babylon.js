@@ -2758,14 +2758,16 @@ declare module BABYLON {
         static Down(): Vector3;
         /**
          * Returns a new Vector3 set to (0.0, 0.0, 1.0)
+         * @param rightHandedSystem is the scene right-handed (negative z)
          * @returns a new forward Vector3
          */
-        static Forward(): Vector3;
+        static Forward(rightHandedSystem?: boolean): Vector3;
         /**
          * Returns a new Vector3 set to (0.0, 0.0, -1.0)
+         * @param rightHandedSystem is the scene right-handed (negative-z)
          * @returns a new forward Vector3
          */
-        static Backward(): Vector3;
+        static Backward(rightHandedSystem?: boolean): Vector3;
         /**
          * Returns a new Vector3 set to (1.0, 0.0, 0.0)
          * @returns a new right Vector3
@@ -9344,6 +9346,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var shadowMapFragmentDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var clipPlaneFragmentDeclaration: {
         name: string;
         shader: string;
@@ -9352,6 +9361,13 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export var clipPlaneFragment: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var shadowMapFragment: {
         name: string;
         shader: string;
     };
@@ -9400,6 +9416,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var shadowMapVertexDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var clipPlaneVertexDeclaration: {
         name: string;
         shader: string;
@@ -9422,6 +9445,20 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export var bonesVertex: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var shadowMapVertexNormalBias: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var shadowMapVertexMetric: {
         name: string;
         shader: string;
     };
@@ -9475,6 +9512,7 @@ declare module BABYLON {
         length?: number);
         /**
          * Checks if the ray intersects a box
+         * This does not account for the ray lenght by design to improve perfs.
          * @param minimum bound of the box
          * @param maximum bound of the box
          * @param intersectionTreshold extra extend to be added to the box in all direction
@@ -9483,6 +9521,7 @@ declare module BABYLON {
         intersectsBoxMinMax(minimum: DeepImmutable<Vector3>, maximum: DeepImmutable<Vector3>, intersectionTreshold?: number): boolean;
         /**
          * Checks if the ray intersects a box
+         * This does not account for the ray lenght by design to improve perfs.
          * @param box the bounding box to check
          * @param intersectionTreshold extra extend to be added to the BoundingBox in all direction
          * @returns if the box was hit
@@ -10024,6 +10063,7 @@ declare module BABYLON {
         private _spriteMap;
         /** True when packed cell data from JSON file is ready*/
         private _packedAndReady;
+        private _textureContent;
         /**
         * An event triggered when the manager is disposed.
         */
@@ -10079,6 +10119,7 @@ declare module BABYLON {
         name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode?: number, fromPacked?: boolean, spriteJSON?: any | null);
         private _makePacked;
         private _appendSpriteVertex;
+        private _checkTextureAlpha;
         /**
          * Intersects the sprites with a ray
          * @param ray defines the ray to intersect with
@@ -10467,7 +10508,7 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-        interface Engine {
+        interface ThinEngine {
             /**
              * Creates a raw texture
              * @param data defines the data to store in the texture
@@ -15474,6 +15515,7 @@ declare module BABYLON {
         private _cachedWorldViewProjectionMatrix;
         private _renderId;
         private _multiview;
+        private _cachedDefines;
         /**
          * Instantiate a new shader material.
          * The ShaderMaterial object has the necessary methods to pass data from your scene to the Vertex and Fragment Shaders and returns a material that can be applied to any mesh.
@@ -15673,14 +15715,24 @@ declare module BABYLON {
         /**
          * Binds the world matrix to the material
          * @param world defines the world transformation matrix
+         * @param effectOverride - If provided, use this effect instead of internal effect
          */
-        bindOnlyWorldMatrix(world: Matrix): void;
+        bindOnlyWorldMatrix(world: Matrix, effectOverride?: Nullable<Effect>): void;
+        /**
+         * Binds the submesh to this material by preparing the effect and shader to draw
+         * @param world defines the world transformation matrix
+         * @param mesh defines the mesh containing the submesh
+         * @param subMesh defines the submesh to bind the material to
+         */
+        bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         /**
          * Binds the material to the mesh
          * @param world defines the world transformation matrix
          * @param mesh defines the mesh to bind the material to
+         * @param effectOverride - If provided, use this effect instead of internal effect
          */
-        bind(world: Matrix, mesh?: Mesh): void;
+        bind(world: Matrix, mesh?: Mesh, effectOverride?: Nullable<Effect>): void;
+        protected _afterBind(mesh?: Mesh): void;
         /**
          * Gets the active textures from the material
          * @returns an array of textures
@@ -16740,7 +16792,7 @@ declare module BABYLON {
         protected _initializeShadowMap(): void;
         protected _initializeBlurRTTAndPostProcesses(): void;
         protected _renderForShadowMap(opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void;
-        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect): void;
+        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any, mesh: AbstractMesh): void;
         protected _renderSubMeshForShadowMap(subMesh: SubMesh): void;
         protected _applyFilterValues(): void;
         /**
@@ -16760,6 +16812,7 @@ declare module BABYLON {
             useInstances: boolean;
         }>): Promise<void>;
         protected _isReadyCustomDefines(defines: any, subMesh: SubMesh, useInstances: boolean): void;
+        private _prepareShadowDefines;
         /**
          * Determine wheter the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
          * @param subMesh The submesh we want to render in the shadow map
@@ -18073,6 +18126,16 @@ declare module BABYLON {
         animations: Animation[];
         /** Gets or sets a boolean indicating if the sprite can be picked */
         isPickable: boolean;
+        /** Gets or sets a boolean indicating that sprite texture alpha will be used for precise picking (false by default) */
+        useAlphaForPicking: boolean;
+        /** @hidden */
+        _xOffset: number;
+        /** @hidden */
+        _yOffset: number;
+        /** @hidden */
+        _xSize: number;
+        /** @hidden */
+        _ySize: number;
         /**
          * Gets or sets the associated action manager
          */
@@ -20941,6 +21004,86 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Class used to manipulate GUIDs
+     */
+    export class GUID {
+        /**
+         * Implementation from http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/2117523#answer-2117523
+         * Be aware Math.random() could cause collisions, but:
+         * "All but 6 of the 128 bits of the ID are randomly generated, which means that for any two ids, there's a 1 in 2^^122 (or 5.3x10^^36) chance they'll collide"
+         * @returns a pseudo random id
+         */
+        static RandomId(): string;
+    }
+}
+declare module BABYLON {
+    /**
+     * Options to be used when creating a shadow depth material
+     */
+    export interface IIOptionShadowDepthMaterial {
+        /** Variables in the vertex shader code that need to have their names remapped.
+         * The format is: ["var_name", "var_remapped_name", "var_name", "var_remapped_name", ...]
+         * "var_name" should be either: worldPos or vNormalW
+         * So, if the variable holding the world position in your vertex shader is not named worldPos, you must tell the system
+         * the name to use instead by using: ["worldPos", "myWorldPosVar"] assuming the variable is named myWorldPosVar in your code.
+         * If the normal must also be remapped: ["worldPos", "myWorldPosVar", "vNormalW", "myWorldNormal"]
+        */
+        remappedVariables?: string[];
+        /** Set standalone to true if the base material wrapped by ShadowDepthMaterial is not used for a regular object but for depth shadow generation only */
+        standalone?: boolean;
+    }
+    /**
+     * Class that can be used to wrap a base material to generate accurate shadows when using custom vertex/fragment code in the base material
+     */
+    export class ShadowDepthWrapper {
+        private _scene;
+        private _options?;
+        private _baseMaterial;
+        private _onEffectCreatedObserver;
+        private _subMeshToEffect;
+        private _subMeshToDepthEffect;
+        private _meshes;
+        /** @hidden */
+        _matriceNames: any;
+        /** Gets the standalone status of the wrapper */
+        get standalone(): boolean;
+        /** Gets the base material the wrapper is built upon */
+        get baseMaterial(): Material;
+        /**
+         * Instantiate a new shadow depth wrapper.
+         * It works by injecting some specific code in the vertex/fragment shaders of the base material and is used by a shadow generator to
+         * generate the shadow depth map. For more information, please refer to the documentation:
+         * https://doc.babylonjs.com/babylon101/shadows
+         * @param baseMaterial Material to wrap
+         * @param scene Define the scene the material belongs to
+         * @param options Options used to create the wrapper
+         */
+        constructor(baseMaterial: Material, scene: Scene, options?: IIOptionShadowDepthMaterial);
+        /**
+         * Gets the effect to use to generate the depth map
+         * @param subMesh subMesh to get the effect for
+         * @param shadowGenerator shadow generator to get the effect for
+         * @returns the effect to use to generate the depth map for the subMesh + shadow generator specified
+         */
+        getEffect(subMesh: Nullable<SubMesh>, shadowGenerator: ShadowGenerator): Nullable<Effect>;
+        /**
+         * Specifies that the submesh is ready to be used for depth rendering
+         * @param subMesh submesh to check
+         * @param defines the list of defines to take into account when checking the effect
+         * @param shadowGenerator combined with subMesh, it defines the effect to check
+         * @param useInstances specifies that instances should be used
+         * @returns a boolean indicating that the submesh is ready or not
+         */
+        isReadyForSubMesh(subMesh: SubMesh, defines: string[], shadowGenerator: ShadowGenerator, useInstances: boolean): boolean;
+        /**
+         * Disposes the resources
+         */
+        dispose(): void;
+        private _makeEffect;
+    }
+}
+declare module BABYLON {
+    /**
      * Options for compiling materials.
      */
     export interface IMaterialCompilationOptions {
@@ -21042,6 +21185,14 @@ declare module BABYLON {
          * They are also discarded below the alpha cutoff threshold to improve performances.
          */
         static readonly MATERIAL_ALPHATESTANDBLEND: number;
+        /**
+         * Custom callback helping to override the default shader used in the material.
+         */
+        customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[]) => string;
+        /**
+         * Custom shadow depth material to use for shadow rendering instead of the in-built one
+         */
+        shadowDepthWrapper: Nullable<ShadowDepthWrapper>;
         /**
          * The ID of the material
          */
@@ -21165,6 +21316,17 @@ declare module BABYLON {
         * An event triggered when the material is unbound
         */
         get onUnBindObservable(): Observable<Material>;
+        protected _onEffectCreatedObservable: Nullable<Observable<{
+            effect: Effect;
+            subMesh: Nullable<SubMesh>;
+        }>>;
+        /**
+        * An event triggered when the effect is (re)created
+        */
+        get onEffectCreatedObservable(): Observable<{
+            effect: Effect;
+            subMesh: Nullable<SubMesh>;
+        }>;
         /**
          * Stores the value of the alpha mode
          */
@@ -21666,6 +21828,8 @@ declare module BABYLON {
         _materialDefines: Nullable<MaterialDefines>;
         /** @hidden */
         _materialEffect: Nullable<Effect>;
+        /** @hidden */
+        _effectOverride: Nullable<Effect>;
         /**
          * Gets material defines used by the effect associated to the sub mesh
          */
@@ -27014,10 +27178,6 @@ declare module BABYLON {
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
         set cameraColorCurves(value: Nullable<ColorCurves>);
-        /**
-         * Custom callback helping to override the default shader used in the material.
-         */
-        customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines, attributes?: string[]) => string;
         protected _renderTargets: SmartArray<RenderTargetTexture>;
         protected _worldViewProjectionMatrix: Matrix;
         protected _globalAmbientColor: Color3;
@@ -29933,20 +30093,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Class used to manipulate GUIDs
-     */
-    export class GUID {
-        /**
-         * Implementation from http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/2117523#answer-2117523
-         * Be aware Math.random() could cause collisions, but:
-         * "All but 6 of the 128 bits of the ID are randomly generated, which means that for any two ids, there's a 1 in 2^^122 (or 5.3x10^^36) chance they'll collide"
-         * @returns a pseudo random id
-         */
-        static RandomId(): string;
-    }
-}
-declare module BABYLON {
-    /**
      * Base class of all the textures in babylon.
      * It groups all the common properties the materials, post process, lights... might need
      * in order to make a correct use of the texture.
@@ -30407,6 +30553,7 @@ declare module BABYLON {
         private static _uniqueIdSeed;
         private _engine;
         private _uniformBuffersNames;
+        private _uniformBuffersNamesList;
         private _uniformsNames;
         private _samplerList;
         private _samplers;
@@ -30508,9 +30655,24 @@ declare module BABYLON {
         getUniform(uniformName: string): Nullable<WebGLUniformLocation>;
         /**
          * Returns an array of sampler variable names
-         * @returns The array of sampler variable neames.
+         * @returns The array of sampler variable names.
          */
         getSamplers(): string[];
+        /**
+         * Returns an array of uniform variable names
+         * @returns The array of uniform variable names.
+         */
+        getUniformNames(): string[];
+        /**
+         * Returns an array of uniform buffer variable names
+         * @returns The array of uniform buffer variable names.
+         */
+        getUniformBuffersNames(): string[];
+        /**
+         * Returns the index parameters used to create the effect
+         * @returns The index parameters object
+         */
+        getIndexParameters(): any;
         /**
          * The error from the last compilation.
          * @returns the error string.
@@ -30528,6 +30690,14 @@ declare module BABYLON {
         executeWhenCompiled(func: (effect: Effect) => void): void;
         private _checkIsReady;
         private _loadShader;
+        /**
+         * Gets the vertex shader source code of this effect
+         */
+        get vertexSourceCode(): string;
+        /**
+         * Gets the fragment shader source code of this effect
+         */
+        get fragmentSourceCode(): string;
         /**
          * Recompiles the webGL program
          * @param vertexSourceCode The source code for the vertex shader.
@@ -32116,63 +32286,6 @@ declare module BABYLON {
          * @hidden
          */
         _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<any>, internalFormat: number, onComplete: () => void): void;
-        /**
-         * Creates a raw texture
-         * @param data defines the data to store in the texture
-         * @param width defines the width of the texture
-         * @param height defines the height of the texture
-         * @param format defines the format of the data
-         * @param generateMipMaps defines if the engine should generate the mip levels
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
-         * @param compression defines the compression used (null by default)
-         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
-         * @returns the raw texture inside an InternalTexture
-         */
-        createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>, type?: number): InternalTexture;
-        /**
-         * Creates a new raw cube texture
-         * @param data defines the array of data to use to create each face
-         * @param size defines the size of the textures
-         * @param format defines the format of the data
-         * @param type defines the type of the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
-         * @param generateMipMaps  defines if the engine should generate the mip levels
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
-         * @param compression defines the compression used (null by default)
-         * @returns the cube texture as an InternalTexture
-         */
-        createRawCubeTexture(data: Nullable<ArrayBufferView[]>, size: number, format: number, type: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>): InternalTexture;
-        /**
-         * Creates a new raw 3D texture
-         * @param data defines the data used to create the texture
-         * @param width defines the width of the texture
-         * @param height defines the height of the texture
-         * @param depth defines the depth of the texture
-         * @param format defines the format of the texture
-         * @param generateMipMaps defines if the engine must generate mip levels
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
-         * @param compression defines the compressed used (can be null)
-         * @param textureType defines the compressed used (can be null)
-         * @returns a new raw 3D texture (stored in an InternalTexture)
-         */
-        createRawTexture3D(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>, textureType?: number): InternalTexture;
-        /**
-         * Creates a new raw 2D array texture
-         * @param data defines the data used to create the texture
-         * @param width defines the width of the texture
-         * @param height defines the height of the texture
-         * @param depth defines the number of layers of the texture
-         * @param format defines the format of the texture
-         * @param generateMipMaps defines if the engine must generate mip levels
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
-         * @param compression defines the compressed used (can be null)
-         * @param textureType defines the compressed used (can be null)
-         * @returns a new raw 2D array texture (stored in an InternalTexture)
-         */
-        createRawTexture2DArray(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>, textureType?: number): InternalTexture;
         private _unpackFlipYCached;
         /**
          * In case you are sharing the context with other applications, it might
@@ -34071,8 +34184,6 @@ declare module BABYLON {
          * @param postProcess The post process which's output should be bound
          */
         setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>): void;
-        /** @hidden */
-        _convertRGBtoRGBATextureData(rgbData: any, width: number, height: number, textureType: number): ArrayBufferView;
         protected _rebuildBuffers(): void;
         /** @hidden */
         _renderFrame(): void;
@@ -48010,6 +48121,7 @@ declare module BABYLON {
         private readonly INVALID_HANDLE;
         getHardwareScalingLevel(): number;
         constructor();
+        dispose(): void;
         /**
          * Can be used to override the current requestAnimationFrame requester.
          * @hidden
@@ -48156,7 +48268,7 @@ declare module BABYLON {
         /**
          * Usually called from Texture.ts.
          * Passed information to create a WebGLTexture
-         * @param urlArg defines a value which contains one of the following:
+         * @param url defines a value which contains one of the following:
          * * A conventional http URL, e.g. 'http://...' or 'file://...'
          * * A base64 string of in-line texture data, e.g. 'data:image/jpg;base64,/...'
          * * An indicator that data being passed using the buffer parameter, e.g. 'data:mytexture.jpg'
@@ -48173,7 +48285,7 @@ declare module BABYLON {
          * @param mimeType defines an optional mime type
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string): InternalTexture;
+        createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string): InternalTexture;
         /**
          * Creates a cube texture
          * @param rootUrl defines the url where the files to load is located
@@ -51939,10 +52051,6 @@ declare module BABYLON {
          * Defines the SubSurface parameters for the material.
          */
         readonly subSurface: PBRSubSurfaceConfiguration;
-        /**
-         * Custom callback helping to override the default shader used in the material.
-         */
-        customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: PBRMaterialDefines, attributes?: string[]) => string;
         protected _rebuildInParallel: boolean;
         /**
          * Instantiates a new PBRMaterial instance.
@@ -54953,7 +55061,7 @@ declare module BABYLON {
         protected _initializeGenerator(): void;
         protected _createTargetRenderTexture(): void;
         protected _initializeShadowMap(): void;
-        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect): void;
+        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any, mesh: AbstractMesh): void;
         protected _isReadyCustomDefines(defines: any, subMesh: SubMesh, useInstances: boolean): void;
         /**
          * Prepare all the defines in a material relying on a shadow map at the specified light index.
@@ -55497,11 +55605,13 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export class OimoJSPlugin implements IPhysicsEnginePlugin {
+        private _useDeltaForWorldStep;
         world: any;
         name: string;
         BJSOIMO: any;
         private _raycastResult;
-        constructor(iterations?: number, oimoInjection?: any);
+        private _fixedTimeStep;
+        constructor(_useDeltaForWorldStep?: boolean, iterations?: number, oimoInjection?: any);
         setGravity(gravity: Vector3): void;
         setTimeStep(timeStep: number): void;
         getTimeStep(): number;
@@ -56372,10 +56482,6 @@ declare module BABYLON {
      */
     export class ColorGradingTexture extends BaseTexture {
         /**
-         * The current texture matrix. (will always be identity in color grading texture)
-         */
-        private _textureMatrix;
-        /**
          * The texture URL.
          */
         url: string;
@@ -56383,14 +56489,21 @@ declare module BABYLON {
          * Empty line regex stored for GC.
          */
         private static _noneEmptyLineRegex;
+        private _textureMatrix;
         private _engine;
+        private _onLoad;
         /**
          * Instantiates a ColorGradingTexture from the following parameters.
          *
          * @param url The location of the color gradind data (currently only supporting 3dl)
-         * @param scene The scene the texture will be used in
+         * @param sceneOrEngine The scene or engine the texture will be used in
+         * @param onLoad defines a callback triggered when the texture has been loaded
          */
-        constructor(url: string, scene: Scene);
+        constructor(url: string, sceneOrEngine: Scene | ThinEngine, onLoad?: Nullable<() => void>);
+        /**
+         * Fires the onload event from the constructor if requested.
+         */
+        private _triggerOnLoad;
         /**
          * Returns the texture matrix used in most of the material.
          * This is not used in color grading but keep for troubleshooting purpose (easily swap diffuse by colorgrading to look in).
@@ -56424,6 +56537,11 @@ declare module BABYLON {
          * Serializes the LUT texture to json format.
          */
         serialize(): any;
+        /**
+         * Returns true if the passed parameter is a scene object (can be use for typings)
+         * @param sceneOrEngine The object to test.
+         */
+        private static _isScene;
     }
 }
 declare module BABYLON {
@@ -70921,6 +71039,19 @@ type XREye =
     | "none"
     | "left"
     | "right";
+
+type XREventType =
+    | "devicechange"
+    | "visibilitychange"
+    | "end"
+    | "inputsourceschange"
+    | "select"
+    | "selectstart"
+    | "selectend"
+    | "squeeze"
+    | "squeezestart"
+    | "squeezeend"
+    | "reset";
 
 interface XRSpace extends EventTarget {
 

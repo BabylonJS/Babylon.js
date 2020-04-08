@@ -1,6 +1,6 @@
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { Effect } from "babylonjs/Materials/effect";
-import { PBRMaterialDefines } from "babylonjs/Materials/PBR/pbrBaseMaterial";
+import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
@@ -39,6 +39,9 @@ export class ShaderAlebdoParts {
     // normalUpdated
     public Vertex_Before_NormalUpdated: string;
 
+    // worldPosComputed
+    public Vertex_After_WorldPosComputed: string;
+
     // mainEnd
     public Vertex_MainEnd: string;
 }
@@ -50,50 +53,54 @@ export class PBRCustomMaterial extends PBRMaterial {
     _createdShaderName: string;
     _customUniform: string[];
     _newUniforms: string[];
-    _newUniformInstances: any[];
-    _newSamplerInstances: Texture[];
+    _newUniformInstances: { [name: string]: any };
+    _newSamplerInstances: { [name: string]: Texture };
     _customAttributes: string[];
 
     public FragmentShader: string;
     public VertexShader: string;
 
     public AttachAfterBind(mesh: Mesh, effect: Effect) {
-        for (var el in this._newUniformInstances) {
-            var ea = el.toString().split('-');
-            if (ea[0] == 'vec2') {
-                effect.setVector2(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'vec3') {
-                effect.setVector3(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'vec4') {
-                effect.setVector4(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'mat4') {
-                effect.setMatrix(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'float') {
-                effect.setFloat(ea[1], this._newUniformInstances[el]);
+        if (this._newUniformInstances) {
+            for (let el in this._newUniformInstances) {
+                const ea = el.toString().split('-');
+                if (ea[0] == 'vec2') {
+                    effect.setVector2(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'vec3') {
+                    effect.setVector3(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'vec4') {
+                    effect.setVector4(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'mat4') {
+                    effect.setMatrix(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'float') {
+                    effect.setFloat(ea[1], this._newUniformInstances[el]);
+                }
             }
         }
-        for (var el in this._newSamplerInstances) {
-            var ea = el.toString().split('-');
-            if (ea[0] == 'sampler2D' && this._newSamplerInstances[el].isReady && this._newSamplerInstances[el].isReady()) {
-                effect.setTexture(ea[1], this._newSamplerInstances[el]);
+        if (this._newSamplerInstances) {
+            for (let el in this._newSamplerInstances) {
+                const ea = el.toString().split('-');
+                if (ea[0] == 'sampler2D' && this._newSamplerInstances[el].isReady && this._newSamplerInstances[el].isReady()) {
+                    effect.setTexture(ea[1], this._newSamplerInstances[el]);
+                }
             }
         }
     }
 
     public ReviewUniform(name: string, arr: string[]): string[] {
-        if (name == "uniform") {
-            for (var ind in this._newUniforms) {
+        if (name == "uniform" && this._newUniforms) {
+            for (var ind = 0; ind < this._newUniforms.length ; ind ++) {
                 if (this._customUniform[ind].indexOf('sampler') == -1) {
                     arr.push(this._newUniforms[ind]);
                 }
             }
         }
-        if (name == "sampler") {
-            for (var ind in this._newUniforms) {
+        if (name == "sampler" && this._newUniforms) {
+            for (var ind = 0; ind < this._newUniforms.length ; ind ++) {
                 if (this._customUniform[ind].indexOf('sampler') != -1) {
                     arr.push(this._newUniforms[ind]);
                 }
@@ -102,7 +109,7 @@ export class PBRCustomMaterial extends PBRMaterial {
         return arr;
     }
 
-    public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: PBRMaterialDefines, attributes?: string[]): string {
+    public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[]): string {
 
         if (attributes && this._customAttributes && this._customAttributes.length > 0) {
             attributes.push(...this._customAttributes);
@@ -137,6 +144,10 @@ export class PBRCustomMaterial extends PBRMaterial {
             .replace('#define CUSTOM_VERTEX_UPDATE_NORMAL', (this.CustomParts.Vertex_Before_NormalUpdated ? this.CustomParts.Vertex_Before_NormalUpdated : ""))
             .replace('#define CUSTOM_VERTEX_MAIN_END', (this.CustomParts.Vertex_MainEnd ? this.CustomParts.Vertex_MainEnd : ""));
 
+        if (this.CustomParts.Vertex_After_WorldPosComputed) {
+            Effect.ShadersStore[name + "VertexShader"] = Effect.ShadersStore[name + "VertexShader"].replace('#define CUSTOM_VERTEX_UPDATE_WORLDPOS', this.CustomParts.Vertex_After_WorldPosComputed);
+        }
+
         Effect.ShadersStore[name + "PixelShader"] = this.FragmentShader
             .replace('#define CUSTOM_FRAGMENT_BEGIN', (this.CustomParts.Fragment_Begin ? this.CustomParts.Fragment_Begin : ""))
             .replace('#define CUSTOM_FRAGMENT_MAIN_BEGIN', (this.CustomParts.Fragment_MainBegin ? this.CustomParts.Fragment_MainBegin : ""))
@@ -168,12 +179,12 @@ export class PBRCustomMaterial extends PBRMaterial {
         if (!this._customUniform) {
             this._customUniform = new Array();
             this._newUniforms = new Array();
-            this._newSamplerInstances = new Array();
-            this._newUniformInstances = new Array();
+            this._newSamplerInstances = {};
+            this._newUniformInstances = {};
         }
         if (param) {
             if (kind.indexOf("sampler") == -1) {
-                (<any>this._newUniformInstances)[kind + "-" + name] = param;
+                (<any>this._newSamplerInstances)[kind + "-" + name] = param;
             }
             else {
                 (<any>this._newUniformInstances)[kind + "-" + name] = param;
@@ -267,6 +278,11 @@ export class PBRCustomMaterial extends PBRMaterial {
 
     public Vertex_Before_NormalUpdated(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Vertex_Before_NormalUpdated = shaderPart.replace("result", "normalUpdated");
+        return this;
+    }
+
+    public Vertex_After_WorldPosComputed(shaderPart: string): PBRCustomMaterial {
+        this.CustomParts.Vertex_After_WorldPosComputed = shaderPart;
         return this;
     }
 

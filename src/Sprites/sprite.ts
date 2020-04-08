@@ -33,6 +33,17 @@ export class Sprite {
     public animations = new Array<Animation>();
     /** Gets or sets a boolean indicating if the sprite can be picked */
     public isPickable = false;
+    /** Gets or sets a boolean indicating that sprite texture alpha will be used for precise picking (false by default) */
+    public useAlphaForPicking = false;
+
+    /** @hidden */
+    public _xOffset: number;
+    /** @hidden */
+    public _yOffset: number;
+    /** @hidden */
+    public _xSize: number;
+    /** @hidden */
+    public _ySize: number;
 
     /**
      * Gets or sets the associated action manager
