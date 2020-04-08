@@ -779,6 +779,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         // Check compatibility
         let isFragmentOutput = pointB.ownerBlock.getClassName() === "FragmentOutputBlock";
         let compatibilityState = pointA.checkCompatibilityState(pointB);
+        if ((pointA.needDualDirectionValidation || pointB.needDualDirectionValidation) && compatibilityState === NodeMaterialConnectionPointCompatibilityStates.Compatible && !(pointA instanceof InputBlock)) {
+            compatibilityState = pointB.checkCompatibilityState(pointA);
+        }
         if (compatibilityState === NodeMaterialConnectionPointCompatibilityStates.Compatible) {
             if (isFragmentOutput) {
                 let fragmentBlock = pointB.ownerBlock as FragmentOutputBlock;

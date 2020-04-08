@@ -57,6 +57,9 @@ export class NodeMaterialConnectionPoint {
         return this._direction;
     }
 
+    /** Indicates that this connection point needs dual validation before being connected to another point */
+    public needDualDirectionValidation: boolean = false;
+
     /**
      * Gets or sets the additional types supported by this connection point
      */
