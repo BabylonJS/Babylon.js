@@ -1,11 +1,12 @@
 import { NodeMaterialBlock } from '../../nodeMaterialBlock';
 import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
+import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 //import { Nullable } from "../../../../types";
 import { _TypeStore } from '../../../../Misc/typeStore';
 import { editableInPropertyPage } from "../../nodeMaterialDecorator";
+import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 
 export class SheenBlock extends NodeMaterialBlock {
 
@@ -17,7 +18,7 @@ export class SheenBlock extends NodeMaterialBlock {
         this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("roughness", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
 
-        this.registerOutput("sheen", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput("sheen", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment, new NodeMaterialConnectionPointCustomObject("sheen", this, NodeMaterialConnectionPointDirection.Output, SheenBlock, "SheenBlock"));
     }
 
     @editableInPropertyPage("Albedo scaling")
