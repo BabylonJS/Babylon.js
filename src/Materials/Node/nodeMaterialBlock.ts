@@ -213,10 +213,11 @@ export class NodeMaterialBlock {
      * @param type defines the connection point type
      * @param isOptional defines a boolean indicating that this input can be omitted
      * @param target defines the target to use to limit the connection point (will be VertexAndFragment by default)
+     * @param point an already created connection point. If not provided, create a new one
      * @returns the current block
      */
-    public registerInput(name: string, type: NodeMaterialBlockConnectionPointTypes, isOptional: boolean = false, target?: NodeMaterialBlockTargets) {
-        let point = new NodeMaterialConnectionPoint(name, this, NodeMaterialConnectionPointDirection.Input);
+    public registerInput(name: string, type: NodeMaterialBlockConnectionPointTypes, isOptional: boolean = false, target?: NodeMaterialBlockTargets, point?: NodeMaterialConnectionPoint) {
+        point = point ?? new NodeMaterialConnectionPoint(name, this, NodeMaterialConnectionPointDirection.Input);
         point.type = type;
         point.isOptional = isOptional;
         if (target) {
@@ -233,10 +234,11 @@ export class NodeMaterialBlock {
      * @param name defines the connection point name
      * @param type defines the connection point type
      * @param target defines the target to use to limit the connection point (will be VertexAndFragment by default)
+     * @param point an already created connection point. If not provided, create a new one
      * @returns the current block
      */
-    public registerOutput(name: string, type: NodeMaterialBlockConnectionPointTypes, target?: NodeMaterialBlockTargets) {
-        let point = new NodeMaterialConnectionPoint(name, this, NodeMaterialConnectionPointDirection.Output);
+    public registerOutput(name: string, type: NodeMaterialBlockConnectionPointTypes, target?: NodeMaterialBlockTargets, point?: NodeMaterialConnectionPoint) {
+        point = point ?? new NodeMaterialConnectionPoint(name, this, NodeMaterialConnectionPointDirection.Output);
         point.type = type;
         if (target) {
             point.target = target;
