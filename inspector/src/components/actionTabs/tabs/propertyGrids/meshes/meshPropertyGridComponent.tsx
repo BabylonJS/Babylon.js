@@ -28,6 +28,7 @@ import { OptionsLineComponent } from '../../../lines/optionsLineComponent';
 import { AbstractMesh } from 'babylonjs/Meshes/abstractMesh';
 import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
+import { PropertiesLineComponent } from '../../../lines/propertiesLineComponent';
 
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;
@@ -452,6 +453,14 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                         <Color3LineComponent label="Outline color" target={mesh} propertyName="outlineColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     </LineContainerComponent>
                 }
+                <LineContainerComponent globalState={this.props.globalState} title="ANIMATIONS" closed={false}>
+                   {/** TODO
+                    * Get Animated Properties List
+                    * Set Event/Component to Display Curve Editor 
+                    */}
+                   <ButtonLineComponent label="Add Animation" onClick={() => { console.log("Here will display curve editor")}} />
+                   <PropertiesLineComponent label="Animated Properties" properties={[{name: "Transform.X", animationType: "ease-in"},{name: "Transform.Y", animationType: "ease-out"}]}></PropertiesLineComponent>
+                </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="DEBUG" closed={true}>
                     {
                         !mesh.isAnInstance &&
