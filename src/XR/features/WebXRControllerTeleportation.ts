@@ -406,7 +406,9 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             }
         };
         const controllerData = this._controllers[xrController.uniqueId];
-        if (controllerData.xrController.inputSource.targetRayMode === 'tracked-pointer') {
+        // motion controller only available to gamepad-enabled input sources.
+        if (controllerData.xrController.inputSource.targetRayMode === 'tracked-pointer'
+            && controllerData.xrController.inputSource.gamepad) {
             // motion controller support
             xrController.onMotionControllerInitObservable.addOnce(() => {
                 if (xrController.motionController) {
@@ -520,21 +522,21 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             this._xrSessionManager.scene.onPointerObservable.add((pointerInfo) => {
                 if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
                     controllerData.teleportationState.forward = true;
-                        this._currentTeleportationControllerId = controllerData.xrController.uniqueId;
-                        controllerData.teleportationState.baseRotation = this._options.xrInput.xrCamera.rotationQuaternion.toEulerAngles().y;
-                        controllerData.teleportationState.currentRotation = 0;
-                        const timeToSelect = this._options.timeToTeleport || 3000;
-                        let timer = 0;
-                        const observer = this._xrSessionManager.onXRFrameObservable.add(() => {
-                            timer += this._xrSessionManager.scene.getEngine().getDeltaTime();
-                            if (timer >= timeToSelect && this._currentTeleportationControllerId === controllerData.xrController.uniqueId && controllerData.teleportationState.forward) {
-                                this._teleportForward(xrController.uniqueId);
-                            }
+                    this._currentTeleportationControllerId = controllerData.xrController.uniqueId;
+                    controllerData.teleportationState.baseRotation = this._options.xrInput.xrCamera.rotationQuaternion.toEulerAngles().y;
+                    controllerData.teleportationState.currentRotation = 0;
+                    const timeToSelect = this._options.timeToTeleport || 3000;
+                    let timer = 0;
+                    const observer = this._xrSessionManager.onXRFrameObservable.add(() => {
+                        timer += this._xrSessionManager.scene.getEngine().getDeltaTime();
+                        if (timer >= timeToSelect && this._currentTeleportationControllerId === controllerData.xrController.uniqueId && controllerData.teleportationState.forward) {
+                            this._teleportForward(xrController.uniqueId);
+                        }
 
-                            if (timer >= timeToSelect) {
-                                this._xrSessionManager.onXRFrameObservable.remove(observer);
-                            }
-                        });
+                        if (timer >= timeToSelect) {
+                            this._xrSessionManager.onXRFrameObservable.remove(observer);
+                        }
+                    });
                 } else if (pointerInfo.type === PointerEventTypes.POINTERUP) {
                     controllerData.teleportationState.forward = false;
                     this._currentTeleportationControllerId = "";
