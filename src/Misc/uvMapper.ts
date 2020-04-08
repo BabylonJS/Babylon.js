@@ -819,7 +819,7 @@ export class UvMapper {
 
             dvec.normalize();
 
-            if (dvec.x > 1e-6) {
+            if (dvec.length() > 1e-6) {
                 min.copyFromFloats(+Infinity, +Infinity);
                 max.copyFromFloats(-Infinity, -Infinity);
 
