@@ -134,6 +134,7 @@
 - Fix bugs in NME that were causing inconsistent behavior displaying Move Node Up and Down buttons on frame ports ([belfortk](https://github.com/belfortk))
 - Fix bug in `ShaderMaterial` when using morph targets ([Popov72](https://github.com/Popov72)
 - Fix bug in playground where child NME windows would not close before page unload events ([belfortk](https://github.com/belfortk)
+- Fixed an issue with stereoscopic rendering ([#8000](https://github.com/BabylonJS/Babylon.js/issues/8000)) ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 
