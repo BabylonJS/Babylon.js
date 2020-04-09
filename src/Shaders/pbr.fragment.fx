@@ -261,6 +261,7 @@ void main(void) {
         #endif
         #ifdef ENVIRONMENTBRDF
             NdotV,
+            environmentBrdf,
         #endif
         #if defined(REFLECTION) && defined(ENVIRONMENTBRDF)
             AARoughnessFactors,
@@ -275,7 +276,6 @@ void main(void) {
                 reflectionSamplerLow,
                 reflectionSamplerHigh,
             #endif
-            environmentBrdf,
             #if !defined(REFLECTIONMAP_SKYBOX) && defined(RADIANCEOCCLUSION)
                 seo,
             #endif
