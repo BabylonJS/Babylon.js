@@ -9657,7 +9657,7 @@ declare module BABYLON {
             /** @hidden */
             _pickWithRayInverseMatrix: Matrix;
             /** @hidden */
-            _internalPick(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo>;
+            _internalPick(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo>;
             /** @hidden */
             _internalMultiPick(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]>;
         }
@@ -16792,7 +16792,7 @@ declare module BABYLON {
         protected _initializeShadowMap(): void;
         protected _initializeBlurRTTAndPostProcesses(): void;
         protected _renderForShadowMap(opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void;
-        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any): void;
+        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any, mesh: AbstractMesh): void;
         protected _renderSubMeshForShadowMap(subMesh: SubMesh): void;
         protected _applyFilterValues(): void;
         /**
@@ -28887,10 +28887,11 @@ declare module BABYLON {
          * @param ray defines the ray to use
          * @param fastCheck defines if fast mode (but less precise) must be used (false by default)
          * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
+         * @param onlyBoundingInfo defines a boolean indicating if picking should only happen using bounding info (false by default)
          * @returns the picking info
          * @see http://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh
          */
-        intersects(ray: Ray, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): PickingInfo;
+        intersects(ray: Ray, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate, onlyBoundingInfo?: boolean): PickingInfo;
         /**
          * Clones the current mesh
          * @param name defines the mesh name
@@ -37307,6 +37308,15 @@ declare module BABYLON {
          * @returns a PickingInfo
          */
         pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo>;
+        /** Launch a ray to try to pick a mesh in the scene using only bounding information of the main mesh (not using submeshes)
+         * @param x position on screen
+         * @param y position on screen
+         * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
+         * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
+         * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+         * @returns a PickingInfo (Please note that some info will not be set like distance, bv, bu and everything that cannot be capture by only using bounding infos)
+         */
+        pickWithBoundingInfo(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo>;
         /** Use the given ray to pick a mesh in the scene
          * @param ray The ray to use to pick meshes
          * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must have isPickable set to true
@@ -42290,50 +42300,6 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    /** @hidden */
-    export var stereoscopicInterlacePixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /**
-     * StereoscopicInterlacePostProcessI used to render stereo views from a rigged camera with support for alternate line interlacing
-     */
-    export class StereoscopicInterlacePostProcessI extends PostProcess {
-        private _stepSize;
-        private _passedProcess;
-        /**
-         * Initializes a StereoscopicInterlacePostProcessI
-         * @param name The name of the effect.
-         * @param rigCameras The rig cameras to be appled to the post process
-         * @param isStereoscopicHoriz If the rendered results are horizontal or vertical
-         * @param isStereoscopicInterlaced If the rendered results are alternate line interlaced
-         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
-         * @param engine The engine which the post process will be applied. (default: current engine)
-         * @param reusable If the post process can be reused on the same frame. (default: false)
-         */
-        constructor(name: string, rigCameras: Camera[], isStereoscopicHoriz: boolean, isStereoscopicInterlaced: boolean, samplingMode?: number, engine?: Engine, reusable?: boolean);
-    }
-    /**
-     * StereoscopicInterlacePostProcess used to render stereo views from a rigged camera
-     */
-    export class StereoscopicInterlacePostProcess extends PostProcess {
-        private _stepSize;
-        private _passedProcess;
-        /**
-         * Initializes a StereoscopicInterlacePostProcess
-         * @param name The name of the effect.
-         * @param rigCameras The rig cameras to be appled to the post process
-         * @param isStereoscopicHoriz If the rendered results are horizontal or verticle
-         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
-         * @param engine The engine which the post process will be applied. (default: current engine)
-         * @param reusable If the post process can be reused on the same frame. (default: false)
-         */
-        constructor(name: string, rigCameras: Camera[], isStereoscopicHoriz: boolean, samplingMode?: number, engine?: Engine, reusable?: boolean);
-    }
-}
-declare module BABYLON {
     /**
      * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
      * @see http://doc.babylonjs.com/features/cameras
@@ -46951,6 +46917,85 @@ declare module BABYLON.Debug {
         update(): void;
         /** Release associated resources */
         dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * This class will take all inputs from Keyboard, Pointer, and
+     * any Gamepads and provide a polling system that all devices
+     * will use.  This class assumes that there will only be one
+     * pointer device and one keyboard.
+     */
+    export class DeviceInputSystem implements IDisposable {
+        /** POINTER_DEVICE */
+        static readonly POINTER_DEVICE: string;
+        /** KEYBOARD_DEVICE */
+        static readonly KEYBOARD_DEVICE: string;
+        /**
+         * Observable to be triggered when a device is connected
+         */
+        onDeviceConnectedObservable: Observable<string>;
+        /**
+         * Observable to be triggered when a device is disconnected
+         */
+        onDeviceDisconnectedObservable: Observable<string>;
+        private _inputs;
+        private _gamepads;
+        private _keyboardActive;
+        private _pointerActive;
+        private _elementToAttachTo;
+        private _keyboardDownEvent;
+        private _keyboardUpEvent;
+        private _pointerMoveEvent;
+        private _pointerDownEvent;
+        private _pointerUpEvent;
+        private _gamepadConnectedEvent;
+        private _gamepadDisconnectedEvent;
+        private static _MAX_KEYCODES;
+        private static _MAX_POINTER_INPUTS;
+        /**
+         * Default Constructor
+         * @param engine - engine to pull input element from
+         */
+        constructor(engine: Engine);
+        /**
+         * Checks for current device input value, given an id and input index
+         * @param deviceName Id of connected device
+         * @param inputIndex Index of device input
+         * @returns Current value of input
+         */
+        pollInput(deviceName: string, inputIndex: number): Nullable<number>;
+        /**
+         * Dispose of all the eventlisteners and clears the observables
+         */
+        dispose(): void;
+        /**
+         * Add device and inputs to device map
+         * @param deviceName Assigned name of device (may be SN)
+         * @param numberOfInputs Number of input entries to create for given device
+         */
+        private _registerDevice;
+        /**
+         * Given a specific device name, remove that device from the device map
+         * @param deviceName Name of device to be removed
+         */
+        private _unregisterDevice;
+        /**
+         * Handle all actions that come from keyboard interaction
+         */
+        private _handleKeyActions;
+        /**
+         * Handle all actions that come from pointer interaction
+         */
+        private _handlePointerActions;
+        /**
+         * Handle all actions that come from gamepad interaction
+         */
+        private _handleGamepadActions;
+        /**
+         * Update all non-event based devices with each frame
+         */
+        private _updateDevice;
     }
 }
 declare module BABYLON {
@@ -55061,7 +55106,7 @@ declare module BABYLON {
         protected _initializeGenerator(): void;
         protected _createTargetRenderTexture(): void;
         protected _initializeShadowMap(): void;
-        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any): void;
+        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any, mesh: AbstractMesh): void;
         protected _isReadyCustomDefines(defines: any, subMesh: SubMesh, useInstances: boolean): void;
         /**
          * Prepare all the defines in a material relying on a shadow map at the specified light index.
@@ -67172,6 +67217,50 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var stereoscopicInterlacePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * StereoscopicInterlacePostProcessI used to render stereo views from a rigged camera with support for alternate line interlacing
+     */
+    export class StereoscopicInterlacePostProcessI extends PostProcess {
+        private _stepSize;
+        private _passedProcess;
+        /**
+         * Initializes a StereoscopicInterlacePostProcessI
+         * @param name The name of the effect.
+         * @param rigCameras The rig cameras to be appled to the post process
+         * @param isStereoscopicHoriz If the rendered results are horizontal or vertical
+         * @param isStereoscopicInterlaced If the rendered results are alternate line interlaced
+         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
+         * @param engine The engine which the post process will be applied. (default: current engine)
+         * @param reusable If the post process can be reused on the same frame. (default: false)
+         */
+        constructor(name: string, rigCameras: Camera[], isStereoscopicHoriz: boolean, isStereoscopicInterlaced: boolean, samplingMode?: number, engine?: Engine, reusable?: boolean);
+    }
+    /**
+     * StereoscopicInterlacePostProcess used to render stereo views from a rigged camera
+     */
+    export class StereoscopicInterlacePostProcess extends PostProcess {
+        private _stepSize;
+        private _passedProcess;
+        /**
+         * Initializes a StereoscopicInterlacePostProcess
+         * @param name The name of the effect.
+         * @param rigCameras The rig cameras to be appled to the post process
+         * @param isStereoscopicHoriz If the rendered results are horizontal or verticle
+         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
+         * @param engine The engine which the post process will be applied. (default: current engine)
+         * @param reusable If the post process can be reused on the same frame. (default: false)
+         */
+        constructor(name: string, rigCameras: Camera[], isStereoscopicHoriz: boolean, samplingMode?: number, engine?: Engine, reusable?: boolean);
+    }
+}
+declare module BABYLON {
+    /** @hidden */
     export var tonemapPixelShader: {
         name: string;
         shader: string;
@@ -71039,6 +71128,19 @@ type XREye =
     | "none"
     | "left"
     | "right";
+
+type XREventType =
+    | "devicechange"
+    | "visibilitychange"
+    | "end"
+    | "inputsourceschange"
+    | "select"
+    | "selectstart"
+    | "selectend"
+    | "squeeze"
+    | "squeezestart"
+    | "squeezeend"
+    | "reset";
 
 interface XRSpace extends EventTarget {
 
@@ -76988,6 +77090,30 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1691)
+     * [Playground Sample](https://playground.babylonjs.com/#QFIGLW#9)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>>;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
      * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression)
      */
     export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
@@ -77176,30 +77302,6 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
         private _loadSpecularPropertiesAsync;
-    }
-}
-declare module BABYLON.GLTF2.Loader.Extensions {
-    /**
-     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1691)
-     * [Playground Sample](//TODO)
-     * !!! Experimental Extension Subject to Changes !!!
-     */
-    export class KHR_mesh_instancing implements IGLTFLoaderExtension {
-        /**
-         * The name of this extension.
-         */
-        readonly name: string;
-        /**
-         * Defines whether this extension is enabled.
-         */
-        enabled: boolean;
-        private _loader;
-        /** @hidden */
-        constructor(loader: GLTFLoader);
-        /** @hidden */
-        dispose(): void;
-        /** @hidden */
-        loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>>;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
@@ -79865,8 +79967,12 @@ declare module BABYLON {
         _createdShaderName: string;
         _customUniform: string[];
         _newUniforms: string[];
-        _newUniformInstances: any[];
-        _newSamplerInstances: BABYLON.Texture[];
+        _newUniformInstances: {
+            [name: string]: any;
+        };
+        _newSamplerInstances: {
+            [name: string]: BABYLON.Texture;
+        };
         _customAttributes: string[];
         FragmentShader: string;
         VertexShader: string;
@@ -79921,8 +80027,12 @@ declare module BABYLON {
         _createdShaderName: string;
         _customUniform: string[];
         _newUniforms: string[];
-        _newUniformInstances: any[];
-        _newSamplerInstances: BABYLON.Texture[];
+        _newUniformInstances: {
+            [name: string]: any;
+        };
+        _newSamplerInstances: {
+            [name: string]: BABYLON.Texture;
+        };
         _customAttributes: string[];
         FragmentShader: string;
         VertexShader: string;

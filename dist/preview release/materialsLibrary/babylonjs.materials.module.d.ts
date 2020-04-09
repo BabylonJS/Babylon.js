@@ -113,8 +113,12 @@ declare module "babylonjs-materials/custom/customMaterial" {
         _createdShaderName: string;
         _customUniform: string[];
         _newUniforms: string[];
-        _newUniformInstances: any[];
-        _newSamplerInstances: Texture[];
+        _newUniformInstances: {
+            [name: string]: any;
+        };
+        _newSamplerInstances: {
+            [name: string]: Texture;
+        };
         _customAttributes: string[];
         FragmentShader: string;
         VertexShader: string;
@@ -175,8 +179,12 @@ declare module "babylonjs-materials/custom/pbrCustomMaterial" {
         _createdShaderName: string;
         _customUniform: string[];
         _newUniforms: string[];
-        _newUniformInstances: any[];
-        _newSamplerInstances: Texture[];
+        _newUniformInstances: {
+            [name: string]: any;
+        };
+        _newSamplerInstances: {
+            [name: string]: Texture;
+        };
         _customAttributes: string[];
         FragmentShader: string;
         VertexShader: string;
@@ -1629,8 +1637,12 @@ declare module BABYLON {
         _createdShaderName: string;
         _customUniform: string[];
         _newUniforms: string[];
-        _newUniformInstances: any[];
-        _newSamplerInstances: BABYLON.Texture[];
+        _newUniformInstances: {
+            [name: string]: any;
+        };
+        _newSamplerInstances: {
+            [name: string]: BABYLON.Texture;
+        };
         _customAttributes: string[];
         FragmentShader: string;
         VertexShader: string;
@@ -1685,8 +1697,12 @@ declare module BABYLON {
         _createdShaderName: string;
         _customUniform: string[];
         _newUniforms: string[];
-        _newUniformInstances: any[];
-        _newSamplerInstances: BABYLON.Texture[];
+        _newUniformInstances: {
+            [name: string]: any;
+        };
+        _newSamplerInstances: {
+            [name: string]: BABYLON.Texture;
+        };
         _customAttributes: string[];
         FragmentShader: string;
         VertexShader: string;
