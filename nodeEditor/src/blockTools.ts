@@ -62,9 +62,10 @@ import { DerivativeBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/deriva
 import { RefractBlock } from 'babylonjs/Materials/Node/Blocks/refractBlock';
 import { ReflectBlock } from 'babylonjs/Materials/Node/Blocks/reflectBlock';
 import { DesaturateBlock } from 'babylonjs/Materials/Node/Blocks/desaturateBlock';
-import { PBRMetallicRoughnessBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/pbrMetallicRoughnessBlock';
-import { SheenBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/sheenBlock';
-import { AmbientOcclusionBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/ambientOcclusionBlock';
+import { PBRMetallicRoughnessBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/PBR/pbrMetallicRoughnessBlock';
+import { SheenBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/PBR/sheenBlock';
+import { AmbientOcclusionBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/PBR/ambientOcclusionBlock';
+import { MetallicRoughnessTextureBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/PBR/MetallicRoughnessTextureBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
@@ -441,7 +442,9 @@ export class BlockTools {
                 return new SheenBlock("Sheen");
             case "AmbientOcclusionBlock":
                 return new AmbientOcclusionBlock("AmbientOcclusion");
-        }
+            case "MetallicRoughnessTextureBlock":
+                return new MetallicRoughnessTextureBlock("MetallicRoughness texture");
+            }
 
         return null;
     }
