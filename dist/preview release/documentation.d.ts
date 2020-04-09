@@ -9558,14 +9558,14 @@ declare module BABYLON {
         /**
          * Checks if ray intersects a mesh
          * @param mesh the mesh to check
-         * @param fastCheck if only the bounding box should checked
+         * @param fastCheck defines if the first intersection will be used (and not the closest)
          * @returns picking info of the intersecton
          */
         intersectsMesh(mesh: DeepImmutable<AbstractMesh>, fastCheck?: boolean): PickingInfo;
         /**
          * Checks if ray intersects a mesh
          * @param meshes the meshes to check
-         * @param fastCheck if only the bounding box should checked
+         * @param fastCheck defines if the first intersection will be used (and not the closest)
          * @param results array to store result in
          * @returns Array of picking infos
          */
@@ -9876,7 +9876,7 @@ declare module BABYLON {
              * @param x position on screen
              * @param y position on screen
              * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
-             * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
+             * @param fastCheck defines if the first intersection will be used (and not the closest)
              * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
              * @returns a PickingInfo
              */
@@ -9884,7 +9884,7 @@ declare module BABYLON {
             /** Use the given ray to pick a sprite in the scene
              * @param ray The ray (in world space) to use to pick meshes
              * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
-             * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
+             * @param fastCheck defines if the first intersection will be used (and not the closest)
              * @param camera camera to use. Can be set to null. In this case, the scene.activeCamera will be used
              * @returns a PickingInfo
              */
@@ -10019,7 +10019,7 @@ declare module BABYLON {
          * @param ray The ray we are sending to test the collision
          * @param camera The camera space we are sending rays in
          * @param predicate A predicate allowing excluding sprites from the list of object to test
-         * @param fastCheck Is the hit test done in a OOBB or AOBB fashion the faster, the less precise
+         * @param fastCheck defines if the first intersection will be used (and not the closest)
          * @returns picking info or null.
          */
         intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
@@ -21371,6 +21371,10 @@ declare module BABYLON {
          */
         disableDepthWrite: boolean;
         /**
+         * Specifies if color writing should be disabled
+         */
+        disableColorWrite: boolean;
+        /**
          * Specifies if depth writing should be forced
          */
         forceDepthWrite: boolean;
@@ -21447,6 +21451,10 @@ declare module BABYLON {
          * Specifies if the depth write state should be cached
          */
         private _cachedDepthWriteState;
+        /**
+         * Specifies if the color write state should be cached
+         */
+        private _cachedColorWriteState;
         /**
          * Specifies if the depth function state should be cached
          */
@@ -21997,7 +22005,7 @@ declare module BABYLON {
          * @param ray defines the ray to test
          * @param positions defines mesh's positions array
          * @param indices defines mesh's indices array
-         * @param fastCheck defines if only bounding info should be used
+         * @param fastCheck defines if the first intersection will be used (and not the closest)
          * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
          * @returns intersection info or null if no intersection
          */
@@ -37302,7 +37310,7 @@ declare module BABYLON {
          * @param x position on screen
          * @param y position on screen
          * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
-         * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
+         * @param fastCheck defines if the first intersection will be used (and not the closest)
          * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
          * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
          * @returns a PickingInfo
@@ -37312,7 +37320,7 @@ declare module BABYLON {
          * @param x position on screen
          * @param y position on screen
          * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
-         * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
+         * @param fastCheck defines if the first intersection will be used (and not the closest)
          * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
          * @returns a PickingInfo (Please note that some info will not be set like distance, bv, bu and everything that cannot be capture by only using bounding infos)
          */
@@ -37320,7 +37328,7 @@ declare module BABYLON {
         /** Use the given ray to pick a mesh in the scene
          * @param ray The ray to use to pick meshes
          * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must have isPickable set to true
-         * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null
+         * @param fastCheck defines if the first intersection will be used (and not the closest)
          * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
          * @returns a PickingInfo
          */
