@@ -95,14 +95,14 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                     break;
                 }
                 case PropertyTypeForEdition.Float: {
-                    let cantDisplaySlider = (isNaN(options.min) || isNaN(options.max) || options.min === options.max);
+                    let cantDisplaySlider = (isNaN(options.min as number) || isNaN(options.max as number) || options.min === options.max);
                     if (cantDisplaySlider) {
                         components.push(
                             <FloatLineComponent globalState={this.props.globalState} label={displayName} propertyName={propertyName} target={this.props.block} onChange={() => this.forceRebuild(options.notifiers)} />
                         );
                     } else {
                         components.push(
-                            <SliderLineComponent label={displayName} target={this.props.block} propertyName={propertyName} step={Math.abs(options.max - options.min) / 100.0} minimum={Math.min(options.min, options.max)} maximum={options.max} onChange={() => this.forceRebuild(options.notifiers)}/>
+                            <SliderLineComponent label={displayName} target={this.props.block} propertyName={propertyName} step={Math.abs((options.max as number) - (options.min as number)) / 100.0} minimum={Math.min(options.min as number, options.max as number)} maximum={options.max as number} onChange={() => this.forceRebuild(options.notifiers)}/>
                         );
                     }
                     break;

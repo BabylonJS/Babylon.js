@@ -65,7 +65,7 @@ import { DesaturateBlock } from 'babylonjs/Materials/Node/Blocks/desaturateBlock
 import { PBRMetallicRoughnessBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/PBR/pbrMetallicRoughnessBlock';
 import { SheenBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/PBR/sheenBlock';
 import { AmbientOcclusionBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/PBR/ambientOcclusionBlock';
-import { MetallicRoughnessTextureBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/PBR/MetallicRoughnessTextureBlock';
+import { MetallicRoughnessTextureBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/PBR/metallicRoughnessTextureBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
