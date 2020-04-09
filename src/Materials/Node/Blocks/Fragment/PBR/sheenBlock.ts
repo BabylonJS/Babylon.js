@@ -1,12 +1,12 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
+import { NodeMaterialBlock } from '../../../nodeMaterialBlock';
+import { NodeMaterialBlockConnectionPointTypes } from '../../../Enums/nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBuildState } from '../../../nodeMaterialBuildState';
+import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../../nodeMaterialBlockConnectionPoint';
+import { NodeMaterialBlockTargets } from '../../../Enums/nodeMaterialBlockTargets';
 //import { Nullable } from "../../../../types";
-import { _TypeStore } from '../../../../Misc/typeStore';
-import { editableInPropertyPage } from "../../nodeMaterialDecorator";
-import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
+import { _TypeStore } from '../../../../../Misc/typeStore';
+import { editableInPropertyPage } from "../../../nodeMaterialDecorator";
+import { NodeMaterialConnectionPointCustomObject } from "../../../nodeMaterialConnectionPointCustomObject";
 
 export class SheenBlock extends NodeMaterialBlock {
 
