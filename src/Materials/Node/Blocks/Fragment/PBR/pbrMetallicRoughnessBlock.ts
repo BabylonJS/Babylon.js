@@ -257,7 +257,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         aoBlock?.prepareDefines(mesh, nodeMaterial, defines);
 
         // Reflectivity
+        const metalRoughTextBlock = this.metalRoughTexture.connectedPoint?.ownerBlock as Nullable<MetallicRoughnessTextureBlock>;
+
         defines.setValue("REFLECTIVITY", this.metalRoughTexture.isConnected);
+
+        metalRoughTextBlock?.prepareDefines(mesh, nodeMaterial, defines);
 
         if (!defines._areLightsDirty) {
             return;
