@@ -590,7 +590,7 @@ export class Material implements IAnimatable {
      * Specifies if the depth write state should be cached
      */
     private _cachedDepthWriteState: boolean = false;
-    
+
     /**
      * Specifies if the color write state should be cached
      */
