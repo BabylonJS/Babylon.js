@@ -743,7 +743,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 [inputBlock, pointName] = customInputBlock;
             }
             this.props.globalState.nodeMaterial.attachedBlocks.push(inputBlock);
-            pointA = inputBlock[pointName];
+            pointA = (inputBlock as any)[pointName];
             nodeA = this.appendBlock(inputBlock);
             
             nodeA.x = this._dropPointX - 200;
