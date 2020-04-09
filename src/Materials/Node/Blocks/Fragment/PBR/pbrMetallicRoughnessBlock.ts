@@ -19,6 +19,7 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../../../nodeMat
 import { NodeMaterialConnectionPointCustomObject } from "../../../nodeMaterialConnectionPointCustomObject";
 import { AmbientOcclusionBlock } from './ambientOcclusionBlock';
 import { SheenBlock } from './sheenBlock';
+import { MetallicRoughnessTextureBlock } from './metallicRoughnessTextureBlock';
 
 export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     private _lightId: number;
@@ -39,9 +40,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this.registerInput("cameraPosition", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("baseColor", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("baseTexture", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("metallic", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("roughness", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("metalRoughText", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("metallic", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("roughness", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("metalRoughText", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment, new NodeMaterialConnectionPointCustomObject("metalRoughText", this, NodeMaterialConnectionPointDirection.Input, MetallicRoughnessTextureBlock, "MetallicRoughnessTextureBlock", "rgba"));
         this.registerInput("opacityTexture", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("ambientColor", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("ambientOcclusion", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment, new NodeMaterialConnectionPointCustomObject("ambientOcclusion", this, NodeMaterialConnectionPointDirection.Input, AmbientOcclusionBlock, "AOBlock"));
@@ -88,6 +89,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     public initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("surfaceAlbedo");
         state._excludeVariableName("alpha");
+        state._excludeVariableName("baseColor");
+        state._excludeVariableName("diffuseBase");
+        state._excludeVariableName("metallicRoughness");
     }
 
     /**
@@ -228,6 +232,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         defines.setValue("PBR", true);
+        defines.setValue("METALLICWORKFLOW", true);
 
         // Albedo & Opacity
         if (this.baseTexture.isConnected) {
@@ -248,6 +253,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         const aoBlock = this.ambientOcclusionParams.connectedPoint?.ownerBlock as Nullable<AmbientOcclusionBlock>;
 
         defines.setValue("AMBIENT", aoBlock?.texture.isConnected ?? false);
+
+        aoBlock?.prepareDefines(mesh, nodeMaterial, defines);
+
+        // Reflectivity
+        defines.setValue("REFLECTIVITY", this.metalRoughTexture.isConnected);
 
         if (!defines._areLightsDirty) {
             return;
@@ -449,69 +459,100 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             aoDirectLightIntensity += ".";
         }
 
-        if (this._lightId === 0) {
-            // _____________________________ Geometry Information ____________________________
-            if (state._registerTempVariable("viewDirectionW")) {
-                state.compilationString += `vec3 viewDirectionW = normalize(${this.cameraPosition.associatedVariableName} - ${"v_" + worldPos.associatedVariableName}.xyz);\r\n`;
-            }
-
-            state.compilationString += `vec3 geometricNormalW = ${this.worldNormal.associatedVariableName}.xyz;\r\n`;
-
-            state.compilationString += `vec3 normalW = ${normalShading.isConnected ? normalShading.associatedVariableName + ".xyz" : "geometricNormalW"};\r\n`;
-
-            state.compilationString += state._emitCodeFromInclude("pbrBlockNormalFinal", comments, {
-                replaceStrings: [
-                    { search: /vPositionW/g, replace: worldPos.associatedVariableName },
-                    { search: /vEyePosition.w/g, replace: "1." },
-                ]
-            });
-
-            // _____________________________ Albedo & Opacity ______________________________
-            state.compilationString += `albedoOpacityOutParams albedoOpacityOut;\r\n`;
-
-            const albedoColor = this.baseColor.isConnected ? this.baseColor.associatedVariableName : "vec4(1., 1., 1., 1.)";
-            const albedoTexture = this.baseTexture.isConnected ? this.baseTexture.associatedVariableName : "";
-            const opacityTexture = this.opacityTexture.isConnected ? this.opacityTexture.associatedVariableName : "";
-
-            state.compilationString += `albedoOpacityBlock(
-                    ${albedoColor},
-                #ifdef ALBEDO
-                    ${albedoTexture},
-                    vec2(1., 1.),
-                #endif
-                #ifdef OPACITY
-                    ${opacityTexture},
-                    vec2(1., 1.),
-                #endif
-                    albedoOpacityOut
-                );
-
-                vec3 surfaceAlbedo = albedoOpacityOut.surfaceAlbedo;
-                float alpha = albedoOpacityOut.alpha;\r\n`;
-
-            state.compilationString += state._emitCodeFromInclude("depthPrePass", comments);
-
-            // _____________________________ AO  _______________________________
-            state.compilationString += `ambientOcclusionOutParams aoOut;\r\n`;
-
-            const aoTexture = aoBlock?.texture.isConnected ? aoBlock.texture.associatedVariableName : "vec2(0., 0.)";
-            const aoLevel = "1.";
-            const aoIntensity = aoBlock?.intensity.isConnected ? aoBlock.intensity.associatedVariableName : "1.";
-
-            state.compilationString += `ambientOcclusionBlock(
-                #ifdef AMBIENT
-                    ${aoTexture},
-                    vec4(0., ${aoLevel}, ${aoIntensity}, 0.),
-                #endif
-                    aoOut
-                );\r\n`;
-
-            // _____________________________ Reflectivity _______________________________
-            state.compilationString += `vec3 baseColor = surfaceAlbedo;\r\nreflectivityOutParams reflectivityOut;\r\n`;
-
-            // _____________________________ Direct Lighting Info __________________________________
-            state.compilationString += state._emitCodeFromInclude("pbrBlockDirectLighting", comments);
+        // _____________________________ Geometry Information ____________________________
+        if (state._registerTempVariable("viewDirectionW")) {
+            state.compilationString += `vec3 viewDirectionW = normalize(${this.cameraPosition.associatedVariableName} - ${"v_" + worldPos.associatedVariableName}.xyz);\r\n`;
         }
+
+        state.compilationString += `vec3 geometricNormalW = ${this.worldNormal.associatedVariableName}.xyz;\r\n`;
+
+        state.compilationString += `vec3 normalW = ${normalShading.isConnected ? normalShading.associatedVariableName + ".xyz" : "geometricNormalW"};\r\n`;
+
+        state.compilationString += state._emitCodeFromInclude("pbrBlockNormalFinal", comments, {
+            replaceStrings: [
+                { search: /vPositionW/g, replace: worldPos.associatedVariableName },
+                { search: /vEyePosition.w/g, replace: "1." },
+            ]
+        });
+
+        // _____________________________ Albedo & Opacity ______________________________
+        state.compilationString += `albedoOpacityOutParams albedoOpacityOut;\r\n`;
+
+        const albedoColor = this.baseColor.isConnected ? this.baseColor.associatedVariableName : "vec4(1., 1., 1., 1.)";
+        const albedoTexture = this.baseTexture.isConnected ? this.baseTexture.associatedVariableName : "";
+        const opacityTexture = this.opacityTexture.isConnected ? this.opacityTexture.associatedVariableName : "";
+
+        state.compilationString += `albedoOpacityBlock(
+                ${albedoColor},
+            #ifdef ALBEDO
+                ${albedoTexture},
+                vec2(1., 1.),
+            #endif
+            #ifdef OPACITY
+                ${opacityTexture},
+                vec2(1., 1.),
+            #endif
+                albedoOpacityOut
+            );
+
+            vec3 surfaceAlbedo = albedoOpacityOut.surfaceAlbedo;
+            float alpha = albedoOpacityOut.alpha;\r\n`;
+
+        state.compilationString += state._emitCodeFromInclude("depthPrePass", comments);
+
+        // _____________________________ AO  _______________________________
+        state.compilationString += `ambientOcclusionOutParams aoOut;\r\n`;
+
+        const aoTexture = aoBlock?.texture.isConnected ? aoBlock.texture.associatedVariableName : "vec2(0., 0.)";
+        const aoLevel = "1.";
+        const aoIntensity = aoBlock?.intensity.isConnected ? aoBlock.intensity.associatedVariableName : "1.";
+
+        state.compilationString += `ambientOcclusionBlock(
+            #ifdef AMBIENT
+                ${aoTexture},
+                vec4(0., ${aoLevel}, ${aoIntensity}, 0.),
+            #endif
+                aoOut
+            );\r\n`;
+
+        // _____________________________ Reflectivity _______________________________
+        const metalRoughTexture = this.metalRoughTexture.isConnected ? this.metalRoughTexture.associatedVariableName : null;
+
+        state.compilationString += `vec3 baseColor = surfaceAlbedo;\r\nreflectivityOutParams reflectivityOut;\r\n`;
+
+        state.compilationString += `reflectivityBlock(
+            vec4(${this.metallic.associatedVariableName}, ${this.roughness.associatedVariableName}, 0., 0.04),
+        #ifdef METALLICWORKFLOW
+            surfaceAlbedo,
+        #endif
+        #ifdef REFLECTIVITY
+            vec3(0., 0., ${aoIntensity}),
+            ${metalRoughTexture},
+        #endif
+        #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY)  && defined(AOSTOREINMETALMAPRED)
+            aoOut.ambientOcclusionColor,
+        #endif
+        #ifdef MICROSURFACEMAP
+            microSurfaceTexel, <== not handled!
+        #endif
+            reflectivityOut
+        );
+
+        float microSurface = reflectivityOut.microSurface;
+        float roughness = reflectivityOut.roughness;
+
+        #ifdef METALLICWORKFLOW
+            surfaceAlbedo = reflectivityOut.surfaceAlbedo;
+        #endif
+        #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY) && defined(AOSTOREINMETALMAPRED)
+            aoOut.ambientOcclusionColor = reflectivityOut.ambientOcclusionColor;
+        #endif\r\n`;
+
+        // _____________________________ Compute Geometry info _________________________________
+        //#include<pbrBlockGeometryInfo>
+
+        // _____________________________ Direct Lighting Info __________________________________
+        state.compilationString += state._emitCodeFromInclude("pbrBlockDirectLighting", comments);
 
         /*if (this.light) {
             state.compilationString += state._emitCodeFromInclude("lightFragment", comments, {
