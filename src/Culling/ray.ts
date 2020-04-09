@@ -282,7 +282,7 @@ export class Ray {
     /**
      * Checks if ray intersects a mesh
      * @param mesh the mesh to check
-     * @param fastCheck if only the bounding box should checked
+     * @param fastCheck defines if the first intersection will be used (and not the closest)
      * @returns picking info of the intersecton
      */
     public intersectsMesh(mesh: DeepImmutable<AbstractMesh>, fastCheck?: boolean): PickingInfo {
@@ -304,7 +304,7 @@ export class Ray {
     /**
      * Checks if ray intersects a mesh
      * @param meshes the meshes to check
-     * @param fastCheck if only the bounding box should checked
+     * @param fastCheck defines if the first intersection will be used (and not the closest)
      * @param results array to store result in
      * @returns Array of picking infos
      */
