@@ -97,6 +97,8 @@ export class ShadowDepthWrapper {
             "view": prefix + "view",
             "projection": prefix + "projection",
             "viewProjection": prefix + "viewProjection",
+            "worldView": prefix + "worldView",
+            "worldViewProjection": prefix + "worldViewProjection",
         };
 
         // Register for onEffectCreated to store the effect of the base material when it is (re)generated. This effect will be used

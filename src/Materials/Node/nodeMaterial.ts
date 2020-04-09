@@ -1378,7 +1378,7 @@ export class NodeMaterial extends PushMaterial {
                         nodeMaterial.snippetId = snippetId;
 
                         try {
-                            nodeMaterial.build(true);
+                            nodeMaterial.build();
                             resolve(nodeMaterial);
                         } catch (err) {
                             reject(err);

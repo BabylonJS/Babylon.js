@@ -8,19 +8,19 @@ import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { INode } from "../glTFLoaderInterfaces";
 
-const NAME = "KHR_mesh_instancing";
+const NAME = "EXT_mesh_gpu_instancing";
 
-interface IKHRMeshInstancing {
+interface IEXTMeshGpuInstancing {
     mesh?: number;
     attributes: { [name: string]: number };
 }
 
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1691)
- * [Playground Sample](//TODO)
+ * [Playground Sample](https://playground.babylonjs.com/#QFIGLW#9)
  * !!! Experimental Extension Subject to Changes !!!
  */
-export class KHR_mesh_instancing implements IGLTFLoaderExtension {
+export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
     /**
      * The name of this extension.
      */
@@ -46,7 +46,7 @@ export class KHR_mesh_instancing implements IGLTFLoaderExtension {
 
     /** @hidden */
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
-        return GLTFLoader.LoadExtensionAsync<IKHRMeshInstancing, TransformNode>(context, node, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IEXTMeshGpuInstancing, TransformNode>(context, node, this.name, (extensionContext, extension) => {
             return this._loader.loadNodeAsync(`#/nodes/${node.index}`, node, (babylonTransformNode) => {
                 const promises = new Array<Promise<any>>();
                 let instanceCount: Nullable<number> = null;
@@ -109,4 +109,4 @@ export class KHR_mesh_instancing implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_mesh_instancing(loader));
+GLTFLoader.RegisterExtension(NAME, (loader) => new EXT_mesh_gpu_instancing(loader));

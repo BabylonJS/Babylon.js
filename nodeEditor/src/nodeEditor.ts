@@ -80,11 +80,11 @@ export class NodeEditor {
 
             };
         }
-        window.onbeforeunload = () => {
+        window.addEventListener('beforeunload', () => {
             if(DataStorage.ReadNumber("PreviewMeshType", PreviewMeshType.Box) === PreviewMeshType.Custom){
                 DataStorage.WriteNumber("PreviewMeshType", PreviewMeshType.Box)
             }
-        }
+        });
     }
 }
 
