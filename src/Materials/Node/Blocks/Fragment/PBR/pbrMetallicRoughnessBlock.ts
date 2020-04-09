@@ -1,22 +1,22 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../nodeMaterialBlockConnectionPoint';
-import { MaterialHelper } from '../../../materialHelper';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
-import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
-import { InputBlock } from '../Input/inputBlock';
-import { Light } from '../../../../Lights/light';
-import { Nullable } from '../../../../types';
-import { _TypeStore } from '../../../../Misc/typeStore';
-import { AbstractMesh } from '../../../../Meshes/abstractMesh';
-import { Effect, IEffectCreationOptions } from '../../../effect';
-import { Mesh } from '../../../../Meshes/mesh';
-import { PBRBaseMaterial } from '../../../PBR/pbrBaseMaterial';
-import { Scene } from '../../../../scene';
-import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
-import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
+import { NodeMaterialBlock } from '../../../nodeMaterialBlock';
+import { NodeMaterialBlockConnectionPointTypes } from '../../../Enums/nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBuildState } from '../../../nodeMaterialBuildState';
+import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../../nodeMaterialBlockConnectionPoint';
+import { MaterialHelper } from '../../../../materialHelper';
+import { NodeMaterialBlockTargets } from '../../../Enums/nodeMaterialBlockTargets';
+import { NodeMaterial, NodeMaterialDefines } from '../../../nodeMaterial';
+import { NodeMaterialSystemValues } from '../../../Enums/nodeMaterialSystemValues';
+import { InputBlock } from '../../Input/inputBlock';
+import { Light } from '../../../../../Lights/light';
+import { Nullable } from '../../../../../types';
+import { _TypeStore } from '../../../../../Misc/typeStore';
+import { AbstractMesh } from '../../../../../Meshes/abstractMesh';
+import { Effect, IEffectCreationOptions } from '../../../../effect';
+import { Mesh } from '../../../../../Meshes/mesh';
+import { PBRBaseMaterial } from '../../../../PBR/pbrBaseMaterial';
+import { Scene } from '../../../../../scene';
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../../nodeMaterialDecorator";
+import { NodeMaterialConnectionPointCustomObject } from "../../../nodeMaterialConnectionPointCustomObject";
 import { AmbientOcclusionBlock } from './ambientOcclusionBlock';
 import { SheenBlock } from './sheenBlock';
 
@@ -489,6 +489,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 vec3 surfaceAlbedo = albedoOpacityOut.surfaceAlbedo;
                 float alpha = albedoOpacityOut.alpha;\r\n`;
 
+            state.compilationString += state._emitCodeFromInclude("depthPrePass", comments);
+
             // _____________________________ AO  _______________________________
             state.compilationString += `ambientOcclusionOutParams aoOut;\r\n`;
 
@@ -503,6 +505,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 #endif
                     aoOut
                 );\r\n`;
+
+            // _____________________________ Reflectivity _______________________________
+            state.compilationString += `vec3 baseColor = surfaceAlbedo;\r\nreflectivityOutParams reflectivityOut;\r\n`;
 
             // _____________________________ Direct Lighting Info __________________________________
             state.compilationString += state._emitCodeFromInclude("pbrBlockDirectLighting", comments);
