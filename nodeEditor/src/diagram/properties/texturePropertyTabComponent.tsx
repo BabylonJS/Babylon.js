@@ -15,7 +15,7 @@ import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponen
 import { IPropertyComponentProps } from './propertyComponentProps';
 import { ReflectionTextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/reflectionTextureBlock';
 import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/textureBlock';
-import { GeneralPropertyTabComponent } from './genericNodePropertyComponent';
+import { GeneralPropertyTabComponent, GenericPropertyTabComponent } from './genericNodePropertyComponent';
 
 export class TexturePropertyTabComponent extends React.Component<IPropertyComponentProps, {isEmbedded: boolean, loadAsCubeTexture: boolean}> {
 
@@ -299,6 +299,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                         <ButtonLineComponent label="Remove" onClick={() => this.removeTexture()}/>
                     }
                 </LineContainerComponent>
+                <GenericPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
             </div>
         );
     }
