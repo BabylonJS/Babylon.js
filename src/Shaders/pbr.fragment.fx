@@ -129,24 +129,32 @@ void main(void) {
 
     reflectivityOutParams reflectivityOut;
 
+#if defined(REFLECTIVITY)
+    vec4 surfaceMetallicOrReflectivityColorMap = texture2D(reflectivitySampler, vReflectivityUV + uvOffset);
+    #ifndef METALLICWORKFLOW
+        surfaceMetallicOrReflectivityColorMap *= toLinearSpace(surfaceMetallicOrReflectivityColorMap);
+        surfaceMetallicOrReflectivityColorMap.rgb *= vReflectivityInfos.y;
+    #endif
+#endif
+
+#if defined(MICROSURFACEMAP)
+    vec4 microSurfaceTexel = texture2D(microSurfaceSampler, vMicroSurfaceSamplerUV + uvOffset) * vMicroSurfaceSamplerInfos.y;
+#endif
+
     reflectivityBlock(
         vReflectivityColor,
-        uvOffset,
     #ifdef METALLICWORKFLOW
         surfaceAlbedo,
     #endif
     #ifdef REFLECTIVITY
         vReflectivityInfos,
-        vReflectivityUV,
-        reflectivitySampler,
+        surfaceMetallicOrReflectivityColorMap,
     #endif
     #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY)  && defined(AOSTOREINMETALMAPRED)
         aoOut.ambientOcclusionColor,
     #endif
     #ifdef MICROSURFACEMAP
-        vMicroSurfaceSamplerUV,
-        vMicroSurfaceSamplerInfos,
-        microSurfaceSampler,
+        microSurfaceTexel,
     #endif
         reflectivityOut
     );
