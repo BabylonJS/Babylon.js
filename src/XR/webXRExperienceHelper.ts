@@ -120,12 +120,7 @@ export class WebXRExperienceHelper implements IDisposable {
         }).then(() => {
             // run the render loop
             this.sessionManager.runXRRenderLoop();
-            // Cache pre xr scene settings
-            this._originalSceneAutoClear = this.scene.autoClear;
             this._nonVRCamera = this.scene.activeCamera;
-
-            // Overwrite current scene settings
-            this.scene.autoClear = false;
 
             this.scene.activeCamera = this.camera;
             // do not compensate when AR session is used
@@ -141,8 +136,6 @@ export class WebXRExperienceHelper implements IDisposable {
                     c.outputRenderTarget = null;
                 });
 
-                // Restore scene settings
-                this.scene.autoClear = this._originalSceneAutoClear;
                 this.scene.activeCamera = this._nonVRCamera;
                 if (sessionMode !== 'immersive-ar' && this.camera.compensateOnFirstFrame) {
                     if ((<any>this._nonVRCamera).setPosition) {
