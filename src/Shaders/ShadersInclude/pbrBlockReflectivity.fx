@@ -114,6 +114,8 @@ void reflectivityBlock(
         #endif
     #else
         #ifdef REFLECTIVITY
+            surfaceReflectivityColor *= surfaceMetallicOrReflectivityColorMap.rgb;
+
             #if DEBUGMODE > 0
                 outParams.surfaceReflectivityColorMap = surfaceMetallicOrReflectivityColorMap;
             #endif

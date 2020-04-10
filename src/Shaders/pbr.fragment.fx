@@ -1,4 +1,4 @@
-﻿#if defined(BUMP) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC)
+#if defined(BUMP) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC)
 #extension GL_OES_standard_derivatives : enable
 #endif
 
@@ -132,7 +132,7 @@ void main(void) {
 #if defined(REFLECTIVITY)
     vec4 surfaceMetallicOrReflectivityColorMap = texture2D(reflectivitySampler, vReflectivityUV + uvOffset);
     #ifndef METALLICWORKFLOW
-        surfaceMetallicOrReflectivityColorMap *= toLinearSpace(surfaceMetallicOrReflectivityColorMap);
+        surfaceMetallicOrReflectivityColorMap = toLinearSpace(surfaceMetallicOrReflectivityColorMap);
         surfaceMetallicOrReflectivityColorMap.rgb *= vReflectivityInfos.y;
     #endif
 #endif
