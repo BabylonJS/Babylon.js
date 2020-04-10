@@ -5,6 +5,7 @@ import { DeepImmutable, Nullable, FloatArray, float } from "../types";
 import { ArrayTools } from '../Misc/arrayTools';
 import { IPlaneLike } from './math.like';
 import { _TypeStore } from '../Misc/typeStore';
+import { Plane } from './math.plane';
 
 /**
  * Class representing a vector containing 2 coordinates
@@ -917,6 +918,45 @@ export class Vector3 {
      */
     public scaleAndAddToRef(scale: number, result: Vector3): Vector3 {
         return result.addInPlaceFromFloats(this.x * scale, this.y * scale, this.z * scale);
+    }
+
+    /**
+     * Projects the current vector3 to a plane along a ray starting from a specified origin and directed towards the point.
+     * @param origin defines the origin of the projection ray
+     * @param plane defines the plane to project to
+     * @returns the projected vector3
+     */
+    public projectOnPlane(plane: Plane, origin: Vector3): Vector3 {
+        let result = Vector3.Zero();
+
+        this.projectOnPlaneToRef(plane, origin, result);
+
+        return result;
+    }
+
+    /**
+     * Projects the current vector3 to a plane along a ray starting from a specified origin and directed towards the point.
+     * @param origin defines the origin of the projection ray
+     * @param plane defines the plane to project to
+     * @param result defines the Vector3 where to store the result
+     */
+    public projectOnPlaneToRef(plane: Plane, origin: Vector3, result: Vector3): void {
+        let n = plane.normal;
+        let d = plane.d;
+
+        let V  = MathTmp.Vector3[0];
+
+        // ray direction
+        this.subtractToRef(origin, V);
+
+        V.normalize();
+
+        let denom = Vector3.Dot(V, n);
+        let t = -(Vector3.Dot(origin, n) + d) / denom;
+
+        // P = P0 + t*V
+        let scaledV = V.scaleInPlace(t);
+        origin.addToRef(scaledV, result);
     }
 
     /**

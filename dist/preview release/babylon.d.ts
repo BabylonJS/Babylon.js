@@ -1905,6 +1905,114 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Represens a plane by the equation ax + by + cz + d = 0
+     */
+    export class Plane {
+        private static _TmpMatrix;
+        /**
+         * Normal of the plane (a,b,c)
+         */
+        normal: Vector3;
+        /**
+         * d component of the plane
+         */
+        d: number;
+        /**
+         * Creates a Plane object according to the given floats a, b, c, d and the plane equation : ax + by + cz + d = 0
+         * @param a a component of the plane
+         * @param b b component of the plane
+         * @param c c component of the plane
+         * @param d d component of the plane
+         */
+        constructor(a: number, b: number, c: number, d: number);
+        /**
+         * @returns the plane coordinates as a new array of 4 elements [a, b, c, d].
+         */
+        asArray(): number[];
+        /**
+         * @returns a new plane copied from the current Plane.
+         */
+        clone(): Plane;
+        /**
+         * @returns the string "Plane".
+         */
+        getClassName(): string;
+        /**
+         * @returns the Plane hash code.
+         */
+        getHashCode(): number;
+        /**
+         * Normalize the current Plane in place.
+         * @returns the updated Plane.
+         */
+        normalize(): Plane;
+        /**
+         * Applies a transformation the plane and returns the result
+         * @param transformation the transformation matrix to be applied to the plane
+         * @returns a new Plane as the result of the transformation of the current Plane by the given matrix.
+         */
+        transform(transformation: DeepImmutable<Matrix>): Plane;
+        /**
+         * Compute the dot product between the point and the plane normal
+         * @param point point to calculate the dot product with
+         * @returns the dot product (float) of the point coordinates and the plane normal.
+         */
+        dotCoordinate(point: DeepImmutable<Vector3>): number;
+        /**
+         * Updates the current Plane from the plane defined by the three given points.
+         * @param point1 one of the points used to contruct the plane
+         * @param point2 one of the points used to contruct the plane
+         * @param point3 one of the points used to contruct the plane
+         * @returns the updated Plane.
+         */
+        copyFromPoints(point1: DeepImmutable<Vector3>, point2: DeepImmutable<Vector3>, point3: DeepImmutable<Vector3>): Plane;
+        /**
+         * Checks if the plane is facing a given direction
+         * @param direction the direction to check if the plane is facing
+         * @param epsilon value the dot product is compared against (returns true if dot <= epsilon)
+         * @returns True is the vector "direction"  is the same side than the plane normal.
+         */
+        isFrontFacingTo(direction: DeepImmutable<Vector3>, epsilon: number): boolean;
+        /**
+         * Calculates the distance to a point
+         * @param point point to calculate distance to
+         * @returns the signed distance (float) from the given point to the Plane.
+         */
+        signedDistanceTo(point: DeepImmutable<Vector3>): number;
+        /**
+         * Creates a plane from an  array
+         * @param array the array to create a plane from
+         * @returns a new Plane from the given array.
+         */
+        static FromArray(array: DeepImmutable<ArrayLike<number>>): Plane;
+        /**
+         * Creates a plane from three points
+         * @param point1 point used to create the plane
+         * @param point2 point used to create the plane
+         * @param point3 point used to create the plane
+         * @returns a new Plane defined by the three given points.
+         */
+        static FromPoints(point1: DeepImmutable<Vector3>, point2: DeepImmutable<Vector3>, point3: DeepImmutable<Vector3>): Plane;
+        /**
+         * Creates a plane from an origin point and a normal
+         * @param origin origin of the plane to be constructed
+         * @param normal normal of the plane to be constructed
+         * @returns a new Plane the normal vector to this plane at the given origin point.
+         * Note : the vector "normal" is updated because normalized.
+         */
+        static FromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): Plane;
+        /**
+         * Calculates the distance from a plane and a point
+         * @param origin origin of the plane to be constructed
+         * @param normal normal of the plane to be constructed
+         * @param point point to calculate distance to
+         * @returns the signed distance between the plane defined by the normal vector at the "origin"" point and the given other point.
+         */
+        static SignedDistanceToPlaneFromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>, point: DeepImmutable<Vector3>): number;
+    }
+}
+declare module BABYLON {
+    /**
      * Class representing a vector containing 2 coordinates
      */
     export class Vector2 {
@@ -2462,6 +2570,20 @@ declare module BABYLON {
          * @returns the unmodified current Vector3
          */
         scaleAndAddToRef(scale: number, result: Vector3): Vector3;
+        /**
+         * Projects the current vector3 to a plane along a ray starting from a specified origin and directed towards the point.
+         * @param origin defines the origin of the projection ray
+         * @param plane defines the plane to project to
+         * @returns the projected vector3
+         */
+        projectOnPlane(plane: Plane, origin: Vector3): Vector3;
+        /**
+         * Projects the current vector3 to a plane along a ray starting from a specified origin and directed towards the point.
+         * @param origin defines the origin of the projection ray
+         * @param plane defines the plane to project to
+         * @param result defines the Vector3 where to store the result
+         */
+        projectOnPlaneToRef(plane: Plane, origin: Vector3, result: Vector3): void;
         /**
          * Returns true if the current Vector3 and the given vector coordinates are strictly equal
          * @param otherVector defines the second operand
@@ -6611,114 +6733,6 @@ declare module BABYLON {
         faceId: number;
         subMeshId: number;
         constructor(bu: Nullable<number>, bv: Nullable<number>, distance: number);
-    }
-}
-declare module BABYLON {
-    /**
-     * Represens a plane by the equation ax + by + cz + d = 0
-     */
-    export class Plane {
-        private static _TmpMatrix;
-        /**
-         * Normal of the plane (a,b,c)
-         */
-        normal: Vector3;
-        /**
-         * d component of the plane
-         */
-        d: number;
-        /**
-         * Creates a Plane object according to the given floats a, b, c, d and the plane equation : ax + by + cz + d = 0
-         * @param a a component of the plane
-         * @param b b component of the plane
-         * @param c c component of the plane
-         * @param d d component of the plane
-         */
-        constructor(a: number, b: number, c: number, d: number);
-        /**
-         * @returns the plane coordinates as a new array of 4 elements [a, b, c, d].
-         */
-        asArray(): number[];
-        /**
-         * @returns a new plane copied from the current Plane.
-         */
-        clone(): Plane;
-        /**
-         * @returns the string "Plane".
-         */
-        getClassName(): string;
-        /**
-         * @returns the Plane hash code.
-         */
-        getHashCode(): number;
-        /**
-         * Normalize the current Plane in place.
-         * @returns the updated Plane.
-         */
-        normalize(): Plane;
-        /**
-         * Applies a transformation the plane and returns the result
-         * @param transformation the transformation matrix to be applied to the plane
-         * @returns a new Plane as the result of the transformation of the current Plane by the given matrix.
-         */
-        transform(transformation: DeepImmutable<Matrix>): Plane;
-        /**
-         * Calcualtte the dot product between the point and the plane normal
-         * @param point point to calculate the dot product with
-         * @returns the dot product (float) of the point coordinates and the plane normal.
-         */
-        dotCoordinate(point: DeepImmutable<Vector3>): number;
-        /**
-         * Updates the current Plane from the plane defined by the three given points.
-         * @param point1 one of the points used to contruct the plane
-         * @param point2 one of the points used to contruct the plane
-         * @param point3 one of the points used to contruct the plane
-         * @returns the updated Plane.
-         */
-        copyFromPoints(point1: DeepImmutable<Vector3>, point2: DeepImmutable<Vector3>, point3: DeepImmutable<Vector3>): Plane;
-        /**
-         * Checks if the plane is facing a given direction
-         * @param direction the direction to check if the plane is facing
-         * @param epsilon value the dot product is compared against (returns true if dot <= epsilon)
-         * @returns True is the vector "direction"  is the same side than the plane normal.
-         */
-        isFrontFacingTo(direction: DeepImmutable<Vector3>, epsilon: number): boolean;
-        /**
-         * Calculates the distance to a point
-         * @param point point to calculate distance to
-         * @returns the signed distance (float) from the given point to the Plane.
-         */
-        signedDistanceTo(point: DeepImmutable<Vector3>): number;
-        /**
-         * Creates a plane from an  array
-         * @param array the array to create a plane from
-         * @returns a new Plane from the given array.
-         */
-        static FromArray(array: DeepImmutable<ArrayLike<number>>): Plane;
-        /**
-         * Creates a plane from three points
-         * @param point1 point used to create the plane
-         * @param point2 point used to create the plane
-         * @param point3 point used to create the plane
-         * @returns a new Plane defined by the three given points.
-         */
-        static FromPoints(point1: DeepImmutable<Vector3>, point2: DeepImmutable<Vector3>, point3: DeepImmutable<Vector3>): Plane;
-        /**
-         * Creates a plane from an origin point and a normal
-         * @param origin origin of the plane to be constructed
-         * @param normal normal of the plane to be constructed
-         * @returns a new Plane the normal vector to this plane at the given origin point.
-         * Note : the vector "normal" is updated because normalized.
-         */
-        static FromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): Plane;
-        /**
-         * Calculates the distance from a plane and a point
-         * @param origin origin of the plane to be constructed
-         * @param normal normal of the plane to be constructed
-         * @param point point to calculate distance to
-         * @returns the signed distance between the plane defined by the normal vector at the "origin"" point and the given other point.
-         */
-        static SignedDistanceToPlaneFromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>, point: DeepImmutable<Vector3>): number;
     }
 }
 declare module BABYLON {
