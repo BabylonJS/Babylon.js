@@ -1,4 +1,4 @@
-#if defined(BUMP) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC)
+﻿#if defined(BUMP) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC)
 #extension GL_OES_standard_derivatives : enable
 #endif
 
@@ -193,13 +193,14 @@ void main(void) {
     #ifdef ANISOTROPIC
         anisotropicOutParams anisotropicOut;
 
+        #ifdef ANISOTROPIC_TEXTURE
+            vec3 anisotropyMapData = texture2D(anisotropySampler, vAnisotropyUV + uvOffset).rgb * vAnisotropyInfos.y;
+        #endif
+
         anisotropicBlock(
             vAnisotropy,
         #ifdef ANISOTROPIC_TEXTURE
-            vAnisotropyInfos,
-            vAnisotropyUV,
-            uvOffset,
-            anisotropySampler,
+            anisotropyMapData,
         #endif
             TBN,
             normalW,
