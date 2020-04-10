@@ -992,23 +992,32 @@ $line-padding-left: 2px;
 
                     .draggable-window {
                         position: fixed;
-                        z-index: 1;
                         top: 50%;
-                        right: 15%;
-                        background: black;
+                        left: 50%;
+                        background: #333333;
                         padding: 0px;
                         width: 400px;
+                        resize: both;
+                        overflow: hidden;
 
                         .window-header{
                             display: flex;
                             justify-content: space-between;
-                            background-color: lightgrey;
+                            background-color: #222222;
                             height: 32px;
-                            color: black;
+                            color: white;
                             align-items: center;
                             padding-left: 10px;
                             padding-right: 10px;
                             cursor: move;
+
+                            .close {
+                                grid-column: 2;
+                                display: grid;
+                                align-items: center;   
+                                justify-items: center;
+                                cursor: pointer;     
+                            }  
                         }
                         
                         .window-content{

@@ -15,7 +15,7 @@ export class CurveEditorComponent extends React.Component<ICurveEditorComponentP
 
     render() {
         return (
-            <DraggableWindowComponent label="Curve Editor" isOpen={this.props.isOpen} closeWindow={this.props.close}>
+            <DraggableWindowComponent label="CURVE EDITOR" isOpen={this.props.isOpen} closeWindow={this.props.close}>
                 <div>
                     Contents of Curve Editor
                 </div>

@@ -1,4 +1,6 @@
 import * as React from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
 interface IDraggableWindowComponentProps {
     label: string;
@@ -24,6 +26,10 @@ export class DraggableWindowComponent extends React.Component<IDraggableWindowCo
     }
 
     closeWindow() {
+        if (!this.props.closeWindow) {
+            return;
+        }
+
         this.props.closeWindow();
     }
 
@@ -99,7 +105,9 @@ export class DraggableWindowComponent extends React.Component<IDraggableWindowCo
                 onMouseLeave = {(e) => this.dragEnd(e)}
                 >
                 <div>{this.props.label}</div>
-                <button onClick={() => this.closeWindow() }>X</button>
+                <div className="close" onClick={() => this.closeWindow() }>
+                            <FontAwesomeIcon icon={faTimes} />
+                        </div>
                 </div>
                 <div className="window-content">
                     {this.props.children}
