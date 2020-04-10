@@ -87,11 +87,34 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
      * @param state defines the state that will be used for the build
      */
     public initialize(state: NodeMaterialBuildState) {
+        state._excludeVariableName("geometricNormalW");
+        state._excludeVariableName("normalW");
+        state._excludeVariableName("faceNormal");
+
+        state._excludeVariableName("albedoOpacityOut");
         state._excludeVariableName("surfaceAlbedo");
         state._excludeVariableName("alpha");
-        state._excludeVariableName("baseColor");
+
+        state._excludeVariableName("NdotVUnclamped");
+        state._excludeVariableName("NdotV");
+        state._excludeVariableName("alphaG");
+        state._excludeVariableName("AARoughnessFactors");
+        state._excludeVariableName("environmentBrdf");
+        state._excludeVariableName("ambientMonochrome");
+        state._excludeVariableName("seo");
+        state._excludeVariableName("eho");
+
         state._excludeVariableName("diffuseBase");
-        state._excludeVariableName("metallicRoughness");
+        state._excludeVariableName("specularBase");
+        state._excludeVariableName("preInfo");
+        state._excludeVariableName("info");
+        state._excludeVariableName("shadow");
+
+        state._excludeVariableName("finalDiffuse");
+        state._excludeVariableName("finalAmbient");
+        state._excludeVariableName("ambientOcclusionForDirectDiffuse");
+
+        state._excludeVariableName("finalColor");
     }
 
     /**

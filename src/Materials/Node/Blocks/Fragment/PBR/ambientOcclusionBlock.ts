@@ -26,6 +26,14 @@ export class AmbientOcclusionBlock extends NodeMaterialBlock {
     public useAmbientInGrayScale: boolean = false;
 
     /**
+     * Initialize the block and prepare the context for build
+     * @param state defines the state that will be used for the build
+     */
+    public initialize(state: NodeMaterialBuildState) {
+        state._excludeVariableName("aoOut");
+    }
+
+    /**
      * Gets the current class name
      * @returns the class name
      */
