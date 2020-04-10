@@ -19,7 +19,7 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../../../nodeMat
 import { NodeMaterialConnectionPointCustomObject } from "../../../nodeMaterialConnectionPointCustomObject";
 import { AmbientOcclusionBlock } from './ambientOcclusionBlock';
 import { SheenBlock } from './sheenBlock';
-import { MetallicRoughnessTextureBlock } from './metallicRoughnessTextureBlock';
+import { ReflectivityBlock } from './reflectivityBlock';
 import { BaseTexture } from '../../../../Textures/baseTexture';
 import { Engine } from '../../../../../Engines/engine';
 import { BRDFTextureTools } from '../../../../../Misc/brdfTextureTools';
@@ -47,10 +47,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this.registerInput("cameraPosition", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("baseColor", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("baseTexture", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("metallic", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("roughness", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("metalRoughText", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment, new NodeMaterialConnectionPointCustomObject("metalRoughText", this, NodeMaterialConnectionPointDirection.Input, MetallicRoughnessTextureBlock, "MetallicRoughnessTextureBlock", "rgba"));
         this.registerInput("opacityTexture", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("reflectivity", NodeMaterialBlockConnectionPointTypes.Object, false, NodeMaterialBlockTargets.Fragment, new NodeMaterialConnectionPointCustomObject("reflectivity", this, NodeMaterialConnectionPointDirection.Input, ReflectivityBlock, "ReflectivityBlock"));
         this.registerInput("ambientColor", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("ambientOcclusion", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment, new NodeMaterialConnectionPointCustomObject("ambientOcclusion", this, NodeMaterialConnectionPointDirection.Input, AmbientOcclusionBlock, "AOBlock"));
         this.registerInput("reflection", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment);
@@ -181,48 +179,40 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         return this._inputs[5];
     }
 
-    public get metallic(): NodeMaterialConnectionPoint {
+    public get opacityTexture(): NodeMaterialConnectionPoint {
         return this._inputs[6];
     }
 
-    public get roughness(): NodeMaterialConnectionPoint {
+    public get reflectivity(): NodeMaterialConnectionPoint {
         return this._inputs[7];
     }
 
-    public get metalRoughTexture(): NodeMaterialConnectionPoint {
+    public get ambientColor(): NodeMaterialConnectionPoint {
         return this._inputs[8];
     }
 
-    public get opacityTexture(): NodeMaterialConnectionPoint {
+    public get ambientOcclusionParams(): NodeMaterialConnectionPoint {
         return this._inputs[9];
     }
 
-    public get ambientColor(): NodeMaterialConnectionPoint {
+    public get reflectionParams(): NodeMaterialConnectionPoint {
         return this._inputs[10];
     }
 
-    public get ambientOcclusionParams(): NodeMaterialConnectionPoint {
+    public get sheenParams(): NodeMaterialConnectionPoint {
         return this._inputs[11];
     }
 
-    public get reflectionParams(): NodeMaterialConnectionPoint {
+    public get clearcoatParams(): NodeMaterialConnectionPoint {
         return this._inputs[12];
     }
 
-    public get sheenParams(): NodeMaterialConnectionPoint {
+    public get subSurfaceParams(): NodeMaterialConnectionPoint {
         return this._inputs[13];
     }
 
-    public get clearcoatParams(): NodeMaterialConnectionPoint {
-        return this._inputs[14];
-    }
-
-    public get subSurfaceParams(): NodeMaterialConnectionPoint {
-        return this._inputs[15];
-    }
-
     public get anisotropyParams(): NodeMaterialConnectionPoint {
-        return this._inputs[16];
+        return this._inputs[14];
     }
 
     public get ambient(): NodeMaterialConnectionPoint {
@@ -312,9 +302,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         aoBlock?.prepareDefines(mesh, nodeMaterial, defines);
 
         // Reflectivity
-        const metalRoughTextBlock = this.metalRoughTexture.connectedPoint?.ownerBlock as Nullable<MetallicRoughnessTextureBlock>;
-
-        defines.setValue("REFLECTIVITY", this.metalRoughTexture.isConnected);
+        const metalRoughTextBlock = this.reflectivity.connectedPoint?.ownerBlock as ReflectivityBlock;
 
         metalRoughTextBlock?.prepareDefines(mesh, nodeMaterial, defines);
 
@@ -592,8 +580,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         // _____________________________ Reflectivity _______________________________
         const aoIntensity = aoBlock?.intensity.isConnected ? aoBlock.intensity.associatedVariableName : "1.";
 
-        state.compilationString += MetallicRoughnessTextureBlock.getCode(this.metalRoughTexture.isConnected ? this.metalRoughTexture.connectedPoint?.ownerBlock as MetallicRoughnessTextureBlock : null,
-            this.metallic.associatedVariableName, this.roughness.associatedVariableName, aoIntensity);
+        state.compilationString += (this.reflectivity.connectedPoint?.ownerBlock as Nullable<ReflectivityBlock>)?.getCode(aoIntensity) ?? "";
 
         // _____________________________ Geometry info _________________________________
         state.compilationString += state._emitCodeFromInclude("pbrBlockGeometryInfo", comments);
