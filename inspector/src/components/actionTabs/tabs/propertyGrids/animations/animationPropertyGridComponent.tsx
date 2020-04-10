@@ -7,6 +7,7 @@ import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { ButtonLineComponent } from "../../../lines/buttonLineComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
+import { CurveEditorComponent } from "../animations/curveEditorComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
 import { Animation } from 'babylonjs/Animations/animation';
@@ -33,6 +34,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
     private _mainAnimatable: Nullable<Animatable>;
     private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
     private _isPlaying = false;
+    private _isCurveEditorOpen = false;
     private timelineRef: React.RefObject<SliderLineComponent>;
     private _animationControl = {
         from: 0,
@@ -94,6 +96,10 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
             this._mainAnimatable = this.props.scene.beginAnimation(this.props.animatable, this._animationControl.from, this._animationControl.to, this._animationControl.loop);
         }
         this.forceUpdate();
+    }
+
+    toggleCurveEditor(){
+            this._isCurveEditorOpen = !this._isCurveEditorOpen;
     }
 
     componentDidMount() {
@@ -170,13 +176,16 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                     <>
                         <LineContainerComponent globalState={this.props.globalState} title="ANIMATIONS">
                             <TextLineComponent label="Count" value={animations.length.toString()} />
-                            <ButtonLineComponent label="Edit" onClick={() => {}} />
+                            <ButtonLineComponent label={this._isCurveEditorOpen ? 'Close' : 'Edit'} onClick={() => this.toggleCurveEditor()} />
                             {
                                 animations.map((anim, i) => {
                                     return (
                                         <TextLineComponent key={anim.targetProperty + i} label={"#" + i + " >"} value={anim.targetProperty} />
                                     )
                                 })
+                            }
+                            {
+                                this._isCurveEditorOpen && <CurveEditorComponent isOpen={this._isCurveEditorOpen} close={()=> { this._isCurveEditorOpen = false}}></CurveEditorComponent>
                             }
                         </LineContainerComponent>
                         <LineContainerComponent globalState={this.props.globalState} title="ANIMATION GENERAL CONTROL">

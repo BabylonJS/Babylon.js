@@ -990,6 +990,33 @@ $line-padding-left: 2px;
                         border-left: 3px solid transparent;
                     }
 
+                    .draggable-window {
+                        position: fixed;
+                        z-index: 1;
+                        top: 50%;
+                        right: 15%;
+                        background: black;
+                        padding: 0px;
+                        width: 400px;
+
+                        .window-header{
+                            display: flex;
+                            justify-content: space-between;
+                            background-color: lightgrey;
+                            height: 32px;
+                            color: black;
+                            align-items: center;
+                            padding-left: 10px;
+                            padding-right: 10px;
+                            cursor: move;
+                        }
+                        
+                        .window-content{
+                            height: 300px;
+                            padding: 10px;
+                        }
+                    } 
+
                     &:hover {  
                         .paneList {                      
                             border-left: 3px solid rgba(51, 122, 183, 0.8);
