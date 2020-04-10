@@ -60,14 +60,13 @@ export class AmbientOcclusionBlock extends NodeMaterialBlock {
     public static getCode(block: Nullable<AmbientOcclusionBlock>): string {
         let code = `ambientOcclusionOutParams aoOut;\r\n`;
 
-        const aoTexture = block?.texture.isConnected ? block.texture.associatedVariableName : "vec2(0., 0.)";
-        const aoLevel = "1.";
+        const aoTexture = block?.texture.isConnected ? block.texture.associatedVariableName : "vec3(0.)";
         const aoIntensity = block?.intensity.isConnected ? block.intensity.associatedVariableName : "1.";
 
         code += `ambientOcclusionBlock(
             #ifdef AMBIENT
                 ${aoTexture},
-                vec4(0., ${aoLevel}, ${aoIntensity}, 0.),
+                vec4(0., 1.0, ${aoIntensity}, 0.),
             #endif
                 aoOut
             );\r\n`;
