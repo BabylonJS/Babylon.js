@@ -14,6 +14,7 @@ import { Logger } from '../Misc/logger';
  */
 export class WebXRExperienceHelper implements IDisposable {
     private _nonVRCamera: Nullable<Camera> = null;
+    private _originalSceneAutoClear = true;
     private _supported = false;
 
     /**
@@ -119,6 +120,8 @@ export class WebXRExperienceHelper implements IDisposable {
         }).then(() => {
             // run the render loop
             this.sessionManager.runXRRenderLoop();
+            // Cache pre xr scene settings
+            this._originalSceneAutoClear = this.scene.autoClear;
             this._nonVRCamera = this.scene.activeCamera;
 
             this.scene.activeCamera = this.camera;
@@ -126,6 +129,8 @@ export class WebXRExperienceHelper implements IDisposable {
             if (sessionMode !== 'immersive-ar') {
                 this._nonXRToXRCamera();
             } else {
+                // Kept here, TODO - check if needed
+                this.scene.autoClear = false;
                 this.camera.compensateOnFirstFrame = false;
             }
 
@@ -135,6 +140,8 @@ export class WebXRExperienceHelper implements IDisposable {
                     c.outputRenderTarget = null;
                 });
 
+                // Restore scene settings
+                this.scene.autoClear = this._originalSceneAutoClear;
                 this.scene.activeCamera = this._nonVRCamera;
                 if (sessionMode !== 'immersive-ar' && this.camera.compensateOnFirstFrame) {
                     if ((<any>this._nonVRCamera).setPosition) {
