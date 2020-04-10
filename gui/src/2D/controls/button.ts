@@ -1,10 +1,11 @@
 import { Nullable } from "babylonjs/types";
-import { Vector2 } from "babylonjs/Maths/math";
+import { Vector2 } from "babylonjs/Maths/math.vector";
 
 import { Rectangle } from "./rectangle";
 import { Control } from "./control";
 import { TextBlock } from "./textBlock";
 import { Image } from "./image";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /**
  * Class used to create 2D buttons
@@ -88,7 +89,7 @@ export class Button extends Rectangle {
 
     // While being a container, the button behaves like a control.
     /** @hidden */
-    public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean {
+    public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled || !this.isHitTestVisible || !this.isVisible || this.notRenderable) {
             return false;
         }
@@ -112,7 +113,7 @@ export class Button extends Rectangle {
             }
         }
 
-        this._processObservables(type, x, y, pointerId, buttonIndex);
+        this._processObservables(type, x, y, pointerId, buttonIndex, deltaX, deltaY);
 
         return true;
     }
@@ -263,3 +264,4 @@ export class Button extends Rectangle {
         return result;
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.Button"] = Button;

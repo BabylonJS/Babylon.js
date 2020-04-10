@@ -1,11 +1,11 @@
 import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
+import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../Misc/typeStore';
 import { NodeMaterial } from '../nodeMaterial';
-import { NodeMaterialSystemValues } from '../nodeMaterialSystemValues';
+import { NodeMaterialSystemValues } from '../Enums/nodeMaterialSystemValues';
 import { InputBlock } from './Input/inputBlock';
 /**
  * Block used to get the view direction

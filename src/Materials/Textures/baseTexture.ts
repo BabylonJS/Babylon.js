@@ -1,18 +1,16 @@
-import { serialize, SerializationHelper, serializeAsTexture } from "../../Misc/decorators";
+import { serialize, SerializationHelper, serializeAsTexture, expandToProperty } from "../../Misc/decorators";
 import { Observer, Observable } from "../../Misc/observable";
-import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { Matrix } from "../../Maths/math.vector";
-import { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
 import { EngineStore } from "../../Engines/engineStore";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
-import { _TimeToken } from "../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { Constants } from "../../Engines/constants";
 import { IAnimatable } from '../../Animations/animatable.interface';
 import { GUID } from '../../Misc/guid';
 import { ISize, Size } from '../../Maths/math.size';
+
+import "../../Misc/fileTools";
 
 declare type Animation = import("../../Animations/animation").Animation;
 
@@ -201,11 +199,32 @@ export class BaseTexture implements IAnimatable {
     }
 
     /**
+     * Define if the texture is a 2d array texture (webgl 2) or if false a 2d texture.
+     */
+    @serialize()
+    public get is2DArray(): boolean {
+        if (!this._texture) {
+            return false;
+        }
+
+        return this._texture.is2DArray;
+    }
+
+    public set is2DArray(value: boolean) {
+        if (!this._texture) {
+            return;
+        }
+
+        this._texture.is2DArray = value;
+    }
+
+    /**
      * Define if the texture contains data in gamma space (most of the png/jpg aside bump).
      * HDR texture are usually stored in linear space.
      * This only impacts the PBR and Background materials
      */
     @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public gammaSpace = true;
 
     /**
@@ -596,6 +615,19 @@ export class BaseTexture implements IAnimatable {
     }
 
     /**
+     * Indicates that textures need to be re-calculated for all materials
+     */
+    protected _markAllSubMeshesAsTexturesDirty() {
+        let scene = this.getScene();
+
+        if (!scene) {
+            return;
+        }
+
+        scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
+    /**
      * Reads the pixels stored in the webgl texture and returns them as an ArrayBuffer.
      * This will returns an RGBA array buffer containing either in values (0-255) or
      * float values (0-1) depending of the underlying buffer type.
@@ -645,30 +677,6 @@ export class BaseTexture implements IAnimatable {
         }
     }
 
-    /**
-     * Get the polynomial representation of the texture data.
-     * This is mainly use as a fast way to recover IBL Diffuse irradiance data.
-     * @see https://learnopengl.com/PBR/IBL/Diffuse-irradiance
-     */
-    public get sphericalPolynomial(): Nullable<SphericalPolynomial> {
-        if (!this._texture || !CubeMapToSphericalPolynomialTools || !this.isReady()) {
-            return null;
-        }
-
-        if (!this._texture._sphericalPolynomial) {
-            this._texture._sphericalPolynomial =
-                CubeMapToSphericalPolynomialTools.ConvertCubeMapTextureToSphericalPolynomial(this);
-        }
-
-        return this._texture._sphericalPolynomial;
-    }
-
-    public set sphericalPolynomial(value: Nullable<SphericalPolynomial>) {
-        if (this._texture) {
-            this._texture._sphericalPolynomial = value;
-        }
-    }
-
     /** @hidden */
     public get _lodTextureHigh(): Nullable<BaseTexture> {
         if (this._texture) {
@@ -697,23 +705,21 @@ export class BaseTexture implements IAnimatable {
      * Dispose the texture and release its associated resources.
      */
     public dispose(): void {
-        if (!this._scene) {
-            return;
-        }
+        if (this._scene) {
+            // Animations
+            if (this._scene.stopAnimation) {
+                this._scene.stopAnimation(this);
+            }
 
-        // Animations
-        if (this._scene.stopAnimation) {
-            this._scene.stopAnimation(this);
-        }
+            // Remove from scene
+            this._scene._removePendingData(this);
+            var index = this._scene.textures.indexOf(this);
 
-        // Remove from scene
-        this._scene._removePendingData(this);
-        var index = this._scene.textures.indexOf(this);
-
-        if (index >= 0) {
-            this._scene.textures.splice(index, 1);
+            if (index >= 0) {
+                this._scene.textures.splice(index, 1);
+            }
+            this._scene.onTextureRemovedObservable.notifyObservers(this);
         }
-        this._scene.onTextureRemovedObservable.notifyObservers(this);
 
         if (this._texture === undefined) {
             return;
@@ -767,14 +773,16 @@ export class BaseTexture implements IAnimatable {
             else {
                 var onLoadObservable = (texture as any).onLoadObservable as Observable<BaseTexture>;
 
-                let onLoadCallback = () => {
-                    onLoadObservable.removeCallback(onLoadCallback);
-                    if (--numRemaining === 0) {
-                        callback();
-                    }
-                };
+                if (onLoadObservable) {
+                    let onLoadCallback = () => {
+                        onLoadObservable.removeCallback(onLoadCallback);
+                        if (--numRemaining === 0) {
+                            callback();
+                        }
+                    };
 
-                onLoadObservable.add(onLoadCallback);
+                    onLoadObservable.add(onLoadCallback);
+                }
             }
         }
     }

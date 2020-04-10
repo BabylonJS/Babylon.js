@@ -15,7 +15,17 @@ interface ITextureLineComponentProps {
     hideChannelSelect?: boolean;
 }
 
-export class TextureLineComponent extends React.Component<ITextureLineComponentProps, { displayRed: boolean, displayGreen: boolean, displayBlue: boolean, displayAlpha: boolean, face: number }> {
+export interface ITextureLineComponentState {
+    displayRed: boolean;
+    displayGreen: boolean;
+    displayBlue: boolean;
+    displayAlpha: boolean;
+    face: number;
+}
+
+export class TextureLineComponent extends React.Component<ITextureLineComponentProps, ITextureLineComponentState> {
+    private canvasRef: React.RefObject<HTMLCanvasElement>;
+
     constructor(props: ITextureLineComponentProps) {
         super(props);
 
@@ -26,6 +36,8 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
             displayAlpha: true,
             face: 0
         };
+
+        this.canvasRef = React.createRef();
     }
 
     shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: { displayRed: boolean, displayGreen: boolean, displayBlue: boolean, displayAlpha: boolean, face: number }): boolean {
@@ -40,18 +52,20 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         this.updatePreview();
     }
 
-    updatePreview() {
-        var texture = this.props.texture;
+    public updatePreview() {
+        TextureLineComponent.UpdatePreview(this.canvasRef.current as HTMLCanvasElement, this.props.texture, this.props.width, this.state, undefined, this.props.globalState);
+    }
+
+    public static UpdatePreview(previewCanvas: HTMLCanvasElement, texture: BaseTexture, width: number, options: ITextureLineComponentState, onReady?: ()=> void, globalState?: any) {
         if (!texture.isReady() && texture._texture) {
             texture._texture.onLoadedObservable.addOnce(() => {
-                this.updatePreview();
+                TextureLineComponent.UpdatePreview(previewCanvas, texture, width, options, onReady, globalState);
             })
         }
         var scene = texture.getScene()!;
         var engine = scene.getEngine();
         var size = texture.getSize();
         var ratio = size.width / size.height;
-        var width = this.props.width;
         var height = (width / ratio) | 1;
 
         let passPostProcess: PostProcess;
@@ -60,7 +74,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
             passPostProcess = new PassPostProcess("pass", 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, Constants.TEXTURETYPE_UNSIGNED_INT);
         } else {
             var passCubePostProcess = new PassCubePostProcess("pass", 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, Constants.TEXTURETYPE_UNSIGNED_INT);
-            passCubePostProcess.face = this.state.face;
+            passCubePostProcess.face = options.face;
 
             passPostProcess = passCubePostProcess;
         }
@@ -69,15 +83,13 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
             // Try again later
             passPostProcess.dispose();
 
-            setTimeout(() => this.updatePreview(), 250);
+            setTimeout(() => TextureLineComponent.UpdatePreview(previewCanvas, texture, width, options, onReady, globalState), 250);
 
             return;
         }
 
-        const previewCanvas = this.refs.canvas as HTMLCanvasElement;
-
-        if (this.props.globalState) {
-            this.props.globalState.blockMutationUpdates = true;
+        if (globalState) {
+            globalState.blockMutationUpdates = true;
         }
 
         let rtt = new RenderTargetTexture(
@@ -102,22 +114,22 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
             var data = engine.readPixels(0, 0, width, height);
 
             if (!texture.isCube) {
-                if (!this.state.displayRed || !this.state.displayGreen || !this.state.displayBlue) {
+                if (!options.displayRed || !options.displayGreen || !options.displayBlue) {
                     for (var i = 0; i < width * height * 4; i += 4) {
 
-                        if (!this.state.displayRed) {
+                        if (!options.displayRed) {
                             data[i] = 0;
                         }
 
-                        if (!this.state.displayGreen) {
+                        if (!options.displayGreen) {
                             data[i + 1] = 0;
                         }
 
-                        if (!this.state.displayBlue) {
+                        if (!options.displayBlue) {
                             data[i + 2] = 0;
                         }
 
-                        if (this.state.displayAlpha) {
+                        if (options.displayAlpha) {
                             var alpha = data[i + 2];
                             data[i] = alpha;
                             data[i + 1] = alpha;
@@ -153,6 +165,10 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
                 var castData = imageData.data;
                 castData.set(data);
                 context.putImageData(imageData, 0, 0);
+
+                if (onReady) {
+                    onReady();
+                }
             }
 
             // Unbind
@@ -163,10 +179,9 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         passPostProcess.dispose();
 
         previewCanvas.style.height = height + "px";
-        if (this.props.globalState) {
-            this.props.globalState.blockMutationUpdates = false;
+        if (globalState) {
+            globalState.blockMutationUpdates = false;
         }
-
     }
 
     render() {
@@ -195,7 +210,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
                         <button className={this.state.displayRed && this.state.displayGreen ? "all command selected" : "all command"} onClick={() => this.setState({ displayRed: true, displayGreen: true, displayBlue: true, displayAlpha: true })}>ALL</button>
                     </div>
                 }
-                <canvas ref="canvas" className="preview" />
+                <canvas ref={this.canvasRef} className="preview" />
             </div>
         );
     }

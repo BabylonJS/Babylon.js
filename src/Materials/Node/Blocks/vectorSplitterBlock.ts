@@ -1,7 +1,7 @@
 import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
+import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 import { _TypeStore } from '../../../Misc/typeStore';
 
@@ -15,7 +15,7 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Fragment);
+        super(name, NodeMaterialBlockTargets.Neutral);
 
         this.registerInput("xyzw", NodeMaterialBlockConnectionPointTypes.Vector4, true);
         this.registerInput("xyz ", NodeMaterialBlockConnectionPointTypes.Vector3, true);
@@ -27,6 +27,8 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
         this.registerOutput("y", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerOutput("z", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerOutput("w", NodeMaterialBlockConnectionPointTypes.Float);
+
+        this.inputsAreExclusive = true;
     }
 
     /**

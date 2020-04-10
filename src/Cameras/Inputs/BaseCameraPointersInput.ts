@@ -228,9 +228,13 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
         element.addEventListener("contextmenu",
             <EventListener>this.onContextMenu.bind(this), false);
 
-        Tools.RegisterTopRootEvents(this.camera.getScene().getEngine().getHostWindow(), [
-            { name: "blur", handler: this._onLostFocus }
-        ]);
+        let hostWindow = this.camera.getScene().getEngine().getHostWindow();
+
+        if (hostWindow) {
+            Tools.RegisterTopRootEvents(hostWindow, [
+                { name: "blur", handler: this._onLostFocus }
+            ]);
+        }
     }
 
     /**
@@ -239,9 +243,12 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      */
     public detachControl(element: Nullable<HTMLElement>): void {
         if (this._onLostFocus) {
-            Tools.UnregisterTopRootEvents(this.camera.getScene().getEngine().getHostWindow(), [
-                { name: "blur", handler: this._onLostFocus }
-            ]);
+            let hostWindow = this.camera.getScene().getEngine().getHostWindow();
+            if (hostWindow) {
+                Tools.UnregisterTopRootEvents(hostWindow, [
+                    { name: "blur", handler: this._onLostFocus }
+                ]);
+            }
         }
 
         if (element && this._observer) {

@@ -1,6 +1,6 @@
 import { DeepImmutable, Nullable } from '../types';
 import { Scalar } from './math.scalar';
-import { Vector2, Vector3 } from './math.vector';
+import { Vector2, Vector3, Quaternion, Matrix } from './math.vector';
 import { Epsilon } from './math.constants';
 
 /**
@@ -265,7 +265,7 @@ export class Path2 {
     public length(): number {
         var result = this._length;
 
-        if (!this.closed) {
+        if (this.closed) {
             var lastPoint = this._points[this._points.length - 1];
             var firstPoint = this._points[0];
             result += (firstPoint.subtract(lastPoint).length());
@@ -338,6 +338,20 @@ export class Path3D {
     private _normals = new Array<Vector3>();
     private _binormals = new Array<Vector3>();
     private _raw: boolean;
+    private _alignTangentsWithPath: boolean;
+
+    // holds interpolated point data
+    private readonly _pointAtData = {
+        id: 0,
+        point: Vector3.Zero(),
+        previousPointArrayIndex: 0,
+
+        position: 0,
+        subPosition: 0,
+
+        interpolateReady: false,
+        interpolationMatrix: Matrix.Identity(),
+    };
 
     /**
     * new Path3D(path, normal, raw)
@@ -346,6 +360,7 @@ export class Path3D {
     * @param path an array of Vector3, the curve axis of the Path3D
     * @param firstNormal (options) Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
     * @param raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
+    * @param alignTangentsWithPath (optional, default false) : boolean, if true the tangents will be aligned with the path.
     */
     constructor(
         /**
@@ -353,13 +368,15 @@ export class Path3D {
          */
         public path: Vector3[],
         firstNormal: Nullable<Vector3> = null,
-        raw?: boolean
+        raw?: boolean,
+        alignTangentsWithPath = false
     ) {
         for (var p = 0; p < path.length; p++) {
             this._curve[p] = path[p].clone(); // hard copy
         }
         this._raw = raw || false;
-        this._compute(firstNormal);
+        this._alignTangentsWithPath = alignTangentsWithPath;
+        this._compute(firstNormal, alignTangentsWithPath);
     }
 
     /**
@@ -368,6 +385,21 @@ export class Path3D {
      */
     public getCurve(): Vector3[] {
         return this._curve;
+    }
+
+    /**
+     * Returns the Path3D array of successive Vector3 designing its curve.
+     * @returns the Path3D array of successive Vector3 designing its curve.
+     */
+    public getPoints(): Vector3[] {
+        return this._curve;
+    }
+
+    /**
+     * @returns the computed length (float) of the path.
+     */
+    public length() {
+        return this._distances[this._distances.length - 1];
     }
 
     /**
@@ -403,23 +435,157 @@ export class Path3D {
     }
 
     /**
+     * Returns an interpolated point along this path
+     * @param position the position of the point along this path, from 0.0 to 1.0
+     * @returns a new Vector3 as the point
+     */
+    public getPointAt(position: number): Vector3 {
+        return this._updatePointAtData(position).point;
+    }
+
+    /**
+     * Returns the tangent vector of an interpolated Path3D curve point at the specified position along this path.
+     * @param position the position of the point along this path, from 0.0 to 1.0
+     * @param interpolated (optional, default false) : boolean, if true returns an interpolated tangent instead of the tangent of the previous path point.
+     * @returns a tangent vector corresponding to the interpolated Path3D curve point, if not interpolated, the tangent is taken from the precomputed tangents array.
+     */
+    public getTangentAt(position: number, interpolated = false): Vector3 {
+        this._updatePointAtData(position, interpolated);
+        return interpolated ? Vector3.TransformCoordinates(Vector3.Forward(), this._pointAtData.interpolationMatrix) : this._tangents[this._pointAtData.previousPointArrayIndex];
+    }
+
+    /**
+     * Returns the tangent vector of an interpolated Path3D curve point at the specified position along this path.
+     * @param position the position of the point along this path, from 0.0 to 1.0
+     * @param interpolated (optional, default false) : boolean, if true returns an interpolated normal instead of the normal of the previous path point.
+     * @returns a normal vector corresponding to the interpolated Path3D curve point, if not interpolated, the normal is taken from the precomputed normals array.
+     */
+    public getNormalAt(position: number, interpolated = false): Vector3 {
+        this._updatePointAtData(position, interpolated);
+        return interpolated ? Vector3.TransformCoordinates(Vector3.Right(), this._pointAtData.interpolationMatrix) : this._normals[this._pointAtData.previousPointArrayIndex];
+    }
+
+    /**
+     * Returns the binormal vector of an interpolated Path3D curve point at the specified position along this path.
+     * @param position the position of the point along this path, from 0.0 to 1.0
+     * @param interpolated (optional, default false) : boolean, if true returns an interpolated binormal instead of the binormal of the previous path point.
+     * @returns a binormal vector corresponding to the interpolated Path3D curve point, if not interpolated, the binormal is taken from the precomputed binormals array.
+     */
+    public getBinormalAt(position: number, interpolated = false): Vector3 {
+        this._updatePointAtData(position, interpolated);
+        return interpolated ? Vector3.TransformCoordinates(Vector3.UpReadOnly, this._pointAtData.interpolationMatrix) : this._binormals[this._pointAtData.previousPointArrayIndex];
+    }
+
+    /**
+     * Returns the distance (float) of an interpolated Path3D curve point at the specified position along this path.
+     * @param position the position of the point along this path, from 0.0 to 1.0
+     * @returns the distance of the interpolated Path3D curve point at the specified position along this path.
+     */
+    public getDistanceAt(position: number): number {
+        return this.length() * position;
+    }
+
+    /**
+     * Returns the array index of the previous point of an interpolated point along this path
+     * @param position the position of the point to interpolate along this path, from 0.0 to 1.0
+     * @returns the array index
+     */
+    public getPreviousPointIndexAt(position: number) {
+        this._updatePointAtData(position);
+        return this._pointAtData.previousPointArrayIndex;
+    }
+
+    /**
+     * Returns the position of an interpolated point relative to the two path points it lies between, from 0.0 (point A) to 1.0 (point B)
+     * @param position the position of the point to interpolate along this path, from 0.0 to 1.0
+     * @returns the sub position
+     */
+    public getSubPositionAt(position: number) {
+        this._updatePointAtData(position);
+        return this._pointAtData.subPosition;
+    }
+
+    /**
+     * Returns the position of the closest virtual point on this path to an arbitrary Vector3, from 0.0 to 1.0
+     * @param target the vector of which to get the closest position to
+     * @returns the position of the closest virtual point on this path to the target vector
+     */
+    public getClosestPositionTo(target: Vector3) {
+        let smallestDistance = Number.MAX_VALUE;
+        let closestPosition = 0.0;
+        for (let i = 0; i < this._curve.length - 1; i++) {
+            let point = this._curve[i + 0];
+            let tangent = this._curve[i + 1].subtract(point).normalize();
+            let subLength = this._distances[i + 1] - this._distances[i + 0];
+            let subPosition = Math.min(Math.max(Vector3.Dot(tangent, target.subtract(point).normalize()), 0.0) * Vector3.Distance(point, target) / subLength, 1.0);
+            let distance = Vector3.Distance(point.add(tangent.scale(subPosition * subLength)), target);
+
+            if (distance < smallestDistance) {
+                smallestDistance = distance;
+                closestPosition = (this._distances[i + 0] + subLength * subPosition) / this.length();
+            }
+        }
+        return closestPosition;
+    }
+
+    /**
+     * Returns a sub path (slice) of this path
+     * @param start the position of the fist path point, from 0.0 to 1.0, or a negative value, which will get wrapped around from the end of the path to 0.0 to 1.0 values
+     * @param end the position of the last path point, from 0.0 to 1.0, or a negative value, which will get wrapped around from the end of the path to 0.0 to 1.0 values
+     * @returns a sub path (slice) of this path
+     */
+    public slice(start: number = 0.0, end: number = 1.0) {
+        if (start < 0.0) {
+            start = 1 - (start * -1.0) % 1.0;
+        }
+        if (end < 0.0) {
+            end = 1 - (end * -1.0) % 1.0;
+        }
+        if (start > end) {
+            let _start = start;
+            start = end;
+            end = _start;
+        }
+        let curvePoints = this.getCurve();
+
+        let startPoint = this.getPointAt(start);
+        let startIndex = this.getPreviousPointIndexAt(start);
+
+        let endPoint = this.getPointAt(end);
+        let endIndex = this.getPreviousPointIndexAt(end) + 1;
+
+        let slicePoints: Vector3[] = [];
+        if (start !== 0.0) {
+            startIndex++;
+            slicePoints.push(startPoint);
+        }
+
+        slicePoints.push(...curvePoints.slice(startIndex, endIndex));
+        if (end !== 1.0 || start === 1.0) {
+            slicePoints.push(endPoint);
+        }
+        return new Path3D(slicePoints, this.getNormalAt(start), this._raw, this._alignTangentsWithPath);
+    }
+
+    /**
      * Forces the Path3D tangent, normal, binormal and distance recomputation.
      * @param path path which all values are copied into the curves points
      * @param firstNormal which should be projected onto the curve
+     * @param alignTangentsWithPath (optional, default false) : boolean, if true the tangents will be aligned with the path
      * @returns the same object updated.
      */
-    public update(path: Vector3[], firstNormal: Nullable<Vector3> = null): Path3D {
+    public update(path: Vector3[], firstNormal: Nullable<Vector3> = null, alignTangentsWithPath = false): Path3D {
         for (var p = 0; p < path.length; p++) {
             this._curve[p].x = path[p].x;
             this._curve[p].y = path[p].y;
             this._curve[p].z = path[p].z;
         }
-        this._compute(firstNormal);
+        this._compute(firstNormal, alignTangentsWithPath);
         return this;
     }
 
     // private function compute() : computes tangents, normals and binormals
-    private _compute(firstNormal: Nullable<Vector3>): void {
+    private _compute(firstNormal: Nullable<Vector3>, alignTangentsWithPath = false): void {
         var l = this._curve.length;
 
         // first and last tangents
@@ -450,6 +616,7 @@ export class Path3D {
         var cur: Vector3;         // current vector (segment)
         var curTang: Vector3;     // current tangent
         // previous normal
+        var prevNor: Vector3;    // previous normal
         var prevBinor: Vector3;   // previous binormal
 
         for (var i = 1; i < l; i++) {
@@ -457,7 +624,7 @@ export class Path3D {
             prev = this._getLastNonNullVector(i);
             if (i < l - 1) {
                 cur = this._getFirstNonNullVector(i);
-                this._tangents[i] = prev.add(cur);
+                this._tangents[i] = alignTangentsWithPath ? cur : prev.add(cur);
                 this._tangents[i].normalize();
             }
             this._distances[i] = this._distances[i - 1] + prev.length();
@@ -468,13 +635,19 @@ export class Path3D {
             prevBinor = this._binormals[i - 1];
             this._normals[i] = Vector3.Cross(prevBinor, curTang);
             if (!this._raw) {
-                this._normals[i].normalize();
+                if (this._normals[i].length() === 0) {
+                    prevNor = this._normals[i - 1];
+                    this._normals[i] = prevNor.clone();
+                } else {
+                    this._normals[i].normalize();
+                }
             }
             this._binormals[i] = Vector3.Cross(curTang, this._normals[i]);
             if (!this._raw) {
                 this._binormals[i].normalize();
             }
         }
+        this._pointAtData.id = NaN;
     }
 
     // private function getFirstNonNullVector(index)
@@ -533,6 +706,99 @@ export class Path3D {
         }
         normal0.normalize();
         return normal0;
+    }
+
+    /**
+     * Updates the point at data for an interpolated point along this curve
+     * @param position the position of the point along this curve, from 0.0 to 1.0
+     * @interpolateTNB wether to compute the interpolated tangent, normal and binormal
+     * @returns the (updated) point at data
+     */
+    private _updatePointAtData(position: number, interpolateTNB: boolean = false) {
+        // set an id for caching the result
+        if (this._pointAtData.id === position) {
+            if (!this._pointAtData.interpolateReady) {
+                this._updateInterpolationMatrix();
+            }
+            return this._pointAtData;
+        } else {
+            this._pointAtData.id = position;
+        }
+        let curvePoints = this.getPoints();
+
+        // clamp position between 0.0 and 1.0
+        if (position <= 0.0) {
+            return this._setPointAtData(0.0, 0.0, curvePoints[0], 0, interpolateTNB);
+        } else if (position >= 1.0) {
+            return this._setPointAtData(1.0, 1.0, curvePoints[curvePoints.length - 1], curvePoints.length - 1, interpolateTNB);
+        }
+
+        let previousPoint: Vector3 = curvePoints[0];
+        let currentPoint: Vector3;
+        let currentLength = 0.0;
+        let targetLength = position * this.length();
+
+        for (let i = 1; i < curvePoints.length; i++) {
+            currentPoint = curvePoints[i];
+            let distance = Vector3.Distance(previousPoint, currentPoint);
+            currentLength += distance;
+            if (currentLength === targetLength) {
+                return this._setPointAtData(position, 1.0, currentPoint, i, interpolateTNB);
+            } else if (currentLength > targetLength) {
+                let toLength = currentLength - targetLength;
+                let diff = toLength / distance;
+                let dir = previousPoint.subtract(currentPoint);
+                let point = currentPoint.add(dir.scaleInPlace(diff));
+                return this._setPointAtData(position, 1 - diff, point, i - 1, interpolateTNB);
+            }
+            previousPoint = currentPoint;
+        }
+        return this._pointAtData;
+    }
+
+    /**
+     * Updates the point at data from the specified parameters
+     * @param position where along the path the interpolated point is, from 0.0 to 1.0
+     * @param point the interpolated point
+     * @param parentIndex the index of an existing curve point that is on, or else positionally the first behind, the interpolated point
+     */
+    private _setPointAtData(position: number, subPosition: number, point: Vector3, parentIndex: number, interpolateTNB: boolean) {
+        this._pointAtData.point = point;
+        this._pointAtData.position = position;
+        this._pointAtData.subPosition = subPosition;
+        this._pointAtData.previousPointArrayIndex = parentIndex;
+        this._pointAtData.interpolateReady = interpolateTNB;
+
+        if (interpolateTNB) {
+            this._updateInterpolationMatrix();
+        }
+        return this._pointAtData;
+    }
+
+    /**
+     * Updates the point at interpolation matrix for the tangents, normals and binormals
+     */
+    private _updateInterpolationMatrix() {
+        this._pointAtData.interpolationMatrix = Matrix.Identity();
+        let parentIndex = this._pointAtData.previousPointArrayIndex;
+
+        if (parentIndex !== this._tangents.length - 1) {
+            let index = parentIndex + 1;
+
+            let tangentFrom = this._tangents[parentIndex].clone();
+            let normalFrom = this._normals[parentIndex].clone();
+            let binormalFrom = this._binormals[parentIndex].clone();
+
+            let tangentTo = this._tangents[index].clone();
+            let normalTo = this._normals[index].clone();
+            let binormalTo = this._binormals[index].clone();
+
+            let quatFrom = Quaternion.RotationQuaternionFromAxis(normalFrom, binormalFrom, tangentFrom);
+            let quatTo = Quaternion.RotationQuaternionFromAxis(normalTo, binormalTo, tangentTo);
+            let quatAt = Quaternion.Slerp(quatFrom, quatTo, this._pointAtData.subPosition);
+
+            quatAt.toRotationMatrix(this._pointAtData.interpolationMatrix);
+        }
     }
 }
 

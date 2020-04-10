@@ -5,6 +5,7 @@ import { ValueAndUnit } from "../valueAndUnit";
 import { Control } from "./control";
 import { Measure } from "../measure";
 import { Tools } from 'babylonjs/Misc/tools';
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /**
  * Class used to create a 2D grid container
@@ -489,3 +490,4 @@ export class Grid extends Container {
         this._childControls = [];
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.Grid"] = Grid;

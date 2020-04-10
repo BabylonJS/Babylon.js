@@ -12,6 +12,9 @@ import { QuaternionLineComponent } from "../../../lines/quaternionLineComponent"
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
+import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
+import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
+import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
 
 interface ITransformNodePropertyGridComponentProps {
     globalState: GlobalState;
@@ -35,9 +38,18 @@ export class TransformNodePropertyGridComponent extends React.Component<ITransfo
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="ID" value={transformNode.id} />
+                    <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={transformNode} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <TextLineComponent label="Unique ID" value={transformNode.uniqueId.toString()} />
-                    <TextLineComponent label="Class" value={transformNode.getClassName()} />
+                    <TextLineComponent label="Class" value={transformNode.getClassName()} />                    
                     <CheckBoxLineComponent label="IsEnabled" isSelected={() => transformNode.isEnabled()} onSelect={(value) => transformNode.setEnabled(value)} />
+                    {
+                        transformNode.parent &&
+                        <TextLineComponent label="Parent" value={transformNode.parent.name} onLink={() => this.props.globalState.onSelectionChangedObservable.notifyObservers(transformNode.parent)}/>
+                    }        
+                    <ButtonLineComponent label="Dispose" onClick={() => {
+                        transformNode.dispose();
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                    }} />              
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="TRANSFORMATIONS">
                     <Vector3LineComponent label="Position" target={transformNode} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -51,6 +63,7 @@ export class TransformNodePropertyGridComponent extends React.Component<ITransfo
                     }
                     <Vector3LineComponent label="Scaling" target={transformNode} propertyName="scaling" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
+                <AnimationGridComponent globalState={this.props.globalState} animatable={transformNode} scene={transformNode.getScene()} lockObject={this.props.lockObject} />
             </div>
         );
     }

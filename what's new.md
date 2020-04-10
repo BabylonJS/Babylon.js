@@ -146,7 +146,6 @@
 - Added support for MSFT_audio_emitter ([najadojo](http://www.github.com/najadojo))
 - Added support for custom loader extensions ([bghgary](http://www.github.com/bghgary))
 - Added support for validating assets using [glTF-Validator](https://github.com/KhronosGroup/glTF-Validator) ([bghgary](http://www.github.com/bghgary))
-- Added automatically renormalizes skinweights when loading geometry. Calls core mesh functions to do this ([Bolloxim](https://github.com/Bolloxim))
 
 ### glTF Serializer
 - Added support for exporting the scale, rotation and offset texture properties ([kcoley](http://www.github.com/kcoley))
@@ -205,7 +204,7 @@
 - Spring Joint could not be removed ([TrevorDev](https://github.com/TrevorDev))
 - Sometimes duplicate controller models are loaded in VR ([TrevorDev](https://github.com/TrevorDev))
 - Particle emit rate and start size over time do not reset on every particle system start ([TrevorDev](https://github.com/TrevorDev))
-- SSAO2 now correctly takes diffuse texture alpha value into account. ([CraigFeldspar](https://github.com/CraigFeldspar))
+- SSAO2 now correctly takes diffuse texture alpha value into account ([CraigFeldspar](https://github.com/CraigFeldspar))
 
 ### Core Engine
 
@@ -223,6 +222,7 @@
 - Improving visual quality on SSAO2 shader ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Fixed a bug where changing the sample count on `PostProcess` would not update the WebGL Texture ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Fixed multi camera support in defaultRenderingPipeline depth of field ([sebavan](http://www.github.com/sebavan))
+- Added a new NaturalPinchZoom for the ArcRotateCamera, which adds a new pinch type that is based on the camera and pinch distance. ([rwedoff](https://github.com/rwedoff))
 
 ### Viewer
 

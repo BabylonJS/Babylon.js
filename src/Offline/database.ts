@@ -25,7 +25,7 @@ export class Database implements IOfflineProvider {
     private _isSupported: boolean;
 
     // Handling various flavors of prefixed version of IndexedDB
-    private _idbFactory = <IDBFactory>(window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB);
+    private _idbFactory = <IDBFactory>(typeof window !== "undefined" ? window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB : indexedDB);
 
     /** Gets a boolean indicating if the user agent supports blob storage (this value will be updated after creating the first Database object) */
     private static IsUASupportingBlobStorage = true;
@@ -389,7 +389,7 @@ export class Database implements IOfflineProvider {
             }
         }
         else {
-            Logger.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
+            Logger.Error("Error: IndexedDB not supported by your browser or Babylon.js database is not open.");
             image.src = url;
         }
     }
@@ -446,7 +446,7 @@ export class Database implements IOfflineProvider {
             }
         }
         else {
-            Logger.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
+            Logger.Error("Error: IndexedDB not supported by your browser or Babylon.js database is not open.");
             callback(-1);
         }
     }
@@ -660,7 +660,7 @@ export class Database implements IOfflineProvider {
             xhr.send();
         }
         else {
-            Logger.Error("Error: IndexedDB not supported by your browser or Babylon.js Database is not open.");
+            Logger.Error("Error: IndexedDB not supported by your browser or Babylon.js database is not open.");
             callback();
         }
     }

@@ -1,11 +1,11 @@
 import { PanoramaToCubeMapTools } from '../../Misc/HighDynamicRange/panoramaToCubemap';
-import { Engine } from "../../Engines/engine";
 import { BaseTexture } from './baseTexture';
 import { Texture } from './texture';
 import { Scene } from "../../scene";
 import { Nullable } from "../../types";
 import { Tools } from '../../Misc/tools';
 import "../../Engines/Extensions/engine.rawTexture";
+import { Constants } from '../../Engines/constants';
 
 /**
  * This represents a texture coming from an equirectangular image supported by the web browser canvas.
@@ -79,7 +79,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
             if (!scene.useDelayedTextureLoading) {
                 this.loadImage(this.loadTexture.bind(this), this._onError);
             } else {
-                this.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
+                this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
             }
         } else if (onLoad) {
             if (this._texture.isReady) {
@@ -151,10 +151,10 @@ export class EquiRectangularCubeTexture extends BaseTexture {
                 this.url,
                 scene,
                 this._size,
-                Engine.TEXTUREFORMAT_RGB,
+                Constants.TEXTUREFORMAT_RGB,
                 scene.getEngine().getCaps().textureFloat
-                    ? Engine.TEXTURETYPE_FLOAT
-                    : Engine.TEXTURETYPE_UNSIGNED_INTEGER,
+                    ? Constants.TEXTURETYPE_FLOAT
+                    : Constants.TEXTURETYPE_UNSIGNED_INTEGER,
                 this._noMipmap,
                 callback,
                 null,

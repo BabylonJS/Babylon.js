@@ -1,4 +1,4 @@
-import { Vector2 } from "babylonjs/Maths/math";
+import { Vector2 } from "babylonjs/Maths/math.vector";
 import { BaseSlider } from "./baseSlider";
 import { Control } from "../control";
 import { Measure } from "../../measure";
@@ -9,7 +9,7 @@ import { Measure } from "../../measure";
 export class ScrollBar extends BaseSlider {
     private _background = "black";
     private _borderColor = "white";
-    private _thumbMeasure = new Measure(0, 0, 0, 0);
+    private _tempMeasure = new Measure(0, 0, 0, 0);
 
     /** Gets or sets border color */
     public get borderColor(): string {
@@ -79,19 +79,19 @@ export class ScrollBar extends BaseSlider {
 
         // Thumb
         if (this.isVertical) {
-            this._thumbMeasure.left = left - this._effectiveBarOffset;
-            this._thumbMeasure.top = this._currentMeasure.top + thumbPosition;
-            this._thumbMeasure.width = this._currentMeasure.width;
-            this._thumbMeasure.height = this._effectiveThumbThickness;
+            this._tempMeasure.left = left - this._effectiveBarOffset;
+            this._tempMeasure.top = this._currentMeasure.top + thumbPosition;
+            this._tempMeasure.width = this._currentMeasure.width;
+            this._tempMeasure.height = this._effectiveThumbThickness;
         }
         else {
-            this._thumbMeasure.left = this._currentMeasure.left + thumbPosition;
-            this._thumbMeasure.top = this._currentMeasure.top;
-            this._thumbMeasure.width = this._effectiveThumbThickness;
-            this._thumbMeasure.height = this._currentMeasure.height;
+            this._tempMeasure.left = this._currentMeasure.left + thumbPosition;
+            this._tempMeasure.top = this._currentMeasure.top;
+            this._tempMeasure.width = this._effectiveThumbThickness;
+            this._tempMeasure.height = this._currentMeasure.height;
         }
 
-        context.fillRect(this._thumbMeasure.left, this._thumbMeasure.top, this._thumbMeasure.width, this._thumbMeasure.height);
+        context.fillRect(this._tempMeasure.left, this._tempMeasure.top, this._tempMeasure.width, this._tempMeasure.height);
 
         context.restore();
     }
@@ -114,7 +114,7 @@ export class ScrollBar extends BaseSlider {
             this._originY = y;
 
             // Check if move is required
-            if (x < this._thumbMeasure.left || x > this._thumbMeasure.left + this._thumbMeasure.width || y < this._thumbMeasure.top || y > this._thumbMeasure.top + this._thumbMeasure.height) {
+            if (x < this._tempMeasure.left || x > this._tempMeasure.left + this._tempMeasure.width || y < this._tempMeasure.top || y > this._tempMeasure.top + this._tempMeasure.height) {
                 if (this.isVertical) {
                     this.value = this.minimum + (1 - ((y - this._currentMeasure.top) / this._currentMeasure.height)) * (this.maximum - this.minimum);
                 }

@@ -1,10 +1,24 @@
 import { Nullable } from "../../types";
 import { Engine, IDisplayChangedEventArgs } from "../../Engines/engine";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { Size } from '../../Maths/math.size';
 import { Observable } from '../../Misc/observable';
 import { Tools } from '../../Misc/tools';
 import { DomManagement } from '../../Misc/domManagement';
+import { WebVROptions } from '../../Cameras/VR/webVRCamera';
+
+/**
+ * Interface used to define additional presentation attributes
+ */
+export interface IVRPresentationAttributes {
+    /**
+     * Defines a boolean indicating that we want to get 72hz mode on Oculus Browser (default is off eg. 60hz)
+     */
+    highRefreshRate: boolean;
+    /**
+     * Enables foveation in VR to improve perf. 0 none, 1 low, 2 medium, 3 high (Default is 1)
+     */
+    foveationLevel: number;
+}
 
 declare module "../../Engines/engine" {
     export interface Engine {
@@ -75,11 +89,17 @@ declare module "../../Engines/engine" {
         _getVRDisplaysAsync(): Promise<IDisplayChangedEventArgs>;
 
         /**
+         * Gets or sets the presentation attributes used to configure VR rendering
+         */
+        vrPresentationAttributes?: IVRPresentationAttributes;
+
+        /**
          * Call this function to switch to webVR mode
          * Will do nothing if webVR is not supported or if there is no webVR device
+         * @param options the webvr options provided to the camera. mainly used for multiview
          * @see http://doc.babylonjs.com/how_to/webvr_camera
          */
-        enableVR(): void;
+        enableVR(options: WebVROptions): void;
 
         /** @hidden */
         _onVRFullScreenTriggered(): void;
@@ -133,16 +153,18 @@ Engine.prototype.initWebVRAsync = function(): Promise<IDisplayChangedEventArgs> 
         this._onVrDisplayDisconnect = () => {
             this._vrDisplay.cancelAnimationFrame(this._frameHandler);
             this._vrDisplay = undefined;
-            this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction);
+            this._frameHandler = Engine.QueueNewFrame(this._boundRenderFunction);
             notifyObservers();
         };
         this._onVrDisplayPresentChange = () => {
             this._vrExclusivePointerMode = this._vrDisplay && this._vrDisplay.isPresenting;
         };
         let hostWindow = this.getHostWindow();
-        hostWindow.addEventListener('vrdisplayconnect', this._onVrDisplayConnect);
-        hostWindow.addEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
-        hostWindow.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
+        if (hostWindow) {
+            hostWindow.addEventListener('vrdisplayconnect', this._onVrDisplayConnect);
+            hostWindow.addEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
+            hostWindow.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
+        }
     }
     this._webVRInitPromise = this._webVRInitPromise || this._getVRDisplaysAsync();
     this._webVRInitPromise.then(notifyObservers);
@@ -173,7 +195,7 @@ Engine.prototype._getVRDisplaysAsync = function(): Promise<IDisplayChangedEventA
     });
 };
 
-Engine.prototype.enableVR = function() {
+Engine.prototype.enableVR = function(options: WebVROptions) {
     if (this._vrDisplay && !this._vrDisplay.isPresenting) {
         var onResolved = () => {
             this.onVRRequestPresentComplete.notifyObservers(true);
@@ -184,7 +206,18 @@ Engine.prototype.enableVR = function() {
         };
 
         this.onVRRequestPresentStart.notifyObservers(this);
-        this._vrDisplay.requestPresent([{ source: this.getRenderingCanvas() }]).then(onResolved).catch(onRejected);
+
+        var presentationAttributes = {
+            highRefreshRate: this.vrPresentationAttributes ? this.vrPresentationAttributes.highRefreshRate : false,
+            foveationLevel: this.vrPresentationAttributes ? this.vrPresentationAttributes.foveationLevel : 1,
+            multiview: (this.getCaps().multiview || this.getCaps().oculusMultiview) && options.useMultiview
+        };
+
+        this._vrDisplay.requestPresent([{
+            source: this.getRenderingCanvas(),
+            attributes: presentationAttributes,
+            ...presentationAttributes
+        }]).then(onResolved).catch(onRejected);
     }
 };
 
@@ -230,7 +263,7 @@ Engine.prototype.disableVR = function() {
     }
 };
 
-Engine.prototype._connectVREvents = function(canvas: HTMLCanvasElement, document: any) {
+Engine.prototype._connectVREvents = function(canvas?: HTMLCanvasElement, document?: any) {
     this._onVRDisplayPointerRestricted = () => {
         if (canvas) {
             canvas.requestPointerLock();
@@ -238,6 +271,14 @@ Engine.prototype._connectVREvents = function(canvas: HTMLCanvasElement, document
     };
 
     this._onVRDisplayPointerUnrestricted = () => {
+        // Edge fix - for some reason document is not present and this is window
+        if (!document) {
+            let hostWindow = this.getHostWindow()!;
+            if (hostWindow.document && hostWindow.document.exitPointerLock) {
+                hostWindow.document.exitPointerLock();
+            }
+            return;
+        }
         if (!document.exitPointerLock) {
             return;
         }
@@ -245,8 +286,7 @@ Engine.prototype._connectVREvents = function(canvas: HTMLCanvasElement, document
     };
 
     if (DomManagement.IsWindowObjectExist()) {
-        let hostWindow = this.getHostWindow();
-
+        let hostWindow = this.getHostWindow()!;
         hostWindow.addEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted, false);
         hostWindow.addEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted, false);
     }
@@ -269,5 +309,5 @@ Engine.prototype.isVRPresenting = function() {
 };
 
 Engine.prototype._requestVRFrame = function() {
-    this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction, this._vrDisplay);
+    this._frameHandler = Engine.QueueNewFrame(this._boundRenderFunction, this._vrDisplay);
 };

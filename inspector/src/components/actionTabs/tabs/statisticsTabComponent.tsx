@@ -86,17 +86,17 @@ export class StatisticsTabComponent extends PaneComponent {
                     <TextLineComponent label="Total textures" value={scene.textures.length.toString()} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="FRAME STEPS DURATION">
-                    <ValueLineComponent label="Absolute FPS" value={1000.0 / this._sceneInstrumentation!.frameTimeCounter.current} fractionDigits={0} />
-                    <ValueLineComponent label="Meshes selection" value={sceneInstrumentation.activeMeshesEvaluationTimeCounter.current} units="ms" />
-                    <ValueLineComponent label="Render targets" value={sceneInstrumentation.renderTargetsRenderTimeCounter.current} units="ms" />
-                    <ValueLineComponent label="Particles" value={sceneInstrumentation.particlesRenderTimeCounter.current} units="ms" />
-                    <ValueLineComponent label="Sprites" value={sceneInstrumentation.spritesRenderTimeCounter.current} units="ms" />
-                    <ValueLineComponent label="Animations" value={sceneInstrumentation.animationsTimeCounter.current} units="ms" />
-                    <ValueLineComponent label="Physics" value={sceneInstrumentation.physicsTimeCounter.current} units="ms" />
-                    <ValueLineComponent label="Render" value={sceneInstrumentation.renderTimeCounter.current} units="ms" />
-                    <ValueLineComponent label="Frame total" value={sceneInstrumentation.frameTimeCounter.current} units="ms" />
-                    <ValueLineComponent label="Inter-frame" value={sceneInstrumentation.interFrameTimeCounter.current} units="ms" />
-                    <ValueLineComponent label="GPU Frame time" value={engineInstrumentation.gpuFrameTimeCounter.current * 0.000001} units="ms" />
+                    <ValueLineComponent label="Absolute FPS" value={1000.0 / this._sceneInstrumentation!.frameTimeCounter.lastSecAverage} fractionDigits={0} />
+                    <ValueLineComponent label="Meshes selection" value={sceneInstrumentation.activeMeshesEvaluationTimeCounter.lastSecAverage} units="ms" />
+                    <ValueLineComponent label="Render targets" value={sceneInstrumentation.renderTargetsRenderTimeCounter.lastSecAverage} units="ms" />
+                    <ValueLineComponent label="Particles" value={sceneInstrumentation.particlesRenderTimeCounter.lastSecAverage} units="ms" />
+                    <ValueLineComponent label="Sprites" value={sceneInstrumentation.spritesRenderTimeCounter.lastSecAverage} units="ms" />
+                    <ValueLineComponent label="Animations" value={sceneInstrumentation.animationsTimeCounter.lastSecAverage} units="ms" />
+                    <ValueLineComponent label="Physics" value={sceneInstrumentation.physicsTimeCounter.lastSecAverage} units="ms" />
+                    <ValueLineComponent label="Render" value={sceneInstrumentation.renderTimeCounter.lastSecAverage} units="ms" />
+                    <ValueLineComponent label="Frame total" value={sceneInstrumentation.frameTimeCounter.lastSecAverage} units="ms" />
+                    <ValueLineComponent label="Inter-frame" value={sceneInstrumentation.interFrameTimeCounter.lastSecAverage} units="ms" />
+                    <ValueLineComponent label="GPU Frame time" value={engineInstrumentation.gpuFrameTimeCounter.lastSecAverage * 0.000001} units="ms" />
                     <ValueLineComponent label="GPU Frame time (average)" value={engineInstrumentation.gpuFrameTimeCounter.average * 0.000001} units="ms" />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="SYSTEM INFO">

@@ -4,7 +4,6 @@ import { Nullable } from "../types";
 import { IDisposable } from "../scene";
 import { Engine } from "../Engines/engine";
 import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 /**
  * This class can be used to get instrumentation data from a Babylon engine
  * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation

@@ -1,6 +1,7 @@
 import { Container } from "./container";
 import { Control } from "./control";
 import { Measure } from "../measure";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /** Class used to create 2D ellipse containers */
 export class Ellipse extends Container {
@@ -85,3 +86,4 @@ export class Ellipse extends Container {
         context.clip();
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.Ellipse"] = Ellipse;

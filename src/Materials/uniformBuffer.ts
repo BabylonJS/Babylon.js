@@ -7,6 +7,9 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { Color3 } from '../Maths/math.color';
 import { IMatrixLike } from '../Maths/math.like';
+
+import "../Engines/Extensions/engine.uniformBuffer";
+
 /**
  * Uniform buffer objects.
  *
@@ -29,6 +32,9 @@ export class UniformBuffer {
     private _needSync: boolean;
     private _noUBO: boolean;
     private _currentEffect: Effect;
+
+    /** @hidden */
+    public _alreadyBound = false;
 
     // Pool for avoiding memory leaks
     private static _MAX_UNIFORM_SIZE = 256;
@@ -629,6 +635,7 @@ export class UniformBuffer {
             return;
         }
 
+        this._alreadyBound = true;
         effect.bindUniformBuffer(this._buffer, name);
     }
 

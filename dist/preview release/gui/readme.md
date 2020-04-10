@@ -27,7 +27,7 @@ If using TypeScript, the typing needs to be added to tsconfig.json:
     "types": [
         "babylonjs",
         "babylonjs-gui",
-        "angularFTW"
+        "otherImportsYouMightNeed"
     ],
     ....
 ```

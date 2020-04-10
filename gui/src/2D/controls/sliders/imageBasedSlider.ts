@@ -1,6 +1,8 @@
 import { BaseSlider } from "./baseSlider";
 import { Measure } from "../../measure";
 import { Image } from "../image";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { Nullable } from 'babylonjs/types';
 
 /**
  * Class used to create slider controls based on images
@@ -100,7 +102,7 @@ export class ImageBasedSlider extends BaseSlider {
         return "ImageBasedSlider";
     }
 
-    public _draw(context: CanvasRenderingContext2D): void {
+    public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void {
         context.save();
 
         this._applyStates(context);
@@ -161,3 +163,4 @@ export class ImageBasedSlider extends BaseSlider {
         context.restore();
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.ImageBasedSlider"] = ImageBasedSlider;

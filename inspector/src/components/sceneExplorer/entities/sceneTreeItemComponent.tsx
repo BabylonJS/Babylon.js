@@ -77,7 +77,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
         const scene = this.props.scene;
         this._onSelectionChangeObserver = this.props.onSelectionChangedObservable.add((entity) => {
             this._selectedEntity = entity;
-            if (scene.reservedDataStore && scene.reservedDataStore.gizmoManager) {
+            if (entity && scene.reservedDataStore && scene.reservedDataStore.gizmoManager) {
                 const manager: GizmoManager = scene.reservedDataStore.gizmoManager;
 
                 const className = entity.getClassName();
@@ -231,7 +231,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                         // Record movement for generating replay code
                         this._posDragEnd = manager.gizmos.positionGizmo!.onDragEndObservable.add(() => {
                             if (manager.gizmos.positionGizmo && manager.gizmos.positionGizmo.attachedMesh) {
-                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.positionGizmo.attachedMesh.reservedDataStore.lightGizmo;
+                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.positionGizmo.attachedMesh.reservedDataStore ? manager.gizmos.positionGizmo.attachedMesh.reservedDataStore.lightGizmo : null;
                                 var obj: any = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.positionGizmo.attachedMesh;
 
                                 if (obj.position) {
@@ -252,7 +252,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                         // Record movement for generating replay code
                         this._rotateDragEnd = manager.gizmos.rotationGizmo!.onDragEndObservable.add(() => {
                             if (manager.gizmos.rotationGizmo && manager.gizmos.rotationGizmo.attachedMesh) {
-                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.rotationGizmo.attachedMesh.reservedDataStore.lightGizmo;
+                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.rotationGizmo.attachedMesh.reservedDataStore ? manager.gizmos.rotationGizmo.attachedMesh.reservedDataStore.lightGizmo : null;
                                 var obj: any = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.rotationGizmo.attachedMesh;
 
                                 if (obj.rotationQuaternion) {
@@ -285,7 +285,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                         // Record movement for generating replay code
                         this._scaleDragEnd = manager.gizmos.scaleGizmo!.onDragEndObservable.add(() => {
                             if (manager.gizmos.scaleGizmo && manager.gizmos.scaleGizmo.attachedMesh) {
-                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.scaleGizmo.attachedMesh.reservedDataStore.lightGizmo;
+                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.scaleGizmo.attachedMesh.reservedDataStore ? manager.gizmos.scaleGizmo.attachedMesh.reservedDataStore.lightGizmo : null;
                                 var obj: any = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.scaleGizmo.attachedMesh;
 
                                 if (obj.scaling) {

@@ -52,7 +52,7 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
     private _gamma: number = 0;
 
     /**
-     * Can be used to detect if a device orientation sensor is availible on a device
+     * Can be used to detect if a device orientation sensor is available on a device
      * @param timeout amount of time in milliseconds to wait for a response from the sensor (default: infinite)
      * @returns a promise that will resolve on orientation change
      */
@@ -65,7 +65,7 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
                 res();
             };
 
-            // If timeout is pupulated reject the promise
+            // If timeout is populated reject the promise
             if (timeout) {
                 setTimeout(() => {
                     if (!gotValue) {
@@ -75,7 +75,21 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
                 }, timeout);
             }
 
-            window.addEventListener("deviceorientation", eventHandler);
+            if (typeof(DeviceOrientationEvent) !== "undefined" && typeof (<any>DeviceOrientationEvent).requestPermission === 'function') {
+                (<any>DeviceOrientationEvent).requestPermission()
+                    .then((response: string) => {
+                        if (response == 'granted') {
+                            window.addEventListener("deviceorientation", eventHandler);
+                        } else {
+                            Tools.Warn("Permission not granted.");
+                        }
+                    })
+                    .catch((error: any) => {
+                        Tools.Error(error);
+                    });
+            } else {
+                window.addEventListener("deviceorientation", eventHandler);
+            }
         });
     }
 
@@ -120,12 +134,31 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
 
         let hostWindow = this.camera.getScene().getEngine().getHostWindow();
 
-        hostWindow.addEventListener("orientationchange", this._orientationChanged);
-        hostWindow.addEventListener("deviceorientation", this._deviceOrientation);
+        if (hostWindow) {
 
-        //In certain cases, the attach control is called AFTER orientation was changed,
-        //So this is needed.
-        this._orientationChanged();
+            const eventHandler = () => {
+                hostWindow!.addEventListener("orientationchange", this._orientationChanged);
+                hostWindow!.addEventListener("deviceorientation", this._deviceOrientation);
+                //In certain cases, the attach control is called AFTER orientation was changed,
+                //So this is needed.
+                this._orientationChanged();
+            };
+            if (typeof(DeviceOrientationEvent) !== "undefined" && typeof (<any>DeviceOrientationEvent).requestPermission === 'function') {
+                (<any>DeviceOrientationEvent).requestPermission()
+                    .then((response: string) => {
+                        if (response === 'granted') {
+                            eventHandler();
+                        } else {
+                            Tools.Warn("Permission not granted.");
+                        }
+                    })
+                    .catch((error: any) => {
+                        Tools.Error(error);
+                    });
+            } else {
+                eventHandler();
+            }
+        }
     }
 
     private _orientationChanged = () => {

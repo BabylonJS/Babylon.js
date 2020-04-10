@@ -7,10 +7,10 @@ import { Color4 } from '../../Maths/math.color';
 import { Mesh } from '../../Meshes/mesh';
 import { Engine } from '../../Engines/engine';
 import { NodeMaterialBuildState } from './nodeMaterialBuildState';
-import { EffectCreationOptions, EffectFallbacks } from '../effect';
+import { IEffectCreationOptions } from '../effect';
 import { BaseTexture } from '../../Materials/Textures/baseTexture';
 import { Observable, Observer } from '../../Misc/observable';
-import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
+import { NodeMaterialBlockTargets } from './Enums/nodeMaterialBlockTargets';
 import { NodeMaterialBuildStateSharedData } from './nodeMaterialBuildStateSharedData';
 import { SubMesh } from '../../Meshes/subMesh';
 import { MaterialDefines } from '../../Materials/materialDefines';
@@ -27,7 +27,11 @@ import { _TypeStore } from '../../Misc/typeStore';
 import { SerializationHelper } from '../../Misc/decorators';
 import { TextureBlock } from './Blocks/Dual/textureBlock';
 import { ReflectionTextureBlock } from './Blocks/Dual/reflectionTextureBlock';
-import { FileTools } from '../../Misc/fileTools';
+import { EffectFallbacks } from '../effectFallbacks';
+import { WebRequest } from '../../Misc/webRequest';
+import { Effect } from '../effect';
+
+const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
 // declare NODEEDITOR namespace for compilation issue
 declare var NODEEDITOR: any;
@@ -43,6 +47,10 @@ export interface INodeMaterialEditorOptions {
 
 /** @hidden */
 export class NodeMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
+    public NORMAL = false;
+    public TANGENT = false;
+    public UV1 = false;
+
     /** BONES */
     public NUM_BONE_INFLUENCERS = 0;
     public BonesPerMesh = 0;
@@ -70,6 +78,9 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public SAMPLER3DGREENDEPTH = false;
     public SAMPLER3DBGRMAP = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
+
+    /** MISC. */
+    public BUMPDIRECTUV = 0;
 
     constructor() {
         super();
@@ -111,8 +122,14 @@ export class NodeMaterial extends PushMaterial {
     private _optimizers = new Array<NodeMaterialOptimizer>();
     private _animationFrame = -1;
 
-    /** Define the URl to load node editor script */
+    /** Define the Url to load node editor script */
     public static EditorURL = `https://unpkg.com/babylonjs-node-editor@${Engine.Version}/babylon.nodeEditor.js`;
+
+    /** Define the Url to load snippets */
+    public static SnippetUrl = "https://snippet.babylonjs.com";
+
+    /** Gets or sets a boolean indicating that node materials should not deserialize textures from json / snippet content */
+    public static IgnoreTexturesAtLoadTime = false;
 
     private BJSNODEMATERIALEDITOR = this._getGlobalNodeMaterialEditor();
 
@@ -130,6 +147,17 @@ export class NodeMaterial extends PushMaterial {
 
         return undefined;
     }
+
+    /**
+     * Snippet ID if the material was created from the snippet server
+     */
+    public snippetId: string;
+
+    /**
+     * Gets or sets data used by visual editor
+     * @see https://nme.babylonjs.com
+     */
+    public editorData: any = null;
 
     /**
      * Gets or sets a boolean indicating that alpha value must be ignored (This will turn alpha blending off even if an alpha value is produced by the material)
@@ -261,13 +289,19 @@ export class NodeMaterial extends PushMaterial {
      * @returns the required block or null if not found
      */
     public getBlockByName(name: string) {
+        let result = null;
         for (var block of this.attachedBlocks) {
             if (block.name === name) {
-                return block;
+                if (!result) {
+                    result = block;
+                } else {
+                    Tools.Warn("More than one block was found with the name `" + name + "`");
+                    return result;
+                }
             }
         }
 
-        return null;
+        return result;
     }
 
     /**
@@ -460,13 +494,20 @@ export class NodeMaterial extends PushMaterial {
         node._preparationId = this._buildId;
 
         if (this.attachedBlocks.indexOf(node) === -1) {
+            if (node.isUnique) {
+                const className = node.getClassName();
+
+                for (var other of this.attachedBlocks) {
+                    if (other.getClassName() === className) {
+                        throw `Cannot have multiple blocks of type ${className} in the same NodeMaterial`;
+                    }
+                }
+            }
             this.attachedBlocks.push(node);
         }
 
         for (var input of node.inputs) {
-            if (!node.isInput) {
-                input.associatedVariableName = "";
-            }
+            input.associatedVariableName = "";
 
             let connectedPoint = input.connectedPoint;
             if (connectedPoint) {
@@ -506,6 +547,21 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Remove a block from the current node material
+     * @param block defines the block to remove
+     */
+    public removeBlock(block: NodeMaterialBlock) {
+        let attachedBlockIndex = this.attachedBlocks.indexOf(block);
+        if (attachedBlockIndex > -1) {
+            this.attachedBlocks.splice(attachedBlockIndex, 1);
+        }
+
+        if (block.isFinalMerger) {
+            this.removeOutputNode(block);
+        }
+    }
+
+    /**
      * Build the material and generates the inner effect
      * @param verbose defines if the build should log activity
      */
@@ -536,6 +592,7 @@ export class NodeMaterial extends PushMaterial {
         this._sharedData.buildId = this._buildId;
         this._sharedData.emitComments = this._options.emitComments;
         this._sharedData.verbose = verbose;
+        this._sharedData.scene = this.getScene();
 
         // Initialize blocks
         let vertexNodes: NodeMaterialBlock[] = [];
@@ -562,6 +619,7 @@ export class NodeMaterial extends PushMaterial {
         // Fragment
         this._fragmentCompilationState.uniforms = this._vertexCompilationState.uniforms.slice(0);
         this._fragmentCompilationState._uniformDeclaration = this._vertexCompilationState._uniformDeclaration;
+        this._fragmentCompilationState._constantDeclaration = this._vertexCompilationState._constantDeclaration;
         this._fragmentCompilationState._vertexState = this._vertexCompilationState;
 
         for (var fragmentOutputNode of fragmentNodes) {
@@ -623,15 +681,19 @@ export class NodeMaterial extends PushMaterial {
     }
 
     private _prepareDefinesForAttributes(mesh: AbstractMesh, defines: NodeMaterialDefines) {
-        if (!defines._areAttributesDirty) {
-            return;
-        }
+        let oldNormal = defines["NORMAL"];
+        let oldTangent = defines["TANGENT"];
+        let oldUV1 = defines["UV1"];
 
         defines["NORMAL"] = mesh.isVerticesDataPresent(VertexBuffer.NormalKind);
 
         defines["TANGENT"] = mesh.isVerticesDataPresent(VertexBuffer.TangentKind);
 
         defines["UV1"] = mesh.isVerticesDataPresent(VertexBuffer.UVKind);
+
+        if (oldNormal !== defines["NORMAL"] || oldTangent !== defines["TANGENT"] || oldUV1 !== defines["UV1"]) {
+            defines.markAsAttributesDirty();
+        }
     }
 
     /**
@@ -661,7 +723,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         if (subMesh.effect && this.isFrozen) {
-            if (this._wasPreviouslyReady) {
+            if (subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -671,10 +733,8 @@ export class NodeMaterial extends PushMaterial {
         }
 
         var defines = <NodeMaterialDefines>subMesh._materialDefines;
-        if (!this.checkReadyOnEveryCall && subMesh.effect) {
-            if (defines._renderId === scene.getRenderId()) {
-                return true;
-            }
+        if (this._isReadyForSubMesh(subMesh)) {
+            return true;
         }
 
         var engine = scene.getEngine();
@@ -708,8 +768,9 @@ export class NodeMaterial extends PushMaterial {
             });
 
             // Uniforms
+            let uniformBuffers: string[] = [];
             this._sharedData.dynamicUniformBlocks.forEach((b) => {
-                b.updateUniformsAndSamples(this._vertexCompilationState, this, defines);
+                b.updateUniformsAndSamples(this._vertexCompilationState, this, defines, uniformBuffers);
             });
 
             let mergedUniforms = this._vertexCompilationState.uniforms;
@@ -719,17 +780,6 @@ export class NodeMaterial extends PushMaterial {
 
                 if (index === -1) {
                     mergedUniforms.push(u);
-                }
-            });
-
-            // Uniform buffers
-            let mergedUniformBuffers = this._vertexCompilationState.uniformBuffers;
-
-            this._fragmentCompilationState.uniformBuffers.forEach((u) => {
-                let index = mergedUniformBuffers.indexOf(u);
-
-                if (index === -1) {
-                    mergedUniformBuffers.push(u);
                 }
             });
 
@@ -758,10 +808,10 @@ export class NodeMaterial extends PushMaterial {
                 fragment: "nodeMaterial" + this._buildId,
                 vertexSource: this._vertexCompilationState.compilationString,
                 fragmentSource: this._fragmentCompilationState.compilationString
-            }, <EffectCreationOptions>{
+            }, <IEffectCreationOptions>{
                 attributes: this._vertexCompilationState.attributes,
                 uniformsNames: mergedUniforms,
-                uniformBuffersNames: mergedUniformBuffers,
+                uniformBuffersNames: uniformBuffers,
                 samplers: mergedSamplers,
                 defines: join,
                 fallbacks: fallbacks,
@@ -771,6 +821,12 @@ export class NodeMaterial extends PushMaterial {
             }, engine);
 
             if (effect) {
+                if (this._onEffectCreatedObservable) {
+                    onCreatedEffectParameters.effect = effect;
+                    onCreatedEffectParameters.subMesh = subMesh;
+                    this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
+                }
+
                 // Use previous effect while new one is compiling
                 if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
                     effect = previousEffect;
@@ -787,7 +843,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         defines._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
 
         return true;
     }
@@ -847,7 +903,7 @@ export class NodeMaterial extends PushMaterial {
 
         if (mustRebind) {
             let sharedData = this._sharedData;
-            if (effect && scene.getCachedMaterial() !== this) {
+            if (effect && scene.getCachedEffect() !== effect) {
                 // Bindable blocks
                 for (var block of sharedData.bindableBlocks) {
                     block.bind(effect, this, mesh);
@@ -870,7 +926,9 @@ export class NodeMaterial extends PushMaterial {
     public getActiveTextures(): BaseTexture[] {
         var activeTextures = super.getActiveTextures();
 
-        activeTextures.push(...this._sharedData.textureBlocks.filter((tb) => tb.texture).map((tb) => tb.texture!));
+        if (this._sharedData) {
+            activeTextures.push(...this._sharedData.textureBlocks.filter((tb) => tb.texture).map((tb) => tb.texture!));
+        }
 
         return activeTextures;
     }
@@ -884,7 +942,7 @@ export class NodeMaterial extends PushMaterial {
             return [];
         }
 
-        return this._sharedData.textureBlocks.filter((tb) => tb.texture);
+        return this._sharedData.textureBlocks;
     }
 
     /**
@@ -922,6 +980,10 @@ export class NodeMaterial extends PushMaterial {
             for (var texture of this._sharedData.textureBlocks.filter((tb) => tb.texture).map((tb) => tb.texture!)) {
                 texture.dispose();
             }
+        }
+
+        for (var block of this.attachedBlocks) {
+            block.dispose();
         }
 
         this.onBuildObservable.clear();
@@ -976,31 +1038,33 @@ export class NodeMaterial extends PushMaterial {
     public setToDefault() {
         this.clear();
 
-        var positionInput = new InputBlock("position");
+        this.editorData = null;
+
+        var positionInput = new InputBlock("Position");
         positionInput.setAsAttribute("position");
 
-        var worldInput = new InputBlock("world");
+        var worldInput = new InputBlock("World");
         worldInput.setAsSystemValue(BABYLON.NodeMaterialSystemValues.World);
 
-        var worldPos = new TransformBlock("worldPos");
+        var worldPos = new TransformBlock("WorldPos");
         positionInput.connectTo(worldPos);
         worldInput.connectTo(worldPos);
 
-        var viewProjectionInput = new InputBlock("viewProjection");
+        var viewProjectionInput = new InputBlock("ViewProjection");
         viewProjectionInput.setAsSystemValue(BABYLON.NodeMaterialSystemValues.ViewProjection);
 
-        var worldPosdMultipliedByViewProjection = new TransformBlock("worldPos * viewProjectionTransform");
+        var worldPosdMultipliedByViewProjection = new TransformBlock("WorldPos * ViewProjectionTransform");
         worldPos.connectTo(worldPosdMultipliedByViewProjection);
         viewProjectionInput.connectTo(worldPosdMultipliedByViewProjection);
 
-        var vertexOutput = new VertexOutputBlock("vertexOutput");
+        var vertexOutput = new VertexOutputBlock("VertexOutput");
         worldPosdMultipliedByViewProjection.connectTo(vertexOutput);
 
         // Pixel
         var pixelColor = new InputBlock("color");
         pixelColor.value = new Color4(0.8, 0.8, 0.8, 1);
 
-        var fragmentOutput = new FragmentOutputBlock("fragmentOutput");
+        var fragmentOutput = new FragmentOutputBlock("FragmentOutput");
         pixelColor.connectTo(fragmentOutput);
 
         // Add to nodes
@@ -1014,16 +1078,9 @@ export class NodeMaterial extends PushMaterial {
      * @returns a promise that will fullfil when the material is fully loaded
      */
     public loadAsync(url: string) {
-        return new Promise((resolve, reject) => {
-            FileTools.LoadFile(url, (data) => {
-                let serializationObject = JSON.parse(data as string);
-
-                this.loadFromSerialization(serializationObject, "");
-
-                resolve();
-            }, undefined, undefined, false, (request, exception) => {
-                reject(exception.message);
-            });
+        return this.getScene()._loadFileAsync(url).then((data) => {
+            const serializationObject = JSON.parse(data as string);
+            this.loadFromSerialization(serializationObject, "");
         });
     }
 
@@ -1065,7 +1122,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         // Generate vertex shader
-        let codeString = "var nodeMaterial = new BABYLON.NodeMaterial(`node material`);\r\n";
+        let codeString = `var nodeMaterial = new BABYLON.NodeMaterial("${this.name || "node material"}");\r\n`;
         for (var node of vertexBlocks) {
             if (node.isInput && alreadyDumped.indexOf(node) === -1) {
                 codeString += node._dumpCode(uniqueNames, alreadyDumped);
@@ -1079,6 +1136,18 @@ export class NodeMaterial extends PushMaterial {
             }
         }
 
+        // Connections
+        alreadyDumped = [];
+        codeString += "\r\n// Connections\r\n";
+        for (var node of this._vertexOutputNodes) {
+            codeString += node._dumpCodeForOutputConnections(alreadyDumped);
+        }
+        for (var node of this._fragmentOutputNodes) {
+            codeString += node._dumpCodeForOutputConnections(alreadyDumped);
+        }
+
+        // Output nodes
+        codeString += "\r\n// Output nodes\r\n";
         for (var node of this._vertexOutputNodes) {
             codeString += `nodeMaterial.addOutputNode(${node._codeVariableName});\r\n`;
         }
@@ -1096,25 +1165,30 @@ export class NodeMaterial extends PushMaterial {
      * Serializes this material in a JSON representation
      * @returns the serialized material object
      */
-    public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this);
-        serializationObject.customType = "BABYLON.NodeMaterial";
-
-        serializationObject.outputNodes = [];
+    public serialize(selectedBlocks?: NodeMaterialBlock[]): any {
+        var serializationObject = selectedBlocks ? {} : SerializationHelper.Serialize(this);
+        serializationObject.editorData = JSON.parse(JSON.stringify(this.editorData)); // Copy
 
         let blocks: NodeMaterialBlock[] = [];
 
-        // Outputs
-        for (var outputNode of this._vertexOutputNodes) {
-            this._gatherBlocks(outputNode, blocks);
-            serializationObject.outputNodes.push(outputNode.uniqueId);
-        }
+        if (selectedBlocks) {
+            blocks = selectedBlocks;
+        } else {
+            serializationObject.customType = "BABYLON.NodeMaterial";
+            serializationObject.outputNodes = [];
 
-        for (var outputNode of this._fragmentOutputNodes) {
-            this._gatherBlocks(outputNode, blocks);
-
-            if (serializationObject.outputNodes.indexOf(outputNode.uniqueId) === -1) {
+            // Outputs
+            for (var outputNode of this._vertexOutputNodes) {
+                this._gatherBlocks(outputNode, blocks);
                 serializationObject.outputNodes.push(outputNode.uniqueId);
+            }
+
+            for (var outputNode of this._fragmentOutputNodes) {
+                this._gatherBlocks(outputNode, blocks);
+
+                if (serializationObject.outputNodes.indexOf(outputNode.uniqueId) === -1) {
+                    serializationObject.outputNodes.push(outputNode.uniqueId);
+                }
             }
         }
 
@@ -1125,11 +1199,13 @@ export class NodeMaterial extends PushMaterial {
             serializationObject.blocks.push(block.serialize());
         }
 
-        for (var block of this.attachedBlocks) {
-            if (blocks.indexOf(block) !== -1) {
-                continue;
+        if (!selectedBlocks) {
+            for (var block of this.attachedBlocks) {
+                if (blocks.indexOf(block) !== -1) {
+                    continue;
+                }
+                serializationObject.blocks.push(block.serialize());
             }
-            serializationObject.blocks.push(block.serialize());
         }
 
         return serializationObject;
@@ -1185,7 +1261,7 @@ export class NodeMaterial extends PushMaterial {
             let parsedBlock = source.blocks[blockIndex];
             let block = map[parsedBlock.id];
 
-            if (!block.isInput) {
+            if (block.inputs.length) {
                 continue;
             }
             this._restoreConnections(block, source, map);
@@ -1196,12 +1272,54 @@ export class NodeMaterial extends PushMaterial {
             this.addOutputNode(map[outputNodeId]);
         }
 
-        // Store map for external uses
-        source.map = {};
+        // UI related info
+        if (source.locations || source.editorData && source.editorData.locations) {
+            let locations: {
+                blockId: number;
+                x: number;
+                y: number;
+            }[] = source.locations || source.editorData.locations;
 
-        for (var key in map) {
-            source.map[key] = map[key].uniqueId;
+            for (var location of locations) {
+                if (map[location.blockId]) {
+                    location.blockId = map[location.blockId].uniqueId;
+                }
+            }
+
+            if (source.locations) {
+                this.editorData = {
+                    locations: locations
+                };
+            } else {
+                this.editorData = source.editorData;
+                this.editorData.locations = locations;
+            }
+
+            let blockMap: number[] = [];
+
+            for (var key in map) {
+                blockMap[key] = map[key].uniqueId;
+            }
+
+            this.editorData.map = blockMap;
         }
+    }
+
+    /**
+     * Makes a duplicate of the current material.
+     * @param name - name to use for the new material.
+     */
+    public clone(name: string): NodeMaterial {
+        const serializationObject = this.serialize();
+
+        const clone = SerializationHelper.Clone(() => new NodeMaterial(name, this.getScene(), this.options), this);
+        clone.id = name;
+        clone.name = name;
+
+        clone.loadFromSerialization(serializationObject);
+        clone.build();
+
+        return clone;
     }
 
     /**
@@ -1215,8 +1333,65 @@ export class NodeMaterial extends PushMaterial {
         let nodeMaterial = SerializationHelper.Parse(() => new NodeMaterial(source.name, scene), source, scene, rootUrl);
 
         nodeMaterial.loadFromSerialization(source, rootUrl);
+        nodeMaterial.build();
 
         return nodeMaterial;
+    }
+
+    /**
+     * Creates a node material from a snippet saved in a remote file
+     * @param name defines the name of the material to create
+     * @param url defines the url to load from
+     * @param scene defines the hosting scene
+     * @returns a promise that will resolve to the new node material
+     */
+    public static ParseFromFileAsync(name: string, url: string, scene: Scene): Promise<NodeMaterial> {
+        var material = new NodeMaterial(name, scene);
+
+        return new Promise((resolve, reject) => {
+            return material.loadAsync(url).then(() => resolve(material)).catch(reject);
+        });
+    }
+
+    /**
+     * Creates a node material from a snippet saved by the node material editor
+     * @param snippetId defines the snippet to load
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @param nodeMaterial defines a node material to update (instead of creating a new one)
+     * @returns a promise that will resolve to the new node material
+     */
+    public static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = "", nodeMaterial?: NodeMaterial): Promise<NodeMaterial> {
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
+                        let serializationObject = JSON.parse(snippet.nodeMaterial);
+
+                        if (!nodeMaterial) {
+                            nodeMaterial = SerializationHelper.Parse(() => new NodeMaterial(snippetId, scene), serializationObject, scene, rootUrl);
+                        }
+
+                        nodeMaterial.loadFromSerialization(serializationObject);
+                        nodeMaterial.snippetId = snippetId;
+
+                        try {
+                            nodeMaterial.build(true);
+                            resolve(nodeMaterial);
+                        } catch (err) {
+                            reject(err);
+                        }
+                    } else {
+                        reject("Unable to load the snippet " + snippetId);
+                    }
+                }
+            });
+
+            request.open("GET", this.SnippetUrl + "/" + snippetId.replace("#", "/"));
+            request.send();
+        });
     }
 
     /**

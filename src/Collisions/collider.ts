@@ -70,6 +70,9 @@ var getLowestRoot: (a: number, b: number, c: number, maxR: number) => { root: nu
 
 /** @hidden */
 export class Collider {
+    // Implementation of the "Improved Collision detection and Response" algorithm proposed by Kasper Fauerby
+    // https://www.peroxide.dk/papers/collision/collision.pdf
+
     /** Define if a collision was found */
     public collisionFound: boolean;
 

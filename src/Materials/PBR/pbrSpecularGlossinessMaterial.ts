@@ -1,8 +1,6 @@
 import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsTexture } from "../../Misc/decorators";
 import { Scene } from "../../scene";
 import { Color3 } from "../../Maths/math.color";
-import { _TimeToken } from "../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { PBRBaseSimpleMaterial } from "./pbrBaseSimpleMaterial";
 import { _TypeStore } from '../../Misc/typeStore';
@@ -83,6 +81,7 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
         this.anisotropy.copyTo(clone.anisotropy);
         this.brdf.copyTo(clone.brdf);
         this.sheen.copyTo(clone.sheen);
+        this.subSurface.copyTo(clone.subSurface);
 
         return clone;
     }

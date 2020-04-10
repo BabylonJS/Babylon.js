@@ -9,7 +9,7 @@ import { _DevTools } from './devTools';
 import { WebRequest } from './webRequest';
 import { IFileRequest } from './fileRequest';
 import { EngineStore } from '../Engines/engineStore';
-import { FileTools } from './fileTools';
+import { FileTools, ReadFileError } from './fileTools';
 import { IOfflineProvider } from '../Offline/IOfflineProvider';
 import { PromisePolyfill } from './promise';
 import { TimingTools } from './timingTools';
@@ -71,7 +71,13 @@ export class Tools {
      * It can be a string if the expected behavior is identical in the entire app.
      * Or a callback to be able to set it per url or on a group of them (in case of Video source for instance)
      */
-    public static CorsBehavior: string | ((url: string | string[]) => string) = "anonymous";
+    public static get CorsBehavior(): string | ((url: string | string[]) => string) {
+        return FileTools.CorsBehavior;
+    }
+
+    public static set CorsBehavior(value: string | ((url: string | string[]) => string)) {
+        FileTools.CorsBehavior = value;
+    }
 
     /**
      * Gets or sets a global variable indicating if fallback texture must be used when a texture cannot be loaded
@@ -260,40 +266,6 @@ export class Tools {
     }
 
     /**
-     * Encode a buffer to a base64 string
-     * @param buffer defines the buffer to encode
-     * @returns the encoded string
-     */
-    public static EncodeArrayBufferTobase64(buffer: ArrayBuffer): string {
-        var keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-        var output = "";
-        var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
-        var i = 0;
-        var bytes = new Uint8Array(buffer);
-
-        while (i < bytes.length) {
-            chr1 = bytes[i++];
-            chr2 = i < bytes.length ? bytes[i++] : Number.NaN; // Not sure if the index
-            chr3 = i < bytes.length ? bytes[i++] : Number.NaN; // checks are needed here
-
-            enc1 = chr1 >> 2;
-            enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
-            enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
-            enc4 = chr3 & 63;
-
-            if (isNaN(chr2)) {
-                enc3 = enc4 = 64;
-            } else if (isNaN(chr3)) {
-                enc4 = 64;
-            }
-            output += keyStr.charAt(enc1) + keyStr.charAt(enc2) +
-                keyStr.charAt(enc3) + keyStr.charAt(enc4);
-        }
-
-        return "data:image/png;base64," + output;
-    }
-
-    /**
      * Returns an array if obj is not an array
      * @param obj defines the object to evaluate as an array
      * @param allowsNullUndefined defines a boolean indicating if obj is allowed to be null or undefined
@@ -360,14 +332,15 @@ export class Tools {
     * @param onLoad callback called when the image successfully loads
     * @param onError callback called when the image fails to load
     * @param offlineProvider offline provider for caching
+    * @param mimeType optional mime type
     * @returns the HTMLImageElement of the loaded image
     */
-    public static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>): HTMLImageElement {
-        return FileTools.LoadImage(input, onLoad, onError, offlineProvider);
+    public static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): Nullable<HTMLImageElement> {
+        return FileTools.LoadImage(input, onLoad, onError, offlineProvider, mimeType);
     }
 
     /**
-     * Loads a file
+     * Loads a file from a url
      * @param url url string, ArrayBuffer, or Blob to load
      * @param onSuccess callback called when the file successfully loads
      * @param onProgress callback called while file is loading (if the server supports this mode)
@@ -383,13 +356,14 @@ export class Tools {
     /**
      * Loads a file from a url
      * @param url the file url to load
-     * @returns a promise containing an ArrayBuffer corrisponding to the loaded file
+     * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
+     * @returns a promise containing an ArrayBuffer corresponding to the loaded file
      */
-    public static LoadFileAsync(url: string): Promise<ArrayBuffer> {
+    public static LoadFileAsync(url: string, useArrayBuffer: boolean = true): Promise<ArrayBuffer | string> {
         return new Promise((resolve, reject) => {
             FileTools.LoadFile(url, (data) => {
-                resolve(data as ArrayBuffer);
-            }, undefined, undefined, true, (request, exception) => {
+                resolve(data);
+            }, undefined, undefined, useArrayBuffer, (request, exception) => {
                 reject(exception);
             });
         });
@@ -437,29 +411,13 @@ export class Tools {
      * @param scriptId defines the id of the script element
      * @returns a promise request object
      */
-    public static LoadScriptAsync(scriptUrl: string, scriptId?: string): Promise<boolean> {
-        return new Promise<boolean>((resolve, reject) => {
-            if (!DomManagement.IsWindowObjectExist()) {
-                resolve(false);
-                return;
-            }
-            var head = document.getElementsByTagName('head')[0];
-            var script = document.createElement('script');
-            script.setAttribute('type', 'text/javascript');
-            script.setAttribute('src', scriptUrl);
-            if (scriptId) {
-                script.id = scriptId;
-            }
-
-            script.onload = () => {
-                resolve(true);
-            };
-
-            script.onerror = (e) => {
-                resolve(false);
-            };
-
-            head.appendChild(script);
+    public static LoadScriptAsync(scriptUrl: string, scriptId?: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            this.LoadScript(scriptUrl, () => {
+                resolve();
+            }, (message, exception) => {
+                reject(exception);
+            });
         });
     }
 
@@ -495,15 +453,16 @@ export class Tools {
     }
 
     /**
-     * Loads a file
-     * @param fileToLoad defines the file to load
-     * @param callback defines the callback to call when data is loaded
-     * @param progressCallBack defines the callback to call during loading process
+     * Reads a file from a File object
+     * @param file defines the file to load
+     * @param onSuccess defines the callback to call when data is loaded
+     * @param onProgress defines the callback to call during loading process
      * @param useArrayBuffer defines a boolean indicating that data must be returned as an ArrayBuffer
+     * @param onError defines the callback to call when an error occurs
      * @returns a file request object
      */
-    public static ReadFile(fileToLoad: File, callback: (data: any) => void, progressCallBack?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean): IFileRequest {
-        return FileTools.ReadFile(fileToLoad, callback, progressCallBack, useArrayBuffer);
+    public static ReadFile(file: File, onSuccess: (data: any) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: ReadFileError) => void): IFileRequest {
+        return FileTools.ReadFile(file, onSuccess, onProgress, useArrayBuffer, onError);
     }
 
     /**
@@ -1042,9 +1001,7 @@ export class Tools {
 
         Tools._EndUserMark(counterName, condition);
 
-        if (console.time) {
-            console.timeEnd(counterName);
-        }
+        console.timeEnd(counterName);
     }
 
     /**
@@ -1147,6 +1104,14 @@ export class Tools {
                 resolve();
             }, delay);
         });
+    }
+
+    /**
+     * Utility function to detect if the current user agent is Safari
+     * @returns whether or not the current user agent is safari
+     */
+    public static IsSafari(): boolean {
+        return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     }
 }
 

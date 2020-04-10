@@ -257,6 +257,25 @@ export class Vector2 {
     }
 
     /**
+     * Negate this vector in place
+     * @returns this
+     */
+    public negateInPlace(): Vector2 {
+        this.x *= -1;
+        this.y *= -1;
+        return this;
+    }
+
+    /**
+     * Negate the current Vector2 and stores the result in the given vector "result" coordinates
+     * @param result defines the Vector3 object where to store the result
+     * @returns the current Vector2
+     */
+    public negateToRef(result: Vector2): Vector2 {
+        return result.copyFromFloats(this.x * -1, this.y * -1);
+    }
+
+    /**
      * Multiply the Vector2 coordinates by scale
      * @param scale defines the scaling factor
      * @returns the current updated Vector2
@@ -368,10 +387,8 @@ export class Vector2 {
             return this;
         }
 
-        var num = 1.0 / len;
-
-        this.x *= num;
-        this.y *= num;
+        this.x /= len;
+        this.y /= len;
 
         return this;
     }
@@ -646,7 +663,7 @@ export class Vector2 {
 }
 
 /**
- * Classed used to store (x,y,z) vector representation
+ * Class used to store (x,y,z) vector representation
  * A Vector3 is the main object used in 3D geometry
  * It can represent etiher the coordinates of a point the space, either a direction
  * Reminder: js uses a left handed forward facing system
@@ -839,6 +856,26 @@ export class Vector3 {
      */
     public negate(): Vector3 {
         return new Vector3(-this.x, -this.y, -this.z);
+    }
+
+    /**
+     * Negate this vector in place
+     * @returns this
+     */
+    public negateInPlace(): Vector3 {
+        this.x *= -1;
+        this.y *= -1;
+        this.z *= -1;
+        return this;
+    }
+
+    /**
+     * Negate the current Vector3 and stores the result in the given vector "result" coordinates
+     * @param result defines the Vector3 object where to store the result
+     * @returns the current Vector3
+     */
+    public negateToRef(result: Vector3): Vector3 {
+        return result.copyFromFloats(this.x * -1, this.y * -1, this.z * -1);
     }
 
     /**
@@ -1161,6 +1198,16 @@ export class Vector3 {
     }
 
     /**
+     * Returns a new Vector3 as the cross product of the current vector and the "other" one
+     * The cross product is then orthogonal to both current and "other"
+     * @param other defines the right operand
+     * @returns the cross product
+     */
+    public cross(other: Vector3) {
+        return Vector3.Cross(this, other);
+    }
+
+    /**
      * Normalize the current Vector3 with the given input length.
      * Please note that this is an in place operation.
      * @param len the length of the vector
@@ -1300,10 +1347,10 @@ export class Vector3 {
 
     /**
      * Returns a new Vector3 set from the index "offset" of the given Float32Array
-     * This function is deprecated. Use FromArray instead
      * @param array defines the source array
      * @param offset defines the offset in the source array
      * @returns the new Vector3
+     * @deprecated Please use FromArray instead.
      */
     public static FromFloatArray(array: DeepImmutable<Float32Array>, offset?: number): Vector3 {
         return Vector3.FromArray(array, offset);
@@ -1323,10 +1370,10 @@ export class Vector3 {
 
     /**
      * Sets the given vector "result" with the element values from the index "offset" of the given Float32Array
-     * This function is deprecated.  Use FromArrayToRef instead.
      * @param array defines the source array
      * @param offset defines the offset in the source array
      * @param result defines the Vector3 where to store the result
+     * @deprecated Please use FromArrayToRef instead.
      */
     public static FromFloatArrayToRef(array: DeepImmutable<Float32Array>, offset: number, result: Vector3): void {
         return Vector3.FromArrayToRef(array, offset, result);
@@ -1388,17 +1435,19 @@ export class Vector3 {
     }
     /**
      * Returns a new Vector3 set to (0.0, 0.0, 1.0)
+     * @param rightHandedSystem is the scene right-handed (negative z)
      * @returns a new forward Vector3
      */
-    public static Forward(): Vector3 {
-        return new Vector3(0.0, 0.0, 1.0);
+    public static Forward(rightHandedSystem: boolean = false): Vector3 {
+        return new Vector3(0.0, 0.0, (rightHandedSystem ? -1.0 : 1.0));
     }
     /**
      * Returns a new Vector3 set to (0.0, 0.0, -1.0)
+     * @param rightHandedSystem is the scene right-handed (negative-z)
      * @returns a new forward Vector3
      */
-    public static Backward(): Vector3 {
-        return new Vector3(0.0, 0.0, -1.0);
+    public static Backward(rightHandedSystem: boolean = false): Vector3 {
+        return new Vector3(0.0, 0.0, (rightHandedSystem ? 1.0 : -1.0));
     }
     /**
      * Returns a new Vector3 set to (1.0, 0.0, 0.0)
@@ -2082,6 +2131,27 @@ export class Vector4 {
     }
 
     /**
+     * Negate this vector in place
+     * @returns this
+     */
+    public negateInPlace(): Vector4 {
+        this.x *= -1;
+        this.y *= -1;
+        this.z *= -1;
+        this.w *= -1;
+        return this;
+    }
+
+    /**
+     * Negate the current Vector4 and stores the result in the given vector "result" coordinates
+     * @param result defines the Vector3 object where to store the result
+     * @returns the current Vector4
+     */
+    public negateToRef(result: Vector4): Vector4 {
+        return result.copyFromFloats(this.x * -1, this.y * -1, this.z * -1, this.w * -1);
+    }
+
+    /**
      * Multiplies the current Vector4 coordinates by scale (float).
      * @param scale the number to scale with
      * @returns the updated Vector4.
@@ -2647,6 +2717,20 @@ export class Quaternion {
     }
 
     /**
+     * Gets a boolean if two quaternions are equals (using an epsilon value)
+     * @param otherQuaternion defines the other quaternion
+     * @param epsilon defines the minimal distance to consider equality
+     * @returns true if the given quaternion coordinates are close to the current ones by a distance of epsilon.
+     */
+    public equalsWithEpsilon(otherQuaternion: DeepImmutable<Quaternion>, epsilon: number = Epsilon): boolean {
+        return otherQuaternion
+            && Scalar.WithinEpsilon(this.x, otherQuaternion.x, epsilon)
+            && Scalar.WithinEpsilon(this.y, otherQuaternion.y, epsilon)
+            && Scalar.WithinEpsilon(this.z, otherQuaternion.z, epsilon)
+            && Scalar.WithinEpsilon(this.w, otherQuaternion.w, epsilon);
+    }
+
+    /**
      * Clone the current quaternion
      * @returns a new quaternion copied from the current one
      */
@@ -3104,6 +3188,19 @@ export class Quaternion {
             offset = 0;
         }
         return new Quaternion(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
+    }
+
+    /**
+     * Updates the given quaternion "result" from the starting index of the given array.
+     * @param array the array to pull values from
+     * @param offset the offset into the array to start at
+     * @param result the quaternion to store the result in
+     */
+    public static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number, result: Quaternion): void {
+        result.x = array[offset];
+        result.y = array[offset + 1];
+        result.z = array[offset + 2];
+        result.w = array[offset + 3];
     }
 
     /**
@@ -3748,9 +3845,24 @@ export class Matrix {
      * @returns the current matrix
      */
     public copyToArray(array: Float32Array, offset: number = 0): Matrix {
-        for (var index = 0; index < 16; index++) {
-            array[offset + index] = this._m[index];
-        }
+        let source = this._m;
+        array[offset] = source[0];
+        array[offset + 1] = source[1];
+        array[offset + 2] = source[2];
+        array[offset + 3] = source[3];
+        array[offset + 4] = source[4];
+        array[offset + 5] = source[5];
+        array[offset + 6] = source[6];
+        array[offset + 7] = source[7];
+        array[offset + 8] = source[8];
+        array[offset + 9] = source[9];
+        array[offset + 10] = source[10];
+        array[offset + 11] = source[11];
+        array[offset + 12] = source[12];
+        array[offset + 13] = source[13];
+        array[offset + 14] = source[14];
+        array[offset + 15] = source[15];
+
         return this;
     }
 
@@ -4974,6 +5086,29 @@ export class Matrix {
     }
 
     /**
+     * Stores a left-handed perspective projection into a given matrix with depth reversed
+     * @param fov defines the horizontal field of view
+     * @param aspect defines the aspect ratio
+     * @param znear defines the near clip plane
+     * @param zfar not used as infinity is used as far clip
+     * @param result defines the target matrix
+     * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
+     */
+    public static PerspectiveFovReverseLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
+        let t = 1.0 / (Math.tan(fov * 0.5));
+        let a = isVerticalFovFixed ? (t / aspect) : t;
+        let b = isVerticalFovFixed ? t : (t * aspect);
+        Matrix.FromValuesToRef(
+            a, 0.0, 0.0, 0.0,
+            0.0, b, 0.0, 0.0,
+            0.0, 0.0, -znear, 1.0,
+            0.0, 0.0, 1.0, 0.0,
+            result
+        );
+        result._updateIdentityStatus(false);
+    }
+
+    /**
      * Creates a right-handed perspective projection matrix
      * @param fov defines the horizontal field of view
      * @param aspect defines the aspect ratio
@@ -5016,6 +5151,36 @@ export class Matrix {
             0.0, b, 0.0, 0.0,
             0.0, 0.0, c, -1.0,
             0.0, 0.0, d, 0.0,
+            result
+        );
+
+        result._updateIdentityStatus(false);
+    }
+
+    /**
+     * Stores a right-handed perspective projection into a given matrix
+     * @param fov defines the horizontal field of view
+     * @param aspect defines the aspect ratio
+     * @param znear defines the near clip plane
+     * @param zfar not used as infinity is used as far clip
+     * @param result defines the target matrix
+     * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
+     */
+    public static PerspectiveFovReverseRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
+        //alternatively this could be expressed as:
+        //    m = PerspectiveFovLHToRef
+        //    m[10] *= -1.0;
+        //    m[11] *= -1.0;
+
+        let t = 1.0 / (Math.tan(fov * 0.5));
+        let a = isVerticalFovFixed ? (t / aspect) : t;
+        let b = isVerticalFovFixed ? t : (t * aspect);
+
+        Matrix.FromValuesToRef(
+            a, 0.0, 0.0, 0.0,
+            0.0, b, 0.0, 0.0,
+            0.0, 0.0, -znear, -1.0,
+            0.0, 0.0, -1.0, 0.0,
             result
         );
 

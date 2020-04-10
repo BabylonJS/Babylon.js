@@ -3,5 +3,7 @@ export enum PreviewMeshType {
     Box, 
     Torus,
     Cylinder,
-    Plane
+    Plane,
+    ShaderBall,
+    Custom
 }

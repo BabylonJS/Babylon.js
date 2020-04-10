@@ -100,10 +100,25 @@ export class Node implements IBehaviorAware<Node> {
      */
     public inspectableCustomProperties: IInspectable[];
 
+    private _doNotSerialize = false;
     /**
      * Gets or sets a boolean used to define if the node must be serialized
      */
-    public doNotSerialize = false;
+    public get doNotSerialize() {
+        if (this._doNotSerialize) {
+            return true;
+        }
+
+        if (this._parentNode) {
+            return this._parentNode.doNotSerialize;
+        }
+
+        return false;
+    }
+
+    public set doNotSerialize(value: boolean) {
+        this._doNotSerialize = value;
+    }
 
     /** @hidden */
     public _isDisposed = false;
@@ -175,7 +190,7 @@ export class Node implements IBehaviorAware<Node> {
             }
 
             if (!parent && !this._isDisposed) {
-                this.addToSceneRootNodes();
+                this._addToSceneRootNodes();
             }
         }
 
@@ -190,7 +205,7 @@ export class Node implements IBehaviorAware<Node> {
             this._parentNode._children.push(this);
 
             if (!previousParentNode) {
-                this.removeFromSceneRootNodes();
+                this._removeFromSceneRootNodes();
             }
         }
 
@@ -202,14 +217,16 @@ export class Node implements IBehaviorAware<Node> {
         return this._parentNode;
     }
 
-    private addToSceneRootNodes() {
+    /** @hidden */
+    public _addToSceneRootNodes() {
         if (this._sceneRootNodesIndex === -1) {
             this._sceneRootNodesIndex = this._scene.rootNodes.length;
             this._scene.rootNodes.push(this);
         }
     }
 
-    private removeFromSceneRootNodes() {
+    /** @hidden */
+    public _removeFromSceneRootNodes() {
         if (this._sceneRootNodesIndex !== -1) {
             const rootNodes = this._scene.rootNodes;
             const lastIdx = rootNodes.length - 1;
@@ -267,18 +284,13 @@ export class Node implements IBehaviorAware<Node> {
      * Creates a new Node
      * @param name the name and id to be given to this node
      * @param scene the scene this node will be added to
-     * @param addToRootNodes the node will be added to scene.rootNodes
      */
-    constructor(name: string, scene: Nullable<Scene> = null, addToRootNodes = true) {
+    constructor(name: string, scene: Nullable<Scene> = null) {
         this.name = name;
         this.id = name;
         this._scene = <Scene>(scene || EngineStore.LastCreatedScene);
         this.uniqueId = this._scene.getUniqueId();
         this._initCache();
-
-        if (addToRootNodes) {
-            this.addToSceneRootNodes();
-        }
     }
 
     /**
@@ -749,7 +761,7 @@ export class Node implements IBehaviorAware<Node> {
         }
 
         if (!this.parent) {
-            this.removeFromSceneRootNodes();
+            this._removeFromSceneRootNodes();
         } else {
             this.parent = null;
         }

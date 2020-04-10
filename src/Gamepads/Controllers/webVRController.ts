@@ -1,10 +1,10 @@
 import { Observable } from "../../Misc/observable";
 import { Scene } from "../../scene";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { _TimeToken } from "../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { PoseEnabledController, ExtendedGamepadButton, MutableGamepadButton } from "./poseEnabledController";
 import { StickValues, GamepadButtonChanges } from "../../Gamepads/gamepad";
+import { Nullable } from '../../types';
+
 /**
  * Defines the WebVRController object that represents controllers tracked in 3D space
  */
@@ -12,7 +12,7 @@ export abstract class WebVRController extends PoseEnabledController {
     /**
      * Internal, the default controller model for the controller
      */
-    protected _defaultModel: AbstractMesh;
+    protected _defaultModel: Nullable<AbstractMesh>;
 
     // Observables
     /**
@@ -64,7 +64,7 @@ export abstract class WebVRController extends PoseEnabledController {
     /**
      * The default controller model for the controller
      */
-    public get defaultModel(): AbstractMesh {
+    public get defaultModel(): Nullable<AbstractMesh> {
         return this._defaultModel;
     }
 
@@ -154,6 +154,8 @@ export abstract class WebVRController extends PoseEnabledController {
      */
     public dispose(): void {
         super.dispose();
+
+        this._defaultModel = null;
 
         this.onTriggerStateChangedObservable.clear();
         this.onMainButtonStateChangedObservable.clear();

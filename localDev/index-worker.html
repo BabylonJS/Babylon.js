@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <title>Local Development - Worker mode</title>
+
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            font-size: 0;
+        }
+
+        #fps {
+            position: absolute;
+            background-color: black;
+            border: 2px solid red;
+            text-align: center;
+            font-size: 16px;
+            color: white;
+            top: 15px;
+            right: 10px;
+            width: 60px;
+            height: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="fps">0</div>
+    <canvas id="renderCanvas" touch-action="none"></canvas>
+
+    <script>
+        var canvas = document.getElementById("renderCanvas");
+
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+
+        var offscreen = canvas.transferControlToOffscreen();
+
+        var worker = new Worker("worker.js"); 
+        worker.postMessage({canvas: offscreen}, [offscreen]);
+    </script>
+</body>
+
+</html>

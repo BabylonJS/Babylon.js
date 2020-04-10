@@ -4,8 +4,6 @@ import { Scene } from "../scene";
 import { Matrix, Vector3 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Light } from "./light";
-import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { Axis } from '../Maths/math.axis';
 /**
  * Interface describing all the common properties and methods a shadow light needs to implement.
@@ -166,7 +164,7 @@ export abstract class ShadowLight extends Light implements IShadowLight {
         this._setDirection(value);
     }
 
-    private _shadowMinZ: number;
+    protected _shadowMinZ: number;
     /**
      * Gets the shadow projection clipping minimum z value.
      */
@@ -182,7 +180,7 @@ export abstract class ShadowLight extends Light implements IShadowLight {
         this.forceProjectionMatrixCompute();
     }
 
-    private _shadowMaxZ: number;
+    protected _shadowMaxZ: number;
     /**
      * Sets the shadow projection clipping maximum z value.
      */

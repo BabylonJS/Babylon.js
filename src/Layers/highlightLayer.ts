@@ -16,8 +16,6 @@ import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { PostProcess, PostProcessOptions } from "../PostProcesses/postProcess";
 import { PassPostProcess } from "../PostProcesses/passPostProcess";
 import { BlurPostProcess } from "../PostProcesses/blurPostProcess";
-import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "../abstractScene";
 import { Constants } from "../Engines/constants";
@@ -167,7 +165,7 @@ interface IHighlightLayerExcludedMesh {
 /**
  * The highlight layer Helps adding a glow effect around a mesh.
  *
- * Once instantiated in a scene, simply use the pushMesh or removeMesh method to add or remove
+ * Once instantiated in a scene, simply use the addMesh or removeMesh method to add or remove
  * glowy meshes to your scene.
  *
  * !!! THIS REQUIRES AN ACTIVE STENCIL BUFFER ON THE CANVAS !!!
@@ -514,6 +512,14 @@ export class HighlightLayer extends EffectLayer {
     }
 
     /**
+     * Adds specific effects defines.
+     * @param defines The defines to add specifics to.
+     */
+    protected _addCustomEffectDefines(defines: string[]): void {
+        defines.push("#define HIGHLIGHT");
+    }
+
+    /**
      * Sets the required values for both the emissive texture and and the main color.
      */
     protected _setEmissiveTextureAndColor(mesh: Mesh, subMesh: SubMesh, material: Material): void {
@@ -683,6 +689,24 @@ export class HighlightLayer extends EffectLayer {
             if (this._meshes[meshHighlightToCheck]) {
                 this._shouldRender = true;
                 break;
+            }
+        }
+    }
+
+    /**
+     * Remove all the meshes currently referenced in the highlight layer
+     */
+    public removeAllMeshes(): void {
+        if (!this._meshes) {
+            return;
+        }
+
+        for (const uniqueId in this._meshes) {
+            if (this._meshes.hasOwnProperty(uniqueId)) {
+                const mesh = this._meshes[uniqueId];
+                if (mesh) {
+                    this.removeMesh(mesh.mesh);
+                }
             }
         }
     }

@@ -1,4 +1,5 @@
 import { InputText } from "./inputText";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /**
  * Class used to create a password control
@@ -12,3 +13,4 @@ export class InputPassword extends InputText {
         return txt;
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.InputPassword"] = InputPassword;

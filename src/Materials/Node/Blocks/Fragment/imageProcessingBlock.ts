@@ -1,13 +1,17 @@
 import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
+import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
 import { _TypeStore } from '../../../../Misc/typeStore';
+
+import "../../../../Shaders/ShadersInclude/helperFunctions";
+import "../../../../Shaders/ShadersInclude/imageProcessingDeclaration";
+import "../../../../Shaders/ShadersInclude/imageProcessingFunctions";
 
 /**
  * Block used to add image processing support to fragment shader
@@ -125,7 +129,7 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("imageProcessingDeclaration", comments);
         state._emitFunctionFromInclude("imageProcessingFunctions", comments);
 
-        if (color.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Color4) {
+        if (color.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Color4 || (color.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Vector4)) {
             state.compilationString += `${this._declareOutput(output, state)} = ${color.associatedVariableName};\r\n`;
         } else {
             state.compilationString += `${this._declareOutput(output, state)} = vec4(${color.associatedVariableName}, 1.0);\r\n`;

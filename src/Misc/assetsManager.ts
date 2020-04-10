@@ -490,7 +490,7 @@ export class TextureAssetTask extends AbstractAssetTask implements ITextureAsset
      * @param name defines the name of the task
      * @param url defines the location of the file to load
      * @param noMipmap defines if mipmap should not be generated (default is false)
-     * @param invertY defines if texture must be inverted on Y axis (default is false)
+     * @param invertY defines if texture must be inverted on Y axis (default is true)
      * @param samplingMode defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
      */
     constructor(
@@ -507,9 +507,9 @@ export class TextureAssetTask extends AbstractAssetTask implements ITextureAsset
          */
         public noMipmap?: boolean,
         /**
-         * Defines if texture must be inverted on Y axis (default is false)
+         * Defines if texture must be inverted on Y axis (default is true)
          */
-        public invertY?: boolean,
+        public invertY: boolean = true,
         /**
          * Defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
          */
@@ -995,12 +995,15 @@ export class AssetsManager {
 
         if (this._waitingTasksCount === 0) {
             try {
+
+                var currentTasks = this._tasks.slice();
+
                 if (this.onFinish) {
-                    this.onFinish(this._tasks);
+                    // Calling onFinish with immutable array of tasks
+                    this.onFinish(currentTasks);
                 }
 
                 // Let's remove successfull tasks
-                var currentTasks = this._tasks.slice();
                 for (var task of currentTasks) {
                     if (task.taskState === AssetTaskState.DONE) {
                         let index = this._tasks.indexOf(task);

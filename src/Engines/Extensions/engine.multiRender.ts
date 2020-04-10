@@ -1,11 +1,12 @@
-import { Engine } from "../../Engines/engine";
-import { InternalTexture } from '../../Materials/Textures/internalTexture';
+import { InternalTexture, InternalTextureSource } from '../../Materials/Textures/internalTexture';
 import { IMultiRenderTargetOptions } from '../../Materials/Textures/multiRenderTarget';
 import { Logger } from '../../Misc/logger';
 import { Nullable } from '../../types';
+import { Constants } from '../constants';
+import { ThinEngine } from '../thinEngine';
 
-declare module "../../Engines/engine" {
-    export interface Engine {
+declare module "../../Engines/thinEngine" {
+    export interface ThinEngine {
         /**
          * Unbind a list of render target textures from the webGL context
          * This is used only when drawBuffer extension or webGL2 are active
@@ -35,7 +36,7 @@ declare module "../../Engines/engine" {
     }
 }
 
-Engine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: InternalTexture[], disableGenerateMipMaps: boolean = false, onBeforeUnbind?: () => void): void {
+ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: InternalTexture[], disableGenerateMipMaps: boolean = false, onBeforeUnbind?: () => void): void {
     this._currentRenderTarget = null;
 
     // If MSAA, we need to bitblt back to main texture
@@ -92,15 +93,15 @@ Engine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: Inte
     this._bindUnboundFramebuffer(null);
 };
 
-Engine.prototype.createMultipleRenderTarget = function(size: any, options: IMultiRenderTargetOptions): InternalTexture[] {
+ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: IMultiRenderTargetOptions): InternalTexture[] {
     var generateMipMaps = false;
     var generateDepthBuffer = true;
     var generateStencilBuffer = false;
     var generateDepthTexture = false;
     var textureCount = 1;
 
-    var defaultType = Engine.TEXTURETYPE_UNSIGNED_INT;
-    var defaultSamplingMode = Engine.TEXTURE_TRILINEAR_SAMPLINGMODE;
+    var defaultType = Constants.TEXTURETYPE_UNSIGNED_INT;
+    var defaultSamplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
 
     var types = new Array<number>();
     var samplingModes = new Array<number>();
@@ -137,22 +138,22 @@ Engine.prototype.createMultipleRenderTarget = function(size: any, options: IMult
         var samplingMode = samplingModes[i] || defaultSamplingMode;
         var type = types[i] || defaultType;
 
-        if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+        if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
             // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-            samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
+            samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         }
-        else if (type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+        else if (type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
             // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-            samplingMode = Engine.TEXTURE_NEAREST_SAMPLINGMODE;
+            samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         }
 
         var filters = this._getSamplingParameters(samplingMode, generateMipMaps);
-        if (type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-            type = Engine.TEXTURETYPE_UNSIGNED_INT;
+        if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+            type = Constants.TEXTURETYPE_UNSIGNED_INT;
             Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
         }
 
-        var texture = new InternalTexture(this, InternalTexture.DATASOURCE_MULTIRENDERTARGET);
+        var texture = new InternalTexture(this, InternalTextureSource.MultiRenderTarget);
         var attachment = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
 
         textures.push(texture);
@@ -197,7 +198,7 @@ Engine.prototype.createMultipleRenderTarget = function(size: any, options: IMult
 
     if (generateDepthTexture && this._caps.depthTextureExtension) {
         // Depth texture
-        var depthTexture = new InternalTexture(this, InternalTexture.DATASOURCE_MULTIRENDERTARGET);
+        var depthTexture = new InternalTexture(this, InternalTextureSource.MultiRenderTarget);
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, depthTexture._webGLTexture);
@@ -242,7 +243,6 @@ Engine.prototype.createMultipleRenderTarget = function(size: any, options: IMult
     }
 
     gl.drawBuffers(attachments);
-    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
     this._bindUnboundFramebuffer(null);
 
     this.resetTextureCache();
@@ -250,7 +250,7 @@ Engine.prototype.createMultipleRenderTarget = function(size: any, options: IMult
     return textures;
 };
 
-Engine.prototype.updateMultipleRenderTargetTextureSampleCount = function(textures: Nullable<InternalTexture[]>, samples: number): number {
+ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function(textures: Nullable<InternalTexture[]>, samples: number): number {
     if (this.webGLVersion < 2 || !textures || textures.length == 0) {
         return 1;
     }
@@ -281,7 +281,7 @@ Engine.prototype.updateMultipleRenderTargetTextureSampleCount = function(texture
         }
     }
 
-    if (samples > 1) {
+    if (samples > 1 && gl.renderbufferStorageMultisample) {
         let framebuffer = gl.createFramebuffer();
 
         if (!framebuffer) {

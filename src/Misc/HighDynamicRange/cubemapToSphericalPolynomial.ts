@@ -72,7 +72,7 @@ export class CubeMapToSphericalPolynomialTools {
         // Always read as RGBA.
         var format = Constants.TEXTUREFORMAT_RGBA;
         var type = Constants.TEXTURETYPE_UNSIGNED_INT;
-        if (texture.textureType && texture.textureType !== Constants.TEXTURETYPE_UNSIGNED_INT) {
+        if (texture.textureType == Constants.TEXTURETYPE_FLOAT || texture.textureType == Constants.TEXTURETYPE_HALF_FLOAT) {
             type = Constants.TEXTURETYPE_FLOAT;
         }
 

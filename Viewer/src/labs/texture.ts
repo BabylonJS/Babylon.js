@@ -1,6 +1,6 @@
 import { Scene } from "babylonjs/scene";
 import { CubeTexture } from "babylonjs/Materials/Textures/cubeTexture";
-import { InternalTexture } from "babylonjs/Materials/Textures/internalTexture";
+import { InternalTexture, InternalTextureSource } from "babylonjs/Materials/Textures/internalTexture";
 import { Scalar } from "babylonjs/Maths/math.scalar";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Texture } from "babylonjs/Materials/Textures/texture";
@@ -219,7 +219,7 @@ export class TextureUtils {
 
             babylonTexture.gammaSpace = false;
 
-            let internalTexture = new InternalTexture(scene.getEngine(), InternalTexture.DATASOURCE_CUBERAW);
+            let internalTexture = new InternalTexture(scene.getEngine(), InternalTextureSource.CubeRaw);
             let glTexture = internalTexture._webGLTexture;
             //babylon properties
             internalTexture.isCube = true;

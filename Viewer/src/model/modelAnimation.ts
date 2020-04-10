@@ -1,10 +1,10 @@
-import { Vector3 } from "babylonjs/Maths/math";
+import { Vector3 } from "babylonjs/Maths/math.vector";
 import { AnimationGroup, Animatable } from "babylonjs/Animations/index";
 
 /**
  * Animation play mode enum - is the animation looping or playing once
  */
-export const enum AnimationPlayMode {
+export enum AnimationPlayMode {
     ONCE,
     LOOP
 }
@@ -12,7 +12,7 @@ export const enum AnimationPlayMode {
 /**
  * An enum representing the current state of an animation object
  */
-export const enum AnimationState {
+export enum AnimationState {
     INIT,
     PLAYING,
     PAUSED,
@@ -23,7 +23,7 @@ export const enum AnimationState {
 /**
  * The different type of easing functions available
  */
-export const enum EasingFunction {
+export enum EasingFunction {
     Linear = 0,
     CircleEase = 1,
     BackEase = 2,

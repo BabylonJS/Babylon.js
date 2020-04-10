@@ -1,3 +1,6 @@
+import { StringTools } from './stringTools';
+import { Logger } from './logger';
+
 var cloneValue = (source: any, destinationObject: any) => {
     if (!source) {
         return null;
@@ -30,6 +33,10 @@ export class DeepCopier {
         for (var prop in source) {
 
             if (prop[0] === "_" && (!mustCopyList || mustCopyList.indexOf(prop) === -1)) {
+                continue;
+            }
+
+            if (StringTools.EndsWith(prop, "Observable")) {
                 continue;
             }
 
@@ -70,7 +77,8 @@ export class DeepCopier {
                 }
             }
             catch (e) {
-                // Just ignore error (it could be because of a read-only property)
+                // Log a warning (it could be because of a read-only property)
+                Logger.Warn(e.message);
             }
         }
     }

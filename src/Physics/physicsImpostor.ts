@@ -636,7 +636,7 @@ export class PhysicsImpostor {
     }
 
     /**
-     * Get a specific parametes from the options parameter
+     * Get a specific parameter from the options parameters
      * @param paramName The object parameter name
      * @returns The object parameter
      */
@@ -1262,6 +1262,10 @@ export class PhysicsImpostor {
      * ConvexHull-Impostor type (Ammo.js plugin only)
      */
     public static ConvexHullImpostor = 10;
+    /**
+     * Custom-Imposter type (Ammo.js plugin only)
+     */
+    public static CustomImpostor = 100;
     /**
      * Rope-Imposter type
      */

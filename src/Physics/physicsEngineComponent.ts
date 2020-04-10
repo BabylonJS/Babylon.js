@@ -17,6 +17,8 @@ declare module "../scene" {
     export interface Scene {
         /** @hidden (Backing field) */
         _physicsEngine: Nullable<IPhysicsEngine>;
+        /** @hidden */
+        _physicsTimeAccumulator: number;
 
         /**
          * Gets the current physics engine
@@ -89,6 +91,7 @@ Scene.prototype.enablePhysics = function(gravity: Nullable<Vector3> = null, plug
 
     try {
         this._physicsEngine = new PhysicsEngine(gravity, plugin);
+        this._physicsTimeAccumulator = 0;
         return true;
     } catch (e) {
         Logger.Error(e.message);
@@ -132,9 +135,20 @@ Scene.prototype.deleteCompoundImpostor = function(compound: any): void {
 /** @hidden */
 Scene.prototype._advancePhysicsEngineStep = function(step: number) {
     if (this._physicsEngine) {
-        this.onBeforePhysicsObservable.notifyObservers(this);
-        this._physicsEngine._step(step / 1000);
-        this.onAfterPhysicsObservable.notifyObservers(this);
+        let subTime = this._physicsEngine.getSubTimeStep();
+        if (subTime > 0) {
+            this._physicsTimeAccumulator += step;
+            while (this._physicsTimeAccumulator > subTime) {
+                this.onBeforePhysicsObservable.notifyObservers(this);
+                this._physicsEngine._step(subTime / 1000);
+                this.onAfterPhysicsObservable.notifyObservers(this);
+                this._physicsTimeAccumulator -= subTime;
+            }
+        } else {
+            this.onBeforePhysicsObservable.notifyObservers(this);
+            this._physicsEngine._step(step / 1000);
+            this.onAfterPhysicsObservable.notifyObservers(this);
+        }
     }
 };
 

@@ -38,8 +38,7 @@ class SettingsPG {
         if (this.scriptLanguage == "JS") {
             this.defaultScene = "scripts/radiosity.js";
             this.parent.monacoCreator.monacoMode = "javascript";
-        }
-        else if (this.scriptLanguage == "TS") {
+        } else if (this.scriptLanguage == "TS") {
             this.defaultScene = "scripts/radiosity.txt";
             this.parent.monacoCreator.monacoMode = "typescript";
         }
@@ -63,7 +62,9 @@ class SettingsPG {
     setFontSize(size) {
         localStorage.setItem("bjs-playground-font", size);
         this.fontSize = size;
-        this.parent.monacoCreator.jsEditor.updateOptions({ fontSize: size });
+        this.parent.monacoCreator.jsEditor.updateOptions({
+            fontSize: size
+        });
         var array = document.getElementsByClassName("displayFontSize");
         for (var i = 0; i < array.length; i++) {
             var subArray = array[i].children;
@@ -94,9 +95,14 @@ class SettingsPG {
         }
         if (this.scriptLanguage == "JS") {
             this.parent.utils.setToMultipleID("toJSbutton", "removeClass", "floatLeft");
-        }
-        else if (this.scriptLanguage == "TS") {
+            this.parent.utils.setToMultipleID("toJSbutton", "addClass", "selectedLanguage");
+            this.parent.utils.setToMultipleID("toJSbutton", "innerHTML", "Javascript");
+            this.parent.utils.setToMultipleID("toTSbutton", "title", "Switch to TypeScript");
+        } else if (this.scriptLanguage == "TS") {
             this.parent.utils.setToMultipleID("toJSbutton", "addClass", "floatLeft");
+            this.parent.utils.setToMultipleID("toTSbutton", "addClass", "selectedLanguage");
+            this.parent.utils.setToMultipleID("toTSbutton", "innerHTML", "Typescript");
+            this.parent.utils.setToMultipleID("toJSbutton", "title", "Switch to JavaScript");
         }
     };
 
@@ -112,8 +118,7 @@ class SettingsPG {
         if (theme == 'dark') {
             this.vsTheme = 'vs-dark';
             this.parent.utils.setToMultipleID("darkTheme", "addClass", "selected");
-        }
-        else {
+        } else {
             this.vsTheme = 'vs';
             this.parent.utils.setToMultipleID("lightTheme", "addClass", "selected");
         }
@@ -149,26 +154,61 @@ class SettingsPG {
      * Check if we need to restore a BJS version
      */
     restoreVersion() {
-        if (localStorage.getItem("bjs-playground-apiversion") && localStorage.getItem("bjs-playground-apiversion") != null) {
-            BABYLON = null;
-
+        if (this.mustModifyBJSversion()) {
             this.parent.menuPG.displayWaitDiv();
 
+            window.def = window.define;
+            window.define = undefined;
+
+            var apiVersion = localStorage.getItem("bjs-playground-apiversion");
+            BABYLON = null;
+
+            var position = 0;
+            for (var i = 0; i < CONFIG_last_versions.length; i++) {
+                if (CONFIG_last_versions[i][0] == apiVersion) {
+                    position = i;
+                    break;
+                }
+            }
+
+            var count = CONFIG_last_versions[position][1].length - 1;
             var newBJSscript = document.createElement('script');
-            newBJSscript.src = localStorage.getItem("bjs-playground-apiversion");
+            newBJSscript.src = CONFIG_last_versions[position][1][0];
             newBJSscript.onload = function () {
-                if(BABYLON.Engine.Version.search('-') != -1) this.parent.menuPG.displayVersionNumber("Latest");
-                else this.parent.menuPG.displayVersionNumber(BABYLON.Engine.Version);
-                this.parent.monacoCreator.setCode(localStorage.getItem("bjs-playground-apiversion-tempcode"));
+                for (var i = 1; i < CONFIG_last_versions[position][1].length; i++) {
+                    var newBJSscript = document.createElement('script');
+                    newBJSscript.src = CONFIG_last_versions[position][1][i];
+                    newBJSscript.onload = function () {
+                        count--;
+                        if (count == 0) {
+                            if (BABYLON.Engine.Version.search('-') != -1) this.parent.menuPG.displayVersionNumber("Latest");
+                            else this.parent.menuPG.displayVersionNumber(BABYLON.Engine.Version);
+                            this.parent.utils.setToMultipleID("mainTitle", "innerHTML", "v" + BABYLON.Engine.Version);
+                            this.parent.monacoCreator.addOnMonacoLoadedCallback(() => {
+                                this.parent.monacoCreator.setCode(localStorage.getItem("bjs-playground-apiversion-tempcode"));
 
-                localStorage.removeItem("bjs-playground-apiversion");
-                localStorage.removeItem("bjs-playground-apiversion-tempcode");
 
-                this.parent.main.compileAndRunFromOutside();
+                                localStorage.removeItem("bjs-playground-apiversion");
+                                localStorage.removeItem("bjs-playground-apiversion-tempcode");
+                                this.parent.main.compileAndRunFromOutside();
+                            });
+
+                            if (window.def) {
+                                window.define = window.def;
+                            }
+
+                        }
+                    }.bind(this);
+
+                    document.head.appendChild(newBJSscript);
+                }
             }.bind(this);
-
             document.head.appendChild(newBJSscript);
-        }
+        } else return false;
+    };
+
+    mustModifyBJSversion() {
+        if (localStorage.getItem("bjs-playground-apiversion") && localStorage.getItem("bjs-playground-apiversion") != null && localStorage.getItem("bjs-playground-apiversion") != "Latest") return true;
         else return false;
     };
 };

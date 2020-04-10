@@ -5,6 +5,7 @@ var xhr = new XMLHttpRequest();
 
 xhr.open("GET", "/tests/validation/config.json", true);
 
+
 xhr.addEventListener("load", function () {
     if (xhr.status === 200) {
 
@@ -26,11 +27,6 @@ xhr.addEventListener("load", function () {
                         var info = engine.getGlInfo();
                         console.log("Webgl Version: " + info.version);
                         console.log("Webgl Vendor: " + info.vendor);
-                        // Reduces error ratio on Embedded Firefox for travis.
-                        if (info.vendor === "VMware, Inc.") {
-                            errorRatio = 5;
-                        }
-
                         console.log("Webgl Renderer: " + info.renderer);
                         done();
                     });

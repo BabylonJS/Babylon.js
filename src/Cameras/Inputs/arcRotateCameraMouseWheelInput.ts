@@ -32,10 +32,10 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
     private _wheel: Nullable<(p: PointerInfo, s: EventState) => void>;
     private _observer: Nullable<Observer<PointerInfo>>;
 
-    private computeDeltaFromMouseWheelLegacyEvent(mouseWheelLegacyEvent: any, radius: number) {
+    private computeDeltaFromMouseWheelLegacyEvent(mouseWheelDelta: number, radius: number) {
         var delta = 0;
-        var wheelDelta = (mouseWheelLegacyEvent.wheelDelta * 0.01 * this.wheelDeltaPercentage) * radius;
-        if (mouseWheelLegacyEvent.wheelDelta > 0) {
+        var wheelDelta = (mouseWheelDelta * 0.01 * this.wheelDeltaPercentage) * radius;
+        if (mouseWheelDelta > 0) {
             delta = wheelDelta / (1.0 + this.wheelDeltaPercentage);
         } else {
             delta = wheelDelta * (1.0 + this.wheelDeltaPercentage);
@@ -55,28 +55,31 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
             var delta = 0;
 
             let mouseWheelLegacyEvent = event as any;
-            if (mouseWheelLegacyEvent.wheelDelta) {
-                if (this.wheelDeltaPercentage) {
-                    delta = this.computeDeltaFromMouseWheelLegacyEvent(mouseWheelLegacyEvent, this.camera.radius);
+            let wheelDelta = 0;
 
-                    // If zooming in, estimate the target radius and use that to compute the delta for inertia
-                    // this will stop multiple scroll events zooming in from adding too much inertia
-                    if (delta > 0) {
-                        var estimatedTargetRadius = this.camera.radius;
-                        var targetInertia = this.camera.inertialRadiusOffset + delta;
-                        for (var i = 0; i < 20 && Math.abs(targetInertia) > 0.001; i++) {
-                            estimatedTargetRadius -= targetInertia;
-                            targetInertia *= this.camera.inertia;
-                        }
-                        estimatedTargetRadius = Scalar.Clamp(estimatedTargetRadius, 0, Number.MAX_VALUE);
-                        delta = this.computeDeltaFromMouseWheelLegacyEvent(mouseWheelLegacyEvent, estimatedTargetRadius);
+            if (mouseWheelLegacyEvent.wheelDelta) {
+                wheelDelta = mouseWheelLegacyEvent.wheelDelta;
+            } else {
+                wheelDelta = -(event.deltaY || event.detail) * 60;
+            }
+
+            if (this.wheelDeltaPercentage) {
+                delta = this.computeDeltaFromMouseWheelLegacyEvent(wheelDelta, this.camera.radius);
+
+                // If zooming in, estimate the target radius and use that to compute the delta for inertia
+                // this will stop multiple scroll events zooming in from adding too much inertia
+                if (delta > 0) {
+                    var estimatedTargetRadius = this.camera.radius;
+                    var targetInertia = this.camera.inertialRadiusOffset + delta;
+                    for (var i = 0; i < 20 && Math.abs(targetInertia) > 0.001; i++) {
+                        estimatedTargetRadius -= targetInertia;
+                        targetInertia *= this.camera.inertia;
                     }
-                } else {
-                    delta = mouseWheelLegacyEvent.wheelDelta / (this.wheelPrecision * 40);
+                    estimatedTargetRadius = Scalar.Clamp(estimatedTargetRadius, 0, Number.MAX_VALUE);
+                    delta = this.computeDeltaFromMouseWheelLegacyEvent(wheelDelta, estimatedTargetRadius);
                 }
             } else {
-                let deltaValue = event.deltaY || event.detail;
-                delta = -deltaValue / this.wheelPrecision;
+                delta = wheelDelta / (this.wheelPrecision * 40);
             }
 
             if (delta) {

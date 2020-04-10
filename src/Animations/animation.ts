@@ -1,6 +1,6 @@
 import { IEasingFunction, EasingFunction } from "./easing";
-import { Vector3, Quaternion, Vector2, Matrix } from "../Maths/math.vector";
-import { Color3 } from '../Maths/math.color';
+import { Vector3, Quaternion, Vector2, Matrix, TmpVectors } from "../Maths/math.vector";
+import { Color3, Color4 } from '../Maths/math.color';
 import { Scalar } from "../Maths/math.scalar";
 
 import { Nullable } from "../types";
@@ -95,6 +95,8 @@ export class Animation {
             dataType = Animation.ANIMATIONTYPE_VECTOR2;
         } else if (from instanceof Color3) {
             dataType = Animation.ANIMATIONTYPE_COLOR3;
+        } else if (from instanceof Color4) {
+            dataType = Animation.ANIMATIONTYPE_COLOR4;
         } else if (from instanceof Size) {
             dataType = Animation.ANIMATIONTYPE_SIZE;
         }
@@ -219,6 +221,207 @@ export class Animation {
         node.animations.push(animation);
 
         return node.getScene().beginAnimation(node, 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
+    }
+
+    /**
+     * Convert the keyframes for all animations belonging to the group to be relative to a given reference frame.
+     * @param sourceAnimation defines the Animation containing keyframes to convert
+     * @param referenceFrame defines the frame that keyframes in the range will be relative to
+     * @param range defines the name of the AnimationRange belonging to the Animation to convert
+     * @param cloneOriginal defines whether or not to clone the animation and convert the clone or convert the original animation (default is false)
+     * @param clonedName defines the name of the resulting cloned Animation if cloneOriginal is true
+     * @returns a new Animation if cloneOriginal is true or the original Animation if cloneOriginal is false
+     */
+    public static MakeAnimationAdditive(sourceAnimation: Animation, referenceFrame = 0, range?: string, cloneOriginal = false, clonedName?: string): Animation {
+        let animation = sourceAnimation;
+
+        if (cloneOriginal) {
+            animation = sourceAnimation.clone();
+            animation.name = clonedName || animation.name;
+        }
+
+        if (!animation._keys.length) {
+            return animation;
+        }
+
+        referenceFrame = referenceFrame >= 0 ? referenceFrame : 0;
+        let startIndex = 0;
+        let firstKey = animation._keys[0];
+        let endIndex = animation._keys.length - 1;
+        let lastKey = animation._keys[endIndex];
+        let valueStore = {
+            referenceValue: firstKey.value,
+            referencePosition: TmpVectors.Vector3[0],
+            referenceQuaternion: TmpVectors.Quaternion[0],
+            referenceScaling: TmpVectors.Vector3[1],
+            keyPosition: TmpVectors.Vector3[2],
+            keyQuaternion: TmpVectors.Quaternion[1],
+            keyScaling: TmpVectors.Vector3[3]
+        };
+        let referenceFound = false;
+        let from = firstKey.frame;
+        let to = lastKey.frame;
+        if (range) {
+            let rangeValue = animation.getRange(range);
+
+            if (rangeValue) {
+                from = rangeValue.from;
+                to = rangeValue.to;
+            }
+        }
+        let fromKeyFound = firstKey.frame === from;
+        let toKeyFound = lastKey.frame === to;
+
+        // There's only one key, so use it
+        if (animation._keys.length === 1) {
+            let value = animation._getKeyValue(animation._keys[0]);
+            valueStore.referenceValue = value.clone ? value.clone() : value;
+            referenceFound = true;
+        }
+
+        // Reference frame is before the first frame, so just use the first frame
+        else if (referenceFrame <= firstKey.frame) {
+            let value = animation._getKeyValue(firstKey.value);
+            valueStore.referenceValue = value.clone ? value.clone() : value;
+            referenceFound = true;
+        }
+
+        // Reference frame is after the last frame, so just use the last frame
+        else if (referenceFrame >= lastKey.frame) {
+            let value = animation._getKeyValue(lastKey.value);
+            valueStore.referenceValue = value.clone ? value.clone() : value;
+            referenceFound = true;
+        }
+
+        // Find key bookends, create them if they don't exist
+        var index = 0;
+        while (!referenceFound || !fromKeyFound || !toKeyFound && index < animation._keys.length - 1) {
+            let currentKey = animation._keys[index];
+            let nextKey = animation._keys[index + 1];
+
+            // If reference frame wasn't found yet, check if we can interpolate to it
+            if (!referenceFound && referenceFrame >= currentKey.frame && referenceFrame <= nextKey.frame) {
+                let value;
+
+                if (referenceFrame === currentKey.frame) {
+                    value = animation._getKeyValue(currentKey.value);
+                } else if (referenceFrame === nextKey.frame) {
+                    value = animation._getKeyValue(nextKey.value);
+                } else {
+                    let animationState = {
+                        key: index,
+                        repeatCount: 0,
+                        loopMode: this.ANIMATIONLOOPMODE_CONSTANT
+                    };
+                    value = animation._interpolate(referenceFrame, animationState);
+                }
+
+                valueStore.referenceValue = value.clone ? value.clone() : value;
+                referenceFound = true;
+            }
+
+            // If from key wasn't found yet, check if we can interpolate to it
+            if (!fromKeyFound && from >= currentKey.frame && from <= nextKey.frame) {
+                if (from === currentKey.frame) {
+                    startIndex = index;
+                } else if (from === nextKey.frame) {
+                    startIndex = index + 1;
+                } else {
+                    let animationState = {
+                        key: index,
+                        repeatCount: 0,
+                        loopMode: this.ANIMATIONLOOPMODE_CONSTANT
+                    };
+                    let value = animation._interpolate(from, animationState);
+                    let key: IAnimationKey = {
+                        frame: from,
+                        value: value.clone ? value.clone() : value
+                    };
+                    animation._keys.splice(index + 1, 0, key);
+                    startIndex = index + 1;
+                }
+
+                fromKeyFound = true;
+            }
+
+            // If to key wasn't found yet, check if we can interpolate to it
+            if (!toKeyFound && to >= currentKey.frame && to <= nextKey.frame) {
+                if (to === currentKey.frame) {
+                    endIndex = index;
+                } else if (to === nextKey.frame) {
+                    endIndex = index + 1;
+                } else {
+                    let animationState = {
+                        key: index,
+                        repeatCount: 0,
+                        loopMode: this.ANIMATIONLOOPMODE_CONSTANT
+                    };
+                    let value = animation._interpolate(to, animationState);
+                    let key: IAnimationKey = {
+                        frame: to,
+                        value: value.clone ? value.clone() : value
+                    };
+                    animation._keys.splice(index + 1, 0, key);
+                    endIndex = index + 1;
+                }
+
+                toKeyFound = true;
+            }
+
+            index++;
+        }
+
+        // Conjugate the quaternion
+        if (animation.dataType === Animation.ANIMATIONTYPE_QUATERNION) {
+            valueStore.referenceValue.normalize().conjugateInPlace();
+        }
+
+        // Decompose matrix and conjugate the quaternion
+        else if (animation.dataType === Animation.ANIMATIONTYPE_MATRIX) {
+            valueStore.referenceValue.decompose(valueStore.referenceScaling, valueStore.referenceQuaternion, valueStore.referencePosition);
+            valueStore.referenceQuaternion.normalize().conjugateInPlace();
+        }
+
+        // Subtract the reference value from all of the key values
+        for (var index = startIndex; index <= endIndex; index++) {
+            let key = animation._keys[index];
+
+            // If this key was duplicated to create a frame 0 key, skip it because its value has already been updated
+            if (index && animation.dataType !== Animation.ANIMATIONTYPE_FLOAT && key.value === firstKey.value) {
+                continue;
+            }
+
+            switch (animation.dataType) {
+                case Animation.ANIMATIONTYPE_MATRIX:
+                    key.value.decompose(valueStore.keyScaling, valueStore.keyQuaternion, valueStore.keyPosition);
+                    valueStore.keyPosition.subtractInPlace(valueStore.referencePosition);
+                    valueStore.keyScaling.divideInPlace(valueStore.referenceScaling);
+                    valueStore.referenceQuaternion.multiplyToRef(valueStore.keyQuaternion, valueStore.keyQuaternion);
+                    Matrix.ComposeToRef(valueStore.keyScaling, valueStore.keyQuaternion, valueStore.keyPosition, key.value);
+                    break;
+
+                case Animation.ANIMATIONTYPE_QUATERNION:
+                    valueStore.referenceValue.multiplyToRef(key.value, key.value);
+                    break;
+
+                case Animation.ANIMATIONTYPE_VECTOR2:
+                case Animation.ANIMATIONTYPE_VECTOR3:
+                case Animation.ANIMATIONTYPE_COLOR3:
+                case Animation.ANIMATIONTYPE_COLOR4:
+                    key.value.subtractToRef(valueStore.referenceValue, key.value);
+                    break;
+
+                case Animation.ANIMATIONTYPE_SIZE:
+                    key.value.width -= valueStore.referenceValue.width;
+                    key.value.height -= valueStore.referenceValue.height;
+                    break;
+
+                default:
+                    key.value -= valueStore.referenceValue;
+            }
+        }
+
+        return animation;
     }
 
     /**
@@ -572,6 +775,17 @@ export class Animation {
     }
 
     /**
+     * Interpolates a Color4 linearly
+     * @param startValue Start value of the animation curve
+     * @param endValue End value of the animation curve
+     * @param gradient Scalar amount to interpolate
+     * @returns Interpolated Color3 value
+     */
+    public color4InterpolateFunction(startValue: Color4, endValue: Color4, gradient: number): Color4 {
+        return Color4.Lerp(startValue, endValue, gradient);
+    }
+
+    /**
      * @hidden Internal use only
      */
     public _getKeyValue(value: any): any {
@@ -690,6 +904,15 @@ export class Animation {
                             case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                 return this.color3InterpolateFunction(startValue, endValue, gradient).add(state.offsetValue.scale(state.repeatCount));
                         }
+                    // Color4
+                    case Animation.ANIMATIONTYPE_COLOR4:
+                        switch (state.loopMode) {
+                            case Animation.ANIMATIONLOOPMODE_CYCLE:
+                            case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                                return this.color4InterpolateFunction(startValue, endValue, gradient);
+                            case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                                return this.color4InterpolateFunction(startValue, endValue, gradient).add(state.offsetValue.scale(state.repeatCount));
+                        }
                     // Matrix
                     case Animation.ANIMATIONTYPE_MATRIX:
                         switch (state.loopMode) {
@@ -803,6 +1026,7 @@ export class Animation {
                 case Animation.ANIMATIONTYPE_MATRIX:
                 case Animation.ANIMATIONTYPE_VECTOR3:
                 case Animation.ANIMATIONTYPE_COLOR3:
+                case Animation.ANIMATIONTYPE_COLOR4:
                     key.values = animationKey.value.asArray();
                     break;
             }
@@ -831,113 +1055,47 @@ export class Animation {
     /**
      * Float animation type
      */
-    private static _ANIMATIONTYPE_FLOAT = 0;
+    public static readonly ANIMATIONTYPE_FLOAT = 0;
     /**
      * Vector3 animation type
      */
-    private static _ANIMATIONTYPE_VECTOR3 = 1;
+    public static readonly ANIMATIONTYPE_VECTOR3 = 1;
     /**
      * Quaternion animation type
      */
-    private static _ANIMATIONTYPE_QUATERNION = 2;
+    public static readonly ANIMATIONTYPE_QUATERNION = 2;
     /**
      * Matrix animation type
      */
-    private static _ANIMATIONTYPE_MATRIX = 3;
+    public static readonly ANIMATIONTYPE_MATRIX = 3;
     /**
      * Color3 animation type
      */
-    private static _ANIMATIONTYPE_COLOR3 = 4;
+    public static readonly ANIMATIONTYPE_COLOR3 = 4;
+    /**
+     * Color3 animation type
+     */
+    public static readonly ANIMATIONTYPE_COLOR4 = 7;
     /**
      * Vector2 animation type
      */
-    private static _ANIMATIONTYPE_VECTOR2 = 5;
+    public static readonly ANIMATIONTYPE_VECTOR2 = 5;
     /**
      * Size animation type
      */
-    private static _ANIMATIONTYPE_SIZE = 6;
+    public static readonly ANIMATIONTYPE_SIZE = 6;
     /**
      * Relative Loop Mode
      */
-    private static _ANIMATIONLOOPMODE_RELATIVE = 0;
+    public static readonly ANIMATIONLOOPMODE_RELATIVE = 0;
     /**
      * Cycle Loop Mode
      */
-    private static _ANIMATIONLOOPMODE_CYCLE = 1;
+    public static readonly ANIMATIONLOOPMODE_CYCLE = 1;
     /**
      * Constant Loop Mode
      */
-    private static _ANIMATIONLOOPMODE_CONSTANT = 2;
-
-    /**
-     * Get the float animation type
-     */
-    public static get ANIMATIONTYPE_FLOAT(): number {
-        return Animation._ANIMATIONTYPE_FLOAT;
-    }
-
-    /**
-     * Get the Vector3 animation type
-     */
-    public static get ANIMATIONTYPE_VECTOR3(): number {
-        return Animation._ANIMATIONTYPE_VECTOR3;
-    }
-
-    /**
-     * Get the Vector2 animation type
-     */
-    public static get ANIMATIONTYPE_VECTOR2(): number {
-        return Animation._ANIMATIONTYPE_VECTOR2;
-    }
-
-    /**
-     * Get the Size animation type
-     */
-    public static get ANIMATIONTYPE_SIZE(): number {
-        return Animation._ANIMATIONTYPE_SIZE;
-    }
-
-    /**
-     * Get the Quaternion animation type
-     */
-    public static get ANIMATIONTYPE_QUATERNION(): number {
-        return Animation._ANIMATIONTYPE_QUATERNION;
-    }
-
-    /**
-     * Get the Matrix animation type
-     */
-    public static get ANIMATIONTYPE_MATRIX(): number {
-        return Animation._ANIMATIONTYPE_MATRIX;
-    }
-
-    /**
-     * Get the Color3 animation type
-     */
-    public static get ANIMATIONTYPE_COLOR3(): number {
-        return Animation._ANIMATIONTYPE_COLOR3;
-    }
-
-    /**
-     * Get the Relative Loop Mode
-     */
-    public static get ANIMATIONLOOPMODE_RELATIVE(): number {
-        return Animation._ANIMATIONLOOPMODE_RELATIVE;
-    }
-
-    /**
-     * Get the Cycle Loop Mode
-     */
-    public static get ANIMATIONLOOPMODE_CYCLE(): number {
-        return Animation._ANIMATIONLOOPMODE_CYCLE;
-    }
-
-    /**
-     * Get the Constant Loop Mode
-     */
-    public static get ANIMATIONLOOPMODE_CONSTANT(): number {
-        return Animation._ANIMATIONLOOPMODE_CONSTANT;
-    }
+    public static readonly ANIMATIONLOOPMODE_CONSTANT = 2;
 
     /** @hidden */
     public static _UniversalLerp(left: any, right: any, amount: number): any {
@@ -1009,6 +1167,9 @@ export class Animation {
                     break;
                 case Animation.ANIMATIONTYPE_COLOR3:
                     data = Color3.FromArray(key.values);
+                    break;
+                case Animation.ANIMATIONTYPE_COLOR4:
+                    data = Color4.FromArray(key.values);
                     break;
                 case Animation.ANIMATIONTYPE_VECTOR3:
                 default:

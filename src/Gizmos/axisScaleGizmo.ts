@@ -9,8 +9,6 @@ import { BoxBuilder } from "../Meshes/Builders/boxBuilder";
 import { CylinderBuilder } from "../Meshes/Builders/cylinderBuilder";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { ScaleGizmo } from "./scaleGizmo";
@@ -38,6 +36,10 @@ export class AxisScaleGizmo extends Gizmo {
      * If the scaling operation should be done on all axis (default: false)
      */
     public uniformScaling = false;
+    /**
+     * Custom sensitivity value for the drag strength
+     */
+    public sensitivity = 1;
 
     private _isEnabled: boolean = true;
     private _parent: Nullable<ScaleGizmo> = null;
@@ -93,7 +95,7 @@ export class AxisScaleGizmo extends Gizmo {
         this.dragBehavior.onDragObservable.add((event) => {
             if (this.attachedMesh) {
                 // Drag strength is modified by the scale of the gizmo (eg. for small objects like boombox the strength will be increased to match the behavior of larger objects)
-                var dragStrength = event.dragDistance * ((this.scaleRatio * 3) / this._rootMesh.scaling.length());
+                var dragStrength = this.sensitivity * event.dragDistance * ((this.scaleRatio * 3) / this._rootMesh.scaling.length());
 
                 // Snapping logic
                 var snapped = false;

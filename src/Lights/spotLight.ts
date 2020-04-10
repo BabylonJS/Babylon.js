@@ -8,8 +8,6 @@ import { Effect } from "../Materials/effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
-import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { Texture } from '../Materials/Textures/texture';
 
 Node.AddNodeConstructor("Light_Type_2", (name, scene) => {
@@ -304,13 +302,23 @@ export class SpotLight extends ShadowLight {
         this._projectionTextureDirty = false;
 
         this._projectionTextureViewLightMatrix.multiplyToRef(this._projectionTextureProjectionLightMatrix, this._projectionTextureMatrix);
+        if (this._projectionTexture instanceof Texture) {
+            const u = this._projectionTexture.uScale / 2.0;
+            const v = this._projectionTexture.vScale / 2.0;
+            Matrix.FromValuesToRef(
+                u,   0.0, 0.0, 0.0,
+                0.0, v,   0.0, 0.0,
+                0.0, 0.0, 0.5, 0.0,
+                0.5, 0.5, 0.5, 1.0
+            , this._projectionTextureScalingMatrix);
+        }
         this._projectionTextureMatrix.multiplyToRef(this._projectionTextureScalingMatrix, this._projectionTextureMatrix);
     }
 
     protected _buildUniformLayout(): void {
         this._uniformBuffer.addUniform("vLightData", 4);
         this._uniformBuffer.addUniform("vLightDiffuse", 4);
-        this._uniformBuffer.addUniform("vLightSpecular", 3);
+        this._uniformBuffer.addUniform("vLightSpecular", 4);
         this._uniformBuffer.addUniform("vLightDirection", 3);
         this._uniformBuffer.addUniform("vLightFalloff", 4);
         this._uniformBuffer.addUniform("shadowsInfo", 3);
@@ -321,6 +329,29 @@ export class SpotLight extends ShadowLight {
     private _computeAngleValues(): void {
         this._lightAngleScale = 1.0 / Math.max(0.001, (Math.cos(this._innerAngle * 0.5) - this._cosHalfAngle));
         this._lightAngleOffset = -this._cosHalfAngle * this._lightAngleScale;
+    }
+
+    /**
+     * Sets the passed Effect "effect" with the Light textures.
+     * @param effect The effect to update
+     * @param lightIndex The index of the light in the effect to update
+     * @returns The light
+     */
+    public transferTexturesToEffect(effect: Effect, lightIndex: string): Light {
+        if (this.projectionTexture && this.projectionTexture.isReady()) {
+            if (this._projectionTextureViewLightDirty) {
+                this._computeProjectionTextureViewLightMatrix();
+            }
+            if (this._projectionTextureProjectionLightDirty) {
+                this._computeProjectionTextureProjectionLightMatrix();
+            }
+            if (this._projectionTextureDirty) {
+                this._computeProjectionTextureMatrix();
+            }
+            effect.setMatrix("textureProjectionMatrix" + lightIndex, this._projectionTextureMatrix);
+            effect.setTexture("projectionLightSampler" + lightIndex, this.projectionTexture);
+        }
+        return this;
     }
 
     /**
@@ -375,20 +406,6 @@ export class SpotLight extends ShadowLight {
             this._lightAngleOffset,
             lightIndex
         );
-
-        if (this.projectionTexture && this.projectionTexture.isReady()) {
-            if (this._projectionTextureViewLightDirty) {
-                this._computeProjectionTextureViewLightMatrix();
-            }
-            if (this._projectionTextureProjectionLightDirty) {
-                this._computeProjectionTextureProjectionLightMatrix();
-            }
-            if (this._projectionTextureDirty) {
-                this._computeProjectionTextureMatrix();
-            }
-            effect.setMatrix("textureProjectionMatrix" + lightIndex, this._projectionTextureMatrix);
-            effect.setTexture("projectionLightSampler" + lightIndex, this.projectionTexture);
-        }
         return this;
     }
 

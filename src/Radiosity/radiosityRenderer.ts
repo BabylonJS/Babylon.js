@@ -376,7 +376,7 @@ export class RadiosityRenderer {
         uniformCallback(effect, args);
 
         // Draw triangles
-        mesh._processRendering(subMesh, effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
+        mesh._processRendering(mesh, subMesh, effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
             (isInstance, world) => effect.setMatrix("world", world));
 
         // render edges
@@ -542,7 +542,7 @@ export class RadiosityRenderer {
 
             var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
             mesh._bind(subMesh, this._radiosityEffectsManager.shootEffect, Material.TriangleFillMode);
-            mesh._processRendering(subMesh, this._radiosityEffectsManager.shootEffect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
+            mesh._processRendering(mesh, subMesh, this._radiosityEffectsManager.shootEffect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
                 (isInstance, world) => this._radiosityEffectsManager.shootEffect.setMatrix("world", world));
         }
 
@@ -1068,7 +1068,7 @@ export class RadiosityRenderer {
 
         // Draw triangles
         var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
-        mesh._processRendering(subMesh, effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
+        mesh._processRendering(mesh, subMesh, effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
             (isInstance, world) => effect.setMatrix("world", world));
     }
 

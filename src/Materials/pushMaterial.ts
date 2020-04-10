@@ -5,6 +5,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { Material } from "../Materials/material";
 import { Effect } from "../Materials/effect";
+import { SubMesh } from '../Meshes/subMesh';
 /**
  * Base class of materials working in push mode in babylon JS
  * @hidden
@@ -41,6 +42,17 @@ export class PushMaterial extends Material {
         }
 
         return this.isReadyForSubMesh(mesh, mesh.subMeshes[0], useInstances);
+    }
+
+    protected _isReadyForSubMesh(subMesh: SubMesh) {
+        const defines = subMesh._materialDefines;
+        if (!this.checkReadyOnEveryCall && subMesh.effect && defines) {
+            if (defines._renderId === this.getScene().getRenderId()) {
+                    return true;
+            }
+        }
+
+        return false;
     }
 
     /**

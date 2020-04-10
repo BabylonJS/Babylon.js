@@ -7,11 +7,13 @@ import { faEye, faEyeSlash, faSquare } from '@fortawesome/free-regular-svg-icons
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
+import { GlobalState } from '../../globalState';
 
 interface IMeshTreeItemComponentProps {
     mesh: AbstractMesh;
     extensibilityGroups?: IExplorerExtensibilityGroup[];
     onClick: () => void;
+    globalState: GlobalState;
 }
 
 export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponentProps, { isBoundingBoxEnabled: boolean, isVisible: boolean }> {

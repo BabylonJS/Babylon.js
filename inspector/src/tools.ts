@@ -1,18 +1,4 @@
 export class Tools {
-    public static StoreLocalBooleanSettings(key: string, value: boolean) {
-        if (typeof (Storage) !== "undefined") {
-            localStorage.setItem(key, value ? "true" : "false");
-        }
-    }
-
-    public static ReadLocalBooleanSettings(key: string, defaultValue: boolean): boolean {
-        if (typeof (Storage) !== "undefined" && localStorage.getItem(key) !== null) {
-            return localStorage.getItem(key) === "true";
-        } else {
-            return defaultValue;
-        }
-    }
-
     public static LookForItem(item: any, selectedEntity: any): boolean {
         if (item === selectedEntity) {
             return true;

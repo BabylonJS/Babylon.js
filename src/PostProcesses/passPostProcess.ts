@@ -91,5 +91,5 @@ export class PassCubePostProcess extends PostProcess {
 }
 
 Engine._RescalePostProcessFactory = (engine: Engine) => {
-    return new PassPostProcess("rescale", 1, null, Engine.TEXTURE_BILINEAR_SAMPLINGMODE, engine, false, Engine.TEXTURETYPE_UNSIGNED_INT);
+    return new PassPostProcess("rescale", 1, null, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, engine, false, Constants.TEXTURETYPE_UNSIGNED_INT);
 };

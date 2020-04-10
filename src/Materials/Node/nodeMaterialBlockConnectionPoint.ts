@@ -1,9 +1,32 @@
-import { NodeMaterialBlockConnectionPointTypes } from './nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
+import { NodeMaterialBlockConnectionPointTypes } from './Enums/nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockTargets } from './Enums/nodeMaterialBlockTargets';
 import { Nullable } from '../../types';
 import { InputBlock } from './Blocks/Input/inputBlock';
+import { Observable } from '../../Misc/observable';
 
 declare type NodeMaterialBlock = import("./nodeMaterialBlock").NodeMaterialBlock;
+
+/**
+ * Enum used to define the compatibility state between two connection points
+ */
+export enum NodeMaterialConnectionPointCompatibilityStates {
+    /** Points are compatibles */
+    Compatible,
+    /** Points are incompatible because of their types */
+    TypeIncompatible,
+    /** Points are incompatible because of their targets (vertex vs fragment) */
+    TargetIncompatible
+}
+
+/**
+ * Defines the direction of a connection point
+ */
+export enum NodeMaterialConnectionPointDirection {
+    /** Input */
+    Input,
+    /** Output */
+    Output
+}
 
 /**
  * Defines a connection point for a block
@@ -16,6 +39,7 @@ export class NodeMaterialConnectionPoint {
 
     private _endpoints = new Array<NodeMaterialConnectionPoint>();
     private _associatedVariableName: string;
+    private _direction: NodeMaterialConnectionPointDirection;
 
     /** @hidden */
     public _typeConnectionSource: Nullable<NodeMaterialConnectionPoint> = null;
@@ -28,10 +52,25 @@ export class NodeMaterialConnectionPoint {
     /** @hidden */
     public _enforceAssociatedVariableName = false;
 
+    /** Gets the direction of the point */
+    public get direction() {
+        return this._direction;
+    }
+
     /**
-     * Gets or sets the additional types supported byt this connection point
+     * Gets or sets the additional types supported by this connection point
      */
     public acceptedConnectionPointTypes = new Array<NodeMaterialBlockConnectionPointTypes>();
+
+    /**
+     * Gets or sets the additional types excluded by this connection point
+     */
+    public excludedConnectionPointTypes = new Array<NodeMaterialBlockConnectionPointTypes>();
+
+    /**
+     * Observable triggered when this point is connected
+     */
+    public onConnectionObservable = new Observable<NodeMaterialConnectionPoint>();
 
     /**
      * Gets or sets the associated variable name in the shader
@@ -50,6 +89,14 @@ export class NodeMaterialConnectionPoint {
 
     public set associatedVariableName(value: string) {
         this._associatedVariableName = value;
+    }
+
+    /** Get the inner type (ie AutoDetect for instance instead of the inferred one) */
+    public get innerType() {
+        if (this._linkedConnectionSource && this._linkedConnectionSource.isConnected) {
+            return this.type;
+        }
+        return this._type;
     }
 
     /**
@@ -96,8 +143,31 @@ export class NodeMaterialConnectionPoint {
      */
     public define: string;
 
+    /** @hidden */
+    public _prioritizeVertex = false;
+
+    private _target: NodeMaterialBlockTargets = NodeMaterialBlockTargets.VertexAndFragment;
+
     /** Gets or sets the target of that connection point */
-    public target: NodeMaterialBlockTargets = NodeMaterialBlockTargets.VertexAndFragment;
+    public get target(): NodeMaterialBlockTargets {
+        if (!this._prioritizeVertex || !this._ownerBlock) {
+            return this._target;
+        }
+
+        if (this._target !== NodeMaterialBlockTargets.VertexAndFragment) {
+            return this._target;
+        }
+
+        if (this._ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
+            return NodeMaterialBlockTargets.Fragment;
+        }
+
+        return NodeMaterialBlockTargets.Vertex;
+    }
+
+    public set target(value: NodeMaterialBlockTargets) {
+        this._target = value;
+    }
 
     /**
      * Gets a boolean indicating that the current point is connected
@@ -162,14 +232,70 @@ export class NodeMaterialConnectionPoint {
         return this._endpoints && this._endpoints.length > 0;
     }
 
+    /** Gets a boolean indicating that this connection will be used in the vertex shader */
+    public get isConnectedInVertexShader(): boolean {
+        if (this.target === NodeMaterialBlockTargets.Vertex) {
+            return true;
+        }
+
+        if (!this.hasEndpoints) {
+            return false;
+        }
+
+        for (var endpoint of this._endpoints) {
+            if (endpoint.ownerBlock.target === NodeMaterialBlockTargets.Vertex) {
+                return true;
+            }
+
+            if (endpoint.target === NodeMaterialBlockTargets.Vertex) {
+                return true;
+            }
+
+            if (endpoint.ownerBlock.target === NodeMaterialBlockTargets.Neutral || endpoint.ownerBlock.target === NodeMaterialBlockTargets.VertexAndFragment) {
+                if (endpoint.ownerBlock.outputs.some((o) => o.isConnectedInVertexShader)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /** Gets a boolean indicating that this connection will be used in the fragment shader */
+    public get isConnectedInFragmentShader(): boolean {
+        if (this.target === NodeMaterialBlockTargets.Fragment) {
+            return true;
+        }
+
+        if (!this.hasEndpoints) {
+            return false;
+        }
+
+        for (var endpoint of this._endpoints) {
+            if (endpoint.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
+                return true;
+            }
+
+            if (endpoint.ownerBlock.target === NodeMaterialBlockTargets.Neutral || endpoint.ownerBlock.target === NodeMaterialBlockTargets.VertexAndFragment) {
+                if (endpoint.ownerBlock.outputs.some((o) => o.isConnectedInFragmentShader)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Creates a new connection point
      * @param name defines the connection point name
      * @param ownerBlock defines the block hosting this connection point
+     * @param direction defines the direction of the connection point
      */
-    public constructor(name: string, ownerBlock: NodeMaterialBlock) {
+    public constructor(name: string, ownerBlock: NodeMaterialBlock, direction: NodeMaterialConnectionPointDirection) {
         this._ownerBlock = ownerBlock;
         this.name = name;
+        this._direction = direction;
     }
 
     /**
@@ -181,41 +307,80 @@ export class NodeMaterialConnectionPoint {
     }
 
     /**
-     * Gets an boolean indicating if the current point can be connected to another point
+     * Gets a boolean indicating if the current point can be connected to another point
      * @param connectionPoint defines the other connection point
-     * @returns true if the connection is possible
+     * @returns a boolean
      */
     public canConnectTo(connectionPoint: NodeMaterialConnectionPoint) {
-        if (this.type !== connectionPoint.type && connectionPoint.type !== NodeMaterialBlockConnectionPointTypes.AutoDetect) {
+        return this.checkCompatibilityState(connectionPoint) === NodeMaterialConnectionPointCompatibilityStates.Compatible;
+    }
+
+    /**
+     * Gets a number indicating if the current point can be connected to another point
+     * @param connectionPoint defines the other connection point
+     * @returns a number defining the compatibility state
+     */
+    public checkCompatibilityState(connectionPoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPointCompatibilityStates {
+        const ownerBlock = this._ownerBlock;
+
+        if (ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
+            // Let's check we are not going reverse
+            const otherBlock = connectionPoint.ownerBlock;
+
+            if (otherBlock.target === NodeMaterialBlockTargets.Vertex) {
+                return NodeMaterialConnectionPointCompatibilityStates.TargetIncompatible;
+            }
+
+            for (var output of otherBlock.outputs) {
+                if (output.isConnectedInVertexShader) {
+                    return NodeMaterialConnectionPointCompatibilityStates.TargetIncompatible;
+                }
+            }
+        }
+
+        if (this.type !== connectionPoint.type && connectionPoint.innerType !== NodeMaterialBlockConnectionPointTypes.AutoDetect) {
             // Equivalents
             switch (this.type) {
                 case NodeMaterialBlockConnectionPointTypes.Vector3: {
                     if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Color3) {
-                        return true;
+                        return NodeMaterialConnectionPointCompatibilityStates.Compatible;
                     }
+                    break;
                 }
                 case NodeMaterialBlockConnectionPointTypes.Vector4: {
                     if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Color4) {
-                        return true;
+                        return NodeMaterialConnectionPointCompatibilityStates.Compatible;
                     }
+                    break;
                 }
                 case NodeMaterialBlockConnectionPointTypes.Color3: {
                     if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Vector3) {
-                        return true;
+                        return NodeMaterialConnectionPointCompatibilityStates.Compatible;
                     }
+                    break;
                 }
                 case NodeMaterialBlockConnectionPointTypes.Color4: {
                     if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
-                        return true;
+                        return NodeMaterialConnectionPointCompatibilityStates.Compatible;
                     }
+                    break;
                 }
             }
 
             // Accepted types
-            return (connectionPoint.acceptedConnectionPointTypes && connectionPoint.acceptedConnectionPointTypes.indexOf(this.type) !== -1);
+            if (connectionPoint.acceptedConnectionPointTypes && connectionPoint.acceptedConnectionPointTypes.indexOf(this.type) !== -1) {
+                return NodeMaterialConnectionPointCompatibilityStates.Compatible;
+            } else {
+                return NodeMaterialConnectionPointCompatibilityStates.TypeIncompatible;
+            }
         }
 
-        return true;
+        // Excluded
+        if ((connectionPoint.excludedConnectionPointTypes && connectionPoint.excludedConnectionPointTypes.indexOf(this.type) !== -1)) {
+            return 1;
+        }
+
+        return NodeMaterialConnectionPointCompatibilityStates.Compatible;
     }
 
     /**
@@ -226,13 +391,17 @@ export class NodeMaterialConnectionPoint {
      */
     public connectTo(connectionPoint: NodeMaterialConnectionPoint, ignoreConstraints = false): NodeMaterialConnectionPoint {
         if (!ignoreConstraints && !this.canConnectTo(connectionPoint)) {
-            throw "Cannot connect two different connection types.";
+            throw "Cannot connect these two connectors.";
         }
 
         this._endpoints.push(connectionPoint);
         connectionPoint._connectedPoint = this;
 
         this._enforceAssociatedVariableName = false;
+
+        this.onConnectionObservable.notifyObservers(connectionPoint);
+        connectionPoint.onConnectionObservable.notifyObservers(this);
+
         return this;
     }
 
@@ -271,5 +440,12 @@ export class NodeMaterialConnectionPoint {
         }
 
         return serializationObject;
+    }
+
+    /**
+     * Release resources
+     */
+    public dispose() {
+        this.onConnectionObservable.clear();
     }
 }

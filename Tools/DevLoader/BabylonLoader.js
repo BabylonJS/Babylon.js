@@ -3,6 +3,9 @@
 var BABYLONDEVTOOLS;
 (function(BABYLONDEVTOOLS) {
 
+    var ua = window.navigator.userAgent;
+    var isIE = ua.indexOf("Trident") > 0;
+
     var getJson = function(url, callback, errorCallback) {
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url);
@@ -33,6 +36,7 @@ var BABYLONDEVTOOLS;
         var dependencies;
         var useDist;
         var testMode;
+        var workerMode;
         var min;
         var babylonJSPath;
 
@@ -44,8 +48,14 @@ var BABYLONDEVTOOLS;
             esmQueue = [];
             dependencies = [];
             callback = null;
-            min = (document.location.href.toLowerCase().indexOf('dist=min') > 0);
-            useDist = (min || useDist || document.location.href.toLowerCase().indexOf('dist=true') > 0);
+            if (typeof document !== "undefined") {
+                min = document.location.href.toLowerCase().indexOf('dist=min') > 0;
+                useDist = (min || useDist || document.location.href.toLowerCase().indexOf('dist=true') > 0);
+            } else {
+                min = false;
+                useDist = false;
+                workerMode = true;
+            }
             babylonJSPath = '';
         }
 
@@ -108,14 +118,25 @@ var BABYLONDEVTOOLS;
         }
 
         Loader.prototype.dequeue = function() {
-            if (queue.length + esmQueue.length == 0) {
+            if (queue.length + esmQueue.length === 0) {
                 console.log('Scripts loaded');
-                BABYLON.Engine.ShadersRepository = "/src/Shaders/";
+
+                if (BABYLON) {
+                    BABYLON.Engine.ShadersRepository = "/src/Shaders/";
+                }
                 if (callback) {
                     callback();
                 }
                 return;
             }
+
+            if (typeof document === "undefined") {
+                let url = esmQueue.length ? esmQueue.shift() : queue.shift();
+                console.log(url);
+                importScripts(url);
+                this.dequeue();    
+                return;
+            } 
 
             var head = document.getElementsByTagName('head')[0];
             var script = document.createElement('script');
@@ -130,9 +151,15 @@ var BABYLONDEVTOOLS;
             }
 
             var self = this;
-            script.onload = function() {
-                self.dequeue();
-            };
+            if (isIE) { // I love you IE
+                setTimeout(function() {
+                    self.dequeue();
+                }, 500);
+            } else {
+                script.onload = function() {
+                    self.dequeue();
+                };
+            }
             head.appendChild(script);
         }
 
@@ -169,6 +196,9 @@ var BABYLONDEVTOOLS;
             distFolder += "/";
             
             if (!useDist) {
+                if (workerMode && module.build.ignoreInWorkerMode) {
+                    return;
+                }
                 var tempDirectory = '/.temp/' + localDevUMDFolderName + distFolder;
                 this.loadScript((babylonJSPath + tempDirectory + library.output)
                     .replace(".min.", ".")
@@ -191,6 +221,10 @@ var BABYLONDEVTOOLS;
         }
 
         Loader.prototype.loadCoreDev = function() {
+            if (typeof document === "undefined" || isIE) {                
+                this.loadScript(babylonJSPath + "/dist/preview release/babylon.max.js");
+                return;
+            }
             // Es6 core import
             this.loadESMScript(babylonJSPath + "/.temp/" + localDevES6FolderName + "/core/Legacy/legacy.js");
         }

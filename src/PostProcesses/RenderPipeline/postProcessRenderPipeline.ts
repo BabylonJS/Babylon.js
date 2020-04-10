@@ -36,6 +36,11 @@ export class PostProcessRenderPipeline {
         return this._name;
     }
 
+    /** Gets the list of attached cameras */
+    public get cameras() {
+        return this._cameras;
+    }
+
     /**
      * Initializes a PostProcessRenderPipeline
      * @param engine engine to add the pipeline to
@@ -134,6 +139,9 @@ export class PostProcessRenderPipeline {
         var i: number;
         for (i = 0; i < cams.length; i++) {
             var camera = cams[i];
+            if (!camera) {
+                continue;
+            }
             var cameraName = camera.name;
 
             if (this._cameras.indexOf(camera) === -1) {
@@ -187,6 +195,9 @@ export class PostProcessRenderPipeline {
         }
 
         for (var i = 0; i < this._cameras.length; i++) {
+            if (! this._cameras[i]) {
+                continue;
+            }
             var cameraName = this._cameras[i].name;
             if ((<any>this._renderEffectsForIsolatedPass)[cameraName]) {
                 (<any>this._renderEffectsForIsolatedPass)[cameraName]._update();

@@ -153,11 +153,7 @@ void main(void) {
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 
 #ifdef REFLECTIONMAP_SKYBOX
-    #ifdef REFLECTIONMAP_SKYBOX_TRANSFORMED
-        vPositionUVW = (reflectionMatrix * vec4(positionUpdated, 1.0)).xyz;
-    #else
-        vPositionUVW = positionUpdated;
-    #endif
+    vPositionUVW = positionUpdated;
 #endif 
 
 #define CUSTOM_VERTEX_UPDATE_POSITION
@@ -166,16 +162,6 @@ void main(void) {
 
 #include<instancesVertex>
 #include<bonesVertex>
-
-#ifdef MULTIVIEW
-	if (gl_ViewID_OVR == 0u) {
-		gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
-	} else {
-		gl_Position = viewProjectionR * finalWorld * vec4(positionUpdated, 1.0);
-	}
-#else
-	gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
-#endif
 
 #if DEBUGMODE > 0
     vClipSpacePosition = gl_Position;
@@ -200,6 +186,18 @@ void main(void) {
         #endif
         vEnvironmentIrradiance = computeEnvironmentIrradiance(reflectionVector);
     #endif
+#endif
+
+#define CUSTOM_VERTEX_UPDATE_WORLDPOS
+
+#ifdef MULTIVIEW
+	if (gl_ViewID_OVR == 0u) {
+		gl_Position = viewProjection * worldPos;
+	} else {
+		gl_Position = viewProjectionR * worldPos;
+	}
+#else
+	gl_Position = viewProjection * worldPos;
 #endif
 
 #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)

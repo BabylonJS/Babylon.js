@@ -66,7 +66,7 @@ export class Inspector {
                     targetDoc.head!.appendChild(newLinkEl);
                 }
             } catch (e) {
-                console.log(e)
+                console.log(e);
             }
 
         }
@@ -193,8 +193,8 @@ export class Inspector {
                     if (options.popup) {
                         this._ActionTabsWindow.close();
                     }
-
-                }
+                },
+                initialTab: options.initialTab
             });
             ReactDOM.render(actionTabsElement, this._ActionTabsHost);
         }
@@ -222,6 +222,7 @@ export class Inspector {
             this._OpenedPane++;
             const embedHostElement = React.createElement(EmbedHostComponent, {
                 globalState: this._GlobalState, scene: scene,
+                extensibilityGroups: options.explorerExtensibility,
                 noExpand: !options.enablePopup,
                 noClose: !options.enableClose,
                 popupMode: options.popup, onPopup: () => {
@@ -250,7 +251,8 @@ export class Inspector {
                     if (options.popup) {
                         this._EmbedHostWindow.close();
                     }
-                }
+                },
+                initialTab: options.initialTab
             });
             ReactDOM.render(embedHostElement, this._EmbedHost);
         }
@@ -345,14 +347,14 @@ export class Inspector {
 
         this._Scene = scene;
 
-        var canvas = scene ? scene.getEngine().getRenderingCanvas() : EngineStore.LastCreatedEngine!.getRenderingCanvas();
+        var rootElement = scene ? scene.getEngine().getInputElement() : EngineStore.LastCreatedEngine!.getInputElement();
 
         if (options.embedMode && options.showExplorer && options.showInspector) {
             if (options.popup) {
                 this._CreateEmbedHost(scene, options, this._CreatePopup("INSPECTOR", "_EmbedHostWindow"), Inspector.OnSelectionChangeObservable);
             }
             else {
-                let parentControl = (options.globalRoot ? options.globalRoot : canvas!.parentElement) as HTMLElement;
+                let parentControl = (options.globalRoot ? options.globalRoot : rootElement!.parentElement) as HTMLElement;
 
                 if (!options.overlay && !this._NewCanvasContainer) {
                     this._CreateCanvasContainer(parentControl);
@@ -387,7 +389,7 @@ export class Inspector {
                 this._CreateActionTabs(scene, options, this._CreatePopup("INSPECTOR", "_ActionTabsWindow"));
             }
         } else {
-            let parentControl = (options.globalRoot ? options.globalRoot : canvas!.parentElement) as HTMLElement;
+            let parentControl = (options.globalRoot ? options.globalRoot : rootElement!.parentElement) as HTMLElement;
 
             if (!options.overlay && !this._NewCanvasContainer) {
                 this._CreateCanvasContainer(parentControl);

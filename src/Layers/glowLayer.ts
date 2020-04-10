@@ -85,8 +85,7 @@ export interface IGlowLayerOptions {
 /**
  * The glow layer Helps adding a glow effect around the emissive parts of a mesh.
  *
- * Once instantiated in a scene, simply use the pushMesh or removeMesh method to add or remove
- * glowy meshes to your scene.
+ * Once instantiated in a scene, by default, all the emissive meshes will glow.
  *
  * Documentation: https://doc.babylonjs.com/how_to/glow_layer
  */
@@ -154,6 +153,7 @@ export class GlowLayer extends EffectLayer {
 
     private _includedOnlyMeshes: number[] = [];
     private _excludedMeshes: number[] = [];
+    private _meshesUsingTheirOwnMaterials: number[] = [];
 
     /**
      * Callback used to let the user override the color selection on a per mesh basis
@@ -350,7 +350,7 @@ export class GlowLayer extends EffectLayer {
     }
 
     /**
-     * Returns wether or nood the layer needs stencil enabled during the mesh rendering.
+     * Returns whether or nood the layer needs stencil enabled during the mesh rendering.
      */
     public needStencil(): boolean {
         return false;
@@ -509,6 +509,37 @@ export class GlowLayer extends EffectLayer {
         }
 
         return true;
+    }
+
+    /**
+     * Defines whether the current material of the mesh should be use to render the effect.
+     * @param mesh defines the current mesh to render
+     */
+    protected _useMeshMaterial(mesh: AbstractMesh): boolean {
+        if (this._meshesUsingTheirOwnMaterials.length == 0) {
+            return false;
+        }
+        return this._meshesUsingTheirOwnMaterials.indexOf(mesh.uniqueId) > -1;
+    }
+
+    /**
+     * Add a mesh to be rendered through its own material and not with emissive only.
+     * @param mesh The mesh for which we need to use its material
+     */
+    public referenceMeshToUseItsOwnMaterial(mesh: AbstractMesh): void {
+        this._meshesUsingTheirOwnMaterials.push(mesh.uniqueId);
+    }
+
+    /**
+     * Remove a mesh from being rendered through its own material and not with emissive only.
+     * @param mesh The mesh for which we need to not use its material
+     */
+    public unReferenceMeshFromUsingItsOwnMaterial(mesh: AbstractMesh): void {
+        let index = this._meshesUsingTheirOwnMaterials.indexOf(mesh.uniqueId);
+        while (index >= 0) {
+            this._meshesUsingTheirOwnMaterials.splice(index, 1);
+            index = this._meshesUsingTheirOwnMaterials.indexOf(mesh.uniqueId);
+        }
     }
 
     /**

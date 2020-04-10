@@ -9,7 +9,7 @@ import { TextLineComponent } from "../../../lines/textLineComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
 import { Skeleton } from 'babylonjs/Bones/skeleton';
-import { AnimationGridComponent } from '../animationPropertyGridComponent';
+import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
 import { SkeletonViewer } from 'babylonjs/Debug/skeletonViewer';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 
@@ -91,6 +91,15 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
         return true;
     }
 
+    onOverrideMeshLink() {
+        if (!this.props.globalState.onSelectionChangedObservable) {
+            return;
+        }
+
+        const skeleton = this.props.skeleton;
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(skeleton.overrideMesh);
+    }        
+
     render() {
         const skeleton = this.props.skeleton;
 
@@ -98,10 +107,14 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
             <div className="pane">
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={skeleton}
                     lockObject={this.props.lockObject}
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />                    
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="ID" value={skeleton.id} />
                     <TextLineComponent label="Bone count" value={skeleton.bones.length.toString()} />
+                    {
+                        skeleton.overrideMesh &&
+                        <TextLineComponent label="Override mesh" value={skeleton.overrideMesh.name} onLink={() => this.onOverrideMeshLink()}/>
+                    }                        
                     <CheckBoxLineComponent label="Use texture to store matrices" target={skeleton} propertyName="useTextureToStoreBoneMatrices" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Debug mode" isSelected={() => this._skeletonViewersEnabled} onSelect={() => this.switchSkeletonViewers()} />
                 </LineContainerComponent>

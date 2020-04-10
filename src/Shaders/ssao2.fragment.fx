@@ -41,13 +41,15 @@ void main()
 {
 	vec3 random = texture2D(randomSampler, vUV * randTextureTiles).rgb;
 	float depth = texture2D(textureSampler, vUV).r;
-	float depthSign = depth / abs(depth);
+	float depthSign = sign(depth);
 	depth = depth * depthSign;
-	vec3 normal = texture2D(normalSampler, vUV).rgb; 
+	vec3 normal = texture2D(normalSampler, vUV).rgb;
 	float occlusion = 0.0;
 	float correctedRadius = min(radius, minZAspect * depth / near);
 
 	vec3 vViewRay = vec3((vUV.x * 2.0 - 1.0)*xViewport, (vUV.y * 2.0 - 1.0)*yViewport, depthSign);
+  // flipping normals in case of polygons with no backface culling, to avoid generating fully occluded hemisphere
+  normal = sign(-dot(normal, vViewRay)) * normal;
 	vec3 origin = vViewRay * depth;
 	vec3 rvec = random * 2.0 - 1.0;
 	rvec.z = 0.0;

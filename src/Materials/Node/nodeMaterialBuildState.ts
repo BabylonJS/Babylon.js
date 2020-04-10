@@ -1,5 +1,5 @@
-import { NodeMaterialBlockConnectionPointTypes } from './nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
+import { NodeMaterialBlockConnectionPointTypes } from './Enums/nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockTargets } from './Enums/nodeMaterialBlockTargets';
 import { NodeMaterialBuildStateSharedData } from './nodeMaterialBuildStateSharedData';
 import { Effect } from '../effect';
 import { StringTools } from '../../Misc/stringTools';
@@ -19,9 +19,9 @@ export class NodeMaterialBuildState {
      */
     public uniforms = new Array<string>();
     /**
-     * Gets the list of emitted uniform buffers
-     */
-    public uniformBuffers = new Array<string>();
+    * Gets the list of emitted constants
+    */
+    public constants = new Array<string>();
     /**
      * Gets the list of emitted samplers
      */
@@ -30,6 +30,11 @@ export class NodeMaterialBuildState {
      * Gets the list of emitted functions
      */
     public functions: { [key: string]: string } = {};
+    /**
+     * Gets the list of emitted extensions
+     */
+    public extensions: { [key: string]: string } = {};
+
     /**
      * Gets the target of the compilation state
      */
@@ -51,6 +56,8 @@ export class NodeMaterialBuildState {
     public _attributeDeclaration = "";
     /** @hidden */
     public _uniformDeclaration = "";
+    /** @hidden */
+    public _constantDeclaration = "";
     /** @hidden */
     public _samplerDeclaration = "";
     /** @hidden */
@@ -74,6 +81,10 @@ export class NodeMaterialBuildState {
         let isFragmentMode = (this.target === NodeMaterialBlockTargets.Fragment);
 
         this.compilationString = `\r\n${emitComments ? "//Entry point\r\n" : ""}void main(void) {\r\n${this.compilationString}`;
+
+        if (this._constantDeclaration) {
+            this.compilationString = `\r\n${emitComments ? "//Constants\r\n" : ""}${this._constantDeclaration}\r\n${this.compilationString}`;
+        }
 
         let functionCode = "";
         for (var functionName in this.functions) {
@@ -101,6 +112,11 @@ export class NodeMaterialBuildState {
 
         if (this._attributeDeclaration && !isFragmentMode) {
             this.compilationString = `\r\n${emitComments ? "//Attributes\r\n" : ""}${this._attributeDeclaration}\r\n${this.compilationString}`;
+        }
+
+        for (var extensionName in this.extensions) {
+            let extension = this.extensions[extensionName];
+            this.compilationString = `\r\n${extension}\r\n${this.compilationString}`;
         }
 
         this._builtCompilationString = this.compilationString;
@@ -148,6 +164,12 @@ export class NodeMaterialBuildState {
     }
 
     /** @hidden */
+    public _emit2DSampler(name: string) {
+        this._samplerDeclaration += `uniform sampler2D ${name};\r\n`;
+        this.samplers.push(name);
+    }
+
+    /** @hidden */
     public _getGLType(type: NodeMaterialBlockConnectionPointTypes): string {
         switch (type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
@@ -167,6 +189,15 @@ export class NodeMaterialBuildState {
         }
 
         return "";
+    }
+
+    /** @hidden */
+    public _emitExtension(name: string, extension: string) {
+        if (this.extensions[name]) {
+            return;
+        }
+
+        this.extensions[name] = extension;
     }
 
     /** @hidden */
@@ -321,5 +352,14 @@ export class NodeMaterialBuildState {
         if (define) {
             this._uniformDeclaration += `#endif\r\n`;
         }
+    }
+
+    /** @hidden */
+    public _emitFloat(value: number) {
+        if (value.toString() === value.toFixed(0)) {
+            return `${value}.0`;
+        }
+
+        return value.toString();
     }
 }

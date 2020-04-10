@@ -1,18 +1,17 @@
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
-import { Engine } from "../../Engines/engine";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
-import { _TimeToken } from "../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { HDRTools } from "../../Misc/HighDynamicRange/hdr";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 import { _TypeStore } from '../../Misc/typeStore';
 import { Tools } from '../../Misc/tools';
-import "../../Engines/Extensions/engine.rawTexture";
 import { ToGammaSpace } from '../../Maths/math.constants';
+
+import "../../Engines/Extensions/engine.rawTexture";
+import "../../Materials/Textures/baseTexture.polynomial";
 
 /**
  * This represents a texture coming from an HDR input.
@@ -134,6 +133,7 @@ export class HDRCubeTexture extends BaseTexture {
 
         this._noMipmap = noMipmap;
         this._size = size;
+        this._generateHarmonics = generateHarmonics;
 
         this._texture = this._getFromCache(url, this._noMipmap);
 
@@ -141,7 +141,7 @@ export class HDRCubeTexture extends BaseTexture {
             if (!scene.useDelayedTextureLoading) {
                 this.loadTexture();
             } else {
-                this.delayLoadState = Engine.DELAYLOADSTATE_NOTLOADED;
+                this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
             }
         } else if (onLoad) {
             if (this._texture.isReady) {
@@ -244,8 +244,8 @@ export class HDRCubeTexture extends BaseTexture {
         let scene = this.getScene();
         if (scene) {
             this._texture = scene.getEngine().createRawCubeTextureFromUrl(this.url, scene, this._size,
-                Engine.TEXTUREFORMAT_RGB,
-                scene.getEngine().getCaps().textureFloat ? Engine.TEXTURETYPE_FLOAT : Engine.TEXTURETYPE_UNSIGNED_INT,
+                Constants.TEXTUREFORMAT_RGB,
+                scene.getEngine().getCaps().textureFloat ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INT,
                 this._noMipmap,
                 callback,
                 null, this._onLoad, this._onError);
@@ -273,11 +273,11 @@ export class HDRCubeTexture extends BaseTexture {
 
     // Methods
     public delayLoad(): void {
-        if (this.delayLoadState !== Engine.DELAYLOADSTATE_NOTLOADED) {
+        if (this.delayLoadState !== Constants.DELAYLOADSTATE_NOTLOADED) {
             return;
         }
 
-        this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
+        this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
         this._texture = this._getFromCache(this.url, this._noMipmap);
 
         if (!this._texture) {

@@ -494,9 +494,9 @@ export class ImageProcessingConfiguration {
     /**
      * Binds the image processing to the shader.
      * @param effect The effect to bind to
-     * @param aspectRatio Define the current aspect ratio of the effect
+     * @param overrideAspectRatio Override the aspect ratio of the effect
      */
-    public bind(effect: Effect, aspectRatio = 1): void {
+    public bind(effect: Effect, overrideAspectRatio?: number): void {
         // Color Curves
         if (this._colorCurvesEnabled && this.colorCurves) {
             ColorCurves.Bind(this.colorCurves, effect);
@@ -507,6 +507,8 @@ export class ImageProcessingConfiguration {
             var inverseWidth = 1 / effect.getEngine().getRenderWidth();
             var inverseHeight = 1 / effect.getEngine().getRenderHeight();
             effect.setFloat2("vInverseScreenSize", inverseWidth, inverseHeight);
+
+            let aspectRatio = overrideAspectRatio != null ? overrideAspectRatio : (inverseHeight / inverseWidth);
 
             let vignetteScaleY = Math.tan(this.vignetteCameraFov * 0.5);
             let vignetteScaleX = vignetteScaleY * aspectRatio;

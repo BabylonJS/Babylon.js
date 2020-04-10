@@ -10,7 +10,7 @@ export class ShaderDefineArithmeticOperator extends ShaderDefineExpression {
         let value = preprocessors[this.define];
 
         if (value === undefined) {
-            return false;
+            value = this.define;
         }
 
         let condition = false;

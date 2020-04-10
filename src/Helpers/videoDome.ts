@@ -1,8 +1,6 @@
 import { Scene } from "../scene";
 import { TransformNode } from "../Meshes/transformNode";
 import { Mesh } from "../Meshes/mesh";
-import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { Texture } from "../Materials/Textures/texture";
 import { VideoTexture, VideoTextureSettings } from "../Materials/Textures/videoTexture";
 import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial";
@@ -162,7 +160,7 @@ export class VideoDome extends TransformNode {
         let material = this._material = new BackgroundMaterial(name + "_material", scene);
         let texture = this._videoTexture = new VideoTexture(name + "_texture", urlsOrVideo, scene, false, this._useDirectMapping, Texture.TRILINEAR_SAMPLINGMODE, tempOptions);
         this._mesh = Mesh.CreateSphere(name + "_mesh", options.resolution, options.size, scene, false, Mesh.BACKSIDE);
-
+        texture.anisotropicFilteringLevel = 1;
         texture.onLoadObservable.addOnce(() => {
             this._setReady(true);
         });

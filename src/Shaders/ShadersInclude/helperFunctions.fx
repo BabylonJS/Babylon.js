@@ -53,6 +53,11 @@ vec3 toGammaSpace(vec3 color)
     return pow(color, vec3(GammaEncodePowerApprox));
 }
 
+float toGammaSpace(float color)
+{
+    return pow(color, GammaEncodePowerApprox);
+}
+
 float square(float value)
 {
     return value * value;

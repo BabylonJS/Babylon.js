@@ -19,7 +19,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
     constructor(props: ITextInputLineComponentProps) {
         super(props);
 
-        this.state = { value: this.props.value || this.props.target[this.props.propertyName!] || "" }
+        this.state = { value: (this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!]) || "" }
     }
 
     componentWillUnmount() {
@@ -32,7 +32,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
             return true;
         }
 
-        const newValue = nextProps.value || nextProps.target[nextProps.propertyName!];
+        const newValue = nextProps.value  !== undefined  ? nextProps.value : nextProps.target[nextProps.propertyName!];
         if (newValue !== nextState.value) {
             nextState.value = newValue || "";
             return true;
@@ -61,7 +61,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
     updateValue(value: string) {
 
         this._localChange = true;
-        const store = this.props.value || this.props.target[this.props.propertyName!];
+        const store = this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!];
         this.setState({ value: value });
 
         this.raiseOnPropertyChanged(value, store);

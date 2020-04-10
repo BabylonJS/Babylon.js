@@ -1,6 +1,6 @@
 import { Nullable } from "babylonjs/types";
 import { Observable, Observer } from "babylonjs/Misc/observable";
-import { Vector3 } from "babylonjs/Maths/math";
+import { Vector3 } from "babylonjs/Maths/math.vector";
 import { PointerInfo, PointerEventTypes } from 'babylonjs/Events/pointerEvents';
 import { Material } from "babylonjs/Materials/material";
 import { HemisphericLight } from "babylonjs/Lights/hemisphericLight";

@@ -11,6 +11,7 @@ class ListLineOption {
 interface IOptionsLineComponentProps {
     label: string,
     target: any,
+    className?: string,
     propertyName?: string,
     options: ListLineOption[],
     noDirectUpdate?: boolean,
@@ -88,8 +89,8 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
                     {this.props.label}
 
                 </div>
-                <div className="options">
-                    <select onChange={evt => this.updateValue(evt.target.value)} value={this.state.value}>
+                <div className={"options" + (this.props.className ? " " + this.props.className : "")}>
+                    <select onChange={evt => this.updateValue(evt.target.value)} value={this.state.value ?? ""}>
                         {
                             this.props.options.map(option => {
                                 return (

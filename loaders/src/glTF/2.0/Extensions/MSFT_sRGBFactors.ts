@@ -11,12 +11,13 @@ const NAME = "MSFT_sRGBFactors";
 /** @hidden */
 export class MSFT_sRGBFactors implements IGLTFLoaderExtension {
     public readonly name = NAME;
-    public enabled = true;
+    public enabled: boolean;
 
     private _loader: GLTFLoader;
 
     constructor(loader: GLTFLoader) {
         this._loader = loader;
+        this.enabled = this._loader.isExtensionUsed(NAME);
     }
 
     public dispose() {

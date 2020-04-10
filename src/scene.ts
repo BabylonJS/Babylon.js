@@ -54,6 +54,7 @@ import { Color4, Color3 } from './Maths/math.color';
 import { Plane } from './Maths/math.plane';
 import { Frustum } from './Maths/math.frustum';
 import { UniqueIdGenerator } from './Misc/uniqueIdGenerator';
+import { FileTools, LoadFileError, RequestFileError, ReadFileError } from './Misc/fileTools';
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -91,7 +92,7 @@ export interface SceneOptions {
      * Defines that each mesh of the scene should keep up-to-date a map of referencing cloned meshes for fast diposing
      * It will improve performance when the number of mesh becomes important, but might consume a bit more memory
      */
-    useClonedMeshhMap?: boolean;
+    useClonedMeshMap?: boolean;
 
     /** Defines if the creation of the scene should impact the engine (Eg. UtilityLayer's scene) */
     virtual?: boolean;
@@ -150,6 +151,9 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     /** @hidden */
     public readonly _isScene = true;
+
+    /** @hidden */
+    public _blockEntityCollection = false;
 
     /**
      * Gets or sets a boolean that indicates if the scene must clear the render buffer before rendering a frame
@@ -257,6 +261,20 @@ export class Scene extends AbstractScene implements IAnimatable {
         return this._forceWireframe;
     }
 
+    private _skipFrustumClipping = false;
+    /**
+     * Gets or sets a boolean indicating if we should skip the frustum clipping part of the active meshes selection
+     */
+    public set skipFrustumClipping(value: boolean) {
+        if (this._skipFrustumClipping === value) {
+            return;
+        }
+        this._skipFrustumClipping = value;
+    }
+    public get skipFrustumClipping(): boolean {
+        return this._skipFrustumClipping;
+    }
+
     private _forcePointsCloud = false;
     /**
      * Gets or sets a boolean indicating if all rendering must be done in point cloud
@@ -291,6 +309,16 @@ export class Scene extends AbstractScene implements IAnimatable {
      * Gets or sets the active clipplane 4
      */
     public clipPlane4: Nullable<Plane>;
+
+    /**
+     * Gets or sets the active clipplane 5
+     */
+    public clipPlane5: Nullable<Plane>;
+
+    /**
+     * Gets or sets the active clipplane 6
+     */
+    public clipPlane6: Nullable<Plane>;
 
     /**
      * Gets or sets a boolean indicating if animations are enabled
@@ -329,6 +357,10 @@ export class Scene extends AbstractScene implements IAnimatable {
      * Defines the HTML default cursor to use (empty by default)
      */
     public defaultCursor: string = "";
+    /**
+     * Defines whether cursors are handled by the scene.
+     */
+    public doNotHandleCursors = false;
     /**
      * This is used to call preventDefault() on pointer down
      * in order to block unwanted artifacts like system double clicks
@@ -620,6 +652,11 @@ export class Scene extends AbstractScene implements IAnimatable {
      * This Observable will when a mesh has been imported into the scene.
      */
     public onMeshImportedObservable = new Observable<AbstractMesh>();
+
+    /**
+     * This Observable will when an animation file has been imported into the scene.
+     */
+    public onAnimationFileImportedObservable = new Observable<Scene>();
 
     /**
      * Gets or sets a user defined funtion to select LOD from a mesh and a camera.
@@ -1152,7 +1189,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     /** @hidden */
     public readonly useMaterialMeshMap: boolean;
     /** @hidden */
-    public readonly useClonedMeshhMap: boolean;
+    public readonly useClonedMeshMap: boolean;
 
     private _externalData: StringDictionary<Object>;
     private _uid: Nullable<string>;
@@ -1337,8 +1374,17 @@ export class Scene extends AbstractScene implements IAnimatable {
      */
     constructor(engine: Engine, options?: SceneOptions) {
         super();
+
+        const fullOptions = {
+            useGeometryUniqueIdsMap: true,
+            useMaterialMeshMap: true,
+            useClonedMeshMap: true,
+            virtual: false,
+            ...options
+        };
+
         this._engine = engine || EngineStore.LastCreatedEngine;
-        if (!options || !options.virtual) {
+        if (!fullOptions.virtual) {
             EngineStore._LastCreatedScene = this;
             this._engine.scenes.push(this);
         }
@@ -1365,12 +1411,12 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         this.setDefaultCandidateProviders();
 
-        if (options && options.useGeometryUniqueIdsMap === true) {
+        if (fullOptions.useGeometryUniqueIdsMap) {
             this.geometriesByUniqueId = {};
         }
 
-        this.useMaterialMeshMap = options && options.useGeometryUniqueIdsMap || false;
-        this.useClonedMeshhMap = options && options.useClonedMeshhMap || false;
+        this.useMaterialMeshMap = fullOptions.useMaterialMeshMap;
+        this.useClonedMeshMap = fullOptions.useClonedMeshMap;
 
         if (!options || !options.virtual) {
             this._engine.onNewSceneAddedObservable.notifyObservers(this);
@@ -1995,9 +2041,17 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param recursive if all child meshes should also be added to the scene
      */
     public addMesh(newMesh: AbstractMesh, recursive = false) {
+        if (this._blockEntityCollection) {
+            return;
+        }
+
         this.meshes.push(newMesh);
 
         newMesh._resyncLightSources();
+
+        if (!newMesh.parent) {
+            newMesh._addToSceneRootNodes();
+        }
 
         this.onNewMeshAddedObservable.notifyObservers(newMesh);
 
@@ -2020,6 +2074,10 @@ export class Scene extends AbstractScene implements IAnimatable {
             // Remove from the scene if mesh found
             this.meshes[index] = this.meshes[this.meshes.length - 1];
             this.meshes.pop();
+
+            if (!toRemove.parent) {
+                toRemove._removeFromSceneRootNodes();
+            }
         }
 
         this.onMeshRemovedObservable.notifyObservers(toRemove);
@@ -2036,8 +2094,15 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newTransformNode defines the transform node to add
      */
     public addTransformNode(newTransformNode: TransformNode) {
+        if (this._blockEntityCollection) {
+            return;
+        }
         newTransformNode._indexInSceneTransformNodesArray = this.transformNodes.length;
         this.transformNodes.push(newTransformNode);
+
+        if (!newTransformNode.parent) {
+            newTransformNode._addToSceneRootNodes();
+        }
 
         this.onNewTransformNodeAddedObservable.notifyObservers(newTransformNode);
     }
@@ -2058,6 +2123,9 @@ export class Scene extends AbstractScene implements IAnimatable {
 
             toRemove._indexInSceneTransformNodesArray = -1;
             this.transformNodes.pop();
+            if (!toRemove.parent) {
+                toRemove._removeFromSceneRootNodes();
+            }
         }
 
         this.onTransformNodeRemovedObservable.notifyObservers(toRemove);
@@ -2112,6 +2180,10 @@ export class Scene extends AbstractScene implements IAnimatable {
             // Remove from the scene if mesh found
             this.lights.splice(index, 1);
             this.sortLightsByPriority();
+
+            if (!toRemove.parent) {
+                toRemove._removeFromSceneRootNodes();
+            }
         }
         this.onLightRemovedObservable.notifyObservers(toRemove);
         return index;
@@ -2127,6 +2199,9 @@ export class Scene extends AbstractScene implements IAnimatable {
         if (index !== -1) {
             // Remove from the scene if mesh found
             this.cameras.splice(index, 1);
+            if (!toRemove.parent) {
+                toRemove._removeFromSceneRootNodes();
+            }
         }
         // Remove from activeCameras
         var index2 = this.activeCameras.indexOf(toRemove);
@@ -2264,10 +2339,17 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newLight The light to add
      */
     public addLight(newLight: Light): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
         this.lights.push(newLight);
         this.sortLightsByPriority();
 
-        // Add light to all meshes (To support if the light is removed and then readded)
+        if (!newLight.parent) {
+            newLight._addToSceneRootNodes();
+        }
+
+        // Add light to all meshes (To support if the light is removed and then re-added)
         for (var mesh of this.meshes) {
             if (mesh.lightSources.indexOf(newLight) === -1) {
                 mesh.lightSources.push(newLight);
@@ -2292,8 +2374,16 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newCamera The camera to add
      */
     public addCamera(newCamera: Camera): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
+
         this.cameras.push(newCamera);
         this.onNewCameraAddedObservable.notifyObservers(newCamera);
+
+        if (!newCamera.parent) {
+            newCamera._addToSceneRootNodes();
+        }
     }
 
     /**
@@ -2301,6 +2391,9 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newSkeleton The skeleton to add
      */
     public addSkeleton(newSkeleton: Skeleton): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
         this.skeletons.push(newSkeleton);
         this.onNewSkeletonAddedObservable.notifyObservers(newSkeleton);
     }
@@ -2310,6 +2403,9 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newParticleSystem The particle system to add
      */
     public addParticleSystem(newParticleSystem: IParticleSystem): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
         this.particleSystems.push(newParticleSystem);
     }
 
@@ -2318,6 +2414,9 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newAnimation The animation to add
      */
     public addAnimation(newAnimation: Animation): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
         this.animations.push(newAnimation);
     }
 
@@ -2326,6 +2425,9 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newAnimationGroup The animation group to add
      */
     public addAnimationGroup(newAnimationGroup: AnimationGroup): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
         this.animationGroups.push(newAnimationGroup);
     }
 
@@ -2334,6 +2436,9 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newMultiMaterial The multi-material to add
      */
     public addMultiMaterial(newMultiMaterial: MultiMaterial): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
         this.multiMaterials.push(newMultiMaterial);
     }
 
@@ -2342,6 +2447,10 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newMaterial The material to add
      */
     public addMaterial(newMaterial: Material): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
+
         newMaterial._indexInSceneMaterialArray = this.materials.length;
         this.materials.push(newMaterial);
         this.onNewMaterialAddedObservable.notifyObservers(newMaterial);
@@ -2352,6 +2461,9 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newMorphTargetManager The morph target to add
      */
     public addMorphTargetManager(newMorphTargetManager: MorphTargetManager): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
         this.morphTargetManagers.push(newMorphTargetManager);
     }
 
@@ -2360,6 +2472,10 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newGeometry The geometry to add
      */
     public addGeometry(newGeometry: Geometry): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
+
         if (this.geometriesByUniqueId) {
             this.geometriesByUniqueId[newGeometry.uniqueId] = this.geometries.length;
         }
@@ -2380,6 +2496,9 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newTexture The texture to add
      */
     public addTexture(newTexture: BaseTexture): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
         this.textures.push(newTexture);
         this.onNewTextureAddedObservable.notifyObservers(newTexture);
     }
@@ -2390,7 +2509,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param attachControl defines if attachControl must be called for the new active camera (default: true)
      */
     public switchActiveCamera(newCamera: Camera, attachControl = true): void {
-        var canvas = this._engine.getRenderingCanvas();
+        var canvas = this._engine.getInputElement();
 
         if (!canvas) {
             return;
@@ -3085,6 +3204,24 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     /**
+     * Gets a morph target using a given name (if many are found, this function will pick the first one)
+     * @param name defines the name to search for
+     * @return the found morph target or null if not found at all.
+     */
+    public getMorphTargetByName(name: string): Nullable<MorphTarget> {
+        for (let managerIndex = 0; managerIndex < this.morphTargetManagers.length; ++managerIndex) {
+            const morphTargetManager = this.morphTargetManagers[managerIndex];
+            for (let index = 0; index < morphTargetManager.numTargets; ++index) {
+                const target = morphTargetManager.getTarget(index);
+                if (target.name === name) {
+                    return target;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * Gets a boolean indicating if the given mesh is active
      * @param mesh defines the mesh to look for
      * @returns true if the mesh is in the active list
@@ -3153,7 +3290,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     private _evaluateSubMesh(subMesh: SubMesh, mesh: AbstractMesh, initialMesh: AbstractMesh): void {
-        if (initialMesh.hasInstances || initialMesh.isAnInstance || this.dispatchAllSubMeshesOfActiveMeshes || mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
+        if (initialMesh.hasInstances || initialMesh.isAnInstance || this.dispatchAllSubMeshesOfActiveMeshes || this._skipFrustumClipping || mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
             for (let step of this._evaluateSubMeshStage) {
                 step.action(mesh, subMesh);
             }
@@ -3170,7 +3307,6 @@ export class Scene extends AbstractScene implements IAnimatable {
                 }
 
                 // Dispatch
-                this._activeIndices.addCount(subMesh.indexCount, false);
                 this._renderingManager.dispatch(subMesh, mesh, material);
             }
         }
@@ -3276,26 +3412,31 @@ export class Scene extends AbstractScene implements IAnimatable {
     public getCollidingSubMeshCandidates: (mesh: AbstractMesh, collider: Collider) => ISmartArrayLike<SubMesh>;
 
     private _activeMeshesFrozen = false;
+    private _skipEvaluateActiveMeshesCompletely = false;
 
     /**
      * Use this function to stop evaluating active meshes. The current list will be keep alive between frames
+     * @param skipEvaluateActiveMeshes defines an optional boolean indicating that the evaluate active meshes step must be completely skipped
      * @returns the current scene
      */
-    public freezeActiveMeshes(): Scene {
-        if (!this.activeCamera) {
-            return this;
-        }
+    public freezeActiveMeshes(skipEvaluateActiveMeshes = false): Scene {
+        this.executeWhenReady(() => {
+            if (!this.activeCamera) {
+                return;
+            }
 
-        if (!this._frustumPlanes) {
-            this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
-        }
+            if (!this._frustumPlanes) {
+                this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
+            }
 
-        this._evaluateActiveMeshes();
-        this._activeMeshesFrozen = true;
+            this._evaluateActiveMeshes();
+            this._activeMeshesFrozen = true;
+            this._skipEvaluateActiveMeshesCompletely = skipEvaluateActiveMeshes;
 
-        for (var index = 0; index < this._activeMeshes.length; index++) {
-            this._activeMeshes.data[index]._freeze();
-        }
+            for (var index = 0; index < this._activeMeshes.length; index++) {
+                this._activeMeshes.data[index]._freeze();
+            }
+        });
         return this;
     }
 
@@ -3323,10 +3464,12 @@ export class Scene extends AbstractScene implements IAnimatable {
     private _evaluateActiveMeshes(): void {
         if (this._activeMeshesFrozen && this._activeMeshes.length) {
 
-            const len = this._activeMeshes.length;
-            for (let i = 0; i < len; i++) {
-                let mesh = this._activeMeshes.data[i];
-                mesh.computeWorldMatrix();
+            if (!this._skipEvaluateActiveMeshesCompletely) {
+                const len = this._activeMeshes.length;
+                for (let i = 0; i < len; i++) {
+                    let mesh = this._activeMeshes.data[i];
+                    mesh.computeWorldMatrix();
+                }
             }
 
             return;
@@ -3374,7 +3517,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             }
 
             // Switch to current LOD
-            const meshToRender = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
+            let meshToRender = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
             if (meshToRender === undefined || meshToRender === null) {
                 continue;
             }
@@ -3386,7 +3529,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
             mesh._preActivate();
 
-            if (mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && (mesh.alwaysSelectAsActiveMesh || mesh.isInFrustum(this._frustumPlanes))) {
+            if (mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && (this._skipFrustumClipping || mesh.alwaysSelectAsActiveMesh || mesh.isInFrustum(this._frustumPlanes))) {
                 this._activeMeshes.push(mesh);
                 this.activeCamera._activeMeshes.push(mesh);
 
@@ -3397,6 +3540,10 @@ export class Scene extends AbstractScene implements IAnimatable {
                 if (mesh._activate(this._renderId, false)) {
                     if (!mesh.isAnInstance) {
                         meshToRender._internalAbstractMeshDataInfo._onlyForInstances = false;
+                    } else {
+                        if (mesh._internalAbstractMeshDataInfo._actAsRegularMesh) {
+                            meshToRender = mesh;
+                        }
                     }
                     meshToRender._internalAbstractMeshDataInfo._isActive = true;
                     this._activeMesh(mesh, meshToRender);
@@ -3694,7 +3841,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * User updatable function that will return a deterministic frame time when engine is in deterministic lock step mode
      */
     public getDeterministicFrameTime: () => number = () => {
-        return 1000.0 / 60.0; // frame time in ms
+        return this._engine.getTimeStep();
     }
 
     /** @hidden */
@@ -3707,18 +3854,17 @@ export class Scene extends AbstractScene implements IAnimatable {
         if (this._engine.isDeterministicLockStep()) {
             var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime)) + this._timeAccumulator;
 
-            var defaultFPS = (60.0 / 1000.0);
-
-            let defaultFrameTime = this.getDeterministicFrameTime();
+            let defaultFrameTime = this._engine.getTimeStep();
+            var defaultFPS = (1000.0 / defaultFrameTime) / 1000.0;
 
             let stepsTaken = 0;
 
             var maxSubSteps = this._engine.getLockstepMaxSteps();
 
-            var internalSteps = Math.floor(deltaTime / (1000 * defaultFPS));
+            var internalSteps = Math.floor(deltaTime / defaultFrameTime);
             internalSteps = Math.min(internalSteps, maxSubSteps);
 
-            do {
+            while (deltaTime > 0 && stepsTaken < internalSteps) {
                 this.onBeforeStepObservable.notifyObservers(this);
 
                 // Animations
@@ -3735,7 +3881,7 @@ export class Scene extends AbstractScene implements IAnimatable {
                 stepsTaken++;
                 deltaTime -= defaultFrameTime;
 
-            } while (deltaTime > 0 && stepsTaken < internalSteps);
+            }
 
             this._timeAccumulator = deltaTime < 0 ? 0 : deltaTime;
 
@@ -3852,7 +3998,9 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         // Restore back buffer
         this.activeCamera = currentActiveCamera;
-        this._bindFrameBuffer();
+        if (this._activeCamera && this._activeCamera.cameraRigMode !== Camera.RIG_MODE_CUSTOM) {
+            this._bindFrameBuffer();
+        }
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
 
         for (let step of this._beforeClearStage) {
@@ -4061,7 +4209,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         this.detachControl();
 
         // Detach cameras
-        var canvas = this._engine.getRenderingCanvas();
+        var canvas = this._engine.getInputElement();
 
         if (canvas) {
             var index;
@@ -4516,8 +4664,8 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     /** @hidden */
-    public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest {
-        let request = Tools.LoadFile(url, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError);
+    public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest {
+        const request = FileTools.LoadFile(url, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError);
         this._activeRequests.push(request);
         request.onCompleteObservable.add((request) => {
             this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
@@ -4526,12 +4674,54 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     /** @hidden */
-    public _loadFileAsync(url: string, useOfflineSupport?: boolean, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
+    public _loadFileAsync(url: string, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
         return new Promise((resolve, reject) => {
             this._loadFile(url, (data) => {
                 resolve(data);
-            }, undefined, useOfflineSupport, useArrayBuffer, (request, exception) => {
+            }, onProgress, useOfflineSupport, useArrayBuffer, (request, exception) => {
                 reject(exception);
+            });
+        });
+    }
+
+    /** @hidden */
+    public _requestFile(url: string, onSuccess: (data: string | ArrayBuffer, request?: WebRequest) => void, onProgress?: (ev: ProgressEvent) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (error: RequestFileError) => void, onOpened?: (request: WebRequest) => void): IFileRequest {
+        const request = FileTools.RequestFile(url, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError, onOpened);
+        this._activeRequests.push(request);
+        request.onCompleteObservable.add((request) => {
+            this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
+        });
+        return request;
+    }
+
+    /** @hidden */
+    public _requestFileAsync(url: string, onProgress?: (ev: ProgressEvent) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onOpened?: (request: WebRequest) => void): Promise<string | ArrayBuffer> {
+        return new Promise((resolve, reject) => {
+            this._requestFile(url, (data) => {
+                resolve(data);
+            }, onProgress, useOfflineSupport, useArrayBuffer, (error) => {
+                reject(error);
+            }, onOpened);
+        });
+    }
+
+    /** @hidden */
+    public _readFile(file: File, onSuccess: (data: string | ArrayBuffer) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: ReadFileError) => void): IFileRequest {
+        const request = FileTools.ReadFile(file, onSuccess, onProgress, useArrayBuffer, onError);
+        this._activeRequests.push(request);
+        request.onCompleteObservable.add((request) => {
+            this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
+        });
+        return request;
+    }
+
+    /** @hidden */
+    public _readFileAsync(file: File, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
+        return new Promise((resolve, reject) => {
+            this._readFile(file, (data) => {
+                resolve(data);
+            }, onProgress, useArrayBuffer, (error) => {
+                reject(error);
             });
         });
     }

@@ -12,10 +12,10 @@
         "packageES6FolderName": "packageES6",
         "packageES6DevFolderName": "packageES6Dev",
         "playgroundDirectory": "../../Playground/",
-        "intellisenseFile": "babylon.d.txt",
         "documentationFile": "documentation.d.ts",
         "intellisenseSources": [
             "../../dist/preview release/babylon.d.ts",
+            "../../dist/preview release/typedoc.d.ts",
             "../../dist/preview release/gui/babylon.gui.d.ts",
             "../../dist/preview release/loaders/babylonjs.loaders.d.ts",
             "../../dist/preview release/serializers/babylonjs.serializers.d.ts",
@@ -137,8 +137,8 @@
                 ],
                 "typings": "babylon.module.d.ts",
                 "index": "babylon.js",
-                "dependencies": [],
-                "devDependencies": []
+                "dependencies": {},
+                "devDependencies": {}
             },
             "es6": {
                 "packageName": "@babylonjs/core",
@@ -262,11 +262,6 @@
             {
                 "output": "babylon.digitalRainPostProcess.min.js",
                 "entry": "./legacy/legacy-digitalRain.ts",
-                "preventLoadLibrary": true
-            },
-            {
-                "output": "babylon.oceanPostProcess.min.js",
-                "entry": "./legacy/legacy-ocean.ts",
                 "preventLoadLibrary": true
             }
         ],
@@ -533,6 +528,7 @@
             }
         ],
         "build": {
+            "ignoreInWorkerMode": true,
             "ignoreInTestMode": true,
             "mainFolder": "./inspector/",
             "uncheckedLintImports": [
@@ -592,7 +588,8 @@
                 "entry": "./legacy/legacy.ts"
             }
         ],
-        "build": {
+        "build": {            
+            "ignoreInWorkerMode": true,
             "ignoreInTestMode": true,
             "mainFolder": "./nodeEditor/",
             "uncheckedLintImports": [
@@ -600,7 +597,8 @@
                 "react-dom",
                 "dagre",
                 "re-resizable",
-                "glTF"
+                "glTF",
+                "file-saver"
             ],
             "umd": {
                 "packageName": "babylonjs-node-editor",

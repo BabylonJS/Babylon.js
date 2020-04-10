@@ -158,8 +158,8 @@ export abstract class AbstractScene {
     /**
     * All of the materials added to this scene
     * In the context of a Scene, it is not supposed to be modified manually.
-    * Any addition or removal should be done using the addMaterial and removeMAterial Scene methods.
-    * Note also that the order of the Material wihin the array is not significant and might change.
+    * Any addition or removal should be done using the addMaterial and removeMaterial Scene methods.
+    * Note also that the order of the Material within the array is not significant and might change.
     * @see http://doc.babylonjs.com/babylon101/materials
     */
     public materials = new Array<Material>();
@@ -198,4 +198,17 @@ export abstract class AbstractScene {
      * Environment texture for the scene
      */
     public environmentTexture: Nullable<BaseTexture> = null;
+
+    /**
+     * @returns all meshes, lights, cameras, transformNodes and bones
+     */
+    public getNodes(): Array<Node> {
+        let nodes = new Array<Node>();
+        nodes = nodes.concat(this.meshes);
+        nodes = nodes.concat(this.lights);
+        nodes = nodes.concat(this.cameras);
+        nodes = nodes.concat(this.transformNodes); // dummies
+        this.skeletons.forEach((skeleton) => nodes = nodes.concat(skeleton.bones));
+        return nodes;
+    }
 }

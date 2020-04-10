@@ -226,7 +226,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
      */
     public resize(size: any) {
         this.releaseInternalTextures();
-        this._internalTextures = this._engine.createMultipleRenderTarget(size, this._multiRenderTargetOptions);
+        this._size = size;
         this._createInternalTextures();
     }
 

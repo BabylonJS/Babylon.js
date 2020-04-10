@@ -1,6 +1,9 @@
 import { Constants } from "../Engines/constants";
 import { PostProcess } from "../PostProcesses/postProcess";
 import "../Shaders/rgbdDecode.fragment";
+import { Engine } from '../Engines/engine';
+
+import "../Engines/Extensions/engine.renderTarget";
 
 declare type Texture = import("../Materials/Textures/texture").Texture;
 
@@ -18,32 +21,34 @@ export class RGBDTextureTools {
             return;
         }
 
+        // Gets everything ready.
+        const engine = internalTexture.getEngine() as Engine;
+        const caps = engine.getCaps();
+        let expandTexture = false;
+
+        // If half float available we can uncompress the texture
+        if (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering) {
+            expandTexture = true;
+            internalTexture.type = Constants.TEXTURETYPE_HALF_FLOAT;
+        }
+        // If full float available we can uncompress the texture
+        else if (caps.textureFloatRender && caps.textureFloatLinearFiltering) {
+            expandTexture = true;
+            internalTexture.type = Constants.TEXTURETYPE_FLOAT;
+        }
+
+        if (expandTexture) {
+            // Do not use during decode.
+            internalTexture.isReady = false;
+            internalTexture._isRGBD = false;
+            internalTexture.invertY = false;
+        }
+
         texture.onLoadObservable.addOnce(() => {
-            // Gets everything ready.
-            let engine = internalTexture.getEngine();
-            let caps = engine.getCaps();
-            let expandTexture = false;
-
-            // If half float available we can uncompress the texture
-            if (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering) {
-                expandTexture = true;
-                internalTexture.type = Constants.TEXTURETYPE_HALF_FLOAT;
-            }
-            // If full float available we can uncompress the texture
-            else if (caps.textureFloatRender && caps.textureFloatLinearFiltering) {
-                expandTexture = true;
-                internalTexture.type = Constants.TEXTURETYPE_FLOAT;
-            }
-
             // Expand the texture if possible
             if (expandTexture) {
-                // Do not use during decode.
-                internalTexture.isReady = false;
-
                 // Simply run through the decode PP.
                 const rgbdPostProcess = new PostProcess("rgbdDecode", "rgbdDecode", null, null, 1, null, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, engine, false, undefined, internalTexture.type, undefined, null, false);
-                internalTexture._isRGBD = false;
-                internalTexture.invertY = false;
 
                 // Hold the output of the decoding.
                 const expandedTexture = engine.createRenderTargetTexture(internalTexture.width, {
@@ -61,7 +66,7 @@ export class RGBDTextureTools {
                         effect._bindTexture("textureSampler", internalTexture);
                         effect.setFloat2("scale", 1, 1);
                     };
-                    engine.scenes[0].postProcessManager.directRender([rgbdPostProcess!], expandedTexture, true);
+                    texture.getScene()!.postProcessManager.directRender([rgbdPostProcess!], expandedTexture, true);
 
                     // Cleanup
                     engine.restoreDefaultFramebuffer();

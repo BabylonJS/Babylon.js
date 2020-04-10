@@ -2,6 +2,7 @@ import { Nullable } from "../../types";
 import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { ArcRotateCameraInputsManager } from "../../Cameras/arcRotateCameraInputsManager";
+import { Tools } from '../../Misc/tools';
 
 // Module augmentation to abstract orientation inputs from camera.
 declare module "../../Cameras/arcRotateCameraInputsManager" {
@@ -66,7 +67,24 @@ export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<Arc
 
         let hostWindow = this.camera.getScene().getEngine().getHostWindow();
 
-        hostWindow.addEventListener("deviceorientation", this._deviceOrientationHandler);
+        if (hostWindow) {
+            // check iOS 13+ support
+            if (typeof(DeviceOrientationEvent) !== "undefined" && typeof (<any>DeviceOrientationEvent).requestPermission === 'function') {
+                (<any>DeviceOrientationEvent).requestPermission()
+                    .then((response: string) => {
+                        if (response === 'granted') {
+                            hostWindow!.addEventListener("deviceorientation", this._deviceOrientationHandler);
+                        } else {
+                            Tools.Warn("Permission not granted.");
+                        }
+                    })
+                    .catch((error: any) => {
+                        Tools.Error(error);
+                    });
+            } else {
+                hostWindow.addEventListener("deviceorientation", this._deviceOrientationHandler);
+            }
+        }
     }
 
     /** @hidden */

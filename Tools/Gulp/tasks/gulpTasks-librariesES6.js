@@ -8,6 +8,7 @@ var concat = require('gulp-concat');
 // Gulp Helpers
 var rmDir = require("../../NodeHelpers/rmDir");
 var processImports = require("../helpers/gulp-processImportsToEs6");
+var processConstants = require("../helpers/gulp-processConstants");
 var processLooseDeclarations = require("../helpers/gulp-processLooseDeclarationsEs6");
 var uncommentShaders = require('../helpers/gulp-removeShaderComments');
 var processShaders = require("../helpers/gulp-processShaders");
@@ -55,6 +56,7 @@ var source = function(settings) {
 var dep = function(settings) {
     const copyPaths = []
     // Add tsconfig rules.
+    copyPaths.push(path.join(config.computed.rootFolder, "/dist/preview release/babylon.max.js"));
     copyPaths.push(path.join(config.computed.rootFolder, "tsconfigRules.json"));
 
     const tsconfig = require(settings.computed.tsConfigPath);
@@ -82,7 +84,7 @@ var dep = function(settings) {
 /**
  * Adapt Sources import paths.
  */
-var modifySources = function(settings) {
+var modifySourcesImports = function(settings) {
     const tsconfig = require(settings.computed.tsConfigPath);
 
     var replacements = [];
@@ -110,6 +112,18 @@ var modifySources = function(settings) {
     return gulp.src([settings.computed.sourceES6Directory + "/**/*.ts", 
         settings.computed.sourceES6Directory + "/**/*.tsx"])
         .pipe(processImports(replacements));
+}
+
+/**
+ * Inline Constants in sources.
+ */
+var modifySourcesConstants = function(settings) {
+    if (settings.isCore) {
+        return gulp.src([settings.computed.sourceES6Directory + "/**/*.ts", 
+            settings.computed.sourceES6Directory + "/**/*.tsx"])
+            .pipe(processConstants());
+    }
+    return Promise.resolve();
 }
 
 /**
@@ -261,7 +275,8 @@ function buildES6Library(settings, module) {
     }
     var copySource = function() { return source(settings); };
     var dependencies = function() { return dep(settings); };
-    var adaptSourceImportPaths = function() { return modifySources(settings); };
+    var adaptSourceImportPaths = function() { return modifySourcesImports(settings); };
+    var adaptSourceConstants = function() { return modifySourcesConstants(settings); };
     var adaptTsConfigImportPaths = function(cb) { return modifyTsConfig(settings, cb); };
 
     // Build with ts or webpack
@@ -280,7 +295,7 @@ function buildES6Library(settings, module) {
         ];
     }
 
-    tasks.push(...cleanAndShaderTasks, copySource, dependencies, adaptSourceImportPaths, adaptTsConfigImportPaths, ...buildSteps);
+    tasks.push(...cleanAndShaderTasks, copySource, dependencies, adaptSourceImportPaths, adaptSourceConstants, adaptTsConfigImportPaths, ...buildSteps);
 
     return gulp.series.apply(this, tasks);
 }

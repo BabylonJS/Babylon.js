@@ -1,8 +1,6 @@
 import { Tools } from "../../../Misc/tools";
 import { Scene } from "../../../scene";
 import { SceneComponentConstants, ISceneComponent } from "../../../sceneComponent";
-import { _TimeToken } from "../../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../../States/index";
 
 import { ProceduralTexture } from "./proceduralTexture";
 

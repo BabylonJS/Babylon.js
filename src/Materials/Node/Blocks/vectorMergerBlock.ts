@@ -1,7 +1,7 @@
 import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
+import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 import { _TypeStore } from '../../../Misc/typeStore';
 
@@ -14,10 +14,12 @@ export class VectorMergerBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Fragment);
+        super(name, NodeMaterialBlockTargets.Neutral);
 
-        this.registerInput("x", NodeMaterialBlockConnectionPointTypes.Float);
-        this.registerInput("y", NodeMaterialBlockConnectionPointTypes.Float);
+        this.registerInput("xyz ", NodeMaterialBlockConnectionPointTypes.Vector3, true);
+        this.registerInput("xy ", NodeMaterialBlockConnectionPointTypes.Vector2, true);
+        this.registerInput("x", NodeMaterialBlockConnectionPointTypes.Float, true);
+        this.registerInput("y", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerInput("z", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerInput("w", NodeMaterialBlockConnectionPointTypes.Float, true);
 
@@ -35,31 +37,45 @@ export class VectorMergerBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the xyz component (input)
+     */
+    public get xyzIn(): NodeMaterialConnectionPoint {
+        return this._inputs[0];
+    }
+
+    /**
+     * Gets the xy component (input)
+     */
+    public get xyIn(): NodeMaterialConnectionPoint {
+        return this._inputs[1];
+    }
+
+    /**
      * Gets the x component (input)
      */
     public get x(): NodeMaterialConnectionPoint {
-        return this._inputs[0];
+        return this._inputs[2];
     }
 
     /**
      * Gets the y component (input)
      */
     public get y(): NodeMaterialConnectionPoint {
-        return this._inputs[1];
+        return this._inputs[3];
     }
 
     /**
      * Gets the z component (input)
      */
     public get z(): NodeMaterialConnectionPoint {
-        return this._inputs[2];
+        return this._inputs[4];
     }
 
     /**
      * Gets the w component (input)
      */
     public get w(): NodeMaterialConnectionPoint {
-        return this._inputs[3];
+        return this._inputs[5];
     }
 
     /**
@@ -72,15 +88,31 @@ export class VectorMergerBlock extends NodeMaterialBlock {
     /**
      * Gets the xyz component (output)
      */
-    public get xyz(): NodeMaterialConnectionPoint {
+    public get xyzOut(): NodeMaterialConnectionPoint {
         return this._outputs[1];
     }
 
     /**
      * Gets the xy component (output)
      */
-    public get xy(): NodeMaterialConnectionPoint {
+    public get xyOut(): NodeMaterialConnectionPoint {
         return this._outputs[2];
+    }
+
+    /**
+     * Gets the xy component (output)
+     * @deprecated Please use xyOut instead.
+     */
+    public get xy(): NodeMaterialConnectionPoint {
+        return this.xyOut;
+    }
+
+    /**
+     * Gets the xyz component (output)
+     * @deprecated Please use xyzOut instead.
+     */
+    public get xyz(): NodeMaterialConnectionPoint {
+        return this.xyzOut;
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
@@ -90,17 +122,37 @@ export class VectorMergerBlock extends NodeMaterialBlock {
         let yInput = this.y;
         let zInput = this.z;
         let wInput = this.w;
+        let xyInput = this.xyIn;
+        let xyzInput = this.xyzIn;
 
         let v4Output = this._outputs[0];
         let v3Output = this._outputs[1];
         let v2Output = this._outputs[2];
 
-        if (v4Output.hasEndpoints) {
-            state.compilationString += this._declareOutput(v4Output, state) + ` = vec4(${this._writeVariable(xInput)}, ${this._writeVariable(yInput)}, ${zInput.isConnected ? this._writeVariable(zInput) : "0.0"}, ${zInput.isConnected ? this._writeVariable(wInput) : "0.0"});\r\n`;
-        } else if (v3Output.hasEndpoints) {
-            state.compilationString += this._declareOutput(v3Output, state) + ` = vec3(${this._writeVariable(xInput)}, ${this._writeVariable(yInput)}, ${zInput.isConnected ? this._writeVariable(zInput) : "0.0"});\r\n`;
-        } else if (v2Output.hasEndpoints) {
-            state.compilationString += this._declareOutput(v2Output, state) + ` = vec2(${this._writeVariable(xInput)}, ${this._writeVariable(yInput)});\r\n`;
+        if (xyInput.isConnected) {
+            if (v4Output.hasEndpoints) {
+                state.compilationString += this._declareOutput(v4Output, state) + ` = vec4(${xyInput.associatedVariableName}, ${zInput.isConnected ? this._writeVariable(zInput) : "0.0"}, ${wInput.isConnected ? this._writeVariable(wInput) : "0.0"});\r\n`;
+            } else if (v3Output.hasEndpoints) {
+                state.compilationString += this._declareOutput(v3Output, state) + ` = vec3(${xyInput.associatedVariableName}, ${zInput.isConnected ? this._writeVariable(zInput) : "0.0"});\r\n`;
+            } else if (v2Output.hasEndpoints) {
+                state.compilationString += this._declareOutput(v2Output, state) + ` = ${xyInput.associatedVariableName};\r\n`;
+            }
+        } else if (xyzInput.isConnected) {
+            if (v4Output.hasEndpoints) {
+                state.compilationString += this._declareOutput(v4Output, state) + ` = vec4(${xyzInput.associatedVariableName}, ${wInput.isConnected ? this._writeVariable(wInput) : "0.0"});\r\n`;
+            } else if (v3Output.hasEndpoints) {
+                state.compilationString += this._declareOutput(v3Output, state) + ` = ${xyzInput.associatedVariableName};\r\n`;
+            } else if (v2Output.hasEndpoints) {
+                state.compilationString += this._declareOutput(v2Output, state) + ` = ${xyzInput.associatedVariableName}.xy;\r\n`;
+            }
+        } else {
+            if (v4Output.hasEndpoints) {
+                state.compilationString += this._declareOutput(v4Output, state) + ` = vec4(${xInput.isConnected ? this._writeVariable(xInput) : "0.0"}, ${yInput.isConnected ? this._writeVariable(yInput) : "0.0"}, ${zInput.isConnected ? this._writeVariable(zInput) : "0.0"}, ${wInput.isConnected ? this._writeVariable(wInput) : "0.0"});\r\n`;
+            } else if (v3Output.hasEndpoints) {
+                state.compilationString += this._declareOutput(v3Output, state) + ` = vec3(${xInput.isConnected ? this._writeVariable(xInput) : "0.0"}, ${yInput.isConnected ? this._writeVariable(yInput) : "0.0"}, ${zInput.isConnected ? this._writeVariable(zInput) : "0.0"});\r\n`;
+            } else if (v2Output.hasEndpoints) {
+                state.compilationString += this._declareOutput(v2Output, state) + ` = vec2(${xInput.isConnected ? this._writeVariable(xInput) : "0.0"}, ${yInput.isConnected ? this._writeVariable(yInput) : "0.0"});\r\n`;
+            }
         }
 
         return this;

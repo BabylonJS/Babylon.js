@@ -1,6 +1,6 @@
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { Effect } from "babylonjs/Materials/effect";
-import { PBRMaterialDefines } from "babylonjs/Materials/PBR/pbrBaseMaterial";
+import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
@@ -39,6 +39,9 @@ export class ShaderAlebdoParts {
     // normalUpdated
     public Vertex_Before_NormalUpdated: string;
 
+    // worldPosComputed
+    public Vertex_After_WorldPosComputed: string;
+
     // mainEnd
     public Vertex_MainEnd: string;
 }
@@ -52,6 +55,7 @@ export class PBRCustomMaterial extends PBRMaterial {
     _newUniforms: string[];
     _newUniformInstances: any[];
     _newSamplerInstances: Texture[];
+    _customAttributes: string[];
 
     public FragmentShader: string;
     public VertexShader: string;
@@ -85,14 +89,14 @@ export class PBRCustomMaterial extends PBRMaterial {
 
     public ReviewUniform(name: string, arr: string[]): string[] {
         if (name == "uniform") {
-            for (var ind in this._newUniforms) {
+            for (var ind = 0; ind < this._newUniforms.length ; ind ++) {
                 if (this._customUniform[ind].indexOf('sampler') == -1) {
                     arr.push(this._newUniforms[ind]);
                 }
             }
         }
         if (name == "sampler") {
-            for (var ind in this._newUniforms) {
+            for (var ind = 0; ind < this._newUniforms.length ; ind ++) {
                 if (this._customUniform[ind].indexOf('sampler') != -1) {
                     arr.push(this._newUniforms[ind]);
                 }
@@ -101,7 +105,14 @@ export class PBRCustomMaterial extends PBRMaterial {
         return arr;
     }
 
-    public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: PBRMaterialDefines): string {
+    public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[]): string {
+
+        if (attributes && this._customAttributes && this._customAttributes.length > 0) {
+            attributes.push(...this._customAttributes);
+        }
+
+        this.ReviewUniform("uniform", uniforms);
+        this.ReviewUniform("sampler", samplers);
 
         if (this._isCreatedShader) {
             return this._createdShaderName;
@@ -110,9 +121,6 @@ export class PBRCustomMaterial extends PBRMaterial {
 
         PBRCustomMaterial.ShaderIndexer++;
         var name: string = "custom_" + PBRCustomMaterial.ShaderIndexer;
-
-        this.ReviewUniform("uniform", uniforms);
-        this.ReviewUniform("sampler", samplers);
 
         var fn_afterBind = this._afterBind.bind(this);
         this._afterBind = (m, e) => {
@@ -131,6 +139,10 @@ export class PBRCustomMaterial extends PBRMaterial {
             .replace('#define CUSTOM_VERTEX_UPDATE_POSITION', (this.CustomParts.Vertex_Before_PositionUpdated ? this.CustomParts.Vertex_Before_PositionUpdated : ""))
             .replace('#define CUSTOM_VERTEX_UPDATE_NORMAL', (this.CustomParts.Vertex_Before_NormalUpdated ? this.CustomParts.Vertex_Before_NormalUpdated : ""))
             .replace('#define CUSTOM_VERTEX_MAIN_END', (this.CustomParts.Vertex_MainEnd ? this.CustomParts.Vertex_MainEnd : ""));
+
+        if (this.CustomParts.Vertex_After_WorldPosComputed) {
+            Effect.ShadersStore[name + "VertexShader"] = Effect.ShadersStore[name + "VertexShader"].replace('#define CUSTOM_VERTEX_UPDATE_WORLDPOS', this.CustomParts.Vertex_After_WorldPosComputed);
+        }
 
         Effect.ShadersStore[name + "PixelShader"] = this.FragmentShader
             .replace('#define CUSTOM_FRAGMENT_BEGIN', (this.CustomParts.Fragment_Begin ? this.CustomParts.Fragment_Begin : ""))
@@ -176,6 +188,16 @@ export class PBRCustomMaterial extends PBRMaterial {
         }
         this._customUniform.push("uniform " + kind + " " + name + ";");
         this._newUniforms.push(name);
+
+        return this;
+    }
+
+    public AddAttribute(name: string): PBRCustomMaterial {
+        if (!this._customAttributes) {
+            this._customAttributes = [];
+        }
+
+        this._customAttributes.push(name);
 
         return this;
     }
@@ -252,6 +274,11 @@ export class PBRCustomMaterial extends PBRMaterial {
 
     public Vertex_Before_NormalUpdated(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Vertex_Before_NormalUpdated = shaderPart.replace("result", "normalUpdated");
+        return this;
+    }
+
+    public Vertex_After_WorldPosComputed(shaderPart: string): PBRCustomMaterial {
+        this.CustomParts.Vertex_After_WorldPosComputed = shaderPart;
         return this;
     }
 

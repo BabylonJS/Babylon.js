@@ -9,6 +9,8 @@ import { RenderTargetTexture } from "./Materials/Textures/renderTargetTexture";
 import { PickingInfo } from "./Collisions/pickingInfo";
 import { AbstractScene } from "./abstractScene";
 
+declare type Mesh = import("./Meshes/mesh").Mesh;
+
 /**
  * Groups all the scene component constants in one place to ease maintenance.
  * @hidden
@@ -68,9 +70,9 @@ export class SceneComponentConstants {
 
     public static readonly STEP_AFTERRENDER_AUDIO = 0;
 
-    public static readonly STEP_GATHERRENDERTARGETS_SHADOWGENERATOR = 0;
+    public static readonly STEP_GATHERRENDERTARGETS_DEPTHRENDERER = 0;
     public static readonly STEP_GATHERRENDERTARGETS_GEOMETRYBUFFERRENDERER = 1;
-    public static readonly STEP_GATHERRENDERTARGETS_DEPTHRENDERER = 2;
+    public static readonly STEP_GATHERRENDERTARGETS_SHADOWGENERATOR = 2;
     public static readonly STEP_GATHERRENDERTARGETS_POSTPROCESSRENDERPIPELINEMANAGER = 3;
 
     public static readonly STEP_GATHERACTIVECAMERARENDERTARGETS_DEPTHRENDERER = 0;
@@ -178,7 +180,7 @@ export type RenderingGroupStageAction = (renderingGroupId: number) => void;
 /**
  * Strong typing of a Mesh Render related stage step action
  */
-export type RenderingMeshStageAction = (mesh: AbstractMesh, subMesh: SubMesh, batch: _InstancesBatch) => void;
+export type RenderingMeshStageAction = (mesh: Mesh, subMesh: SubMesh, batch: _InstancesBatch) => void;
 
 /**
  * Strong typing of a simple stage step action
@@ -193,7 +195,7 @@ export type RenderTargetsStageAction = (renderTargets: SmartArrayNoDuplicate<Ren
 /**
  * Strong typing of a pointer move action.
  */
-export type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, canvas: HTMLCanvasElement) => Nullable<PickingInfo>;
+export type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, element: HTMLElement) => Nullable<PickingInfo>;
 
 /**
  * Strong typing of a pointer up/down action.
@@ -201,7 +203,7 @@ export type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslated
 export type PointerUpDownStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: PointerEvent) => Nullable<PickingInfo>;
 
 /**
- * Repressentation of a stage in the scene (Basically a list of ordered steps)
+ * Representation of a stage in the scene (Basically a list of ordered steps)
  * @hidden
  */
 export class Stage<T extends Function> extends Array<{ index: number, component: ISceneComponent, action: T }> {

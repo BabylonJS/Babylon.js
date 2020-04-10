@@ -1,6 +1,6 @@
 import { Nullable } from "babylonjs/types";
 import { Observable, Observer } from "babylonjs/Misc/observable";
-import { Vector2 } from "babylonjs/Maths/math";
+import { Vector2 } from "babylonjs/Maths/math.vector";
 import { ClipboardEventTypes, ClipboardInfo } from "babylonjs/Events/clipboardEvents";
 import { PointerInfo, PointerEventTypes } from 'babylonjs/Events/pointerEvents';
 
@@ -8,6 +8,8 @@ import { Control } from "./control";
 import { IFocusableControl } from "../advancedDynamicTexture";
 import { ValueAndUnit } from "../valueAndUnit";
 import { VirtualKeyboard } from "./virtualKeyboard";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { Measure } from '../measure';
 
 /**
  * Class used to create input text control
@@ -796,7 +798,7 @@ export class InputText extends Control implements IFocusableControl {
         this.text = this._text.slice(0, insertPosition) + data + this._text.slice(insertPosition);
     }
 
-    public _draw(context: CanvasRenderingContext2D): void {
+    public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void {
         context.save();
 
         this._applyStates(context);
@@ -1028,3 +1030,4 @@ export class InputText extends Control implements IFocusableControl {
         this.onKeyboardEventProcessedObservable.clear();
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.InputText"] = InputText;

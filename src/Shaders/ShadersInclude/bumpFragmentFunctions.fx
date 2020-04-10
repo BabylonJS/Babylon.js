@@ -46,7 +46,7 @@
 	}
 #endif
 
-#ifdef BUMP
+#if defined(BUMP)
 	#if BUMPDIRECTUV == 1
 		#define vBumpUV vMainUV1
 	#elif BUMPDIRECTUV == 2
@@ -55,10 +55,17 @@
 		varying vec2 vBumpUV;
 	#endif
 	uniform sampler2D bumpSampler;
-
+	
 	vec3 perturbNormal(mat3 cotangentFrame, vec2 uv)
 	{
 		return perturbNormal(cotangentFrame, texture2D(bumpSampler, uv).xyz, vBumpInfos.y);
+	}
+#endif
+
+#if defined(BUMP)
+	vec3 perturbNormal(mat3 cotangentFrame, vec3 color)
+	{
+		return perturbNormal(cotangentFrame, color, vBumpInfos.y);
 	}
 
 	// Thanks to http://www.thetenthplanet.de/archives/1180

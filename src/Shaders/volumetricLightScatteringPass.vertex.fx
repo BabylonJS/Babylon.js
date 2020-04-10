@@ -34,6 +34,8 @@ void main(void)
 
 #include<bonesVertex>
 
+    gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
+
 #if defined(ALPHATEST) || defined(BASIC_RENDER)
 #ifdef UV1
 	vUV = vec2(diffuseMatrix * vec4(uvUpdated, 1.0, 0.0));

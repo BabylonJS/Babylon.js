@@ -3,8 +3,6 @@ import { BRDFTextureTools } from "../../Misc/brdfTextureTools";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { Color3 } from "../../Maths/math.color";
-import { _TimeToken } from "../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
 import { ColorCurves } from "../../Materials/colorCurves";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
@@ -116,7 +114,7 @@ export class PBRMaterial extends PBRBaseMaterial {
     public ambientTextureImpactOnAnalyticalLights: number = PBRMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
 
     /**
-     * Stores the alpha values in a texture.
+     * Stores the alpha values in a texture. Use luminance if texture.getAlphaFromRGB is true.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
@@ -165,6 +163,25 @@ export class PBRMaterial extends PBRBaseMaterial {
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public roughness: Nullable<number>;
+
+    /**
+     * Specifies the an F0 factor to help configuring the material F0.
+     * Instead of the default 4%, 8% * factor will be used. As the factor is defaulting
+     * to 0.5 the previously hard coded value stays the same.
+     * Can also be used to scale the F0 values of the metallic texture.
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public metallicF0Factor = 0.5;
+
+    /**
+     * Specifies whether the F0 factor can be fetched from the mettalic texture.
+     * If set to true, please adapt the metallicF0Factor to ensure it fits with
+     * your expectation as it multiplies with the texture data.
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public useMetallicF0FactorFromMetallicTexture = false;
 
     /**
      * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
@@ -721,6 +738,7 @@ export class PBRMaterial extends PBRBaseMaterial {
         this.anisotropy.copyTo(clone.anisotropy);
         this.brdf.copyTo(clone.brdf);
         this.sheen.copyTo(clone.sheen);
+        this.subSurface.copyTo(clone.subSurface);
 
         return clone;
     }

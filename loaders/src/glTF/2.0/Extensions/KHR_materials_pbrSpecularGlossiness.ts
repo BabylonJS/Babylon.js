@@ -1,5 +1,5 @@
 import { Nullable } from "babylonjs/types";
-import { Color3 } from "babylonjs/Maths/math";
+import { Color3 } from "babylonjs/Maths/math.color";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { Material } from "babylonjs/Materials/material";
 
@@ -21,17 +21,27 @@ interface IKHRMaterialsPbrSpecularGlossiness {
  * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness)
  */
 export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension {
-    /** The name of this extension. */
+    /**
+     * The name of this extension.
+     */
     public readonly name = NAME;
 
-    /** Defines whether this extension is enabled. */
-    public enabled = true;
+    /**
+     * Defines whether this extension is enabled.
+     */
+    public enabled: boolean;
+
+    /**
+     * Defines a number that determines the order the extensions are applied.
+     */
+    public order = 200;
 
     private _loader: GLTFLoader;
 
     /** @hidden */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
+        this.enabled = this._loader.isExtensionUsed(NAME);
     }
 
     /** @hidden */

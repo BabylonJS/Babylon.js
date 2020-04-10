@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <title>Local Development</title>
+
+    <script src="https://code.jquery.com/pep/0.4.2/pep.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
+    <script src="../dist/preview%20release/cannon.js"></script>
+    <script src="../dist/preview%20release/Oimo.js"></script>
+    <script src="../dist/preview%20release/ammo.js"></script>
+    <script src="../dist/preview%20release/recast.js"></script>
+    <script src="../dist/preview%20release/libktx.js"></script>
+    <script src="../Tools/DevLoader/BabylonLoader.js"></script>
+
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-rows: 50% 50%;
+            grid-template-columns: 50% 50%;
+            font-size: 0;
+        }
+
+        .renderCanvas {            
+            width: 100%;
+            height: 100%;
+        }
+
+        #renderCanvas0 {
+            grid-row: 1;
+            grid-column: 1;
+        }
+
+        #renderCanvas1 {
+            grid-row: 1;
+            grid-column: 2;
+        }
+
+        #renderCanvas2 {
+            grid-row: 2;
+            grid-column: 1;
+        }
+
+        #renderCanvas3 {
+            grid-row: 2;
+            grid-column: 2;
+        }
+
+        #fps {
+            position: absolute;
+            background-color: black;
+            border: 2px solid red;
+            text-align: center;
+            font-size: 16px;
+            color: white;
+            top: 15px;
+            right: 10px;
+            width: 60px;
+            height: 20px;
+        }
+
+        @font-face {
+            font-family: BabylonJSglyphs;
+            /* src: url("http://www.killer-squid.com/fonts/BabylonJSglyphs.otf"); */
+            src: local("BabylonJSglyphs");
+        }
+    </style>
+</head>
+
+<body>
+    <div id="fps">0</div>
+    <div class="container">
+        <canvas class="renderCanvas" id="renderCanvas0" touch-action="none"></canvas>
+        <canvas class="renderCanvas" id="renderCanvas1" touch-action="none"></canvas>
+        <canvas class="renderCanvas" id="renderCanvas2" touch-action="none"></canvas>
+        <canvas class="renderCanvas" id="renderCanvas3" touch-action="none"></canvas>
+    </div>
+
+    <script>
+        var canvas = document.createElement("canvas");
+        //	canvas = WebGLDebugUtils.makeLostContextSimulatingCanvas(canvas);
+        var divFps = document.getElementById("fps");
+
+        // Global to simulate PG.
+        var engine = null;
+
+        // Allow querystring to navigate easily in debug in local samples.
+        var indexjs = 'src/index';
+        var sampleSearch = /sample=([0-9]+)/i;
+        var matches = null;
+        if ((matches = sampleSearch.exec(window.location)) !== null) {
+            indexjs += '.';
+            indexjs += matches[1];
+        }
+        indexjs += '.js';
+
+        // var indexjs = "http://localhost:1234/index.js"
+
+        // Load the scripts + map file to allow vscode debug.
+        BABYLONDEVTOOLS.Loader
+            .require(indexjs)
+            .load(function() {
+                BABYLON.DracoCompression.Configuration.decoder = {
+                    wasmUrl: "../dist/preview%20release/draco_wasm_wrapper_gltf.js",
+                    wasmBinaryUrl: "../dist/preview%20release/draco_decoder_gltf.wasm",
+                    fallbackUrl: "../dist/preview%20release/draco_decoder_gltf.js"
+                };
+                BABYLON.GLTFValidation.Configuration = {
+                    url: "../dist/preview%20release/gltf_validator.js"
+                };
+
+                if (BABYLON.Engine.isSupported()) {
+                    if (typeof createEngine !== "undefined") {
+                        engine = createEngine();
+                    } else {
+                        engine = new BABYLON.Engine(canvas, true, { premultipliedAlpha: false, stencil: true, disableWebGL2Support: false, preserveDrawingBuffer: true });
+                    }
+
+                    BABYLONDEVTOOLS.Loader.debugShortcut(engine);
+
+                    engine.inputElement = document.getElementById("renderCanvas0");
+
+                    // call the scene creation from the js.
+                    if (typeof delayCreateScene !== "undefined") {
+                        var scene = delayCreateScene();
+
+                        if (scene) {
+                            // Register a render loop to repeatedly render the scene
+
+                            engine.runRenderLoop(function() {
+                                if (scene.activeCamera) {
+                                    scene.render();
+                                }
+                                divFps.innerHTML = engine.getFps().toFixed() + " fps";
+                            });
+                        }
+                    }
+                    else {
+                        var scene = createScene();
+
+                        if (scene) {
+
+                            var processCurrentScene = function(scene) {
+                                engine.runRenderLoop(function() {
+                                    scene.render();
+                                    divFps.innerHTML = engine.getFps().toFixed() + " fps";
+                                });
+                            }
+
+                            if (scene.then) {
+                                // Handle if createScene returns a promise
+                                scene.then(function(currentScene) {
+                                    processCurrentScene(currentScene);
+                                }).catch(function(e) {
+                                    console.error(e);
+                                    onError();
+                                });
+                            } else {
+                                // Register a render loop to repeatedly render the scene
+                                processCurrentScene(scene);
+                            }
+                        }
+                    }
+                }
+                else {
+                    alert('BabylonJS is not supported.')
+                }
+            });
+    </script>
+</body>
+
+</html>

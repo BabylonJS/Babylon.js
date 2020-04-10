@@ -147,7 +147,7 @@ export class InputManager {
     }
 
     private _updatePointerPosition(evt: PointerEvent): void {
-        var canvasRect = this._scene.getEngine().getRenderingCanvasClientRect();
+        var canvasRect = this._scene.getEngine().getInputElementClientRect();
 
         if (!canvasRect) {
             return;
@@ -162,26 +162,31 @@ export class InputManager {
 
     private _processPointerMove(pickResult: Nullable<PickingInfo>, evt: PointerEvent) {
         let scene = this._scene;
-        var canvas = scene.getEngine().getRenderingCanvas();
+        let engine = scene.getEngine();
+        var canvas = engine.getInputElement();
 
         if (!canvas) {
             return;
         }
 
-        canvas.tabIndex = 1;
+        canvas.tabIndex = engine.canvasTabIndex;
 
         // Restore pointer
-        canvas.style.cursor = scene.defaultCursor;
+        if (!scene.doNotHandleCursors) {
+            canvas.style.cursor = scene.defaultCursor;
+        }
 
         var isMeshPicked = (pickResult && pickResult.hit && pickResult.pickedMesh) ? true : false;
         if (isMeshPicked) {
             scene.setPointerOverMesh(pickResult!.pickedMesh);
 
             if (this._pointerOverMesh && this._pointerOverMesh.actionManager && this._pointerOverMesh.actionManager.hasPointerTriggers) {
-                if (this._pointerOverMesh.actionManager.hoverCursor) {
-                    canvas.style.cursor = this._pointerOverMesh.actionManager.hoverCursor;
-                } else {
-                    canvas.style.cursor = scene.hoverCursor;
+                if (!scene.doNotHandleCursors) {
+                    if (this._pointerOverMesh.actionManager.hoverCursor) {
+                        canvas.style.cursor = this._pointerOverMesh.actionManager.hoverCursor;
+                    } else {
+                        canvas.style.cursor = scene.hoverCursor;
+                    }
                 }
             }
         } else {
@@ -440,12 +445,16 @@ export class InputManager {
     * @param attachUp defines if you want to attach events to pointerup
     * @param attachDown defines if you want to attach events to pointerdown
     * @param attachMove defines if you want to attach events to pointermove
+    * @param elementToAttachTo defines the target DOM element to attach to (will use the canvas by default)
     */
-    public attachControl(attachUp = true, attachDown = true, attachMove = true): void {
+    public attachControl(attachUp = true, attachDown = true, attachMove = true, elementToAttachTo: Nullable<HTMLElement> = null): void {
         let scene = this._scene;
-        var canvas = scene.getEngine().getRenderingCanvas();
 
-        if (!canvas) {
+        if (!elementToAttachTo) {
+            elementToAttachTo = scene.getEngine().getInputElement();
+        }
+
+        if (!elementToAttachTo) {
             return;
         }
 
@@ -621,9 +630,9 @@ export class InputManager {
 
             this._updatePointerPosition(evt);
 
-            if (scene.preventDefaultOnPointerDown && canvas) {
+            if (scene.preventDefaultOnPointerDown && elementToAttachTo) {
                 evt.preventDefault();
-                canvas.focus();
+                elementToAttachTo.focus();
             }
 
             this._startingPointerPosition.x = this._pointerX;
@@ -665,9 +674,9 @@ export class InputManager {
 
             this._updatePointerPosition(evt);
 
-            if (scene.preventDefaultOnPointerUp && canvas) {
+            if (scene.preventDefaultOnPointerUp && elementToAttachTo) {
                 evt.preventDefault();
-                canvas.focus();
+                elementToAttachTo.focus();
             }
 
             this._initClickEvent(scene.onPrePointerObservable, scene.onPointerObservable, evt, (clickInfo: _ClickInfo, pickResult: Nullable<PickingInfo>) => {
@@ -764,47 +773,49 @@ export class InputManager {
         // Keyboard events
         this._onCanvasFocusObserver = engine.onCanvasFocusObservable.add((() => {
             let fn = () => {
-                if (!canvas) {
+                if (!elementToAttachTo) {
                     return;
                 }
-                canvas.addEventListener("keydown", this._onKeyDown, false);
-                canvas.addEventListener("keyup", this._onKeyUp, false);
+                elementToAttachTo.addEventListener("keydown", this._onKeyDown, false);
+                elementToAttachTo.addEventListener("keyup", this._onKeyUp, false);
             };
-            if (document.activeElement === canvas) {
+            if (document.activeElement === elementToAttachTo) {
                 fn();
             }
             return fn;
         })());
 
         this._onCanvasBlurObserver = engine.onCanvasBlurObservable.add(() => {
-            if (!canvas) {
+            if (!elementToAttachTo) {
                 return;
             }
-            canvas.removeEventListener("keydown", this._onKeyDown);
-            canvas.removeEventListener("keyup", this._onKeyUp);
+            elementToAttachTo.removeEventListener("keydown", this._onKeyDown);
+            elementToAttachTo.removeEventListener("keyup", this._onKeyUp);
         });
 
         // Pointer events
         var eventPrefix = Tools.GetPointerPrefix();
 
         if (attachMove) {
-            canvas.addEventListener(eventPrefix + "move", <any>this._onPointerMove, false);
+            elementToAttachTo.addEventListener(eventPrefix + "move", <any>this._onPointerMove, false);
 
             // Wheel
             this._wheelEventName = "onwheel" in document.createElement("div") ? "wheel" :       // Modern browsers support "wheel"
                 (<any>document).onmousewheel !== undefined ? "mousewheel" :                     // Webkit and IE support at least "mousewheel"
                     "DOMMouseScroll";                                                           // let's assume that remaining browsers are older Firefox
 
-            canvas.addEventListener(this._wheelEventName, <any>this._onPointerMove, false);
+                    elementToAttachTo.addEventListener(this._wheelEventName, <any>this._onPointerMove, false);
         }
 
         if (attachDown) {
-            canvas.addEventListener(eventPrefix + "down", <any>this._onPointerDown, false);
+            elementToAttachTo.addEventListener(eventPrefix + "down", <any>this._onPointerDown, false);
         }
 
         if (attachUp) {
             let hostWindow = scene.getEngine().getHostWindow();
-            hostWindow.addEventListener(eventPrefix + "up", <any>this._onPointerUp, false);
+            if (hostWindow) {
+                hostWindow.addEventListener(eventPrefix + "up", <any>this._onPointerUp, false);
+            }
         }
     }
 
@@ -813,7 +824,7 @@ export class InputManager {
      */
     public detachControl() {
         const eventPrefix = Tools.GetPointerPrefix();
-        const canvas = this._scene.getEngine().getRenderingCanvas();
+        const canvas = this._scene.getEngine().getInputElement();
         const engine = this._scene.getEngine();
 
         if (!canvas) {
@@ -840,7 +851,9 @@ export class InputManager {
         canvas.removeEventListener("keyup", this._onKeyUp);
 
         // Cursor
-        canvas.style.cursor = this._scene.defaultCursor;
+        if (!this._scene.doNotHandleCursors) {
+            canvas.style.cursor = this._scene.defaultCursor;
+        }
     }
 
     /**

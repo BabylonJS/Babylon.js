@@ -1,5 +1,5 @@
 import { Nullable } from "babylonjs/types";
-import { Vector3 } from "babylonjs/Maths/math";
+import { Vector3 } from "babylonjs/Maths/math.vector";
 import { Tools } from "babylonjs/Misc/tools";
 import { AnimationGroup } from "babylonjs/Animations/animationGroup";
 import { AnimationEvent } from "babylonjs/Animations/animationEvent";
@@ -93,11 +93,15 @@ interface ILoaderAnimationEvents {
  * [Specification](https://github.com/najadojo/glTF/tree/MSFT_audio_emitter/extensions/2.0/Vendor/MSFT_audio_emitter)
  */
 export class MSFT_audio_emitter implements IGLTFLoaderExtension {
-    /** The name of this extension. */
+    /**
+     * The name of this extension.
+     */
     public readonly name = NAME;
 
-    /** Defines whether this extension is enabled. */
-    public enabled = true;
+    /**
+     * Defines whether this extension is enabled.
+     */
+    public enabled: boolean;
 
     private _loader: GLTFLoader;
     private _clips: Array<ILoaderClip>;
@@ -106,6 +110,7 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
     /** @hidden */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
+        this.enabled = this._loader.isExtensionUsed(NAME);
     }
 
     /** @hidden */

@@ -7,8 +7,6 @@ import { Color4, Color3 } from '../../../Maths/math.color';
 import { Engine } from "../../../Engines/engine";
 import { VertexBuffer } from "../../../Meshes/buffer";
 import { SceneComponentConstants } from "../../../sceneComponent";
-import { _TimeToken } from "../../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../../States/index";
 
 import { Material } from "../../../Materials/material";
 import { Effect } from "../../../Materials/effect";
@@ -17,6 +15,7 @@ import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTex
 import { ProceduralTextureSceneComponent } from "./proceduralTextureSceneComponent";
 
 import "../../../Engines/Extensions/engine.renderTarget";
+import "../../../Engines/Extensions/engine.renderTargetCube";
 import "../../../Shaders/procedural.vertex";
 import { DataBuffer } from '../../../Meshes/dataBuffer';
 
@@ -58,9 +57,13 @@ export class ProceduralTexture extends Texture {
     /** @hidden */
     public _textures: { [key: string]: Texture } = {};
 
+    /** @hidden */
+    protected _fallbackTexture: Nullable<Texture>;
+
     @serialize()
     private _size: number;
     private _currentRefreshId = -1;
+    private _frameId = -1;
     private _refreshRate = 1;
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
     private _indexBuffer: Nullable<DataBuffer>;
@@ -76,8 +79,6 @@ export class ProceduralTexture extends Texture {
     private _vectors2: { [key: string]: Vector2 } = {};
     private _vectors3: { [key: string]: Vector3 } = {};
     private _matrices: { [key: string]: Matrix } = {};
-
-    private _fallbackTexture: Nullable<Texture>;
 
     private _fallbackTextureUsed = false;
     private _engine: Engine;
@@ -155,12 +156,12 @@ export class ProceduralTexture extends Texture {
      * @returns an ArrayBufferView (Uint8Array or Float32Array)
      */
     public getContent(): Nullable<ArrayBufferView> {
-        if (this._contentData && this._currentRefreshId == this._contentUpdateId) {
+        if (this._contentData && this._frameId === this._contentUpdateId) {
             return this._contentData;
         }
 
         this._contentData = this.readPixels(0, 0, this._contentData);
-        this._contentUpdateId = this._currentRefreshId;
+        this._contentUpdateId = this._frameId;
 
         return this._contentData;
     }
@@ -307,11 +308,13 @@ export class ProceduralTexture extends Texture {
 
         if (this._currentRefreshId === -1) { // At least render once
             this._currentRefreshId = 1;
+            this._frameId++;
             return true;
         }
 
         if (this.refreshRate === this._currentRefreshId) {
             this._currentRefreshId = 1;
+            this._frameId++;
             return true;
         }
 

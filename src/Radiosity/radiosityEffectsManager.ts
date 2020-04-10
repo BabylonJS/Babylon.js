@@ -13,6 +13,8 @@ import "../Shaders/visibility.fragment";
 import "../Shaders/visibility.vertex";
 import "../Shaders/dilate.fragment";
 import "../Shaders/dilate.vertex";
+import "../Shaders/radiosityPostProcess.fragment";
+import "../Shaders/radiosityPostProcess.vertex";
 
 /**
   * Creates various effects to solve radiosity.

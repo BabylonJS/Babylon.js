@@ -7,3 +7,4 @@ export * from "./measure";
 export * from "./multiLinePoint";
 export * from "./style";
 export * from "./valueAndUnit";
+export * from "./xmlLoader";

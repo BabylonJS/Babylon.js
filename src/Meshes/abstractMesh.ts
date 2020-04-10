@@ -83,6 +83,7 @@ class _InternalAbstractMeshDataInfo {
     public _onlyForInstances = false;
     public _isActiveIntermediate = false;
     public _onlyForInstancesIntermediate = false;
+    public _actAsRegularMesh = false;
 }
 
 /**
@@ -181,7 +182,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * - AbstractMesh.CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY
      * Please read each static variable documentation to get details about the culling process.
      * */
-    public cullingStrategy = AbstractMesh.CULLINGSTRATEGY_STANDARD;
+    public cullingStrategy = AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY;
 
     /**
      * Gets the number of facets in the mesh
@@ -375,7 +376,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             value.meshMap[this.uniqueId] = this;
         }
 
-        if (this.onMaterialChangedObservable.hasObservers) {
+        if (this.onMaterialChangedObservable.hasObservers()) {
             this.onMaterialChangedObservable.notifyObservers(this);
         }
 
@@ -556,6 +557,23 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     public set collisionGroup(mask: number) {
         this._meshCollisionData._collisionGroup = !isNaN(mask) ? mask : -1;
+    }
+
+    /**
+     * Gets or sets current surrounding meshes (null by default).
+     *
+     * By default collision detection is tested against every mesh in the scene.
+     * It is possible to set surroundingMeshes to a defined list of meshes and then only these specified
+     * meshes will be tested for the collision.
+     *
+     * Note: if set to an empty array no collision will happen when this mesh is moved.
+     */
+    public get surroundingMeshes(): Nullable<AbstractMesh[]> {
+        return this._meshCollisionData._surroundingMeshes;
+    }
+
+    public set surroundingMeshes(meshes: Nullable<AbstractMesh[]>) {
+        this._meshCollisionData._surroundingMeshes = meshes;
     }
 
     // Edges
@@ -763,11 +781,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /** @hidden */
-    public _resyncLighSource(light: Light): void {
+    public _resyncLightSource(light: Light): void {
         var isIn = light.isEnabled() && light.canAffectMesh(this);
 
         var index = this._lightSources.indexOf(light);
-
+        var removed = false;
         if (index === -1) {
             if (!isIn) {
                 return;
@@ -777,10 +795,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             if (isIn) {
                 return;
             }
+            removed = true;
             this._lightSources.splice(index, 1);
         }
 
-        this._markSubMeshesAsLightDirty();
+        this._markSubMeshesAsLightDirty(removed);
     }
 
     /** @hidden */

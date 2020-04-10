@@ -42,13 +42,18 @@ export class LogComponent extends React.Component<ILogComponentProps, { logs: Lo
     }
 
     render() {
+        var today = new Date();
+        var h = today.getHours();
+        var m = today.getMinutes();
+        var s = today.getSeconds();
+
         return (
             <div id="log-console" ref={"log-console"} >
                 {
                     this.state.logs.map((l, i) => {
                         return (
                             <div key={i} className={"log" + (l.isError ? " error" : "")}>
-                                {l.message}
+                                {h + ":" + m + ":" + s+ ": " + l.message}
                             </div>
                         )
                     })

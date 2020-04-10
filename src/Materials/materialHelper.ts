@@ -10,11 +10,12 @@ import { VertexBuffer } from "../Meshes/buffer";
 import { Light } from "../Lights/light";
 
 import { UniformBuffer } from "./uniformBuffer";
-import { Effect, EffectFallbacks, EffectCreationOptions } from "./effect";
+import { Effect, IEffectCreationOptions } from "./effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { WebVRFreeCamera } from '../Cameras/VR/webVRCamera';
 import { MaterialDefines } from "./materialDefines";
-import { Color3, TmpColors } from '../Maths/math.color';
+import { Color3 } from '../Maths/math.color';
+import { EffectFallbacks } from './effectFallbacks';
 
 /**
  * "Static Class" containing the most commonly used helper while dealing with material for
@@ -122,11 +123,15 @@ export class MaterialHelper {
         let useClipPlane2 = false;
         let useClipPlane3 = false;
         let useClipPlane4 = false;
+        let useClipPlane5 = false;
+        let useClipPlane6 = false;
 
         useClipPlane1 = useClipPlane == null ? (scene.clipPlane !== undefined && scene.clipPlane !== null) : useClipPlane;
         useClipPlane2 = useClipPlane == null ? (scene.clipPlane2 !== undefined && scene.clipPlane2 !== null) : useClipPlane;
         useClipPlane3 = useClipPlane == null ? (scene.clipPlane3 !== undefined && scene.clipPlane3 !== null) : useClipPlane;
         useClipPlane4 = useClipPlane == null ? (scene.clipPlane4 !== undefined && scene.clipPlane4 !== null) : useClipPlane;
+        useClipPlane5 = useClipPlane == null ? (scene.clipPlane5 !== undefined && scene.clipPlane5 !== null) : useClipPlane;
+        useClipPlane6 = useClipPlane == null ? (scene.clipPlane6 !== undefined && scene.clipPlane6 !== null) : useClipPlane;
 
         if (defines["CLIPPLANE"] !== useClipPlane1) {
             defines["CLIPPLANE"] = useClipPlane1;
@@ -145,6 +150,16 @@ export class MaterialHelper {
 
         if (defines["CLIPPLANE4"] !== useClipPlane4) {
             defines["CLIPPLANE4"] = useClipPlane4;
+            changed = true;
+        }
+
+        if (defines["CLIPPLANE5"] !== useClipPlane5) {
+            defines["CLIPPLANE5"] = useClipPlane5;
+            changed = true;
+        }
+
+        if (defines["CLIPPLANE6"] !== useClipPlane6) {
+            defines["CLIPPLANE6"] = useClipPlane6;
             changed = true;
         }
 
@@ -328,6 +343,12 @@ export class MaterialHelper {
 
         // Shadows
         defines["SHADOW" + lightIndex] = false;
+        defines["SHADOWCSM" + lightIndex] = false;
+        defines["SHADOWCSMDEBUG" + lightIndex] = false;
+        defines["SHADOWCSMNUM_CASCADES" + lightIndex] = false;
+        defines["SHADOWCSMUSESHADOWMAXZ" + lightIndex] = false;
+        defines["SHADOWCSMNOBLEND" + lightIndex] = false;
+        defines["SHADOWCSM_RIGHTHANDED" + lightIndex] = false;
         defines["SHADOWPCF" + lightIndex] = false;
         defines["SHADOWPCSS" + lightIndex] = false;
         defines["SHADOWPOISSON" + lightIndex] = false;
@@ -406,6 +427,12 @@ export class MaterialHelper {
                 defines["DIRLIGHT" + index] = false;
                 defines["SPOTLIGHT" + index] = false;
                 defines["SHADOW" + index] = false;
+                defines["SHADOWCSM" + index] = false;
+                defines["SHADOWCSMDEBUG" + index] = false;
+                defines["SHADOWCSMNUM_CASCADES" + index] = false;
+                defines["SHADOWCSMUSESHADOWMAXZ" + index] = false;
+                defines["SHADOWCSMNOBLEND" + index] = false;
+                defines["SHADOWCSM_RIGHTHANDED" + index] = false;
                 defines["SHADOWPCF" + index] = false;
                 defines["SHADOWPCSS" + index] = false;
                 defines["SHADOWPOISSON" + index] = false;
@@ -462,6 +489,15 @@ export class MaterialHelper {
         samplersList.push("shadowSampler" + lightIndex);
         samplersList.push("depthSampler" + lightIndex);
 
+        uniformsList.push(
+            "viewFrustumZ" + lightIndex,
+            "cascadeBlendFactor" + lightIndex,
+            "lightSizeUVCorrection" + lightIndex,
+            "depthCorrection" + lightIndex,
+            "penumbraDarkness" + lightIndex,
+            "frustumLengths" + lightIndex,
+        );
+
         if (projectedLightTexture) {
             samplersList.push("projectionLightSampler" + lightIndex);
             uniformsList.push(
@@ -477,17 +513,17 @@ export class MaterialHelper {
      * @param defines The defines helping in the list generation
      * @param maxSimultaneousLights The maximum number of simultanous light allowed in the effect
      */
-    public static PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] | EffectCreationOptions, samplersList?: string[], defines?: any, maxSimultaneousLights = 4): void {
+    public static PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] | IEffectCreationOptions, samplersList?: string[], defines?: any, maxSimultaneousLights = 4): void {
         let uniformsList: string[];
         let uniformBuffersList: Nullable<string[]> = null;
 
-        if ((<EffectCreationOptions>uniformsListOrOptions).uniformsNames) {
-            var options = <EffectCreationOptions>uniformsListOrOptions;
+        if ((<IEffectCreationOptions>uniformsListOrOptions).uniformsNames) {
+            var options = <IEffectCreationOptions>uniformsListOrOptions;
             uniformsList = options.uniformsNames;
             uniformBuffersList = options.uniformBuffersNames;
             samplersList = options.samplers;
             defines = options.defines;
-            maxSimultaneousLights = options.maxSimultaneousLights;
+            maxSimultaneousLights = options.maxSimultaneousLights || 0;
         } else {
             uniformsList = <string[]>uniformsListOrOptions;
             if (!samplersList) {
@@ -644,23 +680,6 @@ export class MaterialHelper {
     }
 
     /**
-     * Binds the light shadow information to the effect for the given mesh.
-     * @param light The light containing the generator
-     * @param scene The scene the lights belongs to
-     * @param mesh The mesh we are binding the information to render
-     * @param lightIndex The light index in the effect used to render the mesh
-     * @param effect The effect we are binding the data to
-     */
-    public static BindLightShadow(light: Light, mesh: AbstractMesh, lightIndex: string, effect: Effect): void {
-        if (light.shadowEnabled && mesh.receiveShadows) {
-            var shadowGenerator = light.getShadowGenerator();
-            if (shadowGenerator) {
-                shadowGenerator.bindShadowLight(lightIndex, effect);
-            }
-        }
-    }
-
-    /**
      * Binds the light information to the effect.
      * @param light The light containing the generator
      * @param effect The effect we are binding the data to
@@ -675,34 +694,12 @@ export class MaterialHelper {
      * @param light Light to bind
      * @param lightIndex Light index
      * @param scene The scene where the light belongs to
-     * @param mesh The mesh we are binding the information to render
      * @param effect The effect we are binding the data to
      * @param useSpecular Defines if specular is supported
-     * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
      * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
      */
-    public static BindLight(light: Light, lightIndex: number, scene: Scene, mesh: AbstractMesh, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff = false, rebuildInParallel = false): void {
-        let iAsString = lightIndex.toString();
-
-        let scaledIntensity = light.getScaledIntensity();
-        if (!rebuildInParallel) {
-            light._uniformBuffer.bindToEffect(effect, "Light" + iAsString);
-        }
-
-        MaterialHelper.BindLightProperties(light, effect, lightIndex);
-
-        light.diffuse.scaleToRef(scaledIntensity, TmpColors.Color3[0]);
-        light._uniformBuffer.updateColor4("vLightDiffuse", TmpColors.Color3[0], usePhysicalLightFalloff ? light.radius : light.range, iAsString);
-        if (useSpecular) {
-            light.specular.scaleToRef(scaledIntensity, TmpColors.Color3[1]);
-            light._uniformBuffer.updateColor3("vLightSpecular", TmpColors.Color3[1], iAsString);
-        }
-
-        // Shadows
-        if (scene.shadowsEnabled) {
-            this.BindLightShadow(light, mesh, iAsString, effect);
-        }
-        light._uniformBuffer.update();
+    public static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, rebuildInParallel = false): void {
+        light._bindLight(lightIndex, scene, effect, useSpecular, rebuildInParallel);
     }
 
     /**
@@ -712,16 +709,15 @@ export class MaterialHelper {
      * @param effect The effect we are binding the data to
      * @param defines The generated defines for the effect
      * @param maxSimultaneousLights The maximum number of light that can be bound to the effect
-     * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
      * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
      */
-    public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4, usePhysicalLightFalloff = false, rebuildInParallel = false): void {
+    public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4, rebuildInParallel = false): void {
         let len = Math.min(mesh.lightSources.length, maxSimultaneousLights);
 
         for (var i = 0; i < len; i++) {
 
             let light = mesh.lightSources[i];
-            this.BindLight(light, i, scene, mesh, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], usePhysicalLightFalloff, rebuildInParallel);
+            this.BindLight(light, i, scene, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], rebuildInParallel);
         }
     }
 
@@ -824,6 +820,14 @@ export class MaterialHelper {
         if (scene.clipPlane4) {
             let clipPlane = scene.clipPlane4;
             effect.setFloat4("vClipPlane4", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
+        }
+        if (scene.clipPlane5) {
+            let clipPlane = scene.clipPlane5;
+            effect.setFloat4("vClipPlane5", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
+        }
+        if (scene.clipPlane6) {
+            let clipPlane = scene.clipPlane6;
+            effect.setFloat4("vClipPlane6", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
         }
     }
 }

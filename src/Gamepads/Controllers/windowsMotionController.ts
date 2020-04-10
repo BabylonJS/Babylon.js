@@ -8,10 +8,7 @@ import { Mesh } from "../../Meshes/mesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Ray } from "../../Culling/ray";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { SceneLoader } from "../../Loading/sceneLoader";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
-
 import { WebVRController } from "./webVRController";
 import { GenericController } from "./genericController";
 import { PoseEnabledController, PoseEnabledControllerType, ExtendedGamepadButton, PoseEnabledControllerHelper } from "./poseEnabledController";
@@ -108,9 +105,10 @@ export class WindowsMotionController extends WebVRController {
     private static readonly GAMEPAD_ID_PATTERN = /([0-9a-zA-Z]+-[0-9a-zA-Z]+)$/;
 
     private _loadedMeshInfo: Nullable<LoadedMeshInfo>;
-    private readonly _mapping = {
+    protected readonly _mapping = {
         // Semantic button names
         buttons: ['thumbstick', 'trigger', 'grip', 'menu', 'trackpad'],
+        // trigger, grip, trackpad, thumbstick, menu
 
         // A mapping of the button name to glTF model node name
         // that should be transformed by button value.
@@ -139,6 +137,7 @@ export class WindowsMotionController extends WebVRController {
             'TOUCHPAD_TOUCH_X',
             'TOUCHPAD_TOUCH_Y'
         ],
+        // upside down in webxr
         pointingPoseMeshName: PoseEnabledController.POINTING_POSE
     };
 
@@ -207,10 +206,10 @@ export class WindowsMotionController extends WebVRController {
         return this.onTrackpadValuesChangedObservable;
     }
 
-    private _updateTrackpad() {
+    protected _updateTrackpad() {
         if (this.browserGamepad.axes && (this.browserGamepad.axes[2] != this.trackpad.x || this.browserGamepad.axes[3] != this.trackpad.y)) {
-            this.trackpad.x = this.browserGamepad["axes"][2];
-            this.trackpad.y = this.browserGamepad["axes"][3];
+            this.trackpad.x = this.browserGamepad["axes"][this._mapping.axisMeshNames.indexOf('TOUCHPAD_TOUCH_X')];
+            this.trackpad.y = this.browserGamepad["axes"][this._mapping.axisMeshNames.indexOf('TOUCHPAD_TOUCH_Y')];
             this.onTrackpadValuesChangedObservable.notifyObservers(this.trackpad);
         }
     }
@@ -269,7 +268,7 @@ export class WindowsMotionController extends WebVRController {
 
         var meshInfo = this._loadedMeshInfo.buttonMeshes[buttonName];
 
-        if (!meshInfo.unpressed.rotationQuaternion || !meshInfo.pressed.rotationQuaternion || !meshInfo.value.rotationQuaternion) {
+        if (!meshInfo || !meshInfo.unpressed.rotationQuaternion || !meshInfo.pressed.rotationQuaternion || !meshInfo.value.rotationQuaternion) {
             return;
         }
 
@@ -537,7 +536,117 @@ export class WindowsMotionController extends WebVRController {
         super.dispose();
 
         this.onTrackpadChangedObservable.clear();
+        this.onTrackpadValuesChangedObservable.clear();
     }
+}
+
+/**
+ * This class represents a new windows motion controller in XR.
+ */
+export class XRWindowsMotionController extends WindowsMotionController {
+
+    /**
+     * Changing the original WIndowsMotionController mapping to fir the new mapping
+     */
+    protected readonly _mapping = {
+        // Semantic button names
+        buttons: ['trigger', 'grip', 'trackpad', 'thumbstick', 'menu'],
+        // trigger, grip, trackpad, thumbstick, menu
+
+        // A mapping of the button name to glTF model node name
+        // that should be transformed by button value.
+        buttonMeshNames: {
+            'trigger': 'SELECT',
+            'menu': 'MENU',
+            'grip': 'GRASP',
+            'thumbstick': 'THUMBSTICK_PRESS',
+            'trackpad': 'TOUCHPAD_PRESS'
+        },
+        // This mapping is used to translate from the Motion Controller to Babylon semantics
+        buttonObservableNames: {
+            'trigger': 'onTriggerStateChangedObservable',
+            'menu': 'onSecondaryButtonStateChangedObservable',
+            'grip': 'onMainButtonStateChangedObservable',
+            'thumbstick': 'onThumbstickStateChangedObservable',
+            'trackpad': 'onTrackpadChangedObservable'
+        },
+        // A mapping of the axis name to glTF model node name
+        // that should be transformed by axis value.
+        // This array mirrors the browserGamepad.axes array, such that
+        // the mesh corresponding to axis 0 is in this array index 0.
+        axisMeshNames: [
+            'TOUCHPAD_TOUCH_X',
+            'TOUCHPAD_TOUCH_Y',
+            'THUMBSTICK_X',
+            'THUMBSTICK_Y'
+        ],
+        // upside down in webxr
+        pointingPoseMeshName: PoseEnabledController.POINTING_POSE
+    };
+
+    /**
+     * Construct a new XR-Based windows motion controller
+     *
+     * @param gamepadInfo the gamepad object from the browser
+     */
+    constructor(gamepadInfo: any) {
+        super(gamepadInfo);
+    }
+
+    /**
+     * holds the thumbstick values (X,Y)
+     */
+    public thumbstickValues: StickValues = { x: 0, y: 0 };
+
+    /**
+     * Fired when the thumbstick on this controller is clicked
+     */
+    public onThumbstickStateChangedObservable = new Observable<ExtendedGamepadButton>();
+    /**
+     * Fired when the thumbstick on this controller is modified
+     */
+    public onThumbstickValuesChangedObservable = new Observable<StickValues>();
+
+    /**
+     * Fired when the touchpad button on this controller is modified
+     */
+    public onTrackpadChangedObservable = this.onPadStateChangedObservable;
+
+    /**
+     * Fired when the touchpad values on this controller are modified
+     */
+    public onTrackpadValuesChangedObservable = this.onPadValuesChangedObservable;
+
+    /**
+     * Fired when the thumbstick button on this controller is modified
+     * here to prevent breaking changes
+     */
+    public get onThumbstickButtonStateChangedObservable(): Observable<ExtendedGamepadButton> {
+        return this.onThumbstickStateChangedObservable;
+    }
+
+    /**
+     * updating the thumbstick(!) and not the trackpad.
+     * This is named this way due to the difference between WebVR and XR and to avoid
+     * changing the parent class.
+     */
+    protected _updateTrackpad() {
+        if (this.browserGamepad.axes && (this.browserGamepad.axes[2] != this.thumbstickValues.x || this.browserGamepad.axes[3] != this.thumbstickValues.y)) {
+            this.trackpad.x = this.browserGamepad["axes"][2];
+            this.trackpad.y = this.browserGamepad["axes"][3];
+            this.onThumbstickValuesChangedObservable.notifyObservers(this.trackpad);
+        }
+    }
+
+    /**
+     * Disposes the class with joy
+     */
+    public dispose() {
+        super.dispose();
+        this.onThumbstickStateChangedObservable.clear();
+        this.onThumbstickValuesChangedObservable.clear();
+    }
+
 }
 
 PoseEnabledControllerHelper._ControllerFactories.push({

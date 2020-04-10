@@ -2,32 +2,77 @@
 export class Constants {
     /** Defines that alpha blending is disabled */
     public static readonly ALPHA_DISABLE = 0;
-    /** Defines that alpha blending to SRC ALPHA * SRC + DEST */
+    /** Defines that alpha blending is SRC ALPHA * SRC + DEST */
     public static readonly ALPHA_ADD = 1;
-    /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC ALPHA) * DEST */
+    /** Defines that alpha blending is SRC ALPHA * SRC + (1 - SRC ALPHA) * DEST */
     public static readonly ALPHA_COMBINE = 2;
-    /** Defines that alpha blending to DEST - SRC * DEST */
+    /** Defines that alpha blending is DEST - SRC * DEST */
     public static readonly ALPHA_SUBTRACT = 3;
-    /** Defines that alpha blending to SRC * DEST */
+    /** Defines that alpha blending is SRC * DEST */
     public static readonly ALPHA_MULTIPLY = 4;
-    /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC) * DEST */
+    /** Defines that alpha blending is SRC ALPHA * SRC + (1 - SRC) * DEST */
     public static readonly ALPHA_MAXIMIZED = 5;
-    /** Defines that alpha blending to SRC + DEST */
+    /** Defines that alpha blending is SRC + DEST */
     public static readonly ALPHA_ONEONE = 6;
-    /** Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST */
+    /** Defines that alpha blending is SRC + (1 - SRC ALPHA) * DEST */
     public static readonly ALPHA_PREMULTIPLIED = 7;
     /**
-     * Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST
+     * Defines that alpha blending is SRC + (1 - SRC ALPHA) * DEST
      * Alpha will be set to (1 - SRC ALPHA) * DEST ALPHA
      */
     public static readonly ALPHA_PREMULTIPLIED_PORTERDUFF = 8;
-    /** Defines that alpha blending to CST * SRC + (1 - CST) * DEST */
+    /** Defines that alpha blending is CST * SRC + (1 - CST) * DEST */
     public static readonly ALPHA_INTERPOLATE = 9;
     /**
-     * Defines that alpha blending to SRC + (1 - SRC) * DEST
+     * Defines that alpha blending is SRC + (1 - SRC) * DEST
      * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DEST ALPHA
      */
     public static readonly ALPHA_SCREENMODE = 10;
+    /**
+     * Defines that alpha blending is SRC + DST
+     * Alpha will be set to SRC ALPHA + DST ALPHA
+     */
+    public static readonly ALPHA_ONEONE_ONEONE = 11;
+    /**
+     * Defines that alpha blending is SRC * DST ALPHA + DST
+     * Alpha will be set to 0
+     */
+    public static readonly ALPHA_ALPHATOCOLOR = 12;
+    /**
+     * Defines that alpha blending is SRC * (1 - DST) + DST * (1 - SRC)
+     */
+    public static readonly ALPHA_REVERSEONEMINUS = 13;
+    /**
+     * Defines that alpha blending is SRC + DST * (1 - SRC ALPHA)
+     * Alpha will be set to SRC ALPHA + DST ALPHA * (1 - SRC ALPHA)
+     */
+    public static readonly ALPHA_SRC_DSTONEMINUSSRCALPHA = 14;
+    /**
+     * Defines that alpha blending is SRC + DST
+     * Alpha will be set to SRC ALPHA
+     */
+    public static readonly ALPHA_ONEONE_ONEZERO = 15;
+    /**
+     * Defines that alpha blending is SRC * (1 - DST) + DST * (1 - SRC)
+     * Alpha will be set to DST ALPHA
+     */
+    public static readonly ALPHA_EXCLUSION = 16;
+
+    /** Defines that alpha blending equation a SUM */
+    public static readonly ALPHA_EQUATION_ADD = 0;
+    /** Defines that alpha blending equation a SUBSTRACTION */
+    public static readonly ALPHA_EQUATION_SUBSTRACT = 1;
+    /** Defines that alpha blending equation a REVERSE SUBSTRACTION */
+    public static readonly ALPHA_EQUATION_REVERSE_SUBTRACT = 2;
+    /** Defines that alpha blending equation a MAX operation */
+    public static readonly ALPHA_EQUATION_MAX = 3;
+    /** Defines that alpha blending equation a MIN operation */
+    public static readonly ALPHA_EQUATION_MIN = 4;
+    /**
+     * Defines that alpha blending equation a DARKEN operation:
+     * It takes the min of the src and sums the alpha channels.
+     */
+    public static readonly ALPHA_EQUATION_DARKEN = 5;
 
     /** Defines that the ressource is not delayed*/
     public static readonly DELAYLOADSTATE_NONE = 0;
@@ -141,18 +186,21 @@ export class Constants {
     /** FLOAT_32_UNSIGNED_INT_24_8_REV */
     public static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV = 15;
 
-    /** nearest is mag = nearest and min = nearest and mip = linear */
+    /** nearest is mag = nearest and min = nearest and no mip */
     public static readonly TEXTURE_NEAREST_SAMPLINGMODE = 1;
-    /** Bilinear is mag = linear and min = linear and mip = nearest */
+    /** mag = nearest and min = nearest and mip = none */
+    public static readonly TEXTURE_NEAREST_NEAREST = 1;
+
+    /** Bilinear is mag = linear and min = linear and no mip */
     public static readonly TEXTURE_BILINEAR_SAMPLINGMODE = 2;
+    /** mag = linear and min = linear and mip = none */
+    public static readonly TEXTURE_LINEAR_LINEAR = 2;
+
     /** Trilinear is mag = linear and min = linear and mip = linear */
     public static readonly TEXTURE_TRILINEAR_SAMPLINGMODE = 3;
-    /** nearest is mag = nearest and min = nearest and mip = linear */
-    public static readonly TEXTURE_NEAREST_NEAREST_MIPLINEAR = 1;
-    /** Bilinear is mag = linear and min = linear and mip = nearest */
-    public static readonly TEXTURE_LINEAR_LINEAR_MIPNEAREST = 2;
     /** Trilinear is mag = linear and min = linear and mip = linear */
     public static readonly TEXTURE_LINEAR_LINEAR_MIPLINEAR = 3;
+
     /** mag = nearest and min = nearest and mip = nearest */
     public static readonly TEXTURE_NEAREST_NEAREST_MIPNEAREST = 4;
     /** mag = nearest and min = linear and mip = nearest */
@@ -161,14 +209,14 @@ export class Constants {
     public static readonly TEXTURE_NEAREST_LINEAR_MIPLINEAR = 6;
     /** mag = nearest and min = linear and mip = none */
     public static readonly TEXTURE_NEAREST_LINEAR = 7;
-    /** mag = nearest and min = nearest and mip = none */
-    public static readonly TEXTURE_NEAREST_NEAREST = 8;
+    /** nearest is mag = nearest and min = nearest and mip = linear */
+    public static readonly TEXTURE_NEAREST_NEAREST_MIPLINEAR = 8;
     /** mag = linear and min = nearest and mip = nearest */
     public static readonly TEXTURE_LINEAR_NEAREST_MIPNEAREST = 9;
     /** mag = linear and min = nearest and mip = linear */
     public static readonly TEXTURE_LINEAR_NEAREST_MIPLINEAR = 10;
-    /** mag = linear and min = linear and mip = none */
-    public static readonly TEXTURE_LINEAR_LINEAR = 11;
+    /** Bilinear is mag = linear and min = linear and mip = nearest */
+    public static readonly TEXTURE_LINEAR_LINEAR_MIPNEAREST = 11;
     /** mag = linear and min = nearest and mip = none */
     public static readonly TEXTURE_LINEAR_NEAREST = 12;
 
@@ -372,10 +420,6 @@ export class Constants {
      * Special billboard mode where the particle will be biilboard to the camera but rotated to align with direction
      */
     public static readonly PARTICLES_BILLBOARDMODE_STRETCHED = 8;
-    /**
-     * Gets or sets base Assets URL
-     */
-    public static PARTICLES_BaseAssetsUrl = "https://assets.babylonjs.com/particles";
 
     /** Default culling strategy : this is an exclusion test and it's the more accurate.
      *  Test order :

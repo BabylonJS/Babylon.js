@@ -11,6 +11,7 @@
     "scripts": {
         "install": "cd ../../ && npm install && cd Playground/ && npm install && cd ../Viewer && npm install && cd ../Tools/Gulp/",
         "build": "gulp --max-old-space-size=8192 --tsLintFix",
-        "start": "gulp run --max-old-space-size=8192"
+        "start": "gulp run --max-old-space-size=8192",
+        "start-public-ssl": "gulp run --max-old-space-size=8192 --public --ssl"
     }
 }

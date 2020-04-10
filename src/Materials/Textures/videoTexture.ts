@@ -5,6 +5,10 @@ import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { Engine } from "../../Engines/engine";
 import { Texture } from "../../Materials/Textures/texture";
+
+import "../../Engines/Extensions/engine.videoTexture";
+import "../../Engines/Extensions/engine.dynamicTexture";
+
 /**
  * Settings for finer control over video usage
  */
@@ -66,6 +70,7 @@ export class VideoTexture extends Texture {
     private _settings: VideoTextureSettings;
     private _createInternalTextureOnEvent: string;
     private _frameId = -1;
+    private _currentSrc: Nullable<string | string[] | HTMLVideoElement> = null;
 
     /**
      * Creates a video texture.
@@ -100,6 +105,7 @@ export class VideoTexture extends Texture {
         this._initialSamplingMode = samplingMode;
         this.autoUpdateTexture = settings.autoUpdateTexture;
 
+        this._currentSrc = src;
         this.name = name || this._getName(src);
         this.video = this._getVideo(src);
         this._settings = settings;
@@ -126,7 +132,7 @@ export class VideoTexture extends Texture {
         const videoHasEnoughData = (this.video.readyState >= this.video.HAVE_CURRENT_DATA);
         if (settings.poster &&
             (!settings.autoPlay || !videoHasEnoughData)) {
-            this._texture = this._engine.createTexture(settings.poster!, false, true, scene);
+            this._texture = this._engine.createTexture(settings.poster!, false, !this.invertY, scene);
             this._displayingPosterTexture = true;
         }
         else if (videoHasEnoughData) {
@@ -314,6 +320,21 @@ export class VideoTexture extends Texture {
      */
     public updateURL(url: string): void {
         this.video.src = url;
+        this._currentSrc = url;
+    }
+
+    /**
+     * Clones the texture.
+     * @returns the cloned texture
+     */
+    public clone(): VideoTexture {
+        return new VideoTexture(this.name,
+            this._currentSrc!,
+            this.getScene(),
+            this._generateMipMaps,
+            this.invertY,
+            this.samplingMode,
+            this._settings);
     }
 
     /**
@@ -321,6 +342,8 @@ export class VideoTexture extends Texture {
      */
     public dispose(): void {
         super.dispose();
+
+        this._currentSrc = null;
 
         if (this._onUserActionRequestedObservable) {
             this._onUserActionRequestedObservable.clear();

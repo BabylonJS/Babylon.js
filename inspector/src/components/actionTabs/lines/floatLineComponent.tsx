@@ -13,6 +13,7 @@ interface IFloatLineComponentProps {
     lockObject?: LockObject;
     onChange?: (newValue: number) => void;
     isInteger?: boolean;
+    replaySourceReplacement?: string;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     additionalClass?: string;
     step?: string,
@@ -61,7 +62,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             return;
         }
         this.props.onPropertyChangedObservable.notifyObservers({
-            object: this.props.target,
+            object: this.props.replaySourceReplacement ?? this.props.target,
             property: this.props.propertyName,
             value: newValue,
             initialValue: previousValue
@@ -89,8 +90,8 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             return;
         }
 
-        this.raiseOnPropertyChanged(valueAsNumber, this._store);
         this.props.target[this.props.propertyName] = valueAsNumber;
+        this.raiseOnPropertyChanged(valueAsNumber, this._store);
 
         this._store = valueAsNumber;
     }
@@ -125,7 +126,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                             {this.props.label}
                         </div>
                         <div className="value">
-                            <input type="number" step={this.props.step || "0.01"} className="numeric-input" value={this.state.value} onBlur={() => this.unlock()} onFocus={() => this.lock()} onChange={evt => this.updateValue(evt.target.value)} />
+                            <input type="number" step={this.props.step || this.props.isInteger ? "1" : "0.01"} className="numeric-input" value={this.state.value} onBlur={() => this.unlock()} onFocus={() => this.lock()} onChange={evt => this.updateValue(evt.target.value)} />
                         </div>
                     </div>
                 }

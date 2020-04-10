@@ -24,17 +24,17 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
         if (this.props.isSelected) {
             this.state = { isSelected: this.props.isSelected() };
         } else {
-            this.state = { isSelected: this.props.target[this.props.propertyName!] === true };
+            this.state = { isSelected: this.props.target[this.props.propertyName!] == true };
         }
     }
 
     shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: { isSelected: boolean }) {
         var currentState: boolean;
 
-        if (this.props.isSelected) {
+        if (nextProps.isSelected) {
             currentState = nextProps.isSelected!();
         } else {
-            currentState = nextProps.target[nextProps.propertyName!] === true;
+            currentState = nextProps.target[nextProps.propertyName!] == true;
         }
 
         if (currentState !== nextState.isSelected || this._localChange) {
@@ -42,7 +42,7 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
             this._localChange = false;
             return true;
         }
-        return false;
+        return nextProps.label !== this.props.label;
     }
 
     onChange() {

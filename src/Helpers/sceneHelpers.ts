@@ -18,7 +18,7 @@ import "../Materials/Textures/Loaders/ddsTextureLoader";
 import "../Materials/Textures/Loaders/envTextureLoader";
 import "../Materials/Textures/Loaders/ktxTextureLoader";
 import "../Meshes/Builders/boxBuilder";
-import { WebXRDefaultExperience, WebXRDefaultExperienceOptions } from '../Cameras/XR/webXRDefaultExperience';
+import { WebXRDefaultExperience, WebXRDefaultExperienceOptions } from '../XR/webXRDefaultExperience';
 
 /** @hidden */
 export var _forceSceneHelpersToBundle = true;
@@ -142,7 +142,7 @@ Scene.prototype.createDefaultCamera = function(createArcRotateCamera = false, re
         camera.speed = radius * 0.2;
         this.activeCamera = camera;
 
-        let canvas = this.getEngine().getRenderingCanvas();
+        let canvas = this.getEngine().getInputElement();
         if (attachCameraControls && canvas) {
             camera.attachControl(canvas);
         }

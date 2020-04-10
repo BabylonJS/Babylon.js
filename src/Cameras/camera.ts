@@ -5,7 +5,7 @@ import { Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { CameraInputsManager } from "./cameraInputsManager";
 import { Scene } from "../scene";
-import { Matrix, Vector3 } from "../Maths/math.vector";
+import { Matrix, Vector3, Quaternion } from "../Maths/math.vector";
 import { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -77,6 +77,10 @@ export class Camera extends Node {
      * Defines that both eyes of the camera will be rendered over under each other.
      */
     public static readonly RIG_MODE_STEREOSCOPIC_OVERUNDER = 13;
+    /**
+     * Defines that both eyes of the camera will be rendered on successive lines interlaced for passive 3d monitors.
+     */
+    public static readonly RIG_MODE_STEREOSCOPIC_INTERLACED = 14;
     /**
      * Defines that both eyes of the camera should be renderered in a VR mode (carbox).
      */
@@ -186,7 +190,7 @@ export class Camera extends Node {
     public mode = Camera.PERSPECTIVE_CAMERA;
 
     /**
-     * Define wether the camera is intermediate.
+     * Define whether the camera is intermediate.
      * This is useful to not present the output directly to the screen in case of rig without post process for instance
      */
     public isIntermediate = false;
@@ -261,6 +265,17 @@ export class Camera extends Node {
      * Observable triggered when reset has been called and applied to the camera.
      */
     public onRestoreStateObservable = new Observable<Camera>();
+
+    /**
+     * Is this camera a part of a rig system?
+     */
+    public isRigCamera: boolean = false;
+
+    /**
+     * If isRigCamera set to true this will be set with the parent camera.
+     * The parent camera is not (!) necessarily the .parent of this camera (like in the case of XR)
+     */
+    public rigParent?: Camera;
 
     /** @hidden */
     public _cameraRigParams: any;
@@ -396,7 +411,7 @@ export class Camera extends Node {
     }
 
     /**
-     * Check wether a mesh is part of the current active mesh list of the camera
+     * Check whether a mesh is part of the current active mesh list of the camera
      * @param mesh Defines the mesh to check
      * @returns true if active, false otherwise
      */
@@ -719,37 +734,36 @@ export class Camera extends Node {
                 this.minZ = 0.1;
             }
 
+            const reverseDepth = engine.useReverseDepthBuffer;
+            let getProjectionMatrix: (fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed: boolean) => void;
             if (scene.useRightHandedSystem) {
-                Matrix.PerspectiveFovRHToRef(this.fov,
-                    engine.getAspectRatio(this),
-                    this.minZ,
-                    this.maxZ,
-                    this._projectionMatrix,
-                    this.fovMode === Camera.FOVMODE_VERTICAL_FIXED);
+                getProjectionMatrix = reverseDepth ? Matrix.PerspectiveFovReverseRHToRef : Matrix.PerspectiveFovRHToRef;
             } else {
-                Matrix.PerspectiveFovLHToRef(this.fov,
-                    engine.getAspectRatio(this),
-                    this.minZ,
-                    this.maxZ,
-                    this._projectionMatrix,
-                    this.fovMode === Camera.FOVMODE_VERTICAL_FIXED);
+                getProjectionMatrix = reverseDepth ? Matrix.PerspectiveFovReverseLHToRef : Matrix.PerspectiveFovLHToRef;
             }
+
+            getProjectionMatrix(this.fov,
+                engine.getAspectRatio(this),
+                this.minZ,
+                this.maxZ,
+                this._projectionMatrix,
+                this.fovMode === Camera.FOVMODE_VERTICAL_FIXED);
         } else {
             var halfWidth = engine.getRenderWidth() / 2.0;
             var halfHeight = engine.getRenderHeight() / 2.0;
             if (scene.useRightHandedSystem) {
-                Matrix.OrthoOffCenterRHToRef(this.orthoLeft || -halfWidth,
-                    this.orthoRight || halfWidth,
-                    this.orthoBottom || -halfHeight,
-                    this.orthoTop || halfHeight,
+                Matrix.OrthoOffCenterRHToRef(this.orthoLeft ?? -halfWidth,
+                    this.orthoRight ?? halfWidth,
+                    this.orthoBottom ?? -halfHeight,
+                    this.orthoTop ?? halfHeight,
                     this.minZ,
                     this.maxZ,
                     this._projectionMatrix);
             } else {
-                Matrix.OrthoOffCenterLHToRef(this.orthoLeft || -halfWidth,
-                    this.orthoRight || halfWidth,
-                    this.orthoBottom || -halfHeight,
-                    this.orthoTop || halfHeight,
+                Matrix.OrthoOffCenterLHToRef(this.orthoLeft ?? -halfWidth,
+                    this.orthoRight ?? halfWidth,
+                    this.orthoBottom ?? -halfHeight,
+                    this.orthoTop ?? halfHeight,
                     this.minZ,
                     this.maxZ,
                     this._projectionMatrix);
@@ -1004,7 +1018,8 @@ export class Camera extends Node {
             case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
             case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
             case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
-                Camera._setStereoscopicRigMode(this);
+            case Camera.RIG_MODE_STEREOSCOPIC_INTERLACED:
+                    Camera._setStereoscopicRigMode(this);
                 break;
             case Camera.RIG_MODE_VR:
                 Camera._setVRRigMode(this, rigParams);
@@ -1161,6 +1176,17 @@ export class Camera extends Node {
     }
 
     /**
+     * Returns the current camera absolute rotation
+     */
+    public get absoluteRotation(): Quaternion {
+        var result = Quaternion.Zero();
+
+        this.getWorldMatrix().decompose(undefined, result);
+
+        return result;
+    }
+
+    /**
      * Gets the direction of the camera relative to a given local axis into a passed vector.
      * @param localAxis Defines the reference axis to provide a relative direction.
      * @param result Defines the vector to store the result in
@@ -1194,7 +1220,7 @@ export class Camera extends Node {
 
     /**
      * Compute the world  matrix of the camera.
-     * @returns the camera workd matrix
+     * @returns the camera world matrix
      */
     public computeWorldMatrix(): Matrix {
         return this.getWorldMatrix();

@@ -34,6 +34,7 @@ import { MeshLODLevel } from './meshLODLevel';
 import { Path3D } from '../Maths/math.path';
 import { Plane } from '../Maths/math.plane';
 import { TransformNode } from './transformNode';
+import { CanvasGenerator } from '../Misc/canvasGenerator';
 
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
@@ -74,6 +75,7 @@ class _InstanceDataStorage {
     public previousBatch: Nullable<_InstancesBatch>;
     public hardwareInstancedRendering: boolean;
     public sideOrientation: number;
+    public manualUpdate: boolean;
 }
 
 /**
@@ -368,6 +370,20 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
     }
 
+    /** Gets the array buffer used to store the instanced buffer used for instances' world matrices */
+    public get worldMatrixInstancedBuffer() {
+        return this._instanceDataStorage.instancesData;
+    }
+
+    /** Gets or sets a boolean indicating that the update of the instance buffer of the world matrices is manual */
+    public get manualUpdateOfWorldMatrixInstancedBuffer() {
+        return this._instanceDataStorage.manualUpdate;
+    }
+
+    public set manualUpdateOfWorldMatrixInstancedBuffer(value: boolean) {
+        this._instanceDataStorage.manualUpdate = value;
+    }
+
     /**
      * @constructor
      * @param name The value used by scene.getMeshByName() to do a lookup.
@@ -391,17 +407,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
 
             // Deep copy
-            DeepCopier.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent", "uniqueId",
-                "source", "metadata", "hasLODLevels", "geometry", "isBlocked", "areNormalsFrozen",
-                "onBeforeDrawObservable", "onBeforeRenderObservable", "onAfterRenderObservable", "onBeforeDraw",
-                "onAfterWorldMatrixUpdateObservable", "onCollideObservable", "onCollisionPositionChangeObservable", "onRebuildObservable",
-                "onDisposeObservable", "lightSources"
-            ],
-                ["_poseMatrix"]);
+            DeepCopier.DeepCopy(source, this, [
+                "name", "material", "skeleton", "instances", "parent", "uniqueId", "source", "metadata", "morphTargetManager",
+                "hasInstances", "source", "worldMatrixInstancedBuffer", "hasLODLevels", "geometry", "isBlocked", "areNormalsFrozen",
+                "facetNb", "isFacetDataEnabled", "lightSources", "useBones", "isAnInstance", "collider", "edgesRenderer", "forward",
+                "up", "right", "absolutePosition", "absoluteScaling", "absoluteRotationQuaternion", "isWorldMatrixFrozen",
+                "nonUniformScaling", "behaviors", "worldMatrixFromCache"
+            ], ["_poseMatrix"]);
 
             // Source mesh
             this._internalMeshDataInfo._source = source;
-            if (scene.useClonedMeshhMap) {
+            if (scene.useClonedMeshMap) {
                 if (!source._internalMeshDataInfo.meshMap) {
                     source._internalMeshDataInfo.meshMap = {};
                 }
@@ -464,6 +480,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
             }
 
+            // Morphs
+            if (source.morphTargetManager) {
+                this.morphTargetManager = source.morphTargetManager;
+            }
+
             // Physics clone
             if (scene.getPhysicsEngine) {
                 var physicsEngine = scene.getPhysicsEngine();
@@ -496,20 +517,26 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     // Methods
-    public instantiateHierarychy(newParent: Nullable<TransformNode> = null): Nullable<TransformNode> {
-        let instance = this.createInstance("instance of " + (this.name || this.id));
+    public instantiateHierarchy(newParent: Nullable<TransformNode> = null, options?: { doNotInstantiate: boolean}, onNewNodeCreated?: (source: TransformNode, clone: TransformNode) => void): Nullable<TransformNode> {
+        let instance = (this.getTotalVertices() > 0 && (!options || !options.doNotInstantiate)) ? this.createInstance("instance of " + (this.name || this.id)) :  this.clone("Clone of " +  (this.name || this.id), newParent || this.parent, true);
 
-        instance.parent = newParent || this.parent;
-        instance.position = this.position.clone();
-        instance.scaling = this.scaling.clone();
-        if (this.rotationQuaternion)  {
-            instance.rotationQuaternion = this.rotationQuaternion.clone();
-        } else {
-            instance.rotation = this.rotation.clone();
+        if (instance) {
+            instance.parent = newParent || this.parent;
+            instance.position = this.position.clone();
+            instance.scaling = this.scaling.clone();
+            if (this.rotationQuaternion)  {
+                instance.rotationQuaternion = this.rotationQuaternion.clone();
+            } else {
+                instance.rotation = this.rotation.clone();
+            }
+
+            if (onNewNodeCreated) {
+                onNewNodeCreated(this, instance);
+            }
         }
 
         for (var child of this.getChildTransformNodes(true)) {
-            child.instantiateHierarychy(instance);
+            child.instantiateHierarchy(instance, options, onNewNodeCreated);
         }
 
         return instance;
@@ -688,7 +715,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         if (internalDataInfo._LODLevels[internalDataInfo._LODLevels.length - 1].distance > distanceToCamera) {
             if (this.onLODLevelSelection) {
-                this.onLODLevelSelection(distanceToCamera, this, internalDataInfo._LODLevels[internalDataInfo._LODLevels.length - 1].mesh);
+                this.onLODLevelSelection(distanceToCamera, this, this);
             }
             return this;
         }
@@ -958,7 +985,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         for (var light of this.lightSources) {
             let generator = light.getShadowGenerator();
 
-            if (generator) {
+            if (generator && (!generator.getShadowMap()?.renderList || generator.getShadowMap()?.renderList && generator.getShadowMap()?.renderList?.indexOf(this) !== -1)) {
                 for (var subMesh of this.subMeshes) {
                     if (!generator.isReady(subMesh, hardwareInstancedRendering)) {
                         return false;
@@ -1086,12 +1113,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 needToRecreate = true;
             } else {
                 for (var submesh of this.subMeshes) {
-                    if (submesh.indexStart + submesh.indexCount >= totalIndices) {
+                    if (submesh.indexStart + submesh.indexCount > totalIndices) {
                         needToRecreate = true;
                         break;
                     }
 
-                    if (submesh.verticesStart + submesh.verticesCount >= totalVertices) {
+                    if (submesh.verticesStart + submesh.verticesCount > totalVertices) {
                         needToRecreate = true;
                         break;
                     }
@@ -1172,6 +1199,30 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._geometry.setVerticesData(kind, data, updatable, stride);
         }
         return this;
+    }
+
+    /**
+     * Delete a vertex buffer associated with this mesh
+     * @param kind defines which buffer to delete (positions, indices, normals, etc). Possible `kind` values :
+     * - VertexBuffer.PositionKind
+     * - VertexBuffer.UVKind
+     * - VertexBuffer.UV2Kind
+     * - VertexBuffer.UV3Kind
+     * - VertexBuffer.UV4Kind
+     * - VertexBuffer.UV5Kind
+     * - VertexBuffer.UV6Kind
+     * - VertexBuffer.ColorKind
+     * - VertexBuffer.MatricesIndicesKind
+     * - VertexBuffer.MatricesIndicesExtraKind
+     * - VertexBuffer.MatricesWeightsKind
+     * - VertexBuffer.MatricesWeightsExtraKind
+     */
+    public removeVerticesData(kind: string) {
+        if (!this._geometry) {
+            return;
+        }
+
+        this._geometry.removeVerticesData(kind);
     }
 
     /**
@@ -1287,6 +1338,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (!this._geometry) {
             return this;
         }
+
+        if (this._geometry.meshes.length === 1) {
+            return this;
+        }
+
         var oldGeometry = this._geometry;
         var geometry = this._geometry.copy(Geometry.RandomId());
         oldGeometry.releaseForMesh(this, true);
@@ -1444,7 +1500,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /** @hidden */
-    public _getInstancesRenderList(subMeshId: number): _InstancesBatch {
+    public _getInstancesRenderList(subMeshId: number, isReplacementMode: boolean = false): _InstancesBatch {
         if (this._instanceDataStorage.isFrozen && this._instanceDataStorage.previousBatch) {
             return this._instanceDataStorage.previousBatch;
         }
@@ -1453,10 +1509,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const onlyForInstances = isInIntermediateRendering ? this._internalAbstractMeshDataInfo._onlyForInstancesIntermediate : this._internalAbstractMeshDataInfo._onlyForInstances;
         let batchCache = this._instanceDataStorage.batchCache;
         batchCache.mustReturn = false;
-        batchCache.renderSelf[subMeshId] = !onlyForInstances && this.isEnabled() && this.isVisible;
+        batchCache.renderSelf[subMeshId] = isReplacementMode || (!onlyForInstances && this.isEnabled() && this.isVisible);
         batchCache.visibleInstances[subMeshId] = null;
 
-        if (this._instanceDataStorage.visibleInstances) {
+        if (this._instanceDataStorage.visibleInstances && !isReplacementMode) {
             let visibleInstances = this._instanceDataStorage.visibleInstances;
             var currentRenderId = scene.getRenderId();
             var defaultRenderId = (isInIntermediateRendering ? visibleInstances.intermediateDefaultRenderId : visibleInstances.defaultRenderId);
@@ -1466,7 +1522,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 batchCache.visibleInstances[subMeshId] = visibleInstances[defaultRenderId];
             }
         }
-        batchCache.hardwareInstancedRendering[subMeshId] = this._instanceDataStorage.hardwareInstancedRendering && (batchCache.visibleInstances[subMeshId] !== null) && (batchCache.visibleInstances[subMeshId] !== undefined);
+        batchCache.hardwareInstancedRendering[subMeshId] =
+                        !isReplacementMode &&
+                        this._instanceDataStorage.hardwareInstancedRendering
+                        && (batchCache.visibleInstances[subMeshId] !== null)
+                        && (batchCache.visibleInstances[subMeshId] !== undefined);
         this._instanceDataStorage.previousBatch = batchCache;
         return batchCache;
     }
@@ -1495,20 +1555,26 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         var offset = 0;
         var instancesCount = 0;
 
-        var world = this._effectiveMesh.getWorldMatrix();
-        if (batch.renderSelf[subMesh._id]) {
-            world.copyToArray(instanceStorage.instancesData, offset);
-            offset += 16;
-            instancesCount++;
-        }
+        let renderSelf = batch.renderSelf[subMesh._id];
 
-        if (visibleInstances) {
-            for (var instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
-                var instance = visibleInstances[instanceIndex];
-                instance.getWorldMatrix().copyToArray(instanceStorage.instancesData, offset);
+        if (!this._instanceDataStorage.manualUpdate) {
+            var world = this._effectiveMesh.getWorldMatrix();
+            if (renderSelf) {
+                world.copyToArray(instanceStorage.instancesData, offset);
                 offset += 16;
                 instancesCount++;
             }
+
+            if (visibleInstances) {
+                for (var instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
+                    var instance = visibleInstances[instanceIndex];
+                    instance.getWorldMatrix().copyToArray(instanceStorage.instancesData, offset);
+                    offset += 16;
+                    instancesCount++;
+                }
+            }
+        } else {
+            instancesCount = (renderSelf ? 1 : 0) + visibleInstances.length;
         }
 
         if (!instancesBuffer || currentInstancesBufferSize != instanceStorage.instancesBufferSize) {
@@ -1527,6 +1593,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             instancesBuffer!.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
         }
 
+        this._processInstancedBuffers(visibleInstances, renderSelf);
+
+        // Stats
+        this.getScene()._activeIndices.addCount(subMesh.indexCount * instancesCount, false);
+
+        // Draw
         this._bind(subMesh, effect, fillMode);
         this._draw(subMesh, fillMode, instancesCount);
 
@@ -1535,7 +1607,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /** @hidden */
-    public _processRendering(subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean,
+    public _processInstancedBuffers(visibleInstances: InstancedMesh[], renderSelf: boolean) {
+        // Do nothing
+    }
+
+    /** @hidden */
+    public _processRendering(renderingMesh: AbstractMesh, subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean,
         onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material): Mesh {
         var scene = this.getScene();
         var engine = scene.getEngine();
@@ -1543,11 +1620,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (hardwareInstancedRendering) {
             this._renderWithInstances(subMesh, fillMode, batch, effect, engine);
         } else {
+            let instanceCount = 0;
             if (batch.renderSelf[subMesh._id]) {
                 // Draw
                 if (onBeforeDraw) {
-                    onBeforeDraw(false, this._effectiveMesh.getWorldMatrix(), effectiveMaterial);
+                    onBeforeDraw(false, renderingMesh._effectiveMesh.getWorldMatrix(), effectiveMaterial);
                 }
+                instanceCount++;
 
                 this._draw(subMesh, fillMode, this._instanceDataStorage.overridenInstanceCount);
             }
@@ -1555,7 +1634,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             let visibleInstancesForSubMesh = batch.visibleInstances[subMesh._id];
 
             if (visibleInstancesForSubMesh) {
-                for (var instanceIndex = 0; instanceIndex < visibleInstancesForSubMesh.length; instanceIndex++) {
+                let visibleInstanceCount = visibleInstancesForSubMesh.length;
+                instanceCount += visibleInstanceCount;
+
+                // Stats
+                for (var instanceIndex = 0; instanceIndex < visibleInstanceCount; instanceIndex++) {
                     var instance = visibleInstancesForSubMesh[instanceIndex];
 
                     // World
@@ -1563,11 +1646,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     if (onBeforeDraw) {
                         onBeforeDraw(true, world, effectiveMaterial);
                     }
-
                     // Draw
                     this._draw(subMesh, fillMode);
                 }
             }
+
+            // Stats
+            scene._activeIndices.addCount(subMesh.indexCount * instanceCount, false);
         }
         return this;
     }
@@ -1607,12 +1692,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
      * @param subMesh defines the subMesh to render
      * @param enableAlphaMode defines if alpha mode can be changed
+     * @param effectiveMeshReplacement defines an optional mesh used to provide info for the rendering
      * @returns the current mesh
      */
-    public render(subMesh: SubMesh, enableAlphaMode: boolean): Mesh {
+    public render(subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
         var scene = this.getScene();
 
-        if (scene._isInIntermediateRendering()) {
+        if (this._internalAbstractMeshDataInfo._isActiveIntermediate) {
             this._internalAbstractMeshDataInfo._isActiveIntermediate = false;
         } else {
             this._internalAbstractMeshDataInfo._isActive = false;
@@ -1623,7 +1709,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Managing instances
-        var batch = this._getInstancesRenderList(subMesh._id);
+        var batch = this._getInstancesRenderList(subMesh._id, !!effectiveMeshReplacement);
 
         if (batch.mustReturn) {
             return this;
@@ -1650,16 +1736,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Material
         if (!instanceDataStorage.isFrozen || !this._effectiveMaterial || this._effectiveMaterial !== material) {
-
-            this._effectiveMaterial = material;
-
-            if (this._effectiveMaterial._storeEffectOnSubMeshes) {
-                if (!this._effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
+            if (material._storeEffectOnSubMeshes) {
+                if (!material.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
                     return this;
                 }
-            } else if (!this._effectiveMaterial.isReady(this, hardwareInstancedRendering)) {
+            } else if (!material.isReady(this, hardwareInstancedRendering)) {
                 return this;
             }
+
+            this._effectiveMaterial = material;
         }
 
         // Alpha mode
@@ -1682,16 +1767,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        const effectiveMesh = this._effectiveMesh;
+        const effectiveMesh = effectiveMeshReplacement || this._effectiveMesh;
 
         var sideOrientation: Nullable<number>;
 
-        if (!instanceDataStorage.isFrozen) {
+        if (!instanceDataStorage.isFrozen && this._effectiveMaterial.backFaceCulling) {
+            let mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
             sideOrientation = this.overrideMaterialSideOrientation;
             if (sideOrientation == null) {
                 sideOrientation = this._effectiveMaterial.sideOrientation;
             }
-            if (effectiveMesh._getWorldMatrixDeterminant() < 0) {
+            if (mainDeterminant < 0) {
                 sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
             }
             instanceDataStorage.sideOrientation = sideOrientation!;
@@ -1726,12 +1812,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         if (!this._effectiveMaterial.backFaceCulling && this._effectiveMaterial.separateCullingPass) {
             engine.setState(true, this._effectiveMaterial.zOffset, false, !reverse);
-            this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._effectiveMaterial);
+            this._processRendering(this, subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._effectiveMaterial);
             engine.setState(true, this._effectiveMaterial.zOffset, false, reverse);
         }
 
         // Draw
-        this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._effectiveMaterial);
+        this._processRendering(this, subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._effectiveMaterial);
 
         // Unbind
         this._effectiveMaterial.unbind();
@@ -2070,18 +2156,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * This method returns nothing but really modifies the mesh even if it's originally not set as updatable.
      * Note that, under the hood, this method sets a new VertexBuffer each call.
      * @see http://doc.babylonjs.com/resources/baking_transformations
+     * @param bakeIndependenlyOfChildren indicates whether to preserve all child nodes' World Matrix during baking
      * @returns the current mesh
      */
-    public bakeCurrentTransformIntoVertices(): Mesh {
+    public bakeCurrentTransformIntoVertices(bakeIndependenlyOfChildren : boolean = true): Mesh {
         this.bakeTransformIntoVertices(this.computeWorldMatrix(true));
-        this.scaling.copyFromFloats(1, 1, 1);
-        this.position.copyFromFloats(0, 0, 0);
-        this.rotation.copyFromFloats(0, 0, 0);
-        //only if quaternion is already set
-        if (this.rotationQuaternion) {
-            this.rotationQuaternion = Quaternion.Identity();
-        }
-        this._worldMatrix = Matrix.Identity();
+        this.resetLocalMatrix(bakeIndependenlyOfChildren);
         return this;
     }
 
@@ -2120,7 +2200,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param clonePhysicsImpostor allows/denies the cloning in the same time of the original mesh `body` used by the physics engine, if any (default `true`)
      * @returns a new mesh
      */
-    public clone(name: string = "", newParent: Nullable<Node> = null, doNotCloneChildren?: boolean, clonePhysicsImpostor: boolean = true): Nullable<AbstractMesh> {
+    public clone(name: string = "", newParent: Nullable<Node> = null, doNotCloneChildren?: boolean, clonePhysicsImpostor: boolean = true): Mesh {
         return new Mesh(name, this.getScene(), newParent, this, doNotCloneChildren, clonePhysicsImpostor);
     }
 
@@ -2155,7 +2235,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Sources
-        if (this._scene.useClonedMeshhMap) {
+        if (this._scene.useClonedMeshMap) {
             if (internalDataInfo.meshMap) {
                 for (const uniqueId in internalDataInfo.meshMap) {
                     const mesh = internalDataInfo.meshMap[uniqueId];
@@ -2183,16 +2263,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         internalDataInfo._source = null;
 
         // Instances
-        if (this._instanceDataStorage.instancesBuffer) {
-            this._instanceDataStorage.instancesBuffer.dispose();
-            this._instanceDataStorage.instancesBuffer = null;
-        }
-
-        while (this.instances.length) {
-            this.instances[0].dispose();
-        }
+        this._disposeInstanceSpecificData();
 
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
+    }
+
+    /** @hidden */
+    public _disposeInstanceSpecificData() {
+        // Do nothing
     }
 
     /**
@@ -2211,14 +2289,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public applyDisplacementMap(url: string, minHeight: number, maxHeight: number, onSuccess?: (mesh: Mesh) => void, uvOffset?: Vector2, uvScale?: Vector2, forceUpdate = false): Mesh {
         var scene = this.getScene();
 
-        var onload = (img: HTMLImageElement) => {
+        var onload = (img: HTMLImageElement | ImageBitmap) => {
             // Getting height map data
-            var canvas = document.createElement("canvas");
-            var context = <CanvasRenderingContext2D>canvas.getContext("2d");
             var heightMapWidth = img.width;
             var heightMapHeight = img.height;
-            canvas.width = heightMapWidth;
-            canvas.height = heightMapHeight;
+            var canvas = CanvasGenerator.CreateCanvas(heightMapWidth, heightMapHeight);
+            var context = <CanvasRenderingContext2D>canvas.getContext("2d");
 
             context.drawImage(img, 0, 0);
 
@@ -2738,6 +2814,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns a new InstancedMesh
      */
     public createInstance(name: string): InstancedMesh {
+        this.makeGeometryUnique();
+
         return Mesh._instancedMeshFactory(name, this);
     }
 
@@ -2747,6 +2825,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns the current mesh
      */
     public synchronizeInstances(): Mesh {
+        if (this._geometry && this._geometry.meshes.length !== 1) {
+            this.makeGeometryUnique();
+        }
+
         for (var instanceIndex = 0; instanceIndex < this.instances.length; instanceIndex++) {
             var instance = this.instances[instanceIndex];
             instance._syncSubMeshes();
@@ -2841,6 +2923,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         serializationObject.checkCollisions = this.checkCollisions;
         serializationObject.isBlocker = this.isBlocker;
+        serializationObject.overrideMaterialSideOrientation = this.overrideMaterialSideOrientation;
 
         // Parent
         if (this.parent) {
@@ -3101,6 +3184,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         mesh.checkCollisions = parsedMesh.checkCollisions;
+        mesh.overrideMaterialSideOrientation = parsedMesh.overrideMaterialSideOrientation;
 
         if (parsedMesh.isBlocker !== undefined) {
             mesh.isBlocker = parsedMesh.isBlocker;
@@ -4041,6 +4125,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Setting properties
         meshSubclass.checkCollisions = source.checkCollisions;
+        meshSubclass.overrideMaterialSideOrientation = source.overrideMaterialSideOrientation;
 
         // Cleaning
         if (disposeSource) {

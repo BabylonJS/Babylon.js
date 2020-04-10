@@ -5,18 +5,23 @@ import { Scene } from "../../scene";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
-import { _TimeToken } from "../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { Constants } from "../../Engines/constants";
 import { _TypeStore } from '../../Misc/typeStore';
 
 import "../../Engines/Extensions/engine.cubeTexture";
+import { StringTools } from '../../Misc/stringTools';
+import { Observable } from '../../Misc/observable';
 
 /**
  * Class for creating a cube texture
  */
 export class CubeTexture extends BaseTexture {
     private _delayedOnLoad: Nullable<() => void>;
+
+    /**
+     * Observable triggered once the texture has been loaded.
+     */
+    public onLoadObservable: Observable<CubeTexture> = new Observable<CubeTexture>();
 
     /**
      * The url of the texture
@@ -83,8 +88,13 @@ export class CubeTexture extends BaseTexture {
     private _noMipmap: boolean;
 
     @serialize("files")
-    private _files: string[];
-    private _extensions: string[];
+    private _files: Nullable<string[]> = null;
+
+    @serialize("forcedExtension")
+    protected _forcedExtension: Nullable<string> = null;
+
+    @serialize("extensions")
+    private _extensions: Nullable<string[]> = null;
 
     @serializeAsMatrix("textureMatrix")
     private _textureMatrix: Matrix;
@@ -119,7 +129,14 @@ export class CubeTexture extends BaseTexture {
      * @return the prefiltered texture
      */
     public static CreateFromPrefilteredData(url: string, scene: Scene, forcedExtension: any = null, createPolynomials: boolean = true) {
-        return new CubeTexture(url, scene, null, false, null, null, null, undefined, true, forcedExtension, createPolynomials);
+        const oldValue = scene.useDelayedTextureLoading;
+        scene.useDelayedTextureLoading = false;
+
+        const result = new CubeTexture(url, scene, null, false, null, null, null, undefined, true, forcedExtension, createPolynomials);
+
+        scene.useDelayedTextureLoading = oldValue;
+
+        return result;
     }
 
     /**
@@ -155,6 +172,9 @@ export class CubeTexture extends BaseTexture {
         this._textureMatrix = Matrix.Identity();
         this._createPolynomials = createPolynomials;
         this.coordinatesMode = Texture.CUBIC_MODE;
+        this._extensions = extensions;
+        this._files = files;
+        this._forcedExtension = forcedExtension;
 
         if (!rootUrl && !files) {
             return;
@@ -168,12 +188,14 @@ export class CubeTexture extends BaseTexture {
         if (isEnv) {
             this.gammaSpace = false;
             this._prefiltered = false;
+            this.anisotropicFilteringLevel = 1;
         }
         else {
             this._prefiltered = prefiltered;
 
             if (prefiltered) {
                 this.gammaSpace = false;
+                this.anisotropicFilteringLevel = 1;
             }
         }
 
@@ -196,6 +218,13 @@ export class CubeTexture extends BaseTexture {
 
         this._files = files;
 
+        let onLoadProcessing = () => {
+            this.onLoadObservable.notifyObservers(this);
+            if (onLoad) {
+                onLoad();
+            }
+        };
+
         if (!this._texture) {
             if (!scene.useDelayedTextureLoading) {
                 if (prefiltered) {
@@ -204,14 +233,16 @@ export class CubeTexture extends BaseTexture {
                 else {
                     this._texture = scene.getEngine().createCubeTexture(rootUrl, scene, files, noMipmap, onLoad, onError, this._format, forcedExtension, false, lodScale, lodOffset);
                 }
+                this._texture?.onLoadedObservable.add(() => this.onLoadObservable.notifyObservers(this));
+
             } else {
                 this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
             }
-        } else if (onLoad) {
+        } else {
             if (this._texture.isReady) {
-                Tools.SetImmediate(() => onLoad());
+                Tools.SetImmediate(() => onLoadProcessing());
             } else {
-                this._texture.onLoadedObservable.add(onLoad);
+                this._texture.onLoadedObservable.add(() => onLoadProcessing());
             }
         }
     }
@@ -236,17 +267,25 @@ export class CubeTexture extends BaseTexture {
      * @param url the url of the texture
      * @param forcedExtension defines the extension to use
      * @param onLoad callback called when the texture is loaded  (defaults to null)
+     * @param prefiltered Defines whether the updated texture is prefiltered or not
      */
-    public updateURL(url: string, forcedExtension?: string, onLoad?: () => void): void {
+    public updateURL(url: string, forcedExtension?: string, onLoad?: () => void, prefiltered: boolean = false): void {
         if (this.url) {
             this.releaseInternalTexture();
             this.getScene()!.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
-        this.name = url;
+        if (!this.name || StringTools.StartsWith(this.name, "data:")) {
+            this.name = url;
+        }
         this.url = url;
         this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
-        this._prefiltered = false;
+        this._prefiltered = prefiltered;
+        if (this._prefiltered) {
+            this.gammaSpace = false;
+            this.anisotropicFilteringLevel = 1;
+        }
+        this._forcedExtension = forcedExtension || null;
 
         if (onLoad) {
             this._delayedOnLoad = onLoad;
@@ -274,11 +313,13 @@ export class CubeTexture extends BaseTexture {
 
         if (!this._texture) {
             if (this._prefiltered) {
-                this._texture = scene.getEngine().createPrefilteredCubeTexture(this.url, scene, this.lodGenerationScale, this.lodGenerationOffset, this._delayedOnLoad, undefined, this._format, undefined, this._createPolynomials);
+                this._texture = scene.getEngine().createPrefilteredCubeTexture(this.url, scene, 0.8, 0, this._delayedOnLoad, undefined, this._format, undefined, this._createPolynomials);
             }
             else {
                 this._texture = scene.getEngine().createCubeTexture(this.url, scene, this._files, this._noMipmap, this._delayedOnLoad, null, this._format, forcedExtension);
             }
+
+            this._texture?.onLoadedObservable.add(() => this.onLoadObservable.notifyObservers(this));
         }
     }
 
@@ -319,7 +360,7 @@ export class CubeTexture extends BaseTexture {
             if (parsedTexture.prefiltered) {
                 prefiltered = parsedTexture.prefiltered;
             }
-            return new CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions, false, parsedTexture.files || null, null, null, undefined, prefiltered);
+            return new CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions, false, parsedTexture.files || null, null, null, undefined, prefiltered, parsedTexture.forcedExtension);
         }, parsedTexture, scene);
 
         // Local Cubemaps

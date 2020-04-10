@@ -2,6 +2,7 @@ import * as React from "react";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
 import { Scene } from "babylonjs/scene";
+import { DebugLayerTab } from "babylonjs/Debug/debugLayer";
 import { TabsComponent } from "./tabsComponent";
 import { faFileAlt, faWrench, faBug, faChartBar, faCog } from '@fortawesome/free-solid-svg-icons';
 import { StatisticsTabComponent } from "./tabs/statisticsTabComponent";
@@ -24,7 +25,8 @@ interface IActionTabsComponentProps {
     popupMode?: boolean,
     onPopup?: () => void,
     onClose?: () => void,
-    globalState?: GlobalState
+    globalState?: GlobalState,
+    initialTab?: DebugLayerTab
 }
 
 export class ActionTabsComponent extends React.Component<IActionTabsComponentProps, { selectedEntity: any, selectedIndex: number }> {
@@ -35,13 +37,15 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
     constructor(props: IActionTabsComponentProps) {
         super(props);
 
-        let initialIndex = 0;
+        let initialIndex = props.initialTab === undefined 
+            ? DebugLayerTab.Properties
+            : props.initialTab
 
         if (this.props.globalState) {
-            const validationResutls = this.props.globalState.validationResults;
-            if (validationResutls) {
-                if (validationResutls.issues.numErrors || validationResutls.issues.numWarnings) {
-                    initialIndex = 3;
+            const validationResults = this.props.globalState.validationResults;
+            if (validationResults) {
+                if (validationResults.issues.numErrors || validationResults.issues.numWarnings) {
+                    initialIndex = DebugLayerTab.Tools;
                 }
             }
         }
@@ -53,7 +57,7 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
     componentDidMount() {
         if (this.props.globalState) {
             this._onSelectionChangeObserver = this.props.globalState.onSelectionChangedObservable.add((entity) => {
-                this.setState({ selectedEntity: entity, selectedIndex: 0 });
+                this.setState({ selectedEntity: entity, selectedIndex: DebugLayerTab.Properties });
             });
 
             this._onTabChangedObserver = this.props.globalState.onTabChangedObservable.add(index => {
