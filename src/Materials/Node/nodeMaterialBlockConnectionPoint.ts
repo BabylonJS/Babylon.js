@@ -134,6 +134,11 @@ export class NodeMaterialConnectionPoint {
     public name: string;
 
     /**
+     * Gets or sets the connection point name
+     */
+    public displayName: string;
+
+    /**
      * Gets or sets a boolean indicating that this connection point can be omitted
      */
     public isOptional: boolean;

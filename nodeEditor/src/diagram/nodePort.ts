@@ -16,6 +16,7 @@ export class NodePort {
     protected _element: HTMLDivElement;
     protected _img: HTMLImageElement;
     protected _globalState: GlobalState;
+    protected _portLabelElement: Element;
     protected _onCandidateLinkMovedObserver: Nullable<Observer<Nullable<Vector2>>>;
     protected _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;  
     
@@ -27,6 +28,21 @@ export class NodePort {
         }
 
         return this._element;
+    }
+
+    public get portName(){
+        return this.connectionPoint.displayName || this.connectionPoint.name;
+    }
+
+    public set portName(newName: string){
+        if(this._portLabelElement) {
+            this.connectionPoint.displayName = newName;
+            this._portLabelElement.innerHTML = newName;
+        }
+    }
+
+    public hasLabel(){
+        return !!this._portLabelElement;
     }
 
     public refresh() {
@@ -62,6 +78,11 @@ export class NodePort {
         this._img = portContainer.ownerDocument!.createElement("img");
         this._element.appendChild(this._img );
 
+        // determine if node name is editable
+        if (portContainer.children[0].className === 'port-label') {
+            this._portLabelElement = portContainer.children[0];
+        }
+
         (this._element as any).port = this;
 
         // Drag support
@@ -77,6 +98,14 @@ export class NodePort {
 
             this._element.classList.add("selected"); 
             this._globalState.onCandidatePortSelectedObservable.notifyObservers(this);
+        });
+
+        this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add((selection) => {
+            if (selection === this) {
+                this._img.classList.add("selected");
+            } else {
+                this._img.classList.remove("selected");
+            }
         });
 
         this.refresh();
