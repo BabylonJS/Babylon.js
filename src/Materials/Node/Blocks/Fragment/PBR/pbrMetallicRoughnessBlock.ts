@@ -24,6 +24,7 @@ import { BaseTexture } from '../../../../Textures/baseTexture';
 import { Engine } from '../../../../../Engines/engine';
 import { BRDFTextureTools } from '../../../../../Misc/brdfTextureTools';
 import { MaterialFlags } from '../../../../materialFlags';
+import { AnisotropyBlock } from './anisotropyBlock';
 
 export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     private _lightId: number;
@@ -55,7 +56,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this.registerInput("sheen", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment, new NodeMaterialConnectionPointCustomObject("sheen", this, NodeMaterialConnectionPointDirection.Input, SheenBlock, "SheenBlock"));
         this.registerInput("clearCoat", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("subSurface", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("anisotropy", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("anisotropy", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment, new NodeMaterialConnectionPointCustomObject("anisotropy", this, NodeMaterialConnectionPointDirection.Input, AnisotropyBlock, "AnisotropyBlock"));
 
         this.registerOutput("ambient", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("diffuse", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
@@ -183,7 +184,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         return this._inputs[6];
     }
 
-    public get reflectivity(): NodeMaterialConnectionPoint {
+    public get reflectivityParams(): NodeMaterialConnectionPoint {
         return this._inputs[7];
     }
 
@@ -302,9 +303,14 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         aoBlock?.prepareDefines(mesh, nodeMaterial, defines);
 
         // Reflectivity
-        const metalRoughTextBlock = this.reflectivity.connectedPoint?.ownerBlock as ReflectivityBlock;
+        const metalRoughTextBlock = this.reflectivityParams.connectedPoint?.ownerBlock as ReflectivityBlock;
 
         metalRoughTextBlock?.prepareDefines(mesh, nodeMaterial, defines);
+
+        // Anisotropy
+        const anisotropyBlock = this.anisotropyParams.connectedPoint?.ownerBlock as AnisotropyBlock;
+
+        anisotropyBlock?.prepareDefines(mesh, nodeMaterial, defines);
 
         // Rendering
         defines.setValue("RADIANCEOVERALPHA", this.useRadianceOverAlpha);
@@ -580,7 +586,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         // _____________________________ Reflectivity _______________________________
         const aoIntensity = aoBlock?.intensity.isConnected ? aoBlock.intensity.associatedVariableName : "1.";
 
-        state.compilationString += (this.reflectivity.connectedPoint?.ownerBlock as Nullable<ReflectivityBlock>)?.getCode(aoIntensity) ?? "";
+        state.compilationString += (this.reflectivityParams.connectedPoint?.ownerBlock as Nullable<ReflectivityBlock>)?.getCode(aoIntensity) ?? "";
 
         // _____________________________ Geometry info _________________________________
         state.compilationString += state._emitCodeFromInclude("pbrBlockGeometryInfo", comments);
@@ -589,6 +595,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state.compilationString += state._emitCodeFromInclude("pbrBlockDirectLighting", comments);
 
         // _____________________________ Anisotropy _______________________________________
+        const anisotropyBlock = this.anisotropyParams.isConnected ? this.anisotropyParams.connectedPoint?.ownerBlock as AnisotropyBlock : null;
+
+        if (anisotropyBlock) {
+            state.compilationString += anisotropyBlock.getCode();
+        }
 
         /*if (this.light) {
             state.compilationString += state._emitCodeFromInclude("lightFragment", comments, {
