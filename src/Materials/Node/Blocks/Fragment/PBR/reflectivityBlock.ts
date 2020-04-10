@@ -35,7 +35,7 @@ export class ReflectivityBlock extends NodeMaterialBlock {
 
         this.registerInput("metallic", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("roughness", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("texture", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment);
 
         this.registerOutput("reflectivity", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment, new NodeMaterialConnectionPointCustomObject("reflectivity", this, NodeMaterialConnectionPointDirection.Output, ReflectivityBlock, "ReflectivityBlock"));
     }
@@ -67,19 +67,19 @@ export class ReflectivityBlock extends NodeMaterialBlock {
         return this._inputs[1];
     }
 
-    public get rgba(): NodeMaterialConnectionPoint {
+    public get texture(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the rgba output component
+     * Gets the reflectivity output component
      */
     public get reflectivity(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
     public getCode(aoIntensityVarName: string): string {
-        const metalRoughTexture = this.rgba.isConnected ? this.rgba.connectedPoint?.associatedVariableName : null;
+        const metalRoughTexture = this.texture.isConnected ? this.texture.connectedPoint?.associatedVariableName : null;
 
         let code = `vec3 baseColor = surfaceAlbedo;\r\nreflectivityOutParams reflectivityOut;\r\n`;
 
@@ -115,7 +115,7 @@ export class ReflectivityBlock extends NodeMaterialBlock {
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
-        defines.setValue("REFLECTIVITY", this.rgba.isConnected);
+        defines.setValue("REFLECTIVITY", this.texture.isConnected);
         defines.setValue("AOSTOREINMETALMAPRED", this.useAmbientOcclusionFromMetallicTextureRed);
         defines.setValue("METALLNESSSTOREINMETALMAPBLUE", this.useMetallnessFromMetallicTextureBlue);
         defines.setValue("ROUGHNESSSTOREINMETALMAPALPHA", this.useRoughnessFromMetallicTextureAlpha);
