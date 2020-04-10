@@ -216,7 +216,7 @@ export class GeometryBufferRenderer {
         // Alpha test
         if (material) {
             let needUv = false;
-            if (material.needAlphaBlending()) {
+            if (material.needAlphaBlending() || material.needAlphaTesting()) {
                 defines.push("#define ALPHATEST");
                 needUv = true;
             }
@@ -236,6 +236,8 @@ export class GeometryBufferRenderer {
                 }
             }
 
+            // not correct when reflectivity is enabled
+            var alphaTexture = material.getAlphaTestTexture();
             if (needUv) {
                 defines.push("#define NEED_UV");
                 if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
@@ -243,8 +245,10 @@ export class GeometryBufferRenderer {
                     defines.push("#define UV1");
                 }
                 if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-                    attribs.push(VertexBuffer.UV2Kind);
-                    defines.push("#define UV2");
+                    if (alphaTexture && alphaTexture.coordinatesIndex === 1) {
+                        attribs.push(VertexBuffer.UV2Kind);
+                        defines.push("#define UV2");
+                    }
                 }
             }
         }
