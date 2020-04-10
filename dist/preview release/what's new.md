@@ -14,7 +14,7 @@
 - Simplified code contributions by fully automating the dev setup with gitpod ([nisarhassan12](https://github.com/nisarhassan12))
 - Add a `CascadedShadowMap.IsSupported` method and log an error instead of throwing an exception when CSM is not supported ([Popov72](https://github.com/Popov72))
 - Added initial code for DeviceInputSystem ([PolygonalSun](https://github.com/PolygonalSun))
-- Added support for `material.disableColorWrite` ([Deltakosh](https://github.com/deltakosh)
+- Added support for `material.disableColorWrite` ([Deltakosh](https://github.com/deltakosh))
 
 ### Engine
 
@@ -32,8 +32,8 @@
 - Handle PBR colors as colors in linear space ([Popov72](https://github.com/Popov72))
 - Allow removing textures ([Popov72](https://github.com/Popov72))
 - Edit all textures (anisotropic, clear coat, sheen, ...) for the PBR materials ([Popov72](https://github.com/Popov72))
-- Added right click options to create PBR and Standard Materials ([Deltakosh](https://github.com/deltakosh)
-- Added support for recording GIF ([Deltakosh](https://github.com/deltakosh)
+- Added right click options to create PBR and Standard Materials ([Deltakosh](https://github.com/deltakosh))
+- Added support for recording GIF ([Deltakosh](https://github.com/deltakosh))
 
 ### Cameras
 
@@ -43,7 +43,7 @@
 
 ### Sprites
 
-- Added support for 'sprite.useAlphaForPicking` to enable precise picking using sprite alpha ([Deltakosh](https://github.com/deltakosh) 
+- Added support for 'sprite.useAlphaForPicking` to enable precise picking using sprite alpha ([Deltakosh](https://github.com/deltakosh))
 
 ### Physics
 
@@ -82,6 +82,7 @@
 - Teleportation plugin doesn't use the touched to finish teleportation ([#7916](https://github.com/BabylonJS/Babylon.js/issues/7916)) ([RaananW](https://github.com/RaananW))
 - Support for pointer selection and teleportation in right handed systems ([#7967](https://github.com/BabylonJS/Babylon.js/issues/7967)) ([RaananW](https://github.com/RaananW))
 - Pointer Selection feature now uses `selectstart` and `selectend` events when gamepad and motion controller are not present ([#7989](https://github.com/BabylonJS/Babylon.js/issues/7989)) ([RaananW](https://github.com/RaananW))
+- Removed forced `autoClear` = false settings ([RaananW](https://github.com/RaananW))
 
 ### Collisions
 
@@ -90,6 +91,9 @@
 ### Animation
 
 - Added support for Additive Animation Blending. Existing animations can be converted to additive using the new MakeAnimationAdditive method for Skeletons, AnimationGroups and Animations. Animations can be played additively using the new isAdditive input parameter to the begin animation methods. ([c-morten](https://github.com/c-morten))
+
+### Maths
+- Added `Vector3.projectOnPlaneToRef` ([Deltakosh](https://github.com/deltakosh))
 
 ### Build
 
