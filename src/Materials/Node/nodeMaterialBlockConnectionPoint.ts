@@ -440,6 +440,7 @@ export class NodeMaterialConnectionPoint {
 
         if (this.connectedPoint) {
             serializationObject.inputName = this.name;
+            serializationObject.displayName = this.displayName;
             serializationObject.targetBlockId = this.connectedPoint.ownerBlock.uniqueId;
             serializationObject.targetConnectionName = this.connectedPoint.name;
         }
