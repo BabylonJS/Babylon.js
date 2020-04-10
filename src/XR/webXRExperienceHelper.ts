@@ -124,14 +124,13 @@ export class WebXRExperienceHelper implements IDisposable {
             this._originalSceneAutoClear = this.scene.autoClear;
             this._nonVRCamera = this.scene.activeCamera;
 
-            // Overwrite current scene settings
-            this.scene.autoClear = false;
-
             this.scene.activeCamera = this.camera;
             // do not compensate when AR session is used
             if (sessionMode !== 'immersive-ar') {
                 this._nonXRToXRCamera();
             } else {
+                // Kept here, TODO - check if needed
+                this.scene.autoClear = false;
                 this.camera.compensateOnFirstFrame = false;
             }
 
