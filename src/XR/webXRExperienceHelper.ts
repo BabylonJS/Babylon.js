@@ -14,7 +14,6 @@ import { Logger } from '../Misc/logger';
  */
 export class WebXRExperienceHelper implements IDisposable {
     private _nonVRCamera: Nullable<Camera> = null;
-    private _originalSceneAutoClear = true;
     private _supported = false;
 
     /**
