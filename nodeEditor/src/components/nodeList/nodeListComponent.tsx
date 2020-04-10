@@ -120,7 +120,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "PBRMetallicRoughnessBlock": "PBR metallic/roughness material",
         "SheenBlock": "Sheen block",
         "AmbientOcclusionBlock": "Ambient occlusion block",
-        "MetallicRoughnessTextureBlock": "Metallic/Roughness texture block"
+        "ReflectivityBlock": "Reflectivity block"
     };
 
     constructor(props: INodeListComponentProps) {
@@ -149,7 +149,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock" , "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"],
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
-            PBR: ["PBRMetallicRoughnessBlock", "AmbientOcclusionBlock", "MetallicRoughnessTextureBlock", "SheenBlock"],
+            PBR: ["PBRMetallicRoughnessBlock", "AmbientOcclusionBlock", "ReflectivityBlock", "SheenBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
             Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock"],

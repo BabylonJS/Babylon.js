@@ -1,16 +1,15 @@
 import { NodeMaterial, NodeMaterialDefines } from '../../../nodeMaterial';
 import { NodeMaterialBuildState } from '../../../nodeMaterialBuildState';
+import { NodeMaterialBlock } from '../../../nodeMaterialBlock';
 import { _TypeStore } from '../../../../../Misc/typeStore';
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../nodeMaterialDecorator";
 import { AbstractMesh } from '../../../../../Meshes/abstractMesh';
-import { TextureBlock } from '../../Dual/textureBlock';
-import { Nullable } from '../../../../../types';
 import { NodeMaterialBlockConnectionPointTypes } from '../../../Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBlockTargets } from '../../../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPointCustomObject } from "../../../nodeMaterialConnectionPointCustomObject";
 import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../../nodeMaterialBlockConnectionPoint';
 
-export class MetallicRoughnessTextureBlock extends TextureBlock {
+export class ReflectivityBlock extends NodeMaterialBlock {
 
     @editableInPropertyPage("AO from red channel", PropertyTypeForEdition.Boolean, "METALLIC WORKFLOW")
     public useAmbientOcclusionFromMetallicTextureRed: boolean = false;
@@ -28,20 +27,17 @@ export class MetallicRoughnessTextureBlock extends TextureBlock {
     public useMetallicF0FactorFromMetallicTexture: boolean = false;
 
     /**
-     * Create a new MetallicRoughnessTextureBlock
+     * Create a new ReflectivityBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name);
+        super(name, NodeMaterialBlockTargets.Fragment);
 
-        this._outputs = [];
+        this.registerInput("metallic", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("roughness", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment);
 
-        this.registerOutput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, NodeMaterialBlockTargets.Neutral, new NodeMaterialConnectionPointCustomObject("rgba", this, NodeMaterialConnectionPointDirection.Output, MetallicRoughnessTextureBlock, "MetallicRoughnessTextureBlock", "metalRoughText"));
-        this.registerOutput("rgb", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Neutral);
-        this.registerOutput("r", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
-        this.registerOutput("g", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
-        this.registerOutput("b", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
-        this.registerOutput("a", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
+        this.registerOutput("reflectivity", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment, new NodeMaterialConnectionPointCustomObject("reflectivity", this, NodeMaterialConnectionPointDirection.Output, ReflectivityBlock, "ReflectivityBlock"));
     }
 
     /**
@@ -60,31 +56,35 @@ export class MetallicRoughnessTextureBlock extends TextureBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "MetallicRoughnessTextureBlock";
+        return "ReflectivityBlock";
+    }
+
+    public get metallic(): NodeMaterialConnectionPoint {
+        return this._inputs[0];
+    }
+
+    public get roughness(): NodeMaterialConnectionPoint {
+        return this._inputs[1];
+    }
+
+    public get rgba(): NodeMaterialConnectionPoint {
+        return this._inputs[2];
     }
 
     /**
      * Gets the rgba output component
      */
-    public get metalRoughTexture(): NodeMaterialConnectionPoint {
+    public get reflectivity(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
-        defines.setValue("AOSTOREINMETALMAPRED", this.useAmbientOcclusionFromMetallicTextureRed);
-        defines.setValue("METALLNESSSTOREINMETALMAPBLUE", this.useMetallnessFromMetallicTextureBlue);
-        defines.setValue("ROUGHNESSSTOREINMETALMAPALPHA", this.useRoughnessFromMetallicTextureAlpha);
-        defines.setValue("ROUGHNESSSTOREINMETALMAPGREEN",  !this.useRoughnessFromMetallicTextureAlpha && this.useRoughnessFromMetallicTextureGreen);
-        defines.setValue("METALLICF0FACTORFROMMETALLICMAP", this.useMetallicF0FactorFromMetallicTexture);
-    }
-
-    public static getCode(block: Nullable<MetallicRoughnessTextureBlock>, metallicVarName: string, roughnessVarName: string, aoIntensityVarName: string): string {
-        const metalRoughTexture = block?.metalRoughTexture.connectedBlocks && block?.metalRoughTexture.connectedBlocks.length > 0 ? block.metalRoughTexture.associatedVariableName : null;
+    public getCode(aoIntensityVarName: string): string {
+        const metalRoughTexture = this.rgba.isConnected ? this.rgba.connectedPoint?.associatedVariableName : null;
 
         let code = `vec3 baseColor = surfaceAlbedo;\r\nreflectivityOutParams reflectivityOut;\r\n`;
 
         code += `reflectivityBlock(
-            vec4(${metallicVarName}, ${roughnessVarName}, 0., 0.04),
+            vec4(${this.metallic.associatedVariableName}, ${this.roughness.associatedVariableName}, 0., 0.04),
         #ifdef METALLICWORKFLOW
             surfaceAlbedo,
         #endif
@@ -113,6 +113,21 @@ export class MetallicRoughnessTextureBlock extends TextureBlock {
 
         return code;
     }
+
+    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+        defines.setValue("REFLECTIVITY", this.rgba.isConnected);
+        defines.setValue("AOSTOREINMETALMAPRED", this.useAmbientOcclusionFromMetallicTextureRed);
+        defines.setValue("METALLNESSSTOREINMETALMAPBLUE", this.useMetallnessFromMetallicTextureBlue);
+        defines.setValue("ROUGHNESSSTOREINMETALMAPALPHA", this.useRoughnessFromMetallicTextureAlpha);
+        defines.setValue("ROUGHNESSSTOREINMETALMAPGREEN",  !this.useRoughnessFromMetallicTextureAlpha && this.useRoughnessFromMetallicTextureGreen);
+        defines.setValue("METALLICF0FACTORFROMMETALLICMAP", this.useMetallicF0FactorFromMetallicTexture);
+    }
+
+    protected _buildBlock(state: NodeMaterialBuildState) {
+        super._buildBlock(state);
+
+        return this;
+    }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.MetallicRoughnessTextureBlock"] = MetallicRoughnessTextureBlock;
+_TypeStore.RegisteredTypes["BABYLON.ReflectivityBlock"] = ReflectivityBlock;
