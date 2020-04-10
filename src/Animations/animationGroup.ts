@@ -205,7 +205,7 @@ export class AnimationGroup implements IDisposable {
         this._scene = scene || EngineStore.LastCreatedScene!;
         this.uniqueId = this._scene.getUniqueId();
 
-        this._scene.animationGroups.push(this);
+        this._scene.addAnimationGroup(this);
     }
 
     /**

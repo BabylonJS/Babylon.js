@@ -396,7 +396,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                         {
                             morphTargets.map((mt, i) => {
                                 return (
-                                    <SliderLineComponent label={mt.name} target={mt} propertyName="influence" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                                    <SliderLineComponent key={i} label={mt.name} target={mt} propertyName="influence" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                                 );
                             })
                         }
@@ -410,6 +410,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                         <CheckBoxLineComponent label="Compute bones using shaders" target={mesh} propertyName="computeBonesUsingShaders" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
                     <CheckBoxLineComponent label="Collisions" target={mesh} propertyName="checkCollisions" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <TextLineComponent label="Geometry ID" value={mesh.geometry?.uniqueId.toString()} />
                     <TextLineComponent label="Has normals" value={mesh.isVerticesDataPresent(VertexBuffer.NormalKind) ? "Yes" : "No"} />
                     <TextLineComponent label="Has vertex colors" value={mesh.isVerticesDataPresent(VertexBuffer.ColorKind) ? "Yes" : "No"} />
                     <TextLineComponent label="Has UV set 0" value={mesh.isVerticesDataPresent(VertexBuffer.UVKind) ? "Yes" : "No"} />
