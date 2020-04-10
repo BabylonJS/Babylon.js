@@ -1746,17 +1746,21 @@ export class UvMapper {
 
             islandOffsetList.push(new Vector2(minx, miny));
 
-            packBoxes.push({
-                x: 0,
-                y: 0,
-                w,
-                h,
-                islandIdx: islandIdx
-            });
+            // Legacy uv packer
+            // packBoxes.push({
+            //     x: 0,
+            //     y: 0,
+            //     w,
+            //     h,
+            //     islandIdx: islandIdx
+            // });
+            packBoxes.push(new BoxBlender(0, 0, w, h, islandIdx));
             islandIdx++;
         }
 
-        let packDimension = BoxPacker.BoxPack2d(packBoxes);
+        // Legacy uv packer
+        // let packDimension = BoxPacker.BoxPack2d(packBoxes);
+        let packDimension = BoxPacker.BoxPack2dBlender(packBoxes);
 
         islandIdx = islandList.length;
         let xFactor = 1, yFactor = 1;
@@ -1768,7 +1772,10 @@ export class UvMapper {
 
         for (let boxIdx = 0; boxIdx < packBoxes.length; boxIdx++) {
             let box = packBoxes[boxIdx];
-            let islandIdx = box.islandIdx;
+            let islandIdx = box.index;
+
+            // Legacy uv packer
+            // let islandIdx = box.islandIdx
 
             let xOffset = box.x - islandOffsetList[islandIdx].x;
             let yOffset = box.y - islandOffsetList[islandIdx].y;
@@ -1794,6 +1801,159 @@ declare interface Box {
     w: number;
     h: number;
     islandIdx?: number;
+}
+
+class BoxBlender {
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+
+    // Box vertices
+    v: BoxVert[] = [ new BoxVert(), new BoxVert(), new BoxVert(), new BoxVert()];
+
+    index: number;
+
+    constructor(x: number, y: number, w: number, h: number, index: number) {
+        this.x = x;
+        this.y = y;
+        this.w = w;
+        this.h = h;
+        this.index = index;
+    }
+
+    // Change original names
+    public v34x_update()
+    {
+        this.v[CORNERINDEX.TL].x = this.v[CORNERINDEX.BL].x;
+        this.v[CORNERINDEX.BR].x = this.v[CORNERINDEX.TR].x;
+    }
+
+    public v34y_update()
+    {
+        this.v[CORNERINDEX.TL].y = this.v[CORNERINDEX.TR].y;
+        this.v[CORNERINDEX.BR].y = this.v[CORNERINDEX.BL].y;
+    }
+
+    public xmin_set(f: number)
+    {
+        this.v[CORNERINDEX.TR].x = f + this.w;
+        this.v[CORNERINDEX.BL].x = f;
+        this.v34x_update();
+    }
+
+    public xmax_set(f: number)
+    {
+        this.v[CORNERINDEX.BL].x = f - this.w;
+        this.v[CORNERINDEX.TR].x = f;
+        this.v34x_update();
+    }
+
+    public ymin_set(f: number)
+    {
+        this.v[CORNERINDEX.TR].y = f + this.h;
+        this.v[CORNERINDEX.BL].y = f;
+        this.v34y_update();
+    }
+
+    public ymax_set(f: number)
+    {
+        this.v[CORNERINDEX.BL].y = f - this.h;
+        this.v[CORNERINDEX.TR].y = f;
+        this.v34y_update();
+    }
+
+    public xmin_get() : number
+    {
+        return this.v[CORNERINDEX.BL].x;
+    }
+
+    public xmax_get() : number
+    {
+        return this.v[CORNERINDEX.TR].x;
+    }
+
+    public ymin_get() : number
+    {
+        return this.v[CORNERINDEX.BL].y;
+    }
+
+    public ymax_get() : number
+    {
+        return this.v[CORNERINDEX.TR].y;
+    }
+
+    public intersect(box: BoxBlender) {
+        return !(this.xmin_get() + 1e-7 >= box.xmax_get() ||
+            this.ymin_get() + 1e-7 >= box.ymax_get() ||
+            this.xmax_get() - 1e-7 <= box.xmin_get() ||
+            this.ymax_get() - 1e-7 <= box.ymin_get());
+    }
+}
+
+// Corner indices
+enum CORNERINDEX {
+    BL = 0,
+    TR = 1,
+    TL = 2,
+    BR = 3,
+    MAX = 4,
+}
+
+// BLF bottom left flag
+enum CORNERFLAGS {
+    BLF = 1,
+    TRF = 2,
+    TLF = 4,
+    BRF = 8,
+    MAX = 15,
+}
+
+/**
+ * Convert the index of a vertex ranging from 0 to 3, to it's corresponding CORNERFLAG
+ * @param {number} index
+ * @returns {number} the flag
+ */
+function toFlag(index: number) : number { 
+    return 1 << index;
+}
+
+
+class BoxVert {
+    x: number;
+    y: number;
+
+    free : number = CORNERFLAGS.MAX;  /* vert status */
+    used : boolean = false;
+    _pad : number = 23;
+    index : number;
+
+    trb : BoxBlender; /* top right box */
+    blb : BoxBlender; /* bottom left box */
+    brb : BoxBlender; /* bottom right box */
+    tlb : BoxBlender; /* top left box */
+
+    /* Store last intersecting boxes here
+     * speedup intersection testing */
+    intersection_cache: BoxBlender[] = [
+        null,
+        null,
+        null,
+        null,
+    ];
+
+// #ifdef USE_PACK_BIAS
+    bias : number = 0;
+    _pad2 : number;
+// #endif
+
+    public updateBias() {
+        if (!this.used) {
+            console.warn("Vertex must be used before updating it's biad !");
+        }
+
+        this.bias = this.x * this.y * 1e-6;
+    }
 }
 
 /**
@@ -1896,5 +2056,440 @@ class BoxPacker {
             h: height, // container height
             fill: (area / (width * height)) || 0 // space utilization
         };
+    }
+
+    /**
+     * Pack boxes to the lower left hand corner
+     * TODO : use must be fixed
+     */
+    static BoxPack2dBlender(boxes: BoxBlender[], usePackBias: boolean = true, useFreeStrip: boolean = true, useMerge: boolean = false) {
+        // Sort boxes by area
+        boxes.sort((a, b) => (b.w * b.h) - (a.w * a.h));
+
+        // total
+        let tot = Vector2.Zero();
+
+        const vertices: BoxVert[] = [];
+        const vertexPackIndices : number[] = [];
+
+        // Initialize boxes vertices, and vertices boxes
+        let index = 0;
+        for (const box of boxes) {
+            const topRightVertex = new BoxVert();
+            topRightVertex.index = index++;
+            topRightVertex.trb = box;
+            topRightVertex.free &= ~CORNERFLAGS.TRF;
+            box.v[CORNERINDEX.BL] = topRightVertex;
+            vertices.push(topRightVertex);
+
+            const bottomLeftVertex = new BoxVert();
+            bottomLeftVertex.index = index++;
+            bottomLeftVertex.blb = box;
+            bottomLeftVertex.free &= ~CORNERFLAGS.BLF;
+            box.v[CORNERINDEX.TR] = bottomLeftVertex;
+            vertices.push(bottomLeftVertex);
+
+            const bottomRightVertex = new BoxVert();
+            bottomRightVertex.index = index++;
+            bottomRightVertex.brb = box;
+            bottomRightVertex.free &= ~CORNERFLAGS.BRF;
+            box.v[CORNERINDEX.TL] = bottomRightVertex;
+            vertices.push(bottomRightVertex);
+
+            const topLeftVertex = new BoxVert();
+            topLeftVertex.index = index++;
+            topLeftVertex.tlb = box;
+            topLeftVertex.free &= ~CORNERFLAGS.TLF;
+            box.v[CORNERINDEX.BR] = topLeftVertex;
+            vertices.push(topLeftVertex);
+        }
+
+        // Fit the first before entering the firstBox fitting loop
+        let firstBox = boxes[0];
+
+        // Update free neighboors state
+        firstBox.v[CORNERINDEX.BL].free = 0; // No more adjacent space
+        // This vextex stick to the left border
+        firstBox.v[CORNERINDEX.TL].free &= ~(CORNERFLAGS.TLF | CORNERFLAGS.BLF);
+        // This vextex stick to the bottom border
+        firstBox.v[CORNERINDEX.BR].free &= ~(CORNERFLAGS.BLF | CORNERFLAGS.BRF);
+
+        // Total used space
+        tot.x = firstBox.w;
+        tot.y = firstBox.h;
+
+        // Set firstBox vertices position
+        firstBox.xmin_set(0);
+        firstBox.ymin_set(0);
+        firstBox.x = 0;
+        firstBox.y = 0;
+
+        for (const boxVertex of firstBox.v) {
+            boxVertex.used = true;
+
+            if (usePackBias) {
+                boxVertex.updateBias();
+            }
+        }
+
+        for (let cornerIndex = 0; cornerIndex < CORNERINDEX.MAX - 1; cornerIndex++) {
+            vertexPackIndices.push(firstBox.v[cornerIndex + 1].index);
+        }
+
+        // Main firstBox fitting loop
+        // for (const box of boxes) {
+        for (let boxIndex = 1; boxIndex < boxes.length; boxIndex++) {
+            const box = boxes[boxIndex];
+
+            const vertexSort = (index1, index2) => {
+                const v1 = vertices[index1];
+                const v2 = vertices[index2];
+                let a1, a2;
+
+                if (useFreeStrip) {
+                    /* push free verts to the end so we can strip */
+                    if (v1.free == 0 && v2.free == 0) {
+                        return  0;
+                    } else if (v1.free == 0) {
+                        return  1;
+                    } else if (v2.free == 0) {
+                        return -1;
+                    }
+                }
+
+                a1 = Math.max(v1.x + box.w, v1.y + box.h);
+                a2 = Math.max(v2.x + box.w, v2.y + box.h);
+
+                if (usePackBias) {
+                    a1 += v1.bias;
+                    a2 += v2.bias;
+                }
+
+                /* sort largest to smallest */
+                if (a1 > a2) {
+                    return 1;
+                } else if (a1 < a2) {
+                    return -1;
+                }
+                return 0;
+            };
+
+            vertexPackIndices.sort(vertexSort);
+
+            // Find vertices fully used and remove them from the vertex pack to speed up vertices loop
+            if (useFreeStrip) {
+                let index = vertexPackIndices.length - 1;
+
+                while(index != 0 && vertices[vertexPackIndices[index]].free == 0) {
+                    vertexPackIndices.pop();
+                    index--;
+                }
+            }
+
+            let intersection = true;
+
+            for (let i = 0; i < vertexPackIndices.length && intersection; i++) {
+                const vertex = vertices[vertexPackIndices[i]];
+
+                /**
+                 * This vert has a free quadrant
+                 * Test if we can place the firstBox here
+                 * vert->free & quad_flags[cornerIndex] - Checks
+                 */
+                for (let quadrantIndex = 0; quadrantIndex < CORNERINDEX.MAX && intersection; quadrantIndex++) {
+                    if (vertex.free & toFlag(quadrantIndex)) {
+                        switch (quadrantIndex) {
+                            case CORNERINDEX.BL: {
+                                box.xmax_set(vertex.x);
+                                box.ymax_set(vertex.y);
+                                break;
+                            }
+                            case CORNERINDEX.TR: {
+                                box.xmin_set(vertex.x);
+                                box.ymin_set(vertex.y);
+                                break;
+                            }
+                            case CORNERINDEX.TL: {
+                                box.xmax_set(vertex.x);
+                                box.ymin_set(vertex.y);
+                                break;
+                            }
+                            case CORNERINDEX.BR: {
+                                box.xmin_set(vertex.x);
+                                box.ymax_set(vertex.y);
+                                break;
+                            }
+                        }
+
+                        /**
+                         * Now we need to check that the firstBox intersects
+                         * with any other boxes
+                         * Assume no intersection...
+                         */
+                        intersection = false;
+                        if (box.xmin_get() < 0 || box.ymin_get() < 0
+                            || (vertex.intersection_cache[quadrantIndex] && box.intersect(vertex.intersection_cache[quadrantIndex]))) {
+                            /**
+                             * Here we check that the last intersected
+                             * firstBox will intersect with this one using
+                             * isect_cache that can store a pointer to a
+                             * firstBox for each quadrant
+                             * big speedup
+                             */
+                            intersection = true;
+                        } else {
+                            /**
+                             * do a full search for colliding firstBox
+                             * this is really slow, some spatially divided
+                             * data-structure would be better
+                             */
+                            // As boxes are sorted we know that only previous boxes already placed, so we can break once we find the current firstBox
+                            for (let testBoxIndex = 0; boxes[testBoxIndex].index !== box.index; testBoxIndex++) {
+                                if (box.intersect(boxes[testBoxIndex])) {
+                                    vertex.intersection_cache[quadrantIndex] = boxes[testBoxIndex];
+                                    intersection = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (!intersection) {
+                            tot = Vector2.Maximize(tot, new Vector2(box.xmax_get(), box.ymax_get()));
+
+                            // Update the free quadrants states
+                            vertex.free &= ~toFlag(quadrantIndex);
+
+                            switch (quadrantIndex) {
+                                case CORNERINDEX.TR: {
+                                    box.v[CORNERINDEX.BL] = vertex;
+                                    vertex.trb = box;
+                                    break;
+                                }
+                                case CORNERINDEX.TL: {
+                                    box.v[CORNERINDEX.BR] = vertex;
+                                    vertex.tlb = box;
+                                    break;
+                                }
+                                case CORNERINDEX.BR: {
+                                    box.v[CORNERINDEX.TL] = vertex;
+                                    vertex.brb = box;
+                                    break;
+                                }
+                                case CORNERINDEX.BL: {
+                                    box.v[CORNERINDEX.TR] = vertex;
+                                    vertex.blb = box;
+                                    break;
+                                }
+                            }
+
+                            /**
+                             * Mask free flags for verts that are
+                             * on the bottom or side so we don't get
+                             * boxes outside the given rectangle ares
+                             * 
+                             * We can do an else/if here because only the first 
+                             * firstBox can be at the very bottom left corner
+                             */
+                            if (box.xmin_get() <= 0) {
+                                box.v[CORNERINDEX.TL].free &= ~(CORNERFLAGS.TLF | CORNERFLAGS.BLF);
+                                box.v[CORNERINDEX.BL].free &= ~(CORNERFLAGS.TLF | CORNERFLAGS.BLF);
+                            }
+                            else if (box.ymin_get() <= 0) {
+                                box.v[CORNERINDEX.BL].free &= ~(CORNERFLAGS.BRF | CORNERFLAGS.BLF);
+                                box.v[CORNERINDEX.BR].free &= ~(CORNERFLAGS.BRF | CORNERFLAGS.BLF);
+                            }
+
+                            /**
+                             * The following block of code does a logical
+                             * check with 2 adjacent boxes, its possible to
+                             * flag verts on one or both of the boxes 
+                             * as being used by checking the width or
+                             * height of both boxes
+                             *
+                             * Vertically
+                             */
+                            if (vertex.trb && vertex.tlb && (box === vertex.trb || box === vertex.tlb)) {
+                                if (Math.abs(vertex.tlb.h - vertex.trb.h) < 1e-6) {
+                                    if (useMerge) {
+                                        const mask = CORNERFLAGS.BLF | CORNERFLAGS.BRF;
+
+                                        if (vertex.trb.v[CORNERINDEX.TL].used != vertex.tlb.v[CORNERINDEX.TR].used) {
+                                            console.warn("One of those vertices must not be used before merging them !");
+                                            console.log(boxIndex);
+                                        }
+
+                                        if (vertex.trb.v[CORNERINDEX.TL].used) {
+                                            vertex.trb.v[CORNERINDEX.TL].free &= vertex.tlb.v[CORNERINDEX.TR].free & ~mask;
+                                            vertex.tlb.v[CORNERINDEX.TR] = vertex.trb.v[CORNERINDEX.TL];
+                                        } else {
+                                            vertex.tlb.v[CORNERINDEX.TR].free &= vertex.trb.v[CORNERINDEX.TL].free & ~mask;
+                                            vertex.trb.v[CORNERINDEX.TL] = vertex.tlb.v[CORNERINDEX.TR];
+                                        }
+                                    } else {
+                                        vertex.tlb.v[CORNERINDEX.TR].free &= ~CORNERFLAGS.BLF;
+                                        vertex.trb.v[CORNERINDEX.TL].free &= ~CORNERFLAGS.BRF;
+                                    }
+                                } else if (vertex.tlb.h > vertex.trb.h) {
+                                    vertex.trb.v[CORNERINDEX.TL].free &= ~(CORNERFLAGS.BLF | CORNERFLAGS.TLF);
+                                } else {
+                                    vertex.tlb.v[CORNERINDEX.TR].free &= ~(CORNERFLAGS.BRF | CORNERFLAGS.TRF);
+                                }
+                            }
+
+                            else if (vertex.brb && vertex.blb && (box === vertex.brb || box === vertex.blb)) {
+                                if (Math.abs(vertex.blb.h - vertex.brb.h) < 1e-6) {
+                                    if (useMerge) {
+                                        const mask = CORNERFLAGS.TLF | CORNERFLAGS.TRF;
+
+                                        if (vertex.brb.v[CORNERINDEX.BL].used != vertex.blb.v[CORNERINDEX.BR].used) {
+                                            console.warn("One of those vertices must not be used before merging them !");
+                                            console.log(boxIndex);
+                                        }
+
+                                        if (vertex.blb.v[CORNERINDEX.BR].used) {
+                                            vertex.blb.v[CORNERINDEX.BR].free &= vertex.brb.v[CORNERINDEX.BL].free & ~mask;
+                                            vertex.brb.v[CORNERINDEX.BL] = vertex.blb.v[CORNERINDEX.BR];
+                                        } else {
+                                            vertex.brb.v[CORNERINDEX.BL].free &= vertex.blb.v[CORNERINDEX.BR].free & ~mask;
+                                            vertex.blb.v[CORNERINDEX.BR] = vertex.brb.v[CORNERINDEX.BL];
+                                        }
+                                    } else {
+                                        vertex.blb.v[CORNERINDEX.BR].free &= ~CORNERFLAGS.TRF;
+                                        vertex.brb.v[CORNERINDEX.BL].free &= ~CORNERFLAGS.TLF;
+                                    }
+                                } else if (vertex.blb.h > vertex.brb.h) {
+                                    vertex.brb.v[CORNERINDEX.BL].free &= ~(CORNERFLAGS.BLF | CORNERFLAGS.TLF);
+                                } else {
+                                    vertex.blb.v[CORNERINDEX.BR].free &= ~(CORNERFLAGS.BRF | CORNERFLAGS.TRF);
+                                }
+                            }
+
+                            // Horizontally
+                            else if (vertex.tlb && vertex.blb && (box === vertex.tlb || box === vertex.blb)) {
+                                if (Math.abs(vertex.tlb.w - vertex.blb.w) < 1e-6) {
+                                    if (useMerge) {
+                                        const mask = CORNERFLAGS.TRF | CORNERFLAGS.BRF;
+
+                                        if (vertex.tlb.v[CORNERINDEX.TL].used != vertex.blb.v[CORNERINDEX.BL].used) {
+                                            console.warn("One of those vertices must not be used before merging them !");
+                                            console.log(boxIndex);
+                                        }
+
+                                        if (vertex.blb.v[CORNERINDEX.TL].used) {
+                                            vertex.blb.v[CORNERINDEX.TL].free &= vertex.tlb.v[CORNERINDEX.BL].free & ~mask;
+                                            vertex.tlb.v[CORNERINDEX.BL] = vertex.blb.v[CORNERINDEX.TL];
+                                        } else {
+                                            vertex.tlb.v[CORNERINDEX.BL].free &= vertex.blb.v[CORNERINDEX.TL].free & ~mask;
+                                            vertex.blb.v[CORNERINDEX.TL] = vertex.tlb.v[CORNERINDEX.BL];
+                                        }
+                                    } else {
+                                        vertex.blb.v[CORNERINDEX.TL].free &= ~CORNERFLAGS.TRF;
+                                        vertex.tlb.v[CORNERINDEX.BL].free &= ~CORNERFLAGS.BRF;
+                                    }
+                                } else if (vertex.tlb.w > vertex.blb.w) {
+                                    vertex.blb.v[CORNERINDEX.TL].free &= ~(CORNERFLAGS.TLF | CORNERFLAGS.TRF);
+                                } else {
+                                    vertex.tlb.v[CORNERINDEX.BL].free &= ~(CORNERFLAGS.BLF | CORNERFLAGS.BRF);
+                                }
+                            }
+                            else if (vertex.trb && vertex.brb && (box === vertex.trb || box === vertex.brb)) {
+                                if (Math.abs(vertex.trb.w - vertex.brb.w) < 1e-6) {
+                                    if (useMerge) {
+                                        const mask = CORNERFLAGS.TLF | CORNERFLAGS.BLF;
+
+                                        if (vertex.trb.v[CORNERINDEX.TR].used != vertex.brb.v[CORNERINDEX.BR].used) {
+                                            console.warn("One of those vertices must not be used before merging them !");
+                                            console.log(boxIndex);
+                                        }
+
+                                        if (vertex.brb.v[CORNERINDEX.TR].used) {
+                                            vertex.brb.v[CORNERINDEX.TR].free &= vertex.trb.v[CORNERINDEX.BR].free & ~mask;
+                                            vertex.trb.v[CORNERINDEX.BR] = vertex.brb.v[CORNERINDEX.TR];
+                                        } else {
+                                            vertex.trb.v[CORNERINDEX.BR].free &= vertex.brb.v[CORNERINDEX.TR].free & ~mask;
+                                            vertex.brb.v[CORNERINDEX.TR] = vertex.trb.v[CORNERINDEX.BR];
+                                        }
+                                    } else {
+                                        vertex.brb.v[CORNERINDEX.TR].free &= ~CORNERFLAGS.TLF;
+                                        vertex.trb.v[CORNERINDEX.BR].free &= ~CORNERFLAGS.BLF;
+                                    }
+                                } else if (vertex.trb.w > vertex.brb.w) {
+                                    vertex.brb.v[CORNERINDEX.TR].free &= ~(CORNERFLAGS.TLF | CORNERFLAGS.TRF);
+                                } else {
+                                    vertex.trb.v[CORNERINDEX.BR].free &= ~(CORNERFLAGS.BLF | CORNERFLAGS.BRF);
+                                }
+                            }
+
+                            for (const boxVertex of box.v) {
+                                if (!boxVertex.used) {
+                                    boxVertex.used = true;
+
+                                    if (usePackBias) {
+                                        boxVertex.updateBias();
+                                    }
+
+                                    vertexPackIndices.push(boxVertex.index);
+                                }
+                            }
+
+                            box.x = box.xmin_get();
+                            box.y = box.ymin_get();
+                        }
+                    }
+                }
+            }
+        }
+        
+        // BoxPacker.debugFitAABB(boxes, tot.x, tot.y);
+
+        return {
+            w: tot.x,
+            h: tot.y,
+            fill: 1
+        };
+    }
+
+    static debugFitAABB(boxes: BoxBlender[], w: number, h: number) {
+        let canvas = document.createElement("canvas");
+        let ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+        const width = 900;
+        const height = 900;
+
+        document.body.appendChild(canvas);
+        canvas.width = width;
+        canvas.height = height;
+        canvas.style.position = "absolute";
+        canvas.style.zIndex = "10";
+        canvas.style.top = "0px";
+        canvas.style.left = "0px";
+        canvas.onclick = () => {
+            canvas.style.display = "none";
+        };
+
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, width, height);
+        ctx.scale(width, height);
+        ctx.lineWidth = 0.001;
+
+        for (const box of boxes) {
+            ctx.beginPath();
+            ctx.moveTo((box.x / w), (box.y / h));
+
+            ctx.lineTo(((box.x + box.w) / w), (box.y / h));
+            ctx.moveTo(((box.x + box.w) / w), (box.y / h));
+
+            ctx.lineTo(((box.x + box.w) / w), ((box.y + box.h) / h));
+            ctx.moveTo(((box.x + box.w) / w), ((box.y + box.h) / h));
+
+            ctx.lineTo((box.x / w), ((box.y + box.h) / h));
+            ctx.moveTo((box.x / w), ((box.y + box.h) / h));
+
+            ctx.lineTo((box.x / w), (box.y / h));
+            ctx.closePath();
+
+            ctx.strokeStyle = "green";
+            ctx.stroke();
+        }
     }
 }
