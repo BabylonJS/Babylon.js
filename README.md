@@ -255,15 +255,17 @@ the selected Babylon Native demo app.
 ### **Building on Windows, Targeting Android**
 
 **Required Tools:** 
-[Android Studio](https://developer.android.com/studio), [Nodejs](https://nodejs.org/en/download/)
+[Android Studio](https://developer.android.com/studio), [Node.js](https://nodejs.org/en/download/), [Ninja](https://ninja-build.org/)
 
 The minimal requirement target is Android 5.0 with an OpenGL ES 3.0 compatible GPU.
 
-Only building with AndroidStudio is supported. CMake is not used directly. Instead, 
-Gradle is used for building and CMake is automatically invocated for building the native 
-part. An .apk that can be executed on your device or simulator is the output.
-First step is to install the Javascript engines dependencies. This is done by nodejs npm 
-package system.
+Only building with Android Studio is supported. CMake is not used directly. Instead, Gradle
+is used for building and CMake is automatically invocated for building the native part.
+An .apk that can be executed on your device or simulator is the output.
+
+First download the latest release of Ninja, extract the binary, and add it to your system path.
+
+Next install the Javascript engine dependencies. This is done by the Node.js npm package system.
 
 ```
 cd Apps\Playground\Android
