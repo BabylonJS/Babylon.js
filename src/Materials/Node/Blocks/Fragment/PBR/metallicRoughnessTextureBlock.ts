@@ -1,4 +1,5 @@
 import { NodeMaterial, NodeMaterialDefines } from '../../../nodeMaterial';
+import { NodeMaterialBuildState } from '../../../nodeMaterialBuildState';
 import { _TypeStore } from '../../../../../Misc/typeStore';
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../nodeMaterialDecorator";
 import { AbstractMesh } from '../../../../../Meshes/abstractMesh';
@@ -41,6 +42,17 @@ export class MetallicRoughnessTextureBlock extends TextureBlock {
         this.registerOutput("g", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
         this.registerOutput("b", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
         this.registerOutput("a", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
+    }
+
+    /**
+     * Initialize the block and prepare the context for build
+     * @param state defines the state that will be used for the build
+     */
+    public initialize(state: NodeMaterialBuildState) {
+        state._excludeVariableName("baseColor");
+        state._excludeVariableName("reflectivityOut");
+        state._excludeVariableName("microSurface");
+        state._excludeVariableName("roughness");
     }
 
     /**
