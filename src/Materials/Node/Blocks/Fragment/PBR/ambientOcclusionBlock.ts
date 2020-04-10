@@ -4,6 +4,7 @@ import { NodeMaterialBuildState } from '../../../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../../../Enums/nodeMaterialBlockTargets';
 import { NodeMaterial, NodeMaterialDefines } from '../../../nodeMaterial';
+import { Nullable } from '../../../../../types';
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../nodeMaterialDecorator";
 import { _TypeStore } from '../../../../../Misc/typeStore';
 import { AbstractMesh } from '../../../../../Meshes/abstractMesh';
@@ -46,6 +47,24 @@ export class AmbientOcclusionBlock extends NodeMaterialBlock {
 
     public get ambientOcclusion(): NodeMaterialConnectionPoint {
         return this._outputs[0];
+    }
+
+    public static getCode(block: Nullable<AmbientOcclusionBlock>): string {
+        let code = `ambientOcclusionOutParams aoOut;\r\n`;
+
+        const aoTexture = block?.texture.isConnected ? block.texture.associatedVariableName : "vec2(0., 0.)";
+        const aoLevel = "1.";
+        const aoIntensity = block?.intensity.isConnected ? block.intensity.associatedVariableName : "1.";
+
+        code += `ambientOcclusionBlock(
+            #ifdef AMBIENT
+                ${aoTexture},
+                vec4(0., ${aoLevel}, ${aoIntensity}, 0.),
+            #endif
+                aoOut
+            );\r\n`;
+
+        return code;
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
