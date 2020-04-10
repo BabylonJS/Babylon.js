@@ -20,6 +20,10 @@ import { NodeMaterialConnectionPointCustomObject } from "../../../nodeMaterialCo
 import { AmbientOcclusionBlock } from './ambientOcclusionBlock';
 import { SheenBlock } from './sheenBlock';
 import { MetallicRoughnessTextureBlock } from './metallicRoughnessTextureBlock';
+import { BaseTexture } from '../../../../Textures/baseTexture';
+import { Engine } from '../../../../../Engines/engine';
+import { BRDFTextureTools } from '../../../../../Misc/brdfTextureTools';
+import { MaterialFlags } from '../../../../materialFlags';
 
 export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     private _lightId: number;
@@ -28,6 +32,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
      * Gets or sets the light associated with this block
      */
     public light: Nullable<Light>;
+
+    protected _environmentBRDFTexture: Nullable<BaseTexture> = null;
+    protected _environmentBrdfSamplerName: string;
 
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.VertexAndFragment);
@@ -65,6 +72,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this.registerOutput("lighting", NodeMaterialBlockConnectionPointTypes.Color4, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("shadow", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
 
+        this._environmentBRDFTexture = BRDFTextureTools.GetEnvironmentBRDFTexture(Engine.LastCreatedScene!);
     }
 
     @editableInPropertyPage("Alpha from albedo", PropertyTypeForEdition.Boolean, "TRANSPARENCY")
@@ -81,6 +89,30 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
     @editableInPropertyPage("Get alpha from opacity texture RGB", PropertyTypeForEdition.Boolean, "TRANSPARENCY")
     public opacityRGB: boolean = false;
+
+    @editableInPropertyPage("Radiance over alpha", PropertyTypeForEdition.Boolean, "RENDERING")
+    public useRadianceOverAlpha: boolean = true;
+
+    @editableInPropertyPage("Specular over alpha", PropertyTypeForEdition.Boolean, "RENDERING")
+    public useSpecularOverAlpha: boolean = true;
+
+    @editableInPropertyPage("Specular anti-aliasing", PropertyTypeForEdition.Boolean, "RENDERING")
+    public enableSpecularAntiAliasing: boolean = false;
+
+    @editableInPropertyPage("Energy Conservation", PropertyTypeForEdition.Boolean, "ADVANCED")
+    public useEnergyConservation: boolean = true;
+
+    @editableInPropertyPage("Spherical Harmonics", PropertyTypeForEdition.Boolean, "ADVANCED")
+    public useSphericalHarmonics: boolean = true;
+
+    @editableInPropertyPage("Radiance occlusion", PropertyTypeForEdition.Boolean, "ADVANCED")
+    public useRadianceOcclusion: boolean = true;
+
+    @editableInPropertyPage("Horizon occlusion", PropertyTypeForEdition.Boolean, "ADVANCED")
+    public useHorizonOcclusion: boolean = true;
+
+    @editableInPropertyPage("Unlit", PropertyTypeForEdition.Boolean, "ADVANCED")
+    public unlit: boolean = false;
 
     /**
      * Initialize the block and prepare the context for build
@@ -286,6 +318,27 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         metalRoughTextBlock?.prepareDefines(mesh, nodeMaterial, defines);
 
+        // Rendering
+        defines.setValue("RADIANCEOVERALPHA", this.useRadianceOverAlpha);
+        defines.setValue("SPECULAROVERALPHA", this.useSpecularOverAlpha);
+        defines.setValue("SPECULARAA", Engine.LastCreatedScene!.getEngine().getCaps().standardDerivatives && this.enableSpecularAntiAliasing);
+
+        // Advanced
+        defines.setValue("BRDF_V_HEIGHT_CORRELATED", true);
+        defines.setValue("MS_BRDF_ENERGY_CONSERVATION", this.useEnergyConservation);
+        defines.setValue("SPHERICAL_HARMONICS", this.useSphericalHarmonics);
+        defines.setValue("RADIANCEOCCLUSION", this.useRadianceOcclusion);
+        defines.setValue("HORIZONOCCLUSION", this.useHorizonOcclusion);
+        defines.setValue("UNLIT", this.unlit);
+
+        if (this._environmentBRDFTexture && MaterialFlags.ReflectionTextureEnabled) {
+            defines.setValue("ENVIRONMENTBRDF", true);
+            defines.setValue("ENVIRONMENTBRDF_RGBD", this._environmentBRDFTexture.isRGBD);
+        } else {
+            defines.setValue("ENVIRONMENTBRDF" , false);
+            defines.setValue("ENVIRONMENTBRDF_RGBD", false);
+        }
+
         if (!defines._areLightsDirty) {
             return;
         }
@@ -348,6 +401,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         } else {
             MaterialHelper.BindLight(this.light, this._lightId, scene, effect, true);
         }
+
+        effect.setTexture(this._environmentBrdfSamplerName, this._environmentBRDFTexture);
 
         /*if (!mesh || !this.texture) {
             return;
@@ -448,6 +503,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         let worldPos = this.worldPosition;
         let normalShading = this.perturbedNormal;
 
+        this._environmentBrdfSamplerName = state._getFreeVariableName("environmentBrdfSampler");
+
+        state._emit2DSampler(this._environmentBrdfSamplerName);
+
         //
         // Includes
         //
@@ -536,11 +595,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state.compilationString += MetallicRoughnessTextureBlock.getCode(this.metalRoughTexture.isConnected ? this.metalRoughTexture.connectedPoint?.ownerBlock as MetallicRoughnessTextureBlock : null,
             this.metallic.associatedVariableName, this.roughness.associatedVariableName, aoIntensity);
 
-        // _____________________________ Compute Geometry info _________________________________
-        //#include<pbrBlockGeometryInfo>
+        // _____________________________ Geometry info _________________________________
+        state.compilationString += state._emitCodeFromInclude("pbrBlockGeometryInfo", comments);
 
         // _____________________________ Direct Lighting Info __________________________________
         state.compilationString += state._emitCodeFromInclude("pbrBlockDirectLighting", comments);
+
+        // _____________________________ Anisotropy _______________________________________
 
         /*if (this.light) {
             state.compilationString += state._emitCodeFromInclude("lightFragment", comments, {
@@ -588,7 +649,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             state.compilationString += this._declareOutput(this.shadow, state) + ` = shadow;\r\n`;
         }
 
-        (window as any).sheenParams = this.sheenParams.connectedPoint?.ownerBlock;
         return this;
     }
 
