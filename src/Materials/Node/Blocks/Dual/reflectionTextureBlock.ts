@@ -144,7 +144,7 @@ export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
 
         this.handleFragmentSideInits(state);
 
-        state.compilationString += this.handleFragmentSideCodeReflectionCoords();
+        state.compilationString += this.handleFragmentSideCodeReflectionCoords(this.worldNormal.associatedVariableName);
 
         state.compilationString += this.handleFragmentSideCodeReflectionColor();
 
