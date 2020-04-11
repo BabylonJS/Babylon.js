@@ -95,6 +95,9 @@
 ### Maths
 - Added `Vector3.projectOnPlaneToRef` ([Deltakosh](https://github.com/deltakosh))
 
+### Particles
+- Added local space support for GPU particles ([CraigFeldpsar](https://github.com/craigfeldspar))
+
 ### Build
 
 - Fixed an issue with gulp webpack, webpack stream and the viewer ([RaananW](https://github.com/RaananW))
