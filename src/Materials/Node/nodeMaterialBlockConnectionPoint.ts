@@ -437,16 +437,29 @@ export class NodeMaterialConnectionPoint {
         let serializationObject: any = {};
 
         serializationObject.name = this.name;
+        serializationObject.displayName = this.displayName;
 
         if (this.connectedPoint) {
             serializationObject.inputName = this.name;
-            serializationObject.displayName = this.displayName;
             serializationObject.targetBlockId = this.connectedPoint.ownerBlock.uniqueId;
             serializationObject.targetConnectionName = this.connectedPoint.name;
         }
 
         return serializationObject;
     }
+
+    // /**
+    //  * Parses JSON representation into a new NodeMaterialConnectionPoint
+    //  * @returns the serialized point object
+    //  */
+    // public parse(serializationData: any ): NodeMaterialConnectionPoint {
+    //     const newConnectionPoint  = new NodeMaterialConnectionPoint(serializationData.name, serializationData.ownerBlock, serializationData.direction);
+
+    //     newConnectionPoint.
+
+
+    //     return newConnectionPoint;
+    // }
 
     /**
      * Release resources
