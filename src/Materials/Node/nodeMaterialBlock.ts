@@ -656,9 +656,14 @@ export class NodeMaterialBlock {
         serializationObject.comments = this.comments;
 
         serializationObject.inputs = [];
+        serializationObject.outputs = [];
 
         for (var input of this.inputs) {
             serializationObject.inputs.push(input.serialize());
+        }
+
+        for (var output of this.outputs) {
+            serializationObject.outputs.push(output.serialize());
         }
 
         return serializationObject;
@@ -668,6 +673,26 @@ export class NodeMaterialBlock {
     public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         this.name = serializationObject.name;
         this.comments = serializationObject.comments;
+        this._deserializePortDisplayNames(serializationObject);
+    }
+
+    public _deserializePortDisplayNames(serializationObject: any) {
+        const serializedInputs = serializationObject.inputs;
+        const serializedOutputs = serializationObject.outputs;
+        if (serializedInputs) {
+            serializedInputs.forEach((port: any, i: number) => {
+                if(port.displayName) {
+                    this.inputs[i].displayName = port.displayName;
+                }
+            })
+        } 
+        if (serializedOutputs) {
+            serializedOutputs.forEach((port: any, i: number) => {
+                if(port.displayName) {
+                    this.outputs[i].displayName = port.displayName;
+                }
+            })
+        } 
     }
 
     /**

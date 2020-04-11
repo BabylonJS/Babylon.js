@@ -131,7 +131,7 @@ export class NodePort {
         if (!displayManager || displayManager.shouldDisplayPortLabels(block)) {
             let portLabel = root.ownerDocument!.createElement("div");
             portLabel.classList.add("port-label");
-            portLabel.innerHTML = connectionPoint.name;        
+            portLabel.innerHTML = connectionPoint.displayName || connectionPoint.name;        
             portContainer.appendChild(portLabel);
         }
     
