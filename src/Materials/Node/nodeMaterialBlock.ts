@@ -676,7 +676,7 @@ export class NodeMaterialBlock {
         this._deserializePortDisplayNames(serializationObject);
     }
 
-    public _deserializePortDisplayNames(serializationObject: any) {
+    private _deserializePortDisplayNames(serializationObject: any) {
         const serializedInputs = serializationObject.inputs;
         const serializedOutputs = serializationObject.outputs;
         if (serializedInputs) {
