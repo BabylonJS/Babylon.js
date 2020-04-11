@@ -26,6 +26,7 @@ export class CubeTexture extends BaseTexture {
     /**
      * The url of the texture
      */
+    @serialize()
     public url: string;
 
     /**
