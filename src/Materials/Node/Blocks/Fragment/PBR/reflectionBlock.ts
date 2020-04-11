@@ -18,6 +18,8 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     public constructor(name: string) {
         super(name);
 
+        this._isUnique = true;
+
         this.registerInput("position", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Vertex);
         this.registerInput("world", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Vertex);
         this.registerInput("view", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Fragment);
