@@ -22,25 +22,24 @@ import { Texture } from '../../../Textures/texture';
  * Block used to read a reflection texture from a sampler
  */
 export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
-    private _define3DName: string;
-    private _defineCubicName: string;
-    private _defineExplicitName: string;
-    private _defineProjectionName: string;
-    private _defineLocalCubicName: string;
-    private _defineSphericalName: string;
-    private _definePlanarName: string;
-    private _defineEquirectangularName: string;
-    private _defineMirroredEquirectangularFixedName: string;
-    private _defineEquirectangularFixedName: string;
-    private _defineSkyboxName: string;
-    private _cubeSamplerName: string;
-    private _2DSamplerName: string;
-    private _positionUVWName: string;
-    private _directionWName: string;
-    private _reflectionCoordsName: string;
-    private _reflection2DCoordsName: string;
-    private _reflectionMatrixName: string;
-
+    public _define3DName: string;
+    protected _defineCubicName: string;
+    protected _defineExplicitName: string;
+    protected _defineProjectionName: string;
+    protected _defineLocalCubicName: string;
+    protected _defineSphericalName: string;
+    protected _definePlanarName: string;
+    protected _defineEquirectangularName: string;
+    protected _defineMirroredEquirectangularFixedName: string;
+    protected _defineEquirectangularFixedName: string;
+    protected _defineSkyboxName: string;
+    protected _cubeSamplerName: string;
+    protected _2DSamplerName: string;
+    protected _positionUVWName: string;
+    protected _directionWName: string;
+    protected _reflectionVectorName: string;
+    public _reflectionCoordsName: string;
+    protected _reflectionMatrixName: string;
     protected _reflectionColorName: string;
 
     /**
@@ -231,85 +230,113 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
 
         let comments = `//${this.name}`;
         state._emitFunction("ReciprocalPI", "#define RECIPROCAL_PI2 0.15915494", "");
-        state._emitFunctionFromInclude("reflectionFunction", comments);
+        state._emitFunctionFromInclude("reflectionFunction", comments, {
+            replaceStrings: [
+                { search: /vec3 computeReflectionCoords/g, replace: "void DUMMYFUNC" }
+            ]
+        });
 
         this._reflectionColorName = state._getFreeVariableName("reflectionColor");
-        this._reflectionCoordsName = state._getFreeVariableName("reflectionUVW");
-        this._reflection2DCoordsName = state._getFreeVariableName("reflectionUV");
+        this._reflectionVectorName = state._getFreeVariableName("reflectionUVW");
+        this._reflectionCoordsName = state._getFreeVariableName("reflectionCoords");
         this._reflectionMatrixName = state._getFreeVariableName("reflectionMatrix");
 
         state._emitUniformFromString(this._reflectionMatrixName, "mat4");
     }
 
-    public handleFragmentSideCodeReflectionCoords(): string {
+    public handleFragmentSideCodeReflectionCoords(worldNormalVarName: string): string {
         let worldPos = `v_${this.worldPosition.associatedVariableName}`;
-        let worldNormal = this.worldNormal.associatedVariableName + ".xyz";
         let reflectionMatrix = this._reflectionMatrixName;
         let direction = `normalize(${this._directionWName})`;
         let positionUVW = `${this._positionUVWName}`;
         let vEyePosition = `${this.cameraPosition.associatedVariableName}`;
         let view = `${this.view.associatedVariableName}`;
 
-        let code = "";
+        worldNormalVarName += ".xyz";
 
-        code += `vec3 ${this._reflectionColorName};\r\n`;
-        code += `#ifdef ${this._defineMirroredEquirectangularFixedName}\r\n`;
-        code += `    vec3 ${this._reflectionCoordsName} = computeMirroredFixedEquirectangularCoords(${worldPos}, ${worldNormal}, ${direction});\r\n`;
-        code += `#endif\r\n`;
+        let code = `
+            #ifdef ${this._defineMirroredEquirectangularFixedName}
+                vec3 ${this._reflectionVectorName} = computeMirroredFixedEquirectangularCoords(${worldPos}, ${worldNormalVarName}, ${direction});
+            #endif
 
-        code += `#ifdef ${this._defineEquirectangularFixedName}\r\n`;
-        code += `    vec3 ${this._reflectionCoordsName} = computeFixedEquirectangularCoords(${worldPos}, ${worldNormal}, ${direction});\r\n`;
-        code += `#endif\r\n`;
+            #ifdef ${this._defineEquirectangularFixedName}
+                vec3 ${this._reflectionVectorName} = computeFixedEquirectangularCoords(${worldPos}, ${worldNormalVarName}, ${direction});
+            #endif
 
-        code += `#ifdef ${this._defineEquirectangularName}\r\n`;
-        code += `    vec3 ${this._reflectionCoordsName} = computeEquirectangularCoords(${worldPos}, ${worldNormal}, ${vEyePosition}.xyz, ${reflectionMatrix});\r\n`;
-        code += ` #endif\r\n`;
+            #ifdef ${this._defineEquirectangularName}
+                vec3 ${this._reflectionVectorName} = computeEquirectangularCoords(${worldPos}, ${worldNormalVarName}, ${vEyePosition}.xyz, ${reflectionMatrix});
+            #endif
 
-        code += `#ifdef ${this._defineSphericalName}\r\n`;
-        code += `    vec3 ${this._reflectionCoordsName} = computeSphericalCoords(${worldPos}, ${worldNormal}, ${view}, ${reflectionMatrix});\r\n`;
-        code += `#endif\r\n`;
+            #ifdef ${this._defineSphericalName}
+                vec3 ${this._reflectionVectorName} = computeSphericalCoords(${worldPos}, ${worldNormalVarName}, ${view}, ${reflectionMatrix});
+            #endif
 
-        code += `#ifdef ${this._definePlanarName}\r\n`;
-        code += `    vec3 ${this._reflectionCoordsName} = computePlanarCoords(${worldPos}, ${worldNormal}, ${vEyePosition}.xyz, ${reflectionMatrix});\r\n`;
-        code += `#endif\r\n`;
+            #ifdef ${this._definePlanarName}
+                vec3 ${this._reflectionVectorName} = computePlanarCoords(${worldPos}, ${worldNormalVarName}, ${vEyePosition}.xyz, ${reflectionMatrix});
+            #endif
 
-        code += `#ifdef ${this._defineCubicName}\r\n`;
-        code += `    #ifdef ${this._defineLocalCubicName}\r\n`;
-        code += `        vec3 ${this._reflectionCoordsName} = computeCubicLocalCoords(${worldPos}, ${worldNormal}, ${vEyePosition}.xyz, ${reflectionMatrix}, vReflectionSize, vReflectionPosition);\r\n`;
-        code += `    #else\r\n`;
-        code += `       vec3 ${this._reflectionCoordsName} = computeCubicCoords(${worldPos}, ${worldNormal}, ${vEyePosition}.xyz, ${reflectionMatrix});\r\n`;
-        code += `    #endif\r\n`;
-        code += `#endif\r\n`;
+            #ifdef ${this._defineCubicName}
+                #ifdef ${this._defineLocalCubicName}
+                    vec3 ${this._reflectionVectorName} = computeCubicLocalCoords(${worldPos}, ${worldNormalVarName}, ${vEyePosition}.xyz, ${reflectionMatrix}, vReflectionSize, vReflectionPosition);
+                #else
+                vec3 ${this._reflectionVectorName} = computeCubicCoords(${worldPos}, ${worldNormalVarName}, ${vEyePosition}.xyz, ${reflectionMatrix});
+                #endif
+            #endif
 
-        code += `#ifdef ${this._defineProjectionName}\r\n`;
-        code += `    vec3 ${this._reflectionCoordsName} = computeProjectionCoords(${worldPos}, ${view}, ${reflectionMatrix});\r\n`;
-        code += `#endif\r\n`;
+            #ifdef ${this._defineProjectionName}
+                vec3 ${this._reflectionVectorName} = computeProjectionCoords(${worldPos}, ${view}, ${reflectionMatrix});
+            #endif
 
-        code += `#ifdef ${this._defineSkyboxName}\r\n`;
-        code += `    vec3 ${this._reflectionCoordsName} = computeSkyBoxCoords(${positionUVW}, ${reflectionMatrix});\r\n`;
-        code += `#endif\r\n`;
+            #ifdef ${this._defineSkyboxName}
+                vec3 ${this._reflectionVectorName} = computeSkyBoxCoords(${positionUVW}, ${reflectionMatrix});
+            #endif
 
-        code += `#ifdef ${this._defineExplicitName}\r\n`;
-        code += `    vec3 ${this._reflectionCoordsName} = vec3(0, 0, 0);\r\n`;
-        code += `#endif\r\n`;
+            #ifdef ${this._defineExplicitName}
+                vec3 ${this._reflectionVectorName} = vec3(0, 0, 0);
+            #endif
+
+            #ifdef ${this._define3DName}
+                vec3 ${this._reflectionCoordsName} = ${this._reflectionVectorName};
+            #else
+                vec2 ${this._reflectionCoordsName} = ${this._reflectionVectorName}.xy;
+                #ifdef ${this._defineProjectionName}
+                    ${this._reflectionCoordsName} /= ${this._reflectionVectorName}.z;
+                #endif
+                ${this._reflectionCoordsName}.y = 1.0 - ${this._reflectionCoordsName}.y;
+            #endif\r\n`;
 
         return code;
     }
 
-    public handleFragmentSideCodeReflectionColor(): string {
-        let code = "";
+    public handleFragmentSideCodeReflectionColor(lodVarName?: string, swizzleLookupTexture = ".rgb"): string {
+        const colorType = "vec" + (swizzleLookupTexture.length === 0 ? "4" : (swizzleLookupTexture.length - 1));
 
-        code += `#ifdef ${this._define3DName}\r\n`;
-        code += `${this._reflectionColorName} = textureCube(${this._cubeSamplerName}, ${this._reflectionCoordsName}).rgb;\r\n`;
-        code += `#else\r\n`;
-        code += `vec2 ${this._reflection2DCoordsName} = ${this._reflectionCoordsName}.xy;\r\n`;
+        let code = `${colorType} ${this._reflectionColorName};
+            #ifdef ${this._define3DName}
+                ${this._reflectionCoordsName} = ${this._reflectionVectorName};\r\n`;
 
-        code += `#ifdef ${this._defineProjectionName}\r\n`;
-        code += `${this._reflection2DCoordsName} /= ${this._reflectionCoordsName}.z;\r\n`;
-        code += `#endif\r\n`;
+        if (lodVarName) {
+            code += `${this._reflectionColorName} = textureCubeLodEXT(${this._cubeSamplerName}, ${this._reflectionVectorName}, ${lodVarName})${swizzleLookupTexture};\r\n`;
+        } else {
+            code += `${this._reflectionColorName} = textureCube(${this._cubeSamplerName}, ${this._reflectionVectorName})${swizzleLookupTexture};\r\n`;
+        }
 
-        code += `${this._reflection2DCoordsName}.y = 1.0 - ${this._reflection2DCoordsName}.y;\r\n`;
-        code += `${this._reflectionColorName} = texture2D(${this._2DSamplerName}, ${this._reflection2DCoordsName}).rgb;\r\n`;
+        code += `
+            #else
+                vec2 ${this._reflectionCoordsName} = ${this._reflectionVectorName}.xy;
+
+                #ifdef ${this._defineProjectionName}
+                    ${this._reflectionCoordsName} /= ${this._reflectionVectorName}.z;
+                #endif
+
+                ${this._reflectionCoordsName}.y = 1.0 - ${this._reflectionCoordsName}.y;\r\n`;
+
+        if (lodVarName) {
+            code += `${this._reflectionColorName} = texture2DLodEXT(${this._2DSamplerName}, ${this._reflectionCoordsName}, ${lodVarName})${swizzleLookupTexture};\r\n`;
+        } else {
+            code += `${this._reflectionColorName} = texture2D(${this._2DSamplerName}, ${this._reflectionCoordsName})${swizzleLookupTexture};\r\n`;
+        }
+
         code += `#endif\r\n`;
 
         return code;
