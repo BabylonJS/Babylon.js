@@ -25,6 +25,7 @@ import { Engine } from '../../../../../Engines/engine';
 import { BRDFTextureTools } from '../../../../../Misc/brdfTextureTools';
 import { MaterialFlags } from '../../../../materialFlags';
 import { AnisotropyBlock } from './anisotropyBlock';
+import { ReflectionBlock } from './reflectionBlock';
 
 export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     private _lightId: number;
@@ -52,7 +53,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this.registerInput("reflectivity", NodeMaterialBlockConnectionPointTypes.Object, false, NodeMaterialBlockTargets.Fragment, new NodeMaterialConnectionPointCustomObject("reflectivity", this, NodeMaterialConnectionPointDirection.Input, ReflectivityBlock, "ReflectivityBlock"));
         this.registerInput("ambientColor", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("ambientOcclusion", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment, new NodeMaterialConnectionPointCustomObject("ambientOcclusion", this, NodeMaterialConnectionPointDirection.Input, AmbientOcclusionBlock, "AOBlock"));
-        this.registerInput("reflection", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("reflection", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment, new NodeMaterialConnectionPointCustomObject("reflection", this, NodeMaterialConnectionPointDirection.Input, ReflectionBlock, "ReflectionBlock"));
         this.registerInput("sheen", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment, new NodeMaterialConnectionPointCustomObject("sheen", this, NodeMaterialConnectionPointDirection.Input, SheenBlock, "SheenBlock"));
         this.registerInput("clearCoat", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("subSurface", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment);
@@ -312,6 +313,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         anisotropyBlock?.prepareDefines(mesh, nodeMaterial, defines);
 
+        // Reflection
+        const reflectionBlock = this.reflectionParams.isConnected ? this.reflectionParams.connectedPoint?.ownerBlock as ReflectionBlock : null;
+
+        reflectionBlock?.prepareDefines(mesh, nodeMaterial, defines);
+
         // Rendering
         defines.setValue("RADIANCEOVERALPHA", this.useRadianceOverAlpha);
         defines.setValue("SPECULAROVERALPHA", this.useSpecularOverAlpha);
@@ -376,17 +382,19 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     public isReady() {
-        /*if (this.texture && !this.texture.isReadyOrNotBlocking()) {
-            return false;
-        }*/
+        const reflectionBlock = this.reflectionParams.isConnected ? this.reflectionParams.connectedPoint?.ownerBlock as ReflectionBlock : null;
 
-        return true;
+        return reflectionBlock?.isReady() ?? true;
     }
 
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (!mesh) {
             return;
         }
+
+        const reflectionBlock = this.reflectionParams.isConnected ? this.reflectionParams.connectedPoint?.ownerBlock as ReflectionBlock : null;
+
+        reflectionBlock?.bind(effect, nodeMaterial, mesh);
 
         const scene = mesh.getScene();
 
@@ -397,18 +405,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         }
 
         effect.setTexture(this._environmentBrdfSamplerName, this._environmentBRDFTexture);
-
-        /*if (!mesh || !this.texture) {
-            return;
-        }
-
-        effect.setMatrix(this._reflectionMatrixName, this.texture.getReflectionTextureMatrix());
-
-        if (this.texture.isCube) {
-            effect.setTexture(this._cubeSamplerName, this.texture);
-        } else {
-            effect.setTexture(this._2DSamplerName, this.texture);
-        }*/
     }
 
     private _injectVertexCode(state: NodeMaterialBuildState) {
@@ -437,6 +433,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         if (state._emitVaryingFromString(worldPosVaryingName, "vec4")) {
             state.compilationString += `${worldPosVaryingName} = ${worldPos.associatedVariableName};\r\n`;
         }
+
+        const reflectionBlock = this.reflectionParams.isConnected ? this.reflectionParams.connectedPoint?.ownerBlock as ReflectionBlock : null;
+
+        state.compilationString += reflectionBlock?.handleVertexSide(state) ?? "";
 
         if (this.light) {
             state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
@@ -481,6 +481,14 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
+
+        const reflectionBlock = this.reflectionParams.isConnected ? this.reflectionParams.connectedPoint?.ownerBlock as ReflectionBlock : null;
+
+        if (reflectionBlock) {
+            reflectionBlock.worldPositionConnectionPoint = this.worldPosition;
+            reflectionBlock.worldNormalConnectionPoint = this.worldNormal;
+            reflectionBlock.cameraPositionConnectionPoint = this.cameraPosition;
+        }
 
         if (state.target !== NodeMaterialBlockTargets.Fragment) {
             // Vertex
@@ -591,15 +599,20 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         // _____________________________ Geometry info _________________________________
         state.compilationString += state._emitCodeFromInclude("pbrBlockGeometryInfo", comments);
 
-        // _____________________________ Direct Lighting Info __________________________________
-        state.compilationString += state._emitCodeFromInclude("pbrBlockDirectLighting", comments);
-
         // _____________________________ Anisotropy _______________________________________
         const anisotropyBlock = this.anisotropyParams.isConnected ? this.anisotropyParams.connectedPoint?.ownerBlock as AnisotropyBlock : null;
 
         if (anisotropyBlock) {
             state.compilationString += anisotropyBlock.getCode();
         }
+
+        // _____________________________ Reflection _______________________________________
+        reflectionBlock?.handleFragmentSideInits(state);
+
+        state.compilationString += reflectionBlock?.handleFragmentSideCodeReflectionCoords();
+
+        // _____________________________ Direct Lighting Info __________________________________
+        state.compilationString += state._emitCodeFromInclude("pbrBlockDirectLighting", comments);
 
         /*if (this.light) {
             state.compilationString += state._emitCodeFromInclude("lightFragment", comments, {

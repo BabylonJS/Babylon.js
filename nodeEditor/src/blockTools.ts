@@ -67,6 +67,7 @@ import { SheenBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/PBR/sheenBl
 import { AmbientOcclusionBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/PBR/ambientOcclusionBlock';
 import { ReflectivityBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/PBR/reflectivityBlock';
 import { AnisotropyBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/PBR/anisotropyBlock';
+import { ReflectionBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/PBR/reflectionBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
@@ -447,6 +448,8 @@ export class BlockTools {
                 return new ReflectivityBlock("Reflectivity");
             case "AnisotropyBlock":
                 return new AnisotropyBlock("Anisotropy");
+            case "ReflectionBlock":
+                return new ReflectionBlock("Reflection");
         }
 
         return null;
