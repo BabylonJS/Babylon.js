@@ -180,7 +180,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                 <CommonMaterialPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent globalState={this.props.globalState} title="CONFIGURATION">
                 <CheckBoxLineComponent label="Ignore alpha" target={material} propertyName="ignoreAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <ButtonLineComponent label="Node Material Editor" onClick={() => this.edit()} />
+                <ButtonLineComponent label="Node Material Editor" onClick={() => this.edit()} />
                 </LineContainerComponent>
                 {
                     this.renderInputValues()

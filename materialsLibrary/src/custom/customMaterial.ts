@@ -57,49 +57,53 @@ export class CustomMaterial extends StandardMaterial {
     _createdShaderName: string;
     _customUniform: string[];
     _newUniforms: string[];
-    _newUniformInstances: any[];
-    _newSamplerInstances: Texture[];
+    _newUniformInstances: { [name: string]: any };
+    _newSamplerInstances: { [name: string]: Texture };
     _customAttributes: string[];
 
     public FragmentShader: string;
     public VertexShader: string;
 
     public AttachAfterBind(mesh: Mesh, effect: Effect) {
-         for (var el in this._newUniformInstances) {
-            var ea = el.toString().split('-');
-            if (ea[0] == 'vec2') {
-                effect.setVector2(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'vec3') {
-                effect.setVector3(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'vec4') {
-                effect.setVector4(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'mat4') {
-                effect.setMatrix(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'float') {
-                effect.setFloat(ea[1], this._newUniformInstances[el]);
+        if (this._newUniformInstances) {
+            for (let el in this._newUniformInstances) {
+                const ea = el.toString().split('-');
+                if (ea[0] == 'vec2') {
+                    effect.setVector2(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'vec3') {
+                    effect.setVector3(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'vec4') {
+                    effect.setVector4(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'mat4') {
+                    effect.setMatrix(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'float') {
+                    effect.setFloat(ea[1], this._newUniformInstances[el]);
+                }
             }
         }
-        for (var el in this._newSamplerInstances) {
-            var ea = el.toString().split('-');
-            if (ea[0] == 'sampler2D' && this._newSamplerInstances[el].isReady && this._newSamplerInstances[el].isReady()) {
-                effect.setTexture(ea[1], this._newSamplerInstances[el]);
+        if (this._newSamplerInstances) {
+            for (let el in this._newSamplerInstances) {
+                const ea = el.toString().split('-');
+                if (ea[0] == 'sampler2D' && this._newSamplerInstances[el].isReady && this._newSamplerInstances[el].isReady()) {
+                    effect.setTexture(ea[1], this._newSamplerInstances[el]);
+                }
             }
         }
     }
 
     public ReviewUniform(name: string, arr: string[]): string[] {
-        if (name == "uniform") {
+        if (name == "uniform" && this._newUniforms) {
             for (var ind = 0; ind < this._newUniforms.length ; ind ++) {
                 if (this._customUniform[ind].indexOf('sampler') == -1) {
                     arr.push(this._newUniforms[ind]);
                 }
             }
         }
-        if (name == "sampler") {
+        if (name == "sampler" && this._newUniforms) {
             for (var ind = 0; ind < this._newUniforms.length ; ind ++) {
                 if (this._customUniform[ind].indexOf('sampler') != -1) {
                     arr.push(this._newUniforms[ind]);
@@ -177,12 +181,12 @@ export class CustomMaterial extends StandardMaterial {
         if (!this._customUniform) {
             this._customUniform = new Array();
             this._newUniforms = new Array();
-            this._newSamplerInstances = new Array();
-            this._newUniformInstances = new Array();
+            this._newSamplerInstances = {};
+            this._newUniformInstances = {};
         }
         if (param) {
             if (kind.indexOf("sampler") == -1) {
-                (<any>this._newUniformInstances)[kind + "-" + name] = param;
+                (<any>this._newSamplerInstances)[kind + "-" + name] = param;
             }
             else {
                 (<any>this._newUniformInstances)[kind + "-" + name] = param;

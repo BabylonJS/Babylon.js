@@ -38,6 +38,7 @@
     #endif
     #ifdef ENVIRONMENTBRDF
         const in float NdotV,
+        const in vec3 environmentBrdf,
     #endif
     #if defined(REFLECTION) && defined(ENVIRONMENTBRDF)
         const in vec2 AARoughnessFactors,
@@ -57,7 +58,6 @@
             const in sampler2D reflectionSamplerLow,
             const in sampler2D reflectionSamplerHigh,
         #endif
-        const in vec3 environmentBrdf,
         #if !defined(REFLECTIONMAP_SKYBOX) && defined(RADIANCEOCCLUSION)
             const in float seo,
         #endif

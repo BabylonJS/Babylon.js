@@ -10,16 +10,17 @@
 ### General
 
 - Refactored React refs from old string API to React.createRef() API ([belfortk](https://github.com/belfortk)
-
 - Scale on one axis for `BoundingBoxGizmo` ([cedricguillemet](https://github.com/cedricguillemet))
-
 - Simplified code contributions by fully automating the dev setup with gitpod ([nisarhassan12](https://github.com/nisarhassan12))
 - Add a `CascadedShadowMap.IsSupported` method and log an error instead of throwing an exception when CSM is not supported ([Popov72](https://github.com/Popov72))
+- Added initial code for DeviceInputSystem ([PolygonalSun](https://github.com/PolygonalSun))
+- Added support for `material.disableColorWrite` ([Deltakosh](https://github.com/deltakosh))
 
 ### Engine
 
 - Allow logging of shader code when a compilation error occurs ([Popov72](https://github.com/Popov72))
 - Add back support for selecting textures based on engine capabilities ([bghgary](https://github.com/bghgary))
+- Fix Draco decoder when running on IE11 ([bghgary](https://github.com/bghgary))
 
 ### NME
 
@@ -31,17 +32,18 @@
 - Handle PBR colors as colors in linear space ([Popov72](https://github.com/Popov72))
 - Allow removing textures ([Popov72](https://github.com/Popov72))
 - Edit all textures (anisotropic, clear coat, sheen, ...) for the PBR materials ([Popov72](https://github.com/Popov72))
-- Added right click options to create PBR and Standard Materials ([Deltakosh](https://github.com/deltakosh)
-- Added support for recording GIF ([Deltakosh](https://github.com/deltakosh)
+- Added right click options to create PBR and Standard Materials ([Deltakosh](https://github.com/deltakosh))
+- Added support for recording GIF ([Deltakosh](https://github.com/deltakosh))
 
 ### Cameras
 
+- Fixed up vector not correctly handled with stereoscopic rig ([cedricguillemet](https://github.com/cedricguillemet))
 - Added flag to TargetCamera to invert rotation direction and multiplier to adjust speed ([Exolun](https://github.com/Exolun))
 - Added upwards and downwards keyboard input to `FreeCamera` ([Pheater](https://github.com/pheater))
 
 ### Sprites
 
-- Added support for 'sprite.useAlphaForPicking` to enable precise picking using sprite alpha ([Deltakosh](https://github.com/deltakosh) 
+- Added support for 'sprite.useAlphaForPicking` to enable precise picking using sprite alpha ([Deltakosh](https://github.com/deltakosh))
 
 ### Physics
 
@@ -54,6 +56,7 @@
 - Added support for glTF mesh instancing extension ([#7521](https://github.com/BabylonJS/Babylon.js/issues/7521)) ([drigax](https://github.com/Drigax))
 - Get the list of cameras retrieved from a gLTF file when loaded through the asset container ([Popov72](https://github.com/Popov72))
 - Fixed SceneLoader.ImportAnimations. Now targets nodes based on "targetProperty" ([#7931](https://github.com/BabylonJS/Babylon.js/issues/7931)) ([phenry20](https://github.com/phenry20))
+- Renamed KHR_mesh_instancing extension to EXT_mesh_gpu_instancing ([#7945](https://github.com/BabylonJS/Babylon.js/issues/7945)) ([drigax](https://github.com/Drigax))
 
 ### Navigation
 
@@ -78,6 +81,8 @@
 - AR reference space type recommendation changed to 'unbounded' ([#7959](https://github.com/BabylonJS/Babylon.js/issues/7959)) ([RaananW](https://github.com/RaananW))
 - Teleportation plugin doesn't use the touched to finish teleportation ([#7916](https://github.com/BabylonJS/Babylon.js/issues/7916)) ([RaananW](https://github.com/RaananW))
 - Support for pointer selection and teleportation in right handed systems ([#7967](https://github.com/BabylonJS/Babylon.js/issues/7967)) ([RaananW](https://github.com/RaananW))
+- Pointer Selection feature now uses `selectstart` and `selectend` events when gamepad and motion controller are not present ([#7989](https://github.com/BabylonJS/Babylon.js/issues/7989)) ([RaananW](https://github.com/RaananW))
+- Removed forced `autoClear` = false settings ([RaananW](https://github.com/RaananW))
 
 ### Collisions
 
@@ -86,6 +91,9 @@
 ### Animation
 
 - Added support for Additive Animation Blending. Existing animations can be converted to additive using the new MakeAnimationAdditive method for Skeletons, AnimationGroups and Animations. Animations can be played additively using the new isAdditive input parameter to the begin animation methods. ([c-morten](https://github.com/c-morten))
+
+### Maths
+- Added `Vector3.projectOnPlaneToRef` ([Deltakosh](https://github.com/deltakosh))
 
 ### Build
 
@@ -123,11 +131,13 @@
 - Fixed error when downloading async createScene function in playground ([#7926](https://github.com/BabylonJS/Babylon.js/issues/7926)) ([RaananW](https://github.com/RaananW))
 - Fix issue where ThinEngine.prototype.createDynamicEngine is undefined when using VideoTexture with es6 packages ([rvadhavk](https://github.com/rvadhavk))
 - Fix [issue](https://forum.babylonjs.com/t/virtualjoystick-needs-to-set-style-touch-action-none-explicitly/9562) that canvas for `VirtualJoystick` does not have `touch-action: "none"` set by default ([joergplewe](https://github.com/joergplewe))
-- Fix [issue](https://github.com/BabylonJS/Babylon.js/issues/7943) that prevented user from re-loading custom meshes([belfortk](https://github.com/belfortk))
-- Fix bug in NME where collapsed frames didn't redraw output links to outside nodes([belfortk](https://github.com/belfortk))
+- Fix [issue](https://github.com/BabylonJS/Babylon.js/issues/7943) that prevented user from re-loading custom meshes ([belfortk](https://github.com/belfortk))
+- Fix bug in NME where collapsed frames didn't redraw output links to outside nodes ([belfortk](https://github.com/belfortk))
 - Fix bug in NME where links were not redrawn after moving frame port ([belfortk](https://github.com/belfortk))
-- Fix bugs in NME that were causing inconsistent behavior displaying Move Node Up and Down buttons on frame ports([belfortk](https://github.com/belfortk))
+- Fix bugs in NME that were causing inconsistent behavior displaying Move Node Up and Down buttons on frame ports ([belfortk](https://github.com/belfortk))
 - Fix bug in `ShaderMaterial` when using morph targets ([Popov72](https://github.com/Popov72)
+- Fix bug in playground where child NME windows would not close before page unload events ([belfortk](https://github.com/belfortk)
+- Fixed an issue with stereoscopic rendering ([#8000](https://github.com/BabylonJS/Babylon.js/issues/8000)) ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 

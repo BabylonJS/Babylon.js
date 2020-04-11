@@ -95,7 +95,7 @@ export class Plane {
     }
 
     /**
-     * Calcualtte the dot product between the point and the plane normal
+     * Compute the dot product between the point and the plane normal
      * @param point point to calculate the dot product with
      * @returns the dot product (float) of the point coordinates and the plane normal.
      */
