@@ -26,7 +26,7 @@ import { InputBlock } from './Blocks/Input/inputBlock';
 import { _TypeStore } from '../../Misc/typeStore';
 import { SerializationHelper } from '../../Misc/decorators';
 import { TextureBlock } from './Blocks/Dual/textureBlock';
-import { ReflectionTextureBlock } from './Blocks/Dual/reflectionTextureBlock';
+import { ReflectionTextureBaseBlock } from './Blocks/Dual/reflectionTextureBaseBlock';
 import { EffectFallbacks } from '../effectFallbacks';
 import { WebRequest } from '../../Misc/webRequest';
 import { Effect } from '../effect';
@@ -937,7 +937,7 @@ export class NodeMaterial extends PushMaterial {
      * Gets the list of texture blocks
      * @returns an array of texture blocks
      */
-    public getTextureBlocks(): (TextureBlock | ReflectionTextureBlock)[] {
+    public getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock)[] {
         if (!this._sharedData) {
             return [];
         }
