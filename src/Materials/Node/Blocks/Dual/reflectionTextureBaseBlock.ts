@@ -182,6 +182,10 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         this._defineEquirectangularFixedName = state._getFreeDefineName("REFLECTIONMAP_EQUIRECTANGULAR_FIXED");
         this._defineSkyboxName = state._getFreeDefineName("REFLECTIONMAP_SKYBOX");
 
+        this._reflectionMatrixName = state._getFreeVariableName("reflectionMatrix");
+
+        state._emitUniformFromString(this._reflectionMatrixName, "mat4");
+
         let code = "";
 
         let worldPosVaryingName = "v_" + this.worldPosition.associatedVariableName;
@@ -239,9 +243,6 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         this._reflectionColorName = state._getFreeVariableName("reflectionColor");
         this._reflectionVectorName = state._getFreeVariableName("reflectionUVW");
         this._reflectionCoordsName = state._getFreeVariableName("reflectionCoords");
-        this._reflectionMatrixName = state._getFreeVariableName("reflectionMatrix");
-
-        state._emitUniformFromString(this._reflectionMatrixName, "mat4");
     }
 
     public handleFragmentSideCodeReflectionCoords(worldNormalVarName: string): string {
