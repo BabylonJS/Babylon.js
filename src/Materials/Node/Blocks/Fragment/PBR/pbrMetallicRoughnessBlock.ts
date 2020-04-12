@@ -136,6 +136,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state._excludeVariableName("eho");
 
         state._excludeVariableName("environmentRadiance");
+        state._excludeVariableName("irradianceVector");
+        state._excludeVariableName("environmentIrradiance");
 
         state._excludeVariableName("diffuseBase");
         state._excludeVariableName("specularBase");
@@ -453,6 +455,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         if (reflectionBlock) {
             reflectionBlock.worldPositionConnectionPoint = this.worldPosition;
             reflectionBlock.cameraPositionConnectionPoint = this.cameraPosition;
+            reflectionBlock.worldNormalConnectionPoint = this.worldNormal;
         }
 
         if (state.target !== NodeMaterialBlockTargets.Fragment) {
@@ -489,14 +492,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         state._emitFunctionFromInclude("helperFunctions", comments);
         state._emitFunctionFromInclude("pbrHelperFunctions", comments);
+        state._emitFunctionFromInclude("imageProcessingFunctions", comments);
 
         state._emitFunctionFromInclude("shadowsFragmentFunctions", comments, {
             replaceStrings: [
                 { search: /vPositionW/g, replace: "v_" + worldPos.associatedVariableName + ".xyz" }
             ]
         });
-
-        state._emitFunctionFromInclude("harmonicsFunctions", comments);
 
         state._emitFunctionFromInclude("pbrDirectLightingSetupFunctions", comments, {
             replaceStrings: [
@@ -574,8 +576,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         // _____________________________ Reflection _______________________________________
         if (reflectionBlock && reflectionBlock.texture) {
-            reflectionBlock.worldNormalConnectionPoint = this.worldNormal;
-
             state.compilationString += `
                 struct reflectionOutParams
                 {
@@ -597,10 +597,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             `;
 
             state.compilationString += `reflectionOutParams reflectionOut;\r\n`;
-            state.compilationString += reflectionBlock.getCode(state, anisotropyBlock ? "anisotropicOut.anisotropicNormal" : this.worldNormal.associatedVariableName, "environmentRadiance");
+            state.compilationString += reflectionBlock.getCode(state, anisotropyBlock ? "anisotropicOut.anisotropicNormal" : "normalW", "environmentRadiance", "irradianceVector", "environmentIrradiance");
             state.compilationString += `
+                #ifdef SS_TRANSLUCENCY
+                    reflectionOut.irradianceVector = irradianceVector;
+                #endif
                 reflectionOut.environmentRadiance = environmentRadiance;
-                reflectionOut.environmentIrradiance = vec3(0.);
+                reflectionOut.environmentIrradiance = environmentIrradiance;
                 reflectionOut.reflectionCoords = ${reflectionBlock._reflectionCoordsName};\r\n`;
         }
 
@@ -663,6 +666,12 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state.compilationString += state._emitCodeFromInclude("pbrBlockFinalColorComposition", comments, {
             replaceStrings: [
                 { search: /finalEmissive/g, replace: "vec3(0.)" },
+            ]
+        });
+
+        state.compilationString += state._emitCodeFromInclude("pbrBlockImageProcessing", comments, {
+            replaceStrings: [
+                { search: /visibility/g, replace: "1." },
             ]
         });
 
