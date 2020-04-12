@@ -104,6 +104,8 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         defines.setValue(this._defineLODReflectionAlpha, this.texture!.lodLevelInAlpha);
         defines.setValue(this._defineLinearSpecularReflection, this.texture!.linearSpecularLOD);
         defines.setValue(this._defineLODBasedMicroSurface, Engine.LastCreatedScene?.getEngine()?.getCaps().textureLOD ?? false);
+
+        defines.setValue("SPHERICAL_HARMONICS", this.useSphericalHarmonics);
     }
 
     private _formatNumberForGLSL(val: number): string {
