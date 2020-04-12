@@ -305,7 +305,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         // Advanced
         defines.setValue("BRDF_V_HEIGHT_CORRELATED", true);
         defines.setValue("MS_BRDF_ENERGY_CONSERVATION", this.useEnergyConservation);
-        defines.setValue("SPHERICAL_HARMONICS", this.useSphericalHarmonics);
         defines.setValue("RADIANCEOCCLUSION", this.useRadianceOcclusion);
         defines.setValue("HORIZONOCCLUSION", this.useHorizonOcclusion);
         defines.setValue("UNLIT", this.unlit);
