@@ -297,28 +297,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         defines.setValue("ALPHATESTVALUE", this.alphaTestCutoff);
         defines.setValue("OPACITYRGB", this.opacityRGB);
 
-        // Ambient occlusion
-        const aoBlock = this.ambientOcclusionParams.connectedPoint?.ownerBlock as Nullable<AmbientOcclusionBlock>;
-
-        defines.setValue("AMBIENT", aoBlock?.texture.isConnected ?? false);
-
-        aoBlock?.prepareDefines(mesh, nodeMaterial, defines);
-
-        // Reflectivity
-        const metalRoughTextBlock = this.reflectivityParams.connectedPoint?.ownerBlock as ReflectivityBlock;
-
-        metalRoughTextBlock?.prepareDefines(mesh, nodeMaterial, defines);
-
-        // Anisotropy
-        const anisotropyBlock = this.anisotropyParams.connectedPoint?.ownerBlock as AnisotropyBlock;
-
-        anisotropyBlock?.prepareDefines(mesh, nodeMaterial, defines);
-
-        // Reflection
-        const reflectionBlock = this.reflectionParams.isConnected ? this.reflectionParams.connectedPoint?.ownerBlock as ReflectionBlock : null;
-
-        reflectionBlock?.prepareDefines(mesh, nodeMaterial, defines);
-
         // Rendering
         defines.setValue("RADIANCEOVERALPHA", this.useRadianceOverAlpha);
         defines.setValue("SPECULAROVERALPHA", this.useSpecularOverAlpha);
@@ -380,20 +358,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         });
     }
 
-    public isReady() {
-        const reflectionBlock = this.reflectionParams.isConnected ? this.reflectionParams.connectedPoint?.ownerBlock as ReflectionBlock : null;
-
-        return reflectionBlock?.isReady() ?? true;
-    }
-
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (!mesh) {
             return;
         }
-
-        const reflectionBlock = this.reflectionParams.isConnected ? this.reflectionParams.connectedPoint?.ownerBlock as ReflectionBlock : null;
-
-        reflectionBlock?.bind(effect, nodeMaterial, mesh);
 
         const scene = mesh.getScene();
 
