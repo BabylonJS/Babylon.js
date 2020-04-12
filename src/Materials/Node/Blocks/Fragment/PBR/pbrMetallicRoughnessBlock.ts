@@ -75,43 +75,40 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this._environmentBRDFTexture = BRDFTextureTools.GetEnvironmentBRDFTexture(Engine.LastCreatedScene!);
     }
 
-    @editableInPropertyPage("Alpha from albedo", PropertyTypeForEdition.Boolean, "TRANSPARENCY")
+    @editableInPropertyPage("Alpha from albedo", PropertyTypeForEdition.Boolean, "TRANSPARENCY", { "notifiers": { "rebuild": false }})
     public useAlphaFromAlbedoTexture: boolean = false;
 
-    @editableInPropertyPage("Alpha Testing", PropertyTypeForEdition.Boolean, "TRANSPARENCY")
+    @editableInPropertyPage("Alpha Testing", PropertyTypeForEdition.Boolean, "TRANSPARENCY", { "notifiers": { "rebuild": false }})
     public useAlphaTest: boolean = false;
 
-    @editableInPropertyPage("Alpha CutOff", PropertyTypeForEdition.Float, "TRANSPARENCY", { min: 0, max: 1})
+    @editableInPropertyPage("Alpha CutOff", PropertyTypeForEdition.Float, "TRANSPARENCY", { min: 0, max: 1, "notifiers": { "rebuild": false }})
     public alphaTestCutoff: number = 0.4;
 
-    @editableInPropertyPage("Alpha blending", PropertyTypeForEdition.Boolean, "TRANSPARENCY")
+    @editableInPropertyPage("Alpha blending", PropertyTypeForEdition.Boolean, "TRANSPARENCY", { "notifiers": { "rebuild": false }})
     public useAlphaBlending: boolean = false;
 
-    @editableInPropertyPage("Get alpha from opacity texture RGB", PropertyTypeForEdition.Boolean, "TRANSPARENCY")
+    @editableInPropertyPage("Get alpha from opacity texture RGB", PropertyTypeForEdition.Boolean, "TRANSPARENCY", { "notifiers": { "rebuild": false }})
     public opacityRGB: boolean = false;
 
-    @editableInPropertyPage("Radiance over alpha", PropertyTypeForEdition.Boolean, "RENDERING")
+    @editableInPropertyPage("Radiance over alpha", PropertyTypeForEdition.Boolean, "RENDERING", { "notifiers": { "rebuild": false }})
     public useRadianceOverAlpha: boolean = true;
 
-    @editableInPropertyPage("Specular over alpha", PropertyTypeForEdition.Boolean, "RENDERING")
+    @editableInPropertyPage("Specular over alpha", PropertyTypeForEdition.Boolean, "RENDERING", { "notifiers": { "rebuild": false }})
     public useSpecularOverAlpha: boolean = true;
 
-    @editableInPropertyPage("Specular anti-aliasing", PropertyTypeForEdition.Boolean, "RENDERING")
+    @editableInPropertyPage("Specular anti-aliasing", PropertyTypeForEdition.Boolean, "RENDERING", { "notifiers": { "rebuild": false }})
     public enableSpecularAntiAliasing: boolean = false;
 
-    @editableInPropertyPage("Energy Conservation", PropertyTypeForEdition.Boolean, "ADVANCED")
+    @editableInPropertyPage("Energy Conservation", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "rebuild": false }})
     public useEnergyConservation: boolean = true;
 
-    @editableInPropertyPage("Spherical Harmonics", PropertyTypeForEdition.Boolean, "ADVANCED")
-    public useSphericalHarmonics: boolean = true;
-
-    @editableInPropertyPage("Radiance occlusion", PropertyTypeForEdition.Boolean, "ADVANCED")
+    @editableInPropertyPage("Radiance occlusion", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "rebuild": false }})
     public useRadianceOcclusion: boolean = true;
 
-    @editableInPropertyPage("Horizon occlusion", PropertyTypeForEdition.Boolean, "ADVANCED")
+    @editableInPropertyPage("Horizon occlusion", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "rebuild": false }})
     public useHorizonOcclusion: boolean = true;
 
-    @editableInPropertyPage("Unlit", PropertyTypeForEdition.Boolean, "ADVANCED")
+    @editableInPropertyPage("Unlit", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "rebuild": false }})
     public unlit: boolean = false;
 
     /**
