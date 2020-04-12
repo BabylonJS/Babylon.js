@@ -6,6 +6,7 @@ import { NodeMaterialBlockTargets } from './Enums/nodeMaterialBlockTargets';
 import { Effect } from '../effect';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { Mesh } from '../../Meshes/mesh';
+import { SubMesh } from '../../Meshes/subMesh';
 import { NodeMaterial, NodeMaterialDefines } from './nodeMaterial';
 import { InputBlock } from './Blocks/Input/inputBlock';
 import { UniqueIdGenerator } from '../../Misc/uniqueIdGenerator';
@@ -172,7 +173,7 @@ export class NodeMaterialBlock {
      * @param nodeMaterial defines the hosting NodeMaterial
      * @param mesh defines the mesh that will be rendered
      */
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
+    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh) {
         // Do nothing
     }
 
