@@ -54,6 +54,10 @@ export class PBRMaterialDefines extends MaterialDefines
     IMaterialSubSurfaceDefines {
     public PBR = true;
 
+    // Debug
+    public NUM_SAMPLES = 16;
+    public DEBUG_REALTIME_SAMPLING = false;
+
     public MAINUV1 = false;
     public MAINUV2 = false;
     public UV1 = false;
@@ -794,6 +798,44 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         return "PBRBaseMaterial";
     }
 
+    public sampleDirections = [0, 0, 1,
+                               0, 0, 1,
+                               0, 0, 1,
+                               0, 0, 1,
+                               0, 0, 1,
+                               0, 0, 1,
+                               0, 0, 1,
+                               0, 0, 1,
+                               0, 0, 1,
+                               0, 0, 1,
+                               0, 0, 1,
+                               0, 0, 1,
+                               0, 0, 1,
+                               0, 0, 1,
+                               0, 0, 1,
+                               0, 0, 1
+                               ];
+
+    public weights = [1/16,
+                        1/16,
+                        1/16,
+                        1/16,
+                        1/16,
+                        1/16,
+                        1/16,
+                        1/16,
+                        1/16,
+                        1/16,
+                        1/16,
+                        1/16,
+                        1/16,
+                        1/16,
+                        1/16,
+                        1/16,
+    ];
+
+    public debugRealtimeSampling = false;
+
     /**
      * Enabled the use of logarithmic depth buffers, which is good for wide depth buffers.
      */
@@ -1033,6 +1075,18 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
     private _prepareEffect(mesh: AbstractMesh, defines: PBRMaterialDefines, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, useInstances: Nullable<boolean> = null, useClipPlane: Nullable<boolean> = null): Nullable<Effect> {
         this._prepareDefines(mesh, defines, useInstances, useClipPlane);
+
+        if (defines.NUM_SAMPLES != this.sampleDirections.length / 3) {
+            defines.markAsUnprocessed();
+            defines.NUM_SAMPLES = this.sampleDirections.length / 3;
+        }
+
+        if (defines.DEBUG_REALTIME_SAMPLING != this.debugRealtimeSampling) {
+            defines.markAsUnprocessed();
+            defines.DEBUG_REALTIME_SAMPLING = this.debugRealtimeSampling;
+        }
+
+
         if (!defines.isDirty) {
             return null;
         }
@@ -1172,7 +1226,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "vSphericalL2_2", "vSphericalL2_1", "vSphericalL20", "vSphericalL21", "vSphericalL22",
             "vReflectionMicrosurfaceInfos",
             "vTangentSpaceParams", "boneTextureWidth",
-            "vDebugMode"
+            "vDebugMode",
+            "sampleDirections",
+            "weights"
         ];
 
         var samplers = ["albedoSampler", "reflectivitySampler", "ambientSampler", "emissiveSampler",
@@ -1650,6 +1706,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
             this.bindViewProjection(effect);
             reflectionTexture = this._getReflectionTexture();
+
+            effect.setArray3("sampleDirections", this.sampleDirections);
+            effect.setArray("weights", this.weights);
 
             if (!ubo.useUbo || !this.isFrozen || !ubo.isSync) {
 
