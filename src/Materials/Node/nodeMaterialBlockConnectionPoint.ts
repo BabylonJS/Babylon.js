@@ -433,13 +433,13 @@ export class NodeMaterialConnectionPoint {
      * Serializes this point in a JSON representation
      * @returns the serialized point object
      */
-    public serialize(): any {
+    public serialize(isInput = true): any {
         let serializationObject: any = {};
 
         serializationObject.name = this.name;
         serializationObject.displayName = this.displayName;
 
-        if (this.connectedPoint) {
+        if (isInput && this.connectedPoint) {
             serializationObject.inputName = this.name;
             serializationObject.targetBlockId = this.connectedPoint.ownerBlock.uniqueId;
             serializationObject.targetConnectionName = this.connectedPoint.name;
