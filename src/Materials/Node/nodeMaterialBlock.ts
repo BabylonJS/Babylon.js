@@ -663,7 +663,7 @@ export class NodeMaterialBlock {
         }
 
         for (var output of this.outputs) {
-            serializationObject.outputs.push(output.serialize());
+            serializationObject.outputs.push(output.serialize(false));
         }
 
         return serializationObject;
@@ -685,7 +685,7 @@ export class NodeMaterialBlock {
                     this.inputs[i].displayName = port.displayName;
                 }
             })
-        } 
+        }
         if (serializedOutputs) {
             serializedOutputs.forEach((port: any, i: number) => {
                 if(port.displayName) {
