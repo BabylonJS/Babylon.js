@@ -1,10 +1,7 @@
 package BabylonNative;
 
 import android.content.Context;
-import android.content.res.AssetManager;
 import android.view.Surface;
-
-import java.nio.ByteBuffer;
 
 public class Wrapper {
     // JNI interface
@@ -12,7 +9,7 @@ public class Wrapper {
         System.loadLibrary("BabylonNativeJNI");
     }
 
-    public static native void initEngine(AssetManager assetManager);
+    public static native void initEngine();
 
     public static native void finishEngine();
 

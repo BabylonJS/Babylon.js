@@ -8,10 +8,6 @@
 
 #include <set>
 
-#ifdef ANDROID
-#include <Babylon/Platform.h>
-#endif
-
 namespace
 {
     bgfx::TextureFormat::Enum XrTextureFormatToBgfxFormat(xr::TextureFormat format)
@@ -236,16 +232,10 @@ namespace Babylon
 
         if (!m_system.IsInitialized())
         {
-#ifdef ANDROID
-            const auto& platform = Platform::GetFromJavaScript(env);
-            auto result = m_system.TryInitialize(platform.Env(), platform.AppContext());
-            assert(result);
-#else
             while (!m_system.TryInitialize())
             {
                 // do nothing
             }
-#endif
         }
 
         m_session = std::make_unique<xr::System::Session>(m_system, bgfx::getInternalData()->context);

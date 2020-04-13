@@ -4,9 +4,8 @@
 
 namespace Babylon
 {
-    AppRuntime::AppRuntime(std::string rootUrl)
-        : m_rootUrl{std::move(rootUrl)}
-        , m_workQueue{std::make_unique<WorkQueue>([this] { RunPlatformTier(); })}
+    AppRuntime::AppRuntime()
+        : m_workQueue{std::make_unique<WorkQueue>([this] { RunPlatformTier(); })}
     {
         Dispatch([this](Napi::Env env) {
             JsRuntime::CreateForJavaScript(env, [this](auto func) { m_workQueue->Append(std::move(func)); });
@@ -15,11 +14,6 @@ namespace Babylon
 
     AppRuntime::~AppRuntime()
     {
-    }
-
-    const std::string& AppRuntime::RootUrl() const
-    {
-        return m_rootUrl;
     }
 
     void AppRuntime::Run(Napi::Env env)

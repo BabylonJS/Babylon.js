@@ -9,6 +9,8 @@
 #include <GLES3/gl3.h>
 #include <EGL/egl.h>
 
+#include <AndroidExtensions/Globals.h>
+
 #include <android/native_window.h>
 #include <android/log.h>
 #include <arcore_c_api.h>
@@ -22,41 +24,27 @@
 #include <gtc/type_ptr.hpp>
 #include <gtx/quaternion.hpp>
 
+using namespace android::global;
+
 namespace xr
 {
     class System::Impl
     {
     public:
         Impl(const std::string& applicationName)
-        {}
+        {
+        }
 
         bool IsInitialized() const
         {
-            return (m_env != nullptr && m_appContext != nullptr);
-        }
-
-        bool TryInitialize(JNIEnv* env, jobject appContext)
-        {
-            m_env = env;
-            m_appContext = appContext;
-
-            // Perhaps call eglGetCurrentSurface to get the render surface *before* XR render loop starts and changes to rendering to an FBO?
             return true;
         }
 
-        JNIEnv* Env() const
+        bool TryInitialize()
         {
-            return m_env;
+            // Perhaps call eglGetCurrentSurface to get the render surface *before* XR render loop starts and changes to rendering to an FBO?
+            return true;
         }
-
-        const jobject& AppContext() const
-        {
-            return m_appContext;
-        }
-
-    private:
-        JNIEnv* m_env{};
-        jobject m_appContext{};
     };
 
     namespace
@@ -293,7 +281,7 @@ namespace xr
 
             // Create the ARCore ArSession
             {
-                ArStatus status = ArSession_create(hmdImpl.Env(), hmdImpl.AppContext(), &session);
+                ArStatus status = ArSession_create(GetEnvForCurrentThread(), GetAppContext(), &session);
                 if (status != ArStatus::AR_SUCCESS)
                 {
                     std::ostringstream message;
@@ -488,9 +476,9 @@ namespace xr
         return m_impl->IsInitialized();
     }
 
-    bool System::TryInitialize(JNIEnv* env, jobject appContext)
+    bool System::TryInitialize()
     {
-        return m_impl->TryInitialize(env, appContext);
+        return m_impl->TryInitialize();
     }
 
     System::Session::Session(System& system, void* graphicsDevice)

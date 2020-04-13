@@ -2,16 +2,16 @@
 
 #include <Babylon/Polyfills/Console.h>
 
-namespace Babylon
+namespace Babylon::Polyfills::Internal
 {
     class Console final : public Napi::ObjectWrap<Console>
     {
     public:
-        static inline constexpr char* JS_INSTANCE_NAME{"console"};
+        static inline constexpr const char* JS_INSTANCE_NAME{"console"};
 
         using ParentT = Napi::ObjectWrap<Console>;
 
-        static void CreateInstance(Napi::Env env, Polyfills::Console::CallbackT callback);
+        static void CreateInstance(Napi::Env env, Babylon::Polyfills::Console::CallbackT callback);
 
         explicit Console(const Napi::CallbackInfo& info);
 
@@ -19,8 +19,8 @@ namespace Babylon
         void Log(const Napi::CallbackInfo& info);
         void Warn(const Napi::CallbackInfo& info);
         void Error(const Napi::CallbackInfo& info);
-        void InvokeCallback(const Napi::CallbackInfo& info, Polyfills::Console::LogLevel logLevel) const;
+        void InvokeCallback(const Napi::CallbackInfo& info, Babylon::Polyfills::Console::LogLevel logLevel) const;
 
-        Polyfills::Console::CallbackT m_callback{};
+        Babylon::Polyfills::Console::CallbackT m_callback{};
     };
 }

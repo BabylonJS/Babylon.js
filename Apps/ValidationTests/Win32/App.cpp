@@ -13,16 +13,16 @@
 #include <Shared/TestUtils.h>
 
 #include <Babylon/AppRuntime.h>
-#include <Babylon/Polyfills/Console.h>
+#include <Babylon/ScriptLoader.h>
 #include <Babylon/Plugins/NativeEngine.h>
 #include <Babylon/Plugins/NativeWindow.h>
+#include <Babylon/Polyfills/Console.h>
 #include <Babylon/Polyfills/Window.h>
-#include <Babylon/ScriptLoader.h>
-#include <Babylon/XMLHttpRequest.h>
+#include <Babylon/Polyfills/XMLHttpRequest.h>
 
 #define MAX_LOADSTRING 100
 
-    // Global Variables:
+// Global Variables:
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
@@ -55,17 +55,26 @@ namespace
         return { url };
     }
 
+    void Uninitialize()
+    {
+        if (runtime)
+        {
+            runtime.reset();
+            Babylon::Plugins::NativeEngine::DeinitializeGraphics();
+        }
+    }
+
     void RefreshBabylon(HWND hWnd)
     {
+        Uninitialize();
+
+        runtime = std::make_unique<Babylon::AppRuntime>();
+
         RECT rect;
         if (!GetWindowRect(hWnd, &rect))
         {
             return;
         }
-
-        runtime.reset();
-        Babylon::Plugins::NativeEngine::DeinitializeGraphics();
-        runtime = std::make_unique<Babylon::AppRuntime>(GetUrlFromPath(GetModulePath().parent_path().parent_path()));
 
         // Initialize console plugin.
         runtime->Dispatch([rect, hWnd](Napi::Env env)
@@ -76,6 +85,7 @@ namespace
             });
 
             Babylon::Polyfills::Window::Initialize(env);
+            Babylon::Polyfills::XMLHttpRequest::Initialize(env);
 
             // Initialize NativeWindow plugin.
             auto width = static_cast<float>(rect.right - rect.left);
@@ -86,17 +96,18 @@ namespace
             Babylon::Plugins::NativeEngine::InitializeGraphics(hWnd, width, height);
             Babylon::Plugins::NativeEngine::Initialize(env);
 
-            // Initialize XMLHttpRequest plugin.
-            Babylon::InitializeXMLHttpRequest(env, runtime->RootUrl());
-
             Babylon::TestUtils::CreateInstance(env, hWnd);
         });
 
-        Babylon::ScriptLoader loader{*runtime, runtime->RootUrl()};
-        loader.LoadScript("Scripts/babylon.max.js");
-        loader.LoadScript("Scripts/babylon.glTF2FileLoader.js");
-        loader.LoadScript("Scripts/babylonjs.materials.js");
-        loader.LoadScript("Scripts/validation_native.js");
+        // Scripts are copied to the parent of the executable due to CMake issues.
+        // See the CMakeLists.txt comments for more details.
+        std::string scriptsRootUrl = GetUrlFromPath(GetModulePath().parent_path().parent_path() / "Scripts");
+
+        Babylon::ScriptLoader loader{*runtime};
+        loader.LoadScript(scriptsRootUrl + "/babylon.max.js");
+        loader.LoadScript(scriptsRootUrl + "/babylon.glTF2FileLoader.js");
+        loader.LoadScript(scriptsRootUrl + "/babylonjs.materials.js");
+        loader.LoadScript(scriptsRootUrl + "/validation_native.js");
     }
 }
 
@@ -242,8 +253,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         case WM_DESTROY:
         {
-            runtime.reset();
-            Babylon::Plugins::NativeEngine::DeinitializeGraphics();
+            Uninitialize();
             PostQuitMessage(0);
             break;
         }

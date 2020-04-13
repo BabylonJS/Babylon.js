@@ -3,9 +3,9 @@
 #include <functional>
 #include <sstream>
 
-namespace Babylon
+namespace Babylon::Polyfills::Internal
 {
-    void Console::CreateInstance(Napi::Env env, Polyfills::Console::CallbackT callback)
+    void Console::CreateInstance(Napi::Env env, Babylon::Polyfills::Console::CallbackT callback)
     {
         Napi::HandleScope scope{env};
 
@@ -18,32 +18,32 @@ namespace Babylon
                 ParentT::InstanceMethod("error", &Console::Error),
             });
 
-        Napi::Object console = func.New({Napi::External<Polyfills::Console::CallbackT>::New(env, new Polyfills::Console::CallbackT(std::move(callback)))});
+        Napi::Object console = func.New({Napi::External<Babylon::Polyfills::Console::CallbackT>::New(env, new Babylon::Polyfills::Console::CallbackT(std::move(callback)))});
         env.Global().Set(JS_INSTANCE_NAME, console);
     }
 
     Console::Console(const Napi::CallbackInfo& info)
         : ParentT{info}
-        , m_callback{*info[0].As<Napi::External<Polyfills::Console::CallbackT>>().Data()}
+        , m_callback{*info[0].As<Napi::External<Babylon::Polyfills::Console::CallbackT>>().Data()}
     {
     }
 
     void Console::Log(const Napi::CallbackInfo& info)
     {
-        InvokeCallback(info, Polyfills::Console::LogLevel::Log);
+        InvokeCallback(info, Babylon::Polyfills::Console::LogLevel::Log);
     }
 
     void Console::Warn(const Napi::CallbackInfo& info)
     {
-        InvokeCallback(info, Polyfills::Console::LogLevel::Warn);
+        InvokeCallback(info, Babylon::Polyfills::Console::LogLevel::Warn);
     }
 
     void Console::Error(const Napi::CallbackInfo& info)
     {
-        InvokeCallback(info, Polyfills::Console::LogLevel::Error);
+        InvokeCallback(info, Babylon::Polyfills::Console::LogLevel::Error);
     }
 
-    void Console::InvokeCallback(const Napi::CallbackInfo& info, Polyfills::Console::LogLevel logLevel) const
+    void Console::InvokeCallback(const Napi::CallbackInfo& info, Babylon::Polyfills::Console::LogLevel logLevel) const
     {
         std::stringstream ss{};
         for (unsigned int index = 0; index < info.Length(); index++)
@@ -57,12 +57,12 @@ namespace Babylon
         ss << std::endl;
         m_callback(ss.str().c_str(), logLevel);
     }
-    
-    namespace Polyfills::Console
+}
+
+namespace Babylon::Polyfills::Console
+{
+    void Initialize(Napi::Env env, CallbackT callback)
     {
-        void Initialize(Napi::Env env, CallbackT callback)
-        {
-            Babylon::Console::CreateInstance(env, std::move(callback));
-        }
+        Internal::Console::CreateInstance(env, std::move(callback));
     }
 }

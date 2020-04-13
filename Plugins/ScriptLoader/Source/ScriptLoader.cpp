@@ -1,53 +1,53 @@
 #include "ScriptLoader.h"
 
-#include <Babylon/NetworkUtils.h>
+#include <UrlLib/UrlLib.h>
 #include <arcana/threading/task.h>
 
 namespace Babylon
 {
-    struct ScriptLoader::Impl
+    class ScriptLoader::Impl
     {
-        Impl(DispatchFunctionT dispatchFunction, std::string rootUrl)
-            : DispatchFunction{std::move(dispatchFunction)}
-            , RootUrl{std::move(rootUrl)}
-            , Task{arcana::task_from_result<std::exception_ptr>()}
+    public:
+        Impl(DispatchFunctionT dispatchFunction)
+            : m_dispatchFunction{dispatchFunction}
+            , m_task{arcana::task_from_result<std::exception_ptr>()}
         {
         }
 
         void LoadScript(std::string url)
         {
-            auto absoluteUrl = GetAbsoluteUrl(url, RootUrl);
-            auto loadUrlTask = LoadTextAsync(std::move(absoluteUrl));
-            arcana::task_completion_source<void, std::exception_ptr> completionSource{};
-            auto loadScriptTask = arcana::when_all(loadUrlTask, Task).then(arcana::inline_scheduler, arcana::cancellation::none(), [dispatchFunction = DispatchFunction, url = std::move(url), completionSource](const std::tuple<std::string, arcana::void_placeholder>& args) mutable {
-                std::string source = std::get<0>(args);
-                dispatchFunction([source = std::move(source), url = std::move(url), completionSource = std::move(completionSource)](Napi::Env env) mutable {
-                    Napi::Eval(env, source.data(), url.data());
-                    completionSource.complete();
+            UrlLib::UrlRequest request;
+            request.Open(UrlLib::UrlMethod::Get, url);
+            request.ResponseType(UrlLib::UrlResponseType::String);
+            m_task = arcana::when_all(m_task, request.SendAsync()).then(arcana::inline_scheduler, arcana::cancellation::none(), [dispatchFunction{m_dispatchFunction}, request{std::move(request)}, url{std::move(url)}](auto) {
+                arcana::task_completion_source<void, std::exception_ptr> taskCompletionSource{};
+                dispatchFunction([taskCompletionSource, request{std::move(request)}, url{std::move(url)}](Napi::Env env) mutable {
+                    Napi::Eval(env, request.ResponseString().data(), url.data());
+                    taskCompletionSource.complete();
                 });
+                return taskCompletionSource.as_task();
             });
-            Task = completionSource.as_task();
         }
 
         void Eval(std::string source, std::string url)
         {
-            arcana::task_completion_source<void, std::exception_ptr> completionSource{};
-            auto evalTask = Task.then(arcana::inline_scheduler, arcana::cancellation::none(), [dispatchFunction = DispatchFunction, source = std::move(source), url = std::move(url), completionSource]() mutable {
-                dispatchFunction([source = std::move(source), url = std::move(url), completionSource = std::move(completionSource)](Napi::Env env) mutable {
+            m_task = m_task.then(arcana::inline_scheduler, arcana::cancellation::none(), [dispatchFunction{m_dispatchFunction}, source{std::move(source)}, url{std::move(url)}](auto) {
+                arcana::task_completion_source<void, std::exception_ptr> taskCompletionSource{};
+                dispatchFunction([taskCompletionSource, source{std::move(source)}, url{std::move(url)}](Napi::Env env) mutable {
                     Napi::Eval(env, source.data(), url.data());
-                    completionSource.complete();
+                    taskCompletionSource.complete();
                 });
+                return taskCompletionSource.as_task();
             });
-            Task = completionSource.as_task();
         }
 
-        DispatchFunctionT DispatchFunction{};
-        const std::string RootUrl{};
-        arcana::task<void, std::exception_ptr> Task{};
+    private:
+        DispatchFunctionT m_dispatchFunction{};
+        arcana::task<void, std::exception_ptr> m_task{};
     };
 
-    ScriptLoader::ScriptLoader(DispatchFunctionT dispatchFunction, std::string rootUrl)
-        : m_impl{std::make_unique<ScriptLoader::Impl>(std::move(dispatchFunction), std::move(rootUrl))}
+    ScriptLoader::ScriptLoader(DispatchFunctionT dispatchFunction)
+        : m_impl{std::make_unique<ScriptLoader::Impl>(std::move(dispatchFunction))}
     {
     }
 

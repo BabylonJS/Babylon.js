@@ -1,7 +1,5 @@
 #include "NativeWindow.h"
 
-#include <chrono>
-
 namespace Babylon::Plugins::Internal
 {
     namespace

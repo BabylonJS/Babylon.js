@@ -1074,13 +1074,14 @@ namespace Babylon
             .then(m_runtimeScheduler, m_cancelSource, [this, texture, dataRef = Napi::Shared(data)](bimg::ImageContainer* image) {
                 CreateTextureFromImage(&m_allocator, texture, image);
             })
-            .then(arcana::inline_scheduler, m_cancelSource, [this, onSuccessRef = Napi::Shared(onSuccess)]() {
-                onSuccessRef.Value().Call({Napi::Value::From(Env(), true)});
-            })
-            .then(arcana::inline_scheduler, m_cancelSource, [this, onErrorRef = Napi::Shared(onError)](arcana::expected<void, std::exception_ptr> result) {
+            .then(arcana::inline_scheduler, m_cancelSource, [this, onSuccessRef = Napi::Shared(onSuccess), onErrorRef = Napi::Shared(onError)](arcana::expected<void, std::exception_ptr> result) {
                 if (result.has_error())
                 {
-                    onErrorRef.Value().Call({Napi::Value::From(Env(), true)});
+                    onErrorRef.Value().Call({});
+                }
+                else
+                {
+                    onSuccessRef.Value().Call({});
                 }
             });
     }

@@ -12,10 +12,8 @@ namespace Babylon
     class AppRuntime final
     {
     public:
-        AppRuntime(std::string rootUrl);
+        AppRuntime();
         ~AppRuntime();
-
-        const std::string& RootUrl() const;
 
         void Suspend();
         void Resume();
@@ -37,7 +35,6 @@ namespace Babylon
         void RunEnvironmentTier();
         void Run(Napi::Env);
 
-        const std::string m_rootUrl;
         std::unique_ptr<WorkQueue> m_workQueue{};
     };
 }

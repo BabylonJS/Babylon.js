@@ -1150,8 +1150,42 @@ napi_status napi_create_arraybuffer(napi_env env,
                   size_t byte_length,
                   void** data,
                   napi_value* result) {
-  uint8_t *bytes = (uint8_t*)malloc(byte_length);
-  JSObjectRef jsObject = JSObjectMakeArrayBufferWithBytesNoCopy(env->m_globalContext, bytes, byte_length, TypedArrayBytesDeallocator, nullptr, nullptr);
+  *data = malloc(byte_length);
+  JSObjectRef jsObject = JSObjectMakeArrayBufferWithBytesNoCopy(env->m_globalContext, *data, byte_length, TypedArrayBytesDeallocator, nullptr, nullptr);
   *result = reinterpret_cast<napi_value>(jsObject);
   return napi_ok;
 }
+
+// TODO: when implementing JSC NAPI fully
+// napi_status napi_create_external_arraybuffer(napi_env env,
+//                                              void* external_data,
+//                                              size_t byte_length,
+//                                              napi_finalize finalize_cb,
+//                                              void* finalize_hint,
+//                                              napi_value* result)
+// {
+//     struct ExternalData
+//     {
+//         napi_env env;
+//         napi_finalize finalize_cb;
+//         void* finalize_hint;
+        
+//         ExternalData(napi_env env, napi_finalize finalize_cb, void* finalize_hint)
+//             : env{env}
+//             , finalize_cb{finalize_cb}
+//             , finalize_hint{finalize_hint}
+//         {
+//         }
+
+//         static void Finalize(void* bytes, void* context)
+//         {
+//             ExternalData* externalData{static_cast<ExternalData*>(context)};
+//             externalData->finalize_cb(externalData->env, bytes, externalData->finalize_hint);
+//             delete externalData;
+//         }
+//     };
+    
+//     JSObjectMakeArrayBufferWithBytesNoCopy(
+//         env->m_globalContext, external_data, byte_length,
+//         ExternalData::Finalize, new ExternalData{env, finalize_cb, finalize_hint}, nullptr);
+// }

@@ -13,12 +13,11 @@ namespace Babylon
     public:
         using DispatchFunctionT = std::function<void(std::function<void(Napi::Env)>)>;
 
-        ScriptLoader(DispatchFunctionT dispatchFunction, std::string rootUrl);
-        
+        ScriptLoader(DispatchFunctionT dispatchFunction);
+
         template<typename T>
-        ScriptLoader(T& dispatcher, std::string rootUrl)
-            : ScriptLoader([&dispatcher](auto func) { dispatcher.Dispatch(std::move(func)); }
-            , std::move(rootUrl))
+        ScriptLoader(T& dispatcher)
+            : ScriptLoader([&dispatcher](auto func) { dispatcher.Dispatch(std::move(func)); })
         {
         }
 
@@ -28,7 +27,7 @@ namespace Babylon
         void Eval(std::string source, std::string url);
 
     private:
-        struct Impl;
+        class Impl;
         std::unique_ptr<Impl> m_impl{};
     };
 }

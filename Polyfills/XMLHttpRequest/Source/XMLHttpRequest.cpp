@@ -1,28 +1,62 @@
 #include "XMLHttpRequest.h"
-#include <Babylon/XMLHttpRequest.h>
-
-#include <Babylon/NetworkUtils.h>
-
 #include <Babylon/JsRuntime.h>
+#include <Babylon/Polyfills/XMLHttpRequest.h>
 
-namespace Babylon
+namespace Babylon::Polyfills::Internal
 {
     namespace
     {
-        constexpr auto JS_ROOT_URL_NAME = "RootUrl";
+        namespace ResponseType
+        {
+            constexpr const char* Text = "text";
+            constexpr const char* ArrayBuffer = "arraybuffer";
+
+            UrlLib::UrlResponseType StringToEnum(const std::string& value)
+            {
+                if (value == Text)
+                    return UrlLib::UrlResponseType::String;
+                if (value == ArrayBuffer)
+                    return UrlLib::UrlResponseType::Buffer;
+
+                throw;
+            }
+
+            constexpr const char* EnumToString(UrlLib::UrlResponseType value)
+            {
+                switch (value)
+                {
+                    case UrlLib::UrlResponseType::String:
+                        return Text;
+                    case UrlLib::UrlResponseType::Buffer:
+                        return ArrayBuffer;
+                }
+
+                throw;
+            }
+        }
+
+        namespace MethodType
+        {
+            constexpr const char* Get = "GET";
+
+            UrlLib::UrlMethod StringToEnum(const std::string& value)
+            {
+                if (value == Get)
+                    return UrlLib::UrlMethod::Get;
+
+                throw;
+            }
+        }
+
+        namespace EventType
+        {
+            constexpr const char* ReadyStateChange = "readystatechange";
+        }
     }
 
-    void InitializeXMLHttpRequest(Napi::Env env, std::string rootUrl)
-    {
-        XMLHttpRequest::Initialize(env, rootUrl.data());
-    }
-
-    void XMLHttpRequest::Initialize(Napi::Env env, const char* rootUrl)
+    void XMLHttpRequest::Initialize(Napi::Env env)
     {
         Napi::HandleScope scope{env};
-
-        auto jsNative = env.Global().Get(JsRuntime::JS_NATIVE_NAME).As<Napi::Object>();
-        jsNative.Set(JS_ROOT_URL_NAME, Napi::String::New(env, rootUrl));
 
         Napi::Function func = DefineClass(
             env,
@@ -41,6 +75,7 @@ namespace Babylon
                 InstanceAccessor("status", &XMLHttpRequest::GetStatus, nullptr),
                 InstanceMethod("addEventListener", &XMLHttpRequest::AddEventListener),
                 InstanceMethod("removeEventListener", &XMLHttpRequest::RemoveEventListener),
+                InstanceMethod("abort", &XMLHttpRequest::Abort),
                 InstanceMethod("open", &XMLHttpRequest::Open),
                 InstanceMethod("send", &XMLHttpRequest::Send),
             });
@@ -51,7 +86,6 @@ namespace Babylon
     XMLHttpRequest::XMLHttpRequest(const Napi::CallbackInfo& info)
         : Napi::ObjectWrap<XMLHttpRequest>{info}
         , m_runtimeScheduler{JsRuntime::GetFromJavaScript(info.Env())}
-        , m_rootUrl{info.Env().Global().Get(JsRuntime::JS_NATIVE_NAME).ToObject().Get(JS_ROOT_URL_NAME).ToString()}
     {
     }
 
@@ -62,32 +96,39 @@ namespace Babylon
 
     Napi::Value XMLHttpRequest::GetResponse(const Napi::CallbackInfo&)
     {
-        return m_response.Value();
+        gsl::span<const std::byte> responseBuffer{m_request.ResponseBuffer()};
+
+        // TODO: put this back once JSC NAPI is implemented properly
+        //return Napi::ArrayBuffer::New(Env(), const_cast<std::byte*>(responseBuffer.data()), responseBuffer.size());
+
+        auto arrayBuffer{Napi::ArrayBuffer::New(Env(), responseBuffer.size())};
+        std::memcpy(arrayBuffer.Data(), responseBuffer.data(), arrayBuffer.ByteLength());
+        return arrayBuffer;
     }
 
     Napi::Value XMLHttpRequest::GetResponseText(const Napi::CallbackInfo&)
     {
-        return Napi::Value::From(Env(), m_responseText);
+        return Napi::Value::From(Env(), m_request.ResponseString().data());
     }
 
     Napi::Value XMLHttpRequest::GetResponseType(const Napi::CallbackInfo&)
     {
-        return Napi::Value::From(Env(), m_responseType);
+        return Napi::Value::From(Env(), ResponseType::EnumToString(m_request.ResponseType()));
     }
 
     void XMLHttpRequest::SetResponseType(const Napi::CallbackInfo&, const Napi::Value& value)
     {
-        m_responseType = value.As<Napi::String>().Utf8Value();
+        m_request.ResponseType(ResponseType::StringToEnum(value.As<Napi::String>().Utf8Value()));
     }
 
     Napi::Value XMLHttpRequest::GetResponseURL(const Napi::CallbackInfo&)
     {
-        return Napi::Value::From(Env(), m_responseURL);
+        return Napi::Value::From(Env(), m_request.ResponseUrl().data());
     }
 
     Napi::Value XMLHttpRequest::GetStatus(const Napi::CallbackInfo&)
     {
-        return Napi::Value::From(Env(), arcana::underlying_cast(m_status));
+        return Napi::Value::From(Env(), arcana::underlying_cast(m_request.StatusCode()));
     }
 
     void XMLHttpRequest::AddEventListener(const Napi::CallbackInfo& info)
@@ -126,60 +167,29 @@ namespace Babylon
         }
     }
 
+    void XMLHttpRequest::Abort(const Napi::CallbackInfo&)
+    {
+        m_request.Abort();
+    }
+
     void XMLHttpRequest::Open(const Napi::CallbackInfo& info)
     {
-        m_method = info[0].As<Napi::String>().Utf8Value();
-        m_url = GetAbsoluteUrl(info[1].As<Napi::String>().Utf8Value(), m_rootUrl);
+        m_request.Open(MethodType::StringToEnum(info[0].As<Napi::String>().Utf8Value()), info[1].As<Napi::String>().Utf8Value());
         SetReadyState(ReadyState::Opened);
     }
 
     void XMLHttpRequest::Send(const Napi::CallbackInfo& info)
     {
-        // TODO: Handle exceptions
-        SendAsync();
-    }
-
-    // TODO: Make this just be SendAsync() once the UWP file access bug is fixed.
-    arcana::task<void, std::exception_ptr> XMLHttpRequest::SendAsyncImpl()
-    {
-        if (m_responseType.empty() || m_responseType == XMLHttpRequestTypes::ResponseType::Text)
-        {
-            return LoadTextAsync(m_url).then(m_runtimeScheduler, arcana::cancellation::none(), [this](std::string data) {
-                // check UTF-8 BOM encoding
-                if (data.size() >= 3 && data[0] == '\xEF' && data[1] == '\xBB' && data[2] == '\xBF')
-                {
-                    m_responseText = data.substr(3);
-                }
-                else
-                {
-                    // UTF8 encoding
-                    m_responseText = std::move(data);
-                }
-
-                m_status = HTTPStatusCode::Ok;
-                SetReadyState(ReadyState::Done);
-            });
-        }
-        else if (m_responseType == XMLHttpRequestTypes::ResponseType::ArrayBuffer)
-        {
-            return LoadBinaryAsync(m_url).then(m_runtimeScheduler, arcana::cancellation::none(), [this](std::vector<uint8_t> data) {
-                m_response = Napi::Persistent(Napi::ArrayBuffer::New(Env(), data.size()));
-                memcpy(m_response.Value().Data(), data.data(), data.size());
-                m_status = HTTPStatusCode::Ok;
-                SetReadyState(ReadyState::Done);
-            });
-        }
-        else
-        {
-            throw std::exception();
-        }
+        m_request.SendAsync().then(m_runtimeScheduler, arcana::cancellation::none(), [this]() {
+            SetReadyState(ReadyState::Done);
+        });
     }
 
     void XMLHttpRequest::SetReadyState(ReadyState readyState)
     {
         m_readyState = readyState;
 
-        auto it = m_eventHandlerRefs.find(XMLHttpRequestTypes::EventType::ReadyStateChange);
+        auto it = m_eventHandlerRefs.find(EventType::ReadyStateChange);
         if (it != m_eventHandlerRefs.end())
         {
             const auto& eventHandlerRefs = it->second;
@@ -188,5 +198,13 @@ namespace Babylon
                 eventHandlerRef.Call({});
             }
         }
+    }
+}
+
+namespace Babylon::Polyfills::XMLHttpRequest
+{
+    void Initialize(Napi::Env env)
+    {
+        Internal::XMLHttpRequest::Initialize(env);
     }
 }

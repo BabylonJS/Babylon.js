@@ -2,7 +2,6 @@
 
 #include <Shared/InputManager.h>
 #include <Babylon/AppRuntime.h>
-#include <ppltasks.h>
 
 // Main entry point for our app. Connects the app with the Windows shell and handles application lifecycle events.
 ref class App sealed : public Windows::ApplicationModel::Core::IFrameworkView
@@ -37,11 +36,11 @@ private:
     void OnOrientationChanged(Windows::Graphics::Display::DisplayInformation^ sender, Platform::Object^ args);
     void OnDisplayContentsInvalidated(Windows::Graphics::Display::DisplayInformation^ sender, Platform::Object^ args);
 
-    concurrency::task<void> RestartRuntimeAsync(Windows::Foundation::Rect);
+    void RestartRuntime(Windows::Foundation::Rect bounds);
 
     std::unique_ptr<Babylon::AppRuntime> m_runtime{};
     std::unique_ptr<InputManager::InputBuffer> m_inputBuffer{};
-    Windows::ApplicationModel::Activation::FileActivatedEventArgs^ m_fileActivatedArgs;
+    Windows::Foundation::Collections::IVectorView<Windows::Storage::IStorageItem^>^ m_files;
     bool m_windowClosed;
     bool m_windowVisible;
     float m_displayScale{ 1.f };

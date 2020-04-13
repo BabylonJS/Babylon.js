@@ -10,9 +10,6 @@
 [submodule "SPIRV-Cross"]
 	path = Dependencies/SPIRV-Cross
 	url = https://github.com/KhronosGroup/SPIRV-Cross
-[submodule "curl"]
-	path = Dependencies/curl
-	url = https://github.com/curl/curl
 [submodule "bgfx.cmake"]
 	path = Dependencies/bgfx.cmake
 	url = https://github.com/BabylonJS/bgfx.cmake
@@ -22,9 +19,6 @@
 [submodule "Dependencies/xr/Dependencies/OpenXR-SDK"]
 	path = Dependencies/xr/Dependencies/OpenXR-SDK
 	url = https://github.com/KhronosGroup/OpenXR-SDK
-[submodule "Dependencies/openssl/openssl"]
-	path = Dependencies/openssl/openssl
-	url = https://github.com/openssl/openssl.git
 [submodule "Dependencies/xr/Dependencies/arcore-android-sdk"]
 	path = Dependencies/xr/Dependencies/arcore-android-sdk
 	url = https://github.com/google-ar/arcore-android-sdk

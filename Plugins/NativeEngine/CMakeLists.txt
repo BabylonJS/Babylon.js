@@ -54,14 +54,9 @@ endif()
 if(APPLE)
     target_link_to_dependencies(NativeEngine
         PRIVATE spirv-cross-msl)
-elseif(ANDROID)
-    target_link_libraries(NativeEngine
-        PRIVATE Platform)
 elseif(WIN32)
     target_link_to_dependencies(NativeEngine
         PRIVATE "d3dcompiler.lib")
-else()
-    message(FATAL_ERROR "Unrecognized platform: graphics linking could not be performed")
 endif()
 
 set_property(TARGET NativeEngine PROPERTY FOLDER Plugins)

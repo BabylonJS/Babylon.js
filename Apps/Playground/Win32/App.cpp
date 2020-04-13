@@ -10,12 +10,12 @@
 #include <Shared/InputManager.h>
 
 #include <Babylon/AppRuntime.h>
-#include <Babylon/Polyfills/Console.h>
+#include <Babylon/ScriptLoader.h>
 #include <Babylon/Plugins/NativeEngine.h>
 #include <Babylon/Plugins/NativeWindow.h>
-#include <Babylon/ScriptLoader.h>
+#include <Babylon/Polyfills/Console.h>
 #include <Babylon/Polyfills/Window.h>
-#include <Babylon/XMLHttpRequest.h>
+#include <Babylon/Polyfills/XMLHttpRequest.h>
 
 #define MAX_LOADSTRING 100
 
@@ -75,10 +75,22 @@ namespace
         return arguments;
     }
 
+    void Uninitialize()
+    {
+        inputBuffer.reset();
+
+        if (runtime)
+        {
+            runtime.reset();
+            Babylon::Plugins::NativeEngine::DeinitializeGraphics();
+        }
+    }
+
     void RefreshBabylon(HWND hWnd)
     {
-        std::vector<std::string> scripts = GetCommandLineArguments();
-        std::string moduleRootUrl = GetUrlFromPath(GetModulePath().parent_path().parent_path());
+        Uninitialize();
+
+        runtime = std::make_unique<Babylon::AppRuntime>();
 
         RECT rect;
         if (!GetWindowRect(hWnd, &rect))
@@ -86,21 +98,14 @@ namespace
             return;
         }
 
-        // Ensure this is properly disposed.
-        inputBuffer.reset();
-
-        // Separately call reset and make_unique to ensure prior runtime is destroyed before new one is created.
-        runtime.reset();
-        runtime = std::make_unique<Babylon::AppRuntime>(scripts.empty() ? moduleRootUrl : GetUrlFromPath(std::filesystem::path{scripts.back()}.parent_path()));
-
         // Initialize console plugin.
         runtime->Dispatch([rect, hWnd](Napi::Env env) {
-
             Babylon::Polyfills::Console::Initialize(env, [](const char* message, auto) {
                 OutputDebugStringA(message);
             });
 
             Babylon::Polyfills::Window::Initialize(env);
+            Babylon::Polyfills::XMLHttpRequest::Initialize(env);
 
             // Initialize NativeWindow plugin.
             auto width = static_cast<float>(rect.right - rect.left);
@@ -112,24 +117,28 @@ namespace
             Babylon::Plugins::NativeEngine::Initialize(env);
 
             // Initialize XMLHttpRequest plugin.
-            Babylon::InitializeXMLHttpRequest(env, runtime->RootUrl());
 
             auto& jsRuntime = Babylon::JsRuntime::GetFromJavaScript(env);
             inputBuffer = std::make_unique<InputManager::InputBuffer>(jsRuntime);
             InputManager::Initialize(jsRuntime, *inputBuffer);
         });
 
-        Babylon::ScriptLoader loader{*runtime, runtime->RootUrl()};
-        loader.Eval("document = {}", "");
-        loader.LoadScript(moduleRootUrl + "/Scripts/ammo.js");
-        loader.LoadScript(moduleRootUrl + "/Scripts/recast.js");
-        loader.LoadScript(moduleRootUrl + "/Scripts/babylon.max.js");
-        loader.LoadScript(moduleRootUrl + "/Scripts/babylon.glTF2FileLoader.js");
-        loader.LoadScript(moduleRootUrl + "/Scripts/babylonjs.materials.js");
+        // Scripts are copied to the parent of the executable due to CMake issues.
+        // See the CMakeLists.txt comments for more details.
+        std::string scriptsRootUrl = GetUrlFromPath(GetModulePath().parent_path().parent_path() / "Scripts");
 
+        Babylon::ScriptLoader loader{*runtime};
+        loader.Eval("document = {}", "");
+        loader.LoadScript(scriptsRootUrl + "/ammo.js");
+        loader.LoadScript(scriptsRootUrl + "/recast.js");
+        loader.LoadScript(scriptsRootUrl + "/babylon.max.js");
+        loader.LoadScript(scriptsRootUrl + "/babylon.glTF2FileLoader.js");
+        loader.LoadScript(scriptsRootUrl + "/babylonjs.materials.js");
+
+        std::vector<std::string> scripts = GetCommandLineArguments();
         if (scripts.empty())
         {
-            loader.LoadScript("Scripts/experience.js");
+            loader.LoadScript(scriptsRootUrl + "/experience.js");
         }
         else
         {
@@ -138,7 +147,7 @@ namespace
                 loader.LoadScript(GetUrlFromPath(script));
             }
 
-            loader.LoadScript(moduleRootUrl + "/Scripts/playground_runner.js");
+            loader.LoadScript(scriptsRootUrl + "/playground_runner.js");
         }
     }
 
@@ -307,8 +316,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         case WM_DESTROY:
         {
-            inputBuffer.reset();
-            runtime.reset();
+            Uninitialize();
             PostQuitMessage(0);
             break;
         }

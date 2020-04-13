@@ -34,7 +34,7 @@ if (ANDROID)
     add_library(glm INTERFACE)
     set_target_properties(glm PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/arcore-android-sdk/libraries/glm)
 
-    target_link_libraries(xr PRIVATE glm arcore GSL)
+    target_link_libraries(xr PRIVATE glm arcore GSL AndroidExtensions)
 else()
     if(WIN32)
         target_include_directories(xr PRIVATE "Source/OpenXR/Windows")

@@ -10,7 +10,7 @@ target_include_directories(ScriptLoader INTERFACE "Include")
 target_link_to_dependencies(ScriptLoader
     PUBLIC napi
     PRIVATE arcana
-    PRIVATE BabylonNativeUtils)
+    PRIVATE UrlLib)
 
 set_property(TARGET ScriptLoader PROPERTY FOLDER Plugins)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})

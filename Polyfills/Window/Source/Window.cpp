@@ -1,7 +1,5 @@
 #include "Window.h"
-
 #include <basen.hpp>
-
 #include <chrono>
 
 namespace Babylon::Polyfills::Internal
@@ -111,6 +109,6 @@ namespace Babylon::Polyfills::Window
 {
     void Initialize(Napi::Env env)
     {
-        Babylon::Polyfills::Internal::Window::Initialize(env);
+        Internal::Window::Initialize(env);
     }
 }

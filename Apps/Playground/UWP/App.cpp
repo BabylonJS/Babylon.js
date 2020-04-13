@@ -1,18 +1,16 @@
 #include "App.h"
 
+#include <Babylon/ScriptLoader.h>
 #include <Babylon/Plugins/NativeEngine.h>
 #include <Babylon/Plugins/NativeWindow.h>
 #include <Babylon/Polyfills/Console.h>
 #include <Babylon/Polyfills/Window.h>
-#include <Babylon/ScriptLoader.h>
-#include <Babylon/XMLHttpRequest.h>
+#include <Babylon/Polyfills/XMLHttpRequest.h>
 
 #include <pplawait.h>
 #include <winrt/Windows.ApplicationModel.h>
 
 #include <windows.ui.core.h>
-
-#include <filesystem>
 
 using namespace Windows::ApplicationModel;
 using namespace Windows::ApplicationModel::Core;
@@ -113,10 +111,7 @@ void App::Run()
 // class is torn down while the app is in the foreground.
 void App::Uninitialize()
 {
-    if (m_inputBuffer)
-    {
-        m_inputBuffer.reset();
-    }
+    m_inputBuffer.reset();
 
     if (m_runtime)
     {
@@ -134,37 +129,22 @@ void App::OnActivated(CoreApplicationView^ applicationView, IActivatedEventArgs^
 
     if (args->Kind == Activation::ActivationKind::File)
     {
-        m_fileActivatedArgs = static_cast<FileActivatedEventArgs^>(args);
+        m_files = static_cast<FileActivatedEventArgs^>(args)->Files;
     }
     else
     {
-        m_fileActivatedArgs = nullptr;
+        m_files = nullptr;
     }
 
-    RestartRuntimeAsync(applicationView->CoreWindow->Bounds);
+    RestartRuntime(applicationView->CoreWindow->Bounds);
 }
 
-concurrency::task<void> App::RestartRuntimeAsync(Windows::Foundation::Rect bounds)
+void App::RestartRuntime(Windows::Foundation::Rect bounds)
 {
     Uninitialize();
 
-    std::string appUrl{ "file:///" + std::filesystem::current_path().generic_string() };
-
     // Initialize the runtime.
-    {
-        std::string rootUrl{ appUrl };
-        if (m_fileActivatedArgs != nullptr)
-        {
-            auto file = static_cast<Windows::Storage::IStorageFile^>(m_fileActivatedArgs->Files->GetAt(0));
-            const auto path = winrt::to_string(file->Path->Data());
-            auto parentPath = std::filesystem::path{ path }.parent_path();
-            rootUrl = "file:///" + parentPath.generic_string();
-        }
-        m_runtime = std::make_unique<Babylon::AppRuntime>(std::move(rootUrl));
-    }
-
-    // Ensure this is properly uninitialized since it depends on state of the runtime.
-    m_inputBuffer.reset();
+    m_runtime = std::make_unique<Babylon::AppRuntime>();
 
     // Initialize NativeWindow plugin.
     DisplayInformation^ displayInformation = DisplayInformation::GetForCurrentView();
@@ -180,6 +160,7 @@ concurrency::task<void> App::RestartRuntimeAsync(Windows::Foundation::Rect bound
         });
 
         Babylon::Polyfills::Window::Initialize(env);
+        Babylon::Polyfills::XMLHttpRequest::Initialize(env);
 
         Babylon::Plugins::NativeWindow::Initialize(env, windowPtr, width, height);
 
@@ -187,37 +168,35 @@ concurrency::task<void> App::RestartRuntimeAsync(Windows::Foundation::Rect bound
         Babylon::Plugins::NativeEngine::InitializeGraphics(windowPtr, width, height);
         Babylon::Plugins::NativeEngine::Initialize(env);
 
-        // Initialize XMLHttpRequest plugin.
-        Babylon::InitializeXMLHttpRequest(env, runtime->RootUrl());
-
         auto& jsRuntime = Babylon::JsRuntime::GetFromJavaScript(env);
         inputBuffer = std::make_unique<InputManager::InputBuffer>(jsRuntime);
         InputManager::Initialize(jsRuntime, *inputBuffer);
     });
 
-    Babylon::ScriptLoader loader{*m_runtime, m_runtime->RootUrl()};
+    Babylon::ScriptLoader loader{*m_runtime};
     loader.Eval("document = {}", "");
-    loader.LoadScript(appUrl + "/Scripts/ammo.js");
-    loader.LoadScript(appUrl + "/Scripts/recast.js");
-    loader.LoadScript(appUrl + "/Scripts/babylon.max.js");
-    loader.LoadScript(appUrl + "/Scripts/babylon.glTF2FileLoader.js");
-    loader.LoadScript(appUrl + "/Scripts/babylonjs.materials.js");
+    loader.LoadScript("app:///Scripts/ammo.js");
+    loader.LoadScript("app:///Scripts/recast.js");
+    loader.LoadScript("app:///Scripts/babylon.max.js");
+    loader.LoadScript("app:///Scripts/babylon.glTF2FileLoader.js");
+    loader.LoadScript("app:///Scripts/babylonjs.materials.js");
 
-    if (m_fileActivatedArgs == nullptr)
+    if (m_files == nullptr)
     {
-        loader.LoadScript("Scripts/experience.js");
+        loader.LoadScript("app:///Scripts/experience.js");
     }
     else
     {
-        for (unsigned int idx = 0; idx < m_fileActivatedArgs->Files->Size; idx++)
+        for (unsigned int idx = 0; idx < m_files->Size; idx++)
         {
-            auto file = static_cast<Windows::Storage::IStorageFile ^>(m_fileActivatedArgs->Files->GetAt(idx));
-            const auto path = winrt::to_string(file->Path->Data());
-            auto text = co_await Windows::Storage::FileIO::ReadTextAsync(file);
-            // TODO m_runtime->Eval(winrt::to_string(text->Data()), path);
+            auto file{static_cast<Windows::Storage::IStorageFile^>(m_files->GetAt(idx))};
+
+            // There is no built-in way to convert a local file path to a url in UWP, but
+            // Foundation::Uri works with a url constructed using "file:///" with a local path.
+            loader.LoadScript("file:///" + winrt::to_string(file->Path->Data()));
         }
 
-        loader.LoadScript(appUrl + "/Scripts/playground_runner.js");
+        loader.LoadScript("app:///Scripts/playground_runner.js");
     }
 }
 
@@ -293,7 +272,7 @@ void App::OnKeyPressed(CoreWindow^ window, KeyEventArgs^ args)
 {
     if (args->VirtualKey == VirtualKey::R)
     {
-        RestartRuntimeAsync(window->Bounds);
+        RestartRuntime(window->Bounds);
     }
 }
 

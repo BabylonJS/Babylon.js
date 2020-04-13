@@ -57,10 +57,10 @@ target_link_libraries(BabylonNativeJNI
         EGL
         log
         -lz
+        AndroidExtensions
         AppRuntime
         NativeEngine
         NativeWindow
-        Platform
         Console
         Window
         ScriptLoader

@@ -4,11 +4,9 @@
 #import <Babylon/Plugins/NativeEngine.h>
 #import <Babylon/Plugins/NativeWindow.h>
 #import <Babylon/Polyfills/Window.h>
+#import <Babylon/Polyfills/XMLHttpRequest.h>
 #import <Babylon/ScriptLoader.h>
-#import <Babylon/XMLHttpRequest.h>
 #import <Shared/InputManager.h>
-#import "Babylon/XMLHttpRequestApple.h"
-
 
 std::unique_ptr<Babylon::AppRuntime> runtime{};
 std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
@@ -34,12 +32,7 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
     }];
 
     // Create the AppRuntime
-    {
-        NSBundle *main = [NSBundle mainBundle];
-        NSURL * resourceUrl = [main resourceURL];
-        std::string rootUrl = [[NSString stringWithFormat:@"file://%s", [resourceUrl fileSystemRepresentation]] UTF8String];
-        runtime = std::make_unique<Babylon::AppRuntime>(std::move(rootUrl));
-    }
+    runtime = std::make_unique<Babylon::AppRuntime>();
     
     // Initialize NativeWindow plugin
     NSSize size = [self view].frame.size;
@@ -52,28 +45,27 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
     runtime->Dispatch([windowPtr, width, height](Napi::Env env)
     {
         Babylon::Polyfills::Window::Initialize(env);
-    
+        Babylon::Polyfills::XMLHttpRequest::Initialize(env);
+
         Babylon::Plugins::NativeWindow::Initialize(env, windowPtr, width, height);
         Babylon::Plugins::NativeEngine::Initialize(env);
         
-        InitializeXMLHttpRequest(env);
-
         auto& jsRuntime = Babylon::JsRuntime::GetFromJavaScript(env);
         inputBuffer = std::make_unique<InputManager::InputBuffer>(jsRuntime);
         InputManager::Initialize(jsRuntime, *inputBuffer);
     });
     
-    Babylon::ScriptLoader loader{ *runtime, runtime->RootUrl() };
+    Babylon::ScriptLoader loader{ *runtime };
     loader.Eval("document = {}", "");
-    loader.LoadScript("ammo.js");
-    loader.LoadScript("recast.js");
-    loader.LoadScript("babylon.max.js");
-    loader.LoadScript("babylon.glTF2FileLoader.js");
-    loader.LoadScript("babylonjs.materials.js");
+    loader.LoadScript("app:///ammo.js");
+    loader.LoadScript("app:///recast.js");
+    loader.LoadScript("app:///babylon.max.js");
+    loader.LoadScript("app:///babylon.glTF2FileLoader.js");
+    loader.LoadScript("app:///babylonjs.materials.js");
     
     if (scripts.empty())
     {
-        loader.LoadScript("experience.js");
+        loader.LoadScript("app:///experience.js");
     }
     else
     {
@@ -82,7 +74,7 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
             loader.LoadScript(script);
         }
 
-        loader.LoadScript("playground_runner.js");
+        loader.LoadScript("app:///playground_runner.js");
     }
 }
 

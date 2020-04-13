@@ -19,7 +19,7 @@ public class BabylonView extends SurfaceView implements SurfaceHolder.Callback2,
         setOnTouchListener(this);
         this.mViewDelegate = viewDelegate;
 
-        BabylonNative.Wrapper.initEngine(context.getResources().getAssets());
+        BabylonNative.Wrapper.initEngine();
     }
 
     public void loadScript(String path) {

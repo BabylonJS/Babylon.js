@@ -4,10 +4,6 @@
 #include <string>
 #include <vector>
 
-#ifdef ANDROID
-#include <jni.h>
-#endif
-
 namespace xr
 {
     enum class TextureFormat
@@ -135,12 +131,7 @@ namespace xr
         System& operator=(System&&) = delete;
 
         bool IsInitialized() const;
-
-#ifdef ANDROID
-        bool TryInitialize(JNIEnv* env, jobject appContext);
-#else
         bool TryInitialize();
-#endif
 
     private:
         class Impl;

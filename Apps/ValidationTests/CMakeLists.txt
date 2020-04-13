@@ -42,6 +42,8 @@ target_link_to_dependencies(ValidationTests
 
 foreach(script ${SCRIPTS} ${BABYLONSCRIPTS})
     get_filename_component(SCRIPT_NAME "${script}" NAME)
+    # Copy scripts to the parent of the executable location since CMake can't use generator
+    # expressions with OUTPUT. See https://gitlab.kitware.com/cmake/cmake/-/issues/12877.
     add_custom_command(
         OUTPUT "Scripts/${SCRIPT_NAME}"
         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_CURRENT_SOURCE_DIR}/${script}" "${CMAKE_CURRENT_BINARY_DIR}/Scripts/${SCRIPT_NAME}"
