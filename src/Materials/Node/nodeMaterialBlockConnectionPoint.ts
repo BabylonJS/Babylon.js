@@ -134,6 +134,11 @@ export class NodeMaterialConnectionPoint {
     public name: string;
 
     /**
+     * Gets or sets the connection point name
+     */
+    public displayName: string;
+
+    /**
      * Gets or sets a boolean indicating that this connection point can be omitted
      */
     public isOptional: boolean;
@@ -426,14 +431,16 @@ export class NodeMaterialConnectionPoint {
 
     /**
      * Serializes this point in a JSON representation
+     * @param isInput defines if the connection point is an input (default is true)
      * @returns the serialized point object
      */
-    public serialize(): any {
+    public serialize(isInput = true): any {
         let serializationObject: any = {};
 
         serializationObject.name = this.name;
+        serializationObject.displayName = this.displayName;
 
-        if (this.connectedPoint) {
+        if (isInput && this.connectedPoint) {
             serializationObject.inputName = this.name;
             serializationObject.targetBlockId = this.connectedPoint.ownerBlock.uniqueId;
             serializationObject.targetConnectionName = this.connectedPoint.name;
