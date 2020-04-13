@@ -24,7 +24,7 @@ export class AmbientOcclusionBlock extends NodeMaterialBlock {
         this.registerOutput("ambientOcclusion", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment, new NodeMaterialConnectionPointCustomObject("ambientOcclusion", this, NodeMaterialConnectionPointDirection.Output, AmbientOcclusionBlock, "AOBlock"));
     }
 
-    @editableInPropertyPage("Ambient in gray scale", PropertyTypeForEdition.Boolean, "AMBIENT", { "notifiers": { "rebuild": false }})
+    @editableInPropertyPage("Ambient in gray scale", PropertyTypeForEdition.Boolean, "AMBIENT", { "notifiers": { "update": true }})
     public useAmbientInGrayScale: boolean = false;
 
     /**
