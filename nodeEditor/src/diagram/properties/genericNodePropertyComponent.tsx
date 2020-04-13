@@ -116,7 +116,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                 }
                 case PropertyTypeForEdition.List: {
                     components.push(
-                        <OptionsLineComponent label={displayName} options={options.options} target={this.props.block} propertyName={propertyName} />
+                        <OptionsLineComponent label={displayName} options={options.options} target={this.props.block} propertyName={propertyName} onSelect={() => this.forceRebuild(options.notifiers)} />
                     );
                     break;
                 }
