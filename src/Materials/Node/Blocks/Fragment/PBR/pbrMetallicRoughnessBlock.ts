@@ -119,8 +119,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         { label: "Tangents", value: 3 },
         { label: "Bitangents", value: 4 },
         { label: "Bump Normals", value: 5 },
-        { label: "UV1", value: 6 },
-        { label: "UV2", value: 7 },
+        //{ label: "UV1", value: 6 },
+        //{ label: "UV2", value: 7 },
         { label: "ClearCoat Normals", value: 8 },
         { label: "ClearCoat Tangents", value: 9 },
         { label: "ClearCoat Bitangents", value: 10 },
@@ -128,11 +128,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         { label: "Anisotropic Tangents", value: 12 },
         { label: "Anisotropic Bitangents", value: 13 },
         // Maps
-        { label: "Albdeo Map", value: 20 },
+        { label: "Albedo Map", value: 20 },
         { label: "Ambient Map", value: 21 },
         { label: "Opacity Map", value: 22 },
-        { label: "Emissive Map", value: 23 },
-        { label: "Light Map", value: 24 },
+        //{ label: "Emissive Map", value: 23 },
+        //{ label: "Light Map", value: 24 },
         { label: "Metallic Map", value: 25 },
         { label: "Reflectivity Map", value: 26 },
         { label: "ClearCoat Map", value: 27 },
@@ -767,7 +767,14 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             state.compilationString += this._declareOutput(this.shadow, state) + ` = shadow;\r\n`;
         }
 
-        state.compilationString += state._emitCodeFromInclude("pbrDebug", comments);
+        state.compilationString += state._emitCodeFromInclude("pbrDebug", comments, {
+            replaceStrings: [
+                { search: /vNormalW/g, replace: this.worldNormal.associatedVariableName },
+                { search: /vPositionW/g, replace: "v_" + this.worldPosition.associatedVariableName },
+                { search: /albedoTexture\.rgb;/g, replace: this.baseTexture.associatedVariableName + ".rgb;\r\ngl_FragColor.rgb = toGammaSpace(gl_FragColor.rgb);\r\n" },
+                { search: /opacityMap/g, replace: this.opacityTexture.associatedVariableName },
+            ]
+        });
 
         return this;
     }
