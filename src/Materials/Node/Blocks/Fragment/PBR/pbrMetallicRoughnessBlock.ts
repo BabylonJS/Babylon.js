@@ -655,7 +655,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         const anisotropyBlock = this.anisotropyParams.isConnected ? this.anisotropyParams.connectedPoint?.ownerBlock as AnisotropyBlock : null;
 
         if (anisotropyBlock) {
-            state.compilationString += anisotropyBlock.getCode();
+            anisotropyBlock.worldPositionConnectionPoint = this.worldPosition;
+            anisotropyBlock.worldNormalConnectionPoint = this.worldNormal;
+
+            state.compilationString += anisotropyBlock.getCode(state, !this.perturbedNormal.isConnected);
         }
 
         // _____________________________ Reflection _______________________________________
