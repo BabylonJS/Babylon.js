@@ -77,12 +77,16 @@ export class AmbientOcclusionBlock extends NodeMaterialBlock {
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+        super.prepareDefines(mesh, nodeMaterial, defines);
+
         defines.setValue("AMBIENT", this.texture.isConnected);
         defines.setValue("AMBIENTINGRAYSCALE", this.useAmbientInGrayScale);
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
-        super._buildBlock(state);
+        if (state.target === NodeMaterialBlockTargets.Fragment) {
+            state.sharedData.blocksWithDefines.push(this);
+        }
 
         return this;
     }
