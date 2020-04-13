@@ -272,7 +272,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         code += `
             vec4 ${finalColorVarName} = vec4(0.);
 
-            vec3 ${varInfos} = vec3(${this.texture!.getSize().width}., ${this._formatNumberForGLSL(this.texture!.lodGenerationScale)}, ${this._formatNumberForGLSL(this.texture!.lodGenerationScale)});
+            vec3 ${varInfos} = vec3(${this.texture!.getSize().width}., ${this._formatNumberForGLSL(this.texture!.lodGenerationScale)}, ${this._formatNumberForGLSL(this.texture!.lodGenerationOffset)});
 
             #if defined(${this._defineLODReflectionAlpha}) && !defined(${this._defineSkyboxName})
                 float ${varLOD} = getLodFromAlphaG(${varInfos}.x, alphaG, NdotVUnclamped);
