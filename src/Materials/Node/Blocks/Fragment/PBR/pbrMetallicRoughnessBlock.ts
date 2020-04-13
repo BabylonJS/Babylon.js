@@ -111,6 +111,76 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     @editableInPropertyPage("Unlit", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "rebuild": false }})
     public unlit: boolean = false;
 
+    @editableInPropertyPage("Debug mode", PropertyTypeForEdition.List, "DEBUG", { "options": [
+        { label: "None", value: 0 },
+        // Geometry
+        { label: "Normalized position", value: 1 },
+        { label: "Normals", value: 2 },
+        { label: "Tangents", value: 3 },
+        { label: "Bitangents", value: 4 },
+        { label: "Bump Normals", value: 5 },
+        { label: "UV1", value: 6 },
+        { label: "UV2", value: 7 },
+        { label: "ClearCoat Normals", value: 8 },
+        { label: "ClearCoat Tangents", value: 9 },
+        { label: "ClearCoat Bitangents", value: 10 },
+        { label: "Anisotropic Normals", value: 11 },
+        { label: "Anisotropic Tangents", value: 12 },
+        { label: "Anisotropic Bitangents", value: 13 },
+        // Maps
+        { label: "Albdeo Map", value: 20 },
+        { label: "Ambient Map", value: 21 },
+        { label: "Opacity Map", value: 22 },
+        { label: "Emissive Map", value: 23 },
+        { label: "Light Map", value: 24 },
+        { label: "Metallic Map", value: 25 },
+        { label: "Reflectivity Map", value: 26 },
+        { label: "ClearCoat Map", value: 27 },
+        { label: "ClearCoat Tint Map", value: 28 },
+        { label: "Sheen Map", value: 29 },
+        { label: "Anisotropic Map", value: 30 },
+        { label: "Thickness Map", value: 31 },
+        // Env
+        { label: "Env Refraction", value: 40 },
+        { label: "Env Reflection", value: 41 },
+        { label: "Env Clear Coat", value: 42 },
+        // Lighting
+        { label: "Direct Diffuse", value: 50 },
+        { label: "Direct Specular", value: 51 },
+        { label: "Direct Clear Coat", value: 52 },
+        { label: "Direct Sheen", value: 53 },
+        { label: "Env Irradiance", value: 54 },
+        // Lighting Params
+        { label: "Surface Albedo", value: 60 },
+        { label: "Reflectance 0", value: 61 },
+        { label: "Metallic", value: 62 },
+        { label: "Metallic F0", value: 71 },
+        { label: "Roughness", value: 63 },
+        { label: "AlphaG", value: 64 },
+        { label: "NdotV", value: 65 },
+        { label: "ClearCoat Color", value: 66 },
+        { label: "ClearCoat Roughness", value: 67 },
+        { label: "ClearCoat NdotV", value: 68 },
+        { label: "Transmittance", value: 69 },
+        { label: "Refraction Transmittance", value: 70 },
+        // Misc
+        { label: "SEO", value: 80 },
+        { label: "EHO", value: 81 },
+        { label: "Energy Factor", value: 82 },
+        { label: "Specular Reflectance", value: 83 },
+        { label: "Clear Coat Reflectance", value: 84 },
+        { label: "Sheen Reflectance", value: 85 },
+        { label: "Luminance Over Alpha", value: 86 },
+        { label: "Alpha", value: 87 },
+    ]})
+    public debugMode = 0;
+
+    @editableInPropertyPage("Split position", PropertyTypeForEdition.Float, "DEBUG", { min: -1, max: 1, "notifiers": { "rebuild": false }})
+    public debugLimit = 0;
+
+    @editableInPropertyPage("Output factor", PropertyTypeForEdition.Float, "DEBUG", { min: 0, max: 5, "notifiers": { "rebuild": false }})
+    public debugFactor = 1;
+
     /**
      * Initialize the block and prepare the context for build
      * @param state defines the state that will be used for the build
@@ -150,6 +220,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state._excludeVariableName("ambientOcclusionForDirectDiffuse");
 
         state._excludeVariableName("finalColor");
+
+        state._excludeVariableName("vClipSpacePosition");
+        state._excludeVariableName("vDebugMode");
     }
 
     /**
@@ -283,6 +356,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         defines.setValue("PBR", true);
         defines.setValue("METALLICWORKFLOW", true);
+        defines.setValue("DEBUGMODE", this.debugMode);
 
         // Albedo & Opacity
         if (this.baseTexture.isConnected) {
@@ -373,6 +447,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         }
 
         effect.setTexture(this._environmentBrdfSamplerName, this._environmentBRDFTexture);
+
+        effect.setFloat2("vDebugMode", this.debugLimit, this.debugFactor);
     }
 
     private _injectVertexCode(state: NodeMaterialBuildState) {
@@ -405,6 +481,14 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         const reflectionBlock = this.reflectionParams.isConnected ? this.reflectionParams.connectedPoint?.ownerBlock as ReflectionBlock : null;
 
         state.compilationString += reflectionBlock?.handleVertexSide(state) ?? "";
+
+        state._emitUniformFromString("vDebugMode", "vec2", "defined(DUMMY) || DEBUGMODE > 0");
+
+        if (state._emitVaryingFromString("vClipSpacePosition", "vec4", "defined(DUMMY) || DEBUGMODE > 0")) {
+            state._injectAtEnd += `#if DEBUGMODE > 0\r\n`;
+            state._injectAtEnd += `vClipSpacePosition = gl_Position;\r\n`;
+            state._injectAtEnd += `#endif\r\n`;
+        }
 
         if (this.light) {
             state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
@@ -682,6 +766,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         if (this.shadow.hasEndpoints) {
             state.compilationString += this._declareOutput(this.shadow, state) + ` = shadow;\r\n`;
         }
+
+        state.compilationString += state._emitCodeFromInclude("pbrDebug", comments);
 
         return this;
     }
