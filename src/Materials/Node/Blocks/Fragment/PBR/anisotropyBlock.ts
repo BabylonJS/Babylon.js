@@ -10,6 +10,9 @@ import { NodeMaterialConnectionPointCustomObject } from "../../../nodeMaterialCo
 
 export class AnisotropyBlock extends NodeMaterialBlock {
 
+    public worldPositionConnectionPoint: NodeMaterialConnectionPoint;
+    public worldNormalConnectionPoint: NodeMaterialConnectionPoint;
+
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Fragment);
 
@@ -18,6 +21,8 @@ export class AnisotropyBlock extends NodeMaterialBlock {
         this.registerInput("intensity", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("direction", NodeMaterialBlockConnectionPointTypes.Vector2, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("texture", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2, true);
+        this.registerInput("worldTangent", NodeMaterialBlockConnectionPointTypes.Vector4, true);
 
         this.registerOutput("anisotropy", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment, new NodeMaterialConnectionPointCustomObject("anisotropy", this, NodeMaterialConnectionPointDirection.Output, AnisotropyBlock, "AnisotropyBlock"));
     }
@@ -51,12 +56,67 @@ export class AnisotropyBlock extends NodeMaterialBlock {
         return this._inputs[2];
     }
 
+    public get uv(): NodeMaterialConnectionPoint {
+        return this._inputs[3];
+    }
+
+    public get worldTangent(): NodeMaterialConnectionPoint {
+        return this._inputs[4];
+    }
+
     public get anisotropy(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
-    public getCode(): string {
-        let code = `anisotropicOutParams anisotropicOut;\r\n`;
+    private _generateTBNSpace(state: NodeMaterialBuildState) {
+        let code = "";
+
+        let comments = `//${this.name}`;
+        let uv = this.uv;
+        let worldPosition = this.worldPositionConnectionPoint;
+        let worldNormal = this.worldNormalConnectionPoint;
+        let worldTangent = this.worldTangent;
+
+        if (!uv.isConnected) {
+            // we must set the uv input as optional because we may not end up in this method (in case a PerturbNormal block is linked to the PBR material)
+            // in which case uv is not required. But if we do come here, we do need the uv, so we have to throw an error
+            console.error("You must connect the 'uv' input of the Anisotropy block!");
+        }
+
+        state._emitExtension("derivatives", "#extension GL_OES_standard_derivatives : enable");
+
+        let tangentReplaceString = { search: /defined\(TANGENT\)/g, replace: worldTangent.isConnected ? "defined(TANGENT)" : "defined(IGNORE)" };
+
+        if (worldTangent.isConnected) {
+            code += `vec3 tbnNormal = normalize(${worldNormal.associatedVariableName}.xyz);\r\n`;
+            code += `vec3 tbnTangent = normalize(${worldTangent.associatedVariableName}.xyz);\r\n`;
+            code += `vec3 tbnBitangent = cross(tbnNormal, tbnTangent);\r\n`;
+            code += `mat3 vTBN = mat3(tbnTangent, tbnBitangent, tbnNormal);\r\n`;
+        }
+
+        state._emitFunctionFromInclude("bumpFragmentFunctions", comments);
+
+        code += state._emitCodeFromInclude("bumpFragment", comments, {
+            replaceStrings: [
+                { search: /vMainUV1/g, replace: uv.isConnected ? uv.associatedVariableName : "vec2(0.)"},
+                { search: /vPositionW/g, replace: "v_" + worldPosition.associatedVariableName + ".xyz"},
+                { search: /normalW=/g, replace: "NOTUSED=" },
+                { search: /normalW/g, replace: worldNormal.associatedVariableName + ".xyz" },
+                tangentReplaceString
+            ]
+        });
+
+        return code;
+    }
+
+    public getCode(state: NodeMaterialBuildState, generateTBNSpace = false): string {
+        let code = "";
+
+        if (generateTBNSpace) {
+            code += this._generateTBNSpace(state);
+        }
+
+        code += `anisotropicOutParams anisotropicOut;\r\n`;
 
         const intensity = this.intensity.isConnected ? this.intensity.associatedVariableName : "1.0";
         const direction = this.direction.isConnected ? this.direction.associatedVariableName : "vec2(1., 0.)";
