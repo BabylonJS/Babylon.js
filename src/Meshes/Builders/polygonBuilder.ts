@@ -40,7 +40,7 @@ VertexData.CreatePolygon = function(polygon: Mesh, sideOrientation: number, fUV?
     if (wrap) {
         for (var idx = startIndex; idx < positions.length / 3; idx += 4) {
             distX = positions[3 * (idx + 2)] - positions[3 * idx];
-            distZ = positions[3 * (idx + 2) + 2] - positions[3 * idx + 2]
+            distZ = positions[3 * (idx + 2) + 2] - positions[3 * idx + 2];
             dist = Math.sqrt(distX * distX + distZ * distZ);
             totalLen += dist;
             cumulate.push(totalLen);
@@ -63,14 +63,14 @@ VertexData.CreatePolygon = function(polygon: Mesh, sideOrientation: number, fUV?
             face = 2;
         }
         idx = index / 3;
-        if ( face === 1) {
+        if (face === 1) {
             disp = idx - startIndex;
             if (disp % 4 < 1.5) {
                 if (wrap) {
                     uvs[2 * idx] = faceUV[face].x + (faceUV[face].z - faceUV[face].x) * cumulate[Math.floor(disp / 4)] / totalLen;
                 }
                 else {
-                    uvs[2 * idx] = faceUV[face].x
+                    uvs[2 * idx] = faceUV[face].x;
                 }
             }
             else {
