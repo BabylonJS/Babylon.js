@@ -58592,6 +58592,7 @@ declare module BABYLON {
         serialize(): any;
         /** @hidden */
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        private _deserializePortDisplayNames;
         /**
          * Release resources
          */
@@ -58817,6 +58818,10 @@ declare module BABYLON {
          */
         name: string;
         /**
+         * Gets or sets the connection point name
+         */
+        displayName: string;
+        /**
          * Gets or sets a boolean indicating that this connection point can be omitted
          */
         isOptional: boolean;
@@ -58897,9 +58902,10 @@ declare module BABYLON {
         disconnectFrom(endpoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPoint;
         /**
          * Serializes this point in a JSON representation
+         * @param isInput defines if the connection point is an input (default is true)
          * @returns the serialized point object
          */
-        serialize(): any;
+        serialize(isInput?: boolean): any;
         /**
          * Release resources
          */
