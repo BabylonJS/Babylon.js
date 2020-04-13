@@ -117,6 +117,8 @@ export class ReflectivityBlock extends NodeMaterialBlock {
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+        super.prepareDefines(mesh, nodeMaterial, defines);
+
         defines.setValue("REFLECTIVITY", this.texture.isConnected);
         defines.setValue("AOSTOREINMETALMAPRED", this.useAmbientOcclusionFromMetallicTextureRed);
         defines.setValue("METALLNESSSTOREINMETALMAPBLUE", this.useMetallnessFromMetallicTextureBlue);
@@ -126,7 +128,9 @@ export class ReflectivityBlock extends NodeMaterialBlock {
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
-        super._buildBlock(state);
+        if (state.target === NodeMaterialBlockTargets.Fragment) {
+            state.sharedData.blocksWithDefines.push(this);
+        }
 
         return this;
     }
