@@ -448,19 +448,6 @@ export class NodeMaterialConnectionPoint {
         return serializationObject;
     }
 
-    // /**
-    //  * Parses JSON representation into a new NodeMaterialConnectionPoint
-    //  * @returns the serialized point object
-    //  */
-    // public parse(serializationData: any ): NodeMaterialConnectionPoint {
-    //     const newConnectionPoint  = new NodeMaterialConnectionPoint(serializationData.name, serializationData.ownerBlock, serializationData.direction);
-
-    //     newConnectionPoint.
-
-
-    //     return newConnectionPoint;
-    // }
-
     /**
      * Release resources
      */

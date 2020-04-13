@@ -681,17 +681,17 @@ export class NodeMaterialBlock {
         const serializedOutputs = serializationObject.outputs;
         if (serializedInputs) {
             serializedInputs.forEach((port: any, i: number) => {
-                if(port.displayName) {
+                if (port.displayName) {
                     this.inputs[i].displayName = port.displayName;
                 }
-            })
+            });
         }
         if (serializedOutputs) {
             serializedOutputs.forEach((port: any, i: number) => {
-                if(port.displayName) {
+                if (port.displayName) {
                     this.outputs[i].displayName = port.displayName;
                 }
-            })
+            });
         }
     }
 
