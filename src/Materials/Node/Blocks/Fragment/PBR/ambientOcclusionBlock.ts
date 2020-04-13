@@ -9,6 +9,7 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../../../nodeMat
 import { _TypeStore } from '../../../../../Misc/typeStore';
 import { AbstractMesh } from '../../../../../Meshes/abstractMesh';
 import { NodeMaterialConnectionPointCustomObject } from "../../../nodeMaterialConnectionPointCustomObject";
+import { Scene } from '../../../../../scene';
 
 export class AmbientOcclusionBlock extends NodeMaterialBlock {
 
@@ -89,6 +90,20 @@ export class AmbientOcclusionBlock extends NodeMaterialBlock {
         }
 
         return this;
+    }
+
+    public serialize(): any {
+        let serializationObject = super.serialize();
+
+        serializationObject.useAmbientInGrayScale = this.useAmbientInGrayScale;
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+        super._deserialize(serializationObject, scene, rootUrl);
+
+        this.useAmbientInGrayScale = serializationObject.useAmbientInGrayScale;
     }
 }
 

@@ -8,6 +8,7 @@ import { NodeMaterialBlockConnectionPointTypes } from '../../../Enums/nodeMateri
 import { NodeMaterialBlockTargets } from '../../../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPointCustomObject } from "../../../nodeMaterialConnectionPointCustomObject";
 import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../../nodeMaterialBlockConnectionPoint';
+import { Scene } from '../../../../../scene';
 
 export class ReflectivityBlock extends NodeMaterialBlock {
 
@@ -133,6 +134,28 @@ export class ReflectivityBlock extends NodeMaterialBlock {
         }
 
         return this;
+    }
+
+    public serialize(): any {
+        let serializationObject = super.serialize();
+
+        serializationObject.useAmbientOcclusionFromMetallicTextureRed = this.useAmbientOcclusionFromMetallicTextureRed;
+        serializationObject.useMetallnessFromMetallicTextureBlue = this.useMetallnessFromMetallicTextureBlue;
+        serializationObject.useRoughnessFromMetallicTextureAlpha = this.useRoughnessFromMetallicTextureAlpha;
+        serializationObject.useRoughnessFromMetallicTextureGreen = this.useRoughnessFromMetallicTextureGreen;
+        serializationObject.useMetallicF0FactorFromMetallicTexture = this.useMetallicF0FactorFromMetallicTexture;
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+        super._deserialize(serializationObject, scene, rootUrl);
+
+        this.useAmbientOcclusionFromMetallicTextureRed = serializationObject.useAmbientOcclusionFromMetallicTextureRed;
+        this.useMetallnessFromMetallicTextureBlue = serializationObject.useMetallnessFromMetallicTextureBlue;
+        this.useRoughnessFromMetallicTextureAlpha = serializationObject.useRoughnessFromMetallicTextureAlpha;
+        this.useRoughnessFromMetallicTextureGreen = serializationObject.useRoughnessFromMetallicTextureGreen;
+        this.useMetallicF0FactorFromMetallicTexture = serializationObject.useMetallicF0FactorFromMetallicTexture;
     }
 }
 

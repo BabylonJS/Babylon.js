@@ -779,9 +779,21 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             serializationObject.lightId = this.light.id;
         }
 
-        /*if (this.texture) {
-            serializationObject.texture = this.texture.serialize();
-        }*/
+        serializationObject.useAlphaFromAlbedoTexture = this.useAlphaFromAlbedoTexture;
+        serializationObject.useAlphaTest = this.useAlphaTest;
+        serializationObject.alphaTestCutoff = this.alphaTestCutoff;
+        serializationObject.useAlphaBlending = this.useAlphaBlending;
+        serializationObject.opacityRGB = this.opacityRGB;
+        serializationObject.useRadianceOverAlpha = this.useRadianceOverAlpha;
+        serializationObject.useSpecularOverAlpha = this.useSpecularOverAlpha;
+        serializationObject.enableSpecularAntiAliasing = this.enableSpecularAntiAliasing;
+        serializationObject.useEnergyConservation = this.useEnergyConservation;
+        serializationObject.useRadianceOcclusion = this.useRadianceOcclusion;
+        serializationObject.useHorizonOcclusion = this.useHorizonOcclusion;
+        serializationObject.unlit = this.unlit;
+        serializationObject.debugMode = this.debugMode;
+        serializationObject.debugLimit = this.debugLimit;
+        serializationObject.debugFactor = this.debugFactor;
 
         return serializationObject;
     }
@@ -793,14 +805,21 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             this.light = scene.getLightByID(serializationObject.lightId);
         }
 
-        /*if (serializationObject.texture) {
-            rootUrl = serializationObject.texture.url.indexOf("data:") === 0 ? "" : rootUrl;
-            if (serializationObject.texture.isCube) {
-                this.texture = CubeTexture.Parse(serializationObject.texture, scene, rootUrl);
-            } else {
-                this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl);
-            }
-        }*/
+        this.useAlphaFromAlbedoTexture = serializationObject.useAlphaFromAlbedoTexture;
+        this.useAlphaTest = serializationObject.useAlphaTest;
+        this.alphaTestCutoff = serializationObject.alphaTestCutoff;
+        this.useAlphaBlending = serializationObject.useAlphaBlending;
+        this.opacityRGB = serializationObject.opacityRGB;
+        this.useRadianceOverAlpha = serializationObject.useRadianceOverAlpha;
+        this.useSpecularOverAlpha = serializationObject.useSpecularOverAlpha;
+        this.enableSpecularAntiAliasing = serializationObject.enableSpecularAntiAliasing;
+        this.useEnergyConservation = serializationObject.useEnergyConservation;
+        this.useRadianceOcclusion = serializationObject.useRadianceOcclusion;
+        this.useHorizonOcclusion = serializationObject.useHorizonOcclusion;
+        this.unlit = serializationObject.unlit;
+        this.debugMode = serializationObject.debugMode;
+        this.debugLimit = serializationObject.debugLimit;
+        this.debugFactor = serializationObject.debugFactor;
     }
 }
 
