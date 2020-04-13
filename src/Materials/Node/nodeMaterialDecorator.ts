@@ -2,6 +2,12 @@ export enum PropertyTypeForEdition {
     Boolean,
     Float,
     Vector2,
+    List,
+}
+
+export interface IEditablePropertyListOption {
+    "label": string;
+    "value": number;
 }
 
 export interface IEditablePropertyOption {
@@ -11,6 +17,7 @@ export interface IEditablePropertyOption {
         "rebuild"?: boolean;
         "update"?: boolean;
     };
+    "options"?: IEditablePropertyListOption[];
 }
 
 export interface IPropertyDescriptionForEdition {
