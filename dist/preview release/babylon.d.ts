@@ -63398,10 +63398,8 @@ declare module BABYLON {
         private _preWarmDone;
         /**
          * Specifies if the particles are updated in emitter local space or world space.
-         * This is always false for GPU particles
          */
-        get isLocal(): boolean;
-        set isLocal(value: boolean);
+        isLocal: boolean;
         /**
          * Is this system ready to be used/rendered
          * @return true if the system is ready

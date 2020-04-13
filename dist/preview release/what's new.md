@@ -83,6 +83,7 @@
 - Support for pointer selection and teleportation in right handed systems ([#7967](https://github.com/BabylonJS/Babylon.js/issues/7967)) ([RaananW](https://github.com/RaananW))
 - Pointer Selection feature now uses `selectstart` and `selectend` events when gamepad and motion controller are not present ([#7989](https://github.com/BabylonJS/Babylon.js/issues/7989)) ([RaananW](https://github.com/RaananW))
 - Removed forced `autoClear` = false settings ([RaananW](https://github.com/RaananW))
+- Added a warning that WebXR can only be served over HTTPS ([RaananW](https://github.com/RaananW))
 
 ### Collisions
 
@@ -93,7 +94,11 @@
 - Added support for Additive Animation Blending. Existing animations can be converted to additive using the new MakeAnimationAdditive method for Skeletons, AnimationGroups and Animations. Animations can be played additively using the new isAdditive input parameter to the begin animation methods. ([c-morten](https://github.com/c-morten))
 
 ### Maths
+
 - Added `Vector3.projectOnPlaneToRef` ([Deltakosh](https://github.com/deltakosh))
+
+### Particles
+- Added local space support for GPU particles ([CraigFeldpsar](https://github.com/craigfeldspar))
 
 ### Build
 
@@ -138,6 +143,7 @@
 - Fix bug in `ShaderMaterial` when using morph targets ([Popov72](https://github.com/Popov72)
 - Fix bug in playground where child NME windows would not close before page unload events ([belfortk](https://github.com/belfortk)
 - Fixed an issue with stereoscopic rendering ([#8000](https://github.com/BabylonJS/Babylon.js/issues/8000)) ([RaananW](https://github.com/RaananW))
+- Fix an error when compiling with the closure compiler ([ageneau](https://github.com/ageneau/))
 
 ## Breaking changes
 
