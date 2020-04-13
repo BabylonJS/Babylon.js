@@ -37527,12 +37527,13 @@ declare module BABYLON {
          */
         createRootMesh(): Mesh;
         /**
-         * Merge animations from this asset container into a scene
+         * Merge animations (direct and animation groups) from this asset container into a scene
          * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
          * @param animatables set of animatables to retarget to a node from the scene
          * @param targetConverter defines a function used to convert animation targets from the asset container to the scene (default: search node by name)
+         * @returns an array of the new AnimationGroup added to the scene (empty array if none)
          */
-        mergeAnimationsTo(scene: Scene | null | undefined, animatables: Animatable[], targetConverter?: Nullable<(target: any) => Nullable<Node>>): void;
+        mergeAnimationsTo(scene: Scene | null | undefined, animatables: Animatable[], targetConverter?: Nullable<(target: any) => Nullable<Node>>): AnimationGroup[];
     }
 }
 declare module BABYLON {
