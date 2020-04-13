@@ -9,7 +9,6 @@ import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMateri
 import { FramePortData, isFramePortData } from './graphCanvas';
 
 export class FrameNodePort extends NodePort {
-    private _portLabel: Element;
     private _parentFrameId: number;
     private _isInput: boolean;
     private _framePortPosition: FramePortPosition
@@ -28,16 +27,8 @@ export class FrameNodePort extends NodePort {
         return this._isInput;
     }
 
-    public get portLabel() {
-        return this._portLabel.innerHTML;
-    }
-
     public get framePortId() {
         return this._framePortId;
-    }
-
-    public set portLabel(newLabel: string) {
-        this._portLabel.innerHTML = newLabel;
     }
 
     public get framePortPosition() {
@@ -46,7 +37,6 @@ export class FrameNodePort extends NodePort {
 
     public set framePortPosition(position: FramePortPosition) {
         this._framePortPosition = position;
-        console.log(this.onFramePortPositionChangedObservable.observers);
         this.onFramePortPositionChangedObservable.notifyObservers(this);
     }
 
@@ -54,7 +44,6 @@ export class FrameNodePort extends NodePort {
         super(portContainer, connectionPoint,node, globalState);
 
         this._parentFrameId = parentFrameId;
-        this._portLabel = portContainer.children[0];
         this._isInput = isInput;
         this._framePortId = framePortId;
 
@@ -83,7 +72,7 @@ export class FrameNodePort extends NodePort {
         if (!displayManager || displayManager.shouldDisplayPortLabels(block)) {
             let portLabel = root.ownerDocument!.createElement("div");
             portLabel.classList.add("port-label");
-            portLabel.innerHTML = connectionPoint.name;        
+            portLabel.innerHTML = connectionPoint.displayName || connectionPoint.name;        
             portContainer.appendChild(portLabel);
         }
 
