@@ -22946,9 +22946,10 @@ declare module BABYLON {
          * @param fColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
          * @param frontUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
          * @param backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+         * @param wrap a boolean, default false, when true and fUVs used texture is wrapped around all sides, when false texture is applied side
          * @returns the VertexData of the Polygon
          */
-        static CreatePolygon(polygon: Mesh, sideOrientation: number, fUV?: Vector4[], fColors?: Color4[], frontUVs?: Vector4, backUVs?: Vector4): VertexData;
+        static CreatePolygon(polygon: Mesh, sideOrientation: number, fUV?: Vector4[], fColors?: Color4[], frontUVs?: Vector4, backUVs?: Vector4, wrap?: boolean): VertexData;
         /**
          * Creates the VertexData of the IcoSphere
          * @param options an object used to set the following optional parameters for the IcoSphere, required but can be empty
@@ -37527,12 +37528,13 @@ declare module BABYLON {
          */
         createRootMesh(): Mesh;
         /**
-         * Merge animations from this asset container into a scene
+         * Merge animations (direct and animation groups) from this asset container into a scene
          * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
          * @param animatables set of animatables to retarget to a node from the scene
          * @param targetConverter defines a function used to convert animation targets from the asset container to the scene (default: search node by name)
+         * @returns an array of the new AnimationGroup added to the scene (empty array if none)
          */
-        mergeAnimationsTo(scene: Scene | null | undefined, animatables: Animatable[], targetConverter?: Nullable<(target: any) => Nullable<Node>>): void;
+        mergeAnimationsTo(scene: Scene | null | undefined, animatables: Animatable[], targetConverter?: Nullable<(target: any) => Nullable<Node>>): AnimationGroup[];
     }
 }
 declare module BABYLON {
@@ -61502,6 +61504,7 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
+            wrap?: boolean;
         }, scene?: Nullable<Scene>, earcutInjection?: any): Mesh;
         /**
          * Creates an extruded polygon mesh, with depth in the Y direction.
@@ -61523,6 +61526,7 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
+            wrap?: boolean;
         }, scene?: Nullable<Scene>, earcutInjection?: any): Mesh;
     }
 }

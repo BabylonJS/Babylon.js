@@ -1213,8 +1213,8 @@ export class ThinEngine {
         let height: number;
 
         if (DomManagement.IsWindowObjectExist()) {
-            width = this._renderingCanvas ? this._renderingCanvas.clientWidth : window.innerWidth;
-            height = this._renderingCanvas ? this._renderingCanvas.clientHeight : window.innerHeight;
+            width = this._renderingCanvas ? (this._renderingCanvas.clientWidth || this._renderingCanvas.width) : window.innerWidth;
+            height = this._renderingCanvas ? (this._renderingCanvas.clientHeight || this._renderingCanvas.height) : window.innerHeight;
         } else {
             width = this._renderingCanvas ? this._renderingCanvas.width : 100;
             height = this._renderingCanvas ? this._renderingCanvas.height : 100;
