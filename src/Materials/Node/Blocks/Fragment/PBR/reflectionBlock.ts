@@ -15,6 +15,7 @@ import { Mesh } from '../../../../../Meshes/mesh';
 import { SubMesh } from '../../../../../Meshes/subMesh';
 import { Effect } from '../../../../effect';
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../nodeMaterialDecorator";
+import { Scene } from '../../../../../scene';
 
 export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
