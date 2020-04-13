@@ -11,19 +11,19 @@ import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } fro
 
 export class ReflectivityBlock extends NodeMaterialBlock {
 
-    @editableInPropertyPage("AO from red channel", PropertyTypeForEdition.Boolean, "METALLIC WORKFLOW", { "notifiers": { "rebuild": false }})
+    @editableInPropertyPage("AO from red channel", PropertyTypeForEdition.Boolean, "METALLIC WORKFLOW", { "notifiers": { "update": true }})
     public useAmbientOcclusionFromMetallicTextureRed: boolean = false;
 
-    @editableInPropertyPage("Metallness from blue channel", PropertyTypeForEdition.Boolean, "METALLIC WORKFLOW", { "notifiers": { "rebuild": false }})
+    @editableInPropertyPage("Metallness from blue channel", PropertyTypeForEdition.Boolean, "METALLIC WORKFLOW", { "notifiers": { "update": true }})
     public useMetallnessFromMetallicTextureBlue: boolean = true;
 
-    @editableInPropertyPage("Roughness from alpha channel", PropertyTypeForEdition.Boolean, "METALLIC WORKFLOW", { "notifiers": { "rebuild": false }})
+    @editableInPropertyPage("Roughness from alpha channel", PropertyTypeForEdition.Boolean, "METALLIC WORKFLOW", { "notifiers": { "update": true }})
     public useRoughnessFromMetallicTextureAlpha: boolean = false;
 
-    @editableInPropertyPage("Roughness from green channel", PropertyTypeForEdition.Boolean, "METALLIC WORKFLOW", { "notifiers": { "rebuild": false }})
+    @editableInPropertyPage("Roughness from green channel", PropertyTypeForEdition.Boolean, "METALLIC WORKFLOW", { "notifiers": { "update": true }})
     public useRoughnessFromMetallicTextureGreen: boolean = true;
 
-    @editableInPropertyPage("Metallic F0 from alpha channel", PropertyTypeForEdition.Boolean, "METALLIC WORKFLOW", { "notifiers": { "rebuild": false }})
+    @editableInPropertyPage("Metallic F0 from alpha channel", PropertyTypeForEdition.Boolean, "METALLIC WORKFLOW", { "notifiers": { "update": true }})
     public useMetallicF0FactorFromMetallicTexture: boolean = false;
 
     /**

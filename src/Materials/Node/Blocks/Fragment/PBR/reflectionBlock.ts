@@ -29,10 +29,10 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     public worldNormalConnectionPoint: NodeMaterialConnectionPoint;
     public cameraPositionConnectionPoint: NodeMaterialConnectionPoint;
 
-    @editableInPropertyPage("Spherical Harmonics", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "rebuild": false }})
+    @editableInPropertyPage("Spherical Harmonics", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true }})
     public useSphericalHarmonics: boolean = true;
 
-    @editableInPropertyPage("Force irradiance in fragment", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "rebuild": false }})
+    @editableInPropertyPage("Force irradiance in fragment", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true }})
     public forceIrradianceInFragment: boolean = false;
 
     public constructor(name: string) {
@@ -254,6 +254,13 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         let code = "";
 
         this.handleFragmentSideInits(state);
+
+        state._emitFunctionFromInclude("harmonicsFunctions", `//${this.name}`, {
+            replaceStrings: [
+                { search: /uniform vec3 vSphericalL00;[\s\S]*?uniform vec3 vSphericalL22;/g, replace: "" },
+                { search: /uniform vec3 vSphericalX;[\s\S]*?uniform vec3 vSphericalZX;/g, replace: "" },
+            ]
+        });
 
         code += this.handleFragmentSideCodeReflectionCoords(normalVarName);
 
