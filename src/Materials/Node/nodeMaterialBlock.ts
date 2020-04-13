@@ -692,7 +692,7 @@ export class NodeMaterialBlock {
                     this.outputs[i].displayName = port.displayName;
                 }
             })
-        } 
+        }
     }
 
     /**
