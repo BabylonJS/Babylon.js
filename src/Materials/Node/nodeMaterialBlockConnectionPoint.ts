@@ -431,6 +431,7 @@ export class NodeMaterialConnectionPoint {
 
     /**
      * Serializes this point in a JSON representation
+     * @param isInput defines if the connection point is an input (default is true)
      * @returns the serialized point object
      */
     public serialize(isInput = true): any {
