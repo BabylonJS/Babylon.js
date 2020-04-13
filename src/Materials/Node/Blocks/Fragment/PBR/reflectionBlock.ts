@@ -23,6 +23,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     private _defineLinearSpecularReflection: string;
     private _defineLODBasedMicroSurface: string;
     private _vEnvironmentIrradianceName: string;
+    private _vReflectionMicrosurfaceInfosName: string;
 
     public worldPositionConnectionPoint: NodeMaterialConnectionPoint;
     public worldNormalConnectionPoint: NodeMaterialConnectionPoint;
@@ -165,6 +166,8 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
             effect.setTexture(this._2DSamplerName, reflectionTexture);
         }
 
+        effect.setFloat3("vReflectionMicrosurfaceInfos", reflectionTexture.getSize().width, reflectionTexture.lodGenerationScale, reflectionTexture.lodGenerationOffset);
+
         const defines = subMesh._materialDefines as  NodeMaterialDefines;
 
         const polynomials = reflectionTexture.sphericalPolynomial;
@@ -197,16 +200,6 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
                 effect.setFloat3("vSphericalZX", polynomials.zx.x, polynomials.zx.y, polynomials.zx.z);
             }
         }
-    }
-
-    private _formatNumberForGLSL(val: number): string {
-        let s = val.toString();
-
-        if (s.indexOf('.') === -1) {
-            s += ".";
-        }
-
-        return s;
     }
 
     public handleVertexSide(state: NodeMaterialBuildState): string {
@@ -267,23 +260,24 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         const varLOD = state._getFreeVariableName("reflectionLOD");
         const varRequestedLOD = state._getFreeVariableName("requestedReflectionLOD");
         const varAutomaticLOD = state._getFreeVariableName("automaticReflectionLOD");
-        const varInfos = state._getFreeVariableName("vReflectionMicrosurfaceInfos");
+
+        this._vReflectionMicrosurfaceInfosName = state._getFreeVariableName("vReflectionMicrosurfaceInfos");
+
+        state._emitUniformFromString(this._vReflectionMicrosurfaceInfosName, "vec3");
 
         code += `
             vec4 ${finalColorVarName} = vec4(0.);
 
-            vec3 ${varInfos} = vec3(${this.texture!.getSize().width}., ${this._formatNumberForGLSL(this.texture!.lodGenerationScale)}, ${this._formatNumberForGLSL(this.texture!.lodGenerationOffset)});
-
             #if defined(${this._defineLODReflectionAlpha}) && !defined(${this._defineSkyboxName})
-                float ${varLOD} = getLodFromAlphaG(${varInfos}.x, alphaG, NdotVUnclamped);
+                float ${varLOD} = getLodFromAlphaG(${this._vReflectionMicrosurfaceInfosName}.x, alphaG, NdotVUnclamped);
             #elif defined(${this._defineLinearSpecularReflection})
-                float ${varLOD} = getLinearLodFromRoughness(${varInfos}.x, roughness);
+                float ${varLOD} = getLinearLodFromRoughness(${this._vReflectionMicrosurfaceInfosName}.x, roughness);
             #else
-                float ${varLOD} = getLodFromAlphaG(${varInfos}.x, alphaG);
+                float ${varLOD} = getLodFromAlphaG(${this._vReflectionMicrosurfaceInfosName}.x, alphaG);
             #endif
 
             #ifdef ${this._defineLODBasedMicroSurface}
-                ${varLOD} = ${varLOD} * ${varInfos}.y + ${varInfos}.z;
+                ${varLOD} = ${varLOD} * ${this._vReflectionMicrosurfaceInfosName}.y + ${this._vReflectionMicrosurfaceInfosName}.z;
 
                 #ifdef ${this._defineLODReflectionAlpha}
                     #ifdef ${this._define3DName}
