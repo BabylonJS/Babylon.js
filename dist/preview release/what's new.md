@@ -144,6 +144,7 @@
 - Fix bug in playground where child NME windows would not close before page unload events ([belfortk](https://github.com/belfortk)
 - Fixed an issue with stereoscopic rendering ([#8000](https://github.com/BabylonJS/Babylon.js/issues/8000)) ([RaananW](https://github.com/RaananW))
 - Fix an error when compiling with the closure compiler ([ageneau](https://github.com/ageneau/))
+- Fix an error in applying texture to sides of `extrudePolygon` using faceUV[1] ([JohnK](https://github.com/BabylonJSGuide/))
 
 ## Breaking changes
 
