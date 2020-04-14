@@ -22,22 +22,34 @@ import { Texture } from '../../../Textures/texture';
  * Block used to read a reflection texture from a sampler
  */
 export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
+    /** @hidden */
     public _define3DName: string;
-    protected _defineCubicName: string;
-    protected _defineExplicitName: string;
-    protected _defineProjectionName: string;
-    protected _defineLocalCubicName: string;
-    protected _defineSphericalName: string;
-    protected _definePlanarName: string;
-    protected _defineEquirectangularName: string;
-    protected _defineMirroredEquirectangularFixedName: string;
-    protected _defineEquirectangularFixedName: string;
-    protected _defineSkyboxName: string;
+    /** @hidden */
+    public _defineCubicName: string;
+    /** @hidden */
+    public _defineExplicitName: string;
+    /** @hidden */
+    public _defineProjectionName: string;
+    /** @hidden */
+    public _defineLocalCubicName: string;
+    /** @hidden */
+    public _defineSphericalName: string;
+    /** @hidden */
+    public _definePlanarName: string;
+    /** @hidden */
+    public _defineEquirectangularName: string;
+    /** @hidden */
+    public _defineMirroredEquirectangularFixedName: string;
+    /** @hidden */
+    public _defineEquirectangularFixedName: string;
+    /** @hidden */
+    public _defineSkyboxName: string;
     protected _cubeSamplerName: string;
     protected _2DSamplerName: string;
     protected _positionUVWName: string;
     protected _directionWName: string;
     protected _reflectionVectorName: string;
+    /** @hidden */
     public _reflectionCoordsName: string;
     protected _reflectionMatrixName: string;
     protected _reflectionColorName: string;
