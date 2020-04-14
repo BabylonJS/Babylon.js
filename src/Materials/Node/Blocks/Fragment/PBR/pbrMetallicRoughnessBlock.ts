@@ -357,6 +357,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         defines.setValue("PBR", true);
         defines.setValue("METALLICWORKFLOW", true);
         defines.setValue("DEBUGMODE", this.debugMode);
+        defines.setValue("NORMALXYSCALE", true);
+        defines.setValue("BUMP", this.perturbedNormal.isConnected);
 
         // Albedo & Opacity
         if (this.baseTexture.isConnected) {
