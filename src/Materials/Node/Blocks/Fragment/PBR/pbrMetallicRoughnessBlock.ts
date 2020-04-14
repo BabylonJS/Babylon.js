@@ -649,7 +649,12 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state.compilationString += (this.reflectivityParams.connectedPoint?.ownerBlock as Nullable<ReflectivityBlock>)?.getCode(aoIntensity) ?? "";
 
         // _____________________________ Geometry info _________________________________
-        state.compilationString += state._emitCodeFromInclude("pbrBlockGeometryInfo", comments);
+        state.compilationString += state._emitCodeFromInclude("pbrBlockGeometryInfo", comments, {
+            replaceStrings: [
+                { search: /REFLECTIONMAP_SKYBOX/g, replace: reflectionBlock?._defineSkyboxName ?? "REFLECTIONMAP_SKYBOX" },
+                { search: /REFLECTIONMAP_3D/g, replace: reflectionBlock?._define3DName ?? "REFLECTIONMAP_3D" },
+            ]
+        });
 
         // _____________________________ Anisotropy _______________________________________
         const anisotropyBlock = this.anisotropyParams.isConnected ? this.anisotropyParams.connectedPoint?.ownerBlock as AnisotropyBlock : null;
@@ -707,7 +712,12 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             #endif\r\n`;
 
         // _________________________ Specular Environment Reflectance __________________________
-        state.compilationString += state._emitCodeFromInclude("pbrBlockReflectance", comments);
+        state.compilationString += state._emitCodeFromInclude("pbrBlockReflectance", comments, {
+            replaceStrings: [
+                { search: /REFLECTIONMAP_SKYBOX/g, replace: reflectionBlock?._defineSkyboxName ?? "REFLECTIONMAP_SKYBOX" },
+                { search: /REFLECTIONMAP_3D/g, replace: reflectionBlock?._define3DName ?? "REFLECTIONMAP_3D" },
+            ]
+        });
 
         // ___________________________________ SubSurface ______________________________________
         state.compilationString += `subSurfaceOutParams subSurfaceOut;
