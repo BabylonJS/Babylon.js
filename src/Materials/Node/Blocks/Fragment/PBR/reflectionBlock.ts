@@ -106,22 +106,23 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         return this._outputs[0];
     }
 
-    /**
-     * Returns the texture used for reflections.
-     * @returns - Reflection texture if present.  Otherwise, returns the environment texture.
-     */
-    private _getReflectionTexture(): Nullable<BaseTexture> {
+    public get hasTexture(): boolean {
+        return this._getTexture() !== null;
+    }
+
+    protected _getTexture(): Nullable<BaseTexture> {
         if (this.texture) {
             return this.texture;
         }
 
-        return Engine.LastCreatedScene!.environmentTexture;
+        return Engine.LastCreatedScene?.environmentTexture ?? null;
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         super.prepareDefines(mesh, nodeMaterial, defines);
 
-        const reflection = this.texture && this.texture.getTextureMatrix;
+        const reflectionTexture = this._getTexture();
+        const reflection = reflectionTexture && reflectionTexture.getTextureMatrix;
 
         defines.setValue("REFLECTION", reflection);
 
@@ -129,13 +130,11 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
             return;
         }
 
-        defines.setValue(this._defineLODReflectionAlpha, this.texture!.lodLevelInAlpha);
-        defines.setValue(this._defineLinearSpecularReflection, this.texture!.linearSpecularLOD);
+        defines.setValue(this._defineLODReflectionAlpha, reflectionTexture!.lodLevelInAlpha);
+        defines.setValue(this._defineLinearSpecularReflection, reflectionTexture!.linearSpecularLOD);
         defines.setValue(this._defineLODBasedMicroSurface, Engine.LastCreatedScene?.getEngine()?.getCaps().textureLOD ?? false);
 
         defines.setValue("SPHERICAL_HARMONICS", this.useSphericalHarmonics);
-
-        const reflectionTexture = this._getReflectionTexture();
 
         if (reflectionTexture && reflectionTexture.coordinatesMode !== Texture.SKYBOX_MODE) {
             if (reflectionTexture.isCube) {
@@ -154,7 +153,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh) {
         super.bind(effect, nodeMaterial, mesh);
 
-        const reflectionTexture = this._getReflectionTexture();
+        const reflectionTexture = this._getTexture();
 
         if (!reflectionTexture || !subMesh) {
             return;

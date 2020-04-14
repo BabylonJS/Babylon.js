@@ -93,6 +93,10 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
      */
     public abstract get view(): NodeMaterialConnectionPoint;
 
+    protected _getTexture(): Nullable<BaseTexture> {
+        return this.texture;
+    }
+
     public autoConfigure(material: NodeMaterial) {
         if (!this.position.isConnected) {
             let positionInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "position");
@@ -130,25 +134,29 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
             return;
         }
 
-        if (!this.texture || !this.texture.getTextureMatrix) {
+        const texture = this._getTexture();
+
+        if (!texture || !texture.getTextureMatrix) {
             return;
         }
 
-        defines.setValue(this._define3DName, this.texture.isCube);
-        defines.setValue(this._defineLocalCubicName, (<any>this.texture).boundingBoxSize ? true : false);
-        defines.setValue(this._defineExplicitName, this.texture.coordinatesMode === Constants.TEXTURE_EXPLICIT_MODE);
-        defines.setValue(this._defineSkyboxName, this.texture.coordinatesMode === Constants.TEXTURE_SKYBOX_MODE);
-        defines.setValue(this._defineCubicName, this.texture.coordinatesMode === Constants.TEXTURE_CUBIC_MODE);
-        defines.setValue(this._defineSphericalName, this.texture.coordinatesMode === Constants.TEXTURE_SPHERICAL_MODE);
-        defines.setValue(this._definePlanarName, this.texture.coordinatesMode === Constants.TEXTURE_PLANAR_MODE);
-        defines.setValue(this._defineProjectionName, this.texture.coordinatesMode === Constants.TEXTURE_PROJECTION_MODE);
-        defines.setValue(this._defineEquirectangularName, this.texture.coordinatesMode === Constants.TEXTURE_EQUIRECTANGULAR_MODE);
-        defines.setValue(this._defineEquirectangularFixedName, this.texture.coordinatesMode === Constants.TEXTURE_FIXED_EQUIRECTANGULAR_MODE);
-        defines.setValue(this._defineMirroredEquirectangularFixedName, this.texture.coordinatesMode === Constants.TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE);
+        defines.setValue(this._define3DName, texture.isCube);
+        defines.setValue(this._defineLocalCubicName, (<any>texture).boundingBoxSize ? true : false);
+        defines.setValue(this._defineExplicitName, texture.coordinatesMode === Constants.TEXTURE_EXPLICIT_MODE);
+        defines.setValue(this._defineSkyboxName, texture.coordinatesMode === Constants.TEXTURE_SKYBOX_MODE);
+        defines.setValue(this._defineCubicName, texture.coordinatesMode === Constants.TEXTURE_CUBIC_MODE);
+        defines.setValue(this._defineSphericalName, texture.coordinatesMode === Constants.TEXTURE_SPHERICAL_MODE);
+        defines.setValue(this._definePlanarName, texture.coordinatesMode === Constants.TEXTURE_PLANAR_MODE);
+        defines.setValue(this._defineProjectionName, texture.coordinatesMode === Constants.TEXTURE_PROJECTION_MODE);
+        defines.setValue(this._defineEquirectangularName, texture.coordinatesMode === Constants.TEXTURE_EQUIRECTANGULAR_MODE);
+        defines.setValue(this._defineEquirectangularFixedName, texture.coordinatesMode === Constants.TEXTURE_FIXED_EQUIRECTANGULAR_MODE);
+        defines.setValue(this._defineMirroredEquirectangularFixedName, texture.coordinatesMode === Constants.TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE);
     }
 
     public isReady() {
-        if (this.texture && !this.texture.isReadyOrNotBlocking()) {
+        const texture = this._getTexture();
+
+        if (texture && !texture.isReadyOrNotBlocking()) {
             return false;
         }
 
@@ -156,16 +164,18 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     }
 
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
-        if (!mesh || !this.texture) {
+        const texture = this._getTexture();
+
+        if (!mesh || !texture) {
             return;
         }
 
-        effect.setMatrix(this._reflectionMatrixName, this.texture.getReflectionTextureMatrix());
+        effect.setMatrix(this._reflectionMatrixName, texture.getReflectionTextureMatrix());
 
-        if (this.texture.isCube) {
-            effect.setTexture(this._cubeSamplerName, this.texture);
+        if (texture.isCube) {
+            effect.setTexture(this._cubeSamplerName, texture);
         } else {
-            effect.setTexture(this._2DSamplerName, this.texture);
+            effect.setTexture(this._2DSamplerName, texture);
         }
     }
 
