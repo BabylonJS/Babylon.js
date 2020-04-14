@@ -449,6 +449,12 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         effect.setTexture(this._environmentBrdfSamplerName, this._environmentBRDFTexture);
 
         effect.setFloat2("vDebugMode", this.debugLimit, this.debugFactor);
+
+        const ambientScene = Engine.LastCreatedScene?.ambientColor;
+
+        if (ambientScene) {
+            effect.setColor3("ambientFromScene", ambientScene);
+        }
     }
 
     private _injectVertexCode(state: NodeMaterialBuildState) {
@@ -483,6 +489,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state.compilationString += reflectionBlock?.handleVertexSide(state) ?? "";
 
         state._emitUniformFromString("vDebugMode", "vec2", "defined(DUMMY) || DEBUGMODE > 0");
+        state._emitUniformFromString("ambientFromScene", "vec3");
 
         if (state._emitVaryingFromString("vClipSpacePosition", "vec4", "defined(DUMMY) || DEBUGMODE > 0")) {
             state._injectAtEnd += `#if DEBUGMODE > 0\r\n`;
@@ -755,7 +762,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state.compilationString += state._emitCodeFromInclude("pbrBlockFinalUnlitComponents", comments, {
             replaceStrings: [
                 { search: /vec3 finalEmissive[\s\S]*?finalEmissive\*=vLightingIntensity\.y;/g, replace: "" },
-                { search: /vAmbientColor/g, replace: aoColor },
+                { search: /vAmbientColor/g, replace: aoColor + " * ambientFromScene" },
                 { search: /vAmbientInfos\.w/g, replace: aoDirectLightIntensity },
             ]
         });
