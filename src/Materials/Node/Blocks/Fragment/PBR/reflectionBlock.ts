@@ -252,6 +252,27 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     public getCode(state: NodeMaterialBuildState, normalVarName: string, finalColorVarName: string, finalIrradianceVector: string, finalIrradianceVarName: string): string {
         let code = "";
 
+        code += `
+            struct reflectionOutParams
+            {
+                vec4 environmentRadiance;
+                vec3 environmentIrradiance;
+            #ifdef ${this._define3DName}
+                vec3 reflectionCoords;
+            #else
+                vec2 reflectionCoords;
+            #endif
+            #ifdef SS_TRANSLUCENCY
+                #ifdef USESPHERICALFROMREFLECTIONMAP
+                    #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
+                        vec3 irradianceVector;
+                    #endif
+                #endif
+            #endif
+            };\r\n`;
+
+        code += `reflectionOutParams reflectionOut;\r\n`;
+
         this.handleFragmentSideInits(state);
 
         state._emitFunctionFromInclude("harmonicsFunctions", `//${this.name}`, {
@@ -323,6 +344,14 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
                     ${finalIrradianceVarName} = computeEnvironmentIrradiance(${finalIrradianceVector});
                 #endif
             #endif\r\n`;
+
+        code += `
+            #ifdef SS_TRANSLUCENCY
+                reflectionOut.irradianceVector = irradianceVector;
+            #endif
+            reflectionOut.environmentRadiance = environmentRadiance;
+            reflectionOut.environmentIrradiance = environmentIrradiance;
+            reflectionOut.reflectionCoords = ${this._reflectionCoordsName};\r\n`;
 
         return code;
     }
