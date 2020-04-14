@@ -21,5 +21,4 @@ DisplayLedger.RegisteredControls["TrigonometryBlock"] = TrigonometryDisplayManag
 DisplayLedger.RegisteredControls["TextureBlock"] = TextureDisplayManager;
 DisplayLedger.RegisteredControls["ReflectionTextureBlock"] = TextureDisplayManager;
 DisplayLedger.RegisteredControls["ReflectionBlock"] = TextureDisplayManager;
-DisplayLedger.RegisteredControls["MetallicRoughnessTextureBlock"] = TextureDisplayManager;
 DisplayLedger.RegisteredControls["DiscardBlock"] = DiscardDisplayManager;
