@@ -674,36 +674,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         }
 
         // _____________________________ Reflection _______________________________________
-        if (reflectionBlock && reflectionBlock.texture) {
-            state.compilationString += `
-                struct reflectionOutParams
-                {
-                    vec4 environmentRadiance;
-                    vec3 environmentIrradiance;
-                #ifdef ${reflectionBlock._define3DName}
-                    vec3 reflectionCoords;
-                #else
-                    vec2 reflectionCoords;
-                #endif
-                #ifdef SS_TRANSLUCENCY
-                    #ifdef USESPHERICALFROMREFLECTIONMAP
-                        #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
-                            vec3 irradianceVector;
-                        #endif
-                    #endif
-                #endif
-                };
-            `;
-
-            state.compilationString += `reflectionOutParams reflectionOut;\r\n`;
+        if (reflectionBlock && reflectionBlock.hasTexture) {
             state.compilationString += reflectionBlock.getCode(state, anisotropyBlock ? "anisotropicOut.anisotropicNormal" : "normalW", "environmentRadiance", "irradianceVector", "environmentIrradiance");
-            state.compilationString += `
-                #ifdef SS_TRANSLUCENCY
-                    reflectionOut.irradianceVector = irradianceVector;
-                #endif
-                reflectionOut.environmentRadiance = environmentRadiance;
-                reflectionOut.environmentIrradiance = environmentIrradiance;
-                reflectionOut.reflectionCoords = ${reflectionBlock._reflectionCoordsName};\r\n`;
         }
 
         // ___________________ Compute Reflectance aka R0 F0 info _________________________
