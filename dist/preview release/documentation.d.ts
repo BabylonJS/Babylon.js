@@ -21420,9 +21420,6 @@ declare module BABYLON {
          * Stores the z offset value
          */
         zOffset: number;
-        /**
-         * Gets a value specifying if wireframe mode is enabled
-         */
         get wireframe(): boolean;
         /**
          * Sets the state of wireframe mode
