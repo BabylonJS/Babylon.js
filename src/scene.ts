@@ -3908,6 +3908,10 @@ export class Scene extends AbstractScene implements IAnimatable {
             return;
         }
 
+        if (this.onReadyObservable.hasObservers() && this._executeWhenReadyTimeoutId === -1) {
+            this._checkIsReady();
+        }
+
         this._frameId++;
 
         // Register components that have been associated lately to the scene.

@@ -501,10 +501,6 @@ export class Material implements IAnimatable {
     @serialize()
     public zOffset = 0;
 
-    /**
-     * Gets a value specifying if wireframe mode is enabled
-     */
-    @serialize()
     public get wireframe(): boolean {
         switch (this._fillMode) {
             case Material.WireFrameFillMode:
