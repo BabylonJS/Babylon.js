@@ -18,6 +18,8 @@ import { Nullable } from 'babylonjs/types';
 import { FloatLineComponent } from '../../../lines/floatLineComponent';
 import { TextLineComponent } from '../../../lines/textLineComponent';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
+import { AnimationCurveEditorComponent } from '../animations/animationCurveEditorComponent';
+import { PopupComponent } from '../animations/popupComponent';
 
 interface IAnimationGridComponentProps {
     globalState: GlobalState;
@@ -34,6 +36,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
     private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
     private _isPlaying = false;
     private timelineRef: React.RefObject<SliderLineComponent>;
+    private _isCurveEditorOpen = false;
     private _animationControl = {
         from: 0,
         to: 0,
@@ -58,7 +61,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                 }
             });
 
-            if (animatableAsAny.animations) {                
+            if (animatableAsAny.animations) {
                 this._animations!.push(...animatableAsAny.animations);
             }
 
@@ -128,6 +131,19 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
         }
     }
 
+    onOpenAnimationCurveEditor() {
+        this._isCurveEditorOpen = true;
+    }
+
+    onCloseAnimationCurveEditor(window: Window | null) {
+        this._isCurveEditorOpen = false;
+        if (window === null) {
+            console.log("Window already closed");
+        } else {
+            window.close();
+        }
+    }
+
     render() {
         const animatable = this.props.animatable;
         const animatableAsAny = this.props.animatable as any;
@@ -170,7 +186,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                     <>
                         <LineContainerComponent globalState={this.props.globalState} title="ANIMATIONS">
                             <TextLineComponent label="Count" value={animations.length.toString()} />
-                            <ButtonLineComponent label="Edit" onClick={() => {}} />
+                            <ButtonLineComponent label="Edit" onClick={() => this.onOpenAnimationCurveEditor()} />
                             {
                                 animations.map((anim, i) => {
                                     return (
@@ -178,10 +194,23 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                                     )
                                 })
                             }
+
+                            {
+
+                                this._isCurveEditorOpen && <PopupComponent
+                                    id="curve-editor"
+                                    title="Curve Animation Editor"
+                                    size={{ width: 800, height: 600 }}
+                                    onOpen={(window: Window) => { window.console.log("Window opened!!") }}
+                                    onClose={(window: Window) => this.onCloseAnimationCurveEditor(window)}>
+
+                                    <AnimationCurveEditorComponent title="Animations Curve Editor" close={(event) => this.onCloseAnimationCurveEditor(event.view)}/>
+                                </PopupComponent>
+                            }
                         </LineContainerComponent>
                         <LineContainerComponent globalState={this.props.globalState} title="ANIMATION GENERAL CONTROL">
-                            <FloatLineComponent lockObject={this.props.lockObject} isInteger={true} label="From" target={this._animationControl} propertyName="from" onChange={()=> this.onChangeFromOrTo()} />
-                            <FloatLineComponent lockObject={this.props.lockObject} isInteger={true} label="To" target={this._animationControl} propertyName="to" onChange={()=> this.onChangeFromOrTo()}/>
+                            <FloatLineComponent lockObject={this.props.lockObject} isInteger={true} label="From" target={this._animationControl} propertyName="from" onChange={() => this.onChangeFromOrTo()} />
+                            <FloatLineComponent lockObject={this.props.lockObject} isInteger={true} label="To" target={this._animationControl} propertyName="to" onChange={() => this.onChangeFromOrTo()} />
                             <CheckBoxLineComponent label="Loop" onSelect={value => this._animationControl.loop = value} isSelected={() => this._animationControl.loop} />
                             {
                                 this._isPlaying &&
@@ -189,32 +218,32 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                                     step={(this._animationControl.to - this._animationControl.from) / 1000.0} directValue={this.state.currentFrame}
                                     onInput={value => this.onCurrentFrameChange(value)}
                                 />
-                            }                         
-                            <ButtonLineComponent label={this._isPlaying ? "Stop" : "Play"} onClick={() => this.playOrPause()} />                        
+                            }
+                            <ButtonLineComponent label={this._isPlaying ? "Stop" : "Play"} onClick={() => this.playOrPause()} />
                             {
                                 (this._ranges.length > 0 || this._animations && this._animations.length > 0) &&
-                                    <>
-                                        <CheckBoxLineComponent label="Enable override" onSelect={value => {
-                                            if (value) {
-                                                animatableAsAny.animationPropertiesOverride = new AnimationPropertiesOverride();
-                                                animatableAsAny.animationPropertiesOverride.blendingSpeed = 0.05;
-                                            } else {
-                                                animatableAsAny.animationPropertiesOverride = null;
-                                            }
-                                            this.forceUpdate();
-                                        }} isSelected={() => animatableAsAny.animationPropertiesOverride != null}
-                                            onValueChanged={() => this.forceUpdate()}
-                                        />
-                                        {
-                                            animatableAsAny.animationPropertiesOverride != null &&
-                                            <div>
-                                                <CheckBoxLineComponent label="Enable blending" target={animatableAsAny.animationPropertiesOverride} propertyName="enableBlending" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                                                <SliderLineComponent label="Blending speed" target={animatableAsAny.animationPropertiesOverride} propertyName="blendingSpeed" minimum={0} maximum={0.1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                                            </div>
+                                <>
+                                    <CheckBoxLineComponent label="Enable override" onSelect={value => {
+                                        if (value) {
+                                            animatableAsAny.animationPropertiesOverride = new AnimationPropertiesOverride();
+                                            animatableAsAny.animationPropertiesOverride.blendingSpeed = 0.05;
+                                        } else {
+                                            animatableAsAny.animationPropertiesOverride = null;
                                         }
-                                    </>
+                                        this.forceUpdate();
+                                    }} isSelected={() => animatableAsAny.animationPropertiesOverride != null}
+                                        onValueChanged={() => this.forceUpdate()}
+                                    />
+                                    {
+                                        animatableAsAny.animationPropertiesOverride != null &&
+                                        <div>
+                                            <CheckBoxLineComponent label="Enable blending" target={animatableAsAny.animationPropertiesOverride} propertyName="enableBlending" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                                            <SliderLineComponent label="Blending speed" target={animatableAsAny.animationPropertiesOverride} propertyName="blendingSpeed" minimum={0} maximum={0.1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                                        </div>
+                                    }
+                                </>
                             }
-                        </LineContainerComponent>    
+                        </LineContainerComponent>
                     </>
                 }
             </div>
