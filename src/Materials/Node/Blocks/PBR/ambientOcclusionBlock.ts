@@ -143,4 +143,4 @@ export class AmbientOcclusionBlock extends NodeMaterialBlock {
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.ambientOcclusionBlock"] = AmbientOcclusionBlock;
+_TypeStore.RegisteredTypes["BABYLON.AmbientOcclusionBlock"] = AmbientOcclusionBlock;
