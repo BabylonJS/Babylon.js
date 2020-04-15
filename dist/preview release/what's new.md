@@ -10,12 +10,11 @@
 ### General
 
 - Refactored React refs from old string API to React.createRef() API ([belfortk](https://github.com/belfortk)
-
 - Scale on one axis for `BoundingBoxGizmo` ([cedricguillemet](https://github.com/cedricguillemet))
-
 - Simplified code contributions by fully automating the dev setup with gitpod ([nisarhassan12](https://github.com/nisarhassan12))
 - Add a `CascadedShadowMap.IsSupported` method and log an error instead of throwing an exception when CSM is not supported ([Popov72](https://github.com/Popov72))
 - Added initial code for DeviceInputSystem ([PolygonalSun](https://github.com/PolygonalSun))
+- Added support for `material.disableColorWrite` ([Deltakosh](https://github.com/deltakosh))
 
 ### Engine
 
@@ -27,14 +26,16 @@
 
 - Frames are now resizable from the corners ([belfortk](https://github.com/belfortk)
 - Can now rename and re-order frame inputs and outputs ([belfortk](https://github.com/belfortk)
+- Can now edit Node port names ([belfortk](https://github.com/belfortk)
 
 ### Inspector
 
 - Handle PBR colors as colors in linear space ([Popov72](https://github.com/Popov72))
 - Allow removing textures ([Popov72](https://github.com/Popov72))
 - Edit all textures (anisotropic, clear coat, sheen, ...) for the PBR materials ([Popov72](https://github.com/Popov72))
-- Added right click options to create PBR and Standard Materials ([Deltakosh](https://github.com/deltakosh)
-- Added support for recording GIF ([Deltakosh](https://github.com/deltakosh)
+- Added right click options to create PBR and Standard Materials ([Deltakosh](https://github.com/deltakosh))
+- Added support for recording GIF ([Deltakosh](https://github.com/deltakosh))
+- Popup Window available (To be used in Curve Editor) ([pixelspace](https://github.com/devpixelspace))
 
 ### Cameras
 
@@ -44,13 +45,14 @@
 
 ### Sprites
 
-- Added support for 'sprite.useAlphaForPicking` to enable precise picking using sprite alpha ([Deltakosh](https://github.com/deltakosh) 
+- Added support for 'sprite.useAlphaForPicking` to enable precise picking using sprite alpha ([Deltakosh](https://github.com/deltakosh))
 
 ### Physics
 
 - Fixed time steps or delta time with sub time step for Oimo.js and Cannon.js ([cedricguillemet](https://github.com/cedricguillemet))
 - Ammo.js IDL exposed property update and raycast vehicle stablization support ([MackeyK24](https://github.com/MackeyK24))
 - Recast.js plugin nav mesh and crowd agent to ref performance optimizations. ([MackeyK24](https://github.com/MackeyK24))
+- Added `scene.physicsEnabled` boolean ([Deltakosh](https://github.com/deltakosh))
 
 ### Loaders
 
@@ -83,6 +85,8 @@
 - Teleportation plugin doesn't use the touched to finish teleportation ([#7916](https://github.com/BabylonJS/Babylon.js/issues/7916)) ([RaananW](https://github.com/RaananW))
 - Support for pointer selection and teleportation in right handed systems ([#7967](https://github.com/BabylonJS/Babylon.js/issues/7967)) ([RaananW](https://github.com/RaananW))
 - Pointer Selection feature now uses `selectstart` and `selectend` events when gamepad and motion controller are not present ([#7989](https://github.com/BabylonJS/Babylon.js/issues/7989)) ([RaananW](https://github.com/RaananW))
+- Removed forced `autoClear` = false settings ([RaananW](https://github.com/RaananW))
+- Added a warning that WebXR can only be served over HTTPS ([RaananW](https://github.com/RaananW))
 
 ### Collisions
 
@@ -91,6 +95,14 @@
 ### Animation
 
 - Added support for Additive Animation Blending. Existing animations can be converted to additive using the new MakeAnimationAdditive method for Skeletons, AnimationGroups and Animations. Animations can be played additively using the new isAdditive input parameter to the begin animation methods. ([c-morten](https://github.com/c-morten))
+
+### Maths
+
+- Added `Vector3.projectOnPlaneToRef` ([Deltakosh](https://github.com/deltakosh))
+
+### Particles
+
+- Added local space support for GPU particles ([CraigFeldpsar](https://github.com/craigfeldspar))
 
 ### Build
 
@@ -135,6 +147,8 @@
 - Fix bug in `ShaderMaterial` when using morph targets ([Popov72](https://github.com/Popov72)
 - Fix bug in playground where child NME windows would not close before page unload events ([belfortk](https://github.com/belfortk)
 - Fixed an issue with stereoscopic rendering ([#8000](https://github.com/BabylonJS/Babylon.js/issues/8000)) ([RaananW](https://github.com/RaananW))
+- Fix an error when compiling with the closure compiler ([ageneau](https://github.com/ageneau/))
+- Fix an error in applying texture to sides of `extrudePolygon` using faceUV[1] ([JohnK](https://github.com/BabylonJSGuide/))
 
 ## Breaking changes
 

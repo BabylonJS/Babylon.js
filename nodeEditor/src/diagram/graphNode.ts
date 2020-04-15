@@ -51,6 +51,7 @@ export class GraphNode {
             this._visual.classList.add("hidden");
         } else {
             this._visual.classList.remove("hidden");
+            this._upateNodePortNames();
         }
 
         for (var link of this._links) {
@@ -58,6 +59,14 @@ export class GraphNode {
         }
 
         this._refreshLinks();
+    }
+
+    private _upateNodePortNames(){
+        for (var port of this._inputPorts.concat(this._outputPorts)) {
+            if(port.hasLabel()){
+                port.portName = port.connectionPoint.displayName || port.connectionPoint.name;
+            }
+        }
     }
 
     public get outputPorts() {

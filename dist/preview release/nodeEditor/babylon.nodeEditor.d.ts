@@ -100,7 +100,6 @@ declare module NODEEDITOR {
     export class FrameNodePort extends NodePort {
         connectionPoint: BABYLON.NodeMaterialConnectionPoint;
         node: GraphNode;
-        private _portLabel;
         private _parentFrameId;
         private _isInput;
         private _framePortPosition;
@@ -109,9 +108,7 @@ declare module NODEEDITOR {
         get parentFrameId(): number;
         get onFramePortPositionChangedObservable(): BABYLON.Observable<FrameNodePort>;
         get isInput(): boolean;
-        get portLabel(): string;
         get framePortId(): number;
-        set portLabel(newLabel: string);
         get framePortPosition(): FramePortPosition;
         set framePortPosition(position: FramePortPosition);
         constructor(portContainer: HTMLElement, connectionPoint: BABYLON.NodeMaterialConnectionPoint, node: GraphNode, globalState: GlobalState, isInput: boolean, framePortId: number, parentFrameId: number);
@@ -260,10 +257,14 @@ declare module NODEEDITOR {
         protected _element: HTMLDivElement;
         protected _img: HTMLImageElement;
         protected _globalState: GlobalState;
+        protected _portLabelElement: Element;
         protected _onCandidateLinkMovedObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.Nullable<BABYLON.Vector2>>>;
         protected _onSelectionChangedObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;
         delegatedPort: BABYLON.Nullable<FrameNodePort>;
         get element(): HTMLDivElement;
+        get portName(): string;
+        set portName(newName: string);
+        hasLabel(): boolean;
         refresh(): void;
         constructor(portContainer: HTMLElement, connectionPoint: BABYLON.NodeMaterialConnectionPoint, node: GraphNode, globalState: GlobalState);
         dispose(): void;
@@ -1150,6 +1151,7 @@ declare module NODEEDITOR {
         private _isVisible;
         get isVisible(): boolean;
         set isVisible(value: boolean);
+        private _upateNodePortNames;
         get outputPorts(): NodePort[];
         get inputPorts(): NodePort[];
         get links(): NodeLink[];
@@ -1283,14 +1285,28 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export interface IFrameNodePortPropertyTabComponentProps {
+        globalState: GlobalState;
+        nodePort: NodePort;
+    }
+    export class NodePortPropertyTabComponent extends React.Component<IFrameNodePortPropertyTabComponentProps> {
+        private _onSelectionChangedObserver;
+        constructor(props: IFrameNodePortPropertyTabComponentProps);
+        componentWillUnmount(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     interface IPropertyTabComponentProps {
         globalState: GlobalState;
     }
-    export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, {
+    interface IPropertyTabComponentState {
         currentNode: BABYLON.Nullable<GraphNode>;
         currentFrame: BABYLON.Nullable<GraphFrame>;
         currentFrameNodePort: BABYLON.Nullable<FrameNodePort>;
-    }> {
+        currentNodePort: BABYLON.Nullable<NodePort>;
+    }
+    export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
         private _onBuiltObserver;
         constructor(props: IPropertyTabComponentProps);
         componentDidMount(): void;

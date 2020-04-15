@@ -198,6 +198,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     } else {                    
                         this._selectedNodes = [selection];
                     }
+                } else if(selection instanceof NodePort && !selection.hasLabel()){ // if node port is uneditable, select graphNode instead
+                    props.globalState.onSelectionChangedObservable.notifyObservers(selection.node)
                 } else if(selection instanceof NodePort){
                     this._selectedNodes = [];
                     this._selectedFrame = null;
@@ -625,6 +627,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                         }
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(data);
                     }
+                } else if(this._candidateLink.portA instanceof NodePort){
+                    this.props.globalState.onSelectionChangedObservable.notifyObservers(this._candidateLink.portA );
                 }
             }
             this._candidateLink.dispose();
