@@ -3,6 +3,7 @@ import { Observable } from "../Misc/observable";
 import { IDisposable, Scene } from "../scene";
 import { WebXRExperienceHelper } from "./webXRExperienceHelper";
 import { WebXRState, WebXRRenderTarget } from './webXRTypes';
+import { Tools } from '../Misc/tools';
 /**
  * Button which can be used to enter a different mode of XR
  */
@@ -82,6 +83,14 @@ export class WebXREnterExitUI implements IDisposable {
     ) {
         this._overlay = document.createElement("div");
         this._overlay.style.cssText = "z-index:11;position: absolute; right: 20px;bottom: 50px;";
+
+        // if served over HTTP, warn people.
+        // Hopefully the browsers will catch up
+        if (typeof window !== 'undefined') {
+            if (window.location && window.location.protocol === 'http:') {
+                Tools.Warn('WebXR can only be served over HTTPS');
+            }
+        }
 
         if (options.customButtons) {
             this._buttons = options.customButtons;
