@@ -126,12 +126,11 @@ export class GraphFrame {
                                 this._controlledPorts.push(port);
                             }
                         }
-                    } else {
+                    } else if(port.exposedOnFrame) {
                         let localPort = FrameNodePort.CreateFrameNodePortElement(port.connectionPoint, node, this._outputPortContainer, null, this._ownerCanvas.globalState, false, GraphFrame._FramePortCounter++, this.id);
                         this._frameOutPorts.push(localPort);
                         port.delegatedPort = localPort;
                         this._controlledPorts.push(port);
-
                     }
                 }
 
@@ -143,7 +142,7 @@ export class GraphFrame {
                                 link.isVisible = true;
                             }
                         }
-                    } else {
+                    } else if(port.exposedOnFrame) {
                         this._createInputPort(port, node);
                     }
                 }
@@ -1261,6 +1260,7 @@ export class GraphFrame {
 
                 if (node.length) {
                     newFrame.nodes.push(node[0]);
+                    node[0].isEnclosedInAFrame = true;
                 }
             }
         } else {
