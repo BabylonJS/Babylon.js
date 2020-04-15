@@ -8,9 +8,9 @@ import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineCompon
 import { FloatLineComponent } from '../../sharedComponents/floatLineComponent';
 import { SliderLineComponent } from '../../sharedComponents/sliderLineComponent';
 import { Vector2LineComponent } from '../../sharedComponents/vector2LineComponent';
-import { OptionsLineComponent } from '../../sharedComponents/OptionsLineComponent';
+import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
-import { PropertyTypeForEdition, IPropertyDescriptionForEdition } from 'babylonjs/Materials/Node/nodeMaterialDecorator';
+import { PropertyTypeForEdition, IPropertyDescriptionForEdition, IEditablePropertyListOption } from 'babylonjs/Materials/Node/nodeMaterialDecorator';
 
 export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -116,7 +116,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                 }
                 case PropertyTypeForEdition.List: {
                     components.push(
-                        <OptionsLineComponent label={displayName} options={options.options} target={this.props.block} propertyName={propertyName} onSelect={() => this.forceRebuild(options.notifiers)} />
+                        <OptionsLineComponent label={displayName} options={options.options as IEditablePropertyListOption[]} target={this.props.block} propertyName={propertyName} onSelect={() => this.forceRebuild(options.notifiers)} />
                     );
                     break;
                 }
