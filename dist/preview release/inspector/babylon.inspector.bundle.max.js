@@ -58522,6 +58522,45 @@ var PropertyGridTabComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/animationCurveEditorComponent.tsx":
+/*!***********************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/animationCurveEditorComponent.tsx ***!
+  \***********************************************************************************************/
+/*! exports provided: AnimationCurveEditorComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AnimationCurveEditorComponent", function() { return AnimationCurveEditorComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
+/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
+
+
+
+
+var AnimationCurveEditorComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AnimationCurveEditorComponent, _super);
+    function AnimationCurveEditorComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    AnimationCurveEditorComponent.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null, this.props.title),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: { width: 48, height: 48 }, className: "close", onClick: function (event) { return _this.props.close(event); } },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faTimes"] })))));
+    };
+    return AnimationCurveEditorComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./components/actionTabs/tabs/propertyGrids/animations/animationGroupPropertyGridComponent.tsx":
 /*!*****************************************************************************************************!*\
   !*** ./components/actionTabs/tabs/propertyGrids/animations/animationGroupPropertyGridComponent.tsx ***!
@@ -58671,6 +58710,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
+/* harmony import */ var _animations_animationCurveEditorComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../animations/animationCurveEditorComponent */ "./components/actionTabs/tabs/propertyGrids/animations/animationCurveEditorComponent.tsx");
+/* harmony import */ var _animations_popupComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../animations/popupComponent */ "./components/actionTabs/tabs/propertyGrids/animations/popupComponent.tsx");
+
+
 
 
 
@@ -58687,6 +58730,7 @@ var AnimationGridComponent = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this._animations = null;
         _this._isPlaying = false;
+        _this._isCurveEditorOpen = false;
         _this._animationControl = {
             from: 0,
             to: 0,
@@ -58766,6 +58810,18 @@ var AnimationGridComponent = /** @class */ (function (_super) {
             this.playOrPause();
         }
     };
+    AnimationGridComponent.prototype.onOpenAnimationCurveEditor = function () {
+        this._isCurveEditorOpen = true;
+    };
+    AnimationGridComponent.prototype.onCloseAnimationCurveEditor = function (window) {
+        this._isCurveEditorOpen = false;
+        if (window === null) {
+            console.log("Window already closed");
+        }
+        else {
+            window.close();
+        }
+    };
     AnimationGridComponent.prototype.render = function () {
         var _this = this;
         var animatable = this.props.animatable;
@@ -58793,10 +58849,12 @@ var AnimationGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ANIMATIONS" },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { label: "Count", value: animations.length.toString() }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Edit", onClick: function () { } }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Edit", onClick: function () { return _this.onOpenAnimationCurveEditor(); } }),
                         animations.map(function (anim, i) {
                             return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { key: anim.targetProperty + i, label: "#" + i + " >", value: anim.targetProperty }));
-                        })),
+                        }),
+                        this._isCurveEditorOpen && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_popupComponent__WEBPACK_IMPORTED_MODULE_10__["PopupComponent"], { id: "curve-editor", title: "Curve Animation Editor", size: { width: 800, height: 600 }, onOpen: function (window) { window.console.log("Window opened!!"); }, onClose: function (window) { return _this.onCloseAnimationCurveEditor(window); } },
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_animationCurveEditorComponent__WEBPACK_IMPORTED_MODULE_9__["AnimationCurveEditorComponent"], { title: "Animations Curve Editor", close: function (event) { return _this.onCloseAnimationCurveEditor(event.view); } }))),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ANIMATION GENERAL CONTROL" },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { lockObject: this.props.lockObject, isInteger: true, label: "From", target: this._animationControl, propertyName: "from", onChange: function () { return _this.onChangeFromOrTo(); } }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { lockObject: this.props.lockObject, isInteger: true, label: "To", target: this._animationControl, propertyName: "to", onChange: function () { return _this.onChangeFromOrTo(); } }),
@@ -58822,6 +58880,88 @@ var AnimationGridComponent = /** @class */ (function (_super) {
                                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Blending speed", target: animatableAsAny.animationPropertiesOverride, propertyName: "blendingSpeed", minimum: 0, maximum: 0.1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })))))));
     };
     return AnimationGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/popupComponent.tsx":
+/*!********************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/popupComponent.tsx ***!
+  \********************************************************************************/
+/*! exports provided: PopupComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PopupComponent", function() { return PopupComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-dom */ "../../node_modules/react-dom/index.js");
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_2__);
+
+
+
+var PopupComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PopupComponent, _super);
+    function PopupComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this._container = document.createElement('div');
+        _this._container.id = _this.props.id;
+        _this._window;
+        _this.state = {
+            isComponentMounted: false,
+            blockedByBrowser: false,
+        };
+        return _this;
+    }
+    PopupComponent.prototype.componentDidMount = function () {
+        this.openPopup();
+        this.setState({ isComponentMounted: true });
+    };
+    PopupComponent.prototype.openPopup = function () {
+        var _this = this;
+        var _a = this.props, title = _a.title, size = _a.size, onOpen = _a.onOpen, onClose = _a.onClose;
+        var windowCreationOptionsList = {
+            width: size.width,
+            height: size.height,
+            top: (window.innerHeight - size.width) / 2 + window.screenY,
+            left: (window.innerWidth - size.height) / 2 + window.screenX
+        };
+        var windowCreationOptions = Object.keys(windowCreationOptionsList)
+            .map(function (key) { return key + '=' + windowCreationOptionsList[key]; })
+            .join(',');
+        this._window = window.open("", title, windowCreationOptions);
+        if (this._window) {
+            this._window.document.title = title;
+            this._window.document.body.appendChild(this._container);
+            onOpen(this._window);
+            this._window.addEventListener('beforeunload', function () { return _this._window && onClose(_this._window); });
+        }
+        else {
+            if (!this._window) {
+                this.setState({ blockedByBrowser: true }, function () {
+                    if (_this.state.blockedByBrowser) {
+                        alert("You might have blocked popups in your browser");
+                        console.warn("Popup window couldn't be created");
+                    }
+                });
+            }
+        }
+    };
+    PopupComponent.prototype.componentWillUnmount = function () {
+        if (this._window) {
+            this._window.close();
+        }
+    };
+    PopupComponent.prototype.render = function () {
+        if (!this.state.isComponentMounted)
+            return null;
+        return react_dom__WEBPACK_IMPORTED_MODULE_2__["createPortal"](this.props.children, this._container);
+    };
+    return PopupComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
