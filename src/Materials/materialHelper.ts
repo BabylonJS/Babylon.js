@@ -31,6 +31,7 @@ export class MaterialHelper {
      * Bind the current view position to an effect.
      * @param effect The effect to be bound
      * @param scene The scene the eyes position is used from
+     * @param variableName name of the shader variable that will hold the eye position
      */
     public static BindEyePosition(effect: Effect, scene: Scene, variableName = "vEyePosition"): void {
         if (scene._forcedViewPosition) {

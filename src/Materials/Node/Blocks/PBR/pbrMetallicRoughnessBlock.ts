@@ -673,6 +673,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Gets the code corresponding to the albedo/opacity module
+     * @returns the shader code
+     */
     public getAlbedoOpacityCode(): string {
         let code = `albedoOpacityOutParams albedoOpacityOut;\r\n`;
 
@@ -818,7 +822,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         // _____________________________ AO  _______________________________
         const aoBlock = this.ambientOcclusion.connectedPoint?.ownerBlock as Nullable<AmbientOcclusionBlock>;
 
-        state.compilationString += AmbientOcclusionBlock.getCode(aoBlock);
+        state.compilationString += AmbientOcclusionBlock.GetCode(aoBlock);
 
         if (this.unlit) {
             state.compilationString += `vec3 diffuseBase = vec3(1., 1., 1.);\r\n`;

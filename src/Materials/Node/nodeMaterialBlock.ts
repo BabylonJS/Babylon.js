@@ -172,6 +172,7 @@ export class NodeMaterialBlock {
      * @param effect defines the effect to bind data to
      * @param nodeMaterial defines the hosting NodeMaterial
      * @param mesh defines the mesh that will be rendered
+     * @param submesh defines the submesh that will be rendered
      */
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh) {
         // Do nothing
