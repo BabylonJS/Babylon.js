@@ -18,7 +18,8 @@ export class NodePort {
     protected _globalState: GlobalState;
     protected _portLabelElement: Element;
     protected _onCandidateLinkMovedObserver: Nullable<Observer<Nullable<Vector2>>>;
-    protected _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;  
+    protected _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;
+    protected _exposedOnFrame = this.connectionPoint.isConnected || false;
     
     public delegatedPort: Nullable<FrameNodePort> = null;
 
@@ -31,7 +32,11 @@ export class NodePort {
     }
 
     public get portName(){
-        return this.connectionPoint.displayName || this.connectionPoint.name;
+        let portName = this.connectionPoint.displayName || this.connectionPoint.name;
+        if (portName === "output") {
+            portName = this.node.name;
+        }
+        return portName
     }
 
     public set portName(newName: string){
@@ -43,6 +48,14 @@ export class NodePort {
 
     public hasLabel(){
         return !!this._portLabelElement;
+    }
+
+    public get exposedOnFrame() {
+        return this._exposedOnFrame;
+    }
+
+    public set exposedOnFrame(value: boolean) {
+        this._exposedOnFrame = value;
     }
 
     public refresh() {

@@ -178,7 +178,7 @@ export class NodeMaterialConnectionPoint {
      * Gets a boolean indicating that the current point is connected
      */
     public get isConnected(): boolean {
-        return this.connectedPoint !== null;
+        return this.connectedPoint !== null || this.isConnectedInFragmentShader || this.isConnectedInVertexShader || this.isConnectedToInputBlock;
     }
 
     /**

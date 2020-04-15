@@ -10,6 +10,7 @@ export interface ICheckBoxLineComponentProps {
     onSelect?: (value: boolean) => void;
     onValueChanged?: () => void;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    disabled?: boolean;
 }
 
 export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, { isSelected: boolean }> {
@@ -42,7 +43,7 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
             this._localChange = false;
             return true;
         }
-        return nextProps.label !== this.props.label;
+        return nextProps.label !== this.props.label || nextProps.target !== this.props.target;
     }
 
     onChange() {
@@ -69,6 +70,13 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
         this.setState({ isSelected: !this.state.isSelected });
     }
 
+    getDisabled() {
+        if (this.props.disabled) {
+            return this.props.disabled;
+        }
+        else return false;
+    }
+
     render() {
         return (
             <div className="checkBoxLine">
@@ -76,8 +84,8 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
                     {this.props.label}
                 </div>
                 <div className="checkBox">
-                    <input type="checkbox" id={"checkbox" + this._uniqueId} className="cbx hidden" checked={this.state.isSelected} onChange={() => this.onChange()} />
-                    <label htmlFor={"checkbox" + this._uniqueId} className="lbl"></label>
+                    <input type="checkbox" id={"checkbox" + this._uniqueId} className="cbx hidden" checked={this.state.isSelected} onChange={() => this.onChange()} disabled={this.getDisabled()}/>
+                    <label htmlFor={"checkbox" + this._uniqueId} className={`lbl${this.getDisabled() ? ' disabled' : ''}`}></label>
                 </div>
             </div>
         );
