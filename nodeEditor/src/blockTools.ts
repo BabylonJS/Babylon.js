@@ -62,12 +62,12 @@ import { DerivativeBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/deriva
 import { RefractBlock } from 'babylonjs/Materials/Node/Blocks/refractBlock';
 import { ReflectBlock } from 'babylonjs/Materials/Node/Blocks/reflectBlock';
 import { DesaturateBlock } from 'babylonjs/Materials/Node/Blocks/desaturateBlock';
-import { PBRMetallicRoughnessBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/PBR/pbrMetallicRoughnessBlock';
-import { SheenBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/PBR/sheenBlock';
-import { AmbientOcclusionBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/PBR/ambientOcclusionBlock';
-import { ReflectivityBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/PBR/reflectivityBlock';
-import { AnisotropyBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/PBR/anisotropyBlock';
-import { ReflectionBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/PBR/reflectionBlock';
+import { PBRMetallicRoughnessBlock } from 'babylonjs/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock';
+import { SheenBlock } from 'babylonjs/Materials/Node/Blocks/PBR/sheenBlock';
+import { AmbientOcclusionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/ambientOcclusionBlock';
+import { ReflectivityBlock } from 'babylonjs/Materials/Node/Blocks/PBR/reflectivityBlock';
+import { AnisotropyBlock } from 'babylonjs/Materials/Node/Blocks/PBR/anisotropyBlock';
+import { ReflectionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/reflectionBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {

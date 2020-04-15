@@ -1,15 +1,15 @@
-import { NodeMaterialBlock } from '../../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../../../Enums/nodeMaterialBlockTargets';
-import { NodeMaterial, NodeMaterialDefines } from '../../../nodeMaterial';
-import { Nullable } from '../../../../../types';
-import { editableInPropertyPage, PropertyTypeForEdition } from "../../../nodeMaterialDecorator";
-import { _TypeStore } from '../../../../../Misc/typeStore';
-import { AbstractMesh } from '../../../../../Meshes/abstractMesh';
-import { NodeMaterialConnectionPointCustomObject } from "../../../nodeMaterialConnectionPointCustomObject";
-import { Scene } from '../../../../../scene';
+import { NodeMaterialBlock } from '../../nodeMaterialBlock';
+import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
+import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../nodeMaterialBlockConnectionPoint';
+import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
+import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
+import { Nullable } from '../../../../types';
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
+import { _TypeStore } from '../../../../Misc/typeStore';
+import { AbstractMesh } from '../../../../Meshes/abstractMesh';
+import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
+import { Scene } from '../../../../scene';
 
 export class AmbientOcclusionBlock extends NodeMaterialBlock {
 

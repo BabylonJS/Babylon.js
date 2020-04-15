@@ -14,7 +14,7 @@ import { CubeTexture } from 'babylonjs/Materials/Textures/cubeTexture';
 import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
 import { IPropertyComponentProps } from './propertyComponentProps';
 import { ReflectionTextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/reflectionTextureBlock';
-import { ReflectionBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/PBR/reflectionBlock';
+import { ReflectionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/reflectionBlock';
 import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/textureBlock';
 import { GeneralPropertyTabComponent, GenericPropertyTabComponent } from './genericNodePropertyComponent';
 
