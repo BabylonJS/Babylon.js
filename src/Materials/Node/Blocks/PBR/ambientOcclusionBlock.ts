@@ -88,7 +88,7 @@ export class AmbientOcclusionBlock extends NodeMaterialBlock {
      * @param block instance of an AmbientOcclusionBlock or null if the code must be generated without an active ambient occlusion module
      * @returns the shader code
      */
-    public static getCode(block: Nullable<AmbientOcclusionBlock>): string {
+    public static GetCode(block: Nullable<AmbientOcclusionBlock>): string {
         let code = `ambientOcclusionOutParams aoOut;\r\n`;
 
         const aoTexture = block?.texture.isConnected ? block.texture.associatedVariableName : "vec3(0.)";

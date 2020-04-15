@@ -241,6 +241,10 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         return code;
     }
 
+    /**
+     * Handles the inits for the fragment code path
+     * @param state node material build state
+     */
     public handleFragmentSideInits(state: NodeMaterialBuildState) {
         state.sharedData.blockingBlocks.push(this);
         state.sharedData.textureBlocks.push(this);
@@ -275,6 +279,11 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         this._reflectionCoordsName = state._getFreeVariableName("reflectionCoords");
     }
 
+    /**
+     * Generates the reflection coords code for the fragment code path
+     * @param worldNormalVarName name of the world normal variable
+     * @returns the shader code
+     */
     public handleFragmentSideCodeReflectionCoords(worldNormalVarName: string): string {
         let worldPos = `v_${this.worldPosition.associatedVariableName}`;
         let reflectionMatrix = this._reflectionMatrixName;
@@ -343,6 +352,12 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         return code;
     }
 
+    /**
+     * Generates the reflection color code for the fragment code path
+     * @param lodVarName name of the lod variable
+     * @param swizzleLookupTexture swizzle to use for the final color variable
+     * @returns the shader code
+     */
     public handleFragmentSideCodeReflectionColor(lodVarName?: string, swizzleLookupTexture = ".rgb"): string {
         const colorType = "vec" + (swizzleLookupTexture.length === 0 ? "4" : (swizzleLookupTexture.length - 1));
 
@@ -377,6 +392,12 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         return code;
     }
 
+    /**
+     * Generates the code corresponding to the connected output points
+     * @param state node material build state
+     * @param varName name of the variable to output
+     * @returns the shader code
+     */
     public writeOutputs(state: NodeMaterialBuildState, varName: string): string {
         let code = "";
 
