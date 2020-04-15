@@ -172,11 +172,6 @@
 
 - Added ```unlit``` mode to lava material ([sebavan](http://www.github.com/sebavan))
 
-
-### Curve Animations Editor
-
-- Popup Window available ([pixelspace](https://github.com/devpixelspace))
-
 ## Bug fixes
 
 - VR experience helper will now fire pointer events even when no mesh is currently hit ([TrevorDev](https://github.com/TrevorDev))
