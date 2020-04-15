@@ -111,6 +111,7 @@ export class ReflectivityBlock extends NodeMaterialBlock {
 
     /**
      * Gets the main code of the block (fragment side)
+     * @params aoIntensityVarName name of the variable with the ambient occlusion intensity
      * @returns the shader code
      */
     public getCode(aoIntensityVarName: string): string {

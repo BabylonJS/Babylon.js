@@ -37,6 +37,7 @@ export interface IEditablePropertyOption {
         /** the preview should be updated */
         "update"?: boolean;
     };
+    /** list of the options for a variable of type list */
     "options"?: IEditablePropertyListOption[];
 }
 
