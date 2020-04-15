@@ -1,20 +1,20 @@
-import { NodeMaterialBlockConnectionPointTypes } from '../../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../../../Enums/nodeMaterialBlockTargets';
-import { NodeMaterial, NodeMaterialDefines } from '../../../nodeMaterial';
-import { _TypeStore } from '../../../../../Misc/typeStore';
-import { NodeMaterialConnectionPointCustomObject } from "../../../nodeMaterialConnectionPointCustomObject";
-import { ReflectionTextureBaseBlock } from '../../Dual/reflectionTextureBaseBlock';
-import { AbstractMesh } from '../../../../../Meshes/abstractMesh';
-import { Nullable } from '../../../../../types';
-import { Texture } from '../../../../Textures/texture';
-import { BaseTexture } from '../../../../Textures/baseTexture';
-import { Mesh } from '../../../../../Meshes/mesh';
-import { SubMesh } from '../../../../../Meshes/subMesh';
-import { Effect } from '../../../../effect';
-import { editableInPropertyPage, PropertyTypeForEdition } from "../../../nodeMaterialDecorator";
-import { Scene } from '../../../../../scene';
+import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
+import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../nodeMaterialBlockConnectionPoint';
+import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
+import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
+import { _TypeStore } from '../../../../Misc/typeStore';
+import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
+import { ReflectionTextureBaseBlock } from '../Dual/reflectionTextureBaseBlock';
+import { AbstractMesh } from '../../../../Meshes/abstractMesh';
+import { Nullable } from '../../../../types';
+import { Texture } from '../../../Textures/texture';
+import { BaseTexture } from '../../../Textures/baseTexture';
+import { Mesh } from '../../../../Meshes/mesh';
+import { SubMesh } from '../../../../Meshes/subMesh';
+import { Effect } from '../../../effect';
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
+import { Scene } from '../../../../scene';
 
 export class ReflectionBlock extends ReflectionTextureBaseBlock {
 

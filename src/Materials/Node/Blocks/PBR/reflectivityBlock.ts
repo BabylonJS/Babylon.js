@@ -1,14 +1,14 @@
-import { NodeMaterial, NodeMaterialDefines } from '../../../nodeMaterial';
-import { NodeMaterialBuildState } from '../../../nodeMaterialBuildState';
-import { NodeMaterialBlock } from '../../../nodeMaterialBlock';
-import { _TypeStore } from '../../../../../Misc/typeStore';
-import { editableInPropertyPage, PropertyTypeForEdition } from "../../../nodeMaterialDecorator";
-import { AbstractMesh } from '../../../../../Meshes/abstractMesh';
-import { NodeMaterialBlockConnectionPointTypes } from '../../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBlockTargets } from '../../../Enums/nodeMaterialBlockTargets';
-import { NodeMaterialConnectionPointCustomObject } from "../../../nodeMaterialConnectionPointCustomObject";
-import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../../nodeMaterialBlockConnectionPoint';
-import { Scene } from '../../../../../scene';
+import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
+import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
+import { NodeMaterialBlock } from '../../nodeMaterialBlock';
+import { _TypeStore } from '../../../../Misc/typeStore';
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
+import { AbstractMesh } from '../../../../Meshes/abstractMesh';
+import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
+import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
+import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../nodeMaterialBlockConnectionPoint';
+import { Scene } from '../../../../scene';
 
 export class ReflectivityBlock extends NodeMaterialBlock {
 
