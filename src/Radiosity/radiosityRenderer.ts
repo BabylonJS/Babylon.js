@@ -37,6 +37,7 @@ class Patch {
         this.normal = n.clone().normalize();
         this.id = id;
         this.residualEnergy = residualEnergy;
+        this.size = 0;
 
         this.viewMatrix = Matrix.LookAtLH(this.position, this.position.add(this.normal), Vector3.Up());
         let xAxis = new Vector3(this.viewMatrix.m[0], this.viewMatrix.m[4], this.viewMatrix.m[8]); // Tangent
@@ -68,6 +69,25 @@ class Patch {
             `Id: ${this.id}\n`;
     }
 
+    public perturbPosition() {
+        let randomVector = Math.abs(this.normal.y) < 0.999 ? new Vector3(0, 1, 0) : new Vector3(1, 0, 0);
+        randomVector = Vector3.Cross(randomVector, this.normal);
+
+        // Now we randomly rotate this vector around this.normal
+        let randomAngle = Math.random() * 2 * Math.PI;
+        // Rodrigues' formula
+        randomVector = randomVector.scale(Math.cos(randomAngle))
+            .add(Vector3.Cross(randomVector, this.normal).scale(Math.sin(randomAngle)))
+            .add(this.normal.scale((1 - Math.cos(randomAngle)*Vector3.Dot(this.normal, randomVector))));
+        // scale between 0 and patch size / 2
+        randomVector.scaleInPlace(Math.random() * 0.5 * this.size);
+        return this.position.add(randomVector);
+    }
+
+    /**
+      * Size of the patch
+      */
+    public size: number;
     /**
      * Parent surface id
      */
@@ -205,9 +225,12 @@ export class RadiosityRenderer {
      * and therefore will not occlude or receive radiance.
      */
     public meshes: Mesh[];
+
+    // Add some randomness to patch position to avoid banding effect
+    public randomizePosition: boolean = true;
     private _cachePatches: boolean = false;
     private _filterMinEnergy: number = 1e-5;
-    private _patchMapResolution: number = 1024;
+    private _patchMapResolution: number = 2048;
 
     private _options: RadiosityRendererOptions;
     /**
@@ -363,7 +386,6 @@ export class RadiosityRenderer {
         engine.setState(false);
         engine.setDirectViewport(0, 0, this.getCurrentRenderWidth(), this.getCurrentRenderHeight());
 
-        var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
         var effect = this._radiosityEffectsManager.radiosityEffect;
 
         if (!effect || !effect.isReady()) {
@@ -376,7 +398,7 @@ export class RadiosityRenderer {
         uniformCallback(effect, args);
 
         // Draw triangles
-        mesh._processRendering(mesh, subMesh, effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
+        mesh._processRendering(mesh, subMesh, effect, Material.TriangleFillMode, batch, false,
             (isInstance, world) => effect.setMatrix("world", world));
 
         // render edges
@@ -395,6 +417,9 @@ export class RadiosityRenderer {
      * Prepare textures for radiosity
      */
     public createMaps() {
+        // REFACTORING NECESSARY,
+        // RENDER DIRECTLY, DONT WAIT FOR SCENE RENDER PASS
+        // ONLY 1 MESH IS RENDERERED, SIMPLIFICATIONS ARE POSSIBLE
         this._nextShooterTexture = new RenderTargetTexture("nextShooter", 1, this._scene, false, true, Constants.TEXTURETYPE_FLOAT);
         var meshes = this.meshes;
         this._isBuildingPatches = true;
@@ -506,7 +531,7 @@ export class RadiosityRenderer {
         this._radiosityEffectsManager.shootEffect.setTexture("gatheringBuffer", mrt.textures[4]);
         this._radiosityEffectsManager.shootEffect.setFloat2("nearFar", this._near, this._far);
 
-        this._radiosityEffectsManager.shootEffect.setVector3("shootPos", patch.position);
+        this._radiosityEffectsManager.shootEffect.setVector3("shootPos", this.randomizePosition ? patch.perturbPosition() : patch.position);
         this._radiosityEffectsManager.shootEffect.setVector3("shootNormal", patch.normal);
         this._radiosityEffectsManager.shootEffect.setVector3("shootEnergy", patch.residualEnergy);
         this._radiosityEffectsManager.shootEffect.setFloat("shootDArea", deltaArea);
@@ -794,7 +819,7 @@ export class RadiosityRenderer {
             for (let j = 0; j < this._patchedMeshes.length; j++) {
 
                 let subMeshDate = Date.now();
-                this.renderToRadiosityTexture(this._patchedMeshes[j], patches[i], this.squareToDiskArea(shooter.radiosityInfo.texelWorldSize));
+                this.renderToRadiosityTexture(this._patchedMeshes[j], patches[i], this.squareToDiskArea(patches[i].size));
 
                 if (RadiosityRenderer.PERFORMANCE_LOGS_LEVEL >= 3) {
                     duration = Date.now() - subMeshDate;
@@ -964,10 +989,12 @@ export class RadiosityRenderer {
                         // add only rendered patches
                         continue;
                     }
-                    mesh.radiosityInfo.radiosityPatches.push(new Patch(new Vector3(positions[i], positions[i + 1], positions[i + 2]),
+                    let patch = new Patch(new Vector3(positions[i], positions[i + 1], positions[i + 2]),
                         new Vector3(normals[i], normals[i + 1], normals[i + 2]),
                         RadiosityUtils.DecodeId(new Vector3(ids[i], ids[i + 1], ids[i + 2])),
-                        new Vector3(residualEnergy[i] / 255., residualEnergy[i + 1] / 255., residualEnergy[i + 2] / 255.)));
+                        new Vector3(residualEnergy[i] / 255., residualEnergy[i + 1] / 255., residualEnergy[i + 2] / 255.));
+                    mesh.radiosityInfo.radiosityPatches.push(patch);
+                    patch.size = mesh.radiosityInfo.texelWorldSize;
                 }
             }
 
@@ -1026,10 +1053,12 @@ export class RadiosityRenderer {
             if (this._cachePatches) {
                 patches[currentIndex].residualEnergy.copyFromFloats(residualEnergy[i], residualEnergy[i + 1], residualEnergy[i + 2]);
             } else {
-                patches.push(new Patch(new Vector3((<Float32Array>positions)[i], (<Float32Array>positions)[i + 1], (<Float32Array>positions)[i + 2]),
+                let patch = new Patch(new Vector3((<Float32Array>positions)[i], (<Float32Array>positions)[i + 1], (<Float32Array>positions)[i + 2]),
                     new Vector3((<Float32Array>normals)[i], (<Float32Array>normals)[i + 1], (<Float32Array>normals)[i + 2]),
                     RadiosityUtils.DecodeId(new Vector3((<Float32Array>ids)[i], (<Float32Array>ids)[i + 1], (<Float32Array>ids)[i + 2])),
-                    new Vector3(residualEnergy[i], residualEnergy[i + 1], residualEnergy[i + 2])));
+                    new Vector3(residualEnergy[i], residualEnergy[i + 1], residualEnergy[i + 2]))
+                patches.push(patch);
+                patch.size = mesh.radiosityInfo.texelWorldSize;
             }
 
             energyLeft += (residualEnergy[i] + residualEnergy[i + 1] + residualEnergy[i + 2]) / 3;

@@ -3,29 +3,31 @@
 // You can also run it in one go, see below
 
 var meshes = [];
-
+var scene;
 let uvm = new BABYLON.UvMapper();
 
 var prepareUVS = function(ms) {
     let geometryMeshes = [];
     for (let i = 0; i < ms.length; i++) {
-        if (ms[i].getVerticesData(BABYLON.VertexBuffer.PositionKind) && geometryMeshes.indexOf(ms[i]) === -1) {
+        if (ms[i].getVerticesData(BABYLON.VertexBuffer.PositionKind)); {
             geometryMeshes.push(ms[i]);
         }
     }
 
-    // let worldToUVRatio = uvm.map(geometryMeshes);
+    let worldToUVRatio = uvm.map(geometryMeshes);
 
     for (let i = 0; i < geometryMeshes.length; i++) {
         let mesh = geometryMeshes[i];
         if (!mesh.radiosityInfo) {
             mesh.initForRadiosity();
         }
-        mesh.radiosityInfo.lightmapSize = mesh.radiosityInfo.lightmapSize || {
-            width: 256,
-            height: 256
-        };
-        let worldToUVRatio = uvm.map([mesh]);
+        if (mesh.name !== "areaLight") {
+            mesh.radiosityInfo.lightmapSize = {
+                width: 1024,
+                height: 1024
+            };
+        }
+
         mesh.radiosityInfo.texelWorldSize = 1 / ( worldToUVRatio * mesh.radiosityInfo.lightmapSize.width);
         meshes.push(mesh);
     }
@@ -42,8 +44,8 @@ var addAreaLight = function(name, scaling) {
     }
     ground.initForRadiosity();
     ground.radiosityInfo.lightmapSize = {
-        width: 16,
-        height: 16
+        width: 4,
+        height: 4
     };
     addMaterial(ground);
     prepareUVS([ground]);
@@ -51,7 +53,7 @@ var addAreaLight = function(name, scaling) {
 }
 
 var createScene = function() {
-    var scene = new BABYLON.Scene(engine);
+    scene = new BABYLON.Scene(engine);
     var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
     camera.position.copyFromFloats(9.200132469205137, 1.1758180989261708, -1.4947768829435397);
     camera.rotation.copyFromFloats(-0.16352062147076044, 4.820623367259722, 0);
@@ -62,8 +64,8 @@ var createScene = function() {
 
     var areaLight = addAreaLight("areaLight", new BABYLON.Vector3(0.25, 0.25, 0.25));
     areaLight.rotation.x = -3 * Math.PI / 4;
-    areaLight.position.copyFromFloats(-5, 15, 15);
-    areaLight.radiosityInfo.color = new BABYLON.Vector3(2000, 2000, 2000);
+    areaLight.position.copyFromFloats(-5, 20, 10);
+    areaLight.radiosityInfo.color = new BABYLON.Vector3(100, 100, 100);
 
     var pr;
 
@@ -82,7 +84,7 @@ var createScene = function() {
             }
             prepareUVS(ms);
 
-            pr = new BABYLON.RadiosityRenderer(scene, meshes, { near: 0.1, far: 150, bias: 5e-5, normalBias: 1e-10 });
+            pr = new BABYLON.RadiosityRenderer(scene, meshes);
             pr.createMaps();
 
             var wasPreviouslyReady = false;
@@ -90,7 +92,6 @@ var createScene = function() {
                 if (!pr.isReady()) {
                     return;
                 }
-                pr.gatherDirectLightOnly()
 
                 if (!wasPreviouslyReady) {
                     for (let i = 0; i < meshes.length; i++) {
@@ -100,9 +101,10 @@ var createScene = function() {
                     wasPreviouslyReady = true;
                 }
 
-                // if (!pr.gatherFor(2, 1)) { /* *** use pr.gatherRadiosity(16) for computing the solution all at once *** */
-                console.log("Converged ! ");
-                scene.onAfterRenderTargetsRenderObservable.remove(observer);
+                if (!pr.gatherFor(2, 1)) { /* *** use pr.gatherRadiosity(16) for computing the solution all at once *** */
+                    console.log("Converged ! ");
+                    scene.onAfterRenderTargetsRenderObservable.remove(observer);
+                }
             });
         }
     );
