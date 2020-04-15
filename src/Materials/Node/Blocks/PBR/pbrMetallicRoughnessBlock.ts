@@ -812,6 +812,28 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         return this;
     }
 
+    protected _dumpPropertiesCode() {
+        let codeString: string = "";
+
+        codeString += `${this._codeVariableName}.useAlphaFromAlbedoTexture = ${this.useAlphaFromAlbedoTexture};\r\n`;
+        codeString += `${this._codeVariableName}.useAlphaTest = ${this.useAlphaTest};\r\n`;
+        codeString += `${this._codeVariableName}.alphaTestCutoff = ${this.alphaTestCutoff};\r\n`;
+        codeString += `${this._codeVariableName}.useAlphaBlending = ${this.useAlphaBlending};\r\n`;
+        codeString += `${this._codeVariableName}.opacityRGB = ${this.opacityRGB};\r\n`;
+        codeString += `${this._codeVariableName}.useRadianceOverAlpha = ${this.useRadianceOverAlpha};\r\n`;
+        codeString += `${this._codeVariableName}.useSpecularOverAlpha = ${this.useSpecularOverAlpha};\r\n`;
+        codeString += `${this._codeVariableName}.enableSpecularAntiAliasing = ${this.enableSpecularAntiAliasing};\r\n`;
+        codeString += `${this._codeVariableName}.useEnergyConservation = ${this.useEnergyConservation};\r\n`;
+        codeString += `${this._codeVariableName}.useRadianceOcclusion = ${this.useRadianceOcclusion};\r\n`;
+        codeString += `${this._codeVariableName}.useHorizonOcclusion = ${this.useHorizonOcclusion};\r\n`;
+        codeString += `${this._codeVariableName}.unlit = ${this.unlit};\r\n`;
+        codeString += `${this._codeVariableName}.debugMode = ${this.debugMode};\r\n`;
+        codeString += `${this._codeVariableName}.debugLimit = ${this.debugLimit};\r\n`;
+        codeString += `${this._codeVariableName}.debugFactor = ${this.debugFactor};\r\n`;
+
+        return codeString;
+    }
+
     public serialize(): any {
         let serializationObject = super.serialize();
 
