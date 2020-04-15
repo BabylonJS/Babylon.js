@@ -166,6 +166,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         defines.setValue(this._defineLODReflectionAlpha, reflectionTexture!.lodLevelInAlpha);
         defines.setValue(this._defineLinearSpecularReflection, reflectionTexture!.linearSpecularLOD);
         defines.setValue(this._defineLODBasedMicroSurface, this._scene.getEngine().getCaps().textureLOD);
+        defines.setValue(this._defineOppositeZ, this._scene.useRightHandedSystem ? !reflectionTexture!.invertZ : reflectionTexture!.invertZ);
 
         defines.setValue("SPHERICAL_HARMONICS", this.useSphericalHarmonics);
 
@@ -278,7 +279,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         code +=
             `#if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
                 vec3 ${reflectionVectorName} = vec3(${this._reflectionMatrixName} * vec4(${this.worldNormal.associatedVariableName}.xyz, 0)).xyz;
-                #ifdef REFLECTIONMAP_OPPOSITEZ
+                #ifdef ${this._defineOppositeZ}
                     ${reflectionVectorName}.z *= -1.0;
                 #endif
                 ${this._vEnvironmentIrradianceName} = computeEnvironmentIrradiance(${reflectionVectorName});
@@ -383,7 +384,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
                         vec3 ${finalIrradianceVector} = vec3(${this._reflectionMatrixName} * vec4(${normalVarName}.xyz, 0)).xyz;
                     #endif
 
-                    #ifdef REFLECTIONMAP_OPPOSITEZ
+                    #ifdef ${this._defineOppositeZ}
                     ${finalIrradianceVector}.z *= -1.0;
                     #endif
 
