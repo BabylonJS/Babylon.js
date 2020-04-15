@@ -6,8 +6,6 @@ import { NodeMaterial } from '../../nodeMaterial';
 import { _TypeStore } from '../../../../Misc/typeStore';
 import { InputBlock } from '../Input/inputBlock';
 import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
-
-import "../../../../Shaders/ShadersInclude/reflectionFunction";
 import { ReflectionTextureBaseBlock } from './reflectionTextureBaseBlock';
 
 /**
