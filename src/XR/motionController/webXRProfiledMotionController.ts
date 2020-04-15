@@ -96,7 +96,7 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
     }
 
     protected _setRootMesh(meshes: AbstractMesh[]): void {
-        this.rootMesh = new Mesh(this.profileId + "-" + this.handness, this.scene);
+        this.rootMesh = new Mesh(this.profileId + "-" + this.handedness, this.scene);
         this.rootMesh.isPickable = false;
         let rootMesh;
         // Find the root node in the loaded glTF scene, and attach it as a child of 'parentMesh'
