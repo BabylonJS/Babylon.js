@@ -7,6 +7,9 @@ import { _TypeStore } from '../../../../Misc/typeStore';
 import { editableInPropertyPage } from "../../nodeMaterialDecorator";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 
+/**
+ * Block used to implement the sheen module of the PBR material
+ */
 export class SheenBlock extends NodeMaterialBlock {
 
     /**
