@@ -26,6 +26,21 @@ import { MaterialFlags } from '../../../materialFlags';
 import { AnisotropyBlock } from './anisotropyBlock';
 import { ReflectionBlock } from './reflectionBlock';
 
+const mapOutputToVariable: { [name: string] : [string, string] } = {
+    "ambient":      ["finalAmbient", ""],
+    "diffuse":      ["finalDiffuse", ""],
+    "specular":     ["finalSpecularScaled",                         "!defined(UNLIT) && defined(SPECULARTERM)"],
+    "sheenDir":     ["finalSheenScaled",                            "!defined(UNLIT) && defined(SHEEN)"],
+    "clearcoatDir": ["finalClearCoatScaled",                        "!defined(UNLIT) && defined(CLEARCOAT)"],
+    "diffuseInd":   ["finalIrradiance",                             "!defined(UNLIT) && defined(REFLECTION)"],
+    "specularInd":  ["finalRadianceScaled",                         "!defined(UNLIT) && defined(REFLECTION)"],
+    "sheenInd":     ["sheenOut.finalSheenRadianceScaled",           "!defined(UNLIT) && defined(REFLECTION) && defined(SHEEN) && defined(ENVIRONMENTBRDF)"],
+    "clearcoatInd": ["clearcoatOut.finalClearCoatRadianceScaled",   "!defined(UNLIT) && defined(REFLECTION) && defined(CLEARCOAT)"],
+    "refraction":   ["subSurfaceOut.finalRefraction",               "!defined(UNLIT) && defined(SS_REFRACTION)"],
+    "lighting":     ["finalColor", ""],
+    "shadow":       ["shadow", ""],
+};
+
 export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     /**
      * Gets or sets the light associated with this block
@@ -772,6 +787,27 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 { search: /opacityMap/g, replace: this.opacityTexture.associatedVariableName },
             ]
         });
+
+        // _____________________________ Generate end points ________________________
+        for (var output of this._outputs) {
+            if (output.hasEndpoints) {
+                const remap = mapOutputToVariable[output.name];
+                if (remap) {
+                    const [varName, conditions] = remap;
+                    if (conditions) {
+                        state.compilationString += `#if ${conditions}\r\n`;
+                    }
+                    state.compilationString += `${this._declareOutput(output, state)} = ${varName};\r\n`;
+                    if (conditions) {
+                        state.compilationString += `#else\r\n`;
+                        state.compilationString += `${this._declareOutput(output, state)} = vec3(0.);\r\n`;
+                        state.compilationString += `#endif\r\n`;
+                    }
+                } else {
+                    console.error(`There's no remapping for the ${output.name} end point! No code generated`);
+                }
+            }
+        }
 
         return this;
     }
