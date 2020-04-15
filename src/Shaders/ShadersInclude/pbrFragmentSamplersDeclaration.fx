@@ -204,13 +204,13 @@
             float solidAngleSample = 1.0 / (float(NUM_SAMPLES) * weights[i]);
             float lod = 0.5 * log2(solidAngleSample/solidAngleTexel) + 1.;
             if (vDotD > 0.) {
+                // gamma correction needed ?
                 color += textureCubeLodEXT(sampler, v, lod).xyz * vDotD;
                 totalWeight += vDotD;            
             }
         }
 
         color /= totalWeight;
-
         return vec4(color, 1.0);
     }
 
