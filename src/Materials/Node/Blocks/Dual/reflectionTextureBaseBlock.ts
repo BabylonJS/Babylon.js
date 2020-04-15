@@ -44,6 +44,8 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     public _defineEquirectangularFixedName: string;
     /** @hidden */
     public _defineSkyboxName: string;
+    /** @hidden */
+    public _defineOppositeZ: string;
     protected _cubeSamplerName: string;
     protected _2DSamplerName: string;
     protected _positionUVWName: string;
@@ -208,6 +210,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         this._defineMirroredEquirectangularFixedName = state._getFreeDefineName("REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED");
         this._defineEquirectangularFixedName = state._getFreeDefineName("REFLECTIONMAP_EQUIRECTANGULAR_FIXED");
         this._defineSkyboxName = state._getFreeDefineName("REFLECTIONMAP_SKYBOX");
+        this._defineOppositeZ = state._getFreeDefineName("REFLECTIONMAP_OPPOSITEZ");
 
         this._reflectionMatrixName = state._getFreeVariableName("reflectionMatrix");
 
@@ -321,6 +324,10 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
 
             #ifdef ${this._defineExplicitName}
                 vec3 ${this._reflectionVectorName} = vec3(0, 0, 0);
+            #endif
+
+            #ifdef ${this._defineOppositeZ}
+                ${this._reflectionVectorName}.z *= -1.0;
             #endif
 
             #ifdef ${this._define3DName}
