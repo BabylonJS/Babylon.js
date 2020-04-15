@@ -7,7 +7,6 @@ import { _TypeStore } from '../../../../../Misc/typeStore';
 import { NodeMaterialConnectionPointCustomObject } from "../../../nodeMaterialConnectionPointCustomObject";
 import { ReflectionTextureBaseBlock } from '../../Dual/reflectionTextureBaseBlock';
 import { AbstractMesh } from '../../../../../Meshes/abstractMesh';
-import { Engine } from '../../../../../Engines/engine';
 import { Nullable } from '../../../../../types';
 import { Texture } from '../../../../Textures/texture';
 import { BaseTexture } from '../../../../Textures/baseTexture';
@@ -24,6 +23,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     private _defineLODBasedMicroSurface: string;
     private _vEnvironmentIrradianceName: string;
     private _vReflectionMicrosurfaceInfosName: string;
+    private _scene: Scene;
 
     public worldPositionConnectionPoint: NodeMaterialConnectionPoint;
     public worldNormalConnectionPoint: NodeMaterialConnectionPoint;
@@ -107,7 +107,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     }
 
     public get hasTexture(): boolean {
-        return this._getTexture() !== null;
+        return !!this._getTexture();
     }
 
     protected _getTexture(): Nullable<BaseTexture> {
@@ -115,7 +115,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
             return this.texture;
         }
 
-        return Engine.LastCreatedScene?.environmentTexture ?? null;
+        return this._scene.environmentTexture;
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
@@ -132,7 +132,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         defines.setValue(this._defineLODReflectionAlpha, reflectionTexture!.lodLevelInAlpha);
         defines.setValue(this._defineLinearSpecularReflection, reflectionTexture!.linearSpecularLOD);
-        defines.setValue(this._defineLODBasedMicroSurface, Engine.LastCreatedScene?.getEngine()?.getCaps().textureLOD ?? false);
+        defines.setValue(this._defineLODBasedMicroSurface, this._scene.getEngine().getCaps().textureLOD);
 
         defines.setValue("SPHERICAL_HARMONICS", this.useSphericalHarmonics);
 
@@ -140,7 +140,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
             if (reflectionTexture.isCube) {
                 defines.setValue("USESPHERICALFROMREFLECTIONMAP", true);
                 defines.setValue("USEIRRADIANCEMAP", false);
-                if (this.forceIrradianceInFragment || Engine.LastCreatedScene!.getEngine().getCaps().maxVaryingVectors <= 8) {
+                if (this.forceIrradianceInFragment || this._scene.getEngine().getCaps().maxVaryingVectors <= 8) {
                     defines.setValue("USESPHERICALINVERTEX", false);
                 }
                 else {
@@ -357,6 +357,8 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
+        this._scene = state.sharedData.scene;
+
         if (state.target !== NodeMaterialBlockTargets.Fragment) {
             this._defineLODReflectionAlpha = state._getFreeDefineName("LODINREFLECTIONALPHA");
             this._defineLinearSpecularReflection = state._getFreeDefineName("LINEARSPECULARREFLECTION");

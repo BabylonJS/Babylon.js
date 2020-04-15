@@ -21,22 +21,21 @@ import { AmbientOcclusionBlock } from './ambientOcclusionBlock';
 import { SheenBlock } from './sheenBlock';
 import { ReflectivityBlock } from './reflectivityBlock';
 import { BaseTexture } from '../../../../Textures/baseTexture';
-import { Engine } from '../../../../../Engines/engine';
 import { BRDFTextureTools } from '../../../../../Misc/brdfTextureTools';
 import { MaterialFlags } from '../../../../materialFlags';
 import { AnisotropyBlock } from './anisotropyBlock';
 import { ReflectionBlock } from './reflectionBlock';
 
 export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
-    private _lightId: number;
-
     /**
      * Gets or sets the light associated with this block
      */
     public light: Nullable<Light>;
 
-    protected _environmentBRDFTexture: Nullable<BaseTexture> = null;
-    protected _environmentBrdfSamplerName: string;
+    private _lightId: number;
+    private _scene: Scene;
+    private _environmentBRDFTexture: Nullable<BaseTexture> = null;
+    private _environmentBrdfSamplerName: string;
 
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.VertexAndFragment);
@@ -71,8 +70,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this.registerOutput("refraction", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("lighting", NodeMaterialBlockConnectionPointTypes.Color4, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("shadow", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
-
-        this._environmentBRDFTexture = BRDFTextureTools.GetEnvironmentBRDFTexture(Engine.LastCreatedScene!);
     }
 
     @editableInPropertyPage("Alpha from albedo", PropertyTypeForEdition.Boolean, "TRANSPARENCY", { "notifiers": { "update": true }})
@@ -378,7 +375,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         // Rendering
         defines.setValue("RADIANCEOVERALPHA", this.useRadianceOverAlpha);
         defines.setValue("SPECULAROVERALPHA", this.useSpecularOverAlpha);
-        defines.setValue("SPECULARAA", Engine.LastCreatedScene!.getEngine().getCaps().standardDerivatives && this.enableSpecularAntiAliasing);
+        defines.setValue("SPECULARAA", this._scene.getEngine().getCaps().standardDerivatives && this.enableSpecularAntiAliasing);
 
         // Advanced
         defines.setValue("BRDF_V_HEIGHT_CORRELATED", true);
@@ -452,7 +449,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         effect.setFloat2("vDebugMode", this.debugLimit, this.debugFactor);
 
-        const ambientScene = Engine.LastCreatedScene?.ambientColor;
+        const ambientScene = this._scene.ambientColor;
 
         if (ambientScene) {
             effect.setColor3("ambientFromScene", ambientScene);
@@ -542,6 +539,12 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
+
+        this._scene = state.sharedData.scene;
+
+        if (!this._environmentBRDFTexture) {
+            this._environmentBRDFTexture = BRDFTextureTools.GetEnvironmentBRDFTexture(this._scene);
+        }
 
         const reflectionBlock = this.reflectionParams.isConnected ? this.reflectionParams.connectedPoint?.ownerBlock as ReflectionBlock : null;
 
