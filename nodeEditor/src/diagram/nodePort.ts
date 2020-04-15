@@ -51,7 +51,7 @@ export class NodePort {
     }
 
     public get exposedOnFrame() {
-        return this._exposedOnFrame;
+        return this._exposedOnFrame || this.connectionPoint.isConnected;
     }
 
     public set exposedOnFrame(value: boolean) {
