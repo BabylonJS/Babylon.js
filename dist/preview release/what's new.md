@@ -35,6 +35,7 @@
 - Edit all textures (anisotropic, clear coat, sheen, ...) for the PBR materials ([Popov72](https://github.com/Popov72))
 - Added right click options to create PBR and Standard Materials ([Deltakosh](https://github.com/deltakosh))
 - Added support for recording GIF ([Deltakosh](https://github.com/deltakosh))
+- Popup Window available (To be used in Curve Editor) ([pixelspace](https://github.com/devpixelspace))
 
 ### Cameras
 
@@ -51,6 +52,7 @@
 - Fixed time steps or delta time with sub time step for Oimo.js and Cannon.js ([cedricguillemet](https://github.com/cedricguillemet))
 - Ammo.js IDL exposed property update and raycast vehicle stablization support ([MackeyK24](https://github.com/MackeyK24))
 - Recast.js plugin nav mesh and crowd agent to ref performance optimizations. ([MackeyK24](https://github.com/MackeyK24))
+- Added `scene.physicsEnabled` boolean ([Deltakosh](https://github.com/deltakosh))
 
 ### Loaders
 
@@ -99,6 +101,7 @@
 - Added `Vector3.projectOnPlaneToRef` ([Deltakosh](https://github.com/deltakosh))
 
 ### Particles
+
 - Added local space support for GPU particles ([CraigFeldpsar](https://github.com/craigfeldspar))
 
 ### Build

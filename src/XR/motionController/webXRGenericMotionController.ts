@@ -1,7 +1,7 @@
 import {
     WebXRAbstractMotionController,
     IMinimalMotionControllerObject,
-    MotionControllerHandness,
+    MotionControllerHandedness,
     IMotionControllerLayoutMap
 } from "./webXRAbstractMotionController";
 import { AbstractMesh } from '../../Meshes/abstractMesh';
@@ -20,8 +20,8 @@ export class WebXRGenericTriggerMotionController extends WebXRAbstractMotionCont
 
     public profileId = WebXRGenericTriggerMotionController.ProfileId;
 
-    constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness) {
-        super(scene, GenericTriggerLayout[handness], gamepadObject, handness);
+    constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handedness: MotionControllerHandedness) {
+        super(scene, GenericTriggerLayout[handedness], gamepadObject, handedness);
     }
 
     protected _getFilenameAndPath(): { filename: string; path: string; } {
@@ -40,7 +40,7 @@ export class WebXRGenericTriggerMotionController extends WebXRAbstractMotionCont
     }
 
     protected _setRootMesh(meshes: AbstractMesh[]): void {
-        this.rootMesh = new Mesh(this.profileId + " " + this.handness, this.scene);
+        this.rootMesh = new Mesh(this.profileId + " " + this.handedness, this.scene);
 
         meshes.forEach((mesh) => {
             mesh.isPickable = false;
