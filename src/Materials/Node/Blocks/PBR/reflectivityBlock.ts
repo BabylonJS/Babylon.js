@@ -10,20 +10,38 @@ import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConne
 import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../nodeMaterialBlockConnectionPoint';
 import { Scene } from '../../../../scene';
 
+/**
+ * Block used to implement the reflectivity module of the PBR material
+ */
 export class ReflectivityBlock extends NodeMaterialBlock {
 
+    /**
+     * Specifies if the metallic texture contains the ambient occlusion information in its red channel.
+     */
     @editableInPropertyPage("AO from red channel", PropertyTypeForEdition.Boolean, "METALLIC WORKFLOW", { "notifiers": { "update": true }})
     public useAmbientOcclusionFromMetallicTextureRed: boolean = false;
 
+    /**
+     * Specifies if the metallic texture contains the metallness information in its blue channel.
+     */
     @editableInPropertyPage("Metallness from blue channel", PropertyTypeForEdition.Boolean, "METALLIC WORKFLOW", { "notifiers": { "update": true }})
     public useMetallnessFromMetallicTextureBlue: boolean = true;
 
+    /**
+     * Specifies if the metallic texture contains the roughness information in its alpha channel.
+     */
     @editableInPropertyPage("Roughness from alpha channel", PropertyTypeForEdition.Boolean, "METALLIC WORKFLOW", { "notifiers": { "update": true }})
     public useRoughnessFromMetallicTextureAlpha: boolean = false;
 
+    /**
+     * Specifies if the metallic texture contains the roughness information in its green channel.
+     */
     @editableInPropertyPage("Roughness from green channel", PropertyTypeForEdition.Boolean, "METALLIC WORKFLOW", { "notifiers": { "update": true }})
     public useRoughnessFromMetallicTextureGreen: boolean = true;
 
+    /**
+     * Specifies whether the F0 factor can be fetched from the mettalic texture.
+     */
     @editableInPropertyPage("Metallic F0 from alpha channel", PropertyTypeForEdition.Boolean, "METALLIC WORKFLOW", { "notifiers": { "update": true }})
     public useMetallicF0FactorFromMetallicTexture: boolean = false;
 
@@ -40,7 +58,8 @@ export class ReflectivityBlock extends NodeMaterialBlock {
         this.registerInput("roughness", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("texture", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment);
 
-        this.registerOutput("reflectivity", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment, new NodeMaterialConnectionPointCustomObject("reflectivity", this, NodeMaterialConnectionPointDirection.Output, ReflectivityBlock, "ReflectivityBlock"));
+        this.registerOutput("reflectivity", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment,
+            new NodeMaterialConnectionPointCustomObject("reflectivity", this, NodeMaterialConnectionPointDirection.Output, ReflectivityBlock, "ReflectivityBlock"));
     }
 
     /**
@@ -62,57 +81,72 @@ export class ReflectivityBlock extends NodeMaterialBlock {
         return "ReflectivityBlock";
     }
 
+    /**
+     * Gets the metallic input component
+     */
     public get metallic(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
+    /**
+     * Gets the roughness input component
+     */
     public get roughness(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
+    /**
+     * Gets the texture input component
+     */
     public get texture(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the reflectivity output component
+     * Gets the reflectivity object output component
      */
     public get reflectivity(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
+    /**
+     * Gets the main code of the block (fragment side)
+     * @returns the shader code
+     */
     public getCode(aoIntensityVarName: string): string {
         const metalRoughTexture = this.texture.isConnected ? this.texture.connectedPoint?.associatedVariableName : null;
 
-        let code = `vec3 baseColor = surfaceAlbedo;\r\nreflectivityOutParams reflectivityOut;\r\n`;
+        // note: metallic F0 factor = 0.04
+        let code = `vec3 baseColor = surfaceAlbedo;
+            reflectivityOutParams reflectivityOut;
 
-        code += `reflectivityBlock(
-            vec4(${this.metallic.associatedVariableName}, ${this.roughness.associatedVariableName}, 0., 0.04),
-        #ifdef METALLICWORKFLOW
-            surfaceAlbedo,
-        #endif
-        #ifdef REFLECTIVITY
-            vec3(0., 0., ${aoIntensityVarName}),
-            ${metalRoughTexture},
-        #endif
-        #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY)  && defined(AOSTOREINMETALMAPRED)
-            aoOut.ambientOcclusionColor,
-        #endif
-        #ifdef MICROSURFACEMAP
-            microSurfaceTexel, <== not handled!
-        #endif
-            reflectivityOut
-        );
+            reflectivityBlock(
+                vec4(${this.metallic.associatedVariableName}, ${this.roughness.associatedVariableName}, 0., 0.04),
+            #ifdef METALLICWORKFLOW
+                surfaceAlbedo,
+            #endif
+            #ifdef REFLECTIVITY
+                vec3(0., 0., ${aoIntensityVarName}),
+                ${metalRoughTexture},
+            #endif
+            #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY)  && defined(AOSTOREINMETALMAPRED)
+                aoOut.ambientOcclusionColor,
+            #endif
+            #ifdef MICROSURFACEMAP
+                microSurfaceTexel, <== not handled!
+            #endif
+                reflectivityOut
+            );
 
-        float microSurface = reflectivityOut.microSurface;
-        float roughness = reflectivityOut.roughness;
+            float microSurface = reflectivityOut.microSurface;
+            float roughness = reflectivityOut.roughness;
 
-        #ifdef METALLICWORKFLOW
-            surfaceAlbedo = reflectivityOut.surfaceAlbedo;
-        #endif
-        #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY) && defined(AOSTOREINMETALMAPRED)
-            aoOut.ambientOcclusionColor = reflectivityOut.ambientOcclusionColor;
-        #endif\r\n`;
+            #ifdef METALLICWORKFLOW
+                surfaceAlbedo = reflectivityOut.surfaceAlbedo;
+            #endif
+            #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY) && defined(AOSTOREINMETALMAPRED)
+                aoOut.ambientOcclusionColor = reflectivityOut.ambientOcclusionColor;
+            #endif\r\n`;
 
         return code;
     }

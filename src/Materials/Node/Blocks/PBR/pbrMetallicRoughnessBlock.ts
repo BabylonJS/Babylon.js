@@ -41,6 +41,9 @@ const mapOutputToVariable: { [name: string] : [string, string] } = {
     "shadow":       ["shadow", ""],
 };
 
+/**
+ * Block used to implement the PBR metallic/roughness model
+ */
 export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     /**
      * Gets or sets the light associated with this block
@@ -52,6 +55,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     private _environmentBRDFTexture: Nullable<BaseTexture> = null;
     private _environmentBrdfSamplerName: string;
 
+    /**
+     * Create a new ReflectionBlock
+     * @param name defines the block name
+     */
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.VertexAndFragment);
 
@@ -64,20 +71,25 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this.registerInput("baseColor", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("baseTexture", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("opacityTexture", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("reflectivity", NodeMaterialBlockConnectionPointTypes.Object, false, NodeMaterialBlockTargets.Fragment, new NodeMaterialConnectionPointCustomObject("reflectivity", this, NodeMaterialConnectionPointDirection.Input, ReflectivityBlock, "ReflectivityBlock"));
         this.registerInput("ambientColor", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("ambientOcclusion", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment, new NodeMaterialConnectionPointCustomObject("ambientOcclusion", this, NodeMaterialConnectionPointDirection.Input, AmbientOcclusionBlock, "AOBlock"));
-        this.registerInput("reflection", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment, new NodeMaterialConnectionPointCustomObject("reflection", this, NodeMaterialConnectionPointDirection.Input, ReflectionBlock, "ReflectionBlock"));
-        this.registerInput("sheen", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment, new NodeMaterialConnectionPointCustomObject("sheen", this, NodeMaterialConnectionPointDirection.Input, SheenBlock, "SheenBlock"));
+        this.registerInput("reflectivity", NodeMaterialBlockConnectionPointTypes.Object, false, NodeMaterialBlockTargets.Fragment,
+            new NodeMaterialConnectionPointCustomObject("reflectivity", this, NodeMaterialConnectionPointDirection.Input, ReflectivityBlock, "ReflectivityBlock"));
+        this.registerInput("ambientOcclusion", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
+            new NodeMaterialConnectionPointCustomObject("ambientOcclusion", this, NodeMaterialConnectionPointDirection.Input, AmbientOcclusionBlock, "AOBlock"));
+        this.registerInput("reflection", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
+            new NodeMaterialConnectionPointCustomObject("reflection", this, NodeMaterialConnectionPointDirection.Input, ReflectionBlock, "ReflectionBlock"));
+        this.registerInput("sheen", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
+            new NodeMaterialConnectionPointCustomObject("sheen", this, NodeMaterialConnectionPointDirection.Input, SheenBlock, "SheenBlock"));
         this.registerInput("clearCoat", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("subSurface", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("anisotropy", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment, new NodeMaterialConnectionPointCustomObject("anisotropy", this, NodeMaterialConnectionPointDirection.Input, AnisotropyBlock, "AnisotropyBlock"));
+        this.registerInput("anisotropy", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
+            new NodeMaterialConnectionPointCustomObject("anisotropy", this, NodeMaterialConnectionPointDirection.Input, AnisotropyBlock, "AnisotropyBlock"));
 
         this.registerOutput("ambient", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("diffuse", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("specular", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
-        this.registerOutput("sheen", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
-        this.registerOutput("clearcoat", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput("sheenDir", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput("clearcoatDir", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("diffuseInd", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("specularInd", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("sheenInd", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
@@ -87,42 +99,89 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this.registerOutput("shadow", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
     }
 
+    /**
+     * Specifies that the alpha is coming form the albedo channel alpha channel for alpha blending.
+     */
     @editableInPropertyPage("Alpha from albedo", PropertyTypeForEdition.Boolean, "TRANSPARENCY", { "notifiers": { "update": true }})
     public useAlphaFromAlbedoTexture: boolean = false;
 
-    @editableInPropertyPage("Alpha Testing", PropertyTypeForEdition.Boolean, "TRANSPARENCY", { "notifiers": { "update": true }})
+    /**
+     * Specifies that alpha test should be used
+     */
+    @editableInPropertyPage("Alpha Testing", PropertyTypeForEdition.Boolean, "TRANSPARENCY")
     public useAlphaTest: boolean = false;
 
+    /**
+     * Defines the alpha limits in alpha test mode.
+     */
     @editableInPropertyPage("Alpha CutOff", PropertyTypeForEdition.Float, "TRANSPARENCY", { min: 0, max: 1, "notifiers": { "update": true }})
-    public alphaTestCutoff: number = 0.4;
+    public alphaTestCutoff: number = 0.5;
 
-    @editableInPropertyPage("Alpha blending", PropertyTypeForEdition.Boolean, "TRANSPARENCY", { "notifiers": { "update": true }})
+    /**
+     * Specifies that alpha blending should be used
+     */
+    @editableInPropertyPage("Alpha blending", PropertyTypeForEdition.Boolean, "TRANSPARENCY")
     public useAlphaBlending: boolean = false;
 
+    /**
+     * Defines if the alpha value should be determined via the rgb values.
+     * If true the luminance of the pixel might be used to find the corresponding alpha value.
+     */
     @editableInPropertyPage("Get alpha from opacity texture RGB", PropertyTypeForEdition.Boolean, "TRANSPARENCY", { "notifiers": { "update": true }})
     public opacityRGB: boolean = false;
 
+    /**
+     * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most luminous ones).
+     * A car glass is a good exemple of that. When the street lights reflects on it you can not see what is behind.
+     */
     @editableInPropertyPage("Radiance over alpha", PropertyTypeForEdition.Boolean, "RENDERING", { "notifiers": { "update": true }})
     public useRadianceOverAlpha: boolean = true;
 
+    /**
+     * Specifies that the material will keeps the specular highlights over a transparent surface (only the most luminous ones).
+     * A car glass is a good exemple of that. When sun reflects on it you can not see what is behind.
+     */
     @editableInPropertyPage("Specular over alpha", PropertyTypeForEdition.Boolean, "RENDERING", { "notifiers": { "update": true }})
     public useSpecularOverAlpha: boolean = true;
 
+    /**
+     * Enables specular anti aliasing in the PBR shader.
+     * It will both interacts on the Geometry for analytical and IBL lighting.
+     * It also prefilter the roughness map based on the bump values.
+     */
     @editableInPropertyPage("Specular anti-aliasing", PropertyTypeForEdition.Boolean, "RENDERING", { "notifiers": { "update": true }})
     public enableSpecularAntiAliasing: boolean = false;
 
+    /**
+     * Defines if the material uses energy conservation.
+     */
     @editableInPropertyPage("Energy Conservation", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true }})
     public useEnergyConservation: boolean = true;
 
+    /**
+     * This parameters will enable/disable radiance occlusion by preventing the radiance to lit
+     * too much the area relying on ambient texture to define their ambient occlusion.
+     */
     @editableInPropertyPage("Radiance occlusion", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true }})
     public useRadianceOcclusion: boolean = true;
 
+    /**
+     * This parameters will enable/disable Horizon occlusion to prevent normal maps to look shiny when the normal
+     * makes the reflect vector face the model (under horizon).
+     */
     @editableInPropertyPage("Horizon occlusion", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true }})
     public useHorizonOcclusion: boolean = true;
 
-    @editableInPropertyPage("Unlit", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true }})
+    /**
+     * If set to true, no lighting calculations will be applied.
+     */
+    @editableInPropertyPage("Unlit", PropertyTypeForEdition.Boolean, "ADVANCED")
     public unlit: boolean = false;
 
+    /**
+     * Defines the material debug mode.
+     * It helps seeing only some components of the material while troubleshooting.
+     */
     @editableInPropertyPage("Debug mode", PropertyTypeForEdition.List, "DEBUG", { "notifiers": { "update": true }, "options": [
         { label: "None", value: 0 },
         // Geometry
@@ -187,9 +246,19 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     ]})
     public debugMode = 0;
 
+    /**
+     * Specify from where on screen the debug mode should start.
+     * The value goes from -1 (full screen) to 1 (not visible)
+     * It helps with side by side comparison against the final render
+     * This defaults to 0
+     */
     @editableInPropertyPage("Split position", PropertyTypeForEdition.Float, "DEBUG", { min: -1, max: 1, "notifiers": { "update": true }})
     public debugLimit = 0;
 
+    /**
+     * As the default viewing range might not be enough (if the ambient is really small for instance)
+     * You can use the factor to better multiply the final value.
+     */
     @editableInPropertyPage("Output factor", PropertyTypeForEdition.Float, "DEBUG", { min: 0, max: 5, "notifiers": { "update": true }})
     public debugFactor = 1;
 
@@ -245,110 +314,191 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         return "PBRMetallicRoughnessBlock";
     }
 
+    /**
+     * Gets the world position input component
+     */
     public get worldPosition(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
+    /**
+     * Gets the world normal input component
+     */
     public get worldNormal(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
+    /**
+     * Gets the perturbed normal input component
+     */
     public get perturbedNormal(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
+    /**
+     * Gets the camera position input component
+     */
     public get cameraPosition(): NodeMaterialConnectionPoint {
         return this._inputs[3];
     }
 
+    /**
+     * Gets the base color input component
+     */
     public get baseColor(): NodeMaterialConnectionPoint {
         return this._inputs[4];
     }
 
+    /**
+     * Gets the base texture input component
+     */
     public get baseTexture(): NodeMaterialConnectionPoint {
         return this._inputs[5];
     }
 
+    /**
+     * Gets the opacity texture input component
+     */
     public get opacityTexture(): NodeMaterialConnectionPoint {
         return this._inputs[6];
     }
 
-    public get reflectivityParams(): NodeMaterialConnectionPoint {
+    /**
+     * Gets the ambient color input component
+     */
+    public get ambientColor(): NodeMaterialConnectionPoint {
         return this._inputs[7];
     }
 
-    public get ambientColor(): NodeMaterialConnectionPoint {
+    /**
+     * Gets the reflectivity object parameters
+     */
+    public get reflectivity(): NodeMaterialConnectionPoint {
         return this._inputs[8];
     }
 
-    public get ambientOcclusionParams(): NodeMaterialConnectionPoint {
+    /**
+     * Gets the ambient occlusion object parameters
+     */
+    public get ambientOcclusion(): NodeMaterialConnectionPoint {
         return this._inputs[9];
     }
 
-    public get reflectionParams(): NodeMaterialConnectionPoint {
+    /**
+     * Gets the reflection object parameters
+     */
+    public get reflection(): NodeMaterialConnectionPoint {
         return this._inputs[10];
     }
 
-    public get sheenParams(): NodeMaterialConnectionPoint {
+    /**
+     * Gets the sheen object parameters
+     */
+    public get sheen(): NodeMaterialConnectionPoint {
         return this._inputs[11];
     }
 
-    public get clearcoatParams(): NodeMaterialConnectionPoint {
+    /**
+     * Gets the clear coat object parameters
+     */
+    public get clearcoat(): NodeMaterialConnectionPoint {
         return this._inputs[12];
     }
 
-    public get subSurfaceParams(): NodeMaterialConnectionPoint {
+    /**
+     * Gets the sub surface object parameters
+     */
+    public get subSurface(): NodeMaterialConnectionPoint {
         return this._inputs[13];
     }
 
-    public get anisotropyParams(): NodeMaterialConnectionPoint {
+    /**
+     * Gets the anisotropy object parameters
+     */
+    public get anisotropy(): NodeMaterialConnectionPoint {
         return this._inputs[14];
     }
 
+    /**
+     * Gets the ambient output component
+     */
     public get ambient(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
+    /**
+     * Gets the diffuse output component
+     */
     public get diffuse(): NodeMaterialConnectionPoint {
         return this._outputs[1];
     }
 
+    /**
+     * Gets the specular output component
+     */
     public get specular(): NodeMaterialConnectionPoint {
         return this._outputs[2];
     }
 
-    public get sheen(): NodeMaterialConnectionPoint {
+    /**
+     * Gets the sheen output component
+     */
+    public get sheenDir(): NodeMaterialConnectionPoint {
         return this._outputs[3];
     }
 
-    public get clearcoat(): NodeMaterialConnectionPoint {
+    /**
+     * Gets the clear coat output component
+     */
+    public get clearcoatDir(): NodeMaterialConnectionPoint {
         return this._outputs[4];
     }
 
+    /**
+     * Gets the indirect diffuse output component
+     */
     public get diffuseIndirect(): NodeMaterialConnectionPoint {
         return this._outputs[5];
     }
 
+    /**
+     * Gets the indirect specular output component
+     */
     public get specularIndirect(): NodeMaterialConnectionPoint {
         return this._outputs[6];
     }
 
+    /**
+     * Gets the indirect sheen output component
+     */
     public get sheenIndirect(): NodeMaterialConnectionPoint {
         return this._outputs[7];
     }
 
+    /**
+     * Gets the indirect clear coat output component
+     */
     public get clearcoatIndirect(): NodeMaterialConnectionPoint {
         return this._outputs[8];
     }
 
+    /**
+     * Gets the refraction output component
+     */
     public get refraction(): NodeMaterialConnectionPoint {
         return this._outputs[9];
     }
 
+    /**
+     * Gets the global lighting output component
+     */
     public get lighting(): NodeMaterialConnectionPoint {
         return this._outputs[10];
     }
 
+    /**
+     * Gets the shadow output component
+     */
     public get shadow(): NodeMaterialConnectionPoint {
         return this._outputs[11];
     }
@@ -366,6 +516,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+        // General
         defines.setValue("PBR", true);
         defines.setValue("METALLICWORKFLOW", true);
         defines.setValue("DEBUGMODE", this.debugMode);
@@ -373,14 +524,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         defines.setValue("BUMP", this.perturbedNormal.isConnected);
 
         // Albedo & Opacity
-        if (this.baseTexture.isConnected) {
-            defines.setValue("ALBEDO", true);
-        }
+        defines.setValue("ALBEDO", this.baseTexture.isConnected);
+        defines.setValue("OPACITY", this.opacityTexture.isConnected);
 
-        if (this.opacityTexture.isConnected) {
-            defines.setValue("OPACITY", true);
-        }
-
+        // Transparency
         defines.setValue("ALPHABLEND", this.useAlphaBlending);
         defines.setValue("ALPHAFROMALBEDO", this.useAlphaFromAlbedoTexture);
         defines.setValue("ALPHATEST", this.useAlphaTest);
@@ -498,14 +645,14 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             state.compilationString += `${worldPosVaryingName} = ${worldPos.associatedVariableName};\r\n`;
         }
 
-        const reflectionBlock = this.reflectionParams.isConnected ? this.reflectionParams.connectedPoint?.ownerBlock as ReflectionBlock : null;
+        const reflectionBlock = this.reflection.isConnected ? this.reflection.connectedPoint?.ownerBlock as ReflectionBlock : null;
 
         state.compilationString += reflectionBlock?.handleVertexSide(state) ?? "";
 
-        state._emitUniformFromString("vDebugMode", "vec2", "defined(DUMMY) || DEBUGMODE > 0");
+        state._emitUniformFromString("vDebugMode", "vec2", "defined(IGNORE) || DEBUGMODE > 0");
         state._emitUniformFromString("ambientFromScene", "vec3");
 
-        if (state._emitVaryingFromString("vClipSpacePosition", "vec4", "defined(DUMMY) || DEBUGMODE > 0")) {
+        if (state._emitVaryingFromString("vClipSpacePosition", "vec4", "defined(IGNORE) || DEBUGMODE > 0")) {
             state._injectAtEnd += `#if DEBUGMODE > 0\r\n`;
             state._injectAtEnd += `vClipSpacePosition = gl_Position;\r\n`;
             state._injectAtEnd += `#endif\r\n`;
@@ -561,9 +708,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             this._environmentBRDFTexture = BRDFTextureTools.GetEnvironmentBRDFTexture(this._scene);
         }
 
-        const reflectionBlock = this.reflectionParams.isConnected ? this.reflectionParams.connectedPoint?.ownerBlock as ReflectionBlock : null;
+        const reflectionBlock = this.reflection.isConnected ? this.reflection.connectedPoint?.ownerBlock as ReflectionBlock : null;
 
         if (reflectionBlock) {
+            // Need those variables to be setup when calling _injectVertexCode
             reflectionBlock.worldPositionConnectionPoint = this.worldPosition;
             reflectionBlock.cameraPositionConnectionPoint = this.cameraPosition;
             reflectionBlock.worldNormalConnectionPoint = this.worldNormal;
@@ -587,6 +735,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this._environmentBrdfSamplerName = state._getFreeVariableName("environmentBrdfSampler");
 
         state._emit2DSampler(this._environmentBrdfSamplerName);
+
+        state.sharedData.hints.needAlphaBlending = state.sharedData.hints.needAlphaBlending || this.useAlphaBlending;
+        state.sharedData.hints.needAlphaTesting = state.sharedData.hints.needAlphaTesting || this.useAlphaTest;
 
         //
         // Includes
@@ -633,7 +784,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("pbrBlockAmbientOcclusion", comments);
         state._emitFunctionFromInclude("pbrBlockAlphaFresnel", comments);
         state._emitFunctionFromInclude("pbrBlockAnisotropic", comments);
-        //state._emitFunctionFromInclude("pbrBlockReflection", comments);
         state._emitFunctionFromInclude("pbrBlockSheen", comments);
         state._emitFunctionFromInclude("pbrBlockClearcoat", comments);
         state._emitFunctionFromInclude("pbrBlockSubSurface", comments);
@@ -666,7 +816,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state.compilationString += state._emitCodeFromInclude("depthPrePass", comments);
 
         // _____________________________ AO  _______________________________
-        const aoBlock = this.ambientOcclusionParams.connectedPoint?.ownerBlock as Nullable<AmbientOcclusionBlock>;
+        const aoBlock = this.ambientOcclusion.connectedPoint?.ownerBlock as Nullable<AmbientOcclusionBlock>;
 
         state.compilationString += AmbientOcclusionBlock.getCode(aoBlock);
 
@@ -765,26 +915,21 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             ]
         });
 
+        // _____________________________ Output Final Color Composition ________________________
         state.compilationString += state._emitCodeFromInclude("pbrBlockFinalColorComposition", comments, {
             replaceStrings: [
                 { search: /finalEmissive/g, replace: "vec3(0.)" },
             ]
         });
 
+        // _____________________________ Apply image processing ________________________
         state.compilationString += state._emitCodeFromInclude("pbrBlockImageProcessing", comments, {
             replaceStrings: [
                 { search: /visibility/g, replace: "1." },
             ]
         });
 
-        if (this.lighting.hasEndpoints) {
-            state.compilationString += this._declareOutput(this.lighting, state) + ` = finalColor;\r\n`;
-        }
-
-        if (this.shadow.hasEndpoints) {
-            state.compilationString += this._declareOutput(this.shadow, state) + ` = shadow;\r\n`;
-        }
-
+        // _____________________________ Generate debug code ________________________
         state.compilationString += state._emitCodeFromInclude("pbrDebug", comments, {
             replaceStrings: [
                 { search: /vNormalW/g, replace: this.worldNormal.associatedVariableName },

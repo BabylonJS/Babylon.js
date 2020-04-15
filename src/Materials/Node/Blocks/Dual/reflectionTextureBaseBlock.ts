@@ -19,7 +19,7 @@ import { CubeTexture } from '../../../Textures/cubeTexture';
 import { Texture } from '../../../Textures/texture';
 
 /**
- * Block used to read a reflection texture from a sampler
+ * Base block used to read a reflection texture from a sampler
  */
 export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     /** @hidden */
@@ -60,7 +60,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     public texture: Nullable<BaseTexture>;
 
     /**
-     * Create a new TextureBlock
+     * Create a new ReflectionTextureBaseBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
@@ -191,6 +191,11 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Gets the code to inject in the vertex shader
+     * @param state current state of the node material building
+     * @returns the shader code
+     */
     public handleVertexSide(state: NodeMaterialBuildState): string {
         this._define3DName = state._getFreeDefineName("REFLECTIONMAP_3D");
         this._defineCubicName = state._getFreeDefineName("REFLECTIONMAP_CUBIC");

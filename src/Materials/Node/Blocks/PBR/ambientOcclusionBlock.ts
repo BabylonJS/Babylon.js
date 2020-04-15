@@ -11,8 +11,15 @@ import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { Scene } from '../../../../scene';
 
+/**
+ * Block used to implement the ambient occlusion module of the PBR material
+ */
 export class AmbientOcclusionBlock extends NodeMaterialBlock {
 
+    /**
+     * Create a new AmbientOcclusionBlock
+     * @param name defines the block name
+     */
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Fragment);
 
@@ -22,9 +29,13 @@ export class AmbientOcclusionBlock extends NodeMaterialBlock {
         this.registerInput("intensity", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("directLightIntensity", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
 
-        this.registerOutput("ambientOcclusion", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment, new NodeMaterialConnectionPointCustomObject("ambientOcclusion", this, NodeMaterialConnectionPointDirection.Output, AmbientOcclusionBlock, "AOBlock"));
+        this.registerOutput("ambientOcclusion", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment,
+            new NodeMaterialConnectionPointCustomObject("ambientOcclusion", this, NodeMaterialConnectionPointDirection.Output, AmbientOcclusionBlock, "AOBlock"));
     }
 
+    /**
+     * Specifies if the ambient texture contains the ambient occlusion information in its red channel only.
+     */
     @editableInPropertyPage("Ambient in gray scale", PropertyTypeForEdition.Boolean, "AMBIENT", { "notifiers": { "update": true }})
     public useAmbientInGrayScale: boolean = false;
 
@@ -41,25 +52,42 @@ export class AmbientOcclusionBlock extends NodeMaterialBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "ambientOcclusionBlock";
+        return "AmbientOcclusionBlock";
     }
 
+    /**
+     * Gets the texture input component
+     */
     public get texture(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
+    /**
+     * Gets the texture intensity component
+     */
     public get intensity(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
+    /**
+     * Gets the direct light intensity input component
+     */
     public get directLightIntensity(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
+    /**
+     * Gets the ambient occlusion object output component
+     */
     public get ambientOcclusion(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
+    /**
+     * Gets the main code of the block (fragment side)
+     * @param block instance of an AmbientOcclusionBlock or null if the code must be generated without an active ambient occlusion module
+     * @returns the shader code
+     */
     public static getCode(block: Nullable<AmbientOcclusionBlock>): string {
         let code = `ambientOcclusionOutParams aoOut;\r\n`;
 

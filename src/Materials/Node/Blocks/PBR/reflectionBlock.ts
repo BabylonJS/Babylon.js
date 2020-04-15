@@ -16,6 +16,9 @@ import { Effect } from '../../../effect';
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 import { Scene } from '../../../../scene';
 
+/**
+ * Block used to implement the reflection module of the PBR material
+ */
 export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
     private _defineLODReflectionAlpha: string;
@@ -25,16 +28,36 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     private _vReflectionMicrosurfaceInfosName: string;
     private _scene: Scene;
 
+    /**
+     * The three properties below are set by the main PBR block prior to calling methods of this class.
+     * This is to avoid having to add them as inputs here whereas they are already inputs of the main block, so already known.
+     * It's less burden on the user side in the editor part.
+    */
+
+    /** @hidden */
     public worldPositionConnectionPoint: NodeMaterialConnectionPoint;
+    /** @hidden */
     public worldNormalConnectionPoint: NodeMaterialConnectionPoint;
+    /** @hidden */
     public cameraPositionConnectionPoint: NodeMaterialConnectionPoint;
 
+    /**
+     * Defines if the material uses spherical harmonics vs spherical polynomials for the
+     * diffuse part of the IBL.
+     */
     @editableInPropertyPage("Spherical Harmonics", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true }})
     public useSphericalHarmonics: boolean = true;
 
+    /**
+     * Force the shader to compute irradiance in the fragment shader in order to take bump in account.
+     */
     @editableInPropertyPage("Force irradiance in fragment", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true }})
     public forceIrradianceInFragment: boolean = false;
 
+    /**
+     * Create a new ReflectionBlock
+     * @param name defines the block name
+     */
     public constructor(name: string) {
         super(name);
 
@@ -45,7 +68,8 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         this.registerInput("view", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
 
-        this.registerOutput("reflection", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment, new NodeMaterialConnectionPointCustomObject("reflection", this, NodeMaterialConnectionPointDirection.Output, ReflectionBlock, "ReflectionBlock"));
+        this.registerOutput("reflection", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment,
+            new NodeMaterialConnectionPointCustomObject("reflection", this, NodeMaterialConnectionPointDirection.Output, ReflectionBlock, "ReflectionBlock"));
     }
 
     /**
@@ -57,7 +81,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     }
 
     /**
-     * Gets the world position input component
+     * Gets the position input component
      */
     public get position(): NodeMaterialConnectionPoint {
         return this._inputs[0];
@@ -98,14 +122,23 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         return this._inputs[2];
     }
 
+    /**
+     * Gets the color input component
+     */
     public get color(): NodeMaterialConnectionPoint {
         return this._inputs[3];
     }
 
+    /**
+     * Gets the reflection object output component
+     */
     public get reflection(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
+    /**
+     * Returns true if the block has a texture (either its own texture or the environment texture from the scene, if set)
+     */
     public get hasTexture(): boolean {
         return !!this._getTexture();
     }
@@ -201,6 +234,11 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         }
     }
 
+    /**
+     * Gets the code to inject in the vertex shader
+     * @param state current state of the node material building
+     * @returns the shader code
+     */
     public handleVertexSide(state: NodeMaterialBuildState): string {
         let code = super.handleVertexSide(state);
 
@@ -249,6 +287,15 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         return code;
     }
 
+    /**
+     * Gets the main code of the block (fragment side)
+     * @param state current state of the node material building
+     * @param normalVarName name of the existing variable corresponding to the normal
+     * @param finalColorVarName name of the variable that will hold the final color
+     * @param finalIrradianceVector name of the variable that will hold the final irradiance vector
+     * @param finalIrradianceVarName name of the variable that will hold the final irradiance color
+     * @returns the shader code
+     */
     public getCode(state: NodeMaterialBuildState, normalVarName: string, finalColorVarName: string, finalIrradianceVector: string, finalIrradianceVarName: string): string {
         let code = "";
 
@@ -323,9 +370,8 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
                 ${finalColorVarName} = ${this._reflectionColorName}${this.color.isConnected ? " * vec4(" + this.color.associatedVariableName + ", 1.)" : ""};
             #else
                 // ***not handled***
-            #endif\r\n`;
+            #endif
 
-        code += `
             vec3 ${finalIrradianceVarName} = vec3(0.);
             #ifdef USESPHERICALFROMREFLECTIONMAP
                 #if defined(USESPHERICALINVERTEX)
@@ -343,12 +389,12 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
                     ${finalIrradianceVarName} = computeEnvironmentIrradiance(${finalIrradianceVector});
                 #endif
-            #endif\r\n`;
+            #endif
 
-        code += `
             #ifdef SS_TRANSLUCENCY
                 reflectionOut.irradianceVector = irradianceVector;
             #endif
+
             reflectionOut.environmentRadiance = environmentRadiance;
             reflectionOut.environmentIrradiance = environmentIrradiance;
             reflectionOut.reflectionCoords = ${this._reflectionCoordsName};\r\n`;
