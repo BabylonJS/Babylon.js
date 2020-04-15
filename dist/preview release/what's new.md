@@ -35,6 +35,7 @@
 - Edit all textures (anisotropic, clear coat, sheen, ...) for the PBR materials ([Popov72](https://github.com/Popov72))
 - Added right click options to create PBR and Standard Materials ([Deltakosh](https://github.com/deltakosh))
 - Added support for recording GIF ([Deltakosh](https://github.com/deltakosh))
+- Popup Window available (To be used in Curve Editor) ([pixelspace](https://github.com/devpixelspace))
 
 ### Cameras
 
