@@ -136,6 +136,18 @@ export class ReflectivityBlock extends NodeMaterialBlock {
         return this;
     }
 
+    protected _dumpPropertiesCode() {
+        let codeString: string = "";
+
+        codeString += `${this._codeVariableName}.useAmbientOcclusionFromMetallicTextureRed = ${this.useAmbientOcclusionFromMetallicTextureRed};\r\n`;
+        codeString += `${this._codeVariableName}.useMetallnessFromMetallicTextureBlue = ${this.useMetallnessFromMetallicTextureBlue};\r\n`;
+        codeString += `${this._codeVariableName}.useRoughnessFromMetallicTextureAlpha = ${this.useRoughnessFromMetallicTextureAlpha};\r\n`;
+        codeString += `${this._codeVariableName}.useRoughnessFromMetallicTextureGreen = ${this.useRoughnessFromMetallicTextureGreen};\r\n`;
+        codeString += `${this._codeVariableName}.useMetallicF0FactorFromMetallicTexture = ${this.useMetallicF0FactorFromMetallicTexture};\r\n`;
+
+        return codeString;
+    }
+
     public serialize(): any {
         let serializationObject = super.serialize();
 

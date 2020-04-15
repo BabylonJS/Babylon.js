@@ -109,6 +109,12 @@ export class AnisotropyBlock extends NodeMaterialBlock {
         return code;
     }
 
+    /**
+     * Gets the main code of the block (fragment side)
+     * @param state current state of the node material building
+     * @param generateTBNSpace if true, the code needed to create the TBN coordinate space is generated
+     * @returns the shader code
+     */
     public getCode(state: NodeMaterialBuildState, generateTBNSpace = false): string {
         let code = "";
 

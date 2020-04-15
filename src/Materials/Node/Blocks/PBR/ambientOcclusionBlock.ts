@@ -92,6 +92,14 @@ export class AmbientOcclusionBlock extends NodeMaterialBlock {
         return this;
     }
 
+    protected _dumpPropertiesCode() {
+        let codeString: string;
+
+        codeString = `${this._codeVariableName}.useAmbientInGrayScale = ${this.useAmbientInGrayScale};\r\n`;
+
+        return codeString;
+    }
+
     public serialize(): any {
         let serializationObject = super.serialize();
 

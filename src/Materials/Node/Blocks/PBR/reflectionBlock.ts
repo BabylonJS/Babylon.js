@@ -368,6 +368,15 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         return this;
     }
 
+    protected _dumpPropertiesCode() {
+        let codeString: string = super._dumpPropertiesCode();
+
+        codeString += `${this._codeVariableName}.useSphericalHarmonics = ${this.useSphericalHarmonics};\r\n`;
+        codeString += `${this._codeVariableName}.forceIrradianceInFragment = ${this.forceIrradianceInFragment};\r\n`;
+
+        return codeString;
+    }
+
     public serialize(): any {
         let serializationObject = super.serialize();
 
