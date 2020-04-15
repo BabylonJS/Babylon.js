@@ -510,6 +510,42 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IAnimationCurveEditorComponentProps {
+        close: (event: any) => void;
+        title: string;
+    }
+    export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, {
+        isOpen: boolean;
+    }> {
+        constructor(props: IAnimationCurveEditorComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IPopupComponentProps {
+        id: string;
+        title: string;
+        size: {
+            width: number;
+            height: number;
+        };
+        onOpen: (window: Window) => void;
+        onClose: (window: Window) => void;
+    }
+    export class PopupComponent extends React.Component<IPopupComponentProps, {
+        isComponentMounted: boolean;
+        blockedByBrowser: boolean;
+    }> {
+        private _container;
+        private _window;
+        constructor(props: IPopupComponentProps);
+        componentDidMount(): void;
+        openPopup(): void;
+        componentWillUnmount(): void;
+        render(): React.ReactPortal | null;
+    }
+}
+declare module INSPECTOR {
     interface IAnimationGridComponentProps {
         globalState: GlobalState;
         animatable: BABYLON.IAnimatable;
@@ -526,6 +562,7 @@ declare module INSPECTOR {
         private _onBeforeRenderObserver;
         private _isPlaying;
         private timelineRef;
+        private _isCurveEditorOpen;
         private _animationControl;
         constructor(props: IAnimationGridComponentProps);
         playOrPause(): void;
@@ -533,6 +570,8 @@ declare module INSPECTOR {
         componentWillUnmount(): void;
         onCurrentFrameChange(value: number): void;
         onChangeFromOrTo(): void;
+        onOpenAnimationCurveEditor(): void;
+        onCloseAnimationCurveEditor(window: Window | null): void;
         render(): JSX.Element;
     }
 }

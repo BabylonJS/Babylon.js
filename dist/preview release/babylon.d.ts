@@ -36138,6 +36138,10 @@ declare module BABYLON {
         set texturesEnabled(value: boolean);
         get texturesEnabled(): boolean;
         /**
+         * Gets or sets a boolean indicating if physic engines are enabled on this scene
+         */
+        physicsEnabled: boolean;
+        /**
         * Gets or sets a boolean indicating if particles are enabled on this scene
         */
         particlesEnabled: boolean;
@@ -44093,9 +44097,9 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Handness type in xrInput profiles. These can be used to define layouts in the Layout Map.
+     * Handedness type in xrInput profiles. These can be used to define layouts in the Layout Map.
      */
-    export type MotionControllerHandness = "none" | "left" | "right";
+    export type MotionControllerHandedness = "none" | "left" | "right";
     /**
      * The type of components available in motion controllers.
      * This is not the name of the component.
@@ -44203,9 +44207,9 @@ declare module BABYLON {
      */
     export interface IMotionControllerLayoutMap {
         /**
-         * Layouts with handness type as a key
+         * Layouts with handedness type as a key
          */
-        [handness: string]: IMotionControllerLayout;
+        [handedness: string]: IMotionControllerLayout;
     }
     /**
      * The XR Input profile schema
@@ -44218,7 +44222,7 @@ declare module BABYLON {
          */
         fallbackProfileIds: string[];
         /**
-         * The layout map, with handness as key
+         * The layout map, with handedness as key
          */
         layouts: IMotionControllerLayoutMap;
         /**
@@ -44305,9 +44309,9 @@ declare module BABYLON {
          */
         gamepadObject: IMinimalMotionControllerObject;
         /**
-         * handness (left/right/none) of this controller
+         * handedness (left/right/none) of this controller
          */
-        handness: MotionControllerHandness;
+        handedness: MotionControllerHandedness;
         private _initComponent;
         private _modelReady;
         /**
@@ -44338,7 +44342,7 @@ declare module BABYLON {
          * @param scene the scene to which the model of the controller will be added
          * @param layout The profile layout to load
          * @param gamepadObject The gamepad object correlating to this controller
-         * @param handness handness (left/right/none) of this controller
+         * @param handedness handedness (left/right/none) of this controller
          * @param _doNotLoadControllerMesh set this flag to ignore the mesh loading
          */
         constructor(scene: Scene, layout: IMotionControllerLayout, 
@@ -44347,9 +44351,9 @@ declare module BABYLON {
          */
         gamepadObject: IMinimalMotionControllerObject, 
         /**
-         * handness (left/right/none) of this controller
+         * handedness (left/right/none) of this controller
          */
-        handness: MotionControllerHandness, _doNotLoadControllerMesh?: boolean);
+        handedness: MotionControllerHandedness, _doNotLoadControllerMesh?: boolean);
         /**
          * Dispose this controller, the model mesh and all its components
          */
@@ -44393,6 +44397,10 @@ declare module BABYLON {
          * @param xrFrame the current xr frame to use and update the model
          */
         updateFromXRFrame(xrFrame: XRFrame): void;
+        /**
+         * Backwards compatibility due to a deeply-integrated typo
+         */
+        get handness(): XREye;
         protected _getChildByName(node: AbstractMesh, name: string): AbstractMesh;
         protected _getImmediateChildByName(node: AbstractMesh, name: string): AbstractMesh;
         /**
@@ -44452,7 +44460,7 @@ declare module BABYLON {
          */
         static ProfileId: string;
         profileId: string;
-        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness);
+        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handedness: MotionControllerHandedness);
         protected _getFilenameAndPath(): {
             filename: string;
             path: string;
@@ -70459,7 +70467,7 @@ declare module BABYLON {
          */
         static MODEL_RIGHT_FILENAME: string;
         profileId: string;
-        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness);
+        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handedness: MotionControllerHandedness);
         protected _getFilenameAndPath(): {
             filename: string;
             path: string;
@@ -70495,7 +70503,7 @@ declare module BABYLON {
          */
         static QUEST_MODEL_BASE_URL: string;
         profileId: string;
-        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness, legacyMapping?: boolean, _forceLegacyControllers?: boolean);
+        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handedness: MotionControllerHandedness, legacyMapping?: boolean, _forceLegacyControllers?: boolean);
         protected _getFilenameAndPath(): {
             filename: string;
             path: string;
@@ -70530,9 +70538,9 @@ declare module BABYLON {
          * Create a new Vive motion controller object
          * @param scene the scene to use to create this controller
          * @param gamepadObject the corresponding gamepad object
-         * @param handness the handness of the controller
+         * @param handedness the handedness of the controller
          */
-        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness);
+        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handedness: MotionControllerHandedness);
         protected _getFilenameAndPath(): {
             filename: string;
             path: string;

@@ -1372,6 +1372,7 @@ export class NodeMaterial extends PushMaterial {
 
                         if (!nodeMaterial) {
                             nodeMaterial = SerializationHelper.Parse(() => new NodeMaterial(snippetId, scene), serializationObject, scene, rootUrl);
+                            nodeMaterial.uniqueId = scene.getUniqueId();
                         }
 
                         nodeMaterial.loadFromSerialization(serializationObject);
