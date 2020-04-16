@@ -51,7 +51,7 @@ export interface ISpriteManager extends IDisposable {
      * @param ray The ray we are sending to test the collision
      * @param camera The camera space we are sending rays in
      * @param predicate A predicate allowing excluding sprites from the list of object to test
-     * @param fastCheck Is the hit test done in a OOBB or AOBB fashion the faster, the less precise
+     * @param fastCheck defines if the first intersection will be used (and not the closest)
      * @returns picking info or null.
      */
     intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
