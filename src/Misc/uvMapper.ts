@@ -1914,10 +1914,9 @@ enum CORNERFLAGS {
  * @param {number} index
  * @returns {number} the flag
  */
-function toFlag(index: number) : number { 
+function toFlag(index: number) : number {
     return 1 << index;
 }
-
 
 class BoxVert {
     x: number;
@@ -1935,7 +1934,7 @@ class BoxVert {
 
     /* Store last intersecting boxes here
      * speedup intersection testing */
-    intersection_cache: BoxBlender[] = [
+    intersection_cache: Nullable<BoxBlender>[] = [
         null,
         null,
         null,
@@ -2141,7 +2140,7 @@ class BoxPacker {
         for (let boxIndex = 1; boxIndex < boxes.length; boxIndex++) {
             const box = boxes[boxIndex];
 
-            const vertexSort = (index1, index2) => {
+            const vertexSort = (index1: number, index2: number) => {
                 const v1 = vertices[index1];
                 const v2 = vertices[index2];
                 let a1, a2;
@@ -2180,7 +2179,7 @@ class BoxPacker {
             if (useFreeStrip) {
                 let index = vertexPackIndices.length - 1;
 
-                while(index != 0 && vertices[vertexPackIndices[index]].free == 0) {
+                while (index != 0 && vertices[vertexPackIndices[index]].free == 0) {
                     vertexPackIndices.pop();
                     index--;
                 }
@@ -2228,7 +2227,7 @@ class BoxPacker {
                          */
                         intersection = false;
                         if (box.xmin_get() < 0 || box.ymin_get() < 0
-                            || (vertex.intersection_cache[quadrantIndex] && box.intersect(vertex.intersection_cache[quadrantIndex]))) {
+                            || (vertex.intersection_cache[quadrantIndex] && box.intersect(vertex.intersection_cache[quadrantIndex]!))) {
                             /**
                              * Here we check that the last intersected
                              * firstBox will intersect with this one using
@@ -2286,8 +2285,8 @@ class BoxPacker {
                              * Mask free flags for verts that are
                              * on the bottom or side so we don't get
                              * boxes outside the given rectangle ares
-                             * 
-                             * We can do an else/if here because only the first 
+                             *
+                             * We can do an else/if here because only the first
                              * firstBox can be at the very bottom left corner
                              */
                             if (box.xmin_get() <= 0) {
@@ -2302,7 +2301,7 @@ class BoxPacker {
                             /**
                              * The following block of code does a logical
                              * check with 2 adjacent boxes, its possible to
-                             * flag verts on one or both of the boxes 
+                             * flag verts on one or both of the boxes
                              * as being used by checking the width or
                              * height of both boxes
                              *
@@ -2439,7 +2438,7 @@ class BoxPacker {
                 }
             }
         }
-        
+
         // BoxPacker.debugFitAABB(boxes, tot.x, tot.y);
 
         return {

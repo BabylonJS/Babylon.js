@@ -4203,7 +4203,6 @@ export class ThinEngine {
         return data;
     }
 
-
     // Statics
 
     private static _isSupported: Nullable<boolean> = null;

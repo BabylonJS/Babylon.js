@@ -78,7 +78,7 @@ class Patch {
         // Rodrigues' formula
         randomVector = randomVector.scale(Math.cos(randomAngle))
             .add(Vector3.Cross(randomVector, this.normal).scale(Math.sin(randomAngle)))
-            .add(this.normal.scale((1 - Math.cos(randomAngle)*Vector3.Dot(this.normal, randomVector))));
+            .add(this.normal.scale((1 - Math.cos(randomAngle) * Vector3.Dot(this.normal, randomVector))));
         // scale between 0 and patch size / 2
         randomVector.scaleInPlace(Math.random() * 0.5 * this.size);
         return this.position.add(randomVector);
@@ -206,10 +206,10 @@ Mesh.prototype.getRadiosityTexture = function() {
 };
 
 declare interface RadiosityRendererOptions {
-    near?: number,
-    far?: number,
-    bias?: number,
-    normalBias?: number,
+    near?: number;
+    far?: number;
+    bias?: number;
+    normalBias?: number;
 }
 
 /**
@@ -295,7 +295,6 @@ export class RadiosityRenderer {
     private squareToDiskArea(a: number) {
         return a * a * Math.PI / 4;
     }
-
 
     /**
      * Instanciates a radiosity renderer
@@ -1056,7 +1055,7 @@ export class RadiosityRenderer {
                 let patch = new Patch(new Vector3((<Float32Array>positions)[i], (<Float32Array>positions)[i + 1], (<Float32Array>positions)[i + 2]),
                     new Vector3((<Float32Array>normals)[i], (<Float32Array>normals)[i + 1], (<Float32Array>normals)[i + 2]),
                     RadiosityUtils.DecodeId(new Vector3((<Float32Array>ids)[i], (<Float32Array>ids)[i + 1], (<Float32Array>ids)[i + 2])),
-                    new Vector3(residualEnergy[i], residualEnergy[i + 1], residualEnergy[i + 2]))
+                    new Vector3(residualEnergy[i], residualEnergy[i + 1], residualEnergy[i + 2]));
                 patches.push(patch);
                 patch.size = mesh.radiosityInfo.texelWorldSize;
             }

@@ -336,9 +336,8 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     private applyScale(v: Vector3, fraction: number) {
         // can be overloaded
         // return v.scaleInPlace(Math.max(0.05, fraction * fraction))
-        return v.scaleInPlace(Math.max(0.05,fraction * fraction * fraction));
+        return v.scaleInPlace(Math.max(0.05, fraction * fraction * fraction));
     }
-
 
     private _generateHemisphere(): number[] {
         var numSamples = this.samples;
