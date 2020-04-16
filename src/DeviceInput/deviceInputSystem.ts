@@ -15,6 +15,8 @@ export class DeviceInputSystem implements IDisposable {
     public static readonly POINTER_DEVICE: string = "Pointer";
     /** KEYBOARD_DEVICE */
     public static readonly KEYBOARD_DEVICE: string = "Keyboard";
+    /** MOUSE_DEVICE */
+    public static readonly MOUSE_DEVICE: string = "Mouse";
 
     /**
      * Observable to be triggered when a device is connected
@@ -43,7 +45,7 @@ export class DeviceInputSystem implements IDisposable {
     private _gamepadConnectedEvent = (evt: any) => { };
     private _gamepadDisconnectedEvent = (evt: any) => { };
 
-    private static _MAX_KEYCODES: number = 222;
+    private static _MAX_KEYCODES: number = 255;
     private static _MAX_POINTER_INPUTS: number = 7;
 
     /**
@@ -71,7 +73,7 @@ export class DeviceInputSystem implements IDisposable {
         const device = this._inputs[deviceName];
 
         if (!device) {
-            throw `Unable to find device ${deviceName}`;
+            return null;
         }
 
         this._updateDevice(deviceName, inputIndex);
@@ -79,6 +81,7 @@ export class DeviceInputSystem implements IDisposable {
         if (device[inputIndex] === undefined) {
             throw `Unable to find input ${inputIndex} on device ${deviceName}`;
         }
+
         return device[inputIndex];
     }
 
@@ -169,8 +172,9 @@ export class DeviceInputSystem implements IDisposable {
      */
     private _handlePointerActions() {
         this._pointerMoveEvent = ((evt) => {
-            const deviceName = `${DeviceInputSystem.POINTER_DEVICE}-${evt.pointerId}`;
-            if (!this._pointerActive) {
+            const deviceName = (evt.pointerType == "mouse") ? DeviceInputSystem.MOUSE_DEVICE : `${DeviceInputSystem.POINTER_DEVICE}-${evt.pointerId}`;
+
+            if (!this._inputs[deviceName]) {
                 this._pointerActive = true;
                 this._registerDevice(deviceName, DeviceInputSystem._MAX_POINTER_INPUTS);
             }
@@ -184,8 +188,8 @@ export class DeviceInputSystem implements IDisposable {
 
         this._pointerDownEvent = ((evt) => {
 
-            const deviceName = `${DeviceInputSystem.POINTER_DEVICE}-${evt.pointerId}`;
-            if (!this._pointerActive) {
+            const deviceName = (evt.pointerType == "mouse") ? DeviceInputSystem.MOUSE_DEVICE : `${DeviceInputSystem.POINTER_DEVICE}-${evt.pointerId}`;
+            if (!this._inputs[deviceName]) {
                 this._pointerActive = true;
                 this._registerDevice(deviceName, DeviceInputSystem._MAX_POINTER_INPUTS);
             }
@@ -199,13 +203,13 @@ export class DeviceInputSystem implements IDisposable {
         });
 
         this._pointerUpEvent = ((evt) => {
-            const deviceName = `${DeviceInputSystem.POINTER_DEVICE}-${evt.pointerId}`;
+            const deviceName = (evt.pointerType == "mouse") ? DeviceInputSystem.MOUSE_DEVICE : `${DeviceInputSystem.POINTER_DEVICE}-${evt.pointerId}`;
 
             const pointer = this._inputs[deviceName];
             if (pointer) {
                 pointer[evt.button + 2] = 0;
             }
-            if (evt.pointerId != 1) // Don't unregister the mouse
+            if (evt.pointerType != "mouse") // Don't unregister the mouse
             {
                 this._unregisterDevice(deviceName);
             }
@@ -229,9 +233,11 @@ export class DeviceInputSystem implements IDisposable {
         });
 
         this._gamepadDisconnectedEvent = ((evt: any) => {
-            const deviceName = this._gamepads[evt.gamepad.index];
-            this._unregisterDevice(deviceName);
-            delete this._gamepads[evt.gamepad.index];
+            if (this._gamepads) {
+                const deviceName = this._gamepads[evt.gamepad.index];
+                this._unregisterDevice(deviceName);
+                delete this._gamepads[evt.gamepad.index];
+            }
         });
 
         window.addEventListener("gamepadconnected", this._gamepadConnectedEvent);
