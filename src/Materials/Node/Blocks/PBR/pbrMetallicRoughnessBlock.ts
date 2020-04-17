@@ -102,6 +102,17 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Defines the  falloff type used in this material.
+     * It by default is Physical.
+     */
+    @editableInPropertyPage("Light falloff", PropertyTypeForEdition.List, "LIGHTING & COLORS", { "notifiers": { "update": true }, "options": [
+        { label: "Physical", value: PBRBaseMaterial.LIGHTFALLOFF_PHYSICAL },
+        { label: "GLTF", value: PBRBaseMaterial.LIGHTFALLOFF_GLTF },
+        { label: "Standard", value: PBRBaseMaterial.LIGHTFALLOFF_STANDARD },
+    ]})
+    public lightFalloff = 0;
+
+    /**
      * Specifies that the alpha is coming form the albedo channel alpha channel for alpha blending.
      */
     @editableInPropertyPage("Alpha from albedo", PropertyTypeForEdition.Boolean, "TRANSPARENCY", { "notifiers": { "update": true }})
@@ -535,6 +546,18 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         // Albedo & Opacity
         defines.setValue("ALBEDO", this.baseTexture.isConnected);
         defines.setValue("OPACITY", this.opacityTexture.isConnected);
+
+        // Lighting & colors
+        if (this.lightFalloff === PBRBaseMaterial.LIGHTFALLOFF_STANDARD) {
+            defines.setValue("USEPHYSICALLIGHTFALLOFF", false);
+            defines.setValue("USEGLTFLIGHTFALLOFF", false);
+        } else if (this.lightFalloff === PBRBaseMaterial.LIGHTFALLOFF_GLTF) {
+            defines.setValue("USEPHYSICALLIGHTFALLOFF", false);
+            defines.setValue("USEGLTFLIGHTFALLOFF", true);
+        } else {
+            defines.setValue("USEPHYSICALLIGHTFALLOFF", true);
+            defines.setValue("USEGLTFLIGHTFALLOFF", false);
+        }
 
         // Transparency
         defines.setValue("ALPHABLEND", this.useAlphaBlending);
@@ -993,6 +1016,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     protected _dumpPropertiesCode() {
         let codeString: string = "";
 
+        codeString += `${this._codeVariableName}.lightFalloff = ${this.lightFalloff};\r\n`;
         codeString += `${this._codeVariableName}.useAlphaFromAlbedoTexture = ${this.useAlphaFromAlbedoTexture};\r\n`;
         codeString += `${this._codeVariableName}.useAlphaTest = ${this.useAlphaTest};\r\n`;
         codeString += `${this._codeVariableName}.alphaTestCutoff = ${this.alphaTestCutoff};\r\n`;
@@ -1019,6 +1043,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             serializationObject.lightId = this.light.id;
         }
 
+        serializationObject.lightFalloff = this.lightFalloff;
         serializationObject.useAlphaFromAlbedoTexture = this.useAlphaFromAlbedoTexture;
         serializationObject.useAlphaTest = this.useAlphaTest;
         serializationObject.alphaTestCutoff = this.alphaTestCutoff;
@@ -1045,6 +1070,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             this.light = scene.getLightByID(serializationObject.lightId);
         }
 
+        this.lightFalloff = serializationObject.lightFalloff ?? 0;
         this.useAlphaFromAlbedoTexture = serializationObject.useAlphaFromAlbedoTexture;
         this.useAlphaTest = serializationObject.useAlphaTest;
         this.alphaTestCutoff = serializationObject.alphaTestCutoff;
