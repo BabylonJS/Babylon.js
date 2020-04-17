@@ -39,6 +39,7 @@ const mapOutputToVariable: { [name: string] : [string, string] } = {
     "refraction":   ["subSurfaceOut.finalRefraction",               "!defined(UNLIT) && defined(SS_REFRACTION)"],
     "lighting":     ["finalColor", ""],
     "shadow":       ["shadow", ""],
+    "alpha":        ["alpha", ""],
 };
 
 /**
@@ -97,6 +98,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this.registerOutput("refraction", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("lighting", NodeMaterialBlockConnectionPointTypes.Color4, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("shadow", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput("alpha", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
     }
 
     /**
@@ -501,6 +503,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
      */
     public get shadow(): NodeMaterialConnectionPoint {
         return this._outputs[11];
+    }
+
+    /**
+     * Gets the alpha output component
+     */
+    public get alpha(): NodeMaterialConnectionPoint {
+        return this._outputs[12];
     }
 
     public autoConfigure(material: NodeMaterial) {
