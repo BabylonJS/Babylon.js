@@ -127,50 +127,20 @@
 
             vec4 environmentSheenRadiance = vec4(0., 0., 0., 0.);
 
-            // _____________________________ 2D vs 3D Maps ________________________________
+            sampleReflectionTexture(
+                sheenAlphaG,
+                vReflectionMicrosurfaceInfos,
+                vReflectionInfos,
             #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-                float sheenReflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, sheenAlphaG, NdotVUnclamped);
-            #elif defined(LINEARSPECULARREFLECTION)
-                float sheenReflectionLOD = getLinearLodFromRoughness(vReflectionMicrosurfaceInfos.x, sheenRoughness);
-            #else
-                float sheenReflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, sheenAlphaG);
+                NdotVUnclamped,
             #endif
-
-            #ifdef LODBASEDMICROSFURACE
-                // Apply environment convolution scale/offset filter tuning parameters to the mipmap LOD selection
-                sheenReflectionLOD = sheenReflectionLOD * vReflectionMicrosurfaceInfos.y + vReflectionMicrosurfaceInfos.z;
-                environmentSheenRadiance = sampleReflectionLod(reflectionSampler, reflectionCoords, sheenReflectionLOD);
-            #else
-                float lodSheenReflectionNormalized = saturate(sheenReflectionLOD / log2(vReflectionMicrosurfaceInfos.x));
-                float lodSheenReflectionNormalizedDoubled = lodSheenReflectionNormalized * 2.0;
-
-                vec4 environmentSheenMid = sampleReflection(reflectionSampler, reflectionCoords);
-                if (lodSheenReflectionNormalizedDoubled < 1.0){
-                    environmentSheenRadiance = mix(
-                        sampleReflection(reflectionSamplerHigh, reflectionCoords),
-                        environmentSheenMid,
-                        lodSheenReflectionNormalizedDoubled
-                    );
-                } else {
-                    environmentSheenRadiance = mix(
-                        environmentSheenMid,
-                        sampleReflection(reflectionSamplerLow, reflectionCoords),
-                        lodSheenReflectionNormalizedDoubled - 1.0
-                    );
-                }
+            #ifdef LINEARSPECULARREFLECTION
+                sheenRoughness,
             #endif
-
-            #ifdef RGBDREFLECTION
-                environmentSheenRadiance.rgb = fromRGBD(environmentSheenRadiance);
-            #endif
-
-            #ifdef GAMMAREFLECTION
-                environmentSheenRadiance.rgb = toLinearSpace(environmentSheenRadiance.rgb);
-            #endif
-
-            // _____________________________ Levels _____________________________________
-            environmentSheenRadiance.rgb *= vReflectionInfos.x;
-            environmentSheenRadiance.rgb *= vReflectionColor.rgb;
+                reflectionSampler,
+                reflectionCoords,
+                environmentSheenRadiance
+            );
 
             vec3 sheenEnvironmentReflectance = getSheenReflectanceFromBRDFLookup(sheenColor, environmentSheenBrdf);
 
