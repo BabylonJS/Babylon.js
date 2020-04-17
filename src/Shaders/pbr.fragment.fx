@@ -240,6 +240,10 @@ void main(void) {
         #ifdef USEIRRADIANCEMAP
             irradianceSampler,
         #endif
+        #ifndef LODBASEDMICROSFURACE
+            reflectionSamplerLow,
+            reflectionSamplerHigh,
+        #endif
             reflectionOut
         );
     #endif

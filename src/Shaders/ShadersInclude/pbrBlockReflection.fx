@@ -69,6 +69,15 @@
         const in sampler2D reflectionSampler,
         const vec2 reflectionCoords,
     #endif
+    #ifndef LODBASEDMICROSFURACE
+        #ifdef REFLECTIONMAP_3D
+            const in samplerCube reflectionSamplerLow,
+            const in samplerCube reflectionSamplerHigh,
+        #else
+            const in sampler2D reflectionSamplerLow,
+            const in sampler2D reflectionSamplerHigh,
+        #endif
+    #endif
         out vec4 environmentRadiance
     )
     {
@@ -171,6 +180,15 @@
             const in sampler2D irradianceSampler,
         #endif
     #endif
+    #ifndef LODBASEDMICROSFURACE
+        #ifdef REFLECTIONMAP_3D
+            const in samplerCube reflectionSamplerLow,
+            const in samplerCube reflectionSamplerHigh,
+        #else
+            const in sampler2D reflectionSamplerLow,
+            const in sampler2D reflectionSamplerHigh,
+        #endif
+    #endif
         out reflectionOutParams outParams
     )
     {
@@ -208,6 +226,10 @@
         #else
             reflectionSampler,
             reflectionCoords,
+        #endif
+        #ifndef LODBASEDMICROSFURACE
+            reflectionSamplerLow,
+            reflectionSamplerHigh,
         #endif
             environmentRadiance
         );
