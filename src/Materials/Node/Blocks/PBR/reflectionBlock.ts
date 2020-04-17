@@ -21,9 +21,12 @@ import { Scene } from '../../../../scene';
  */
 export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
-    private _defineLODReflectionAlpha: string;
-    private _defineLinearSpecularReflection: string;
-    private _defineLODBasedMicroSurface: string;
+    /** @hidden */
+    public _defineLODReflectionAlpha: string;
+    /** @hidden */
+    public _defineLinearSpecularReflection: string;
+    /** @hidden */
+    public _defineLODBasedMicroSurface: string;
     private _vEnvironmentIrradianceName: string;
     private _vReflectionMicrosurfaceInfosName: string;
     private _scene: Scene;
@@ -300,27 +303,6 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     public getCode(state: NodeMaterialBuildState, normalVarName: string, finalColorVarName: string, finalIrradianceVector: string, finalIrradianceVarName: string): string {
         let code = "";
 
-        code += `
-            struct reflectionOutParams
-            {
-                vec4 environmentRadiance;
-                vec3 environmentIrradiance;
-            #ifdef ${this._define3DName}
-                vec3 reflectionCoords;
-            #else
-                vec2 reflectionCoords;
-            #endif
-            #ifdef SS_TRANSLUCENCY
-                #ifdef USESPHERICALFROMREFLECTIONMAP
-                    #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
-                        vec3 irradianceVector;
-                    #endif
-                #endif
-            #endif
-            };\r\n`;
-
-        code += `reflectionOutParams reflectionOut;\r\n`;
-
         this.handleFragmentSideInits(state);
 
         state._emitFunctionFromInclude("harmonicsFunctions", `//${this.name}`, {
@@ -330,75 +312,80 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
             ]
         });
 
-        code += this.handleFragmentSideCodeReflectionCoords(normalVarName);
+        state._emitFunction("sampleReflection", `
+            #ifdef ${this._define3DName}
+                #define sampleReflection(s, c) textureCube(s, c)
+            #else
+                #define sampleReflection(s, c) texture2D(s, c)
+            #endif\r\n`, `//${this.name}`);
 
-        const varLOD = state._getFreeVariableName("reflectionLOD");
-        const varRequestedLOD = state._getFreeVariableName("requestedReflectionLOD");
-        const varAutomaticLOD = state._getFreeVariableName("automaticReflectionLOD");
+        state._emitFunction("sampleReflectionLod", `
+            #ifdef ${this._define3DName}
+                #define sampleReflectionLod(s, c, l) textureCubeLodEXT(s, c, l)
+            #else
+                #define sampleReflectionLod(s, c, l) texture2DLodEXT(s, c, l)
+            #endif\r\n`, `//${this.name}`);
+
+        const computeReflectionCoordsFunc = `
+            vec3 computeReflectionCoordsPBR(vec4 worldPos, vec3 worldNormal) {
+                ${this.handleFragmentSideCodeReflectionCoords('worldNormal', 'worldPos', true)}
+                return ${this._reflectionVectorName};
+            }\r\n`;
+
+        state._emitFunction("computeReflectionCoordsPBR", computeReflectionCoordsFunc, `//${this.name}`);
 
         this._vReflectionMicrosurfaceInfosName = state._getFreeVariableName("vReflectionMicrosurfaceInfos");
 
         state._emitUniformFromString(this._vReflectionMicrosurfaceInfosName, "vec3");
 
-        code += `
-            vec4 ${finalColorVarName} = vec4(0.);
+        const reflectionColor = this.color.isConnected ? this.color.associatedVariableName : "vec3(1., 1., 1.)";
 
+        code += `reflectionOutParams reflectionOut;\r\n`;
+
+        code += `
+            reflectionBlock(
+                ${"v_" + this.worldPosition.associatedVariableName + ".xyz"},
+                ${normalVarName},
+                alphaG,
+                ${this._vReflectionMicrosurfaceInfosName},
+                vec2(1., 0.),
+                ${reflectionColor},
+            #ifdef ANISOTROPIC
+                anisotropicOut,
+            #endif
             #if defined(${this._defineLODReflectionAlpha}) && !defined(${this._defineSkyboxName})
-                float ${varLOD} = getLodFromAlphaG(${this._vReflectionMicrosurfaceInfosName}.x, alphaG, NdotVUnclamped);
-            #elif defined(${this._defineLinearSpecularReflection})
-                float ${varLOD} = getLinearLodFromRoughness(${this._vReflectionMicrosurfaceInfosName}.x, roughness);
-            #else
-                float ${varLOD} = getLodFromAlphaG(${this._vReflectionMicrosurfaceInfosName}.x, alphaG);
+                NdotVUnclamped,
             #endif
-
-            #ifdef ${this._defineLODBasedMicroSurface}
-                ${varLOD} = ${varLOD} * ${this._vReflectionMicrosurfaceInfosName}.y + ${this._vReflectionMicrosurfaceInfosName}.z;
-
-                #ifdef ${this._defineLODReflectionAlpha}
-                    #ifdef ${this._define3DName}
-                        float ${varAutomaticLOD} = UNPACK_LOD(textureCube(${this._cubeSamplerName}, ${this._reflectionCoordsName}).a);
-                    #else
-                        float ${varAutomaticLOD} = UNPACK_LOD(texture2D(${this._2DSamplerName}, ${this._reflectionCoordsName}).a);
-                    #endif
-                    float ${varRequestedLOD} = max(${varAutomaticLOD}, ${varLOD});
-                #else
-                    float ${varRequestedLOD} = ${varLOD};
-                #endif\r\n`;
-
-        code += this.handleFragmentSideCodeReflectionColor(varRequestedLOD, "");
-
-        code += `
-                ${finalColorVarName} = ${this._reflectionColorName}${this.color.isConnected ? " * vec4(" + this.color.associatedVariableName + ", 1.)" : ""};
-            #else
-                // ***not handled***
+            #ifdef ${this._defineLinearSpecularReflection}
+                roughness,
             #endif
-
-            vec3 ${finalIrradianceVarName} = vec3(0.);
+            #ifdef ${this._define3DName}
+                ${this._cubeSamplerName},
+            #else
+                ${this._2DSamplerName},
+            #endif
+            #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
+                ${this._vEnvironmentIrradianceName},
+            #endif
             #ifdef USESPHERICALFROMREFLECTIONMAP
-                #if defined(USESPHERICALINVERTEX)
-                    ${finalIrradianceVarName} = ${this._vEnvironmentIrradianceName};
-                #else
-                    #ifdef ANISOTROPIC
-                        vec3 ${finalIrradianceVector} = vec3(${this._reflectionMatrixName} * vec4(anisotropicOut.anisotropicNormal, 0)).xyz;
-                    #else
-                        vec3 ${finalIrradianceVector} = vec3(${this._reflectionMatrixName} * vec4(${normalVarName}.xyz, 0)).xyz;
-                    #endif
-
-                    #ifdef ${this._defineOppositeZ}
-                    ${finalIrradianceVector}.z *= -1.0;
-                    #endif
-
-                    ${finalIrradianceVarName} = computeEnvironmentIrradiance(${finalIrradianceVector});
+                #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
+                    ${this._reflectionMatrixName},
                 #endif
             #endif
-
-            #ifdef SS_TRANSLUCENCY
-                reflectionOut.irradianceVector = irradianceVector;
+            #ifdef USEIRRADIANCEMAP
+                irradianceSampler, // ** not handled **
             #endif
-
-            reflectionOut.environmentRadiance = environmentRadiance;
-            reflectionOut.environmentIrradiance = environmentIrradiance;
-            reflectionOut.reflectionCoords = ${this._reflectionCoordsName};\r\n`;
+            #ifndef ${this._defineLODBasedMicroSurface}
+                #ifdef ${this._define3DName}
+                    ${this._cubeSamplerName},
+                    ${this._cubeSamplerName},
+                #else
+                    ${this._2DSamplerName},
+                    ${this._2DSamplerName},
+                #endif
+            #endif
+                reflectionOut
+            );\r\n`;
 
         return code;
     }
