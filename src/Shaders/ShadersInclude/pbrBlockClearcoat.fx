@@ -75,8 +75,13 @@ struct clearcoatOutParams
             const in sampler2D reflectionSampler,
         #endif
         #ifndef LODBASEDMICROSFURACE
-            const in sampler2D reflectionSamplerLow,
-            const in sampler2D reflectionSamplerHigh,
+            #ifdef REFLECTIONMAP_3D
+                const in samplerCube reflectionSamplerLow,
+                const in samplerCube reflectionSamplerHigh,
+            #else
+                const in sampler2D reflectionSamplerLow,
+                const in sampler2D reflectionSamplerHigh,
+            #endif
         #endif
     #endif
     #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)

@@ -52,8 +52,13 @@
         #endif
         const in float NdotVUnclamped,
         #ifndef LODBASEDMICROSFURACE
-            const in sampler2D reflectionSamplerLow,
-            const in sampler2D reflectionSamplerHigh,
+            #ifdef REFLECTIONMAP_3D
+                const in samplerCube reflectionSamplerLow,
+                const in samplerCube reflectionSamplerHigh,
+            #else
+                const in sampler2D reflectionSamplerLow,
+                const in sampler2D reflectionSamplerHigh,
+            #endif
         #endif
         #if !defined(REFLECTIONMAP_SKYBOX) && defined(RADIANCEOCCLUSION)
             const in float seo,
@@ -135,6 +140,10 @@
             #endif
                 reflectionSampler,
                 reflectionCoords,
+            #ifndef LODBASEDMICROSFURACE
+                reflectionSamplerLow,
+                reflectionSamplerHigh,
+            #endif
                 environmentSheenRadiance
             );
 
