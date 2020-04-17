@@ -853,6 +853,10 @@ declare module "babylonjs-gui/2D/controls/control" {
          */
         onAfterDrawObservable: Observable<Control>;
         /**
+        * An event triggered when the control has been disposed
+        */
+        onDisposeObservable: Observable<Control>;
+        /**
          * Get the hosting AdvancedDynamicTexture
          */
         get host(): AdvancedDynamicTexture;
@@ -5192,6 +5196,10 @@ declare module BABYLON.GUI {
          * An event triggered after the control was drawn
          */
         onAfterDrawObservable: BABYLON.Observable<Control>;
+        /**
+        * An event triggered when the control has been disposed
+        */
+        onDisposeObservable: BABYLON.Observable<Control>;
         /**
          * Get the hosting AdvancedDynamicTexture
          */
