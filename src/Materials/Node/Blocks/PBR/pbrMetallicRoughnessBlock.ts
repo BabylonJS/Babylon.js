@@ -575,7 +575,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             defines._needNormals = true;
 
             // Multiview
-            //MaterialHelper.PrepareDefinesForMultiview(scene, defines);
+            MaterialHelper.PrepareDefinesForMultiview(scene, defines);
         } else {
             let state = {
                 needNormals: false,
@@ -894,7 +894,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             // _____________________________ Direct Lighting Info __________________________________
             state.compilationString += state._emitCodeFromInclude("pbrBlockDirectLighting", comments);
 
-            /*if (this.light) {
+            if (this.light) {
                 state.compilationString += state._emitCodeFromInclude("lightFragment", comments, {
                     replaceStrings: [
                         { search: /{X}/g, replace: this._lightId.toString() }
@@ -904,7 +904,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 state.compilationString += state._emitCodeFromInclude("lightFragment", comments, {
                     repeatKey: "maxSimultaneousLights"
                 });
-            }*/
+            }
 
             // _____________________________ Compute Final Lit Components ________________________
             state.compilationString += state._emitCodeFromInclude("pbrBlockFinalLitComponents", comments);
