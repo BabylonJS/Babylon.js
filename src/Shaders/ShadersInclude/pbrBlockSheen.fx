@@ -132,6 +132,7 @@
                 sheenAlphaG,
                 vReflectionMicrosurfaceInfos,
                 vReflectionInfos,
+                vReflectionColor,
             #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
                 NdotVUnclamped,
             #endif

@@ -56,6 +56,7 @@
         const in float alphaG,
         const in vec3 vReflectionMicrosurfaceInfos,
         const in vec2 vReflectionInfos,
+        const in vec3 vReflectionColor,
     #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
         const in float NdotVUnclamped,
     #endif
@@ -151,6 +152,7 @@
         const in float alphaG,
         const in vec3 vReflectionMicrosurfaceInfos,
         const in vec2 vReflectionInfos,
+        const in vec3 vReflectionColor,
     #ifdef ANISOTROPIC
         const in anisotropicOutParams anisotropicOut,
     #endif
@@ -214,6 +216,7 @@
             alphaG,
             vReflectionMicrosurfaceInfos,
             vReflectionInfos,
+            vReflectionColor,
         #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
             NdotVUnclamped,
         #endif

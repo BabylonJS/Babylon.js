@@ -219,6 +219,7 @@ void main(void) {
             alphaG,
             vReflectionMicrosurfaceInfos,
             vReflectionInfos,
+            vReflectionColor,
         #ifdef ANISOTROPIC
             anisotropicOut,
         #endif
@@ -348,6 +349,7 @@ void main(void) {
         #endif
         #ifdef REFLECTION
             vReflectionMicrosurfaceInfos,
+            vReflectionColor,
             vLightingIntensity,
             reflectionSampler,
             #ifndef LODBASEDMICROSFURACE
