@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Babylon/JsRuntime.h>
-#include <Babylon/TicketedCollection.h>
+#include <arcana/containers/weak_table.h>
 
 namespace Babylon::Plugins::Internal
 {
@@ -18,7 +18,7 @@ namespace Babylon::Plugins::Internal
         void Resize(size_t newWidth, size_t newHeight);
 
         using OnResizeCallback = std::function<void(size_t, size_t)>;
-        using OnResizeCallbackTicket = TicketedCollection<OnResizeCallback>::Ticket;
+        using OnResizeCallbackTicket = arcana::weak_table<OnResizeCallback>::ticket;
         OnResizeCallbackTicket AddOnResizeCallback(OnResizeCallback&& callback);
 
         void* GetWindowPtr() const;
@@ -31,6 +31,6 @@ namespace Babylon::Plugins::Internal
         size_t m_width{};
         size_t m_height{};
 
-        TicketedCollection<OnResizeCallback> m_onResizeCallbacks{};
+        arcana::weak_table<OnResizeCallback> m_onResizeCallbacks{};
     };
 }

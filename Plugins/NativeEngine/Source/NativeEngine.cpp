@@ -463,7 +463,7 @@ namespace Babylon
         m_cancelSource.cancel();
 
         // This collection contains bgfx data, so it must be cleared before bgfx::shutdown is called.
-        m_programDataCollection.Clear();
+        m_programDataCollection.clear();
     }
 
     void NativeEngine::Dispose(const Napi::CallbackInfo& info)
@@ -696,7 +696,7 @@ namespace Babylon
         programData->Program = bgfx::createProgram(vertexShader, fragmentShader, true);
 
         auto* rawProgramData = programData.get();
-        auto ticket = m_programDataCollection.Insert(std::move(programData));
+        auto ticket = m_programDataCollection.insert(std::move(programData));
         auto finalizer = [ticket = std::move(ticket)](Napi::Env, ProgramData*) {};
         return Napi::External<ProgramData>::New(info.Env(), rawProgramData, std::move(finalizer));
     }

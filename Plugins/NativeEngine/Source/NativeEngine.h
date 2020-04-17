@@ -5,7 +5,6 @@
 
 #include <Babylon/JsRuntime.h>
 #include <Babylon/JsRuntimeScheduler.h>
-#include <Babylon/TicketedCollection.h>
 
 #include <NativeWindow.h>
 
@@ -20,6 +19,7 @@
 
 #include <assert.h>
 
+#include <arcana/containers/weak_table.h>
 #include <arcana/threading/cancellation.h>
 
 namespace Babylon
@@ -400,7 +400,7 @@ namespace Babylon
         ShaderCompiler m_shaderCompiler;
 
         ProgramData* m_currentProgram;
-        TicketedCollection<std::unique_ptr<ProgramData>> m_programDataCollection{};
+        arcana::weak_table<std::unique_ptr<ProgramData>> m_programDataCollection{};
 
         JsRuntime& m_runtime;
         JsRuntimeScheduler m_runtimeScheduler;

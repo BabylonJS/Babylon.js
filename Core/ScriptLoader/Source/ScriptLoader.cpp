@@ -1,5 +1,4 @@
-#include "ScriptLoader.h"
-
+#include <Babylon/ScriptLoader.h>
 #include <UrlLib/UrlLib.h>
 #include <arcana/threading/task.h>
 

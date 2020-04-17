@@ -1,8 +1,5 @@
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-# -------------------------------- BabylonNativeCMakeFunctions --------------------------------
-add_subdirectory(BabylonNativeCMakeFunctions)
+# -------------------------------- CMakeExtensions --------------------------------
+add_subdirectory(CMakeExtensions)
 
 # -------------------------------- arcana --------------------------------
 # Dependencies: none
@@ -92,10 +89,6 @@ if(WIN32 OR WINDOWS_STORE OR ANDROID)
         set_property(TARGET xr_global_generated_files PROPERTY FOLDER Dependencies/xr/OpenXR/Generated)
     endif()
 endif()
-
-# -------------------------------- BabylonNativeUtils --------------------------------
-# Dependencies: none
-add_subdirectory(BabylonNativeUtils)
 
 # -------------------------------- AndroidExtensions --------------------------------
 # Dependencies: none
