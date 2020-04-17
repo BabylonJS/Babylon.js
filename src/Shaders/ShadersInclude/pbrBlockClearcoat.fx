@@ -68,6 +68,7 @@ struct clearcoatOutParams
     #endif
     #ifdef REFLECTION
         const in vec3 vReflectionMicrosurfaceInfos,
+        const in vec3 vReflectionColor,
         const in vec4 vLightingIntensity,
         #ifdef REFLECTIONMAP_3D
             const in samplerCube reflectionSampler,
