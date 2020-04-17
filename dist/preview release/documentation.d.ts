@@ -20634,7 +20634,7 @@ declare module BABYLON {
         _prepareFrame(sourceTexture?: Nullable<InternalTexture>, postProcesses?: Nullable<PostProcess[]>): boolean;
         /**
          * Manually render a set of post processes to a texture.
-         * Please not the frame buffer won t be unbound after the call in case you have more render to do.
+         * Please note, the frame buffer won't be unbound after the call in case you have more render to do.
          * @param postProcesses An array of post processes to be run.
          * @param targetTexture The target texture to render to.
          * @param forceFullscreenViewport force gl.viewport to be full screen eg. 0,0,textureWidth,textureHeight
@@ -72204,6 +72204,10 @@ declare module BABYLON.GUI {
          * An event triggered after the control was drawn
          */
         onAfterDrawObservable: BABYLON.Observable<Control>;
+        /**
+        * An event triggered when the control has been disposed
+        */
+        onDisposeObservable: BABYLON.Observable<Control>;
         /**
          * Get the hosting AdvancedDynamicTexture
          */
