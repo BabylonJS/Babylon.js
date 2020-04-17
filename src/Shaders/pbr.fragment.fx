@@ -251,6 +251,10 @@ void main(void) {
     #ifdef SHEEN
         sheenOutParams sheenOut;
 
+        #ifdef SHEEN_TEXTURE
+            vec4 sheenMapData = toLinearSpace(texture2D(sheenSampler, vSheenUV + uvOffset)) * vSheenInfos.y;
+        #endif
+
         sheenBlock(
             vSheenColor,
         #ifdef SHEEN_ROUGHNESS
@@ -258,10 +262,7 @@ void main(void) {
         #endif
             roughness,
         #ifdef SHEEN_TEXTURE
-            vSheenUV,
-            vSheenInfos,
-            uvOffset,
-            sheenSampler,
+            sheenMapData,
         #endif
             reflectance,
         #ifdef SHEEN_LINKWITHALBEDO

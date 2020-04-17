@@ -26,10 +26,7 @@
     #endif
         const in float roughness,
     #ifdef SHEEN_TEXTURE
-        const in vec2 vSheenUV,
-        const in vec2 vSheenInfos,
-        const in vec2 uvOffset,
-        const in sampler2D sheenSampler,
+        const in vec4 sheenMapData,
     #endif
         const in float reflectance,
     #ifdef SHEEN_LINKWITHALBEDO
@@ -71,7 +68,6 @@
         float sheenIntensity = vSheenColor.a;
 
         #ifdef SHEEN_TEXTURE
-            vec4 sheenMapData = toLinearSpace(texture2D(sheenSampler, vSheenUV + uvOffset)) * vSheenInfos.y;
             sheenIntensity *= sheenMapData.a;
             #if DEBUGMODE > 0
                 outParams.sheenMapData = sheenMapData;
