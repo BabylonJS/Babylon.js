@@ -284,8 +284,10 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
      * @param worldNormalVarName name of the world normal variable
      * @returns the shader code
      */
-    public handleFragmentSideCodeReflectionCoords(worldNormalVarName: string): string {
-        let worldPos = `v_${this.worldPosition.associatedVariableName}`;
+    public handleFragmentSideCodeReflectionCoords(worldNormalVarName: string, worldPos?: string, onlyReflectionVector = false): string {
+        if (!worldPos) {
+            worldPos = `v_${this.worldPosition.associatedVariableName}`;
+        }
         let reflectionMatrix = this._reflectionMatrixName;
         let direction = `normalize(${this._directionWName})`;
         let positionUVW = `${this._positionUVWName}`;
@@ -337,17 +339,20 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
 
             #ifdef ${this._defineOppositeZ}
                 ${this._reflectionVectorName}.z *= -1.0;
-            #endif
-
-            #ifdef ${this._define3DName}
-                vec3 ${this._reflectionCoordsName} = ${this._reflectionVectorName};
-            #else
-                vec2 ${this._reflectionCoordsName} = ${this._reflectionVectorName}.xy;
-                #ifdef ${this._defineProjectionName}
-                    ${this._reflectionCoordsName} /= ${this._reflectionVectorName}.z;
-                #endif
-                ${this._reflectionCoordsName}.y = 1.0 - ${this._reflectionCoordsName}.y;
             #endif\r\n`;
+
+        if (!onlyReflectionVector) {
+            code += `
+                #ifdef ${this._define3DName}
+                    vec3 ${this._reflectionCoordsName} = ${this._reflectionVectorName};
+                #else
+                    vec2 ${this._reflectionCoordsName} = ${this._reflectionVectorName}.xy;
+                    #ifdef ${this._defineProjectionName}
+                        ${this._reflectionCoordsName} /= ${this._reflectionVectorName}.z;
+                    #endif
+                    ${this._reflectionCoordsName}.y = 1.0 - ${this._reflectionCoordsName}.y;
+                #endif\r\n`;
+        }
 
         return code;
     }

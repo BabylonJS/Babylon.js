@@ -864,6 +864,20 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 state.compilationString += reflectionBlock.getCode(state, anisotropyBlock ? "anisotropicOut.anisotropicNormal" : "normalW", "environmentRadiance", "irradianceVector", "environmentIrradiance");
             }
 
+            state._emitFunctionFromInclude("pbrBlockReflection", comments, {
+                replaceStrings: [
+                    { search: /computeReflectionCoords/g, replace: "computeReflectionCoordsPBR" },
+                    { search: /REFLECTIONMAP_3D/g, replace: reflectionBlock?._define3DName ?? "REFLECTIONMAP_3D" },
+                    { search: /REFLECTIONMAP_OPPOSITEZ/g, replace: reflectionBlock?._defineOppositeZ ?? "REFLECTIONMAP_OPPOSITEZ" },
+                    { search: /REFLECTIONMAP_PROJECTION/g, replace: reflectionBlock?._defineProjectionName ?? "REFLECTIONMAP_PROJECTION" },
+                    { search: /REFLECTIONMAP_SKYBOX/g, replace: reflectionBlock?._defineSkyboxName ?? "REFLECTIONMAP_SKYBOX" },
+                    { search: /LODINREFLECTIONALPHA/g, replace: reflectionBlock?._defineLODReflectionAlpha ?? "LODINREFLECTIONALPHA" },
+                    { search: /LINEARSPECULARREFLECTION/g, replace: reflectionBlock?._defineLinearSpecularReflection ?? "LINEARSPECULARREFLECTION" },
+                    { search: /LODBASEDMICROSFURACE/g, replace: reflectionBlock?._defineLODBasedMicroSurface ?? "LODBASEDMICROSFURACE" },
+                    { search: /REFLECTIONMAP_OPPOSITEZ/g, replace: reflectionBlock?._defineOppositeZ ?? "REFLECTIONMAP_OPPOSITEZ" },
+                ]
+            });
+
             // ___________________ Compute Reflectance aka R0 F0 info _________________________
             state.compilationString += state._emitCodeFromInclude("pbrBlockReflectance0", comments);
 
