@@ -1,5 +1,6 @@
 export * from "./baseTexture";
 export * from "./baseTexture.polynomial";
+export * from "./baseTexture.prefiltering";
 export * from "./colorGradingTexture";
 export * from "./cubeTexture";
 export * from "./dynamicTexture";
