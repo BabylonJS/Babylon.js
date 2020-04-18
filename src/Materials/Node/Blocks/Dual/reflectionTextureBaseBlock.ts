@@ -371,8 +371,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         const colorType = "vec" + (swizzleLookupTexture.length === 0 ? "4" : (swizzleLookupTexture.length - 1));
 
         let code = `${colorType} ${this._reflectionColorName};
-            #ifdef ${this._define3DName}
-                ${this._reflectionCoordsName} = ${this._reflectionVectorName};\r\n`;
+            #ifdef ${this._define3DName}\r\n`;
 
         if (lodVarName) {
             code += `${this._reflectionColorName} = textureCubeLodEXT(${this._cubeSamplerName}, ${this._reflectionVectorName}, ${lodVarName})${swizzleLookupTexture};\r\n`;
@@ -381,14 +380,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         }
 
         code += `
-            #else
-                vec2 ${this._reflectionCoordsName} = ${this._reflectionVectorName}.xy;
-
-                #ifdef ${this._defineProjectionName}
-                    ${this._reflectionCoordsName} /= ${this._reflectionVectorName}.z;
-                #endif
-
-                ${this._reflectionCoordsName}.y = 1.0 - ${this._reflectionCoordsName}.y;\r\n`;
+            #else\r\n`;
 
         if (lodVarName) {
             code += `${this._reflectionColorName} = texture2DLodEXT(${this._2DSamplerName}, ${this._reflectionCoordsName}, ${lodVarName})${swizzleLookupTexture};\r\n`;
