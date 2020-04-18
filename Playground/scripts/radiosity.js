@@ -44,8 +44,8 @@ var addAreaLight = function(name, scaling) {
     }
     ground.initForRadiosity();
     ground.radiosityInfo.lightmapSize = {
-        width: 4,
-        height: 4
+        width: 16,
+        height: 16
     };
     addMaterial(ground);
     prepareUVS([ground]);
@@ -93,18 +93,16 @@ var createScene = function() {
                     return;
                 }
 
-                if (!wasPreviouslyReady) {
-                    for (let i = 0; i < meshes.length; i++) {
-                        meshes[i].material.emissiveTexture = meshes[i].getRadiosityTexture();
-                        meshes[i].material.emissiveTexture.coordinatesIndex = 1;
-                    }
-                    wasPreviouslyReady = true;
-                }
 
-                if (!pr.gatherFor(2, 1)) { /* *** use pr.gatherRadiosity(16) for computing the solution all at once *** */
-                    console.log("Converged ! ");
-                    scene.onAfterRenderTargetsRenderObservable.remove(observer);
+                pr.gatherDirectLightOnly(); /* *** use pr.gatherRadiosity(16) for computing the solution all at once *** */
+                for (let i = 0; i < meshes.length; i++) {
+                    meshes[i].material.lightmapTexture = meshes[i].getRadiosityTexture();
+                    meshes[i].material.lightmapTexture.coordinatesIndex = 1;
                 }
+                
+                console.log("Converged ! ");
+                scene.onAfterRenderTargetsRenderObservable.remove(observer);
+                scene.ambientColor = new BABYLON.Color3(1, 1, 1);
             });
         }
     );

@@ -401,14 +401,14 @@ export class RadiosityRenderer {
             (isInstance, world) => effect.setMatrix("world", world));
 
         // render edges
-        // mesh._bind(subMesh, effect, Material.WireFrameFillMode);
-        // mesh._processRendering(subMesh, effect, Material.WireFrameFillMode, batch, hardwareInstancedRendering,
-        //     (isInstance, world) => effect.setMatrix("world", world));
+        mesh._bind(subMesh, effect, Material.WireFrameFillMode);
+        mesh._processRendering(mesh, subMesh, effect, Material.WireFrameFillMode, batch, false,
+            (isInstance, world) => effect.setMatrix("world", world));
 
         // // render points
-        // mesh._bind(subMesh, effect, Material.PointFillMode);
-        // mesh._processRendering(subMesh, effect, Material.PointFillMode, batch, hardwareInstancedRendering,
-        //     (isInstance, world) => effect.setMatrix("world", world));
+        mesh._bind(subMesh, effect, Material.PointFillMode);
+        mesh._processRendering(mesh, subMesh, effect, Material.PointFillMode, batch, false,
+            (isInstance, world) => effect.setMatrix("world", world));
         return true;
     }
 
@@ -954,7 +954,7 @@ export class RadiosityRenderer {
         let vb: any = {};
         vb[VertexBuffer.PositionKind] = this._radiosityEffectsManager.screenQuadVB;
         effect.setTexture("inputTexture", origin);
-        effect.setFloat("_ExposureAdjustment", 0.5); // TODO
+        effect.setFloat("_ExposureAdjustment", 0.85); // TODO
         effect.setColor3("ambientColor", new Color3(0.4, 0.4, 0.4)); // TODO
         engine.bindBuffers(vb, this._radiosityEffectsManager.screenQuadIB, effect);
 
