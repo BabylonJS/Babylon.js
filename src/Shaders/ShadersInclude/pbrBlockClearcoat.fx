@@ -223,51 +223,25 @@ struct clearcoatOutParams
                 clearCoatReflectionCoords.y = 1.0 - clearCoatReflectionCoords.y;
             #endif
 
+            sampleReflectionTexture(
+                clearCoatAlphaG,
+                vReflectionMicrosurfaceInfos,
+                vReflectionInfos,
+                vReflectionColor,
             #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-                float clearCoatReflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, clearCoatAlphaG, clearCoatNdotVUnclamped);
-            #elif defined(LINEARSPECULARREFLECTION)
-                float clearCoatReflectionLOD = getLinearLodFromRoughness(vReflectionMicrosurfaceInfos.x, clearCoatRoughness);
-            #else
-                float clearCoatReflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, clearCoatAlphaG);
+                clearCoatNdotVUnclamped,
             #endif
-
-            #ifdef LODBASEDMICROSFURACE
-                // Apply environment convolution scale/offset filter tuning parameters to the mipmap LOD selection
-                clearCoatReflectionLOD = clearCoatReflectionLOD * vReflectionMicrosurfaceInfos.y + vReflectionMicrosurfaceInfos.z;
-                float requestedClearCoatReflectionLOD = clearCoatReflectionLOD;
-
-                environmentClearCoatRadiance = sampleReflectionLod(reflectionSampler, clearCoatReflectionCoords, requestedClearCoatReflectionLOD);
-            #else
-                float lodClearCoatReflectionNormalized = saturate(clearCoatReflectionLOD / log2(vReflectionMicrosurfaceInfos.x));
-                float lodClearCoatReflectionNormalizedDoubled = lodClearCoatReflectionNormalized * 2.0;
-
-                vec4 environmentClearCoatMid = sampleReflection(reflectionSampler, clearCoatReflectionCoords);
-                if (lodClearCoatReflectionNormalizedDoubled < 1.0) {
-                    environmentClearCoatRadiance = mix(
-                        sampleReflection(reflectionSamplerHigh, clearCoatReflectionCoords),
-                        environmentClearCoatMid,
-                        lodClearCoatReflectionNormalizedDoubled
-                    );
-                } else {
-                    environmentClearCoatRadiance = mix(
-                        environmentClearCoatMid,
-                        sampleReflection(reflectionSamplerLow, clearCoatReflectionCoords),
-                        lodClearCoatReflectionNormalizedDoubled - 1.0
-                    );
-                }
+            #ifdef LINEARSPECULARREFLECTION
+                clearCoatRoughness,
             #endif
-
-            #ifdef RGBDREFLECTION
-                environmentClearCoatRadiance.rgb = fromRGBD(environmentClearCoatRadiance);
+                reflectionSampler,
+                clearCoatReflectionCoords,
+            #ifndef LODBASEDMICROSFURACE
+                reflectionSamplerLow,
+                reflectionSamplerHigh,
             #endif
-
-            #ifdef GAMMAREFLECTION
-                environmentClearCoatRadiance.rgb = toLinearSpace(environmentClearCoatRadiance.rgb);
-            #endif
-
-            // _____________________________ Levels _____________________________________
-            environmentClearCoatRadiance.rgb *= vReflectionInfos.x;
-            environmentClearCoatRadiance.rgb *= vReflectionColor.rgb;
+                environmentClearCoatRadiance
+            );
 
             #if DEBUGMODE > 0
                 outParams.environmentClearCoatRadiance = environmentClearCoatRadiance;
