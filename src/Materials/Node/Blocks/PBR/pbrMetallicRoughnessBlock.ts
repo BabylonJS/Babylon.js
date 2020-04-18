@@ -888,7 +888,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
             // _____________________________ Reflection _______________________________________
             if (reflectionBlock && reflectionBlock.hasTexture) {
-                state.compilationString += reflectionBlock.getCode(state, anisotropyBlock ? "anisotropicOut.anisotropicNormal" : "normalW", "environmentRadiance", "irradianceVector", "environmentIrradiance");
+                state.compilationString += reflectionBlock.getCode(state, anisotropyBlock ? "anisotropicOut.anisotropicNormal" : "normalW");
             }
 
             state._emitFunctionFromInclude("pbrBlockReflection", comments, {
