@@ -35,6 +35,7 @@ import { Constants } from "../../Engines/constants";
 import { IAnimatable } from '../../Animations/animatable.interface';
 
 import "../../Materials/Textures/baseTexture.polynomial";
+import "../../Materials/Textures/baseTexture.prefiltering";
 import "../../Shaders/pbr.fragment";
 import "../../Shaders/pbr.vertex";
 import { EffectFallbacks } from '../effectFallbacks';
@@ -54,8 +55,7 @@ export class PBRMaterialDefines extends MaterialDefines
     IMaterialSubSurfaceDefines {
     public PBR = true;
 
-    // Debug
-    public NUM_SAMPLES = 16;
+    public NUM_SAMPLES = 0;
     public DEBUG_REALTIME_SAMPLING = false;
 
     public MAINUV1 = false;
@@ -798,42 +798,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         return "PBRBaseMaterial";
     }
 
-    public sampleDirections = [0, 0, 1,
-                               0, 0, 1,
-                               0, 0, 1,
-                               0, 0, 1,
-                               0, 0, 1,
-                               0, 0, 1,
-                               0, 0, 1,
-                               0, 0, 1,
-                               0, 0, 1,
-                               0, 0, 1,
-                               0, 0, 1,
-                               0, 0, 1,
-                               0, 0, 1,
-                               0, 0, 1,
-                               0, 0, 1,
-                               0, 0, 1
-                               ];
-
-    public weights = [1/16,
-                        1/16,
-                        1/16,
-                        1/16,
-                        1/16,
-                        1/16,
-                        1/16,
-                        1/16,
-                        1/16,
-                        1/16,
-                        1/16,
-                        1/16,
-                        1/16,
-                        1/16,
-                        1/16,
-                        1/16,
-    ];
-
     public debugRealtimeSampling = false;
 
     /**
@@ -1075,17 +1039,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
     private _prepareEffect(mesh: AbstractMesh, defines: PBRMaterialDefines, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, useInstances: Nullable<boolean> = null, useClipPlane: Nullable<boolean> = null): Nullable<Effect> {
         this._prepareDefines(mesh, defines, useInstances, useClipPlane);
-
-        if (defines.NUM_SAMPLES != this.sampleDirections.length / 3) {
-            defines.markAsUnprocessed();
-            defines.NUM_SAMPLES = this.sampleDirections.length / 3;
-        }
-
-        if (defines.DEBUG_REALTIME_SAMPLING != this.debugRealtimeSampling) {
-            defines.markAsUnprocessed();
-            defines.DEBUG_REALTIME_SAMPLING = this.debugRealtimeSampling;
-        }
-
 
         if (!defines.isDirty) {
             return null;
@@ -1331,6 +1284,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
                     defines.LINEARSPECULARREFLECTION = reflectionTexture.linearSpecularLOD;
 
+                    if (reflectionTexture.realTimeFiltering) {
+                        defines.NUM_SAMPLES = reflectionTexture.numSamples;
+                        defines.DEBUG_REALTIME_SAMPLING = true;
+                    }
+                    
                     if (reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE) {
                         defines.INVERTCUBICMAP = true;
                     }
@@ -1707,9 +1665,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             this.bindViewProjection(effect);
             reflectionTexture = this._getReflectionTexture();
 
-            effect.setArray3("sampleDirections", this.sampleDirections);
-            effect.setArray("weights", this.weights);
-
             if (!ubo.useUbo || !this.isFrozen || !ubo.isSync) {
 
                 // Texture uniforms
@@ -1738,6 +1693,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                             ubo.updateVector3("vReflectionPosition", cubeTexture.boundingBoxPosition);
                             ubo.updateVector3("vReflectionSize", cubeTexture.boundingBoxSize);
+                        }
+
+                        if (reflectionTexture.realTimeFiltering) {
+                            // TODO move this into pbrbasematerial
+                            reflectionTexture.generateFilterSamples(this._roughness!);           
+                            effect.setArray3("sampleDirections", reflectionTexture._sampleDirections);
+                            effect.setArray("weights", reflectionTexture._sampleWeights);
                         }
 
                         if (!defines.USEIRRADIANCEMAP) {
