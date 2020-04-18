@@ -25,8 +25,6 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     public _defineLODReflectionAlpha: string;
     /** @hidden */
     public _defineLinearSpecularReflection: string;
-    /** @hidden */
-    public _defineLODBasedMicroSurface: string;
     private _vEnvironmentIrradianceName: string;
     /** @hidden */
     public _vReflectionMicrosurfaceInfosName: string;
@@ -178,7 +176,6 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         defines.setValue(this._defineLODReflectionAlpha, reflectionTexture!.lodLevelInAlpha);
         defines.setValue(this._defineLinearSpecularReflection, reflectionTexture!.linearSpecularLOD);
-        defines.setValue(this._defineLODBasedMicroSurface, this._scene.getEngine().getCaps().textureLOD);
         defines.setValue(this._defineOppositeZ, this._scene.useRightHandedSystem ? !reflectionTexture!.invertZ : reflectionTexture!.invertZ);
 
         defines.setValue("SPHERICAL_HARMONICS", this.useSphericalHarmonics);
@@ -384,7 +381,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
             #ifdef USEIRRADIANCEMAP
                 irradianceSampler, // ** not handled **
             #endif
-            #ifndef ${this._defineLODBasedMicroSurface}
+            #ifndef LODBASEDMICROSFURACE
                 #ifdef ${this._define3DName}
                     ${this._cubeSamplerName},
                     ${this._cubeSamplerName},
@@ -406,7 +403,6 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         if (state.target !== NodeMaterialBlockTargets.Fragment) {
             this._defineLODReflectionAlpha = state._getFreeDefineName("LODINREFLECTIONALPHA");
             this._defineLinearSpecularReflection = state._getFreeDefineName("LINEARSPECULARREFLECTION");
-            this._defineLODBasedMicroSurface = state._getFreeDefineName("LODBASEDMICROSFURACE");
         }
 
         return this;

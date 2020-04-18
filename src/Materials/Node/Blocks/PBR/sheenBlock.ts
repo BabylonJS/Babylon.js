@@ -162,7 +162,7 @@ export class SheenBlock extends NodeMaterialBlock {
                 #endif
                 reflectionOut.reflectionCoords,
                 NdotVUnclamped,
-                #ifndef ${reflectionBlock?._defineLODBasedMicroSurface}
+                #ifndef LODBASEDMICROSFURACE
                     #ifdef ${reflectionBlock?._define3DName}
                         ${reflectionBlock?._cubeSamplerName},
                         ${reflectionBlock?._cubeSamplerName},
