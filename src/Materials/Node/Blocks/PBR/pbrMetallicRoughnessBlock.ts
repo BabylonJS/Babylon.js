@@ -543,6 +543,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         defines.setValue("DEBUGMODE", this.debugMode);
         defines.setValue("NORMALXYSCALE", true);
         defines.setValue("BUMP", this.perturbedNormal.isConnected);
+        defines.setValue("LODBASEDMICROSFURACE", this._scene.getEngine().getCaps().textureLOD);
 
         // Albedo & Opacity
         defines.setValue("ALBEDO", this.baseTexture.isConnected);
@@ -900,7 +901,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                     { search: /REFLECTIONMAP_SKYBOX/g, replace: reflectionBlock?._defineSkyboxName ?? "REFLECTIONMAP_SKYBOX" },
                     { search: /LODINREFLECTIONALPHA/g, replace: reflectionBlock?._defineLODReflectionAlpha ?? "LODINREFLECTIONALPHA" },
                     { search: /LINEARSPECULARREFLECTION/g, replace: reflectionBlock?._defineLinearSpecularReflection ?? "LINEARSPECULARREFLECTION" },
-                    { search: /LODBASEDMICROSFURACE/g, replace: reflectionBlock?._defineLODBasedMicroSurface ?? "LODBASEDMICROSFURACE" },
                 ]
             });
 
@@ -920,7 +920,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                     { search: /REFLECTIONMAP_SKYBOX/g, replace: reflectionBlock?._defineSkyboxName ?? "REFLECTIONMAP_SKYBOX" },
                     { search: /LODINREFLECTIONALPHA/g, replace: reflectionBlock?._defineLODReflectionAlpha ?? "LODINREFLECTIONALPHA" },
                     { search: /LINEARSPECULARREFLECTION/g, replace: reflectionBlock?._defineLinearSpecularReflection ?? "LINEARSPECULARREFLECTION" },
-                    { search: /LODBASEDMICROSFURACE/g, replace: reflectionBlock?._defineLODBasedMicroSurface ?? "LODBASEDMICROSFURACE" },
                 ]
             });
 
