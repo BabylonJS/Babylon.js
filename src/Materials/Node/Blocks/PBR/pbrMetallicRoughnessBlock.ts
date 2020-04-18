@@ -55,6 +55,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     private _scene: Scene;
     private _environmentBRDFTexture: Nullable<BaseTexture> = null;
     private _environmentBrdfSamplerName: string;
+    private _vNormalWName: string;
 
     /**
      * Create a new ReflectionBlock
@@ -831,11 +832,15 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state.compilationString += `vec4 vLightingIntensity = vec4(1.);\r\n`;
 
         // _____________________________ Geometry Information ____________________________
+        this._vNormalWName = state._getFreeVariableName("vNormalW");
+
+        state.compilationString += `vec4 ${this._vNormalWName} = normalize(${this.worldNormal.associatedVariableName});\r\n`;
+
         if (state._registerTempVariable("viewDirectionW")) {
             state.compilationString += `vec3 viewDirectionW = normalize(${this.cameraPosition.associatedVariableName} - ${"v_" + worldPos.associatedVariableName}.xyz);\r\n`;
         }
 
-        state.compilationString += `vec3 geometricNormalW = normalize(${this.worldNormal.associatedVariableName}.xyz);\r\n`;
+        state.compilationString += `vec3 geometricNormalW = ${this._vNormalWName}.xyz;\r\n`;
 
         state.compilationString += `vec3 normalW = ${normalShading.isConnected ? "normalize(" + normalShading.associatedVariableName + ".xyz)" : "geometricNormalW"};\r\n`;
 
@@ -982,7 +987,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         // _____________________________ Generate debug code ________________________
         state.compilationString += state._emitCodeFromInclude("pbrDebug", comments, {
             replaceStrings: [
-                { search: /vNormalW/g, replace: this.worldNormal.associatedVariableName },
+                { search: /vNormalW/g, replace: this._vNormalWName },
                 { search: /vPositionW/g, replace: "v_" + this.worldPosition.associatedVariableName },
                 { search: /albedoTexture\.rgb;/g, replace: this.baseTexture.associatedVariableName + ".rgb;\r\ngl_FragColor.rgb = toGammaSpace(gl_FragColor.rgb);\r\n" },
                 { search: /opacityMap/g, replace: this.opacityTexture.associatedVariableName },

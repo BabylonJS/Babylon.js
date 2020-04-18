@@ -281,7 +281,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         code +=
             `#if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
-                vec3 ${reflectionVectorName} = vec3(${this._reflectionMatrixName} * vec4(${this.worldNormal.associatedVariableName}.xyz, 0)).xyz;
+                vec3 ${reflectionVectorName} = vec3(${this._reflectionMatrixName} * vec4(normalize(${this.worldNormal.associatedVariableName}).xyz, 0)).xyz;
                 #ifdef ${this._defineOppositeZ}
                     ${reflectionVectorName}.z *= -1.0;
                 #endif
