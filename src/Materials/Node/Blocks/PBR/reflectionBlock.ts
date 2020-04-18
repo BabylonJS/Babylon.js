@@ -202,7 +202,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
             effect.setTexture(this._2DSamplerName, reflectionTexture);
         }
 
-        effect.setFloat3("vReflectionMicrosurfaceInfos", reflectionTexture.getSize().width, reflectionTexture.lodGenerationScale, reflectionTexture.lodGenerationOffset);
+        effect.setFloat3(this._vReflectionMicrosurfaceInfosName, reflectionTexture.getSize().width, reflectionTexture.lodGenerationScale, reflectionTexture.lodGenerationOffset);
 
         const defines = subMesh._materialDefines as  NodeMaterialDefines;
 
