@@ -821,7 +821,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("pbrBlockAmbientOcclusion", comments);
         state._emitFunctionFromInclude("pbrBlockAlphaFresnel", comments);
         state._emitFunctionFromInclude("pbrBlockAnisotropic", comments);
-        state._emitFunctionFromInclude("pbrBlockSheen", comments);
         state._emitFunctionFromInclude("pbrBlockClearcoat", comments);
         state._emitFunctionFromInclude("pbrBlockSubSurface", comments);
 
@@ -902,7 +901,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                     { search: /LODINREFLECTIONALPHA/g, replace: reflectionBlock?._defineLODReflectionAlpha ?? "LODINREFLECTIONALPHA" },
                     { search: /LINEARSPECULARREFLECTION/g, replace: reflectionBlock?._defineLinearSpecularReflection ?? "LINEARSPECULARREFLECTION" },
                     { search: /LODBASEDMICROSFURACE/g, replace: reflectionBlock?._defineLODBasedMicroSurface ?? "LODBASEDMICROSFURACE" },
-                    { search: /REFLECTIONMAP_OPPOSITEZ/g, replace: reflectionBlock?._defineOppositeZ ?? "REFLECTIONMAP_OPPOSITEZ" },
                 ]
             });
 
@@ -910,6 +908,21 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             state.compilationString += state._emitCodeFromInclude("pbrBlockReflectance0", comments);
 
             // ________________________________ Sheen ______________________________
+            const sheenBlock = this.sheen.isConnected ? this.sheen.connectedPoint?.ownerBlock as SheenBlock : null;
+
+            if (sheenBlock) {
+                state.compilationString += sheenBlock.getCode(reflectionBlock);
+            }
+
+            state._emitFunctionFromInclude("pbrBlockSheen", comments, {
+                replaceStrings: [
+                    { search: /REFLECTIONMAP_3D/g, replace: reflectionBlock?._define3DName ?? "REFLECTIONMAP_3D" },
+                    { search: /REFLECTIONMAP_SKYBOX/g, replace: reflectionBlock?._defineSkyboxName ?? "REFLECTIONMAP_SKYBOX" },
+                    { search: /LODINREFLECTIONALPHA/g, replace: reflectionBlock?._defineLODReflectionAlpha ?? "LODINREFLECTIONALPHA" },
+                    { search: /LINEARSPECULARREFLECTION/g, replace: reflectionBlock?._defineLinearSpecularReflection ?? "LINEARSPECULARREFLECTION" },
+                    { search: /LODBASEDMICROSFURACE/g, replace: reflectionBlock?._defineLODBasedMicroSurface ?? "LODBASEDMICROSFURACE" },
+                ]
+            });
 
             // _____________________________ Clear Coat ____________________________
             state.compilationString += `clearcoatOutParams clearcoatOut;

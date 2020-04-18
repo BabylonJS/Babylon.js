@@ -28,7 +28,10 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     /** @hidden */
     public _defineLODBasedMicroSurface: string;
     private _vEnvironmentIrradianceName: string;
-    private _vReflectionMicrosurfaceInfosName: string;
+    /** @hidden */
+    public _vReflectionMicrosurfaceInfosName: string;
+    /** @hidden */
+    public _vReflectionInfosName: string;
     private _scene: Scene;
 
     /**
@@ -144,6 +147,13 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
      */
     public get hasTexture(): boolean {
         return !!this._getTexture();
+    }
+
+    /**
+     * Gets the reflection color (either the name of the variable if the color input is connected, else a default value)
+     */
+    public get reflectionColor(): string {
+        return this.color.isConnected ? this.color.associatedVariableName : "vec3(1., 1., 1.)";
     }
 
     protected _getTexture(): Nullable<BaseTexture> {
@@ -338,18 +348,20 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         state._emitUniformFromString(this._vReflectionMicrosurfaceInfosName, "vec3");
 
-        const reflectionColor = this.color.isConnected ? this.color.associatedVariableName : "vec3(1., 1., 1.)";
+        this._vReflectionInfosName = state._getFreeVariableName("vReflectionInfos");
 
-        code += `reflectionOutParams reflectionOut;\r\n`;
+        code += `#ifdef REFLECTION
+            vec2 ${this._vReflectionInfosName} = vec2(1., 0.);
 
-        code += `
+            reflectionOutParams reflectionOut;
+
             reflectionBlock(
                 ${"v_" + this.worldPosition.associatedVariableName + ".xyz"},
                 ${normalVarName},
                 alphaG,
                 ${this._vReflectionMicrosurfaceInfosName},
-                vec2(1., 0.),
-                ${reflectionColor},
+                ${this._vReflectionInfosName},
+                ${this.reflectionColor},
             #ifdef ANISOTROPIC
                 anisotropicOut,
             #endif
@@ -385,7 +397,8 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
                 #endif
             #endif
                 reflectionOut
-            );\r\n`;
+            );
+        #endif\r\n`;
 
         return code;
     }

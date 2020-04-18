@@ -46,8 +46,10 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     public _defineSkyboxName: string;
     /** @hidden */
     public _defineOppositeZ: string;
-    protected _cubeSamplerName: string;
-    protected _2DSamplerName: string;
+    /** @hidden */
+    public _cubeSamplerName: string;
+    /** @hidden */
+    public _2DSamplerName: string;
     protected _positionUVWName: string;
     protected _directionWName: string;
     protected _reflectionVectorName: string;
