@@ -305,12 +305,9 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
      * Gets the main code of the block (fragment side)
      * @param state current state of the node material building
      * @param normalVarName name of the existing variable corresponding to the normal
-     * @param finalColorVarName name of the variable that will hold the final color
-     * @param finalIrradianceVector name of the variable that will hold the final irradiance vector
-     * @param finalIrradianceVarName name of the variable that will hold the final irradiance color
      * @returns the shader code
      */
-    public getCode(state: NodeMaterialBuildState, normalVarName: string, finalColorVarName: string, finalIrradianceVector: string, finalIrradianceVarName: string): string {
+    public getCode(state: NodeMaterialBuildState, normalVarName: string): string {
         let code = "";
 
         this.handleFragmentSideInits(state);

@@ -284,6 +284,8 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     /**
      * Generates the reflection coords code for the fragment code path
      * @param worldNormalVarName name of the world normal variable
+     * @param worldPos name of the world position variable. If not provided, will use the world position connected to this block
+     * @param onlyReflectionVector if true, generates code only for the reflection vector computation, not for the reflection coordinates
      * @returns the shader code
      */
     public handleFragmentSideCodeReflectionCoords(worldNormalVarName: string, worldPos?: string, onlyReflectionVector = false): string {
