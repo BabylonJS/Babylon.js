@@ -1,5 +1,6 @@
-import { Vector3 } from "../../../Maths/math";
+import { Vector3, Color4 } from "../../../Maths/math";
 import { InternalTexture } from "../internalTexture"
+import { RenderTargetTexture } from "../renderTargetTexture"
 import { HDRCubeTexture } from "../hdrCubeTexture"
 import { CubeTexture } from "../cubeTexture"
 import { Scene } from "../../../scene";
@@ -8,7 +9,9 @@ import { Effect } from "../../../Materials/effect";
 import { Material } from "../../../Materials/material";
 import { DataBuffer } from "../../../Meshes/DataBuffer"
 import { VertexBuffer } from "../../../Meshes/Buffer"
-import "../../../Shaders/postprocess.vertex";
+
+import "../../../Shaders/hdrFiltering.vertex";
+import "../../../Shaders/hdrFiltering.fragment";
 /**
  * Filters HDR maps to get correct  renderings of PBR reflections
  */
@@ -88,36 +91,61 @@ export class HDRFiltering {
 	}
 
 	// Todo merge hdrCubeTexture with CubeTexture
-	public static prefilter(texture: CubeTexture | HDRCubeTexture) {
+	public prefilter(texture: CubeTexture | HDRCubeTexture) : RenderTargetTexture | null {
 		//
-		const nbRoughnessStops = 10;
+		const nbRoughnessStops = 1;
 		const samples = 1024;
 		const mipmaps: InternalTexture[] = [];
+		let filteredTexture = null;
 
 		for (let i = 0; i < nbRoughnessStops; i++) {
 			const roughness = i / nbRoughnessStops;
 			const kernel = HDRFiltering.generateSamples(samples, roughness);
 			const weights = HDRFiltering.generateWeights(kernel, roughness);
 
-			const filteredTexture = HDRFiltering.filter(texture, kernel, weights);
-			mipmaps.push(filteredTexture);
+			filteredTexture = this.filter(texture, kernel, weights);
+			// mipmaps.push(filteredTexture);
 		}
 
-		HDRFiltering.setMipmaps(texture, mipmaps);
+		this.setMipmaps(texture, mipmaps);
+
+		return filteredTexture;
 	}
 
-	public static filter(texture: CubeTexture | HDRCubeTexture, kernel: Vector3[], weights: number[]) : InternalTexture {
-		const sides = [
+	public filter(texture: CubeTexture | HDRCubeTexture, kernel: Vector3[], weights: number[]) : RenderTargetTexture | null {
+		if (!texture.isReady()) {
+			return null;
+		}
 
+		const outputTexture = new RenderTargetTexture("temp", texture.getSize(), this._scene, false, true, undefined, true);
+
+		// Wait for readyness
+		if (!outputTexture.isReady()) {
+			return null;
+		}
+
+
+		const directions = [
+			[new Vector3(0, 1, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)], // PositiveX
+			[new Vector3(0, 1, 0), new Vector3(0, 0, -1), new Vector3(-1, 0, 0)], // NegativeX
+			[new Vector3(-1, 0, 0), new Vector3(0, 0, 1), new Vector3(0, 1, 0)], // PositiveY
+			[new Vector3(1, 0, 0), new Vector3(0, 0, 1), new Vector3(0, -1, 0)], // NegativeY
+			[new Vector3(0, 1, 0), new Vector3(-1, 0, 0), new Vector3(0, 0, 1)], // PositiveZ
+			[new Vector3(0, 1, 0), new Vector3(1, 0, 0), new Vector3(0, 0, -1)], // NegativeZ
 		];
 
-		this.
-		for (let i = 0; i < sides.length; i++) {
-
+		for (let i = 0; i < 6 ; i++) {
+			this._effect.setVector3("up", directions[i][0]);
+			this._effect.setVector3("right", directions[i][1]);
+			this._effect.setVector3("front", directions[i][2]);
+			this.apply(texture, kernel, weights);
+			this.directRender(outputTexture._texture!, i);
 		}
+
+		return outputTexture;
 	}
 
-	public static setMipmaps(texture: CubeTexture | HDRCubeTexture, mipmaps: InternalTexture[]) {
+	public setMipmaps(texture: CubeTexture | HDRCubeTexture, mipmaps: InternalTexture[]) {
 		// pass
 	}
 
@@ -135,7 +163,7 @@ export class HDRFiltering {
 	 * Binds all textures and uniforms to the shader, this will be run on every pass.
 	 * @returns the effect corresponding to this post process. Null if not compiled or not ready.
 	 */
-	public apply(texture: InternalTexture, kernel: Vector3[], weights: number[]) {
+	public apply(texture: CubeTexture | HDRCubeTexture, kernel: Vector3[], weights: number[]) {
 	    // Check
 	    if (!this._effect || !this._effect.isReady()) {
 	        return null;
@@ -147,12 +175,13 @@ export class HDRFiltering {
 	    this._engine.setDepthBuffer(false);
 	    this._engine.setDepthWrite(false);
 
-	    this._effect._bindTexture("inputTexture", texture);
+	    this._effect.setTexture("inputTexture", texture);
 
 	    // Parameters
 	    this._effect.setArray3("sampleDirections", HDRFiltering.flatten(kernel));
 	    this._effect.setArray("weights", weights);
-
+	    this._effect.setFloat("cubeSize", texture.getSize().width);
+	    this._effect.setFloat2("scale", 1, 1);
 	    return this._effect;
 	}
 
@@ -175,9 +204,9 @@ export class HDRFiltering {
 	 */
 	public createEffect() {
 		const defines = "#define NUM_SAMPLES " + this._numSamples;
-	    this._effect = this._engine.createEffect({ vertex: "postprocess", fragment: "hdrFiltering" },
+	    this._effect = this._engine.createEffect({ vertex: "hdrFiltering", fragment: "hdrFiltering" },
 	        ["position"],
-	        ["sampleDirections", "weights"],
+	        ["sampleDirections", "weights", "up", "right", "front", "cubeWidth"],
 	        ["inputTexture"],
 	        defines
 	    );
@@ -197,8 +226,7 @@ export class HDRFiltering {
         var engine = this._engine;
         engine.bindFramebuffer(targetTexture, faceIndex, undefined, undefined, false, lodLevel);
 
-        this.apply();
-
+        engine.clear(new Color4(1.0, 0.0, 0.0, 1.0), true, true);
         // VBOs
         this._prepareBuffers();
         engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._effect);

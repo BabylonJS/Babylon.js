@@ -22,3 +22,4 @@ export * from "./texture";
 export * from "./videoTexture";
 export * from "./htmlElementTexture";
 export * from "./Packer/index";
+export * from "./Filtering/hdrFiltering";
