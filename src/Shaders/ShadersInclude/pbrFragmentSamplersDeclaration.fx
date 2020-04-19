@@ -186,31 +186,37 @@
     uniform vec3 sampleDirections[NUM_SAMPLES];
     uniform float weights[NUM_SAMPLES];
     vec4 sampleUnfiltered(samplerCube sampler, vec3 direction, float lod) {
-        // Making a transformation matrix to convert z oriented sample direction to input direction
-        vec3 tangent = abs(direction.z) < 0.999 ? vec3(0., 0., 1.) : vec3(1., 0., 0.);
-        tangent = normalize(cross(tangent, direction));
-        vec3 bitangent = cross(direction, tangent);
-        mat3 tbn = mat3(tangent, bitangent, direction);
+        // Rotation by PI around y is necessary for consistency with IBLBaker
+        vec3 n = vec3(-direction.x, direction.y, -direction.z);
+        vec3 tangent = abs(n.z) < 0.999 ? vec3(0., 0., 1.) : vec3(1., 0., 0.);
+        tangent = normalize(cross(tangent, n));
+        vec3 bitangent = cross(n, tangent);
+        mat3 tbn = mat3(tangent, bitangent, n);
 
         vec3 color = vec3(0.);
-        vec3 v;
-        float vDotD;
+        vec3 h;
+        vec3 l;
+        float NoH;
+        float NoL;
         float totalWeight = 0.;
         for (int i = 0; i < NUM_SAMPLES; i++) {
-            v = tbn * sampleDirections[i];
-            // v = 2. * dot(v, direction) * v - direction;
-            vDotD = clamp(dot(v, direction), 0.0, 1.0);
-            float solidAngleTexel = 4. * 3.14159 / (6. * 512. * 512.);
-            float solidAngleSample = 1.0 / (float(NUM_SAMPLES) * weights[i]);
-            float lod = 0.5 * log2(solidAngleSample/solidAngleTexel) + 1.;
-            if (vDotD > 0.) {
+            h = tbn * sampleDirections[i];
+            l = 2. * dot(h, n) * h - n;
+            NoH = clamp(dot(h, n), 0.0, 1.0);
+            NoL = clamp(dot(l, n), 0.0, 1.0);
+            if (NoL > 0.) {
+                float solidAngleTexel = 4. * 3.14159 / (6. * 128. * 128.);
+                float solidAngleSample = 4.0 / (float(NUM_SAMPLES) * weights[i]);
+                float lod = 0.5 * log2(solidAngleSample/solidAngleTexel);
                 // gamma correction needed ?
-                color += textureCubeLodEXT(sampler, v, lod).xyz * vDotD;
-                totalWeight += vDotD;            
+                color += textureCubeLodEXT(sampler, l, lod).xyz * NoL;
+                totalWeight += NoL;            
             }
         }
 
-        color /= totalWeight;
+        if (totalWeight != 0.) {
+            color /= totalWeight;
+        }
         return vec4(color, 1.0);
     }
 
