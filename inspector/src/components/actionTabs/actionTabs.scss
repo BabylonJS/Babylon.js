@@ -1009,6 +1009,8 @@ $line-padding-left: 2px;
                         grid-column: 1;
                         opacity: 1;
                         border: 3px solid red;
+                        margin-bottom: -5px;
+                        z-index: 100;
                         transition: opacity 250ms;
                         pointer-events: none;
                         

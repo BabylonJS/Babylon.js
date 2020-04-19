@@ -442,6 +442,12 @@ export class Material implements IAnimatable {
     public disableDepthWrite = false;
 
     /**
+     * Specifies if color writing should be disabled
+     */
+    @serialize()
+    public disableColorWrite = false;
+
+    /**
      * Specifies if depth writing should be forced
      */
     @serialize()
@@ -495,10 +501,6 @@ export class Material implements IAnimatable {
     @serialize()
     public zOffset = 0;
 
-    /**
-     * Gets a value specifying if wireframe mode is enabled
-     */
-    @serialize()
     public get wireframe(): boolean {
         switch (this._fillMode) {
             case Material.WireFrameFillMode:
@@ -584,6 +586,11 @@ export class Material implements IAnimatable {
      * Specifies if the depth write state should be cached
      */
     private _cachedDepthWriteState: boolean = false;
+
+    /**
+     * Specifies if the color write state should be cached
+     */
+    private _cachedColorWriteState: boolean = false;
 
     /**
      * Specifies if the depth function state should be cached
@@ -929,6 +936,12 @@ export class Material implements IAnimatable {
             engine.setDepthWrite(false);
         }
 
+        if (this.disableColorWrite) {
+            var engine = this._scene.getEngine();
+            this._cachedColorWriteState = engine.getColorWrite();
+            engine.setColorWrite(false);
+        }
+
         if (this.depthFunction !== 0) {
             var engine = this._scene.getEngine();
             this._cachedDepthFunctionState = engine.getDepthFunction() || 0;
@@ -952,6 +965,11 @@ export class Material implements IAnimatable {
         if (this.disableDepthWrite) {
             var engine = this._scene.getEngine();
             engine.setDepthWrite(this._cachedDepthWriteState);
+        }
+
+        if (this.disableColorWrite) {
+            var engine = this._scene.getEngine();
+            engine.setColorWrite(this._cachedColorWriteState);
         }
     }
 
