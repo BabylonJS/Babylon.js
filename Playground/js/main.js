@@ -566,7 +566,7 @@ class Main {
                         exampleList.appendChild(noResultContainer);
                     }
 
-                    if (!location.hash && restoreVersionResult == false && location.pathname === '/') {
+                    if (!location.hash && restoreVersionResult == false && (location.pathname === '/' || !location.pathname)) {
                         // Query string
                         var queryString = window.location.search;
 
@@ -1016,7 +1016,7 @@ class Main {
     };
     checkHash() {
         let pgHash = "";
-        if (location.search && location.pathname === '/' && !location.hash) {
+        if (location.search && (!location.pathname  || location.pathname === '/') && !location.hash) {
             var query = this.parseQuery(location.search);
             if (query.pg) {
                 pgHash = "#" + query.pg + "#" + (query.revision || "0")
