@@ -968,6 +968,12 @@ export class Scene extends AbstractScene implements IAnimatable {
         return this._texturesEnabled;
     }
 
+    // Physics
+    /**
+     * Gets or sets a boolean indicating if physic engines are enabled on this scene
+     */
+    public physicsEnabled = true;
+
     // Particles
     /**
     * Gets or sets a boolean indicating if particles are enabled on this scene
@@ -3873,7 +3879,9 @@ export class Scene extends AbstractScene implements IAnimatable {
                 this.onAfterAnimationsObservable.notifyObservers(this);
 
                 // Physics
-                this._advancePhysicsEngineStep(defaultFrameTime);
+                if (this.physicsEnabled) {
+                    this._advancePhysicsEngineStep(defaultFrameTime);
+                }
 
                 this.onAfterStepObservable.notifyObservers(this);
                 this._currentStepId++;
@@ -3894,7 +3902,9 @@ export class Scene extends AbstractScene implements IAnimatable {
             this.onAfterAnimationsObservable.notifyObservers(this);
 
             // Physics
-            this._advancePhysicsEngineStep(deltaTime);
+            if (this.physicsEnabled) {
+                this._advancePhysicsEngineStep(deltaTime);
+            }
         }
     }
 
@@ -3906,6 +3916,10 @@ export class Scene extends AbstractScene implements IAnimatable {
     public render(updateCameras = true, ignoreAnimations = false): void {
         if (this.isDisposed) {
             return;
+        }
+
+        if (this.onReadyObservable.hasObservers() && this._executeWhenReadyTimeoutId === -1) {
+            this._checkIsReady();
         }
 
         this._frameId++;
@@ -4419,7 +4433,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param x position on screen
      * @param y position on screen
      * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
-     * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
+     * @param fastCheck defines if the first intersection will be used (and not the closest)
      * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns a PickingInfo
@@ -4438,7 +4452,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param x position on screen
      * @param y position on screen
      * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
-     * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
+     * @param fastCheck defines if the first intersection will be used (and not the closest)
      * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
      * @returns a PickingInfo (Please note that some info will not be set like distance, bv, bu and everything that cannot be capture by only using bounding infos)
      */
@@ -4453,7 +4467,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     /** Use the given ray to pick a mesh in the scene
      * @param ray The ray to use to pick meshes
      * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must have isPickable set to true
-     * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null
+     * @param fastCheck defines if the first intersection will be used (and not the closest)
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns a PickingInfo
      */

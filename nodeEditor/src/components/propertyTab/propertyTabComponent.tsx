@@ -17,6 +17,7 @@ import { TextLineComponent } from '../../sharedComponents/textLineComponent';
 import { Engine } from 'babylonjs/Engines/engine';
 import { FramePropertyTabComponent } from '../../diagram/properties/framePropertyComponent';
 import { FrameNodePortPropertyTabComponent } from '../../diagram/properties/frameNodePortPropertyComponent';
+import { NodePortPropertyTabComponent } from '../../diagram/properties/nodePortPropertyComponent';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
 import { Color3LineComponent } from '../../sharedComponents/color3LineComponent';
@@ -28,6 +29,7 @@ import { Vector4LineComponent } from '../../sharedComponents/vector4LineComponen
 import { Observer } from 'babylonjs/Misc/observable';
 import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
 import { FrameNodePort } from '../../diagram/frameNodePort';
+import { NodePort } from '../../diagram/nodePort';
 import { isFramePortData } from '../../diagram/graphCanvas';
 require("./propertyTab.scss");
 
@@ -35,25 +37,34 @@ interface IPropertyTabComponentProps {
     globalState: GlobalState;
 }
 
-export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, { currentNode: Nullable<GraphNode>, currentFrame: Nullable<GraphFrame>, currentFrameNodePort: Nullable<FrameNodePort> }> {
+interface IPropertyTabComponentState { 
+    currentNode: Nullable<GraphNode>, 
+    currentFrame: Nullable<GraphFrame>, 
+    currentFrameNodePort: Nullable<FrameNodePort>,
+    currentNodePort: Nullable<NodePort>
+ }
+
+export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
     private _onBuiltObserver: Nullable<Observer<void>>;
 
     constructor(props: IPropertyTabComponentProps) {
         super(props)
 
-        this.state = { currentNode: null, currentFrame: null, currentFrameNodePort: null };
+        this.state = { currentNode: null, currentFrame: null, currentFrameNodePort: null, currentNodePort: null };
     }
 
     componentDidMount() {
         this.props.globalState.onSelectionChangedObservable.add(selection => {
             if (selection instanceof GraphNode) {
-                this.setState({ currentNode: selection, currentFrame: null, currentFrameNodePort: null });
+                this.setState({ currentNode: selection, currentFrame: null, currentFrameNodePort: null, currentNodePort: null });
             } else if (selection instanceof GraphFrame) {
-                this.setState({ currentNode: null, currentFrame: selection, currentFrameNodePort: null });
+                this.setState({ currentNode: null, currentFrame: selection, currentFrameNodePort: null, currentNodePort: null });
             } else if(isFramePortData(selection)) {
-                this.setState({ currentNode: null, currentFrame: selection.frame, currentFrameNodePort: selection.port });
+                this.setState({ currentNode: null, currentFrame: selection.frame, currentFrameNodePort: selection.port, currentNodePort: null });
+            } else if (selection instanceof NodePort && selection.hasLabel()) {
+                this.setState({ currentNode: null, currentFrame: null, currentFrameNodePort: null, currentNodePort: selection})
             } else {
-                this.setState({ currentNode: null, currentFrame: null, currentFrameNodePort: null });
+                this.setState({ currentNode: null, currentFrame: null, currentFrameNodePort: null, currentNodePort: null });
             }
         });
 
@@ -240,7 +251,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             NODE MATERIAL EDITOR
                         </div>
                     </div>
-                    {this.state.currentNode.renderProperties()}
+                    {this.state.currentNode?.renderProperties() || this.state.currentNodePort?.node.renderProperties()}
                 </div>
             );
         }
@@ -248,6 +259,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         if (this.state.currentFrameNodePort && this.state.currentFrame) {
             return (
                 <FrameNodePortPropertyTabComponent globalState={this.props.globalState} frame={this.state.currentFrame} frameNodePort={this.state.currentFrameNodePort}/>
+            );
+        }
+
+        if (this.state.currentNodePort) {
+            return (
+                <NodePortPropertyTabComponent globalState={this.props.globalState} nodePort={this.state.currentNodePort}/>
             );
         }
 

@@ -474,15 +474,16 @@ export class AssetContainer extends AbstractScene {
     }
 
     /**
-     * Merge animations from this asset container into a scene
+     * Merge animations (direct and animation groups) from this asset container into a scene
      * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
      * @param animatables set of animatables to retarget to a node from the scene
      * @param targetConverter defines a function used to convert animation targets from the asset container to the scene (default: search node by name)
+     * @returns an array of the new AnimationGroup added to the scene (empty array if none)
      */
-    public mergeAnimationsTo(scene: Nullable<Scene> = EngineStore.LastCreatedScene, animatables: Animatable[], targetConverter: Nullable<(target: any) => Nullable<Node>> = null): void {
+    public mergeAnimationsTo(scene: Nullable<Scene> = EngineStore.LastCreatedScene, animatables: Animatable[], targetConverter: Nullable<(target: any) => Nullable<Node>> = null): AnimationGroup[] {
         if (!scene) {
             Logger.Error("No scene available to merge animations to");
-            return;
+            return [];
         }
 
         let _targetConverter = targetConverter ? targetConverter : (target: any) => {
@@ -538,10 +539,12 @@ export class AssetContainer extends AbstractScene {
             }
         });
 
+        let newAnimationGroups = new Array<AnimationGroup>();
+
         // Copy new animation groups
         this.animationGroups.slice().forEach((animationGroupInAC) => {
             // Clone the animation group and all its animatables
-            animationGroupInAC.clone(animationGroupInAC.name, _targetConverter);
+            newAnimationGroups.push(animationGroupInAC.clone(animationGroupInAC.name, _targetConverter));
 
             // Remove animatables related to the asset container
             animationGroupInAC.animatables.forEach((animatable) => {
@@ -561,5 +564,7 @@ export class AssetContainer extends AbstractScene {
                 scene.stopAnimation(animatable.target);
             }
         });
+
+        return newAnimationGroups;
     }
 }

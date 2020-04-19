@@ -132,14 +132,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.2.0-alpha.10";
+        return "babylonjs@4.2.0-alpha.11";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.2.0-alpha.10";
+        return "4.2.0-alpha.11";
     }
 
     /**
@@ -1213,8 +1213,8 @@ export class ThinEngine {
         let height: number;
 
         if (DomManagement.IsWindowObjectExist()) {
-            width = this._renderingCanvas ? this._renderingCanvas.clientWidth : window.innerWidth;
-            height = this._renderingCanvas ? this._renderingCanvas.clientHeight : window.innerHeight;
+            width = this._renderingCanvas ? (this._renderingCanvas.clientWidth || this._renderingCanvas.width) : window.innerWidth;
+            height = this._renderingCanvas ? (this._renderingCanvas.clientHeight || this._renderingCanvas.height) : window.innerHeight;
         } else {
             width = this._renderingCanvas ? this._renderingCanvas.width : 100;
             height = this._renderingCanvas ? this._renderingCanvas.height : 100;

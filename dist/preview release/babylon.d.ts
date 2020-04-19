@@ -1905,6 +1905,114 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Represens a plane by the equation ax + by + cz + d = 0
+     */
+    export class Plane {
+        private static _TmpMatrix;
+        /**
+         * Normal of the plane (a,b,c)
+         */
+        normal: Vector3;
+        /**
+         * d component of the plane
+         */
+        d: number;
+        /**
+         * Creates a Plane object according to the given floats a, b, c, d and the plane equation : ax + by + cz + d = 0
+         * @param a a component of the plane
+         * @param b b component of the plane
+         * @param c c component of the plane
+         * @param d d component of the plane
+         */
+        constructor(a: number, b: number, c: number, d: number);
+        /**
+         * @returns the plane coordinates as a new array of 4 elements [a, b, c, d].
+         */
+        asArray(): number[];
+        /**
+         * @returns a new plane copied from the current Plane.
+         */
+        clone(): Plane;
+        /**
+         * @returns the string "Plane".
+         */
+        getClassName(): string;
+        /**
+         * @returns the Plane hash code.
+         */
+        getHashCode(): number;
+        /**
+         * Normalize the current Plane in place.
+         * @returns the updated Plane.
+         */
+        normalize(): Plane;
+        /**
+         * Applies a transformation the plane and returns the result
+         * @param transformation the transformation matrix to be applied to the plane
+         * @returns a new Plane as the result of the transformation of the current Plane by the given matrix.
+         */
+        transform(transformation: DeepImmutable<Matrix>): Plane;
+        /**
+         * Compute the dot product between the point and the plane normal
+         * @param point point to calculate the dot product with
+         * @returns the dot product (float) of the point coordinates and the plane normal.
+         */
+        dotCoordinate(point: DeepImmutable<Vector3>): number;
+        /**
+         * Updates the current Plane from the plane defined by the three given points.
+         * @param point1 one of the points used to contruct the plane
+         * @param point2 one of the points used to contruct the plane
+         * @param point3 one of the points used to contruct the plane
+         * @returns the updated Plane.
+         */
+        copyFromPoints(point1: DeepImmutable<Vector3>, point2: DeepImmutable<Vector3>, point3: DeepImmutable<Vector3>): Plane;
+        /**
+         * Checks if the plane is facing a given direction
+         * @param direction the direction to check if the plane is facing
+         * @param epsilon value the dot product is compared against (returns true if dot <= epsilon)
+         * @returns True is the vector "direction"  is the same side than the plane normal.
+         */
+        isFrontFacingTo(direction: DeepImmutable<Vector3>, epsilon: number): boolean;
+        /**
+         * Calculates the distance to a point
+         * @param point point to calculate distance to
+         * @returns the signed distance (float) from the given point to the Plane.
+         */
+        signedDistanceTo(point: DeepImmutable<Vector3>): number;
+        /**
+         * Creates a plane from an  array
+         * @param array the array to create a plane from
+         * @returns a new Plane from the given array.
+         */
+        static FromArray(array: DeepImmutable<ArrayLike<number>>): Plane;
+        /**
+         * Creates a plane from three points
+         * @param point1 point used to create the plane
+         * @param point2 point used to create the plane
+         * @param point3 point used to create the plane
+         * @returns a new Plane defined by the three given points.
+         */
+        static FromPoints(point1: DeepImmutable<Vector3>, point2: DeepImmutable<Vector3>, point3: DeepImmutable<Vector3>): Plane;
+        /**
+         * Creates a plane from an origin point and a normal
+         * @param origin origin of the plane to be constructed
+         * @param normal normal of the plane to be constructed
+         * @returns a new Plane the normal vector to this plane at the given origin point.
+         * Note : the vector "normal" is updated because normalized.
+         */
+        static FromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): Plane;
+        /**
+         * Calculates the distance from a plane and a point
+         * @param origin origin of the plane to be constructed
+         * @param normal normal of the plane to be constructed
+         * @param point point to calculate distance to
+         * @returns the signed distance between the plane defined by the normal vector at the "origin"" point and the given other point.
+         */
+        static SignedDistanceToPlaneFromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>, point: DeepImmutable<Vector3>): number;
+    }
+}
+declare module BABYLON {
+    /**
      * Class representing a vector containing 2 coordinates
      */
     export class Vector2 {
@@ -2462,6 +2570,20 @@ declare module BABYLON {
          * @returns the unmodified current Vector3
          */
         scaleAndAddToRef(scale: number, result: Vector3): Vector3;
+        /**
+         * Projects the current vector3 to a plane along a ray starting from a specified origin and directed towards the point.
+         * @param origin defines the origin of the projection ray
+         * @param plane defines the plane to project to
+         * @returns the projected vector3
+         */
+        projectOnPlane(plane: Plane, origin: Vector3): Vector3;
+        /**
+         * Projects the current vector3 to a plane along a ray starting from a specified origin and directed towards the point.
+         * @param origin defines the origin of the projection ray
+         * @param plane defines the plane to project to
+         * @param result defines the Vector3 where to store the result
+         */
+        projectOnPlaneToRef(plane: Plane, origin: Vector3, result: Vector3): void;
         /**
          * Returns true if the current Vector3 and the given vector coordinates are strictly equal
          * @param otherVector defines the second operand
@@ -6615,114 +6737,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Represens a plane by the equation ax + by + cz + d = 0
-     */
-    export class Plane {
-        private static _TmpMatrix;
-        /**
-         * Normal of the plane (a,b,c)
-         */
-        normal: Vector3;
-        /**
-         * d component of the plane
-         */
-        d: number;
-        /**
-         * Creates a Plane object according to the given floats a, b, c, d and the plane equation : ax + by + cz + d = 0
-         * @param a a component of the plane
-         * @param b b component of the plane
-         * @param c c component of the plane
-         * @param d d component of the plane
-         */
-        constructor(a: number, b: number, c: number, d: number);
-        /**
-         * @returns the plane coordinates as a new array of 4 elements [a, b, c, d].
-         */
-        asArray(): number[];
-        /**
-         * @returns a new plane copied from the current Plane.
-         */
-        clone(): Plane;
-        /**
-         * @returns the string "Plane".
-         */
-        getClassName(): string;
-        /**
-         * @returns the Plane hash code.
-         */
-        getHashCode(): number;
-        /**
-         * Normalize the current Plane in place.
-         * @returns the updated Plane.
-         */
-        normalize(): Plane;
-        /**
-         * Applies a transformation the plane and returns the result
-         * @param transformation the transformation matrix to be applied to the plane
-         * @returns a new Plane as the result of the transformation of the current Plane by the given matrix.
-         */
-        transform(transformation: DeepImmutable<Matrix>): Plane;
-        /**
-         * Calcualtte the dot product between the point and the plane normal
-         * @param point point to calculate the dot product with
-         * @returns the dot product (float) of the point coordinates and the plane normal.
-         */
-        dotCoordinate(point: DeepImmutable<Vector3>): number;
-        /**
-         * Updates the current Plane from the plane defined by the three given points.
-         * @param point1 one of the points used to contruct the plane
-         * @param point2 one of the points used to contruct the plane
-         * @param point3 one of the points used to contruct the plane
-         * @returns the updated Plane.
-         */
-        copyFromPoints(point1: DeepImmutable<Vector3>, point2: DeepImmutable<Vector3>, point3: DeepImmutable<Vector3>): Plane;
-        /**
-         * Checks if the plane is facing a given direction
-         * @param direction the direction to check if the plane is facing
-         * @param epsilon value the dot product is compared against (returns true if dot <= epsilon)
-         * @returns True is the vector "direction"  is the same side than the plane normal.
-         */
-        isFrontFacingTo(direction: DeepImmutable<Vector3>, epsilon: number): boolean;
-        /**
-         * Calculates the distance to a point
-         * @param point point to calculate distance to
-         * @returns the signed distance (float) from the given point to the Plane.
-         */
-        signedDistanceTo(point: DeepImmutable<Vector3>): number;
-        /**
-         * Creates a plane from an  array
-         * @param array the array to create a plane from
-         * @returns a new Plane from the given array.
-         */
-        static FromArray(array: DeepImmutable<ArrayLike<number>>): Plane;
-        /**
-         * Creates a plane from three points
-         * @param point1 point used to create the plane
-         * @param point2 point used to create the plane
-         * @param point3 point used to create the plane
-         * @returns a new Plane defined by the three given points.
-         */
-        static FromPoints(point1: DeepImmutable<Vector3>, point2: DeepImmutable<Vector3>, point3: DeepImmutable<Vector3>): Plane;
-        /**
-         * Creates a plane from an origin point and a normal
-         * @param origin origin of the plane to be constructed
-         * @param normal normal of the plane to be constructed
-         * @returns a new Plane the normal vector to this plane at the given origin point.
-         * Note : the vector "normal" is updated because normalized.
-         */
-        static FromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): Plane;
-        /**
-         * Calculates the distance from a plane and a point
-         * @param origin origin of the plane to be constructed
-         * @param normal normal of the plane to be constructed
-         * @param point point to calculate distance to
-         * @returns the signed distance between the plane defined by the normal vector at the "origin"" point and the given other point.
-         */
-        static SignedDistanceToPlaneFromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>, point: DeepImmutable<Vector3>): number;
-    }
-}
-declare module BABYLON {
-    /**
      * Class used to store bounding sphere information
      */
     export class BoundingSphere {
@@ -9558,14 +9572,14 @@ declare module BABYLON {
         /**
          * Checks if ray intersects a mesh
          * @param mesh the mesh to check
-         * @param fastCheck if only the bounding box should checked
+         * @param fastCheck defines if the first intersection will be used (and not the closest)
          * @returns picking info of the intersecton
          */
         intersectsMesh(mesh: DeepImmutable<AbstractMesh>, fastCheck?: boolean): PickingInfo;
         /**
          * Checks if ray intersects a mesh
          * @param meshes the meshes to check
-         * @param fastCheck if only the bounding box should checked
+         * @param fastCheck defines if the first intersection will be used (and not the closest)
          * @param results array to store result in
          * @returns Array of picking infos
          */
@@ -9876,7 +9890,7 @@ declare module BABYLON {
              * @param x position on screen
              * @param y position on screen
              * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
-             * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
+             * @param fastCheck defines if the first intersection will be used (and not the closest)
              * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
              * @returns a PickingInfo
              */
@@ -9884,7 +9898,7 @@ declare module BABYLON {
             /** Use the given ray to pick a sprite in the scene
              * @param ray The ray (in world space) to use to pick meshes
              * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
-             * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
+             * @param fastCheck defines if the first intersection will be used (and not the closest)
              * @param camera camera to use. Can be set to null. In this case, the scene.activeCamera will be used
              * @returns a PickingInfo
              */
@@ -10019,7 +10033,7 @@ declare module BABYLON {
          * @param ray The ray we are sending to test the collision
          * @param camera The camera space we are sending rays in
          * @param predicate A predicate allowing excluding sprites from the list of object to test
-         * @param fastCheck Is the hit test done in a OOBB or AOBB fashion the faster, the less precise
+         * @param fastCheck defines if the first intersection will be used (and not the closest)
          * @returns picking info or null.
          */
         intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
@@ -20620,6 +20634,7 @@ declare module BABYLON {
         _prepareFrame(sourceTexture?: Nullable<InternalTexture>, postProcesses?: Nullable<PostProcess[]>): boolean;
         /**
          * Manually render a set of post processes to a texture.
+         * Please note, the frame buffer won't be unbound after the call in case you have more render to do.
          * @param postProcesses An array of post processes to be run.
          * @param targetTexture The target texture to render to.
          * @param forceFullscreenViewport force gl.viewport to be full screen eg. 0,0,textureWidth,textureHeight
@@ -21371,6 +21386,10 @@ declare module BABYLON {
          */
         disableDepthWrite: boolean;
         /**
+         * Specifies if color writing should be disabled
+         */
+        disableColorWrite: boolean;
+        /**
          * Specifies if depth writing should be forced
          */
         forceDepthWrite: boolean;
@@ -21402,9 +21421,6 @@ declare module BABYLON {
          * Stores the z offset value
          */
         zOffset: number;
-        /**
-         * Gets a value specifying if wireframe mode is enabled
-         */
         get wireframe(): boolean;
         /**
          * Sets the state of wireframe mode
@@ -21447,6 +21463,10 @@ declare module BABYLON {
          * Specifies if the depth write state should be cached
          */
         private _cachedDepthWriteState;
+        /**
+         * Specifies if the color write state should be cached
+         */
+        private _cachedColorWriteState;
         /**
          * Specifies if the depth function state should be cached
          */
@@ -21997,7 +22017,7 @@ declare module BABYLON {
          * @param ray defines the ray to test
          * @param positions defines mesh's positions array
          * @param indices defines mesh's indices array
-         * @param fastCheck defines if only bounding info should be used
+         * @param fastCheck defines if the first intersection will be used (and not the closest)
          * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
          * @returns intersection info or null if no intersection
          */
@@ -22924,9 +22944,10 @@ declare module BABYLON {
          * @param fColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
          * @param frontUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
          * @param backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+         * @param wrap a boolean, default false, when true and fUVs used texture is wrapped around all sides, when false texture is applied side
          * @returns the VertexData of the Polygon
          */
-        static CreatePolygon(polygon: Mesh, sideOrientation: number, fUV?: Vector4[], fColors?: Color4[], frontUVs?: Vector4, backUVs?: Vector4): VertexData;
+        static CreatePolygon(polygon: Mesh, sideOrientation: number, fUV?: Vector4[], fColors?: Color4[], frontUVs?: Vector4, backUVs?: Vector4, wrap?: boolean): VertexData;
         /**
          * Creates the VertexData of the IcoSphere
          * @param options an object used to set the following optional parameters for the IcoSphere, required but can be empty
@@ -36118,6 +36139,10 @@ declare module BABYLON {
         set texturesEnabled(value: boolean);
         get texturesEnabled(): boolean;
         /**
+         * Gets or sets a boolean indicating if physic engines are enabled on this scene
+         */
+        physicsEnabled: boolean;
+        /**
         * Gets or sets a boolean indicating if particles are enabled on this scene
         */
         particlesEnabled: boolean;
@@ -37302,7 +37327,7 @@ declare module BABYLON {
          * @param x position on screen
          * @param y position on screen
          * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
-         * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
+         * @param fastCheck defines if the first intersection will be used (and not the closest)
          * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
          * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
          * @returns a PickingInfo
@@ -37312,7 +37337,7 @@ declare module BABYLON {
          * @param x position on screen
          * @param y position on screen
          * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
-         * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
+         * @param fastCheck defines if the first intersection will be used (and not the closest)
          * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
          * @returns a PickingInfo (Please note that some info will not be set like distance, bv, bu and everything that cannot be capture by only using bounding infos)
          */
@@ -37320,7 +37345,7 @@ declare module BABYLON {
         /** Use the given ray to pick a mesh in the scene
          * @param ray The ray to use to pick meshes
          * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must have isPickable set to true
-         * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null
+         * @param fastCheck defines if the first intersection will be used (and not the closest)
          * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
          * @returns a PickingInfo
          */
@@ -37505,12 +37530,13 @@ declare module BABYLON {
          */
         createRootMesh(): Mesh;
         /**
-         * Merge animations from this asset container into a scene
+         * Merge animations (direct and animation groups) from this asset container into a scene
          * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
          * @param animatables set of animatables to retarget to a node from the scene
          * @param targetConverter defines a function used to convert animation targets from the asset container to the scene (default: search node by name)
+         * @returns an array of the new AnimationGroup added to the scene (empty array if none)
          */
-        mergeAnimationsTo(scene: Scene | null | undefined, animatables: Animatable[], targetConverter?: Nullable<(target: any) => Nullable<Node>>): void;
+        mergeAnimationsTo(scene: Scene | null | undefined, animatables: Animatable[], targetConverter?: Nullable<(target: any) => Nullable<Node>>): AnimationGroup[];
     }
 }
 declare module BABYLON {
@@ -44072,9 +44098,9 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Handness type in xrInput profiles. These can be used to define layouts in the Layout Map.
+     * Handedness type in xrInput profiles. These can be used to define layouts in the Layout Map.
      */
-    export type MotionControllerHandness = "none" | "left" | "right";
+    export type MotionControllerHandedness = "none" | "left" | "right";
     /**
      * The type of components available in motion controllers.
      * This is not the name of the component.
@@ -44182,9 +44208,9 @@ declare module BABYLON {
      */
     export interface IMotionControllerLayoutMap {
         /**
-         * Layouts with handness type as a key
+         * Layouts with handedness type as a key
          */
-        [handness: string]: IMotionControllerLayout;
+        [handedness: string]: IMotionControllerLayout;
     }
     /**
      * The XR Input profile schema
@@ -44197,7 +44223,7 @@ declare module BABYLON {
          */
         fallbackProfileIds: string[];
         /**
-         * The layout map, with handness as key
+         * The layout map, with handedness as key
          */
         layouts: IMotionControllerLayoutMap;
         /**
@@ -44284,9 +44310,9 @@ declare module BABYLON {
          */
         gamepadObject: IMinimalMotionControllerObject;
         /**
-         * handness (left/right/none) of this controller
+         * handedness (left/right/none) of this controller
          */
-        handness: MotionControllerHandness;
+        handedness: MotionControllerHandedness;
         private _initComponent;
         private _modelReady;
         /**
@@ -44317,7 +44343,7 @@ declare module BABYLON {
          * @param scene the scene to which the model of the controller will be added
          * @param layout The profile layout to load
          * @param gamepadObject The gamepad object correlating to this controller
-         * @param handness handness (left/right/none) of this controller
+         * @param handedness handedness (left/right/none) of this controller
          * @param _doNotLoadControllerMesh set this flag to ignore the mesh loading
          */
         constructor(scene: Scene, layout: IMotionControllerLayout, 
@@ -44326,9 +44352,9 @@ declare module BABYLON {
          */
         gamepadObject: IMinimalMotionControllerObject, 
         /**
-         * handness (left/right/none) of this controller
+         * handedness (left/right/none) of this controller
          */
-        handness: MotionControllerHandness, _doNotLoadControllerMesh?: boolean);
+        handedness: MotionControllerHandedness, _doNotLoadControllerMesh?: boolean);
         /**
          * Dispose this controller, the model mesh and all its components
          */
@@ -44372,6 +44398,10 @@ declare module BABYLON {
          * @param xrFrame the current xr frame to use and update the model
          */
         updateFromXRFrame(xrFrame: XRFrame): void;
+        /**
+         * Backwards compatibility due to a deeply-integrated typo
+         */
+        get handness(): XREye;
         protected _getChildByName(node: AbstractMesh, name: string): AbstractMesh;
         protected _getImmediateChildByName(node: AbstractMesh, name: string): AbstractMesh;
         /**
@@ -44431,7 +44461,7 @@ declare module BABYLON {
          */
         static ProfileId: string;
         profileId: string;
-        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness);
+        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handedness: MotionControllerHandedness);
         protected _getFilenameAndPath(): {
             filename: string;
             path: string;
@@ -58568,6 +58598,7 @@ declare module BABYLON {
         serialize(): any;
         /** @hidden */
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        private _deserializePortDisplayNames;
         /**
          * Release resources
          */
@@ -58793,6 +58824,10 @@ declare module BABYLON {
          */
         name: string;
         /**
+         * Gets or sets the connection point name
+         */
+        displayName: string;
+        /**
          * Gets or sets a boolean indicating that this connection point can be omitted
          */
         isOptional: boolean;
@@ -58873,9 +58908,10 @@ declare module BABYLON {
         disconnectFrom(endpoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPoint;
         /**
          * Serializes this point in a JSON representation
+         * @param isInput defines if the connection point is an input (default is true)
          * @returns the serialized point object
          */
-        serialize(): any;
+        serialize(isInput?: boolean): any;
         /**
          * Release resources
          */
@@ -61480,6 +61516,7 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
+            wrap?: boolean;
         }, scene?: Nullable<Scene>, earcutInjection?: any): Mesh;
         /**
          * Creates an extruded polygon mesh, with depth in the Y direction.
@@ -61501,6 +61538,7 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
+            wrap?: boolean;
         }, scene?: Nullable<Scene>, earcutInjection?: any): Mesh;
     }
 }
@@ -63376,10 +63414,8 @@ declare module BABYLON {
         private _preWarmDone;
         /**
          * Specifies if the particles are updated in emitter local space or world space.
-         * This is always false for GPU particles
          */
-        get isLocal(): boolean;
-        set isLocal(value: boolean);
+        isLocal: boolean;
         /**
          * Is this system ready to be used/rendered
          * @return true if the system is ready
@@ -70432,7 +70468,7 @@ declare module BABYLON {
          */
         static MODEL_RIGHT_FILENAME: string;
         profileId: string;
-        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness);
+        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handedness: MotionControllerHandedness);
         protected _getFilenameAndPath(): {
             filename: string;
             path: string;
@@ -70468,7 +70504,7 @@ declare module BABYLON {
          */
         static QUEST_MODEL_BASE_URL: string;
         profileId: string;
-        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness, legacyMapping?: boolean, _forceLegacyControllers?: boolean);
+        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handedness: MotionControllerHandedness, legacyMapping?: boolean, _forceLegacyControllers?: boolean);
         protected _getFilenameAndPath(): {
             filename: string;
             path: string;
@@ -70503,9 +70539,9 @@ declare module BABYLON {
          * Create a new Vive motion controller object
          * @param scene the scene to use to create this controller
          * @param gamepadObject the corresponding gamepad object
-         * @param handness the handness of the controller
+         * @param handedness the handedness of the controller
          */
-        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness);
+        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handedness: MotionControllerHandedness);
         protected _getFilenameAndPath(): {
             filename: string;
             path: string;
