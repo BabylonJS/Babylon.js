@@ -135,6 +135,7 @@
 - Fix bug in `ShaderMaterial` when using morph targets ([Popov72](https://github.com/Popov72)
 - Fix bug in playground where child NME windows would not close before page unload events ([belfortk](https://github.com/belfortk)
 - Fixed an issue with stereoscopic rendering ([#8000](https://github.com/BabylonJS/Babylon.js/issues/8000)) ([RaananW](https://github.com/RaananW))
+- Fix bug with multiple scenes when resizing the screen and there's a glow or highlight layer active ([Popov72](https://github.com/Popov72)
 
 ## Breaking changes
 
