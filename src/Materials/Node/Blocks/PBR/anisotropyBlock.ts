@@ -129,15 +129,16 @@ export class AnisotropyBlock extends NodeMaterialBlock {
             code += `mat3 vTBN = mat3(tbnTangent, tbnBitangent, tbnNormal);\r\n`;
         }
 
-        state._emitFunctionFromInclude("bumpFragmentFunctions", comments);
+        code += `
+            #if defined(${worldTangent.isConnected ? "TANGENT" : "IGNORE"}) && defined(NORMAL)
+                mat3 TBN = vTBN;
+            #else
+                mat3 TBN = cotangent_frame(${worldNormal.associatedVariableName + ".xyz"}, ${"v_" + worldPosition.associatedVariableName + ".xyz"}, ${uv.isConnected ? uv.associatedVariableName : "vec2(0.)"}, vec2(1., 1.));
+            #endif\r\n`;
 
-        code += state._emitCodeFromInclude("bumpFragment", comments, {
+        state._emitFunctionFromInclude("bumpFragmentMainFunctions", comments, {
             replaceStrings: [
-                { search: /vMainUV1/g, replace: uv.isConnected ? uv.associatedVariableName : "vec2(0.)"},
-                { search: /vPositionW/g, replace: "v_" + worldPosition.associatedVariableName + ".xyz"},
-                { search: /normalW=/g, replace: "NOTUSED=" },
-                { search: /normalW/g, replace: worldNormal.associatedVariableName + ".xyz" },
-                tangentReplaceString
+                tangentReplaceString,
             ]
         });
 

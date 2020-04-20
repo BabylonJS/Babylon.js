@@ -40,6 +40,7 @@ precision highp float;
 #include<pbrBRDFFunctions>
 #include<pbrDirectLightingFunctions>
 #include<pbrIBLFunctions>
+#include<bumpFragmentMainFunctions>
 #include<bumpFragmentFunctions>
 
 #ifdef REFLECTION
