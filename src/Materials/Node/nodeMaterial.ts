@@ -906,7 +906,7 @@ export class NodeMaterial extends PushMaterial {
             if (effect && scene.getCachedEffect() !== effect) {
                 // Bindable blocks
                 for (var block of sharedData.bindableBlocks) {
-                    block.bind(effect, this, mesh, subMesh);
+                    block.bind(effect, this, mesh, subMesh, world);
                 }
 
                 // Connection points
