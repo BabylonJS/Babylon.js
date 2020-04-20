@@ -14,6 +14,33 @@ export class PopupComponent extends React.Component<IPopupComponentProps, { isCo
     private _container: HTMLDivElement;
     private _window: Window | null;
 
+    private _CopyStyles(sourceDoc: HTMLDocument, targetDoc: HTMLDocument) {
+        for (var index = 0; index < sourceDoc.styleSheets.length; index++) {
+            var styleSheet: any = sourceDoc.styleSheets[index];
+            try {
+                if (styleSheet.cssRules) { // for <style> elements
+                    const newStyleEl = sourceDoc.createElement('style');
+
+                    for (var cssRule of styleSheet.cssRules) {
+                        // write the text of each rule into the body of the style element
+                        newStyleEl.appendChild(sourceDoc.createTextNode(cssRule.cssText));
+                    }
+
+                    targetDoc.head!.appendChild(newStyleEl);
+                } else if (styleSheet.href) { // for <link> elements loading CSS from a URL
+                    const newLinkEl = sourceDoc.createElement('link');
+
+                    newLinkEl.rel = 'stylesheet';
+                    newLinkEl.href = styleSheet.href;
+                    targetDoc.head!.appendChild(newLinkEl);
+                }
+            } catch (e) {
+                console.log(e);
+            }
+
+        }
+    }
+
     constructor(props: IPopupComponentProps) {
         super(props);
 
@@ -52,6 +79,8 @@ export class PopupComponent extends React.Component<IPopupComponentProps, { isCo
 
         if (this._window) {
             this._window.document.title = title;
+            this._CopyStyles(window.document, this._window.document);
+            this._window.document.body.innerHTML = "";
             this._window.document.body.appendChild(this._container);
             onOpen(this._window);
             this._window.addEventListener('beforeunload', () => this._window && onClose(this._window));
@@ -80,5 +109,7 @@ export class PopupComponent extends React.Component<IPopupComponentProps, { isCo
         if (!this.state.isComponentMounted) return null
         return ReactDOM.createPortal(this.props.children, this._container)
     }
+
+   
 
 }
