@@ -13,6 +13,7 @@ import { UniqueIdGenerator } from '../../Misc/uniqueIdGenerator';
 import { Scene } from '../../scene';
 import { _TypeStore } from '../../Misc/typeStore';
 import { EffectFallbacks } from '../effectFallbacks';
+import { Matrix } from "../../Maths/math.vector";
 
 /**
  * Defines a block that can be used inside a node based material
@@ -173,8 +174,9 @@ export class NodeMaterialBlock {
      * @param nodeMaterial defines the hosting NodeMaterial
      * @param mesh defines the mesh that will be rendered
      * @param subMesh defines the submesh that will be rendered
+     * @param world defines the world transformation matrix
      */
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh) {
+    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh, world?: Matrix) {
         // Do nothing
     }
 
