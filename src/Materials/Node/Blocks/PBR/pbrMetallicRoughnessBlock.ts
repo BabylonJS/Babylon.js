@@ -167,6 +167,24 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     public enableSpecularAntiAliasing: boolean = false;
 
     /**
+     * If sets to true, x component of normal map value will be inverted (x = 1.0 - x).
+     */
+    @editableInPropertyPage("Invert X axis", PropertyTypeForEdition.Boolean, "NORMAL MAP", { "notifiers": { "update": true }})
+    public invertNormalMapX: boolean = false;
+
+    /**
+     * If sets to true, y component of normal map value will be inverted (y = 1.0 - y).
+     */
+    @editableInPropertyPage("Invert Y axis", PropertyTypeForEdition.Boolean, "NORMAL MAP", { "notifiers": { "update": true }})
+    public invertNormalMapY: boolean = false;
+
+    /**
+     * Allows using an object space normal map (instead of tangent space).
+     */
+    @editableInPropertyPage("Object space normal map", PropertyTypeForEdition.Boolean, "NORMAL MAP", { "notifiers": { "update": true }})
+    public useObjectSpaceNormalMap: boolean = false;
+
+    /**
      * Defines if the material uses energy conservation.
      */
     @editableInPropertyPage("Energy Conservation", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true }})
@@ -191,6 +209,12 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
      */
     @editableInPropertyPage("Unlit", PropertyTypeForEdition.Boolean, "ADVANCED")
     public unlit: boolean = false;
+
+    /**
+     * Force normal to face away from face.
+     */
+    @editableInPropertyPage("Force normal forward", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true }})
+    public forceNormalForward: boolean = false;
 
     /**
      * Defines the material debug mode.
@@ -544,6 +568,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         defines.setValue("NORMALXYSCALE", true);
         defines.setValue("BUMP", this.perturbedNormal.isConnected);
         defines.setValue("LODBASEDMICROSFURACE", this._scene.getEngine().getCaps().textureLOD);
+        defines.setValue("OBJECTSPACE_NORMALMAP", this.useObjectSpaceNormalMap);
 
         // Albedo & Opacity
         defines.setValue("ALBEDO", this.baseTexture.isConnected);
@@ -579,6 +604,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         defines.setValue("RADIANCEOCCLUSION", this.useRadianceOcclusion);
         defines.setValue("HORIZONOCCLUSION", this.useHorizonOcclusion);
         defines.setValue("UNLIT", this.unlit);
+        defines.setValue("FORCENORMALFORWARD", this.forceNormalForward);
 
         if (this._environmentBRDFTexture && MaterialFlags.ReflectionTextureEnabled) {
             defines.setValue("ENVIRONMENTBRDF", true);
@@ -1042,10 +1068,14 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         codeString += `${this._codeVariableName}.useRadianceOverAlpha = ${this.useRadianceOverAlpha};\r\n`;
         codeString += `${this._codeVariableName}.useSpecularOverAlpha = ${this.useSpecularOverAlpha};\r\n`;
         codeString += `${this._codeVariableName}.enableSpecularAntiAliasing = ${this.enableSpecularAntiAliasing};\r\n`;
+        codeString += `${this._codeVariableName}.invertNormalMapX = ${this.invertNormalMapX};\r\n`;
+        codeString += `${this._codeVariableName}.invertNormalMapY = ${this.invertNormalMapY};\r\n`;
+        codeString += `${this._codeVariableName}.useObjectSpaceNormalMap = ${this.useObjectSpaceNormalMap};\r\n`;
         codeString += `${this._codeVariableName}.useEnergyConservation = ${this.useEnergyConservation};\r\n`;
         codeString += `${this._codeVariableName}.useRadianceOcclusion = ${this.useRadianceOcclusion};\r\n`;
         codeString += `${this._codeVariableName}.useHorizonOcclusion = ${this.useHorizonOcclusion};\r\n`;
         codeString += `${this._codeVariableName}.unlit = ${this.unlit};\r\n`;
+        codeString += `${this._codeVariableName}.forceNormalForward = ${this.forceNormalForward};\r\n`;
         codeString += `${this._codeVariableName}.debugMode = ${this.debugMode};\r\n`;
         codeString += `${this._codeVariableName}.debugLimit = ${this.debugLimit};\r\n`;
         codeString += `${this._codeVariableName}.debugFactor = ${this.debugFactor};\r\n`;
@@ -1069,10 +1099,14 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         serializationObject.useRadianceOverAlpha = this.useRadianceOverAlpha;
         serializationObject.useSpecularOverAlpha = this.useSpecularOverAlpha;
         serializationObject.enableSpecularAntiAliasing = this.enableSpecularAntiAliasing;
+        serializationObject.invertNormalMapX = this.invertNormalMapX;
+        serializationObject.invertNormalMapY = this.invertNormalMapY;
+        serializationObject.useObjectSpaceNormalMap = this.useObjectSpaceNormalMap;
         serializationObject.useEnergyConservation = this.useEnergyConservation;
         serializationObject.useRadianceOcclusion = this.useRadianceOcclusion;
         serializationObject.useHorizonOcclusion = this.useHorizonOcclusion;
         serializationObject.unlit = this.unlit;
+        serializationObject.forceNormalForward = this.forceNormalForward;
         serializationObject.debugMode = this.debugMode;
         serializationObject.debugLimit = this.debugLimit;
         serializationObject.debugFactor = this.debugFactor;
@@ -1096,10 +1130,14 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this.useRadianceOverAlpha = serializationObject.useRadianceOverAlpha;
         this.useSpecularOverAlpha = serializationObject.useSpecularOverAlpha;
         this.enableSpecularAntiAliasing = serializationObject.enableSpecularAntiAliasing;
+        this.invertNormalMapX = !!serializationObject.invertNormalMapX;
+        this.invertNormalMapY = !!serializationObject.invertNormalMapY;
+        this.useObjectSpaceNormalMap = !!serializationObject.useObjectSpaceNormalMap;
         this.useEnergyConservation = serializationObject.useEnergyConservation;
         this.useRadianceOcclusion = serializationObject.useRadianceOcclusion;
         this.useHorizonOcclusion = serializationObject.useHorizonOcclusion;
         this.unlit = serializationObject.unlit;
+        this.forceNormalForward = !!serializationObject.forceNormalForward;
         this.debugMode = serializationObject.debugMode;
         this.debugLimit = serializationObject.debugLimit;
         this.debugFactor = serializationObject.debugFactor;
