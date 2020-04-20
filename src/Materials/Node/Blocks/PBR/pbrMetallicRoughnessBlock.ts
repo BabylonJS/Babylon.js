@@ -179,12 +179,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     public invertNormalMapY: boolean = false;
 
     /**
-     * Allows using an object space normal map (instead of tangent space).
-     */
-    @editableInPropertyPage("Object space normal map", PropertyTypeForEdition.Boolean, "NORMAL MAP", { "notifiers": { "update": true }})
-    public useObjectSpaceNormalMap: boolean = false;
-
-    /**
      * Defines if the material uses energy conservation.
      */
     @editableInPropertyPage("Energy Conservation", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true }})
@@ -568,7 +562,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         defines.setValue("NORMALXYSCALE", true);
         defines.setValue("BUMP", this.perturbedNormal.isConnected);
         defines.setValue("LODBASEDMICROSFURACE", this._scene.getEngine().getCaps().textureLOD);
-        defines.setValue("OBJECTSPACE_NORMALMAP", this.useObjectSpaceNormalMap);
 
         // Albedo & Opacity
         defines.setValue("ALBEDO", this.baseTexture.isConnected);
@@ -1070,7 +1063,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         codeString += `${this._codeVariableName}.enableSpecularAntiAliasing = ${this.enableSpecularAntiAliasing};\r\n`;
         codeString += `${this._codeVariableName}.invertNormalMapX = ${this.invertNormalMapX};\r\n`;
         codeString += `${this._codeVariableName}.invertNormalMapY = ${this.invertNormalMapY};\r\n`;
-        codeString += `${this._codeVariableName}.useObjectSpaceNormalMap = ${this.useObjectSpaceNormalMap};\r\n`;
         codeString += `${this._codeVariableName}.useEnergyConservation = ${this.useEnergyConservation};\r\n`;
         codeString += `${this._codeVariableName}.useRadianceOcclusion = ${this.useRadianceOcclusion};\r\n`;
         codeString += `${this._codeVariableName}.useHorizonOcclusion = ${this.useHorizonOcclusion};\r\n`;
@@ -1101,7 +1093,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         serializationObject.enableSpecularAntiAliasing = this.enableSpecularAntiAliasing;
         serializationObject.invertNormalMapX = this.invertNormalMapX;
         serializationObject.invertNormalMapY = this.invertNormalMapY;
-        serializationObject.useObjectSpaceNormalMap = this.useObjectSpaceNormalMap;
         serializationObject.useEnergyConservation = this.useEnergyConservation;
         serializationObject.useRadianceOcclusion = this.useRadianceOcclusion;
         serializationObject.useHorizonOcclusion = this.useHorizonOcclusion;
@@ -1132,7 +1123,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this.enableSpecularAntiAliasing = serializationObject.enableSpecularAntiAliasing;
         this.invertNormalMapX = !!serializationObject.invertNormalMapX;
         this.invertNormalMapY = !!serializationObject.invertNormalMapY;
-        this.useObjectSpaceNormalMap = !!serializationObject.useObjectSpaceNormalMap;
         this.useEnergyConservation = serializationObject.useEnergyConservation;
         this.useRadianceOcclusion = serializationObject.useRadianceOcclusion;
         this.useHorizonOcclusion = serializationObject.useHorizonOcclusion;
