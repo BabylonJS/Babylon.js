@@ -153,6 +153,7 @@ varying vec3 vDirectionW;
 
 #include<imageProcessingFunctions>
 
+#include<bumpFragmentMainFunctions>
 #include<bumpFragmentFunctions>
 #include<clipPlaneFragmentDeclaration>
 #include<logDepthDeclaration>

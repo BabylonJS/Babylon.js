@@ -6,7 +6,7 @@ import { GradientStepComponent } from './gradientStepComponent';
 import { ButtonLineComponent } from '../../sharedComponents/buttonLineComponent';
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { IPropertyComponentProps } from './propertyComponentProps';
-import { GenericPropertyTabComponent } from './genericNodePropertyComponent';
+import { GeneralPropertyTabComponent } from './genericNodePropertyComponent';
 
 export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
 
@@ -64,7 +64,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
       
         return (
             <div>
-                <GenericPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
+                <GeneralPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
                 <LineContainerComponent title="STEPS">
                     <ButtonLineComponent label="Add new step" onClick={() => this.addNewStep()} />
                     {
