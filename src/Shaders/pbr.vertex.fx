@@ -163,10 +163,6 @@ void main(void) {
 #include<instancesVertex>
 #include<bonesVertex>
 
-#if DEBUGMODE > 0
-    vClipSpacePosition = gl_Position;
-#endif
-
     vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
     vPositionW = vec3(worldPos);
 
@@ -198,6 +194,10 @@ void main(void) {
 	}
 #else
 	gl_Position = viewProjection * worldPos;
+#endif
+
+#if DEBUGMODE > 0
+    vClipSpacePosition = gl_Position;
 #endif
 
 #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)

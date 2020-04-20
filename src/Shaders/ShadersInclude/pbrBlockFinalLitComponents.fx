@@ -39,6 +39,7 @@
 
     finalIrradiance *= surfaceAlbedo.rgb;
     finalIrradiance *= vLightingIntensity.z;
+    finalIrradiance *= aoOut.ambientOcclusionColor;
 #endif
 
 // _____________________________ Specular ________________________________________
