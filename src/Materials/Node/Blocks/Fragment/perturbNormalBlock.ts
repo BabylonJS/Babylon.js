@@ -12,6 +12,7 @@ import { Mesh } from '../../../../Meshes/mesh';
 import { Scene } from '../../../../scene';
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 
+import "../../../../Shaders/ShadersInclude/bumpFragmentMainFunctions";
 import "../../../../Shaders/ShadersInclude/bumpFragmentFunctions";
 import "../../../../Shaders/ShadersInclude/bumpFragment";
 
@@ -163,12 +164,17 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
             state.compilationString += `mat3 vTBN = mat3(tbnTangent, tbnBitangent, tbnNormal);\r\n`;
         }
 
+        state._emitFunctionFromInclude("bumpFragmentMainFunctions", comments, {
+            replaceStrings: [
+                tangentReplaceString,
+            ]
+        });
+
         state._emitFunctionFromInclude("bumpFragmentFunctions", comments, {
             replaceStrings: [
                 { search: /vBumpInfos.y/g, replace: replaceForBumpInfos},
                 { search: /vTangentSpaceParams/g, replace: this._tangentSpaceParameterName},
                 { search: /vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz"},
-                tangentReplaceString
             ]
         });
 
