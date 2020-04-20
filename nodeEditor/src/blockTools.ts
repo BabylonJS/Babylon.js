@@ -68,6 +68,7 @@ import { AmbientOcclusionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/ambie
 import { ReflectivityBlock } from 'babylonjs/Materials/Node/Blocks/PBR/reflectivityBlock';
 import { AnisotropyBlock } from 'babylonjs/Materials/Node/Blocks/PBR/anisotropyBlock';
 import { ReflectionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/reflectionBlock';
+import { ClearCoatBlock } from 'babylonjs/Materials/Node/Blocks/PBR/clearCoatBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
@@ -450,6 +451,8 @@ export class BlockTools {
                 return new AnisotropyBlock("Anisotropy");
             case "ReflectionBlock":
                 return new ReflectionBlock("Reflection");
+            case "ClearCoatBlock":
+                return new ClearCoatBlock("ClearCoat");
         }
 
         return null;

@@ -25,6 +25,7 @@ import { BRDFTextureTools } from '../../../../Misc/brdfTextureTools';
 import { MaterialFlags } from '../../../materialFlags';
 import { AnisotropyBlock } from './anisotropyBlock';
 import { ReflectionBlock } from './reflectionBlock';
+import { ClearCoatBlock } from './clearCoatBlock';
 
 const mapOutputToVariable: { [name: string] : [string, string] } = {
     "ambient":      ["finalAmbient", ""],
@@ -83,7 +84,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             new NodeMaterialConnectionPointCustomObject("reflection", this, NodeMaterialConnectionPointDirection.Input, ReflectionBlock, "ReflectionBlock"));
         this.registerInput("sheen", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("sheen", this, NodeMaterialConnectionPointDirection.Input, SheenBlock, "SheenBlock"));
-        this.registerInput("clearCoat", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("clearCoat", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
+            new NodeMaterialConnectionPointCustomObject("clearcoat", this, NodeMaterialConnectionPointDirection.Input, ClearCoatBlock, "ClearCoatBlock"));
         this.registerInput("subSurface", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("anisotropy", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("anisotropy", this, NodeMaterialConnectionPointDirection.Input, AnisotropyBlock, "AnisotropyBlock"));
@@ -834,7 +836,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("pbrBlockAmbientOcclusion", comments);
         state._emitFunctionFromInclude("pbrBlockAlphaFresnel", comments);
         state._emitFunctionFromInclude("pbrBlockAnisotropic", comments);
-        state._emitFunctionFromInclude("pbrBlockClearcoat", comments);
         state._emitFunctionFromInclude("pbrBlockSubSurface", comments);
 
         //
@@ -942,12 +943,22 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             ]
         });
 
-            // _____________________________ Clear Coat ____________________________
-            state.compilationString += `clearcoatOutParams clearcoatOut;
-                #ifdef CLEARCOAT
-                #else
-                    clearcoatOut.specularEnvironmentR0 = specularEnvironmentR0;
-                #endif\r\n`;
+        // _____________________________ Clear Coat ____________________________
+        const clearcoatBlock = this.clearcoat.isConnected ? this.clearcoat.connectedPoint?.ownerBlock as ClearCoatBlock : null;
+
+        state.compilationString += ClearCoatBlock.GetCode(state, clearcoatBlock, reflectionBlock, worldPosVarName);
+
+        state._emitFunctionFromInclude("pbrBlockClearcoat", comments, {
+            replaceStrings: [
+                { search: /computeReflectionCoords/g, replace: "computeReflectionCoordsPBR" },
+                { search: /REFLECTIONMAP_3D/g, replace: reflectionBlock?._define3DName ?? "REFLECTIONMAP_3D" },
+                { search: /REFLECTIONMAP_OPPOSITEZ/g, replace: reflectionBlock?._defineOppositeZ ?? "REFLECTIONMAP_OPPOSITEZ" },
+                { search: /REFLECTIONMAP_PROJECTION/g, replace: reflectionBlock?._defineProjectionName ?? "REFLECTIONMAP_PROJECTION" },
+                { search: /REFLECTIONMAP_SKYBOX/g, replace: reflectionBlock?._defineSkyboxName ?? "REFLECTIONMAP_SKYBOX" },
+                { search: /LODINREFLECTIONALPHA/g, replace: reflectionBlock?._defineLODReflectionAlpha ?? "LODINREFLECTIONALPHA" },
+                { search: /LINEARSPECULARREFLECTION/g, replace: reflectionBlock?._defineLinearSpecularReflection ?? "LINEARSPECULARREFLECTION" },
+            ]
+        });
 
         // _________________________ Specular Environment Reflectance __________________________
         state.compilationString += state._emitCodeFromInclude("pbrBlockReflectance", comments, {
