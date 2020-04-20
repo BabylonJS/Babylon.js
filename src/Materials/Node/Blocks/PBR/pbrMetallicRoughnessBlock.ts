@@ -793,7 +793,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state.sharedData.blocksWithDefines.push(this);
 
         let comments = `//${this.name}`;
-        let worldPos = this.worldPosition;
+        let worldPosVarName = "v_" + this.worldPosition.associatedVariableName;
         let normalShading = this.perturbedNormal;
 
         this._environmentBrdfSamplerName = state._getFreeVariableName("environmentBrdfSampler");
@@ -822,13 +822,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         state._emitFunctionFromInclude("shadowsFragmentFunctions", comments, {
             replaceStrings: [
-                { search: /vPositionW/g, replace: "v_" + worldPos.associatedVariableName + ".xyz" }
+                { search: /vPositionW/g, replace: worldPosVarName + ".xyz" }
             ]
         });
 
         state._emitFunctionFromInclude("pbrDirectLightingSetupFunctions", comments, {
             replaceStrings: [
-                { search: /vPositionW/g, replace: "v_" + worldPos.associatedVariableName + ".xyz" }
+                { search: /vPositionW/g, replace: worldPosVarName + ".xyz" }
             ]
         });
 
@@ -837,7 +837,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         state._emitFunctionFromInclude("pbrDirectLightingFunctions", comments, {
             replaceStrings: [
-                { search: /vPositionW/g, replace: "v_" + worldPos.associatedVariableName + ".xyz" }
+                { search: /vPositionW/g, replace: worldPosVarName + ".xyz" }
             ]
         });
 
@@ -863,7 +863,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state.compilationString += `vec4 ${this._vNormalWName} = normalize(${this.worldNormal.associatedVariableName});\r\n`;
 
         if (state._registerTempVariable("viewDirectionW")) {
-            state.compilationString += `vec3 viewDirectionW = normalize(${this.cameraPosition.associatedVariableName} - ${"v_" + worldPos.associatedVariableName}.xyz);\r\n`;
+            state.compilationString += `vec3 viewDirectionW = normalize(${this.cameraPosition.associatedVariableName} - ${worldPosVarName}.xyz);\r\n`;
         }
 
         state.compilationString += `vec3 geometricNormalW = ${this._vNormalWName}.xyz;\r\n`;
@@ -872,7 +872,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         state.compilationString += state._emitCodeFromInclude("pbrBlockNormalFinal", comments, {
             replaceStrings: [
-                { search: /vPositionW/g, replace: worldPos.associatedVariableName },
+                { search: /vPositionW/g, replace: worldPosVarName },
                 { search: /vEyePosition.w/g, replace: "1." },
             ]
         });
@@ -1026,7 +1026,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state.compilationString += state._emitCodeFromInclude("pbrDebug", comments, {
             replaceStrings: [
                 { search: /vNormalW/g, replace: this._vNormalWName },
-                { search: /vPositionW/g, replace: "v_" + this.worldPosition.associatedVariableName },
+                { search: /vPositionW/g, replace: worldPosVarName },
                 { search: /albedoTexture\.rgb;/g, replace: this.baseTexture.associatedVariableName + ".rgb;\r\ngl_FragColor.rgb = toGammaSpace(gl_FragColor.rgb);\r\n" },
                 { search: /opacityMap/g, replace: this.opacityTexture.associatedVariableName },
             ]
