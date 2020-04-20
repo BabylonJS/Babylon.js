@@ -4,3 +4,4 @@ export * from "./ambientOcclusionBlock";
 export * from "./reflectivityBlock";
 export * from "./anisotropyBlock";
 export * from "./reflectionBlock";
+export * from "./clearCoatBlock";
