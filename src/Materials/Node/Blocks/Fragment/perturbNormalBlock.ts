@@ -186,6 +186,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
                 { search: /vBumpUV/g, replace: uv.associatedVariableName},
                 { search: /vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz"},
                 { search: /normalW=/g, replace: this.output.associatedVariableName + ".xyz = " },
+                { search: /mat3\(normalMatrix\)\*normalW/g, replace: "mat3(normalMatrix) * " + this.output.associatedVariableName + ".xyz" },
                 { search: /normalW/g, replace: worldNormal.associatedVariableName + ".xyz" },
                 tangentReplaceString
             ]
