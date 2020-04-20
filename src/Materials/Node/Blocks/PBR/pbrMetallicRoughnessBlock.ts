@@ -56,6 +56,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     private _environmentBRDFTexture: Nullable<BaseTexture> = null;
     private _environmentBrdfSamplerName: string;
     private _vNormalWName: string;
+    private _invertNormalName: string;
 
     /**
      * Create a new ReflectionBlock
@@ -669,6 +670,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         if (ambientScene) {
             effect.setColor3("ambientFromScene", ambientScene);
         }
+
+        const invertNormal = (scene.useRightHandedSystem === (scene._mirroredCameraPosition != null));
+
+        effect.setFloat(this._invertNormalName, invertNormal ? -1 : 1);
     }
 
     private _injectVertexCode(state: NodeMaterialBuildState) {
@@ -863,10 +868,14 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         state.compilationString += `vec3 normalW = ${normalShading.isConnected ? "normalize(" + normalShading.associatedVariableName + ".xyz)" : "geometricNormalW"};\r\n`;
 
+        this._invertNormalName = state._getFreeVariableName("invertNormal");
+
+        state._emitUniformFromString(this._invertNormalName, "float");
+
         state.compilationString += state._emitCodeFromInclude("pbrBlockNormalFinal", comments, {
             replaceStrings: [
-                { search: /vPositionW/g, replace: worldPosVarName },
-                { search: /vEyePosition.w/g, replace: "1." },
+                { search: /vPositionW/g, replace: worldPosVarName + ".xyz" },
+                { search: /vEyePosition.w/g, replace: this._invertNormalName },
             ]
         });
 
