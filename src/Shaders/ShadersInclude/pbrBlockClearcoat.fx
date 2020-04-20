@@ -49,6 +49,7 @@ struct clearcoatOutParams
     #ifdef CLEARCOAT_BUMP
         const in vec2 vClearCoatBumpInfos,
         const in vec4 clearCoatBumpMapData,
+        const in vec2 vClearCoatBumpUV,
         #if defined(TANGENT) && defined(NORMAL)
             const in mat3 vTBN,
         #else

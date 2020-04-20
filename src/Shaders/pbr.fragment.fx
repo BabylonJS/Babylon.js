@@ -343,6 +343,7 @@ void main(void) {
         #ifdef CLEARCOAT_BUMP
             vClearCoatBumpInfos,
             clearCoatBumpMapData,
+            vClearCoatBumpUV,
             #if defined(TANGENT) && defined(NORMAL)
                 vTBN,
             #else
