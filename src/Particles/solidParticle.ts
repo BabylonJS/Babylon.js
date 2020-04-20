@@ -7,6 +7,7 @@ import { BoundingSphere } from "../Culling/boundingSphere";
 import { SolidParticleSystem } from "./solidParticleSystem";
 import { AbstractMesh } from '../Meshes/abstractMesh';
 import { Plane } from '../Maths/math.plane';
+import { Material } from '../Materials/material';
 /**
  * Represents one particle of a solid particle system.
  */
@@ -112,6 +113,14 @@ export class SolidParticle {
      */
     public parentId: Nullable<number> = null;
     /**
+     * The particle material identifier (integer) when MultiMaterials are enabled in the SPS.
+     */
+    public materialIndex: Nullable<number> = null;
+    /**
+     * Custom object or properties.
+     */
+    public props: Nullable<any> = null;
+    /**
      * The culling strategy to use to check whether the solid particle must be culled or not when using isInFrustum().
      * The possible values are :
      * - AbstractMesh.CULLINGSTRATEGY_STANDARD
@@ -140,8 +149,9 @@ export class SolidParticle {
      * @param idxInShape (integer) is the index of the particle in the current model (ex: the 10th box of addShape(box, 30))
      * @param sps defines the sps it is associated to
      * @param modelBoundingInfo is the reference to the model BoundingInfo used for intersection computations.
+     * @param materialIndex is the particle material identifier (integer) when the MultiMaterials are enabled in the SPS.
      */
-    constructor(particleIndex: number, particleId: number, positionIndex: number, indiceIndex: number, model: Nullable<ModelShape>, shapeId: number, idxInShape: number, sps: SolidParticleSystem, modelBoundingInfo: Nullable<BoundingInfo> = null) {
+    constructor(particleIndex: number, particleId: number, positionIndex: number, indiceIndex: number, model: Nullable<ModelShape>, shapeId: number, idxInShape: number, sps: SolidParticleSystem, modelBoundingInfo: Nullable<BoundingInfo> = null, materialIndex: Nullable<number> = null) {
         this.idx = particleIndex;
         this.id = particleId;
         this._pos = positionIndex;
@@ -154,6 +164,9 @@ export class SolidParticle {
             this._modelBoundingInfo = modelBoundingInfo;
             this._boundingInfo = new BoundingInfo(modelBoundingInfo.minimum, modelBoundingInfo.maximum);
         }
+        if (materialIndex !== null) {
+            this.materialIndex = materialIndex;
+        }
     }
     /**
      * Copies the particle property values into the existing target : position, rotation, scaling, uvs, colors, pivot, parent, visibility, alive
@@ -164,7 +177,12 @@ export class SolidParticle {
         target.position.copyFrom(this.position);
         target.rotation.copyFrom(this.rotation);
         if (this.rotationQuaternion) {
-            target.rotationQuaternion!.copyFrom(this.rotationQuaternion!);
+            if (target.rotationQuaternion) {
+                target.rotationQuaternion!.copyFrom(this.rotationQuaternion!);
+            }
+            else {
+                target.rotationQuaternion = this.rotationQuaternion.clone();
+            }
         }
         target.scaling.copyFrom(this.scaling);
         if (this.color) {
@@ -183,6 +201,9 @@ export class SolidParticle {
         target.isVisible = this.isVisible;
         target.parentId = this.parentId;
         target.cullingStrategy = this.cullingStrategy;
+        if (this.materialIndex !== null) {
+            target.materialIndex = this.materialIndex;
+        }
         return this;
     }
     /**
@@ -308,6 +329,11 @@ export class ModelShape {
      * @hidden
      */
     public _vertexFunction: Nullable<(particle: SolidParticle, vertex: Vector3, i: number) => void>;
+    /**
+     * Model material (internal use)
+     * @hidden
+     */
+    public _material: Nullable<Material>;
 
     /**
      * Creates a ModelShape object. This is an internal simplified reference to a mesh used as for a model to replicate particles from by the SPS.
@@ -315,7 +341,8 @@ export class ModelShape {
      * @hidden
      */
     constructor(id: number, shape: Vector3[], indices: number[], normals: number[], colors: number[], shapeUV: number[],
-        posFunction: Nullable<(particle: SolidParticle, i: number, s: number) => void>, vtxFunction: Nullable<(particle: SolidParticle, vertex: Vector3, i: number) => void>) {
+        posFunction: Nullable<(particle: SolidParticle, i: number, s: number) => void>, vtxFunction: Nullable<(particle: SolidParticle, vertex: Vector3, i: number) => void>,
+        material: Nullable<Material>) {
         this.shapeID = id;
         this._shape = shape;
         this._indices = indices;
@@ -325,13 +352,19 @@ export class ModelShape {
         this._normals = normals;
         this._positionFunction = posFunction;
         this._vertexFunction = vtxFunction;
+        this._material = material;
     }
 }
 
 /**
  * Represents a Depth Sorted Particle in the solid particle system.
+ * @hidden
  */
 export class DepthSortedParticle {
+    /**
+     * Particle index
+     */
+    public idx: number = 0;
     /**
      * Index of the particle in the "indices" array
      */
@@ -344,4 +377,19 @@ export class DepthSortedParticle {
      * Squared distance from the particle to the camera
      */
     public sqDistance: number = 0.0;
+    /**
+     * Material index when used with MultiMaterials
+     */
+    public materialIndex: number = 0;
+
+    /**
+     * Creates a new sorted particle
+     * @param materialIndex
+     */
+    constructor(idx: number, ind: number, indLength: number, materialIndex: number) {
+        this.idx = idx;
+        this.ind = ind;
+        this.indicesLength = indLength;
+        this.materialIndex = materialIndex;
+    }
 }

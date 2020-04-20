@@ -1,5 +1,6 @@
 export * from "./andOrNotEvaluator";
 export * from "./assetsManager";
+export * from "./basis";
 export * from "./dds";
 export * from "./decorators";
 export * from "./deferred";
@@ -44,3 +45,6 @@ export * from "./canvasGenerator";
 export * from "./fileTools";
 export * from "./stringTools";
 export * from "./dataReader";
+export * from "./minMaxReducer";
+export * from "./depthReducer";
+export * from "./dataStorage";

@@ -1,7 +1,6 @@
 import { Nullable } from "../types";
 import { Vector2 } from "../Maths/math.vector";
 import { PickingInfo } from "../Collisions/pickingInfo";
-import { _TimeToken } from "../Instrumentation/timeToken";
 
 declare type Ray = import("../Culling/ray").Ray;
 

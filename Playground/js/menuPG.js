@@ -11,6 +11,8 @@ class MenuPG {
         this.allSubItems = document.querySelectorAll('.toDisplaySub');
         this.allSubSelect = document.querySelectorAll('.subSelect');
         this.allNoSubSelect = document.querySelectorAll('.noSubSelect');
+        this.allDisplayOnDiff = document.querySelectorAll('.displayOnDiff');
+        this.allRemoveOnDiff = document.querySelectorAll('.removeOnDiff');
 
         this.jsEditorElement = document.getElementById('jsEditor');
         this.canvasZoneElement = document.getElementById('canvasZone');
@@ -102,10 +104,12 @@ class MenuPG {
                 return;
             }
 
-            if (document.getElementById("saveLayer").style.display === "block") {
-                return;
+            // we do not want to proceed if a menu is displayed or if we are in diff mode
+            const candidates = ["saveLayer", "diffLayer", "diffView"];
+            if (candidates.every(c => !(document.getElementById(c).style.display === "block"))) {
+                this.removeAllOptions();
             }
-            this.removeAllOptions();
+
         }.bind(this));
 
         // Version selection
@@ -325,6 +329,8 @@ class MenuPG {
             if (document.getElementsByClassName('gutter-horizontal').length > 0) document.getElementsByClassName('gutter-horizontal')[0].style.display = 'none';
             this.switchWrapperCanvas.style.display = 'block';
         }
+        this.setSelectorVisibility(this.allRemoveOnDiff, 'inline-block');
+        this.setSelectorVisibility(this.allDisplayOnDiff, 'none');
     };
     /**
      * Hide the JS editor and display the canvas
@@ -342,6 +348,8 @@ class MenuPG {
             this.switchWrapperCode.style.display = 'block';
             this.fpsLabelElement.style.display = 'block';
         }
+        this.setSelectorVisibility(this.allRemoveOnDiff, 'inline-block');
+        this.setSelectorVisibility(this.allDisplayOnDiff, 'none');
     };
     /**
      * When someone resize from mobile to large screen version
@@ -355,8 +363,25 @@ class MenuPG {
         this.canvasZoneElement.style.width = '50%';
         this.switchWrapperCode.style.display = 'block';
         this.fpsLabelElement.style.display = 'block';
+        this.setSelectorVisibility(this.allRemoveOnDiff, 'inline-block');
+        this.setSelectorVisibility(this.allDisplayOnDiff, 'none');
     };
-
+    /**
+     * Switch to diff mode
+     */
+    resizeForDiff() {
+        this.jsEditorElement.style.width = '0';
+        this.jsEditorElement.style.display = 'none';
+        document.getElementsByClassName('gutter-horizontal')[0].style.display = 'none';
+        this.canvasZoneElement.style.width = '0';
+        this.switchWrapper.style.left = '';
+        this.switchWrapper.style.right = '0';
+        this.switchWrapperCode.style.display = 'none';
+        this.fpsLabelElement.style.display = 'none';
+        // make sure to hide all incompatible buttons with diff mode, and display dedicated buttons
+        this.setSelectorVisibility(this.allRemoveOnDiff, 'none');
+        this.setSelectorVisibility(this.allDisplayOnDiff, 'inline-block');
+    }
     /**
      * Canvas full page
      */
@@ -452,4 +477,13 @@ class MenuPG {
             headings[i].style.visibility = 'visible';
         }
     };
+
+    setSelectorVisibility(selector, displayState) {
+        if (selector) {
+            for (var index = 0; index < selector.length; index++) {
+                var item = selector[index];
+                item.style.display = displayState;
+            }
+        }
+    }
 };

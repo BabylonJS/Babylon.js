@@ -1,7 +1,8 @@
 import { ITextureInfo, ImageMimeType, IMaterial, IMaterialPbrMetallicRoughness, MaterialAlphaMode, IMaterialOcclusionTextureInfo, ISampler, TextureMagFilter, TextureMinFilter, TextureWrapMode, ITexture, IImage } from "babylonjs-gltf2interface";
 
 import { Nullable } from "babylonjs/types";
-import { Vector2, Color3 } from "babylonjs/Maths/math";
+import { Vector2 } from "babylonjs/Maths/math.vector";
+import { Color3 } from "babylonjs/Maths/math.color";
 import { Scalar } from "babylonjs/Maths/math.scalar";
 import { Tools } from "babylonjs/Misc/tools";
 import { TextureTools } from "babylonjs/Misc/textureTools";
@@ -122,7 +123,7 @@ export class _GLTFMaterialExporter {
      * @param hasTextureCoords specifies if texture coordinates are present on the material
      */
     public _convertMaterialsToGLTFAsync(babylonMaterials: Material[], mimeType: ImageMimeType, hasTextureCoords: boolean) {
-        let promises: Promise<void>[] = [];
+        let promises: Promise<IMaterial>[] = [];
         for (let babylonMaterial of babylonMaterials) {
             if (babylonMaterial instanceof StandardMaterial) {
                 promises.push(this._convertStandardMaterialAsync(babylonMaterial, mimeType, hasTextureCoords));
@@ -290,7 +291,7 @@ export class _GLTFMaterialExporter {
      * @param imageData map of image file name to data
      * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
      */
-    public _convertStandardMaterialAsync(babylonStandardMaterial: StandardMaterial, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<void> {
+    public _convertStandardMaterialAsync(babylonStandardMaterial: StandardMaterial, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<IMaterial> {
         const materialMap = this._exporter._materialMap;
         const materials = this._exporter._materials;
         const promises = [];
@@ -361,7 +362,34 @@ export class _GLTFMaterialExporter {
         materials.push(glTFMaterial);
         materialMap[babylonStandardMaterial.uniqueId] = materials.length - 1;
 
-        return Promise.all(promises).then(() => { /* do nothing */ });
+        return this._finishMaterial(promises, glTFMaterial, babylonStandardMaterial, mimeType);
+    }
+
+    private _finishMaterial<T>(promises: Promise<T>[], glTFMaterial: IMaterial, babylonMaterial: Material, mimeType: ImageMimeType) {
+        return Promise.all(promises).then(() => {
+
+            const textures = this._exporter._extensionsPostExportMaterialAdditionalTextures("exportMaterial", glTFMaterial, babylonMaterial);
+            let tasks: Nullable<Promise<Nullable<ITextureInfo>>[]> = null;
+
+            for (var texture of textures) {
+                if (!tasks) {
+                    tasks = [];
+                }
+                tasks.push(this._exportTextureAsync(texture, mimeType));
+            }
+
+            if (!tasks) {
+                tasks = [Promise.resolve(null)];
+            }
+
+            return Promise.all(tasks).then(() => {
+                let extensionWork = this._exporter._extensionsPostExportMaterialAsync("exportMaterial", glTFMaterial, babylonMaterial);
+                if (!extensionWork) {
+                    return glTFMaterial;
+                }
+                return extensionWork.then(() => glTFMaterial);
+            });
+        });
     }
 
     /**
@@ -374,7 +402,7 @@ export class _GLTFMaterialExporter {
      * @param imageData map of image file name to data
      * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
      */
-    public _convertPBRMetallicRoughnessMaterialAsync(babylonPBRMetalRoughMaterial: PBRMetallicRoughnessMaterial, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<void> {
+    public _convertPBRMetallicRoughnessMaterialAsync(babylonPBRMetalRoughMaterial: PBRMetallicRoughnessMaterial, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<IMaterial> {
         const materialMap = this._exporter._materialMap;
         const materials = this._exporter._materials;
         let promises: Promise<void>[] = [];
@@ -452,7 +480,7 @@ export class _GLTFMaterialExporter {
         materials.push(glTFMaterial);
         materialMap[babylonPBRMetalRoughMaterial.uniqueId] = materials.length - 1;
 
-        return Promise.all(promises).then(() => { /* do nothing */ });
+        return this._finishMaterial(promises, glTFMaterial, babylonPBRMetalRoughMaterial, mimeType);
     }
 
     /**
@@ -1001,7 +1029,7 @@ export class _GLTFMaterialExporter {
      * @param imageData map of image file name to data
      * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
      */
-    public _convertPBRMaterialAsync(babylonPBRMaterial: PBRMaterial, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<void> {
+    public _convertPBRMaterialAsync(babylonPBRMaterial: PBRMaterial, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<IMaterial> {
         const glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness = {};
         const glTFMaterial: IMaterial = {
             name: babylonPBRMaterial.name
@@ -1028,7 +1056,7 @@ export class _GLTFMaterialExporter {
         }
     }
 
-    private setMetallicRoughnessPbrMaterial(metallicRoughness: Nullable<_IPBRMetallicRoughness>, babylonPBRMaterial: PBRMaterial, glTFMaterial: IMaterial, glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<void> {
+    private setMetallicRoughnessPbrMaterial(metallicRoughness: Nullable<_IPBRMetallicRoughness>, babylonPBRMaterial: PBRMaterial, glTFMaterial: IMaterial, glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<IMaterial> {
         const materialMap = this._exporter._materialMap;
         const materials = this._exporter._materials;
         let promises = [];
@@ -1075,7 +1103,8 @@ export class _GLTFMaterialExporter {
                     let promise = this._exportTextureAsync(babylonPBRMaterial.ambientTexture, mimeType).then((glTFTexture) => {
                         if (glTFTexture) {
                             let occlusionTexture: IMaterialOcclusionTextureInfo = {
-                                index: glTFTexture.index
+                                index: glTFTexture.index,
+                                texCoord: glTFTexture.texCoord
                             };
 
                             glTFMaterial.occlusionTexture = occlusionTexture;
@@ -1105,7 +1134,8 @@ export class _GLTFMaterialExporter {
             materials.push(glTFMaterial);
             materialMap[babylonPBRMaterial.uniqueId] = materials.length - 1;
         }
-        return Promise.all(promises).then((result) => { /* do nothing */ });
+
+        return this._finishMaterial(promises, glTFMaterial, babylonPBRMaterial, mimeType);
     }
 
     private getPixelsFromTexture(babylonTexture: BaseTexture): Uint8Array | Float32Array {
@@ -1168,7 +1198,9 @@ export class _GLTFMaterialExporter {
                     const textureInfo = this._getTextureInfoFromBase64(base64Data, babylonTexture.name.replace(/\.\/|\/|\.\\|\\/g, "_"), mimeType, babylonTexture.coordinatesIndex, samplerIndex);
                     if (textureInfo) {
                         this._textureMap[textureUid] = textureInfo;
+                        this._exporter._extensionsPostExportTextures("linkTextureInfo", textureInfo, babylonTexture);
                     }
+
                     return textureInfo;
                 });
             }

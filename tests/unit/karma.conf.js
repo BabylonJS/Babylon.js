@@ -1,3 +1,5 @@
+var baseConfig = require('../karma-browsers.config')
+
 module.exports = function(config) {
     config.set({
         basePath: '../../',
@@ -17,7 +19,6 @@ module.exports = function(config) {
             '!./**/*.d.ts',
             './Tools/DevLoader/BabylonLoader.js',
             './tests/unit/babylon/babylon.example.tests.js',
-            './tests/unit/babylon/src/Mesh/babylon.positionAndRotation.tests.js',
             './tests/unit/babylon/serializers/babylon.glTFSerializer.tests.js',
             './tests/unit/babylon/src/babylon.node.tests.js',
             './tests/unit/babylon/src/Animations/babylon.animation.tests.js',
@@ -27,9 +28,11 @@ module.exports = function(config) {
             './tests/unit/babylon/src/Loading/babylon.sceneLoader.tests.js',
             './tests/unit/babylon/src/PostProcesses/babylon.postProcess.tests.js',
             './tests/unit/babylon/src/Materials/babylon.material.tests.js',
+            './tests/unit/babylon/src/Materials/babylon.fresnelParameters.tests.js',
             './tests/unit/babylon/src/Meshes/babylon.dictionaryMode.tests.js',
             './tests/unit/babylon/src/Meshes/babylon.geometry.tests.js',
             './tests/unit/babylon/src/Meshes/babylon.mesh.vertexData.tests.js',
+            './tests/unit/babylon/src/Meshes/babylon.positionAndRotation.tests.js',
             './tests/unit/babylon/src/Misc/babylon.promise.tests.js',
             './tests/unit/babylon/src/Physics/babylon.physicsComponents.tests.js',
             { pattern: 'dist/preview release/**/*.js', watched: false, included: false, served: true },
@@ -74,7 +77,6 @@ module.exports = function(config) {
             classNameFormatter: undefined, // function (browser, result) to customize the classname attribute in xml testcase element
             properties: {} // key value pair of properties to add to the <properties> section of the report
         },
-
-        browsers: ['ChromeHeadless']
+        ...baseConfig
     })
 }

@@ -52,13 +52,18 @@ Engine.prototype.createMultiviewRenderTargetTexture = function(width: number, he
 
 Engine.prototype.bindMultiviewFramebuffer = function(multiviewTexture: InternalTexture) {
     var gl: any = this._gl;
-    var ext = this.getCaps().multiview;
+    var ext = this.getCaps().oculusMultiview || this.getCaps().multiview;
 
     this.bindFramebuffer(multiviewTexture, undefined, undefined, undefined, true);
     gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, multiviewTexture._framebuffer);
     if (multiviewTexture._colorTextureArray && multiviewTexture._depthStencilTextureArray) {
-        ext.framebufferTextureMultiviewOVR(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, multiviewTexture._colorTextureArray, 0, 0, 2);
-        ext.framebufferTextureMultiviewOVR(gl.DRAW_FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, multiviewTexture._depthStencilTextureArray, 0, 0, 2);
+        if (this.getCaps().oculusMultiview) {
+            ext.framebufferTextureMultisampleMultiviewOVR(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, multiviewTexture._colorTextureArray, 0, multiviewTexture.samples, 0, 2);
+            ext.framebufferTextureMultisampleMultiviewOVR(gl.DRAW_FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, multiviewTexture._depthStencilTextureArray, 0, multiviewTexture.samples, 0, 2);
+        } else {
+            ext.framebufferTextureMultiviewOVR(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, multiviewTexture._colorTextureArray, 0, 0, 2);
+            ext.framebufferTextureMultiviewOVR(gl.DRAW_FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, multiviewTexture._depthStencilTextureArray, 0, 0, 2);
+        }
     } else {
         throw "Invalid multiview frame buffer";
     }
@@ -147,7 +152,7 @@ Scene.prototype._renderMultiviewToSingleView = function(camera: Camera) {
 
     // Render to a multiview texture
     camera._resizeOrCreateMultiviewTexture(
-        (camera._rigPostProcess && camera._rigPostProcess && camera._rigPostProcess.width > 0) ? camera._rigPostProcess.width / 2 : this.getEngine().getRenderWidth(true) / 2,
+        (camera._rigPostProcess && camera._rigPostProcess && camera._rigPostProcess.width > 0) ? camera._rigPostProcess.width : this.getEngine().getRenderWidth(true),
         (camera._rigPostProcess && camera._rigPostProcess && camera._rigPostProcess.height > 0) ? camera._rigPostProcess.height : this.getEngine().getRenderHeight(true)
     );
     if (!this._multiviewSceneUbo) {

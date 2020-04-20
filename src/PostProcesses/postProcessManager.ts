@@ -96,6 +96,7 @@ export class PostProcessManager {
 
     /**
      * Manually render a set of post processes to a texture.
+     * Please note, the frame buffer won't be unbound after the call in case you have more render to do.
      * @param postProcesses An array of post processes to be run.
      * @param targetTexture The target texture to render to.
      * @param forceFullscreenViewport force gl.viewport to be full screen eg. 0,0,textureWidth,textureHeight
@@ -110,7 +111,7 @@ export class PostProcessManager {
                 postProcesses[index + 1].activate(this._scene.activeCamera, targetTexture);
             } else {
                 if (targetTexture) {
-                    engine.bindFramebuffer(targetTexture, faceIndex, undefined, undefined, forceFullscreenViewport, undefined, lodLevel);
+                    engine.bindFramebuffer(targetTexture, faceIndex, undefined, undefined, forceFullscreenViewport, lodLevel);
                 } else {
                     engine.restoreDefaultFramebuffer();
                 }

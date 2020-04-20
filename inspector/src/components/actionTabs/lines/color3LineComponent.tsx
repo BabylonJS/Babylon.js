@@ -1,16 +1,20 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
-import { Color3 } from "babylonjs/Maths/math";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
 import { NumericInputComponent } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMinus, faPlus, faCopy } from "@fortawesome/free-solid-svg-icons";
+import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { Color3 } from 'babylonjs/Maths/math.color';
+import { ColorPickerLineComponent } from './colorPickerComponent';
+
+const copyIcon: string = require("./copy.svg");
 
 export interface IColor3LineComponentProps {
     label: string;
     target: any;
     propertyName: string;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    isLinear?: boolean;
 }
 
 export class Color3LineComponent extends React.Component<IColor3LineComponentProps, { isExpanded: boolean, color: Color3 }> {
@@ -19,10 +23,16 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         super(props);
 
         this.state = { isExpanded: false, color: this.props.target[this.props.propertyName].clone() };
+
+        if (props.isLinear) {
+            this.state.color.toGammaSpaceToRef(this.state.color);
+        }
+
+        props.target._isLinearColor = props.isLinear; // so that replayRecorder can append toLinearSpace() as appropriate
     }
 
     shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: { color: Color3 }) {
-        const currentState = nextProps.target[nextProps.propertyName];
+        const currentState = this.props.isLinear ? nextProps.target[nextProps.propertyName].toGammaSpace() : nextProps.target[nextProps.propertyName];
 
         if (!currentState.equals(nextState.color) || this._localChange) {
             nextState.color = currentState.clone();
@@ -30,6 +40,14 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
             return true;
         }
         return false;
+    }
+
+    setPropertyValue(newColor: Color3) {
+        this.props.target[this.props.propertyName] = newColor;
+
+        if (this.props.isLinear) {
+            this.props.target[this.props.propertyName] = newColor.toLinearSpace();
+        }
     }
 
     onChange(newValue: string) {
@@ -41,11 +59,11 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
                 object: this.props.target,
                 property: this.props.propertyName,
                 value: newColor,
-                initialValue: this.state.color
+                initialValue: this.state.color,
             });
         }
 
-        this.props.target[this.props.propertyName] = newColor;
+        this.setPropertyValue(newColor);
 
         this.setState({ color: newColor });
     }
@@ -56,7 +74,6 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
     }
 
     raiseOnPropertyChanged(previousValue: Color3) {
-
         if (!this.props.onPropertyChangedObservable) {
             return;
         }
@@ -64,7 +81,7 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
             object: this.props.target,
             property: this.props.propertyName,
             value: this.state.color,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     }
 
@@ -72,9 +89,8 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         this._localChange = true;
 
         const store = this.state.color.clone();
-        this.props.target[this.props.propertyName].x = value;
         this.state.color.r = value;
-        this.props.target[this.props.propertyName] = this.state.color;
+        this.setPropertyValue(this.state.color);
         this.setState({ color: this.state.color });
 
         this.raiseOnPropertyChanged(store);
@@ -84,9 +100,8 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         this._localChange = true;
 
         const store = this.state.color.clone();
-        this.props.target[this.props.propertyName].g = value;
         this.state.color.g = value;
-        this.props.target[this.props.propertyName] = this.state.color;
+        this.setPropertyValue(this.state.color);
         this.setState({ color: this.state.color });
 
         this.raiseOnPropertyChanged(store);
@@ -96,9 +111,8 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         this._localChange = true;
 
         const store = this.state.color.clone();
-        this.props.target[this.props.propertyName].b = value;
         this.state.color.b = value;
-        this.props.target[this.props.propertyName] = this.state.color;
+        this.setPropertyValue(this.state.color);
         this.setState({ color: this.state.color });
 
         this.raiseOnPropertyChanged(store);
@@ -122,8 +136,7 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
 
     render() {
 
-        const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />
-        const colorAsColor3 = this.state.color.getClassName() === "Color3" ? this.state.color : new Color3(this.state.color.r, this.state.color.g, this.state.color.b);
+        const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
 
         return (
             <div className="color3Line">
@@ -132,10 +145,12 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
                         {this.props.label}
                     </div>
                     <div className="color3">
-                        <input type="color" value={colorAsColor3.toHexString()} onChange={(evt) => this.onChange(evt.target.value)} />
+                        <ColorPickerLineComponent value={this.state.color} disableAlpha={true} onColorChanged={color => {
+                            this.onChange(color);
+                        }} />                             
                     </div>
                     <div className="copy hoverIcon" onClick={() => this.copyToClipboard()} title="Copy to clipboard">
-                        <FontAwesomeIcon icon={faCopy} />
+                        <img src={copyIcon} alt=""/>
                     </div>
                     <div className="expand hoverIcon" onClick={() => this.switchExpandState()} title="Expand">
                         {chevron}
@@ -144,9 +159,9 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
                 {
                     this.state.isExpanded &&
                     <div className="secondLine">
-                        <NumericInputComponent label="r" value={this.state.color.r} onChange={value => this.updateStateR(value)} />
-                        <NumericInputComponent label="g" value={this.state.color.g} onChange={value => this.updateStateG(value)} />
-                        <NumericInputComponent label="b" value={this.state.color.b} onChange={value => this.updateStateB(value)} />
+                        <NumericInputComponent label="r" value={this.state.color.r} onChange={(value) => this.updateStateR(value)} />
+                        <NumericInputComponent label="g" value={this.state.color.g} onChange={(value) => this.updateStateG(value)} />
+                        <NumericInputComponent label="b" value={this.state.color.b} onChange={(value) => this.updateStateB(value)} />
                     </div>
                 }
             </div>

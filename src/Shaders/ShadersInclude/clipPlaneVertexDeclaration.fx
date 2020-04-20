@@ -17,3 +17,13 @@
 	uniform vec4 vClipPlane4;
 	varying float fClipDistance4;
 #endif
+
+#ifdef CLIPPLANE5
+	uniform vec4 vClipPlane5;
+	varying float fClipDistance5;
+#endif
+
+#ifdef CLIPPLANE6
+	uniform vec4 vClipPlane6;
+	varying float fClipDistance6;
+#endif

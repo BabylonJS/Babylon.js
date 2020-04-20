@@ -9,7 +9,6 @@ import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { Texture } from "../Materials/Textures/texture";
 import { SceneComponentConstants } from "../sceneComponent";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { LayerSceneComponent } from "./layerSceneComponent";
 import { Constants } from "../Engines/constants";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
@@ -81,7 +80,7 @@ export class Layer {
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
     private _indexBuffer: Nullable<DataBuffer>;
     private _effect: Effect;
-    private _alphaTestEffect: Effect;
+    private _previousDefines: string;
 
     /**
      * An event triggered when the layer is disposed.
@@ -179,17 +178,6 @@ export class Layer {
         this._vertexBuffers[VertexBuffer.PositionKind] = vertexBuffer;
 
         this._createIndexBuffer();
-
-        // Effects
-        this._effect = engine.createEffect("layer",
-            [VertexBuffer.PositionKind],
-            ["textureMatrix", "color", "scale", "offset"],
-            ["textureSampler"], "");
-
-        this._alphaTestEffect = engine.createEffect("layer",
-            [VertexBuffer.PositionKind],
-            ["textureMatrix", "color", "scale", "offset"],
-            ["textureSampler"], "#define ALPHATEST");
     }
 
     private _createIndexBuffer(): void {
@@ -223,10 +211,30 @@ export class Layer {
      * Renders the layer in the scene.
      */
     public render(): void {
-        var currentEffect = this.alphaTest ? this._alphaTestEffect : this._effect;
+
+        var engine = this._scene.getEngine();
+
+        var defines = "";
+
+        if (this.alphaTest) {
+            defines = "#define ALPHATEST";
+        }
+
+        if (this.texture && !this.texture.gammaSpace) {
+            defines += "\r\n#define LINEAR";
+        }
+
+        if (this._previousDefines !== defines) {
+            this._previousDefines = defines;
+            this._effect = engine.createEffect("layer",
+                [VertexBuffer.PositionKind],
+                ["textureMatrix", "color", "scale", "offset"],
+                ["textureSampler"], defines);
+        }
+        var currentEffect = this._effect;
 
         // Check
-        if (!currentEffect.isReady() || !this.texture || !this.texture.isReady()) {
+        if (!currentEffect || !currentEffect.isReady() || !this.texture || !this.texture.isReady()) {
             return;
         }
 

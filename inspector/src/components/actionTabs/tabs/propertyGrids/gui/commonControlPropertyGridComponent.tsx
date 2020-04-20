@@ -73,6 +73,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             <div>
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="Class" value={control.getClassName()} />
+                    <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={control} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <TextLineComponent label="Unique ID" value={control.uniqueId.toString()} />
                     <SliderLineComponent label="Alpha" target={control} propertyName="alpha" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {

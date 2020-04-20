@@ -63,6 +63,12 @@ Engine.prototype.registerView = function(canvas: HTMLCanvasElement, camera?: Cam
         }
     }
 
+    let masterCanvas = this.getRenderingCanvas();
+    if (masterCanvas) {
+        canvas.width = masterCanvas.width;
+        canvas.height = masterCanvas.height;
+    }
+
     let newView = {target: canvas, camera: camera};
     this.views.push(newView);
 
@@ -81,7 +87,7 @@ Engine.prototype.unRegisterView = function(canvas: HTMLCanvasElement): Engine {
     }
 
     for (var view of this.views) {
-        if (view.target = canvas) {
+        if (view.target === canvas) {
             let index = this.views.indexOf(view);
 
             if (index !== -1) {
@@ -128,10 +134,17 @@ Engine.prototype._renderViews = function() {
         }
 
         // Set sizes
-        canvas.width = canvas.clientWidth;
-        canvas.height = canvas.clientHeight;
-        parent.width = canvas.clientWidth;
-        parent.height = canvas.clientHeight;
+        if (canvas.clientWidth && canvas.clientHeight) {
+            canvas.width = canvas.clientWidth;
+            canvas.height = canvas.clientHeight;
+            parent.width = canvas.clientWidth;
+            parent.height = canvas.clientHeight;
+            this.resize();
+        }
+
+        if (!parent.width || !parent.height) {
+            return false;
+        }
 
         // Render the frame
         this._renderFrame();

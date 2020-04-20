@@ -27,6 +27,8 @@ class FireMaterialDefines extends MaterialDefines {
     public CLIPPLANE2 = false;
     public CLIPPLANE3 = false;
     public CLIPPLANE4 = false;
+    public CLIPPLANE5 = false;
+    public CLIPPLANE6 = false;
     public ALPHATEST = false;
     public DEPTHPREPASS = false;
     public POINTSIZE = false;
@@ -67,7 +69,6 @@ export class FireMaterial extends PushMaterial {
     public speed = 1.0;
 
     private _scaledDiffuse = new Color3();
-    private _renderId: number;
     private _lastTime: number = 0;
 
     constructor(name: string, scene: Scene) {
@@ -89,7 +90,7 @@ export class FireMaterial extends PushMaterial {
     // Methods
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -101,10 +102,8 @@ export class FireMaterial extends PushMaterial {
         var defines = <FireMaterialDefines>subMesh._materialDefines;
         var scene = this.getScene();
 
-        if (!this.checkReadyOnEveryCall && subMesh.effect) {
-            if (this._renderId === scene.getRenderId()) {
-                return true;
-            }
+        if (this._isReadyForSubMesh(subMesh)) {
+            return true;
         }
 
         var engine = scene.getEngine();
@@ -177,7 +176,7 @@ export class FireMaterial extends PushMaterial {
                         "vFogInfos", "vFogColor", "pointSize",
                         "vDiffuseInfos",
                         "mBones",
-                        "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "diffuseMatrix",
+                        "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "diffuseMatrix",
                         // Fire
                         "time", "speed"
                     ],
@@ -200,8 +199,8 @@ export class FireMaterial extends PushMaterial {
             return false;
         }
 
-        this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        defines._renderId = scene.getRenderId();
+        subMesh.effect._wasPreviouslyReady = true;
 
         return true;
     }
@@ -389,10 +388,6 @@ export class FireMaterial extends PushMaterial {
 
         if (source._opacityTexture) {
             material._opacityTexture = Texture.Parse(source._opacityTexture, scene, rootUrl);
-        }
-
-        if (source.checkReadyOnlyOnce) {
-            material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
         }
 
         return material;

@@ -67,7 +67,7 @@ class ZipTool {
         }
 
         if (textures[index].isCube) {
-            if (textures[index].name.indexOf("dds") === -1) {
+            if (textures[index].name.indexOf("dds") === -1 && textures[index].name.indexOf(".env") === -1) {
                 if (textures[index]._extensions) {
                     for (var i = 0; i < 6; i++) {
                         textures.push({ name: textures[index].name + textures[index]._extensions[i] });
@@ -150,13 +150,22 @@ class ZipTool {
 
         document.getElementById("statusBar").innerHTML = "Creating archive... Please wait.";
 
-        if (this.zipCode.indexOf("textures/worldHeightMap.jpg") !== -1) {
-            textures.push({ name: "textures/worldHeightMap.jpg" });
-        }
+        var regex = /CreateGroundFromHeightMap\(".+", "(.+)"/g;
+
+        do {
+            let match = regex.exec(this.zipCode);            
+
+            if (!match) {
+                break;
+            }
+
+            textures.push({ name: match[1] });
+        } while(true);
+
 
         this.addContentToZip(zip,
             "index.html",
-            "zipContent/index.html",
+            "/zipContent/index.html",
             this.zipCode,
             false,
             function () {

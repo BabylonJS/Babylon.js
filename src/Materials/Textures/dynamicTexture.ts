@@ -4,7 +4,6 @@ import { Scene } from "../../scene";
 import { ISize } from "../../Maths/math.size";
 import { Engine } from "../../Engines/engine";
 import { Texture } from "../../Materials/Textures/texture";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { Constants } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.dynamicTexture";
 import { CanvasGenerator } from '../../Misc/canvasGenerator';
@@ -146,7 +145,7 @@ export class DynamicTexture extends Texture {
      * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
      * @param update defines whether texture is immediately update (default is true)
      */
-    public drawText(text: string, x: number, y: number, font: string, color: string, clearColor: string, invertY?: boolean, update = true) {
+    public drawText(text: string, x: number | null | undefined, y: number | null | undefined, font: string, color: string | null, clearColor: string, invertY?: boolean, update = true) {
         var size = this.getSize();
         if (clearColor) {
             this._context.fillStyle = clearColor;
@@ -163,7 +162,7 @@ export class DynamicTexture extends Texture {
             y = (size.height / 2) + (fontSize / 3.65);
         }
 
-        this._context.fillStyle = color;
+        this._context.fillStyle = color || "";
         this._context.fillText(text, x, y);
 
         if (update) {

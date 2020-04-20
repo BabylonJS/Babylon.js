@@ -1,6 +1,6 @@
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
-import { Vector3, Matrix } from "babylonjs/Maths/math";
+import { Vector3, Matrix } from "babylonjs/Maths/math.vector";
 import { Tools } from "babylonjs/Misc/tools";
 import { Scene } from "babylonjs/scene";
 
@@ -155,6 +155,8 @@ export class Line extends Control {
      */
     constructor(public name?: string) {
         super(name);
+
+        this._automaticSize = true;
 
         this.isHitTestVisible = false;
         this._horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;

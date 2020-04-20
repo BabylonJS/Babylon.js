@@ -92,7 +92,7 @@ export interface SceneOptions {
      * Defines that each mesh of the scene should keep up-to-date a map of referencing cloned meshes for fast diposing
      * It will improve performance when the number of mesh becomes important, but might consume a bit more memory
      */
-    useClonedMeshhMap?: boolean;
+    useClonedMeshMap?: boolean;
 
     /** Defines if the creation of the scene should impact the engine (Eg. UtilityLayer's scene) */
     virtual?: boolean;
@@ -151,6 +151,9 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     /** @hidden */
     public readonly _isScene = true;
+
+    /** @hidden */
+    public _blockEntityCollection = false;
 
     /**
      * Gets or sets a boolean that indicates if the scene must clear the render buffer before rendering a frame
@@ -258,6 +261,20 @@ export class Scene extends AbstractScene implements IAnimatable {
         return this._forceWireframe;
     }
 
+    private _skipFrustumClipping = false;
+    /**
+     * Gets or sets a boolean indicating if we should skip the frustum clipping part of the active meshes selection
+     */
+    public set skipFrustumClipping(value: boolean) {
+        if (this._skipFrustumClipping === value) {
+            return;
+        }
+        this._skipFrustumClipping = value;
+    }
+    public get skipFrustumClipping(): boolean {
+        return this._skipFrustumClipping;
+    }
+
     private _forcePointsCloud = false;
     /**
      * Gets or sets a boolean indicating if all rendering must be done in point cloud
@@ -292,6 +309,16 @@ export class Scene extends AbstractScene implements IAnimatable {
      * Gets or sets the active clipplane 4
      */
     public clipPlane4: Nullable<Plane>;
+
+    /**
+     * Gets or sets the active clipplane 5
+     */
+    public clipPlane5: Nullable<Plane>;
+
+    /**
+     * Gets or sets the active clipplane 6
+     */
+    public clipPlane6: Nullable<Plane>;
 
     /**
      * Gets or sets a boolean indicating if animations are enabled
@@ -331,7 +358,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      */
     public defaultCursor: string = "";
     /**
-     * Defines wether cursors are handled by the scene.
+     * Defines whether cursors are handled by the scene.
      */
     public doNotHandleCursors = false;
     /**
@@ -625,6 +652,11 @@ export class Scene extends AbstractScene implements IAnimatable {
      * This Observable will when a mesh has been imported into the scene.
      */
     public onMeshImportedObservable = new Observable<AbstractMesh>();
+
+    /**
+     * This Observable will when an animation file has been imported into the scene.
+     */
+    public onAnimationFileImportedObservable = new Observable<Scene>();
 
     /**
      * Gets or sets a user defined funtion to select LOD from a mesh and a camera.
@@ -936,6 +968,12 @@ export class Scene extends AbstractScene implements IAnimatable {
         return this._texturesEnabled;
     }
 
+    // Physics
+    /**
+     * Gets or sets a boolean indicating if physic engines are enabled on this scene
+     */
+    public physicsEnabled = true;
+
     // Particles
     /**
     * Gets or sets a boolean indicating if particles are enabled on this scene
@@ -1157,7 +1195,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     /** @hidden */
     public readonly useMaterialMeshMap: boolean;
     /** @hidden */
-    public readonly useClonedMeshhMap: boolean;
+    public readonly useClonedMeshMap: boolean;
 
     private _externalData: StringDictionary<Object>;
     private _uid: Nullable<string>;
@@ -1342,8 +1380,17 @@ export class Scene extends AbstractScene implements IAnimatable {
      */
     constructor(engine: Engine, options?: SceneOptions) {
         super();
+
+        const fullOptions = {
+            useGeometryUniqueIdsMap: true,
+            useMaterialMeshMap: true,
+            useClonedMeshMap: true,
+            virtual: false,
+            ...options
+        };
+
         this._engine = engine || EngineStore.LastCreatedEngine;
-        if (!options || !options.virtual) {
+        if (!fullOptions.virtual) {
             EngineStore._LastCreatedScene = this;
             this._engine.scenes.push(this);
         }
@@ -1370,12 +1417,12 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         this.setDefaultCandidateProviders();
 
-        if (options && options.useGeometryUniqueIdsMap === true) {
+        if (fullOptions.useGeometryUniqueIdsMap) {
             this.geometriesByUniqueId = {};
         }
 
-        this.useMaterialMeshMap = options && options.useGeometryUniqueIdsMap || false;
-        this.useClonedMeshhMap = options && options.useClonedMeshhMap || false;
+        this.useMaterialMeshMap = fullOptions.useMaterialMeshMap;
+        this.useClonedMeshMap = fullOptions.useClonedMeshMap;
 
         if (!options || !options.virtual) {
             this._engine.onNewSceneAddedObservable.notifyObservers(this);
@@ -2000,6 +2047,10 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param recursive if all child meshes should also be added to the scene
      */
     public addMesh(newMesh: AbstractMesh, recursive = false) {
+        if (this._blockEntityCollection) {
+            return;
+        }
+
         this.meshes.push(newMesh);
 
         newMesh._resyncLightSources();
@@ -2049,6 +2100,9 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newTransformNode defines the transform node to add
      */
     public addTransformNode(newTransformNode: TransformNode) {
+        if (this._blockEntityCollection) {
+            return;
+        }
         newTransformNode._indexInSceneTransformNodesArray = this.transformNodes.length;
         this.transformNodes.push(newTransformNode);
 
@@ -2291,6 +2345,9 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newLight The light to add
      */
     public addLight(newLight: Light): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
         this.lights.push(newLight);
         this.sortLightsByPriority();
 
@@ -2298,7 +2355,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             newLight._addToSceneRootNodes();
         }
 
-        // Add light to all meshes (To support if the light is removed and then readded)
+        // Add light to all meshes (To support if the light is removed and then re-added)
         for (var mesh of this.meshes) {
             if (mesh.lightSources.indexOf(newLight) === -1) {
                 mesh.lightSources.push(newLight);
@@ -2323,6 +2380,10 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newCamera The camera to add
      */
     public addCamera(newCamera: Camera): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
+
         this.cameras.push(newCamera);
         this.onNewCameraAddedObservable.notifyObservers(newCamera);
 
@@ -2336,6 +2397,9 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newSkeleton The skeleton to add
      */
     public addSkeleton(newSkeleton: Skeleton): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
         this.skeletons.push(newSkeleton);
         this.onNewSkeletonAddedObservable.notifyObservers(newSkeleton);
     }
@@ -2345,6 +2409,9 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newParticleSystem The particle system to add
      */
     public addParticleSystem(newParticleSystem: IParticleSystem): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
         this.particleSystems.push(newParticleSystem);
     }
 
@@ -2353,6 +2420,9 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newAnimation The animation to add
      */
     public addAnimation(newAnimation: Animation): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
         this.animations.push(newAnimation);
     }
 
@@ -2361,6 +2431,9 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newAnimationGroup The animation group to add
      */
     public addAnimationGroup(newAnimationGroup: AnimationGroup): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
         this.animationGroups.push(newAnimationGroup);
     }
 
@@ -2369,6 +2442,9 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newMultiMaterial The multi-material to add
      */
     public addMultiMaterial(newMultiMaterial: MultiMaterial): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
         this.multiMaterials.push(newMultiMaterial);
     }
 
@@ -2377,6 +2453,10 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newMaterial The material to add
      */
     public addMaterial(newMaterial: Material): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
+
         newMaterial._indexInSceneMaterialArray = this.materials.length;
         this.materials.push(newMaterial);
         this.onNewMaterialAddedObservable.notifyObservers(newMaterial);
@@ -2387,6 +2467,9 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newMorphTargetManager The morph target to add
      */
     public addMorphTargetManager(newMorphTargetManager: MorphTargetManager): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
         this.morphTargetManagers.push(newMorphTargetManager);
     }
 
@@ -2395,6 +2478,10 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newGeometry The geometry to add
      */
     public addGeometry(newGeometry: Geometry): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
+
         if (this.geometriesByUniqueId) {
             this.geometriesByUniqueId[newGeometry.uniqueId] = this.geometries.length;
         }
@@ -2415,6 +2502,9 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newTexture The texture to add
      */
     public addTexture(newTexture: BaseTexture): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
         this.textures.push(newTexture);
         this.onNewTextureAddedObservable.notifyObservers(newTexture);
     }
@@ -3120,6 +3210,24 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     /**
+     * Gets a morph target using a given name (if many are found, this function will pick the first one)
+     * @param name defines the name to search for
+     * @return the found morph target or null if not found at all.
+     */
+    public getMorphTargetByName(name: string): Nullable<MorphTarget> {
+        for (let managerIndex = 0; managerIndex < this.morphTargetManagers.length; ++managerIndex) {
+            const morphTargetManager = this.morphTargetManagers[managerIndex];
+            for (let index = 0; index < morphTargetManager.numTargets; ++index) {
+                const target = morphTargetManager.getTarget(index);
+                if (target.name === name) {
+                    return target;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * Gets a boolean indicating if the given mesh is active
      * @param mesh defines the mesh to look for
      * @returns true if the mesh is in the active list
@@ -3188,7 +3296,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     private _evaluateSubMesh(subMesh: SubMesh, mesh: AbstractMesh, initialMesh: AbstractMesh): void {
-        if (initialMesh.hasInstances || initialMesh.isAnInstance || this.dispatchAllSubMeshesOfActiveMeshes || mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
+        if (initialMesh.hasInstances || initialMesh.isAnInstance || this.dispatchAllSubMeshesOfActiveMeshes || this._skipFrustumClipping || mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
             for (let step of this._evaluateSubMeshStage) {
                 step.action(mesh, subMesh);
             }
@@ -3310,12 +3418,14 @@ export class Scene extends AbstractScene implements IAnimatable {
     public getCollidingSubMeshCandidates: (mesh: AbstractMesh, collider: Collider) => ISmartArrayLike<SubMesh>;
 
     private _activeMeshesFrozen = false;
+    private _skipEvaluateActiveMeshesCompletely = false;
 
     /**
      * Use this function to stop evaluating active meshes. The current list will be keep alive between frames
+     * @param skipEvaluateActiveMeshes defines an optional boolean indicating that the evaluate active meshes step must be completely skipped
      * @returns the current scene
      */
-    public freezeActiveMeshes(): Scene {
+    public freezeActiveMeshes(skipEvaluateActiveMeshes = false): Scene {
         this.executeWhenReady(() => {
             if (!this.activeCamera) {
                 return;
@@ -3327,6 +3437,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
             this._evaluateActiveMeshes();
             this._activeMeshesFrozen = true;
+            this._skipEvaluateActiveMeshesCompletely = skipEvaluateActiveMeshes;
 
             for (var index = 0; index < this._activeMeshes.length; index++) {
                 this._activeMeshes.data[index]._freeze();
@@ -3359,10 +3470,12 @@ export class Scene extends AbstractScene implements IAnimatable {
     private _evaluateActiveMeshes(): void {
         if (this._activeMeshesFrozen && this._activeMeshes.length) {
 
-            const len = this._activeMeshes.length;
-            for (let i = 0; i < len; i++) {
-                let mesh = this._activeMeshes.data[i];
-                mesh.computeWorldMatrix();
+            if (!this._skipEvaluateActiveMeshesCompletely) {
+                const len = this._activeMeshes.length;
+                for (let i = 0; i < len; i++) {
+                    let mesh = this._activeMeshes.data[i];
+                    mesh.computeWorldMatrix();
+                }
             }
 
             return;
@@ -3422,7 +3535,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
             mesh._preActivate();
 
-            if (mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && (mesh.alwaysSelectAsActiveMesh || mesh.isInFrustum(this._frustumPlanes))) {
+            if (mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && (this._skipFrustumClipping || mesh.alwaysSelectAsActiveMesh || mesh.isInFrustum(this._frustumPlanes))) {
                 this._activeMeshes.push(mesh);
                 this.activeCamera._activeMeshes.push(mesh);
 
@@ -3734,7 +3847,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * User updatable function that will return a deterministic frame time when engine is in deterministic lock step mode
      */
     public getDeterministicFrameTime: () => number = () => {
-        return 1000.0 / 60.0; // frame time in ms
+        return this._engine.getTimeStep();
     }
 
     /** @hidden */
@@ -3747,18 +3860,17 @@ export class Scene extends AbstractScene implements IAnimatable {
         if (this._engine.isDeterministicLockStep()) {
             var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime)) + this._timeAccumulator;
 
-            var defaultFPS = (60.0 / 1000.0);
-
-            let defaultFrameTime = this.getDeterministicFrameTime();
+            let defaultFrameTime = this._engine.getTimeStep();
+            var defaultFPS = (1000.0 / defaultFrameTime) / 1000.0;
 
             let stepsTaken = 0;
 
             var maxSubSteps = this._engine.getLockstepMaxSteps();
 
-            var internalSteps = Math.floor(deltaTime / (1000 * defaultFPS));
+            var internalSteps = Math.floor(deltaTime / defaultFrameTime);
             internalSteps = Math.min(internalSteps, maxSubSteps);
 
-            do {
+            while (deltaTime > 0 && stepsTaken < internalSteps) {
                 this.onBeforeStepObservable.notifyObservers(this);
 
                 // Animations
@@ -3767,7 +3879,9 @@ export class Scene extends AbstractScene implements IAnimatable {
                 this.onAfterAnimationsObservable.notifyObservers(this);
 
                 // Physics
-                this._advancePhysicsEngineStep(defaultFrameTime);
+                if (this.physicsEnabled) {
+                    this._advancePhysicsEngineStep(defaultFrameTime);
+                }
 
                 this.onAfterStepObservable.notifyObservers(this);
                 this._currentStepId++;
@@ -3775,7 +3889,7 @@ export class Scene extends AbstractScene implements IAnimatable {
                 stepsTaken++;
                 deltaTime -= defaultFrameTime;
 
-            } while (deltaTime > 0 && stepsTaken < internalSteps);
+            }
 
             this._timeAccumulator = deltaTime < 0 ? 0 : deltaTime;
 
@@ -3788,7 +3902,9 @@ export class Scene extends AbstractScene implements IAnimatable {
             this.onAfterAnimationsObservable.notifyObservers(this);
 
             // Physics
-            this._advancePhysicsEngineStep(deltaTime);
+            if (this.physicsEnabled) {
+                this._advancePhysicsEngineStep(deltaTime);
+            }
         }
     }
 
@@ -3800,6 +3916,10 @@ export class Scene extends AbstractScene implements IAnimatable {
     public render(updateCameras = true, ignoreAnimations = false): void {
         if (this.isDisposed) {
             return;
+        }
+
+        if (this.onReadyObservable.hasObservers() && this._executeWhenReadyTimeoutId === -1) {
+            this._checkIsReady();
         }
 
         this._frameId++;
@@ -3892,7 +4012,9 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         // Restore back buffer
         this.activeCamera = currentActiveCamera;
-        this._bindFrameBuffer();
+        if (this._activeCamera && this._activeCamera.cameraRigMode !== Camera.RIG_MODE_CUSTOM) {
+            this._bindFrameBuffer();
+        }
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
 
         for (let step of this._beforeClearStage) {
@@ -4311,7 +4433,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param x position on screen
      * @param y position on screen
      * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
-     * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null.
+     * @param fastCheck defines if the first intersection will be used (and not the closest)
      * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns a PickingInfo
@@ -4326,10 +4448,26 @@ export class Scene extends AbstractScene implements IAnimatable {
         return pi;
     }
 
+    /** Launch a ray to try to pick a mesh in the scene using only bounding information of the main mesh (not using submeshes)
+     * @param x position on screen
+     * @param y position on screen
+     * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
+     * @param fastCheck defines if the first intersection will be used (and not the closest)
+     * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+     * @returns a PickingInfo (Please note that some info will not be set like distance, bv, bu and everything that cannot be capture by only using bounding infos)
+     */
+    public pickWithBoundingInfo(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean,
+        fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
+        // Dummy info if picking as not been imported
+        const pi = new PickingInfo();
+        pi._pickingUnavailable = true;
+        return pi;
+    }
+
     /** Use the given ray to pick a mesh in the scene
      * @param ray The ray to use to pick meshes
      * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must have isPickable set to true
-     * @param fastCheck Launch a fast check only using the bounding boxes. Can be set to null
+     * @param fastCheck defines if the first intersection will be used (and not the closest)
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @returns a PickingInfo
      */

@@ -19,6 +19,9 @@ export class StringTools {
      * @returns Boolean indicating whether the suffix was found (true) or not (false)
      */
     public static StartsWith(str: string, suffix: string): boolean {
+        if (!str) {
+            return false;
+        }
         return str.indexOf(suffix) === 0;
     }
 
@@ -73,4 +76,17 @@ export class StringTools {
 
         return output;
     }
+
+    /**
+    * Converts a number to string and pads with preceeding zeroes until it is of specified length.
+    * @param num the number to convert and pad
+    * @param length the expected length of the string
+    * @returns the padded string
+    */
+    public static PadNumber(num: number, length: number): string {
+        var str = String(num);
+        while (str.length < length) { str = "0" + str; }
+        return str;
+    }
+
 }

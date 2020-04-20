@@ -5,6 +5,7 @@ import { SceneExplorerComponent } from "../sceneExplorer/sceneExplorerComponent"
 import { ActionTabsComponent } from "../actionTabs/actionTabsComponent";
 import { Scene } from "babylonjs/scene";
 import { GlobalState } from "../../components/globalState";
+import { IExplorerExtensibilityGroup, DebugLayerTab } from 'babylonjs/Debug/debugLayer';
 
 const Split = require('split.js').default;
 
@@ -17,28 +18,37 @@ interface IEmbedHostComponentProps {
     noClose?: boolean,
     noExpand?: boolean,
     onClose: () => void,
-    onPopup: () => void
+    onPopup: () => void,
+    extensibilityGroups?: IExplorerExtensibilityGroup[],
+    initialTab?: DebugLayerTab
 }
 
 export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps> {
     private _once = true;
+    private splitRef: React.RefObject<HTMLDivElement>;
+    private topPartRef: React.RefObject<HTMLDivElement>;
+    private bottomPartRef: React.RefObject<HTMLDivElement>;
 
     constructor(props: IEmbedHostComponentProps) {
-        super(props);
+        super(props);        
+
+        this.splitRef = React.createRef();
+        this.topPartRef = React.createRef();
+        this.bottomPartRef = React.createRef();
     }
 
     componentDidMount() {
-        const container = this.refs.split;
+        const container = this.splitRef.current;
 
         if (!container) {
             return;
         }
 
-        Split([this.refs.topPart, this.refs.bottomPart], {
+        Split([this.topPartRef.current, this.bottomPartRef.current], {
             direction: "vertical",
             minSize: [200, 200],
             gutterSize: 4
-        })
+        });
     }
 
     renderContent() {
@@ -47,6 +57,7 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
                 <div id="split" className="splitPopup">
                     <div id="topPart">
                         <SceneExplorerComponent scene={this.props.scene}
+                            extensibilityGroups={this.props.extensibilityGroups}
                             popupMode={true}
                             globalState={this.props.globalState} noHeader={true} />
                     </div>
@@ -54,28 +65,31 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
                     <div id="bottomPart" style={{ marginTop: "4px", overflow: "hidden" }}>
                         <ActionTabsComponent scene={this.props.scene}
                             popupMode={true}
-                            globalState={this.props.globalState} noHeader={true} />
+                            globalState={this.props.globalState} noHeader={true} 
+                            initialTab={this.props.initialTab} />
                     </div>
                 </div>
             )
         }
 
         return (
-            <div ref="split" id="split" className="noPopup">
-                <div id="topPart" ref="topPart">
+            <div ref={this.splitRef} id="split" className="noPopup">
+                <div id="topPart" ref={this.topPartRef}>
                     <SceneExplorerComponent scene={this.props.scene}
+                        extensibilityGroups={this.props.extensibilityGroups}
                         globalState={this.props.globalState}
                         popupMode={true}
                         noHeader={true} />
                 </div>
-                <div id="bottomPart" ref="bottomPart" style={{ marginTop: "4px", overflow: "hidden" }}>
+                <div id="bottomPart" ref={this.bottomPartRef} style={{ marginTop: "4px", overflow: "hidden" }}>
                     <ActionTabsComponent scene={this.props.scene}
                         globalState={this.props.globalState}
                         popupMode={true}
-                        noHeader={true} />
+                        noHeader={true}
+                        initialTab={this.props.initialTab} />
                 </div>
             </div>
-        )
+        );
     }
 
     render() {

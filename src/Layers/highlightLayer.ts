@@ -16,7 +16,6 @@ import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { PostProcess, PostProcessOptions } from "../PostProcesses/postProcess";
 import { PassPostProcess } from "../PostProcesses/passPostProcess";
 import { BlurPostProcess } from "../PostProcesses/blurPostProcess";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "../abstractScene";
 import { Constants } from "../Engines/constants";
@@ -405,6 +404,7 @@ export class HighlightLayer extends EffectLayer {
                     this._postProcesses,
                     internalTexture,
                     true);
+                this._engine.unBindFramebuffer(internalTexture, true);
             }
 
             this.onAfterBlurObservable.notifyObservers(this);
@@ -510,6 +510,14 @@ export class HighlightLayer extends EffectLayer {
         }
 
         return true;
+    }
+
+    /**
+     * Adds specific effects defines.
+     * @param defines The defines to add specifics to.
+     */
+    protected _addCustomEffectDefines(defines: string[]): void {
+        defines.push("#define HIGHLIGHT");
     }
 
     /**
@@ -682,6 +690,24 @@ export class HighlightLayer extends EffectLayer {
             if (this._meshes[meshHighlightToCheck]) {
                 this._shouldRender = true;
                 break;
+            }
+        }
+    }
+
+    /**
+     * Remove all the meshes currently referenced in the highlight layer
+     */
+    public removeAllMeshes(): void {
+        if (!this._meshes) {
+            return;
+        }
+
+        for (const uniqueId in this._meshes) {
+            if (this._meshes.hasOwnProperty(uniqueId)) {
+                const mesh = this._meshes[uniqueId];
+                if (mesh) {
+                    this.removeMesh(mesh.mesh);
+                }
             }
         }
     }

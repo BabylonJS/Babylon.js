@@ -525,8 +525,7 @@ Validate.prototype.validateNaming = function(parent, node) {
     else if (node.kindString == "Interface" ||
         node.kindString == "Class" ||
         node.kindString == "Enumeration" ||
-        node.kindString == "Enumeration member" ||
-        node.kindString == "Accessor" ||
+        node.kindString == "Enumeration member" ||        
         node.kindString == "Type alias") {
         if (!Validate.pascalCase.test(node.name)) {
             this.errorCallback(parent ? parent.name : null,
@@ -539,6 +538,7 @@ Validate.prototype.validateNaming = function(parent, node) {
     }
     else if (node.kindString == "Method" ||
         node.kindString == "Property" ||
+        node.kindString == "Accessor" ||
         node.kindString == "Object literal") {
 
         // Only warn here as special properties such as FOV may be better capitalized 

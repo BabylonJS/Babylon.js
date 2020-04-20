@@ -16,11 +16,9 @@ import { WebRequest } from "babylonjs/Misc/webRequest";
 import { IFileRequest } from "babylonjs/Misc/fileRequest";
 import { Logger } from 'babylonjs/Misc/logger';
 import { DataReader, IDataBuffer } from 'babylonjs/Misc/dataReader';
-
-/**
- * glTF validator object
- */
-declare var GLTFValidator: GLTF2.IGLTFValidator;
+import { GLTFValidation } from './glTFValidation';
+import { Light } from 'babylonjs/Lights/light';
+import { TransformNode } from 'babylonjs/Meshes/transformNode';
 
 /**
  * Mode that determines the coordinate system to use.
@@ -114,9 +112,19 @@ export enum GLTFLoaderState {
 }
 
 /** @hidden */
+export interface IImportMeshAsyncOutput {
+    meshes: AbstractMesh[];
+    particleSystems: IParticleSystem[];
+    skeletons: Skeleton[];
+    animationGroups: AnimationGroup[];
+    lights: Light[];
+    transformNodes: TransformNode[];
+}
+
+/** @hidden */
 export interface IGLTFLoader extends IDisposable {
     readonly state: Nullable<GLTFLoaderState>;
-    importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string) => Promise<{ meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }>;
+    importMeshAsync: (meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string) => Promise<IImportMeshAsyncOutput>;
     loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string) => Promise<void>;
 }
 
@@ -490,7 +498,10 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                     readAsync: (byteOffset: number, byteLength: number) => {
                         return new Promise<ArrayBufferView>((resolve, reject) => {
                             fileRequests.push(scene._requestFile(url, (data, webRequest) => {
-                                dataBuffer.byteLength = Number(webRequest!.getResponseHeader("Content-Range")!.split("/")[1]);
+                                const contentRange = webRequest!.getResponseHeader("Content-Range");
+                                if (contentRange) {
+                                    dataBuffer.byteLength = Number(contentRange.split("/")[1]);
+                                }
                                 resolve(new Uint8Array(data as ArrayBuffer));
                             }, onProgress, true, true, (error) => {
                                 reject(error);
@@ -522,7 +533,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         }
 
         return scene._requestFile(url, (data, response) => {
-            this._validateAsync(scene, data, Tools.GetFolderPath(url), Tools.GetFilename(url));
+            this._validate(scene, data, Tools.GetFolderPath(url), Tools.GetFilename(url));
             onSuccess({ json: this._parseJson(data as string) }, response);
         }, onProgress, true, false, onError);
     }
@@ -530,7 +541,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     /** @hidden */
     public readFile(scene: Scene, file: File, onSuccess: (data: any) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest {
         return scene._readFile(file, (data) => {
-            this._validateAsync(scene, data, "file:", file.name);
+            this._validate(scene, data, "file:", file.name);
             if (useArrayBuffer) {
                 const arrayBuffer = data as ArrayBuffer;
                 this._unpackBinaryAsync(new DataReader({
@@ -552,7 +563,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
             this._log(`Loading ${fileName || ""}`);
             this._loader = this._getLoader(data);
-            return this._loader.importMeshAsync(meshesNames, scene, data, rootUrl, onProgress, fileName);
+            return this._loader.importMeshAsync(meshesNames, scene, false, data, rootUrl, onProgress, fileName);
         });
     }
 
@@ -586,8 +597,12 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
             this.onTextureLoadedObservable.add((texture) => {
                 textures.push(texture);
             });
+            const cameras: Array<Camera> = [];
+            this.onCameraLoadedObservable.add((camera) => {
+                cameras.push(camera);
+            });
 
-            return this._loader.importMeshAsync(null, scene, data, rootUrl, onProgress, fileName).then((result) => {
+            return this._loader.importMeshAsync(null, scene, true, data, rootUrl, onProgress, fileName).then((result) => {
                 const container = new AssetContainer(scene);
                 Array.prototype.push.apply(container.meshes, result.meshes);
                 Array.prototype.push.apply(container.particleSystems, result.particleSystems);
@@ -595,7 +610,9 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                 Array.prototype.push.apply(container.animationGroups, result.animationGroups);
                 Array.prototype.push.apply(container.materials, materials);
                 Array.prototype.push.apply(container.textures, textures);
-                container.removeAllFromScene();
+                Array.prototype.push.apply(container.lights, result.lights);
+                Array.prototype.push.apply(container.transformNodes, result.transformNodes);
+                Array.prototype.push.apply(container.cameras, cameras);
                 return container;
             });
         });
@@ -608,7 +625,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
     /** @hidden */
     public directLoad(scene: Scene, data: string): any {
-        this._validateAsync(scene, data);
+        this._validate(scene, data);
         return { json: this._parseJson(data) };
     }
 
@@ -647,36 +664,21 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         });
     }
 
-    private _validateAsync(scene: Scene, data: string | ArrayBuffer, rootUrl = "", fileName?: string): Promise<void> {
-        if (!this.validate || typeof GLTFValidator === "undefined") {
-            return Promise.resolve();
+    private _validate(scene: Scene, data: string | ArrayBuffer, rootUrl = "", fileName = ""): void {
+        if (!this.validate) {
+            return;
         }
 
         this._startPerformanceCounter("Validate JSON");
-
-        const options: GLTF2.IGLTFValidationOptions = {
-            externalResourceFunction: (uri) => {
-                return this.preprocessUrlAsync(rootUrl + uri)
-                    .then((url) => scene._loadFileAsync(url, undefined, true, true))
-                    .then((data) => new Uint8Array(data as ArrayBuffer));
-            }
-        };
-
-        if (fileName) {
-            options.uri = (rootUrl === "file:" ? fileName : rootUrl + fileName);
-        }
-
-        const promise = (data instanceof ArrayBuffer)
-            ? GLTFValidator.validateBytes(new Uint8Array(data), options)
-            : GLTFValidator.validateString(data, options);
-
-        return promise.then((result) => {
+        GLTFValidation.ValidateAsync(data, rootUrl, fileName, (uri) => {
+            return this.preprocessUrlAsync(rootUrl + uri).then((url) => (scene._loadFileAsync(url, undefined, true, true) as Promise<ArrayBuffer>));
+        }).then((result) => {
             this._endPerformanceCounter("Validate JSON");
             this.onValidatedObservable.notifyObservers(result);
             this.onValidatedObservable.clear();
         }, (reason) => {
             this._endPerformanceCounter("Validate JSON");
-            Tools.Warn(`Failed to validate: ${reason}`);
+            Tools.Warn(`Failed to validate: ${reason.message}`);
             this.onValidatedObservable.clear();
         });
     }
@@ -746,18 +748,18 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
             }
 
             const length = dataReader.readUint32();
-            if (length !== dataReader.buffer.byteLength) {
+            if (dataReader.buffer.byteLength != 0 && length !== dataReader.buffer.byteLength) {
                 throw new Error(`Length in header does not match actual data length: ${length} != ${dataReader.buffer.byteLength}`);
             }
 
             let unpacked: Promise<IGLTFLoaderData>;
             switch (version) {
                 case 1: {
-                    unpacked = this._unpackBinaryV1Async(dataReader);
+                    unpacked = this._unpackBinaryV1Async(dataReader, length);
                     break;
                 }
                 case 2: {
-                    unpacked = this._unpackBinaryV2Async(dataReader);
+                    unpacked = this._unpackBinaryV2Async(dataReader, length);
                     break;
                 }
                 default: {
@@ -771,7 +773,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         });
     }
 
-    private _unpackBinaryV1Async(dataReader: DataReader): Promise<IGLTFLoaderData> {
+    private _unpackBinaryV1Async(dataReader: DataReader, length: number): Promise<IGLTFLoaderData> {
         const ContentFormat = {
             JSON: 0
         };
@@ -783,7 +785,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
             throw new Error(`Unexpected content format: ${contentFormat}`);
         }
 
-        const bodyLength = dataReader.buffer.byteLength - dataReader.byteOffset;
+        const bodyLength = length - dataReader.byteOffset;
 
         const data: IGLTFLoaderData = { json: this._parseJson(dataReader.readString(contentLength)), bin: null };
         if (bodyLength !== 0) {
@@ -797,7 +799,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         return Promise.resolve(data);
     }
 
-    private _unpackBinaryV2Async(dataReader: DataReader): Promise<IGLTFLoaderData> {
+    private _unpackBinaryV2Async(dataReader: DataReader, length: number): Promise<IGLTFLoaderData> {
         const ChunkFormat = {
             JSON: 0x4E4F534A,
             BIN: 0x004E4942
@@ -811,7 +813,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         }
 
         // Bail if there are no other chunks.
-        if (dataReader.byteOffset + chunkLength === dataReader.buffer.byteLength) {
+        if (dataReader.byteOffset + chunkLength === length) {
             return dataReader.loadAsync(chunkLength).then(() => {
                 return { json: this._parseJson(dataReader.readString(chunkLength)), bin: null };
             });
@@ -845,7 +847,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                     }
                 }
 
-                if (dataReader.byteOffset !== dataReader.buffer.byteLength) {
+                if (dataReader.byteOffset !== length) {
                     return dataReader.loadAsync(8).then(readAsync);
                 }
 

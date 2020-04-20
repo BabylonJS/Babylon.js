@@ -8,7 +8,7 @@ import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 
 import { TextLineComponent } from "./textLineComponent";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faWrench } from '@fortawesome/free-solid-svg-icons';
+import { faWrench, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { Texture } from 'babylonjs/Materials/Textures/texture';
 import { FileButtonLineComponent } from './fileButtonLineComponent';
 import { Tools } from 'babylonjs/Misc/tools';
@@ -18,14 +18,15 @@ export interface ITextureLinkLineComponentProps {
     texture: Nullable<BaseTexture>;
     material?: Material;
     onSelectionChangedObservable?: Observable<any>;
-    onDebugSelectionChangeObservable?: Observable<BaseTexture>;
+    onDebugSelectionChangeObservable?: Observable<TextureLinkLineComponent>;
     propertyName?: string;
     onTextureCreated?: (texture: BaseTexture) => void;
     customDebugAction?: (state: boolean) => void
+    onTextureRemoved?: () => void;
 }
 
 export class TextureLinkLineComponent extends React.Component<ITextureLinkLineComponentProps, { isDebugSelected: boolean }> {
-    private _onDebugSelectionChangeObserver: Nullable<Observer<BaseTexture>>;
+    private _onDebugSelectionChangeObserver: Nullable<Observer<TextureLinkLineComponent>>;
 
     constructor(props: ITextureLinkLineComponentProps) {
         super(props);
@@ -40,8 +41,8 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         if (!this.props.onDebugSelectionChangeObservable) {
             return;
         }
-        this._onDebugSelectionChangeObserver = this.props.onDebugSelectionChangeObservable.add((texture) => {
-            if (this.props.texture !== texture) {
+        this._onDebugSelectionChangeObserver = this.props.onDebugSelectionChangeObservable.add((line) => {
+            if (line !== this) {
                 this.setState({ isDebugSelected: false });
             }
         });
@@ -58,10 +59,16 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
             let newState = !this.state.isDebugSelected;
             this.props.customDebugAction(newState);
             this.setState({ isDebugSelected: newState });
+            
+            if (this.props.onDebugSelectionChangeObservable) {
+                this.props.onDebugSelectionChangeObservable.notifyObservers(this);
+            }
+
             return;
         }
 
         const texture = this.props.texture;
+
         const material = this.props.material;
 
         if (!material || !texture) {
@@ -115,7 +122,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         texture.level = 1.0;
 
         if (this.props.onDebugSelectionChangeObservable) {
-            this.props.onDebugSelectionChangeObservable.notifyObservers(texture!);
+            this.props.onDebugSelectionChangeObservable.notifyObservers(this);
         }
 
         if (needToDisposeCheckMaterial) {
@@ -133,7 +140,6 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         const texture = this.props.texture;
         this.props.onSelectionChangedObservable.notifyObservers(texture!);
     }
-
 
     updateTexture(file: File) {
         let material = this.props.material!;
@@ -154,6 +160,17 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         }, undefined, true);
     }
 
+    removeTexture() {
+        let material = this.props.material!;
+        if (this.props.propertyName) {
+            (material as any)[this.props.propertyName!] = null;
+        } else if (this.props.onTextureRemoved) {
+            this.props.onTextureRemoved();
+        }
+
+        this.forceUpdate();
+}
+
     render() {
         const texture = this.props.texture;
 
@@ -169,9 +186,16 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
             <div className="textureLinkLine">
                 {
                     !texture.isCube && this.props.material &&
-                    <div className={this.state.isDebugSelected ? "debug selected" : "debug"} onClick={() => this.debugTexture()} title="Render as main texture">
-                        <FontAwesomeIcon icon={faWrench} />
-                    </div>
+                    <>
+                        <div className={this.state.isDebugSelected ? "debug selected" : "debug"}>
+                            <span className="actionIcon" onClick={() => this.debugTexture()} title="Render as main texture">
+                                <FontAwesomeIcon icon={faWrench} />
+                            </span>
+                            <span className="actionIcon" onClick={() => this.removeTexture()} title="Remove texture">
+                                <FontAwesomeIcon icon={faTrash} />
+                            </span>
+                        </div>
+                    </>
                 }
                 <TextLineComponent label={this.props.label} value={texture.name} onLink={() => this.onLink()} />
             </div>

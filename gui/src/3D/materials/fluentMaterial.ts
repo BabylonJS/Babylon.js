@@ -1,6 +1,6 @@
 import { Nullable } from "babylonjs/types";
 import { serializeAsColor4, serializeAsVector3, serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "babylonjs/Misc/decorators";
-import { Color3, Vector3, Color4, Matrix, TmpVectors } from "babylonjs/Maths/math";
+import { Vector3, Matrix, TmpVectors } from "babylonjs/Maths/math.vector";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { IEffectCreationOptions } from "babylonjs/Materials/effect";
@@ -12,6 +12,7 @@ import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { Color3, Color4 } from 'babylonjs/Maths/math.color';
 
 import "./shaders/fluent.vertex";
 import "./shaders/fluent.fragment";
@@ -139,7 +140,7 @@ export class FluentMaterial extends PushMaterial {
 
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -221,7 +222,7 @@ export class FluentMaterial extends PushMaterial {
         }
 
         defines._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
 
         return true;
     }

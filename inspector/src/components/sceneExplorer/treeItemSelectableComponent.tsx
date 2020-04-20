@@ -129,7 +129,6 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
 
                 if (entity.getDescendants) {
                     if (entity.getDescendants(false, (n: any) => {
-                        console.log(n.name);
                         return n.name && n.name.toLowerCase().indexOf(lowerCaseFilter) !== -1
                     }).length === 0) {
                         return null;

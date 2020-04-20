@@ -345,7 +345,7 @@ export class Texture extends BaseTexture {
 
         if (!this._texture) {
             if (!scene || !scene.useDelayedTextureLoading) {
-                this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format, null, undefined, mimeType);
+                this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format, null, mimeType);
                 if (deleteBuffer) {
                     delete this._buffer;
                 }
@@ -408,7 +408,7 @@ export class Texture extends BaseTexture {
         this._texture = this._getFromCache(this.url, this._noMipmap, this.samplingMode, this._invertY);
 
         if (!this._texture) {
-            this._texture = scene.getEngine().createTexture(this.url, this._noMipmap, this._invertY, scene, this.samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format, null, undefined, this._mimeType);
+            this._texture = scene.getEngine().createTexture(this.url, this._noMipmap, this._invertY, scene, this.samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format, null, this._mimeType);
             if (this._deleteBuffer) {
                 delete this._buffer;
             }
@@ -427,17 +427,17 @@ export class Texture extends BaseTexture {
     }
 
     private _prepareRowForTextureGeneration(x: number, y: number, z: number, t: Vector3): void {
-        x *= this.uScale;
-        y *= this.vScale;
+        x *= this._cachedUScale;
+        y *= this._cachedVScale;
 
-        x -= this.uRotationCenter * this.uScale;
-        y -= this.vRotationCenter * this.vScale;
+        x -= this.uRotationCenter * this._cachedUScale;
+        y -= this.vRotationCenter * this._cachedVScale;
         z -= this.wRotationCenter;
 
         Vector3.TransformCoordinatesFromFloatsToRef(x, y, z, this._rowGenerationMatrix!, t);
 
-        t.x += this.uRotationCenter * this.uScale + this.uOffset;
-        t.y += this.vRotationCenter * this.vScale + this.vOffset;
+        t.x += this.uRotationCenter * this._cachedUScale + this._cachedUOffset;
+        t.y += this.vRotationCenter * this._cachedVScale + this._cachedVOffset;
         t.z += this.wRotationCenter;
     }
 
@@ -445,11 +445,11 @@ export class Texture extends BaseTexture {
      * Get the current texture matrix which includes the requested offsetting, tiling and rotation components.
      * @returns the transform matrix of the texture.
      */
-    public getTextureMatrix(): Matrix {
+    public getTextureMatrix(uBase = 1): Matrix {
         if (
             this.uOffset === this._cachedUOffset &&
             this.vOffset === this._cachedVOffset &&
-            this.uScale === this._cachedUScale &&
+            this.uScale * uBase === this._cachedUScale &&
             this.vScale === this._cachedVScale &&
             this.uAng === this._cachedUAng &&
             this.vAng === this._cachedVAng &&
@@ -459,7 +459,7 @@ export class Texture extends BaseTexture {
 
         this._cachedUOffset = this.uOffset;
         this._cachedVOffset = this.vOffset;
-        this._cachedUScale = this.uScale;
+        this._cachedUScale = this.uScale * uBase;
         this._cachedVScale = this.vScale;
         this._cachedUAng = this.uAng;
         this._cachedVAng = this.vAng;
@@ -592,10 +592,15 @@ export class Texture extends BaseTexture {
      */
     public serialize(): any {
         let savedName = this.name;
+
         if (!Texture.SerializeBuffers) {
             if (StringTools.StartsWith(this.name, "data:")) {
                 this.name = "";
             }
+        }
+
+        if (StringTools.StartsWith(this.name, "data:") && this.url === this.name) {
+            this.url = "";
         }
 
         var serializationObject = super.serialize();
@@ -701,11 +706,11 @@ export class Texture extends BaseTexture {
             } else {
                 var texture: Texture;
                 if (parsedTexture.base64String) {
-                    texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene, !generateMipMaps);
+                    texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene, !generateMipMaps, parsedTexture.invertY);
                 } else {
                     let url = rootUrl + parsedTexture.name;
 
-                    if (Texture.UseSerializedUrlIfAny && parsedTexture.url) {
+                    if (StringTools.StartsWith(parsedTexture.url, "data:") || (Texture.UseSerializedUrlIfAny && parsedTexture.url)) {
                         url = parsedTexture.url;
                     }
                     texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY);

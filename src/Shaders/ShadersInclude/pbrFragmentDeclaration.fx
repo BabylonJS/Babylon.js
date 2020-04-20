@@ -100,6 +100,9 @@ uniform mat4 view;
 // Sheen
 #ifdef SHEEN
     uniform vec4 vSheenColor;
+    #ifdef SHEEN_ROUGHNESS
+        uniform float vSheenRoughness;
+    #endif
 
     #ifdef SHEEN_TEXTURE
         uniform vec2 vSheenInfos;
@@ -117,7 +120,7 @@ uniform mat4 view;
 
     #ifdef SS_THICKNESSANDMASK_TEXTURE
         uniform vec2 vThicknessInfos;
-        uniform mat4 thicknessMatrix;;
+        uniform mat4 thicknessMatrix;
     #endif
 
     uniform vec2 vThicknessParam;

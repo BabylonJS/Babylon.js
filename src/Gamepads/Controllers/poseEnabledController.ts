@@ -5,7 +5,6 @@ import { Node } from "../../node";
 import { TransformNode } from "../../Meshes/transformNode";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Ray } from "../../Culling/ray";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { EngineStore } from "../../Engines/engineStore";
 
 import { Gamepad } from "../../Gamepads/gamepad";
@@ -82,15 +81,15 @@ export interface ExtendedGamepadButton extends GamepadButton {
 /** @hidden */
 export interface _GamePadFactory {
     /**
-     * Returns wether or not the current gamepad can be created for this type of controller.
-     * @param gamepadInfo Defines the gamepad info as receveid from the controller APIs.
+     * Returns whether or not the current gamepad can be created for this type of controller.
+     * @param gamepadInfo Defines the gamepad info as received from the controller APIs.
      * @returns true if it can be created, otherwise false
      */
     canCreate(gamepadInfo: any): boolean;
 
     /**
      * Creates a new instance of the Gamepad.
-     * @param gamepadInfo Defines the gamepad info as receveid from the controller APIs.
+     * @param gamepadInfo Defines the gamepad info as received from the controller APIs.
      * @returns the new gamepad instance
      */
     create(gamepadInfo: any): Gamepad;

@@ -66,7 +66,7 @@ export class RGBDTextureTools {
                         effect._bindTexture("textureSampler", internalTexture);
                         effect.setFloat2("scale", 1, 1);
                     };
-                    engine.scenes[0].postProcessManager.directRender([rgbdPostProcess!], expandedTexture, true);
+                    texture.getScene()!.postProcessManager.directRender([rgbdPostProcess!], expandedTexture, true);
 
                     // Cleanup
                     engine.restoreDefaultFramebuffer();

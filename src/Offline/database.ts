@@ -389,7 +389,7 @@ export class Database implements IOfflineProvider {
             }
         }
         else {
-            Logger.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
+            Logger.Error("Error: IndexedDB not supported by your browser or Babylon.js database is not open.");
             image.src = url;
         }
     }
@@ -446,7 +446,7 @@ export class Database implements IOfflineProvider {
             }
         }
         else {
-            Logger.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
+            Logger.Error("Error: IndexedDB not supported by your browser or Babylon.js database is not open.");
             callback(-1);
         }
     }
@@ -660,7 +660,7 @@ export class Database implements IOfflineProvider {
             xhr.send();
         }
         else {
-            Logger.Error("Error: IndexedDB not supported by your browser or Babylon.js Database is not open.");
+            Logger.Error("Error: IndexedDB not supported by your browser or Babylon.js database is not open.");
             callback();
         }
     }

@@ -1,6 +1,7 @@
 import { Vector3, Matrix } from "../../Maths/math.vector";
 import { Effect } from "../../Materials/effect";
 import { Particle } from "../../Particles/particle";
+import { Scene } from '../../scene';
 /**
  * Particle emitter represents a volume emitting particles.
  * This is the responsibility of the implementation to define the volume shape like cone/sphere/box.
@@ -11,16 +12,18 @@ export interface IParticleEmitterType {
      * @param worldMatrix is the world matrix of the particle system
      * @param directionToUpdate is the direction vector to update with the result
      * @param particle is the particle we are computed the direction for
+     * @param isLocal defines if the direction should be set in local space
      */
-    startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void;
+    startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
 
     /**
      * Called by the particle System when the position is computed for the created particle.
      * @param worldMatrix is the world matrix of the particle system
      * @param positionToUpdate is the position vector to update with the result
      * @param particle is the particle we are computed the position for
+     * @param isLocal defines if the position should be set in local space
      */
-    startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void;
+    startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void;
 
     /**
      * Clones the current emitter and returns a copy of it
@@ -55,6 +58,7 @@ export interface IParticleEmitterType {
     /**
      * Parse properties from a JSON object
      * @param serializationObject defines the JSON object
+     * @param scene defines the hosting scene
      */
-    parse(serializationObject: any): void;
+    parse(serializationObject: any, scene: Scene): void;
 }

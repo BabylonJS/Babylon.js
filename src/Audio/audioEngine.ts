@@ -75,6 +75,26 @@ export interface IAudioEngine extends IDisposable {
      * This is helpful to resume play once browser policies have been satisfied.
      */
     unlock(): void;
+
+    /**
+     * Gets the global volume sets on the master gain.
+     * @returns the global volume if set or -1 otherwise
+     */
+    getGlobalVolume(): number;
+
+    /**
+     * Sets the global volume of your experience (sets on the master gain).
+     * @param newVolume Defines the new global volume of the application
+     */
+    setGlobalVolume(newVolume: number): void;
+
+    /**
+     * Connect the audio engine to an audio analyser allowing some amazing
+     * synchornization between the sounds/music and your visualization (VuMeter for instance).
+     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
+     * @param analyser The analyser to connect to the engine
+     */
+    connectToAnalyser(analyser: Analyser): void;
 }
 
 // Sets the default audio engine to Babylon.js
@@ -275,7 +295,9 @@ export class AudioEngine implements IAudioEngine {
         this._muteButton.className = "babylonUnmuteIcon";
         this._muteButton.id = "babylonUnmuteIconBtn";
         this._muteButton.title = "Unmute";
-        var css = ".babylonUnmuteIcon { position: absolute; left: 20px; top: 20px; height: 40px; width: 60px; background-color: rgba(51,51,51,0.7); background-image: url(data:image/svg+xml;charset=UTF-8,%3Csvg%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2239%22%20height%3D%2232%22%20viewBox%3D%220%200%2039%2032%22%3E%3Cpath%20fill%3D%22white%22%20d%3D%22M9.625%2018.938l-0.031%200.016h-4.953q-0.016%200-0.031-0.016v-12.453q0-0.016%200.031-0.016h4.953q0.031%200%200.031%200.016v12.453zM12.125%207.688l8.719-8.703v27.453l-8.719-8.719-0.016-0.047v-9.938zM23.359%207.875l1.406-1.406%204.219%204.203%204.203-4.203%201.422%201.406-4.219%204.219%204.219%204.203-1.484%201.359-4.141-4.156-4.219%204.219-1.406-1.422%204.219-4.203z%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E);  background-size: 80%; background-repeat:no-repeat; background-position: center; background-position-y: 4px; border: none; outline: none; transition: transform 0.125s ease-out; cursor: pointer; z-index: 9999; } .babylonUnmuteIcon:hover { transform: scale(1.05) } .babylonUnmuteIcon:active { background-color: rgba(51,51,51,1) }";
+        const imageUrl = !window.SVGSVGElement ? "https://cdn.babylonjs.com/Assets/audio.png" : "data:image/svg+xml;charset=UTF-8,%3Csvg%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2239%22%20height%3D%2232%22%20viewBox%3D%220%200%2039%2032%22%3E%3Cpath%20fill%3D%22white%22%20d%3D%22M9.625%2018.938l-0.031%200.016h-4.953q-0.016%200-0.031-0.016v-12.453q0-0.016%200.031-0.016h4.953q0.031%200%200.031%200.016v12.453zM12.125%207.688l8.719-8.703v27.453l-8.719-8.719-0.016-0.047v-9.938zM23.359%207.875l1.406-1.406%204.219%204.203%204.203-4.203%201.422%201.406-4.219%204.219%204.219%204.203-1.484%201.359-4.141-4.156-4.219%204.219-1.406-1.422%204.219-4.203z%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E";
+
+        var css = ".babylonUnmuteIcon { position: absolute; left: 20px; top: 20px; height: 40px; width: 60px; background-color: rgba(51,51,51,0.7); background-image: url(" + imageUrl + ");  background-size: 80%; background-repeat:no-repeat; background-position: center; background-position-y: 4px; border: none; outline: none; transition: transform 0.125s ease-out; cursor: pointer; z-index: 9999; } .babylonUnmuteIcon:hover { transform: scale(1.05) } .babylonUnmuteIcon:active { background-color: rgba(51,51,51,1) }";
 
         var style = document.createElement('style');
         style.appendChild(document.createTextNode(css));

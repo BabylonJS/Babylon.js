@@ -10,9 +10,10 @@ import { Color3 } from 'babylonjs/Maths/math.color';
 const NAME = "KHR_materials_sheen";
 
 interface IKHR_materials_sheen {
-    sheenFactor: number;
-    sheenColor: number[];
-    sheenTexture: ITextureInfo;
+    intensityFactor: number;
+    colorFactor: number[];
+    colorIntensityTexture: ITextureInfo;
+    roughnessFactor: number;
 }
 
 /**
@@ -34,7 +35,7 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
     /**
      * Defines a number that determines the order the extensions are applied.
      */
-    public order = 240;
+    public order = 190;
 
     private _loader: GLTFLoader;
 
@@ -68,23 +69,31 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
 
         babylonMaterial.sheen.isEnabled = true;
 
-        if (properties.sheenFactor != undefined) {
-            babylonMaterial.sheen.intensity = properties.sheenFactor;
+        if (properties.intensityFactor != undefined) {
+            babylonMaterial.sheen.intensity = properties.intensityFactor;
         }
         else {
             babylonMaterial.sheen.intensity = 0;
         }
 
-        if (properties.sheenColor != undefined) {
-            babylonMaterial.sheen.color = Color3.FromArray(properties.sheenColor);
+        if (properties.colorFactor != undefined) {
+            babylonMaterial.sheen.color = Color3.FromArray(properties.colorFactor);
         }
 
-        if (properties.sheenTexture) {
-            promises.push(this._loader.loadTextureInfoAsync(`${context}/sheenTexture`, properties.sheenTexture, (texture) => {
+        if (properties.colorIntensityTexture) {
+            promises.push(this._loader.loadTextureInfoAsync(`${context}/sheenTexture`, properties.colorIntensityTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (Sheen Intensity)`;
                 babylonMaterial.sheen.texture = texture;
             }));
         }
+
+        if (properties.roughnessFactor !== undefined) {
+            babylonMaterial.sheen.roughness = properties.roughnessFactor;
+        } else {
+            babylonMaterial.sheen.roughness = 0;
+        }
+
+        babylonMaterial.sheen.albedoScaling = true;
 
         return Promise.all(promises).then(() => { });
     }

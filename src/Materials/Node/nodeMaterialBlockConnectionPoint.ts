@@ -7,6 +7,28 @@ import { Observable } from '../../Misc/observable';
 declare type NodeMaterialBlock = import("./nodeMaterialBlock").NodeMaterialBlock;
 
 /**
+ * Enum used to define the compatibility state between two connection points
+ */
+export enum NodeMaterialConnectionPointCompatibilityStates {
+    /** Points are compatibles */
+    Compatible,
+    /** Points are incompatible because of their types */
+    TypeIncompatible,
+    /** Points are incompatible because of their targets (vertex vs fragment) */
+    TargetIncompatible
+}
+
+/**
+ * Defines the direction of a connection point
+ */
+export enum NodeMaterialConnectionPointDirection {
+    /** Input */
+    Input,
+    /** Output */
+    Output
+}
+
+/**
  * Defines a connection point for a block
  */
 export class NodeMaterialConnectionPoint {
@@ -17,6 +39,7 @@ export class NodeMaterialConnectionPoint {
 
     private _endpoints = new Array<NodeMaterialConnectionPoint>();
     private _associatedVariableName: string;
+    private _direction: NodeMaterialConnectionPointDirection;
 
     /** @hidden */
     public _typeConnectionSource: Nullable<NodeMaterialConnectionPoint> = null;
@@ -28,6 +51,14 @@ export class NodeMaterialConnectionPoint {
 
     /** @hidden */
     public _enforceAssociatedVariableName = false;
+
+    /** Gets the direction of the point */
+    public get direction() {
+        return this._direction;
+    }
+
+    /** Indicates that this connection point needs dual validation before being connected to another point */
+    public needDualDirectionValidation: boolean = false;
 
     /**
      * Gets or sets the additional types supported by this connection point
@@ -63,6 +94,14 @@ export class NodeMaterialConnectionPoint {
         this._associatedVariableName = value;
     }
 
+    /** Get the inner type (ie AutoDetect for instance instead of the inferred one) */
+    public get innerType() {
+        if (this._linkedConnectionSource && this._linkedConnectionSource.isConnected) {
+            return this.type;
+        }
+        return this._type;
+    }
+
     /**
      * Gets or sets the connection point type (default is float)
      */
@@ -96,6 +135,11 @@ export class NodeMaterialConnectionPoint {
      * Gets or sets the connection point name
      */
     public name: string;
+
+    /**
+     * Gets or sets the connection point name
+     */
+    public displayName: string;
 
     /**
      * Gets or sets a boolean indicating that this connection point can be omitted
@@ -251,13 +295,24 @@ export class NodeMaterialConnectionPoint {
     }
 
     /**
+     * Creates a block suitable to be used as an input for this input point.
+     * If null is returned, a block based on the point type will be created.
+     * @returns The returned string parameter is the name of the output point of NodeMaterialBlock (first parameter of the returned array) that can be connected to the input
+     */
+    public createCustomInputBlock(): Nullable<[NodeMaterialBlock, string]> {
+        return null;
+    }
+
+    /**
      * Creates a new connection point
      * @param name defines the connection point name
      * @param ownerBlock defines the block hosting this connection point
+     * @param direction defines the direction of the connection point
      */
-    public constructor(name: string, ownerBlock: NodeMaterialBlock) {
+    public constructor(name: string, ownerBlock: NodeMaterialBlock, direction: NodeMaterialConnectionPointDirection) {
         this._ownerBlock = ownerBlock;
         this.name = name;
+        this._direction = direction;
     }
 
     /**
@@ -269,46 +324,80 @@ export class NodeMaterialConnectionPoint {
     }
 
     /**
-     * Gets an boolean indicating if the current point can be connected to another point
+     * Gets a boolean indicating if the current point can be connected to another point
      * @param connectionPoint defines the other connection point
-     * @returns true if the connection is possible
+     * @returns a boolean
      */
     public canConnectTo(connectionPoint: NodeMaterialConnectionPoint) {
-        if (this.type !== connectionPoint.type && connectionPoint.type !== NodeMaterialBlockConnectionPointTypes.AutoDetect) {
+        return this.checkCompatibilityState(connectionPoint) === NodeMaterialConnectionPointCompatibilityStates.Compatible;
+    }
+
+    /**
+     * Gets a number indicating if the current point can be connected to another point
+     * @param connectionPoint defines the other connection point
+     * @returns a number defining the compatibility state
+     */
+    public checkCompatibilityState(connectionPoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPointCompatibilityStates {
+        const ownerBlock = this._ownerBlock;
+
+        if (ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
+            // Let's check we are not going reverse
+            const otherBlock = connectionPoint.ownerBlock;
+
+            if (otherBlock.target === NodeMaterialBlockTargets.Vertex) {
+                return NodeMaterialConnectionPointCompatibilityStates.TargetIncompatible;
+            }
+
+            for (var output of otherBlock.outputs) {
+                if (output.isConnectedInVertexShader) {
+                    return NodeMaterialConnectionPointCompatibilityStates.TargetIncompatible;
+                }
+            }
+        }
+
+        if (this.type !== connectionPoint.type && connectionPoint.innerType !== NodeMaterialBlockConnectionPointTypes.AutoDetect) {
             // Equivalents
             switch (this.type) {
                 case NodeMaterialBlockConnectionPointTypes.Vector3: {
                     if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Color3) {
-                        return true;
+                        return NodeMaterialConnectionPointCompatibilityStates.Compatible;
                     }
+                    break;
                 }
                 case NodeMaterialBlockConnectionPointTypes.Vector4: {
                     if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Color4) {
-                        return true;
+                        return NodeMaterialConnectionPointCompatibilityStates.Compatible;
                     }
+                    break;
                 }
                 case NodeMaterialBlockConnectionPointTypes.Color3: {
                     if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Vector3) {
-                        return true;
+                        return NodeMaterialConnectionPointCompatibilityStates.Compatible;
                     }
+                    break;
                 }
                 case NodeMaterialBlockConnectionPointTypes.Color4: {
                     if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
-                        return true;
+                        return NodeMaterialConnectionPointCompatibilityStates.Compatible;
                     }
+                    break;
                 }
             }
 
             // Accepted types
-            return (connectionPoint.acceptedConnectionPointTypes && connectionPoint.acceptedConnectionPointTypes.indexOf(this.type) !== -1);
+            if (connectionPoint.acceptedConnectionPointTypes && connectionPoint.acceptedConnectionPointTypes.indexOf(this.type) !== -1) {
+                return NodeMaterialConnectionPointCompatibilityStates.Compatible;
+            } else {
+                return NodeMaterialConnectionPointCompatibilityStates.TypeIncompatible;
+            }
         }
 
         // Excluded
         if ((connectionPoint.excludedConnectionPointTypes && connectionPoint.excludedConnectionPointTypes.indexOf(this.type) !== -1)) {
-            return false;
+            return 1;
         }
 
-        return true;
+        return NodeMaterialConnectionPointCompatibilityStates.Compatible;
     }
 
     /**
@@ -354,14 +443,16 @@ export class NodeMaterialConnectionPoint {
 
     /**
      * Serializes this point in a JSON representation
+     * @param isInput defines if the connection point is an input (default is true)
      * @returns the serialized point object
      */
-    public serialize(): any {
+    public serialize(isInput = true): any {
         let serializationObject: any = {};
 
         serializationObject.name = this.name;
+        serializationObject.displayName = this.displayName;
 
-        if (this.connectedPoint) {
+        if (isInput && this.connectedPoint) {
             serializationObject.inputName = this.name;
             serializationObject.targetBlockId = this.connectedPoint.ownerBlock.uniqueId;
             serializationObject.targetConnectionName = this.connectedPoint.name;

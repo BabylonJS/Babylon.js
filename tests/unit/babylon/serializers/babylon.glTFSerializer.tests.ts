@@ -64,6 +64,8 @@ describe('Babylon glTF Serializer', () => {
                 const jsonString = glTFData.glTFFiles['test.gltf'] as string;
                 const jsonData = JSON.parse(jsonString);
 
+                console.error(jsonData);
+
                 Object.keys(jsonData).length.should.be.equal(1);
                 jsonData.asset.version.should.be.equal("2.0");
                 jsonData.asset.generator.should.be.equal("BabylonJS");
@@ -427,7 +429,6 @@ describe('Babylon glTF Serializer', () => {
                 expect(jsonData.extensions['KHR_lights_punctual'].lights[0].color).to.deep.equal(diffuseColor.asArray());
                 jsonData.nodes.length.should.be.equal(1);
                 jsonData.nodes[0].extensions['KHR_lights_punctual']['light'].should.be.equal(0);
-                
             });
         });
         it('should serialize multiple lights to glTF', () => {

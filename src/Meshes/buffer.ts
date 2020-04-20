@@ -99,8 +99,8 @@ export class Buffer {
     /**
      * Gets the stride in float32 units (i.e. byte stride / 4).
      * May not be an integer if the byte stride is not divisible by 4.
-     * DEPRECATED. Use byteStride instead.
      * @returns the stride in float32 units
+     * @deprecated Please use byteStride instead.
      */
     public getStrideSize(): number {
         return this.byteStride / Float32Array.BYTES_PER_ELEMENT;
@@ -371,8 +371,8 @@ export class VertexBuffer {
     /**
      * Gets the stride in float32 units (i.e. byte stride / 4).
      * May not be an integer if the byte stride is not divisible by 4.
-     * DEPRECATED. Use byteStride instead.
      * @returns the stride in float32 units
+     * @deprecated Please use byteStride instead.
      */
     public getStrideSize(): number {
         return this.byteStride / VertexBuffer.GetTypeByteLength(this.type);
@@ -380,8 +380,8 @@ export class VertexBuffer {
 
     /**
      * Returns the offset as a multiple of the type byte length.
-     * DEPRECATED. Use byteOffset instead.
      * @returns the offset in bytes
+     * @deprecated Please use byteOffset instead.
      */
     public getOffset(): number {
         return this.byteOffset / VertexBuffer.GetTypeByteLength(this.type);

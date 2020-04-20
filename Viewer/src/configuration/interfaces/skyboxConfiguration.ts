@@ -7,9 +7,9 @@ export interface ISkyboxConfiguration {
         url?: string | Array<string>;
     };
     color?: { r: number, g: number, b: number };
-    pbr?: boolean; // deprecated
+    /** @deprecated */ pbr?: boolean;
     scale?: number;
-    blur?: number; // deprecated
+    /** @deprecated */ blur?: number;
     material?: {
         imageProcessingConfiguration?: IImageProcessingConfiguration;
         [propName: string]: any;

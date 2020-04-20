@@ -2,8 +2,8 @@ import { SmartArrayNoDuplicate } from "../../Misc/smartArray";
 import { Scene } from "../../scene";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { ShadowGenerator } from "./shadowGenerator";
+import { CascadedShadowGenerator } from "./cascadedShadowGenerator";
 import { SceneComponentConstants, ISceneSerializableComponent } from "../../sceneComponent";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { AbstractScene } from "../../abstractScene";
 // Adds the parser to the scene parsers.
 AbstractScene.AddParser(SceneComponentConstants.NAME_SHADOWGENERATOR, (parsedData: any, scene: Scene) => {
@@ -11,7 +11,11 @@ AbstractScene.AddParser(SceneComponentConstants.NAME_SHADOWGENERATOR, (parsedDat
     if (parsedData.shadowGenerators !== undefined && parsedData.shadowGenerators !== null) {
         for (var index = 0, cache = parsedData.shadowGenerators.length; index < cache; index++) {
             var parsedShadowGenerator = parsedData.shadowGenerators[index];
-            ShadowGenerator.Parse(parsedShadowGenerator, scene);
+            if (parsedShadowGenerator.className === CascadedShadowGenerator.CLASSNAME) {
+                CascadedShadowGenerator.Parse(parsedShadowGenerator, scene);
+            } else {
+                ShadowGenerator.Parse(parsedShadowGenerator, scene);
+            }
             // SG would be available on their associated lights
         }
     }

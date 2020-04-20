@@ -10,6 +10,8 @@ export interface EngineCapabilities {
     maxCombinedTexturesImageUnits: number;
     /** Maximum texture size */
     maxTextureSize: number;
+    /** Maximum texture samples */
+    maxSamples?: number;
     /** Maximum cube texture size */
     maxCubemapTextureSize: number;
     /** Maximum render texture size */
@@ -74,6 +76,8 @@ export interface EngineCapabilities {
     canUseTimestampForTimerQuery: boolean;
     /** Defines if multiview is supported (https://www.khronos.org/registry/webgl/extensions/WEBGL_multiview/) */
     multiview?: any;
+    /** Defines if oculus multiview is supported (https://developer.oculus.com/documentation/oculus-browser/latest/concepts/browser-multiview/) */
+    oculusMultiview?: any;
     /** Function used to let the system compiles shaders in background */
     parallelShaderCompile?: {
         COMPLETION_STATUS_KHR: number;

@@ -4,7 +4,6 @@ import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { HDRTools } from "../../Misc/HighDynamicRange/hdr";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 import { _TypeStore } from '../../Misc/typeStore';
@@ -134,6 +133,7 @@ export class HDRCubeTexture extends BaseTexture {
 
         this._noMipmap = noMipmap;
         this._size = size;
+        this._generateHarmonics = generateHarmonics;
 
         this._texture = this._getFromCache(url, this._noMipmap);
 

@@ -1,6 +1,6 @@
 import { Nullable } from "babylonjs/types";
 import { Observable, Observer } from "babylonjs/Misc/observable";
-import { Vector2, Vector3, Matrix } from "babylonjs/Maths/math";
+import { Vector2, Vector3, Matrix } from "babylonjs/Maths/math.vector";
 import { PointerEventTypes } from 'babylonjs/Events/pointerEvents';
 import { Logger } from "babylonjs/Misc/logger";
 import { Tools } from "babylonjs/Misc/tools";
@@ -96,11 +96,18 @@ export class Control {
     private _downPointerIds: { [id: number]: boolean } = {};
     protected _isEnabled = true;
     protected _disabledColor = "#9a9a9a";
+    protected _disabledColorItem = "#6a6a6a";
     /** @hidden */
     protected _rebuildLayout = false;
 
     /** @hidden */
+    public _customData: any = {};
+
+    /** @hidden */
     public _isClipped = false;
+
+    /** @hidden */
+    public _automaticSize = false;
 
     /** @hidden */
     public _tag: any;
@@ -225,6 +232,10 @@ export class Control {
     }
 
     /**
+    * An event triggered when pointer wheel is scrolled
+    */
+    public onWheelObservable = new Observable<Vector2>();
+    /**
     * An event triggered when the pointer move over the control.
     */
     public onPointerMoveObservable = new Observable<Vector2>();
@@ -268,6 +279,11 @@ export class Control {
      * An event triggered after the control was drawn
      */
     public onAfterDrawObservable = new Observable<Control>();
+
+    /**
+    * An event triggered when the control has been disposed
+    */
+   public onDisposeObservable = new Observable<Control>();
 
     /**
      * Get the hosting AdvancedDynamicTexture
@@ -950,6 +966,19 @@ export class Control {
         this._disabledColor = value;
         this._markAsDirty();
     }
+    /** Gets or sets front color of control if it's disabled*/
+    public get disabledColorItem(): string {
+        return this._disabledColorItem;
+    }
+
+    public set disabledColorItem(value: string) {
+        if (this._disabledColorItem === value) {
+            return;
+        }
+
+        this._disabledColorItem = value;
+        this._markAsDirty();
+    }
     // Functions
 
     /**
@@ -1071,8 +1100,13 @@ export class Control {
         this.notRenderable = false;
     }
 
-    /** @hidden */
-    public _getDescendants(results: Control[], directDescendantsOnly: boolean = false, predicate?: (control: Control) => boolean): void {
+    /**
+     * Will store all controls that have this control as ascendant in a given array
+     * @param results defines the array where to store the descendants
+     * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+     * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+     */
+    public getDescendantsToRef(results: Control[], directDescendantsOnly: boolean = false, predicate?: (control: Control) => boolean): void {
         // Do nothing by default
     }
 
@@ -1085,7 +1119,7 @@ export class Control {
     public getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[] {
         var results = new Array<Control>();
 
-        this._getDescendants(results, directDescendantsOnly, predicate);
+        this.getDescendantsToRef(results, directDescendantsOnly, predicate);
 
         return results;
     }
@@ -1348,6 +1382,8 @@ export class Control {
         }
 
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
+            this.host._numLayoutCalls++;
+
             this._currentMeasure.transformToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);
 
             context.save();
@@ -1588,6 +1624,9 @@ export class Control {
             this._isDirty = false;
             return false;
         }
+
+        this.host._numRenderCalls++;
+
         context.save();
 
         this._applyStates(context);
@@ -1667,7 +1706,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean {
+    public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled) {
             return false;
         }
@@ -1679,7 +1718,7 @@ export class Control {
             return false;
         }
 
-        this._processObservables(type, x, y, pointerId, buttonIndex);
+        this._processObservables(type, x, y, pointerId, buttonIndex, deltaX, deltaY);
 
         return true;
     }
@@ -1781,7 +1820,17 @@ export class Control {
     }
 
     /** @hidden */
-    public _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number): boolean {
+    public _onWheelScroll(deltaX?: number, deltaY?: number): void {
+        if (!this._isEnabled) {
+            return;
+        }
+        var canNotify: boolean = this.onWheelObservable.notifyObservers(new Vector2(deltaX, deltaY));
+
+        if (canNotify && this.parent != null) { this.parent._onWheelScroll(deltaX, deltaY); }
+    }
+
+    /** @hidden */
+    public _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled) {
             return false;
         }
@@ -1817,6 +1866,13 @@ export class Control {
             return true;
         }
 
+        if (type === PointerEventTypes.POINTERWHEEL) {
+            if (this._host._lastControlOver[pointerId]) {
+                this._host._lastControlOver[pointerId]._onWheelScroll(deltaX, deltaY);
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -1845,6 +1901,7 @@ export class Control {
         this.onPointerOutObservable.clear();
         this.onPointerUpObservable.clear();
         this.onPointerClickObservable.clear();
+        this.onWheelObservable.clear();
 
         if (this._styleObserver && this._style) {
             this._style.onChangedObservable.remove(this._styleObserver);
@@ -1862,6 +1919,10 @@ export class Control {
                 this.linkWithMesh(null);
             }
         }
+
+        // Callback
+        this.onDisposeObservable.notifyObservers(this);
+        this.onDisposeObservable.clear();
     }
 
     // Statics

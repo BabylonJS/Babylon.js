@@ -94,6 +94,25 @@ export class FreeCamera extends TargetCamera {
     }
 
     /**
+     * Gets or Set the list of keyboard keys used to control the upward move of the camera.
+     */
+    public get keysUpward(): number[] {
+        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        if (keyboard) {
+            return keyboard.keysUpward;
+        }
+
+        return [];
+    }
+
+    public set keysUpward(value: number[]) {
+        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        if (keyboard) {
+            keyboard.keysUpward = value;
+        }
+    }
+
+    /**
      * Gets or Set the list of keyboard keys used to control the backward move of the camera.
      */
     public get keysDown(): number[] {
@@ -109,6 +128,25 @@ export class FreeCamera extends TargetCamera {
         var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             keyboard.keysDown = value;
+        }
+    }
+
+     /**
+     * Gets or Set the list of keyboard keys used to control the downward move of the camera.
+     */
+    public get keysDownward(): number[] {
+        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        if (keyboard) {
+            return keyboard.keysDownward;
+        }
+
+        return [];
+    }
+
+    public set keysDownward(value: number[]) {
+        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        if (keyboard) {
+            keyboard.keysDownward = value;
         }
     }
 

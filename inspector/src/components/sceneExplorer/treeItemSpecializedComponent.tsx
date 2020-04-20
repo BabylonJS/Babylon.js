@@ -30,6 +30,8 @@ import { SkeletonTreeItemComponent } from './entities/skeletonTreeItemComponent'
 import { Skeleton } from 'babylonjs/Bones/skeleton';
 import { BoneTreeItemComponent } from './entities/boneTreeItemComponent';
 import { Bone } from 'babylonjs/Bones/bone';
+import { ParticleSystemTreeItemComponent } from './entities/particleSystemTreeItemComponent';
+import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
 
 
 interface ITreeItemSpecializedComponentProps {
@@ -62,7 +64,7 @@ export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpeci
             if (className.indexOf("Mesh") !== -1) {
                 const mesh = entity as AbstractMesh;
                 if (mesh.isAnInstance || mesh.getTotalVertices() > 0) {
-                    return (<MeshTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} mesh={mesh} onClick={() => this.onClick()} />);
+                    return (<MeshTreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} mesh={mesh} onClick={() => this.onClick()} />);
                 } else {
                     return (<TransformNodeItemComponent extensibilityGroups={this.props.extensibilityGroups} transformNode={entity as TransformNode} onClick={() => this.onClick()} />);
                 }
@@ -90,6 +92,10 @@ export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpeci
 
             if (className.indexOf("Material") !== -1) {
                 return (<MaterialTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} material={entity as Material} onClick={() => this.onClick()} />);
+            }
+
+            if (className.indexOf("ParticleSystem") !== -1) {
+                return (<ParticleSystemTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} system={entity as IParticleSystem} onClick={() => this.onClick()} />);
             }
 
             if (className === "AdvancedDynamicTexture") {

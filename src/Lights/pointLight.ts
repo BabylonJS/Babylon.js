@@ -5,7 +5,6 @@ import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { Effect } from "../Materials/effect";
 
 Node.AddNodeConstructor("Light_Type_0", (name, scene) => {
@@ -153,7 +152,7 @@ export class PointLight extends ShadowLight {
     protected _buildUniformLayout(): void {
         this._uniformBuffer.addUniform("vLightData", 4);
         this._uniformBuffer.addUniform("vLightDiffuse", 4);
-        this._uniformBuffer.addUniform("vLightSpecular", 3);
+        this._uniformBuffer.addUniform("vLightSpecular", 4);
         this._uniformBuffer.addUniform("vLightFalloff", 4);
         this._uniformBuffer.addUniform("shadowsInfo", 3);
         this._uniformBuffer.addUniform("depthValues", 2);

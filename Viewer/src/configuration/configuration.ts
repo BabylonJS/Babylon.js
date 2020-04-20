@@ -97,10 +97,10 @@ export interface ViewerConfiguration {
             specular?: { r: number, g: number, b: number };
         }
         hideLoadingDelay?: number;
-        /** Deprecated */
+        /** @deprecated */
         assetsRootURL?: string;
         environmentMainColor?: { r: number, g: number, b: number };
-        /** Deprecated */
+        /** @deprecated */
         environmentMap?: {
             /**
              * Environment map texture path in relative to the asset folder.

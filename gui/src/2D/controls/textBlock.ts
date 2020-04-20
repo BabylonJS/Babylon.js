@@ -3,6 +3,7 @@ import { Measure } from "../measure";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Control } from "./control";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { Nullable } from 'babylonjs/types';
 
 /**
  * Enum that determines the text-wrapping mode to use.
@@ -305,7 +306,7 @@ export class TextBlock extends Control {
     }
 
     /** @hidden */
-    public _draw(context: CanvasRenderingContext2D): void {
+    public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void {
         context.save();
 
         this._applyStates(context);
