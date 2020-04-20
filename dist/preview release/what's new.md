@@ -151,6 +151,7 @@
 - Fix bug with multiple scenes when resizing the screen and there's a glow or highlight layer active ([Popov72](https://github.com/Popov72)
 - Fix an error when compiling with the closure compiler ([ageneau](https://github.com/ageneau/))
 - Fix an error in applying texture to sides of `extrudePolygon` using faceUV[1] ([JohnK](https://github.com/BabylonJSGuide/))
+- Playground didn't work if query params were added to the URL ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 
