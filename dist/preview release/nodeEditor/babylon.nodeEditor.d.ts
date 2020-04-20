@@ -1,7 +1,7 @@
 /// <reference types="react" />
 declare module NODEEDITOR {
     export class BlockTools {
-        static GetBlockFromString(data: string, scene: BABYLON.Scene, nodeMaterial: BABYLON.NodeMaterial): BABYLON.DesaturateBlock | BABYLON.RefractBlock | BABYLON.ReflectBlock | BABYLON.DerivativeBlock | BABYLON.Rotate2dBlock | BABYLON.NormalBlendBlock | BABYLON.WorleyNoise3DBlock | BABYLON.SimplexPerlin3DBlock | BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.DiscardBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.PowBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.NLerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.StepBlock | BABYLON.SmoothStepBlock | BABYLON.OneMinusBlock | BABYLON.ReciprocalBlock | BABYLON.ViewDirectionBlock | BABYLON.LightInformationBlock | BABYLON.MaxBlock | BABYLON.MinBlock | BABYLON.LengthBlock | BABYLON.DistanceBlock | BABYLON.NegateBlock | BABYLON.PerturbNormalBlock | BABYLON.RandomNumberBlock | BABYLON.ReplaceColorBlock | BABYLON.PosterizeBlock | BABYLON.ArcTan2Block | BABYLON.GradientBlock | BABYLON.FrontFacingBlock | BABYLON.WaveBlock | BABYLON.InputBlock | null;
+        static GetBlockFromString(data: string, scene: BABYLON.Scene, nodeMaterial: BABYLON.NodeMaterial): BABYLON.DesaturateBlock | BABYLON.RefractBlock | BABYLON.ReflectBlock | BABYLON.DerivativeBlock | BABYLON.Rotate2dBlock | BABYLON.NormalBlendBlock | BABYLON.WorleyNoise3DBlock | BABYLON.SimplexPerlin3DBlock | BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.DiscardBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.PowBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.NLerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.StepBlock | BABYLON.SmoothStepBlock | BABYLON.OneMinusBlock | BABYLON.ReciprocalBlock | BABYLON.ViewDirectionBlock | BABYLON.LightInformationBlock | BABYLON.MaxBlock | BABYLON.MinBlock | BABYLON.LengthBlock | BABYLON.DistanceBlock | BABYLON.NegateBlock | BABYLON.PerturbNormalBlock | BABYLON.RandomNumberBlock | BABYLON.ReplaceColorBlock | BABYLON.PosterizeBlock | BABYLON.ArcTan2Block | BABYLON.GradientBlock | BABYLON.FrontFacingBlock | BABYLON.WaveBlock | BABYLON.InputBlock | BABYLON.PBRMetallicRoughnessBlock | BABYLON.SheenBlock | BABYLON.AmbientOcclusionBlock | BABYLON.ReflectivityBlock | BABYLON.AnisotropyBlock | BABYLON.ReflectionBlock | null;
         static GetColorFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): BABYLON.NodeMaterialBlockConnectionPointTypes.Float | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector2 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Matrix | BABYLON.NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -798,12 +798,6 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export class GenericPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
     export interface ICheckBoxLineComponentProps {
         label: string;
         target?: any;
@@ -824,6 +818,24 @@ declare module NODEEDITOR {
             isSelected: boolean;
         }): boolean;
         onChange(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        render(): JSX.Element;
+    }
+    export class GeneralPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        render(): JSX.Element;
+    }
+    export class GenericPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        forceRebuild(notifiers?: {
+            "rebuild"?: boolean;
+            "update"?: boolean;
+        }): void;
         render(): JSX.Element;
     }
 }
@@ -883,25 +895,6 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export class PerturbNormalPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    export class WorleyNoise3DNodePropertyComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    export class ClampPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        forceRebuild(): void;
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
     interface IGradientStepComponentProps {
         globalState: GlobalState;
         step: BABYLON.GradientBlockColorStep;
@@ -951,13 +944,6 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export class RemapPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        forceRebuild(): void;
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
     interface IFileButtonLineComponentProps {
         label: string;
         onClick: (file: File) => void;
@@ -971,11 +957,12 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    type ReflectionTexture = BABYLON.ReflectionTextureBlock | BABYLON.ReflectionBlock;
     export class TexturePropertyTabComponent extends React.Component<IPropertyComponentProps, {
         isEmbedded: boolean;
         loadAsCubeTexture: boolean;
     }> {
-        get textureBlock(): BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock;
+        get textureBlock(): BABYLON.TextureBlock | ReflectionTexture;
         constructor(props: IPropertyComponentProps);
         UNSAFE_componentWillUpdate(nextProps: IPropertyComponentProps, nextState: {
             isEmbedded: boolean;

@@ -6,7 +6,7 @@ import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMateri
 import { GraphCanvasComponent, FramePortData } from './graphCanvas';
 import { PropertyLedger } from './propertyLedger';
 import * as React from 'react';
-import { GenericPropertyTabComponent } from './properties/genericNodePropertyComponent';
+import { GenericPropertyComponent } from './properties/genericNodePropertyComponent';
 import { DisplayLedger } from './displayLedger';
 import { IDisplayManager } from './display/displayManager';
 import { NodeLink } from './nodeLink';
@@ -353,7 +353,7 @@ export class GraphNode {
         let control = PropertyLedger.RegisteredControls[this.block.getClassName()];
 
         if (!control) {
-            control = GenericPropertyTabComponent;
+            control = GenericPropertyComponent;
         }
 
         return React.createElement(control, {

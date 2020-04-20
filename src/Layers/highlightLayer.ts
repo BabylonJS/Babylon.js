@@ -404,6 +404,7 @@ export class HighlightLayer extends EffectLayer {
                     this._postProcesses,
                     internalTexture,
                     true);
+                this._engine.unBindFramebuffer(internalTexture, true);
             }
 
             this.onAfterBlurObservable.notifyObservers(this);
