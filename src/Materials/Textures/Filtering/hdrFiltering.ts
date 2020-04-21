@@ -120,7 +120,7 @@ export class HDRFiltering {
 		const outputTexture = new RenderTargetTexture("temp", texture.getSize(), this._scene, false, true, undefined, true);
 
 		// Wait for readyness
-		if (!outputTexture.isReady()) {
+		if (!outputTexture.isReady() || !texture.isReady()) {
 			return null;
 		}
 
@@ -135,10 +135,10 @@ export class HDRFiltering {
 		];
 
 		for (let i = 0; i < 6 ; i++) {
+			this.apply(texture, kernel, weights);
 			this._effect.setVector3("up", directions[i][0]);
 			this._effect.setVector3("right", directions[i][1]);
 			this._effect.setVector3("front", directions[i][2]);
-			this.apply(texture, kernel, weights);
 			this.directRender(outputTexture._texture!, i);
 		}
 
