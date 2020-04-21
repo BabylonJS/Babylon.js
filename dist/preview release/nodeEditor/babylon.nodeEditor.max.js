@@ -59435,6 +59435,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
@@ -59806,6 +59807,8 @@ var BlockTools = /** @class */ (function () {
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["AnisotropyBlock"]("Anisotropy");
             case "ReflectionBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ReflectionBlock"]("Reflection");
+            case "ClearCoatBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ClearCoatBlock"]("ClearCoat");
         }
         return null;
     };
@@ -60049,7 +60052,7 @@ var NodeListComponent = /** @class */ (function (_super) {
             Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"],
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
-            PBR: ["PBRMetallicRoughnessBlock", "AmbientOcclusionBlock", "AnisotropyBlock", "ReflectionBlock", "ReflectivityBlock", "SheenBlock"],
+            PBR: ["PBRMetallicRoughnessBlock", "AmbientOcclusionBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "ReflectivityBlock", "SheenBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
             Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock"],
@@ -60186,7 +60189,8 @@ var NodeListComponent = /** @class */ (function (_super) {
         "AmbientOcclusionBlock": "PBR Ambient occlusion block",
         "ReflectivityBlock": "PBR Reflectivity block",
         "AnisotropyBlock": "PBR Anisotropy block",
-        "ReflectionBlock": "PBR Reflection block"
+        "ReflectionBlock": "PBR Reflection block",
+        "ClearCoatBlock": "PBR ClearCoat block",
     };
     return NodeListComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));

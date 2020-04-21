@@ -61464,6 +61464,86 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Block used to implement the clear coat module of the PBR material
+     */
+    export class ClearCoatBlock extends NodeMaterialBlock {
+        private _scene;
+        /**
+         * Create a new ClearCoatBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Initialize the block and prepare the context for build
+         * @param state defines the state that will be used for the build
+         */
+        initialize(state: NodeMaterialBuildState): void;
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the intensity input component
+         */
+        get intensity(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the roughness input component
+         */
+        get roughness(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the ior input component
+         */
+        get ior(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the texture input component
+         */
+        get texture(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the bump texture input component
+         */
+        get bumpTexture(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the uv input component
+         */
+        get uv(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the tint color input component
+         */
+        get tintColor(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the tint "at distance" input component
+         */
+        get tintAtDistance(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the tint thickness input component
+         */
+        get tintThickness(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the tint texture input component
+         */
+        get tintTexture(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the clear coat object output component
+         */
+        get clearcoat(): NodeMaterialConnectionPoint;
+        autoConfigure(material: NodeMaterial): void;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh): void;
+        /**
+         * Gets the main code of the block (fragment side)
+         * @param state current state of the node material building
+         * @param ccBlock instance of a ClearCoatBlock or null if the code must be generated without an active clear coat module
+         * @param reflectionBlock instance of a ReflectionBlock null if the code must be generated without an active reflection module
+         * @param worldPosVarName name of the variable holding the world position
+         * @returns the shader code
+         */
+        static GetCode(state: NodeMaterialBuildState, ccBlock: Nullable<ClearCoatBlock>, reflectionBlock: Nullable<ReflectionBlock>, worldPosVarName: string): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
      * Block used to implement the PBR metallic/roughness model
      */
     export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
@@ -61476,6 +61556,7 @@ declare module BABYLON {
         private _environmentBRDFTexture;
         private _environmentBrdfSamplerName;
         private _vNormalWName;
+        private _invertNormalName;
         /**
          * Create a new ReflectionBlock
          * @param name defines the block name
@@ -61541,6 +61622,10 @@ declare module BABYLON {
          * If set to true, no lighting calculations will be applied.
          */
         unlit: boolean;
+        /**
+         * Force normal to face away from face.
+         */
+        forceNormalForward: boolean;
         /**
          * Defines the material debug mode.
          * It helps seeing only some components of the material while troubleshooting.
