@@ -311,31 +311,39 @@ void main(void) {
     clearcoatOutParams clearcoatOut;
 
     #ifdef CLEARCOAT
+        #ifdef CLEARCOAT_TEXTURE
+            vec2 clearCoatMapData = texture2D(clearCoatSampler, vClearCoatUV + uvOffset).rg * vClearCoatInfos.y;
+        #endif
+
+        #if defined(CLEARCOAT_TINT) && defined(CLEARCOAT_TINT_TEXTURE)
+            vec4 clearCoatTintMapData = toLinearSpace(texture2D(clearCoatTintSampler, vClearCoatTintUV + uvOffset));
+        #endif
+
+        #ifdef CLEARCOAT_BUMP
+            vec4 clearCoatBumpMapData = texture2D(clearCoatBumpSampler, vClearCoatBumpUV + uvOffset);
+        #endif
+
         clearcoatBlock(
             vPositionW,
             geometricNormalW,
             viewDirectionW,
             vClearCoatParams,
-            uvOffset,
             specularEnvironmentR0,
         #ifdef CLEARCOAT_TEXTURE
-            vClearCoatUV,
-            vClearCoatInfos,
-            clearCoatSampler,
+            clearCoatMapData,
         #endif
         #ifdef CLEARCOAT_TINT
             vClearCoatTintParams,
             clearCoatColorAtDistance,
             vClearCoatRefractionParams,
             #ifdef CLEARCOAT_TINT_TEXTURE
-                vClearCoatTintUV,
-                clearCoatTintSampler,
+                clearCoatTintMapData,
             #endif
         #endif
         #ifdef CLEARCOAT_BUMP
             vClearCoatBumpInfos,
+            clearCoatBumpMapData,
             vClearCoatBumpUV,
-            clearCoatBumpSampler,
             #if defined(TANGENT) && defined(NORMAL)
                 vTBN,
             #else
@@ -350,6 +358,7 @@ void main(void) {
         #endif
         #ifdef REFLECTION
             vReflectionMicrosurfaceInfos,
+            vReflectionInfos,
             vReflectionColor,
             vLightingIntensity,
             reflectionSampler,

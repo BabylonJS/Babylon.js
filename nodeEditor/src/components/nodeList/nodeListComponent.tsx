@@ -122,7 +122,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "AmbientOcclusionBlock": "PBR Ambient occlusion block",
         "ReflectivityBlock": "PBR Reflectivity block",
         "AnisotropyBlock": "PBR Anisotropy block",
-        "ReflectionBlock": "PBR Reflection block"
+        "ReflectionBlock": "PBR Reflection block",
+        "ClearCoatBlock": "PBR ClearCoat block",
     };
 
     constructor(props: INodeListComponentProps) {
@@ -151,7 +152,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock" , "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"],
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
-            PBR: ["PBRMetallicRoughnessBlock", "AmbientOcclusionBlock", "AnisotropyBlock", "ReflectionBlock", "ReflectivityBlock", "SheenBlock"],
+            PBR: ["PBRMetallicRoughnessBlock", "AmbientOcclusionBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "ReflectivityBlock", "SheenBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
             Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock"],
