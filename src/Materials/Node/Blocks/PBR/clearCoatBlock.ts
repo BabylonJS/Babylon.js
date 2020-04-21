@@ -158,7 +158,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
 
         defines.setValue("CLEARCOAT", true);
         defines.setValue("CLEARCOAT_TEXTURE", this.texture.isConnected);
-        defines.setValue("CLEARCOAT_TINT", this.tintColor.isConnected || this.tintTexture.isConnected);
+        defines.setValue("CLEARCOAT_TINT_TEXTURE", this.tintTexture.isConnected);
         defines.setValue("CLEARCOAT_BUMP", this.bumpTexture.isConnected);
     }
 
