@@ -227,7 +227,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
                 vClearCoatParams,
                 specularEnvironmentR0,
             #ifdef CLEARCOAT_TEXTURE
-                ${texture},
+                ${texture}.rg,
             #endif
             #ifdef CLEARCOAT_TINT
                 vClearCoatTintParams,
