@@ -566,7 +566,7 @@ class Main {
                         exampleList.appendChild(noResultContainer);
                     }
 
-                    if (!location.hash && restoreVersionResult == false && (location.pathname === '/' || !location.pathname)) {
+                    if (!location.hash && restoreVersionResult == false && location.pathname.indexOf('pg/') === -1)
                         // Query string
                         var queryString = window.location.search;
 

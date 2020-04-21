@@ -757,6 +757,7 @@ export class NodeMaterial extends PushMaterial {
 
         // Need to recompile?
         if (defines.isDirty) {
+            const lightDisposed = defines._areLightsDisposed;
             defines.markAsProcessed();
 
             // Repeatable content generators
@@ -831,6 +832,13 @@ export class NodeMaterial extends PushMaterial {
                 if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
                     effect = previousEffect;
                     defines.markAsUnprocessed();
+
+                    if (lightDisposed) {
+                        // re register in case it takes more than one frame.
+                        defines._areLightsDisposed = true;
+                        return false;
+                    }
+
                 } else {
                     scene.resetCachedMaterial();
                     subMesh.setEffect(effect, defines);
