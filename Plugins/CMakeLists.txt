@@ -1,3 +1,4 @@
+add_subdirectory(NativeInput)
 add_subdirectory(NativeWindow)
 
 # Add NativeEngine
