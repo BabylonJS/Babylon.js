@@ -281,6 +281,11 @@ export class Control {
     public onAfterDrawObservable = new Observable<Control>();
 
     /**
+    * An event triggered when the control has been disposed
+    */
+   public onDisposeObservable = new Observable<Control>();
+
+    /**
      * Get the hosting AdvancedDynamicTexture
      */
     public get host(): AdvancedDynamicTexture {
@@ -1914,6 +1919,10 @@ export class Control {
                 this.linkWithMesh(null);
             }
         }
+
+        // Callback
+        this.onDisposeObservable.notifyObservers(this);
+        this.onDisposeObservable.clear();
     }
 
     // Statics

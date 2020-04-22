@@ -44,6 +44,7 @@ uniform sampler2D diffuseSampler;
 #endif
 
 #include<mrtFragmentDeclaration>[RENDER_TARGET_COUNT]
+#include<bumpFragmentMainFunctions>
 #include<bumpFragmentFunctions>
 
 void main() {
