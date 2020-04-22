@@ -549,14 +549,14 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         // General
         defines.setValue("PBR", true);
         defines.setValue("METALLICWORKFLOW", true);
-        defines.setValue("DEBUGMODE", this.debugMode);
+        defines.setValue("DEBUGMODE", this.debugMode, true);
         defines.setValue("NORMALXYSCALE", true);
-        defines.setValue("BUMP", this.perturbedNormal.isConnected);
+        defines.setValue("BUMP", this.perturbedNormal.isConnected, true);
         defines.setValue("LODBASEDMICROSFURACE", this._scene.getEngine().getCaps().textureLOD);
 
         // Albedo & Opacity
-        defines.setValue("ALBEDO", this.baseTexture.isConnected);
-        defines.setValue("OPACITY", this.opacityTexture.isConnected);
+        defines.setValue("ALBEDO", this.baseTexture.isConnected, true);
+        defines.setValue("OPACITY", this.opacityTexture.isConnected, true);
 
         // Lighting & colors
         if (this.lightFalloff === PBRBaseMaterial.LIGHTFALLOFF_STANDARD) {
@@ -571,28 +571,28 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         }
 
         // Transparency
-        defines.setValue("ALPHABLEND", this.useAlphaBlending);
-        defines.setValue("ALPHAFROMALBEDO", this.useAlphaFromAlbedoTexture);
-        defines.setValue("ALPHATEST", this.useAlphaTest);
-        defines.setValue("ALPHATESTVALUE", this.alphaTestCutoff);
-        defines.setValue("OPACITYRGB", this.opacityRGB);
+        defines.setValue("ALPHABLEND", this.useAlphaBlending, true);
+        defines.setValue("ALPHAFROMALBEDO", this.useAlphaFromAlbedoTexture, true);
+        defines.setValue("ALPHATEST", this.useAlphaTest, true);
+        defines.setValue("ALPHATESTVALUE", this.alphaTestCutoff, true);
+        defines.setValue("OPACITYRGB", this.opacityRGB, true);
 
         // Rendering
-        defines.setValue("RADIANCEOVERALPHA", this.useRadianceOverAlpha);
-        defines.setValue("SPECULAROVERALPHA", this.useSpecularOverAlpha);
-        defines.setValue("SPECULARAA", this._scene.getEngine().getCaps().standardDerivatives && this.enableSpecularAntiAliasing);
+        defines.setValue("RADIANCEOVERALPHA", this.useRadianceOverAlpha, true);
+        defines.setValue("SPECULAROVERALPHA", this.useSpecularOverAlpha, true);
+        defines.setValue("SPECULARAA", this._scene.getEngine().getCaps().standardDerivatives && this.enableSpecularAntiAliasing, true);
 
         // Advanced
         defines.setValue("BRDF_V_HEIGHT_CORRELATED", true);
-        defines.setValue("MS_BRDF_ENERGY_CONSERVATION", this.useEnergyConservation);
-        defines.setValue("RADIANCEOCCLUSION", this.useRadianceOcclusion);
-        defines.setValue("HORIZONOCCLUSION", this.useHorizonOcclusion);
-        defines.setValue("UNLIT", this.unlit);
-        defines.setValue("FORCENORMALFORWARD", this.forceNormalForward);
+        defines.setValue("MS_BRDF_ENERGY_CONSERVATION", this.useEnergyConservation, true);
+        defines.setValue("RADIANCEOCCLUSION", this.useRadianceOcclusion, true);
+        defines.setValue("HORIZONOCCLUSION", this.useHorizonOcclusion, true);
+        defines.setValue("UNLIT", this.unlit, true);
+        defines.setValue("FORCENORMALFORWARD", this.forceNormalForward, true);
 
         if (this._environmentBRDFTexture && MaterialFlags.ReflectionTextureEnabled) {
             defines.setValue("ENVIRONMENTBRDF", true);
-            defines.setValue("ENVIRONMENTBRDF_RGBD", this._environmentBRDFTexture.isRGBD);
+            defines.setValue("ENVIRONMENTBRDF_RGBD", this._environmentBRDFTexture.isRGBD, true);
         } else {
             defines.setValue("ENVIRONMENTBRDF" , false);
             defines.setValue("ENVIRONMENTBRDF_RGBD", false);
