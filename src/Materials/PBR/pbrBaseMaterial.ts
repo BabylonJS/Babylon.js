@@ -1788,9 +1788,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     ubo.updateColor4("vAlbedoColor", this._albedoColor, this.alpha);
                 }
 
-                // Visibility
-                ubo.updateFloat("visibility", mesh.visibility);
-
                 // Misc
                 this._lightingInfos.x = this._directIntensity;
                 this._lightingInfos.y = this._emissiveIntensity;
@@ -1799,6 +1796,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 ubo.updateVector4("vLightingIntensity", this._lightingInfos);
             }
+
+            // Visibility
+            ubo.updateFloat("visibility", mesh.visibility);
 
             // Textures
             if (scene.texturesEnabled) {
