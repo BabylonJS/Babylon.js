@@ -110,6 +110,10 @@
 
 - Fixed an issue with gulp webpack, webpack stream and the viewer ([RaananW](https://github.com/RaananW))
 
+### Playground
+
+- Added support for code templates in the playground ([sailro](http://www.github.com/sailro))
+
 ## Bugs
 
 - Fix infinite loop in `GlowLayer.unReferenceMeshFromUsingItsOwnMaterial` ([Popov72](https://github.com/Popov72)
