@@ -157,12 +157,11 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         super.prepareDefines(mesh, nodeMaterial, defines);
 
         defines.setValue("CLEARCOAT", true);
-        defines.setValue("CLEARCOAT_TEXTURE", this.texture.isConnected);
-        defines.setValue("CLEARCOAT_TINT", this.tintColor.isConnected || this.tintThickness.isConnected || this.tintAtDistance.isConnected || this.tintTexture.isConnected);
-        defines.setValue("CLEARCOAT_TINT_TEXTURE", this.tintTexture.isConnected);
-        defines.setValue("CLEARCOAT_BUMP", this.bumpTexture.isConnected);
-        defines.setValue("CLEARCOAT_DEFAULTIOR", this.ior.isConnected ? this.ior.connectInputBlock!.value === 1.5 : false);
-
+        defines.setValue("CLEARCOAT_TEXTURE", this.texture.isConnected, true);
+        defines.setValue("CLEARCOAT_TINT", this.tintColor.isConnected || this.tintThickness.isConnected || this.tintAtDistance.isConnected || this.tintTexture.isConnected, true);
+        defines.setValue("CLEARCOAT_TINT_TEXTURE", this.tintTexture.isConnected, true);
+        defines.setValue("CLEARCOAT_BUMP", this.bumpTexture.isConnected, true);
+        defines.setValue("CLEARCOAT_DEFAULTIOR", this.ior.isConnected ? this.ior.connectInputBlock!.value === 1.5 : false, true);
     }
 
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh) {
