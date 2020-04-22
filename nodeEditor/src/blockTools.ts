@@ -69,6 +69,7 @@ import { ReflectivityBlock } from 'babylonjs/Materials/Node/Blocks/PBR/reflectiv
 import { AnisotropyBlock } from 'babylonjs/Materials/Node/Blocks/PBR/anisotropyBlock';
 import { ReflectionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/reflectionBlock';
 import { ClearCoatBlock } from 'babylonjs/Materials/Node/Blocks/PBR/clearCoatBlock';
+import { SubSurfaceBlock } from 'babylonjs/Materials/Node/Blocks/PBR/subSurfaceBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
@@ -453,6 +454,8 @@ export class BlockTools {
                 return new ReflectionBlock("Reflection");
             case "ClearCoatBlock":
                 return new ClearCoatBlock("ClearCoat");
+            case "SubSurfaceBlock":
+                return new SubSurfaceBlock("SubSurface");
         }
 
         return null;
