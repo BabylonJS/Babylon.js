@@ -33,7 +33,7 @@ export class NodePort {
 
     public get portName(){
         let portName = this.connectionPoint.displayName || this.connectionPoint.name;
-        if (portName === "output") {
+        if (this.connectionPoint.ownerBlock.isInput) {
             portName = this.node.name;
         }
         return portName
@@ -51,7 +51,7 @@ export class NodePort {
     }
 
     public get exposedOnFrame() {
-        return this._exposedOnFrame || this.connectionPoint.isConnectedToAnything;
+        return this.connectionPoint.isConnectedToAnything || this._exposedOnFrame;
     }
 
     public set exposedOnFrame(value: boolean) {
