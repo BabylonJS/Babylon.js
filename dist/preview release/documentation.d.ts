@@ -9127,8 +9127,9 @@ declare module BABYLON {
          * Bind the current view position to an effect.
          * @param effect The effect to be bound
          * @param scene The scene the eyes position is used from
+         * @param variableName name of the shader variable that will hold the eye position
          */
-        static BindEyePosition(effect: Effect, scene: Scene): void;
+        static BindEyePosition(effect: Effect, scene: Scene, variableName?: string): void;
         /**
          * Helps preparing the defines values about the UVs in used in the effect.
          * UVs are shared as much as we can accross channels in the shaders.
@@ -20634,6 +20635,7 @@ declare module BABYLON {
         _prepareFrame(sourceTexture?: Nullable<InternalTexture>, postProcesses?: Nullable<PostProcess[]>): boolean;
         /**
          * Manually render a set of post processes to a texture.
+         * Please note, the frame buffer won't be unbound after the call in case you have more render to do.
          * @param postProcesses An array of post processes to be run.
          * @param targetTexture The target texture to render to.
          * @param forceFullscreenViewport force gl.viewport to be full screen eg. 0,0,textureWidth,textureHeight
@@ -26661,6 +26663,13 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export var reflectionFunction: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var bumpFragmentMainFunctions: {
         name: string;
         shader: string;
     };
@@ -57478,6 +57487,8 @@ declare module BABYLON {
         Color4 = 64,
         /** Matrix */
         Matrix = 128,
+        /** Custom object */
+        Object = 256,
         /** Detect type based on connection */
         AutoDetect = 1024,
         /** Output type that will be defined by input type */
@@ -57636,34 +57647,50 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Block used to read a reflection texture from a sampler
+     * Base block used to read a reflection texture from a sampler
      */
-    export class ReflectionTextureBlock extends NodeMaterialBlock {
-        private _define3DName;
-        private _defineCubicName;
-        private _defineExplicitName;
-        private _defineProjectionName;
-        private _defineLocalCubicName;
-        private _defineSphericalName;
-        private _definePlanarName;
-        private _defineEquirectangularName;
-        private _defineMirroredEquirectangularFixedName;
-        private _defineEquirectangularFixedName;
-        private _defineSkyboxName;
-        private _cubeSamplerName;
-        private _2DSamplerName;
-        private _positionUVWName;
-        private _directionWName;
-        private _reflectionCoordsName;
-        private _reflection2DCoordsName;
-        private _reflectionColorName;
-        private _reflectionMatrixName;
+    export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
+        /** @hidden */
+        _define3DName: string;
+        /** @hidden */
+        _defineCubicName: string;
+        /** @hidden */
+        _defineExplicitName: string;
+        /** @hidden */
+        _defineProjectionName: string;
+        /** @hidden */
+        _defineLocalCubicName: string;
+        /** @hidden */
+        _defineSphericalName: string;
+        /** @hidden */
+        _definePlanarName: string;
+        /** @hidden */
+        _defineEquirectangularName: string;
+        /** @hidden */
+        _defineMirroredEquirectangularFixedName: string;
+        /** @hidden */
+        _defineEquirectangularFixedName: string;
+        /** @hidden */
+        _defineSkyboxName: string;
+        /** @hidden */
+        _defineOppositeZ: string;
+        /** @hidden */
+        _cubeSamplerName: string;
+        /** @hidden */
+        _2DSamplerName: string;
+        protected _positionUVWName: string;
+        protected _directionWName: string;
+        protected _reflectionVectorName: string;
+        /** @hidden */
+        _reflectionCoordsName: string;
+        protected _reflectionMatrixName: string;
+        protected _reflectionColorName: string;
         /**
          * Gets or sets the texture associated with the node
          */
         texture: Nullable<BaseTexture>;
         /**
-         * Create a new TextureBlock
+         * Create a new ReflectionTextureBaseBlock
          * @param name defines the block name
          */
         constructor(name: string);
@@ -57675,50 +57702,66 @@ declare module BABYLON {
         /**
          * Gets the world position input component
          */
-        get position(): NodeMaterialConnectionPoint;
+        abstract get position(): NodeMaterialConnectionPoint;
         /**
          * Gets the world position input component
          */
-        get worldPosition(): NodeMaterialConnectionPoint;
+        abstract get worldPosition(): NodeMaterialConnectionPoint;
         /**
          * Gets the world normal input component
          */
-        get worldNormal(): NodeMaterialConnectionPoint;
+        abstract get worldNormal(): NodeMaterialConnectionPoint;
         /**
          * Gets the world input component
          */
-        get world(): NodeMaterialConnectionPoint;
+        abstract get world(): NodeMaterialConnectionPoint;
         /**
         * Gets the camera (or eye) position component
         */
-        get cameraPosition(): NodeMaterialConnectionPoint;
+        abstract get cameraPosition(): NodeMaterialConnectionPoint;
         /**
          * Gets the view input component
          */
-        get view(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the rgb output component
-         */
-        get rgb(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the r output component
-         */
-        get r(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the g output component
-         */
-        get g(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the b output component
-         */
-        get b(): NodeMaterialConnectionPoint;
+        abstract get view(): NodeMaterialConnectionPoint;
+        protected _getTexture(): Nullable<BaseTexture>;
         autoConfigure(material: NodeMaterial): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         isReady(): boolean;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
-        private _injectVertexCode;
-        private _writeOutput;
-        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+        /**
+         * Gets the code to inject in the vertex shader
+         * @param state current state of the node material building
+         * @returns the shader code
+         */
+        handleVertexSide(state: NodeMaterialBuildState): string;
+        /**
+         * Handles the inits for the fragment code path
+         * @param state node material build state
+         */
+        handleFragmentSideInits(state: NodeMaterialBuildState): void;
+        /**
+         * Generates the reflection coords code for the fragment code path
+         * @param worldNormalVarName name of the world normal variable
+         * @param worldPos name of the world position variable. If not provided, will use the world position connected to this block
+         * @param onlyReflectionVector if true, generates code only for the reflection vector computation, not for the reflection coordinates
+         * @returns the shader code
+         */
+        handleFragmentSideCodeReflectionCoords(worldNormalVarName: string, worldPos?: string, onlyReflectionVector?: boolean): string;
+        /**
+         * Generates the reflection color code for the fragment code path
+         * @param lodVarName name of the lod variable
+         * @param swizzleLookupTexture swizzle to use for the final color variable
+         * @returns the shader code
+         */
+        handleFragmentSideCodeReflectionColor(lodVarName?: string, swizzleLookupTexture?: string): string;
+        /**
+         * Generates the code corresponding to the connected output points
+         * @param state node material build state
+         * @param varName name of the variable to output
+         * @returns the shader code
+         */
+        writeOutputs(state: NodeMaterialBuildState, varName: string): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
         protected _dumpPropertiesCode(): string;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
@@ -57765,7 +57808,7 @@ declare module BABYLON {
         /** MISC. */
         BUMPDIRECTUV: number;
         constructor();
-        setValue(name: string, value: boolean): void;
+        setValue(name: string, value: any): void;
     }
     /**
      * Class used to configure NodeMaterial
@@ -57983,7 +58026,7 @@ declare module BABYLON {
          * Gets the list of texture blocks
          * @returns an array of texture blocks
          */
-        getTextureBlocks(): (TextureBlock | ReflectionTextureBlock)[];
+        getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock)[];
         /**
          * Specifies if the material uses a texture
          * @param texture defines the texture to check against the material
@@ -58083,6 +58126,7 @@ declare module BABYLON {
     export class TextureBlock extends NodeMaterialBlock {
         private _defineName;
         private _linearDefineName;
+        private _gammaDefineName;
         private _tempTextureRead;
         private _samplerName;
         private _transformedUVName;
@@ -58098,6 +58142,10 @@ declare module BABYLON {
          * Gets or sets a boolean indicating if content needs to be converted to gamma space
          */
         convertToGammaSpace: boolean;
+        /**
+         * Gets or sets a boolean indicating if content needs to be converted to linear space
+         */
+        convertToLinearSpace: boolean;
         /**
          * Create a new TextureBlock
          * @param name defines the block name
@@ -58176,7 +58224,7 @@ declare module BABYLON {
         /**
          * Input blocks
          */
-        textureBlocks: (ReflectionTextureBlock | TextureBlock)[];
+        textureBlocks: (ReflectionTextureBaseBlock | TextureBlock)[];
         /**
          * Bindable blocks (Blocks that need to set data to the effect)
          */
@@ -58309,6 +58357,8 @@ declare module BABYLON {
         _samplerDeclaration: string;
         /** @hidden */
         _varyingTransfer: string;
+        /** @hidden */
+        _injectAtEnd: string;
         private _repeatableContentAnchorIndex;
         /** @hidden */
         _builtCompilationString: string;
@@ -58458,8 +58508,9 @@ declare module BABYLON {
          * @param effect defines the effect to bind data to
          * @param nodeMaterial defines the hosting NodeMaterial
          * @param mesh defines the mesh that will be rendered
+         * @param subMesh defines the submesh that will be rendered
          */
-        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh): void;
         protected _declareOutput(output: NodeMaterialConnectionPoint, state: NodeMaterialBuildState): string;
         protected _writeVariable(currentPoint: NodeMaterialConnectionPoint): string;
         protected _writeFloat(value: number): string;
@@ -58474,17 +58525,19 @@ declare module BABYLON {
          * @param type defines the connection point type
          * @param isOptional defines a boolean indicating that this input can be omitted
          * @param target defines the target to use to limit the connection point (will be VertexAndFragment by default)
+         * @param point an already created connection point. If not provided, create a new one
          * @returns the current block
          */
-        registerInput(name: string, type: NodeMaterialBlockConnectionPointTypes, isOptional?: boolean, target?: NodeMaterialBlockTargets): this;
+        registerInput(name: string, type: NodeMaterialBlockConnectionPointTypes, isOptional?: boolean, target?: NodeMaterialBlockTargets, point?: NodeMaterialConnectionPoint): this;
         /**
          * Register a new output. Must be called inside a block constructor
          * @param name defines the connection point name
          * @param type defines the connection point type
          * @param target defines the target to use to limit the connection point (will be VertexAndFragment by default)
+         * @param point an already created connection point. If not provided, create a new one
          * @returns the current block
          */
-        registerOutput(name: string, type: NodeMaterialBlockConnectionPointTypes, target?: NodeMaterialBlockTargets): this;
+        registerOutput(name: string, type: NodeMaterialBlockConnectionPointTypes, target?: NodeMaterialBlockTargets, point?: NodeMaterialConnectionPoint): this;
         /**
          * Will return the first available input e.g. the first one which is not an uniform or an attribute
          * @param forOutput defines an optional connection point to check compatibility with
@@ -58794,6 +58847,8 @@ declare module BABYLON {
         _enforceAssociatedVariableName: boolean;
         /** Gets the direction of the point */
         get direction(): NodeMaterialConnectionPointDirection;
+        /** Indicates that this connection point needs dual validation before being connected to another point */
+        needDualDirectionValidation: boolean;
         /**
          * Gets or sets the additional types supported by this connection point
          */
@@ -58868,6 +58923,12 @@ declare module BABYLON {
         get isConnectedInVertexShader(): boolean;
         /** Gets a boolean indicating that this connection will be used in the fragment shader */
         get isConnectedInFragmentShader(): boolean;
+        /**
+         * Creates a block suitable to be used as an input for this input point.
+         * If null is returned, a block based on the point type will be created.
+         * @returns The returned string parameter is the name of the output point of NodeMaterialBlock (first parameter of the returned array) that can be connected to the input
+         */
+        createCustomInputBlock(): Nullable<[NodeMaterialBlock, string]>;
         /**
          * Creates a new connection point
          * @param name defines the connection point name
@@ -59154,6 +59215,67 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Enum defining the type of properties that can be edited in the property pages in the NME
+     */
+    export enum PropertyTypeForEdition {
+        /** property is a boolean */
+        Boolean = 0,
+        /** property is a float */
+        Float = 1,
+        /** property is a Vector2 */
+        Vector2 = 2,
+        /** property is a list of values */
+        List = 3
+    }
+    /**
+     * Interface that defines an option in a variable of type list
+     */
+    export interface IEditablePropertyListOption {
+        /** label of the option */
+        "label": string;
+        /** value of the option */
+        "value": number;
+    }
+    /**
+     * Interface that defines the options available for an editable property
+     */
+    export interface IEditablePropertyOption {
+        /** min value */
+        "min"?: number;
+        /** max value */
+        "max"?: number;
+        /** notifiers: indicates which actions to take when the property is changed */
+        "notifiers"?: {
+            /** the material should be rebuilt */
+            "rebuild"?: boolean;
+            /** the preview should be updated */
+            "update"?: boolean;
+        };
+        /** list of the options for a variable of type list */
+        "options"?: IEditablePropertyListOption[];
+    }
+    /**
+     * Interface that describes an editable property
+     */
+    export interface IPropertyDescriptionForEdition {
+        /** name of the property */
+        "propertyName": string;
+        /** display name of the property */
+        "displayName": string;
+        /** type of the property */
+        "type": PropertyTypeForEdition;
+        /** group of the property - all properties with the same group value will be displayed in a specific section */
+        "groupName": string;
+        /** options for the property */
+        "options": IEditablePropertyOption;
+    }
+    /**
+     * Decorator that flags a property in a node material block as being editable
+     */
+    export function editableInPropertyPage(displayName: string, propertyType?: PropertyTypeForEdition, groupName?: string, options?: IEditablePropertyOption): (target: any, propertyKey: string) => void;
+}
+declare module BABYLON {
+    /**
      * Block used to pertub normals based on a normal map
      */
     export class PerturbNormalBlock extends NodeMaterialBlock {
@@ -59398,6 +59520,65 @@ declare module BABYLON {
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to read a reflection texture from a sampler
+     */
+    export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
+        /**
+         * Create a new ReflectionTextureBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the world position input component
+         */
+        get position(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the world position input component
+         */
+        get worldPosition(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the world normal input component
+         */
+        get worldNormal(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the world input component
+         */
+        get world(): NodeMaterialConnectionPoint;
+        /**
+        * Gets the camera (or eye) position component
+        */
+        get cameraPosition(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the view input component
+         */
+        get view(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb output component
+         */
+        get rgb(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the r output component
+         */
+        get r(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the g output component
+         */
+        get g(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the b output component
+         */
+        get b(): NodeMaterialConnectionPoint;
+        autoConfigure(material: NodeMaterial): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
 declare module BABYLON {
@@ -60893,6 +61074,711 @@ declare module BABYLON {
          */
         get output(): NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines a connection point to be used for points with a custom object type
+     */
+    export class NodeMaterialConnectionPointCustomObject<T extends NodeMaterialBlock> extends NodeMaterialConnectionPoint {
+        private _blockType;
+        private _blockName;
+        private _nameForCheking?;
+        /**
+         * Creates a new connection point
+         * @param name defines the connection point name
+         * @param ownerBlock defines the block hosting this connection point
+         * @param direction defines the direction of the connection point
+         */
+        constructor(name: string, ownerBlock: NodeMaterialBlock, direction: NodeMaterialConnectionPointDirection, _blockType: new (...args: any[]) => T, _blockName: string, _nameForCheking?: string | undefined);
+        /**
+         * Gets a number indicating if the current point can be connected to another point
+         * @param connectionPoint defines the other connection point
+         * @returns a number defining the compatibility state
+         */
+        checkCompatibilityState(connectionPoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPointCompatibilityStates;
+        /**
+         * Creates a block suitable to be used as an input for this input point.
+         * If null is returned, a block based on the point type will be created.
+         * @returns The returned string parameter is the name of the output point of NodeMaterialBlock (first parameter of the returned array) that can be connected to the input
+         */
+        createCustomInputBlock(): Nullable<[NodeMaterialBlock, string]>;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to implement the ambient occlusion module of the PBR material
+     */
+    export class AmbientOcclusionBlock extends NodeMaterialBlock {
+        /**
+         * Create a new AmbientOcclusionBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Specifies if the ambient texture contains the ambient occlusion information in its red channel only.
+         */
+        useAmbientInGrayScale: boolean;
+        /**
+         * Initialize the block and prepare the context for build
+         * @param state defines the state that will be used for the build
+         */
+        initialize(state: NodeMaterialBuildState): void;
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the texture input component
+         */
+        get texture(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the texture intensity component
+         */
+        get intensity(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the direct light intensity input component
+         */
+        get directLightIntensity(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the ambient occlusion object output component
+         */
+        get ambientOcclusion(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the main code of the block (fragment side)
+         * @param block instance of an AmbientOcclusionBlock or null if the code must be generated without an active ambient occlusion module
+         * @returns the shader code
+         */
+        static GetCode(block: Nullable<AmbientOcclusionBlock>): string;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+        protected _dumpPropertiesCode(): string;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to implement the reflection module of the PBR material
+     */
+    export class ReflectionBlock extends ReflectionTextureBaseBlock {
+        /** @hidden */
+        _defineLODReflectionAlpha: string;
+        /** @hidden */
+        _defineLinearSpecularReflection: string;
+        private _vEnvironmentIrradianceName;
+        /** @hidden */
+        _vReflectionMicrosurfaceInfosName: string;
+        /** @hidden */
+        _vReflectionInfosName: string;
+        private _scene;
+        /**
+         * The three properties below are set by the main PBR block prior to calling methods of this class.
+         * This is to avoid having to add them as inputs here whereas they are already inputs of the main block, so already known.
+         * It's less burden on the user side in the editor part.
+        */
+        /** @hidden */
+        worldPositionConnectionPoint: NodeMaterialConnectionPoint;
+        /** @hidden */
+        worldNormalConnectionPoint: NodeMaterialConnectionPoint;
+        /** @hidden */
+        cameraPositionConnectionPoint: NodeMaterialConnectionPoint;
+        /**
+         * Defines if the material uses spherical harmonics vs spherical polynomials for the
+         * diffuse part of the IBL.
+         */
+        useSphericalHarmonics: boolean;
+        /**
+         * Force the shader to compute irradiance in the fragment shader in order to take bump in account.
+         */
+        forceIrradianceInFragment: boolean;
+        /**
+         * Create a new ReflectionBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the position input component
+         */
+        get position(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the world position input component
+         */
+        get worldPosition(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the world normal input component
+         */
+        get worldNormal(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the world input component
+         */
+        get world(): NodeMaterialConnectionPoint;
+        /**
+        * Gets the camera (or eye) position component
+        */
+        get cameraPosition(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the view input component
+         */
+        get view(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the color input component
+         */
+        get color(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the reflection object output component
+         */
+        get reflection(): NodeMaterialConnectionPoint;
+        /**
+         * Returns true if the block has a texture (either its own texture or the environment texture from the scene, if set)
+         */
+        get hasTexture(): boolean;
+        /**
+         * Gets the reflection color (either the name of the variable if the color input is connected, else a default value)
+         */
+        get reflectionColor(): string;
+        protected _getTexture(): Nullable<BaseTexture>;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh): void;
+        /**
+         * Gets the code to inject in the vertex shader
+         * @param state current state of the node material building
+         * @returns the shader code
+         */
+        handleVertexSide(state: NodeMaterialBuildState): string;
+        /**
+         * Gets the main code of the block (fragment side)
+         * @param state current state of the node material building
+         * @param normalVarName name of the existing variable corresponding to the normal
+         * @returns the shader code
+         */
+        getCode(state: NodeMaterialBuildState, normalVarName: string): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+        protected _dumpPropertiesCode(): string;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to implement the sheen module of the PBR material
+     */
+    export class SheenBlock extends NodeMaterialBlock {
+        /**
+         * Create a new SheenBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * If true, the sheen effect is layered above the base BRDF with the albedo-scaling technique.
+         * It allows the strength of the sheen effect to not depend on the base color of the material,
+         * making it easier to setup and tweak the effect
+         */
+        albedoScaling: boolean;
+        /**
+         * Defines if the sheen is linked to the sheen color.
+         */
+        linkSheenWithAlbedo: boolean;
+        /**
+         * Initialize the block and prepare the context for build
+         * @param state defines the state that will be used for the build
+         */
+        initialize(state: NodeMaterialBuildState): void;
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the intensity input component
+         */
+        get intensity(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the color input component
+         */
+        get color(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the roughness input component
+         */
+        get roughness(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the texture input component
+         */
+        get texture(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the sheen object output component
+         */
+        get sheen(): NodeMaterialConnectionPoint;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        /**
+         * Gets the main code of the block (fragment side)
+         * @param reflectionBlock instance of a ReflectionBlock null if the code must be generated without an active reflection module
+         * @returns the shader code
+         */
+        getCode(reflectionBlock: Nullable<ReflectionBlock>): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+        protected _dumpPropertiesCode(): string;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to implement the reflectivity module of the PBR material
+     */
+    export class ReflectivityBlock extends NodeMaterialBlock {
+        /**
+         * Specifies if the metallic texture contains the ambient occlusion information in its red channel.
+         */
+        useAmbientOcclusionFromMetallicTextureRed: boolean;
+        /**
+         * Specifies if the metallic texture contains the metallness information in its blue channel.
+         */
+        useMetallnessFromMetallicTextureBlue: boolean;
+        /**
+         * Specifies if the metallic texture contains the roughness information in its alpha channel.
+         */
+        useRoughnessFromMetallicTextureAlpha: boolean;
+        /**
+         * Specifies if the metallic texture contains the roughness information in its green channel.
+         */
+        useRoughnessFromMetallicTextureGreen: boolean;
+        /**
+         * Specifies whether the F0 factor can be fetched from the mettalic texture.
+         */
+        useMetallicF0FactorFromMetallicTexture: boolean;
+        /**
+         * Create a new ReflectivityBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Initialize the block and prepare the context for build
+         * @param state defines the state that will be used for the build
+         */
+        initialize(state: NodeMaterialBuildState): void;
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the metallic input component
+         */
+        get metallic(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the roughness input component
+         */
+        get roughness(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the texture input component
+         */
+        get texture(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the reflectivity object output component
+         */
+        get reflectivity(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the main code of the block (fragment side)
+         * @param aoIntensityVarName name of the variable with the ambient occlusion intensity
+         * @returns the shader code
+         */
+        getCode(aoIntensityVarName: string): string;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+        protected _dumpPropertiesCode(): string;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to implement the anisotropy module of the PBR material
+     */
+    export class AnisotropyBlock extends NodeMaterialBlock {
+        /**
+         * The two properties below are set by the main PBR block prior to calling methods of this class.
+         * This is to avoid having to add them as inputs here whereas they are already inputs of the main block, so already known.
+         * It's less burden on the user side in the editor part.
+        */
+        /** @hidden */
+        worldPositionConnectionPoint: NodeMaterialConnectionPoint;
+        /** @hidden */
+        worldNormalConnectionPoint: NodeMaterialConnectionPoint;
+        /**
+         * Create a new AnisotropyBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Initialize the block and prepare the context for build
+         * @param state defines the state that will be used for the build
+         */
+        initialize(state: NodeMaterialBuildState): void;
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the intensity input component
+         */
+        get intensity(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the direction input component
+         */
+        get direction(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the texture input component
+         */
+        get texture(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the uv input component
+         */
+        get uv(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the worldTangent input component
+         */
+        get worldTangent(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the anisotropy object output component
+         */
+        get anisotropy(): NodeMaterialConnectionPoint;
+        private _generateTBNSpace;
+        /**
+         * Gets the main code of the block (fragment side)
+         * @param state current state of the node material building
+         * @param generateTBNSpace if true, the code needed to create the TBN coordinate space is generated
+         * @returns the shader code
+         */
+        getCode(state: NodeMaterialBuildState, generateTBNSpace?: boolean): string;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to implement the clear coat module of the PBR material
+     */
+    export class ClearCoatBlock extends NodeMaterialBlock {
+        private _scene;
+        /**
+         * Create a new ClearCoatBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Initialize the block and prepare the context for build
+         * @param state defines the state that will be used for the build
+         */
+        initialize(state: NodeMaterialBuildState): void;
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the intensity input component
+         */
+        get intensity(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the roughness input component
+         */
+        get roughness(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the ior input component
+         */
+        get ior(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the texture input component
+         */
+        get texture(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the bump texture input component
+         */
+        get bumpTexture(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the uv input component
+         */
+        get uv(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the tint color input component
+         */
+        get tintColor(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the tint "at distance" input component
+         */
+        get tintAtDistance(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the tint thickness input component
+         */
+        get tintThickness(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the tint texture input component
+         */
+        get tintTexture(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the clear coat object output component
+         */
+        get clearcoat(): NodeMaterialConnectionPoint;
+        autoConfigure(material: NodeMaterial): void;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh): void;
+        /**
+         * Gets the main code of the block (fragment side)
+         * @param state current state of the node material building
+         * @param ccBlock instance of a ClearCoatBlock or null if the code must be generated without an active clear coat module
+         * @param reflectionBlock instance of a ReflectionBlock null if the code must be generated without an active reflection module
+         * @param worldPosVarName name of the variable holding the world position
+         * @returns the shader code
+         */
+        static GetCode(state: NodeMaterialBuildState, ccBlock: Nullable<ClearCoatBlock>, reflectionBlock: Nullable<ReflectionBlock>, worldPosVarName: string): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to implement the PBR metallic/roughness model
+     */
+    export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
+        /**
+         * Gets or sets the light associated with this block
+         */
+        light: Nullable<Light>;
+        private _lightId;
+        private _scene;
+        private _environmentBRDFTexture;
+        private _environmentBrdfSamplerName;
+        private _vNormalWName;
+        private _invertNormalName;
+        /**
+         * Create a new ReflectionBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Defines the  falloff type used in this material.
+         * It by default is Physical.
+         */
+        lightFalloff: number;
+        /**
+         * Specifies that the alpha is coming form the albedo channel alpha channel for alpha blending.
+         */
+        useAlphaFromAlbedoTexture: boolean;
+        /**
+         * Specifies that alpha test should be used
+         */
+        useAlphaTest: boolean;
+        /**
+         * Defines the alpha limits in alpha test mode.
+         */
+        alphaTestCutoff: number;
+        /**
+         * Specifies that alpha blending should be used
+         */
+        useAlphaBlending: boolean;
+        /**
+         * Defines if the alpha value should be determined via the rgb values.
+         * If true the luminance of the pixel might be used to find the corresponding alpha value.
+         */
+        opacityRGB: boolean;
+        /**
+         * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most luminous ones).
+         * A car glass is a good exemple of that. When the street lights reflects on it you can not see what is behind.
+         */
+        useRadianceOverAlpha: boolean;
+        /**
+         * Specifies that the material will keeps the specular highlights over a transparent surface (only the most luminous ones).
+         * A car glass is a good exemple of that. When sun reflects on it you can not see what is behind.
+         */
+        useSpecularOverAlpha: boolean;
+        /**
+         * Enables specular anti aliasing in the PBR shader.
+         * It will both interacts on the Geometry for analytical and IBL lighting.
+         * It also prefilter the roughness map based on the bump values.
+         */
+        enableSpecularAntiAliasing: boolean;
+        /**
+         * Defines if the material uses energy conservation.
+         */
+        useEnergyConservation: boolean;
+        /**
+         * This parameters will enable/disable radiance occlusion by preventing the radiance to lit
+         * too much the area relying on ambient texture to define their ambient occlusion.
+         */
+        useRadianceOcclusion: boolean;
+        /**
+         * This parameters will enable/disable Horizon occlusion to prevent normal maps to look shiny when the normal
+         * makes the reflect vector face the model (under horizon).
+         */
+        useHorizonOcclusion: boolean;
+        /**
+         * If set to true, no lighting calculations will be applied.
+         */
+        unlit: boolean;
+        /**
+         * Force normal to face away from face.
+         */
+        forceNormalForward: boolean;
+        /**
+         * Defines the material debug mode.
+         * It helps seeing only some components of the material while troubleshooting.
+         */
+        debugMode: number;
+        /**
+         * Specify from where on screen the debug mode should start.
+         * The value goes from -1 (full screen) to 1 (not visible)
+         * It helps with side by side comparison against the final render
+         * This defaults to 0
+         */
+        debugLimit: number;
+        /**
+         * As the default viewing range might not be enough (if the ambient is really small for instance)
+         * You can use the factor to better multiply the final value.
+         */
+        debugFactor: number;
+        /**
+         * Initialize the block and prepare the context for build
+         * @param state defines the state that will be used for the build
+         */
+        initialize(state: NodeMaterialBuildState): void;
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the world position input component
+         */
+        get worldPosition(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the world normal input component
+         */
+        get worldNormal(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the perturbed normal input component
+         */
+        get perturbedNormal(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the camera position input component
+         */
+        get cameraPosition(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the base color input component
+         */
+        get baseColor(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the base texture input component
+         */
+        get baseTexture(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the opacity texture input component
+         */
+        get opacityTexture(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the ambient color input component
+         */
+        get ambientColor(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the reflectivity object parameters
+         */
+        get reflectivity(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the ambient occlusion object parameters
+         */
+        get ambientOcclusion(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the reflection object parameters
+         */
+        get reflection(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the sheen object parameters
+         */
+        get sheen(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the clear coat object parameters
+         */
+        get clearcoat(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the sub surface object parameters
+         */
+        get subSurface(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the anisotropy object parameters
+         */
+        get anisotropy(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the ambient output component
+         */
+        get ambient(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the diffuse output component
+         */
+        get diffuse(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the specular output component
+         */
+        get specular(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the sheen output component
+         */
+        get sheenDir(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the clear coat output component
+         */
+        get clearcoatDir(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the indirect diffuse output component
+         */
+        get diffuseIndirect(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the indirect specular output component
+         */
+        get specularIndirect(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the indirect sheen output component
+         */
+        get sheenIndirect(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the indirect clear coat output component
+         */
+        get clearcoatIndirect(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the refraction output component
+         */
+        get refraction(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the global lighting output component
+         */
+        get lighting(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the shadow output component
+         */
+        get shadow(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the alpha output component
+         */
+        get alpha(): NodeMaterialConnectionPoint;
+        autoConfigure(material: NodeMaterial): void;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, uniformBuffers: string[]): void;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        private _injectVertexCode;
+        /**
+         * Gets the code corresponding to the albedo/opacity module
+         * @returns the shader code
+         */
+        getAlbedoOpacityCode(): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+        protected _dumpPropertiesCode(): string;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
     }
 }
 declare module BABYLON {
@@ -72203,6 +73089,10 @@ declare module BABYLON.GUI {
          * An event triggered after the control was drawn
          */
         onAfterDrawObservable: BABYLON.Observable<Control>;
+        /**
+        * An event triggered when the control has been disposed
+        */
+        onDisposeObservable: BABYLON.Observable<Control>;
         /**
          * Get the hosting AdvancedDynamicTexture
          */

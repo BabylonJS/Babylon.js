@@ -1436,12 +1436,12 @@ export class StandardMaterial extends PushMaterial {
                 }
                 ubo.updateColor3("vEmissiveColor", StandardMaterial.EmissiveTextureEnabled ? this.emissiveColor : Color3.BlackReadOnly);
 
-                // Visibility
-                ubo.updateFloat("visibility", mesh.visibility);
-
                 // Diffuse
                 ubo.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha);
             }
+
+            // Visibility
+            ubo.updateFloat("visibility", mesh.visibility);
 
             // Textures
             if (scene.texturesEnabled) {

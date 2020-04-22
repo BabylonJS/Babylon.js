@@ -26,7 +26,3 @@ vec3 ambientOcclusionForDirectDiffuse = aoOut.ambientOcclusionColor;
 
 finalAmbient *= aoOut.ambientOcclusionColor;
 finalDiffuse *= ambientOcclusionForDirectDiffuse;
-
-#if !defined(UNLIT) && defined(REFLECTION)
-finalIrradiance *= aoOut.ambientOcclusionColor;
-#endif
