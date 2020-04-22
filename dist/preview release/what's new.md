@@ -1,4 +1,4 @@
-# 4.1.0
+# 4.2.0
 
 ## Major updates
 
@@ -50,6 +50,7 @@
 - Allow setting of `BABYLON.Basis.JSModuleURL` and `BABYLON.Basis.WasmModuleURL`, for hosting the Basis transcoder locally ([JasonAyre])(https://github.com/jasonyre))
 - PNG support for browsers not supporting SVG ([RaananW](https://github.com/RaananW/))
 - Device orientation event permissions for iOS 13+ ([RaananW](https://github.com/RaananW/))
+- Added support for CSG Vertex Color ([PirateJC](https://github.com/PirateJC/))
 
 ### Engine
 
