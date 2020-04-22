@@ -1,19 +1,8 @@
 [
   {
-    "label" : "label1 (js)",
-    "documentation" : "doc1\ndoc1bis",
-    "insertText" : "text1\ntext1bis",
+    "label" : "Create a sphere",
+    "documentation" : "https://doc.babylonjs.com/how_to/set_shapes",
+    "insertText" : "var sphere = BABYLON.MeshBuilder.CreateSphere(\"sphere\", {diameter: 1}, scene);",
     "language" : "javascript"
-  },
-  {
-    "label" : "label2 (ts)",
-    "documentation" : "doc2\ndoc2bis",
-    "insertText" : "text2\ntext2bis",
-    "language" : "typescript"
-  },
-  {
-    "label" : "label3 (all)",
-    "documentation" : "doc3\ndoc3bis",
-    "insertText" : "text3\ntext3bis"
   }
 ]
