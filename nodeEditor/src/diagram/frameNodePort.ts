@@ -73,7 +73,7 @@ export class FrameNodePort extends NodePort {
             let portLabel = root.ownerDocument!.createElement("div");
             portLabel.classList.add("port-label");
             let portName = connectionPoint.displayName || connectionPoint.name;
-            if (portName === "output") {
+            if (connectionPoint.ownerBlock.isInput) {
                 portName = node.name;
             }
             portLabel.innerHTML = portName;       

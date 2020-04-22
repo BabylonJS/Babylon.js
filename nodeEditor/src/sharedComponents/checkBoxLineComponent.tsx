@@ -70,13 +70,6 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
         this.setState({ isSelected: !this.state.isSelected });
     }
 
-    getDisabled() {
-        if (this.props.disabled) {
-            return this.props.disabled;
-        }
-        else return false;
-    }
-
     render() {
         return (
             <div className="checkBoxLine">
@@ -84,8 +77,8 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
                     {this.props.label}
                 </div>
                 <div className="checkBox">
-                    <input type="checkbox" id={"checkbox" + this._uniqueId} className="cbx hidden" checked={this.state.isSelected} onChange={() => this.onChange()} disabled={this.getDisabled()}/>
-                    <label htmlFor={"checkbox" + this._uniqueId} className={`lbl${this.getDisabled() ? ' disabled' : ''}`}></label>
+                    <input type="checkbox" id={"checkbox" + this._uniqueId} className="cbx hidden" checked={this.state.isSelected} onChange={() => this.onChange()} disabled={!!this.props.disabled}/>
+                    <label htmlFor={"checkbox" + this._uniqueId} className={`lbl${!!this.props.disabled ? ' disabled' : ''}`}></label>
                 </div>
             </div>
         );
