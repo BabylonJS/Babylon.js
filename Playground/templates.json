@@ -1,0 +1,8 @@
+[
+  {
+    "label" : "Create a sphere",
+    "documentation" : "https://doc.babylonjs.com/how_to/set_shapes",
+    "insertText" : "var sphere = BABYLON.MeshBuilder.CreateSphere(\"sphere\", {diameter: 1}, scene);",
+    "language" : "javascript"
+  }
+]
