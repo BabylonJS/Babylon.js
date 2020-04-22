@@ -1,0 +1,19 @@
+[
+  {
+    "label" : "label1 (js)",
+    "documentation" : "doc1\ndoc1bis",
+    "insertText" : "text1\ntext1bis",
+    "language" : "javascript"
+  },
+  {
+    "label" : "label2 (ts)",
+    "documentation" : "doc2\ndoc2bis",
+    "insertText" : "text2\ntext2bis",
+    "language" : "typescript"
+  },
+  {
+    "label" : "label3 (all)",
+    "documentation" : "doc3\ndoc3bis",
+    "insertText" : "text3\ntext3bis"
+  }
+]
