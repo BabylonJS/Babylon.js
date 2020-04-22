@@ -26,6 +26,7 @@ import { MaterialFlags } from '../../../materialFlags';
 import { AnisotropyBlock } from './anisotropyBlock';
 import { ReflectionBlock } from './reflectionBlock';
 import { ClearCoatBlock } from './clearCoatBlock';
+import { SubSurfaceBlock } from './subSurfaceBlock';
 
 const mapOutputToVariable: { [name: string] : [string, string] } = {
     "ambient":      ["finalAmbient", ""],
@@ -84,9 +85,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             new NodeMaterialConnectionPointCustomObject("reflection", this, NodeMaterialConnectionPointDirection.Input, ReflectionBlock, "ReflectionBlock"));
         this.registerInput("sheen", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("sheen", this, NodeMaterialConnectionPointDirection.Input, SheenBlock, "SheenBlock"));
-        this.registerInput("clearCoat", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
+        this.registerInput("clearcoat", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("clearcoat", this, NodeMaterialConnectionPointDirection.Input, ClearCoatBlock, "ClearCoatBlock"));
-        this.registerInput("subSurface", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("subsurface", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
+            new NodeMaterialConnectionPointCustomObject("subsurface", this, NodeMaterialConnectionPointDirection.Input, SubSurfaceBlock, "SubSurfaceBlock"));
         this.registerInput("anisotropy", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("anisotropy", this, NodeMaterialConnectionPointDirection.Input, AnisotropyBlock, "AnisotropyBlock"));
 
@@ -431,7 +433,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     /**
      * Gets the sub surface object parameters
      */
-    public get subSurface(): NodeMaterialConnectionPoint {
+    public get subsurface(): NodeMaterialConnectionPoint {
         return this._inputs[13];
     }
 
@@ -836,7 +838,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("pbrBlockAmbientOcclusion", comments);
         state._emitFunctionFromInclude("pbrBlockAlphaFresnel", comments);
         state._emitFunctionFromInclude("pbrBlockAnisotropic", comments);
-        state._emitFunctionFromInclude("pbrBlockSubSurface", comments);
 
         //
         // code
@@ -969,11 +970,17 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         });
 
         // ___________________________________ SubSurface ______________________________________
-        state.compilationString += `subSurfaceOutParams subSurfaceOut;
-            #ifdef SUBSURFACE
-            #else
-                subSurfaceOut.specularEnvironmentReflectance = specularEnvironmentReflectance;
-            #endif\r\n`;
+        const subsurfaceBlock = this.subsurface.isConnected ? this.subsurface.connectedPoint?.ownerBlock as SubSurfaceBlock : null;
+
+        state.compilationString += SubSurfaceBlock.GetCode(state, subsurfaceBlock, reflectionBlock, worldPosVarName);
+
+        state._emitFunctionFromInclude("pbrBlockSubSurface", comments, {
+            replaceStrings: [
+                { search: /REFLECTIONMAP_3D/g, replace: reflectionBlock?._define3DName ?? "REFLECTIONMAP_3D" },
+                { search: /REFLECTIONMAP_OPPOSITEZ/g, replace: reflectionBlock?._defineOppositeZ ?? "REFLECTIONMAP_OPPOSITEZ" },
+                { search: /REFLECTIONMAP_PROJECTION/g, replace: reflectionBlock?._defineProjectionName ?? "REFLECTIONMAP_PROJECTION" },
+            ]
+        });
 
         // _____________________________ Direct Lighting Info __________________________________
         state.compilationString += state._emitCodeFromInclude("pbrBlockDirectLighting", comments);

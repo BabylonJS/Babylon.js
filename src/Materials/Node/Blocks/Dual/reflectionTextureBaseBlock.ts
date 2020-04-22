@@ -55,7 +55,8 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     protected _reflectionVectorName: string;
     /** @hidden */
     public _reflectionCoordsName: string;
-    protected _reflectionMatrixName: string;
+    /** @hidden */
+    public _reflectionMatrixName: string;
     protected _reflectionColorName: string;
 
     /**
