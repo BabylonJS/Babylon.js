@@ -560,16 +560,25 @@ export class WebGPUEngine extends Engine {
 
         // Chunk
         const maxChunk = 1024 * 1024 * 15;
-        let offset = 0;
-        while ((chunkEnd - (chunkStart + offset)) > maxChunk) {
-            // TODO WEBGPU. Deprecated soon to be removed... replace by mappedBuffers
-            buffer.setSubData(dstByteOffset + offset, src, srcByteOffset + offset, maxChunk);
-            offset += maxChunk;
+        const commandEncoder = this._device.createCommandEncoder();
+        const tempBuffers: GPUBuffer[] = [];
+        for (let offset = 0; offset < src.byteLength; offset += maxChunk) {
+            const uploadCount = Math.min(src.byteLength - offset, maxChunk);
 
+            const [uploadBuffer, uploadMapping] = this._device.createBufferMapped({
+                usage: WebGPUConstants.GPUBufferUsage_TRANSFER_SRC,
+                size: uploadCount,
+            });
+            tempBuffers.push(uploadBuffer);
+            new Uint8Array(uploadMapping).set(new Uint8Array(src.buffer, srcByteOffset + offset, uploadCount ));
+            uploadBuffer.unmap();
+            commandEncoder.copyBufferToBuffer(
+                uploadBuffer, 0,
+                buffer, dstByteOffset + offset,
+                uploadCount);
         }
-
-        // TODO WEBGPU. Deprecated soon to be removed... replace by mappedBuffers
-        buffer.setSubData(dstByteOffset + offset, src, srcByteOffset + offset, byteLength - offset);
+        this._device.defaultQueue.submit([commandEncoder.finish()]);
+        tempBuffers.forEach(buff => buff.destroy());
     }
 
     //------------------------------------------------------------------------------
