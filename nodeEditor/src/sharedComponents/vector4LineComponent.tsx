@@ -1,11 +1,12 @@
 import * as React from "react";
-import { Vector4 } from "babylonjs/Maths/math";
+import { Vector4 } from "babylonjs/Maths/math.vector";
 import { Observable } from "babylonjs/Misc/observable";
 
 import { NumericInputComponent } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
+import { GlobalState } from '../globalState';
 
 interface IVector4LineComponentProps {
     label: string;
@@ -15,6 +16,7 @@ interface IVector4LineComponentProps {
     step?: number;
     onChange?: (newvalue: Vector4) => void;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    globalState: GlobalState;
 }
 
 export class Vector4LineComponent extends React.Component<IVector4LineComponentProps, { isExpanded: boolean, value: Vector4 }> {
@@ -125,10 +127,10 @@ export class Vector4LineComponent extends React.Component<IVector4LineComponentP
                 {
                     this.state.isExpanded &&
                     <div className="secondLine">
-                        <NumericInputComponent label="x" step={this.props.step} value={this.state.value.x} onChange={value => this.updateStateX(value)} />
-                        <NumericInputComponent label="y" step={this.props.step} value={this.state.value.y} onChange={value => this.updateStateY(value)} />
-                        <NumericInputComponent label="z" step={this.props.step} value={this.state.value.z} onChange={value => this.updateStateZ(value)} />
-                        <NumericInputComponent label="w" step={this.props.step} value={this.state.value.w} onChange={value => this.updateStateW(value)} />
+                        <NumericInputComponent globalState={this.props.globalState} label="x" step={this.props.step} value={this.state.value.x} onChange={value => this.updateStateX(value)} />
+                        <NumericInputComponent globalState={this.props.globalState} label="y" step={this.props.step} value={this.state.value.y} onChange={value => this.updateStateY(value)} />
+                        <NumericInputComponent globalState={this.props.globalState} label="z" step={this.props.step} value={this.state.value.z} onChange={value => this.updateStateZ(value)} />
+                        <NumericInputComponent globalState={this.props.globalState} label="w" step={this.props.step} value={this.state.value.w} onChange={value => this.updateStateW(value)} />
                     </div>
                 }
             </div>

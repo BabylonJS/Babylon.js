@@ -2,7 +2,6 @@ import { Observable } from "../Misc/observable";
 import { Nullable, IndicesArray, DataArray } from "../types";
 import { Scene } from "../scene";
 import { InternalTexture } from "../Materials/Textures/internalTexture";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { IAudioEngine } from "../Audio/audioEngine";
 import { IOfflineProvider } from "../Offline/IOfflineProvider";
 import { ILoadingScreen } from "../Loading/loadingScreen";
@@ -21,6 +20,8 @@ import { DataBuffer } from '../Meshes/dataBuffer';
 import { PerfCounter } from '../Misc/perfCounter';
 import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
 import { Logger } from '../Misc/logger';
+
+import "./Extensions/engine.alpha";
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
@@ -419,11 +420,6 @@ export class Engine extends ThinEngine {
     private _dummyFramebuffer: WebGLFramebuffer;
     private _rescalePostProcess: PostProcess;
 
-    /** @hidden */
-    protected _alphaMode = Constants.ALPHA_ADD;
-    /** @hidden */
-    protected _alphaEquation = Constants.ALPHA_DISABLE;
-
     // Deterministic lockstepMaxSteps
     private _deterministicLockstep: boolean = false;
     private _lockstepMaxSteps: number = 4;
@@ -439,6 +435,9 @@ export class Engine extends ThinEngine {
 
     /** @hidden */
     public _drawCalls = new PerfCounter();
+
+    /** Gets or sets the tab index to set to the rendering canvas. 1 is the minimum value to set to be able to capture keyboard events */
+    public canvasTabIndex = 1;
 
     /**
      * Turn this value on if you want to pause FPS computation when in background
@@ -492,7 +491,7 @@ export class Engine extends ThinEngine {
 
         Engine.Instances.push(this);
 
-        if ((<HTMLCanvasElement>canvasOrContext).getContext) {
+        if ((<any>canvasOrContext).getContext) {
             let canvas = <HTMLCanvasElement>canvasOrContext;
 
             this._onCanvasFocus = () => {
@@ -750,165 +749,6 @@ export class Engine extends ThinEngine {
      */
     public setDepthWrite(enable: boolean): void {
         this._depthCullingState.depthMask = enable;
-    }
-
-    /**
-     * Enable or disable color writing
-     * @param enable defines the state to set
-     */
-    public setColorWrite(enable: boolean): void {
-        this._gl.colorMask(enable, enable, enable, enable);
-        this._colorWrite = enable;
-    }
-
-    /**
-     * Gets a boolean indicating if color writing is enabled
-     * @returns the current color writing state
-     */
-    public getColorWrite(): boolean {
-        return this._colorWrite;
-    }
-
-    /**
-     * Sets alpha constants used by some alpha blending modes
-     * @param r defines the red component
-     * @param g defines the green component
-     * @param b defines the blue component
-     * @param a defines the alpha component
-     */
-    public setAlphaConstants(r: number, g: number, b: number, a: number) {
-        this._alphaState.setAlphaBlendConstants(r, g, b, a);
-    }
-
-    /**
-     * Sets the current alpha mode
-     * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
-     * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
-     * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
-     */
-    public setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {
-        if (this._alphaMode === mode) {
-            return;
-        }
-
-        switch (mode) {
-            case Constants.ALPHA_DISABLE:
-                this._alphaState.alphaBlend = false;
-                break;
-            case Constants.ALPHA_PREMULTIPLIED:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_PREMULTIPLIED_PORTERDUFF:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_COMBINE:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_ONEONE:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_ADD:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_SUBTRACT:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.ZERO, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_MULTIPLY:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.DST_COLOR, this._gl.ZERO, this._gl.ONE, this._gl.ONE);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_MAXIMIZED:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_INTERPOLATE:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.CONSTANT_COLOR, this._gl.ONE_MINUS_CONSTANT_COLOR, this._gl.CONSTANT_ALPHA, this._gl.ONE_MINUS_CONSTANT_ALPHA);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_SCREENMODE:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_ONEONE_ONEONE:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE, this._gl.ONE, this._gl.ONE);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_ALPHATOCOLOR:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.DST_ALPHA, this._gl.ONE, this._gl.ZERO, this._gl.ZERO);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_REVERSEONEMINUS:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE_MINUS_DST_COLOR, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE_MINUS_DST_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_SRC_DSTONEMINUSSRCALPHA:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_ONEONE_ONEZERO:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE, this._gl.ONE, this._gl.ZERO);
-                this._alphaState.alphaBlend = true;
-                break;
-        }
-        if (!noDepthWriteChange) {
-            this.setDepthWrite(mode === Constants.ALPHA_DISABLE);
-        }
-        this._alphaMode = mode;
-    }
-
-    /**
-     * Gets the current alpha mode
-     * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
-     * @returns the current alpha mode
-     */
-    public getAlphaMode(): number {
-        return this._alphaMode;
-    }
-
-    /**
-     * Sets the current alpha equation
-     * @param equation defines the equation to use (one of the Engine.ALPHA_EQUATION_XXX)
-     */
-    public setAlphaEquation(equation: number): void {
-        if (this._alphaEquation === equation) {
-            return;
-        }
-
-        switch (equation) {
-            case Constants.ALPHA_EQUATION_ADD:
-                this._alphaState.setAlphaEquationParameters(this._gl.FUNC_ADD, this._gl.FUNC_ADD);
-                break;
-            case Constants.ALPHA_EQUATION_SUBSTRACT:
-                this._alphaState.setAlphaEquationParameters(this._gl.FUNC_SUBTRACT, this._gl.FUNC_SUBTRACT);
-                break;
-            case Constants.ALPHA_EQUATION_REVERSE_SUBTRACT:
-                this._alphaState.setAlphaEquationParameters(this._gl.FUNC_REVERSE_SUBTRACT, this._gl.FUNC_REVERSE_SUBTRACT);
-                break;
-            case Constants.ALPHA_EQUATION_MAX:
-                this._alphaState.setAlphaEquationParameters(this._gl.MAX, this._gl.MAX);
-                break;
-            case Constants.ALPHA_EQUATION_MIN:
-                this._alphaState.setAlphaEquationParameters(this._gl.MIN, this._gl.MIN);
-                break;
-            case Constants.ALPHA_EQUATION_DARKEN:
-                this._alphaState.setAlphaEquationParameters(this._gl.MIN, this._gl.FUNC_ADD);
-                break;
-        }
-        this._alphaEquation = equation;
-    }
-
-    /**
-     * Gets the current alpha equation.
-     * @returns the current alpha equation
-     */
-    public getAlphaEquation(): number {
-        return this._alphaEquation;
     }
 
     /**
@@ -1287,20 +1127,6 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Reads pixels from the current frame buffer. Please note that this function can be slow
-     * @param x defines the x coordinate of the rectangle where pixels must be read
-     * @param y defines the y coordinate of the rectangle where pixels must be read
-     * @param width defines the width of the rectangle where pixels must be read
-     * @param height defines the height of the rectangle where pixels must be read
-     * @returns a Uint8Array containing RGBA colors
-     */
-    public readPixels(x: number, y: number, width: number, height: number): Uint8Array {
-        var data = new Uint8Array(height * width * 4);
-        this._gl.readPixels(x, y, width, height, this._gl.RGBA, this._gl.UNSIGNED_BYTE, data);
-        return data;
-    }
-
-    /**
      * Sets a depth stencil texture from a render target to the according uniform.
      * @param channel The texture channel
      * @param uniform The uniform to set
@@ -1339,36 +1165,6 @@ export class Engine extends ThinEngine {
      */
     public setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>): void {
         this._bindTexture(channel, postProcess ? postProcess._outputTexture : null);
-    }
-
-    /** @hidden */
-    public _convertRGBtoRGBATextureData(rgbData: any, width: number, height: number, textureType: number): ArrayBufferView {
-        // Create new RGBA data container.
-        var rgbaData: any;
-        if (textureType === Constants.TEXTURETYPE_FLOAT) {
-            rgbaData = new Float32Array(width * height * 4);
-        }
-        else {
-            rgbaData = new Uint32Array(width * height * 4);
-        }
-
-        // Convert each pixel.
-        for (let x = 0; x < width; x++) {
-            for (let y = 0; y < height; y++) {
-                let index = (y * width + x) * 3;
-                let newIndex = (y * width + x) * 4;
-
-                // Map Old Value to new value.
-                rgbaData[newIndex + 0] = rgbData[index + 0];
-                rgbaData[newIndex + 1] = rgbData[index + 1];
-                rgbaData[newIndex + 2] = rgbData[index + 2];
-
-                // Add fully opaque alpha channel.
-                rgbaData[newIndex + 3] = 1;
-            }
-        }
-
-        return rgbaData;
     }
 
     protected _rebuildBuffers(): void {
@@ -1510,50 +1306,6 @@ export class Engine extends ThinEngine {
         }
 
         super.resize();
-    }
-
-    /**
-     * Set the compressed texture format to use, based on the formats you have, and the formats
-     * supported by the hardware / browser.
-     *
-     * Khronos Texture Container (.ktx) files are used to support this.  This format has the
-     * advantage of being specifically designed for OpenGL.  Header elements directly correspond
-     * to API arguments needed to compressed textures.  This puts the burden on the container
-     * generator to house the arcane code for determining these for current & future formats.
-     *
-     * for description see https://www.khronos.org/opengles/sdk/tools/KTX/
-     * for file layout see https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
-     *
-     * Note: The result of this call is not taken into account when a texture is base64.
-     *
-     * @param formatsAvailable defines the list of those format families you have created
-     * on your server.  Syntax: '-' + format family + '.ktx'.  (Case and order do not matter.)
-     *
-     * Current families are astc, dxt, pvrtc, etc2, & etc1.
-     * @returns The extension selected.
-     */
-    public setTextureFormatToUse(formatsAvailable: Array<string>): Nullable<string> {
-        for (var i = 0, len1 = this.texturesSupported.length; i < len1; i++) {
-            for (var j = 0, len2 = formatsAvailable.length; j < len2; j++) {
-                if (this._texturesSupported[i] === formatsAvailable[j].toLowerCase()) {
-                    return this._textureFormatInUse = this._texturesSupported[i];
-                }
-            }
-        }
-        // actively set format to nothing, to allow this to be called more than once
-        // and possibly fail the 2nd time
-        this._textureFormatInUse = null;
-        return null;
-    }
-
-    /**
-     * Set the compressed texture extensions or file names to skip.
-     *
-     * @param skippedFiles defines the list of those texture files you want to skip
-     * Example: [".dds", ".env", "myfile.png"]
-     */
-    public setCompressedTextureExclusions(skippedFiles: Array<string>): void {
-        this._excludedCompressedTextures = skippedFiles;
     }
 
     /**
@@ -1806,40 +1558,6 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Sets the frame buffer Depth / Stencil attachement of the render target to the defined depth stencil texture.
-     * @param renderTarget The render target to set the frame buffer for
-     */
-    public setFrameBufferDepthStencilTexture(renderTarget: RenderTargetTexture): void {
-        // Create the framebuffer
-        var internalTexture = renderTarget.getInternalTexture();
-        if (!internalTexture || !internalTexture._framebuffer || !renderTarget.depthStencilTexture) {
-            return;
-        }
-
-        var gl = this._gl;
-        var depthStencilTexture = renderTarget.depthStencilTexture;
-
-        this._bindUnboundFramebuffer(internalTexture._framebuffer);
-        if (depthStencilTexture.isCube) {
-            if (depthStencilTexture._generateStencilBuffer) {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X, depthStencilTexture._webGLTexture, 0);
-            }
-            else {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X, depthStencilTexture._webGLTexture, 0);
-            }
-        }
-        else {
-            if (depthStencilTexture._generateStencilBuffer) {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_2D, depthStencilTexture._webGLTexture, 0);
-            }
-            else {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthStencilTexture._webGLTexture, 0);
-            }
-        }
-        this._bindUnboundFramebuffer(null);
-    }
-
-    /**
      * Update a dynamic index buffer
      * @param indexBuffer defines the target index buffer
      * @param indices defines the data to update
@@ -1898,7 +1616,7 @@ export class Engine extends ThinEngine {
             texture._MSAARenderBuffer = null;
         }
 
-        if (samples > 1) {
+        if (samples > 1 && gl.renderbufferStorageMultisample) {
             let framebuffer = gl.createFramebuffer();
 
             if (!framebuffer) {
@@ -1927,7 +1645,6 @@ export class Engine extends ThinEngine {
         texture.samples = samples;
         texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(texture._generateStencilBuffer, texture._generateDepthBuffer, texture.width, texture.height, samples);
 
-        gl.bindRenderbuffer(gl.RENDERBUFFER, null);
         this._bindUnboundFramebuffer(null);
 
         return samples;
@@ -2005,6 +1722,58 @@ export class Engine extends ThinEngine {
      */
     public deleteInstancesBuffer(buffer: WebGLBuffer): void {
         this._gl.deleteBuffer(buffer);
+    }
+
+    private _clientWaitAsync(sync: WebGLSync, flags = 0, interval_ms = 10) {
+        let gl = <WebGL2RenderingContext>(this._gl as any);
+        return new Promise((resolve, reject) => {
+            let check = () => {
+                const res = gl.clientWaitSync(sync, flags, 0);
+                if (res == gl.WAIT_FAILED) {
+                reject();
+                return;
+                }
+                if (res == gl.TIMEOUT_EXPIRED) {
+                setTimeout(check, interval_ms);
+                return;
+                }
+                resolve();
+            };
+
+            check();
+        });
+    }
+
+    /** @hidden */
+    public _readPixelsAsync(x: number, y: number, w: number, h: number, format: number, type: number, outputBuffer: ArrayBufferView) {
+        if (this._webGLVersion < 2) {
+            throw new Error("_readPixelsAsync only work on WebGL2+");
+        }
+
+        let gl = <WebGL2RenderingContext>(this._gl as any);
+        const buf = gl.createBuffer();
+        gl.bindBuffer(gl.PIXEL_PACK_BUFFER, buf);
+        gl.bufferData(gl.PIXEL_PACK_BUFFER, outputBuffer.byteLength, gl.STREAM_READ);
+        gl.readPixels(x, y, w, h, format, type, 0);
+        gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
+
+        const sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
+        if (!sync) {
+            return null;
+        }
+
+        gl.flush();
+
+        return this._clientWaitAsync(sync, 0, 10).then(() => {
+            gl.deleteSync(sync);
+
+            gl.bindBuffer(gl.PIXEL_PACK_BUFFER, buf);
+            gl.getBufferSubData(gl.PIXEL_PACK_BUFFER, 0, outputBuffer);
+            gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
+            gl.deleteBuffer(buf);
+
+            return outputBuffer;
+        });
     }
 
     /** @hidden */
@@ -2086,19 +1855,23 @@ export class Engine extends ThinEngine {
         if (DomManagement.IsWindowObjectExist()) {
             window.removeEventListener("blur", this._onBlur);
             window.removeEventListener("focus", this._onFocus);
+
             if (this._renderingCanvas) {
                 this._renderingCanvas.removeEventListener("focus", this._onCanvasFocus);
                 this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
                 this._renderingCanvas.removeEventListener("pointerout", this._onCanvasPointerOut);
             }
-            document.removeEventListener("fullscreenchange", this._onFullscreenChange);
-            document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
-            document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
-            document.removeEventListener("msfullscreenchange", this._onFullscreenChange);
-            document.removeEventListener("pointerlockchange", this._onPointerLockChange);
-            document.removeEventListener("mspointerlockchange", this._onPointerLockChange);
-            document.removeEventListener("mozpointerlockchange", this._onPointerLockChange);
-            document.removeEventListener("webkitpointerlockchange", this._onPointerLockChange);
+
+            if (DomManagement.IsDocumentAvailable()) {
+                document.removeEventListener("fullscreenchange", this._onFullscreenChange);
+                document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
+                document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
+                document.removeEventListener("msfullscreenchange", this._onFullscreenChange);
+                document.removeEventListener("pointerlockchange", this._onPointerLockChange);
+                document.removeEventListener("mspointerlockchange", this._onPointerLockChange);
+                document.removeEventListener("mozpointerlockchange", this._onPointerLockChange);
+                document.removeEventListener("webkitpointerlockchange", this._onPointerLockChange);
+            }
         }
 
         super.dispose();

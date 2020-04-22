@@ -13,6 +13,11 @@ export class WebGLPipelineContext implements IPipelineContext {
     public onCompiled?: () => void;
     public transformFeedback?: WebGLTransformFeedback | null;
 
+    public vertexCompilationError: Nullable<string> = null;
+    public fragmentCompilationError: Nullable<string> = null;
+    public programLinkError: Nullable<string> = null;
+    public programValidationError: Nullable<string> = null;
+
     public get isAsync() {
         return this.isParallelCompiled;
     }
@@ -32,5 +37,13 @@ export class WebGLPipelineContext implements IPipelineContext {
         if (onCompiled && this.program) {
             onCompiled(this.program);
         }
+    }
+
+    public _getVertexShaderCode(): string | null {
+        return this.vertexShader ? this.engine._getShaderSource(this.vertexShader) : null;
+    }
+
+    public _getFragmentShaderCode(): string | null {
+        return this.fragmentShader ? this.engine._getShaderSource(this.fragmentShader) : null;
     }
 }

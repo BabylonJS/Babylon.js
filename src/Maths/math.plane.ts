@@ -78,9 +78,9 @@ export class Plane {
      * @returns a new Plane as the result of the transformation of the current Plane by the given matrix.
      */
     public transform(transformation: DeepImmutable<Matrix>): Plane {
-        const transposedMatrix = Plane._TmpMatrix;
-        Matrix.TransposeToRef(transformation, transposedMatrix);
-        const m = transposedMatrix.m;
+        const invertedMatrix = Plane._TmpMatrix;
+        transformation.invertToRef(invertedMatrix);
+        const m = invertedMatrix.m;
         var x = this.normal.x;
         var y = this.normal.y;
         var z = this.normal.z;
@@ -95,7 +95,7 @@ export class Plane {
     }
 
     /**
-     * Calcualtte the dot product between the point and the plane normal
+     * Compute the dot product between the point and the plane normal
      * @param point point to calculate the dot product with
      * @returns the dot product (float) of the point coordinates and the plane normal.
      */

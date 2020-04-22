@@ -3,7 +3,6 @@ import { BRDFTextureTools } from "../../Misc/brdfTextureTools";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { Color3 } from "../../Maths/math.color";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
 import { ColorCurves } from "../../Materials/colorCurves";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
@@ -739,6 +738,7 @@ export class PBRMaterial extends PBRBaseMaterial {
         this.anisotropy.copyTo(clone.anisotropy);
         this.brdf.copyTo(clone.brdf);
         this.sheen.copyTo(clone.sheen);
+        this.subSurface.copyTo(clone.subSurface);
 
         return clone;
     }

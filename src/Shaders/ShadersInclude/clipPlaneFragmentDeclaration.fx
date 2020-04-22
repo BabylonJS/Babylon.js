@@ -13,3 +13,11 @@
 #ifdef CLIPPLANE4
 	varying float fClipDistance4;
 #endif
+
+#ifdef CLIPPLANE5
+	varying float fClipDistance5;
+#endif
+
+#ifdef CLIPPLANE6
+	varying float fClipDistance6;
+#endif

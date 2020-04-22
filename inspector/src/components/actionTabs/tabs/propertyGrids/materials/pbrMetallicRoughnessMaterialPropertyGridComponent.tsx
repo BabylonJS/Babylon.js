@@ -11,6 +11,7 @@ import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGri
 import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
+import { CheckBoxLineComponent } from '../../../lines/checkBoxLineComponent';
 
 interface IPBRMetallicRoughnessMaterialPropertyGridComponentProps {
     globalState: GlobalState,
@@ -51,13 +52,18 @@ export class PBRMetallicRoughnessMaterialPropertyGridComponent extends React.Com
                 <CommonMaterialPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 {this.renderTextures()}
                 <LineContainerComponent globalState={this.props.globalState} title="LIGHTING & COLORS">
-                    <Color3LineComponent label="Base" target={material} propertyName="baseColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <Color3LineComponent label="Emissive" target={material} propertyName="emissiveColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Color3LineComponent label="Base" target={material} propertyName="baseColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} isLinear={true} />
+                    <Color3LineComponent label="Emissive" target={material} propertyName="emissiveColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} isLinear={true} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="LEVELS" closed={true}>
                     <SliderLineComponent label="Metallic" target={material} propertyName="metallic" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Roughness" target={material} propertyName="roughness" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
+                <LineContainerComponent globalState={this.props.globalState} title="NORMAL MAP" closed={true}>
+                    <CheckBoxLineComponent label="Invert X axis" target={material} propertyName="invertNormalMapX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <CheckBoxLineComponent label="Invert Y axis" target={material} propertyName="invertNormalMapY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                </LineContainerComponent>
+
             </div>
         );
     }

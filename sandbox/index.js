@@ -91,6 +91,7 @@ if (BABYLON.Engine.isSupported()) {
         dropdownContent.innerHTML = "";
         animationBar.style.display = "none";
         currentGroup = null;
+        babylonScene.skipFrustumClipping = true;
 
         if (babylonScene.animationGroups.length > 0) {
             animationBar.style.display = "flex";
@@ -134,7 +135,7 @@ if (BABYLON.Engine.isSupported()) {
 
         currentScene = babylonScene;
 
-        babylonScene.onAnimationFileImportedObservable.add((scene) => {
+        babylonScene.onAnimationFileImportedObservable.add(function (scene) {
             anyLoaded(scene, false);
         });
 

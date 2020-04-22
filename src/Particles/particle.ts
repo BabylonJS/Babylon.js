@@ -137,6 +137,9 @@ export class Particle {
     /** @hidden */
     public _randomNoiseCoordinates2: Vector3;
 
+    /** @hidden */
+    public _localPosition?: Vector3;
+
     /**
      * Creates a new instance Particle
      * @param particleSystem the particle system the particle belongs to
@@ -190,7 +193,9 @@ export class Particle {
             var emitterMesh = (<AbstractMesh>subEmitter.particleSystem.emitter);
             emitterMesh.position.copyFrom(this.position);
             if (subEmitter.inheritDirection) {
-                emitterMesh.setDirection(this.direction.normalize(), 0, Math.PI / 2);
+                let temp = TmpVectors.Vector3[0];
+                this.direction.normalizeToRef(temp);
+                emitterMesh.setDirection(temp, 0, Math.PI / 2);
             }
         } else {
             var emitterPosition = (<Vector3>subEmitter.particleSystem.emitter);
@@ -213,6 +218,7 @@ export class Particle {
     /** @hidden */
     public _reset() {
         this.age = 0;
+        this.id = Particle._Count++;
         this._currentColorGradient = null;
         this._currentSizeGradient = null;
         this._currentAngularSpeedGradient = null;
@@ -239,6 +245,13 @@ export class Particle {
             other._initialDirection = null;
         }
         other.direction.copyFrom(this.direction);
+        if (this._localPosition) {
+            if (other._localPosition) {
+                other._localPosition.copyFrom(this._localPosition);
+            } else {
+                other._localPosition = this._localPosition.clone();
+            }
+        }
         other.color.copyFrom(this.color);
         other.colorStep.copyFrom(this.colorStep);
         other.lifeTime = this.lifeTime;
@@ -287,7 +300,11 @@ export class Particle {
             other._initialEndSpriteCellID = this._initialEndSpriteCellID;
         }
         if (this.particleSystem.useRampGradients) {
-            other.remapData.copyFrom(this.remapData);
+            if (other.remapData && this.remapData) {
+                other.remapData.copyFrom(this.remapData);
+            } else {
+                other.remapData = new Vector4(0, 0, 0, 0);
+            }
         }
         if (this._randomNoiseCoordinates1) {
             if (other._randomNoiseCoordinates1) {

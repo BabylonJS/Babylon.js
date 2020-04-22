@@ -5,6 +5,7 @@ import { DeepImmutable, Nullable, FloatArray, float } from "../types";
 import { ArrayTools } from '../Misc/arrayTools';
 import { IPlaneLike } from './math.like';
 import { _TypeStore } from '../Misc/typeStore';
+import { Plane } from './math.plane';
 
 /**
  * Class representing a vector containing 2 coordinates
@@ -254,6 +255,25 @@ export class Vector2 {
      */
     public negate(): Vector2 {
         return new Vector2(-this.x, -this.y);
+    }
+
+    /**
+     * Negate this vector in place
+     * @returns this
+     */
+    public negateInPlace(): Vector2 {
+        this.x *= -1;
+        this.y *= -1;
+        return this;
+    }
+
+    /**
+     * Negate the current Vector2 and stores the result in the given vector "result" coordinates
+     * @param result defines the Vector3 object where to store the result
+     * @returns the current Vector2
+     */
+    public negateToRef(result: Vector2): Vector2 {
+        return result.copyFromFloats(this.x * -1, this.y * -1);
     }
 
     /**
@@ -840,6 +860,26 @@ export class Vector3 {
     }
 
     /**
+     * Negate this vector in place
+     * @returns this
+     */
+    public negateInPlace(): Vector3 {
+        this.x *= -1;
+        this.y *= -1;
+        this.z *= -1;
+        return this;
+    }
+
+    /**
+     * Negate the current Vector3 and stores the result in the given vector "result" coordinates
+     * @param result defines the Vector3 object where to store the result
+     * @returns the current Vector3
+     */
+    public negateToRef(result: Vector3): Vector3 {
+        return result.copyFromFloats(this.x * -1, this.y * -1, this.z * -1);
+    }
+
+    /**
      * Multiplies the Vector3 coordinates by the float "scale"
      * @param scale defines the multiplier factor
      * @returns the current updated Vector3
@@ -878,6 +918,45 @@ export class Vector3 {
      */
     public scaleAndAddToRef(scale: number, result: Vector3): Vector3 {
         return result.addInPlaceFromFloats(this.x * scale, this.y * scale, this.z * scale);
+    }
+
+    /**
+     * Projects the current vector3 to a plane along a ray starting from a specified origin and directed towards the point.
+     * @param origin defines the origin of the projection ray
+     * @param plane defines the plane to project to
+     * @returns the projected vector3
+     */
+    public projectOnPlane(plane: Plane, origin: Vector3): Vector3 {
+        let result = Vector3.Zero();
+
+        this.projectOnPlaneToRef(plane, origin, result);
+
+        return result;
+    }
+
+    /**
+     * Projects the current vector3 to a plane along a ray starting from a specified origin and directed towards the point.
+     * @param origin defines the origin of the projection ray
+     * @param plane defines the plane to project to
+     * @param result defines the Vector3 where to store the result
+     */
+    public projectOnPlaneToRef(plane: Plane, origin: Vector3, result: Vector3): void {
+        let n = plane.normal;
+        let d = plane.d;
+
+        let V  = MathTmp.Vector3[0];
+
+        // ray direction
+        this.subtractToRef(origin, V);
+
+        V.normalize();
+
+        let denom = Vector3.Dot(V, n);
+        let t = -(Vector3.Dot(origin, n) + d) / denom;
+
+        // P = P0 + t*V
+        let scaledV = V.scaleInPlace(t);
+        origin.addToRef(scaledV, result);
     }
 
     /**
@@ -1396,17 +1475,19 @@ export class Vector3 {
     }
     /**
      * Returns a new Vector3 set to (0.0, 0.0, 1.0)
+     * @param rightHandedSystem is the scene right-handed (negative z)
      * @returns a new forward Vector3
      */
-    public static Forward(): Vector3 {
-        return new Vector3(0.0, 0.0, 1.0);
+    public static Forward(rightHandedSystem: boolean = false): Vector3 {
+        return new Vector3(0.0, 0.0, (rightHandedSystem ? -1.0 : 1.0));
     }
     /**
      * Returns a new Vector3 set to (0.0, 0.0, -1.0)
+     * @param rightHandedSystem is the scene right-handed (negative-z)
      * @returns a new forward Vector3
      */
-    public static Backward(): Vector3 {
-        return new Vector3(0.0, 0.0, -1.0);
+    public static Backward(rightHandedSystem: boolean = false): Vector3 {
+        return new Vector3(0.0, 0.0, (rightHandedSystem ? 1.0 : -1.0));
     }
     /**
      * Returns a new Vector3 set to (1.0, 0.0, 0.0)
@@ -2090,6 +2171,27 @@ export class Vector4 {
     }
 
     /**
+     * Negate this vector in place
+     * @returns this
+     */
+    public negateInPlace(): Vector4 {
+        this.x *= -1;
+        this.y *= -1;
+        this.z *= -1;
+        this.w *= -1;
+        return this;
+    }
+
+    /**
+     * Negate the current Vector4 and stores the result in the given vector "result" coordinates
+     * @param result defines the Vector3 object where to store the result
+     * @returns the current Vector4
+     */
+    public negateToRef(result: Vector4): Vector4 {
+        return result.copyFromFloats(this.x * -1, this.y * -1, this.z * -1, this.w * -1);
+    }
+
+    /**
      * Multiplies the current Vector4 coordinates by scale (float).
      * @param scale the number to scale with
      * @returns the updated Vector4.
@@ -2655,6 +2757,20 @@ export class Quaternion {
     }
 
     /**
+     * Gets a boolean if two quaternions are equals (using an epsilon value)
+     * @param otherQuaternion defines the other quaternion
+     * @param epsilon defines the minimal distance to consider equality
+     * @returns true if the given quaternion coordinates are close to the current ones by a distance of epsilon.
+     */
+    public equalsWithEpsilon(otherQuaternion: DeepImmutable<Quaternion>, epsilon: number = Epsilon): boolean {
+        return otherQuaternion
+            && Scalar.WithinEpsilon(this.x, otherQuaternion.x, epsilon)
+            && Scalar.WithinEpsilon(this.y, otherQuaternion.y, epsilon)
+            && Scalar.WithinEpsilon(this.z, otherQuaternion.z, epsilon)
+            && Scalar.WithinEpsilon(this.w, otherQuaternion.w, epsilon);
+    }
+
+    /**
      * Clone the current quaternion
      * @returns a new quaternion copied from the current one
      */
@@ -3112,6 +3228,19 @@ export class Quaternion {
             offset = 0;
         }
         return new Quaternion(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
+    }
+
+    /**
+     * Updates the given quaternion "result" from the starting index of the given array.
+     * @param array the array to pull values from
+     * @param offset the offset into the array to start at
+     * @param result the quaternion to store the result in
+     */
+    public static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number, result: Quaternion): void {
+        result.x = array[offset];
+        result.y = array[offset + 1];
+        result.z = array[offset + 2];
+        result.w = array[offset + 3];
     }
 
     /**

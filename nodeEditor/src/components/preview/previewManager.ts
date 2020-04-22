@@ -78,6 +78,7 @@ export class PreviewManager {
 
         this._engine = new Engine(targetCanvas, true);
         this._scene = new Scene(this._engine);
+        this._scene.clearColor = this._globalState.backgroundColor;
         this._camera = new ArcRotateCamera("Camera", 0, 0.8, 4, Vector3.Zero(), this._scene);
 
         this._camera.lowerRadiusLimit = 3;
@@ -191,18 +192,21 @@ export class PreviewManager {
         this._camera.useFramingBehavior = true;
 
         var framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
-        framingBehavior.framingTime = 0;
-        framingBehavior.elevationReturnTime = -1;
 
-        if (this._scene.meshes.length) {
-            var worldExtends = this._scene.getWorldExtends();
-            this._camera.lowerRadiusLimit = null;
-            this._camera.upperRadiusLimit = null;
-            framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
-        }
-
-        this._camera.pinchPrecision = 200 / this._camera.radius;
-        this._camera.upperRadiusLimit = 5 * this._camera.radius;
+        setTimeout(() => { // Let the behavior activate first
+            framingBehavior.framingTime = 0;
+            framingBehavior.elevationReturnTime = -1;
+    
+            if (this._scene.meshes.length) {
+                var worldExtends = this._scene.getWorldExtends();
+                this._camera.lowerRadiusLimit = null;
+                this._camera.upperRadiusLimit = null;
+                framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
+            }
+    
+            this._camera.pinchPrecision = 200 / this._camera.radius;
+            this._camera.upperRadiusLimit = 5 * this._camera.radius;    
+        });
 
         this._camera.wheelDeltaPercentage = 0.01;
         this._camera.pinchDeltaPercentage = 0.01;
@@ -258,7 +262,10 @@ export class PreviewManager {
                     });                    
                     return;                   
                 case PreviewMeshType.Plane:
-                    this._meshes.push(Mesh.CreateGround("dummy-plane", 2, 2, 128, this._scene));
+                    let plane = Mesh.CreateGround("dummy-plane", 2, 2, 128, this._scene);
+                    plane.scaling.y = -1;
+                    plane.rotation.x = Math.PI;
+                    this._meshes.push(plane);
                     break;    
                 case PreviewMeshType.ShaderBall:
                     SceneLoader.AppendAsync("https://models.babylonjs.com/", "shaderBall.glb", this._scene).then(() => {     

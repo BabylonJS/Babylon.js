@@ -53,6 +53,7 @@ export class LightBlock extends NodeMaterialBlock {
 
         this.registerOutput("diffuseOutput", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("specularOutput", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput("shadow", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
     }
 
     /**
@@ -126,6 +127,13 @@ export class LightBlock extends NodeMaterialBlock {
         return this._outputs[1];
     }
 
+    /**
+     * Gets the shadow output component
+     */
+    public get shadow(): NodeMaterialConnectionPoint {
+        return this._outputs[2];
+    }
+
     public autoConfigure(material: NodeMaterial) {
         if (!this.cameraPosition.isConnected) {
             let cameraPositionInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.CameraPosition);
@@ -169,7 +177,7 @@ export class LightBlock extends NodeMaterialBlock {
             if (!defines["LIGHT" + lightIndex]) {
                 break;
             }
-            MaterialHelper.PrepareUniformsAndSamplersForLight(lightIndex, state.uniforms, state.samplers, false, uniformBuffers);
+            MaterialHelper.PrepareUniformsAndSamplersForLight(lightIndex, state.uniforms, state.samplers, defines["PROJECTEDLIGHTTEXTURE" + lightIndex], uniformBuffers);
         }
     }
 
@@ -181,9 +189,9 @@ export class LightBlock extends NodeMaterialBlock {
         const scene = mesh.getScene();
 
         if (!this.light) {
-            MaterialHelper.BindLights(scene, mesh, effect, true, nodeMaterial.maxSimultaneousLights, false);
+            MaterialHelper.BindLights(scene, mesh, effect, true, nodeMaterial.maxSimultaneousLights);
         } else {
-            MaterialHelper.BindLight(this.light, this._lightId, scene, effect, true, false);
+            MaterialHelper.BindLight(this.light, this._lightId, scene, effect, true);
         }
     }
 
@@ -302,6 +310,10 @@ export class LightBlock extends NodeMaterialBlock {
         state.compilationString += this._declareOutput(diffuseOutput, state) + ` = diffuseBase${this.diffuseColor.isConnected ? " * " + this.diffuseColor.associatedVariableName : ""};\r\n`;
         if (specularOutput.hasEndpoints) {
             state.compilationString += this._declareOutput(specularOutput, state) + ` = specularBase${this.specularColor.isConnected ? " * " + this.specularColor.associatedVariableName : ""};\r\n`;
+        }
+
+        if (this.shadow.hasEndpoints) {
+            state.compilationString += this._declareOutput(this.shadow, state) + ` = shadow;\r\n`;
         }
 
         return this;

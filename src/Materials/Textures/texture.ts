@@ -345,7 +345,7 @@ export class Texture extends BaseTexture {
 
         if (!this._texture) {
             if (!scene || !scene.useDelayedTextureLoading) {
-                this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format, null, undefined, mimeType);
+                this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format, null, mimeType);
                 if (deleteBuffer) {
                     delete this._buffer;
                 }
@@ -408,7 +408,7 @@ export class Texture extends BaseTexture {
         this._texture = this._getFromCache(this.url, this._noMipmap, this.samplingMode, this._invertY);
 
         if (!this._texture) {
-            this._texture = scene.getEngine().createTexture(this.url, this._noMipmap, this._invertY, scene, this.samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format, null, undefined, this._mimeType);
+            this._texture = scene.getEngine().createTexture(this.url, this._noMipmap, this._invertY, scene, this.samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format, null, this._mimeType);
             if (this._deleteBuffer) {
                 delete this._buffer;
             }
@@ -592,10 +592,15 @@ export class Texture extends BaseTexture {
      */
     public serialize(): any {
         let savedName = this.name;
+
         if (!Texture.SerializeBuffers) {
             if (StringTools.StartsWith(this.name, "data:")) {
                 this.name = "";
             }
+        }
+
+        if (StringTools.StartsWith(this.name, "data:") && this.url === this.name) {
+            this.url = "";
         }
 
         var serializationObject = super.serialize();
@@ -705,7 +710,7 @@ export class Texture extends BaseTexture {
                 } else {
                     let url = rootUrl + parsedTexture.name;
 
-                    if (Texture.UseSerializedUrlIfAny && parsedTexture.url) {
+                    if (StringTools.StartsWith(parsedTexture.url, "data:") || (Texture.UseSerializedUrlIfAny && parsedTexture.url)) {
                         url = parsedTexture.url;
                     }
                     texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY);
