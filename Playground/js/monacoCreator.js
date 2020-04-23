@@ -309,6 +309,7 @@ class MonacoCreator {
                         continue;
 
                     template.range = undefined;
+                    template.insertTextRules = monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet;
                     suggestions.push(template);
                 }
             }
