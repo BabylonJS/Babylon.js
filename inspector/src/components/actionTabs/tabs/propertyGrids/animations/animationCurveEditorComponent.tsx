@@ -2,7 +2,9 @@ import * as React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { Animation } from 'babylonjs/Animations/animation';
-import { EasingFunction, Vector4, Vector2, IAnimationKey, IEasingFunction} from 'babylonjs';
+import { Vector2, Vector4 } from 'babylonjs/Maths/math.vector';
+import { EasingFunction, IEasingFunction } from 'babylonjs/Animations/easing';
+import { IAnimationKey } from 'babylonjs/Animations/animationKey';
 import { AnchorSvgPoint } from './anchorSvgPoint';
 import { KeyframeSvgPoint } from './keyframeSvgPoint';
 
