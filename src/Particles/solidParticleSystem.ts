@@ -248,6 +248,22 @@ export class SolidParticleSystem implements IDisposable {
         vertexData.applyToMesh(this.mesh, this._updatable);
         this.mesh.isPickable = this._pickable;
 
+        if (this._pickable) {
+            let faceId = 0;
+            for (let p = 0; p < this.nbParticles; p++) {
+                let part = this.particles[p];
+                let lind = part._model._indicesLength;
+                for (let i = 0; i < lind; i++) {
+                    let f = i % 3;
+                    if (f == 0) {
+                        const pickedData = {idx: part.idx, faceId: faceId};
+                        this.pickedParticles[faceId] = pickedData;
+                        faceId++;
+                    }
+                }
+            }
+        }
+
         if (this._multimaterialEnabled) {
             this.setMultiMaterial(this._materials);
         }
@@ -570,13 +586,6 @@ export class SolidParticleSystem implements IDisposable {
             indices.push(current_ind);
             if (current_ind > 65535) {
                 this._needs32Bits = true;
-            }
-        }
-
-        if (this._pickable) {
-            var nbfaces = meshInd.length / 3;
-            for (i = 0; i < nbfaces; i++) {
-                this.pickedParticles.push({ idx: idx, faceId: i });
             }
         }
 
@@ -1266,12 +1275,23 @@ export class SolidParticleSystem implements IDisposable {
                 depthSortedParticles.sort(this._depthSortFunction);
                 const dspl = depthSortedParticles.length;
                 let sid = 0;
+                let faceId = 0;
                 for (let sorted = 0; sorted < dspl; sorted++) {
-                    const lind = depthSortedParticles[sorted].indicesLength;
-                    const sind = depthSortedParticles[sorted].ind;
+                    const sortedParticle = depthSortedParticles[sorted];
+                    const lind = sortedParticle.indicesLength;
+                    const sind = sortedParticle.ind;
                     for (var i = 0; i < lind; i++) {
                         indices32[sid] = indices[sind + i];
                         sid++;
+                        if (this._pickable) {
+                            let f = i % 3;
+                            if (f == 0) {
+                                let pickedData = this.pickedParticles[faceId];
+                                pickedData.idx = sortedParticle.idx;
+                                pickedData.faceId = faceId;
+                                faceId++;
+                            }
+                        }
                     }
                 }
                 mesh.updateIndices(indices32);
@@ -1475,8 +1495,14 @@ export class SolidParticleSystem implements IDisposable {
                 if (this._pickable) {
                     let f = i % 3;
                     if (f == 0) {
-                        const pickedData = {idx: sortedPart.idx, faceId: faceId};
-                        this.pickedBySubMesh[subMeshIndex][subMeshFaceId] = pickedData;
+                        let pickedData = this.pickedBySubMesh[subMeshIndex][subMeshFaceId];
+                        if (pickedData) {
+                            pickedData.idx = sortedPart.idx;
+                            pickedData.faceId = faceId;
+                        }
+                        else {
+                            this.pickedBySubMesh[subMeshIndex][subMeshFaceId] = {idx: sortedPart.idx, faceId: faceId};
+                        }
                         subMeshFaceId++;
                         faceId++;
                     }
