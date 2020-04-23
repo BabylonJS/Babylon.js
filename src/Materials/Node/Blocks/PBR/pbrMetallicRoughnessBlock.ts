@@ -108,6 +108,27 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Intensity of the direct lights e.g. the four lights available in your scene.
+     * This impacts both the direct diffuse and specular highlights.
+     */
+    @editableInPropertyPage("Direct lights", PropertyTypeForEdition.Float, "INTENSITY", { min: 0, max: 1, "notifiers": { "update": true }})
+    public directIntensity: number = 1.0;
+
+    /**
+     * Intensity of the environment e.g. how much the environment will light the object
+     * either through harmonics for rough material or through the refelction for shiny ones.
+     */
+    @editableInPropertyPage("Environment lights", PropertyTypeForEdition.Float, "INTENSITY", { min: 0, max: 1, "notifiers": { "update": true }})
+    public environmentIntensity: number = 1.0;
+
+    /**
+     * This is a special control allowing the reduction of the specular highlights coming from the
+     * four lights of the scene. Those highlights may not be needed in full environment lighting.
+     */
+    @editableInPropertyPage("Specular highlights", PropertyTypeForEdition.Float, "INTENSITY", { min: 0, max: 1, "notifiers": { "update": true }})
+    public specularIntensity: number = 1.0;
+
+    /**
      * Defines the  falloff type used in this material.
      * It by default is Physical.
      */
@@ -666,6 +687,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         const invertNormal = (scene.useRightHandedSystem === (scene._mirroredCameraPosition != null));
 
         effect.setFloat(this._invertNormalName, invertNormal ? -1 : 1);
+
+        effect.setFloat4("vLightingIntensity", this.directIntensity, 1, this.environmentIntensity * this._scene.environmentIntensity, this.specularIntensity);
     }
 
     private _injectVertexCode(state: NodeMaterialBuildState) {
@@ -843,7 +866,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         // code
         //
 
-        state.compilationString += `vec4 vLightingIntensity = vec4(1.);\r\n`;
+        state._emitUniformFromString("vLightingIntensity", "vec4");
 
         // _____________________________ Geometry Information ____________________________
         this._vNormalWName = state._getFreeVariableName("vNormalW");
