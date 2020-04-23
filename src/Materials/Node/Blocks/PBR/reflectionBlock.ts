@@ -168,17 +168,17 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         const reflectionTexture = this._getTexture();
         const reflection = reflectionTexture && reflectionTexture.getTextureMatrix;
 
-        defines.setValue("REFLECTION", reflection);
+        defines.setValue("REFLECTION", reflection, true);
 
         if (!reflection) {
             return;
         }
 
-        defines.setValue(this._defineLODReflectionAlpha, reflectionTexture!.lodLevelInAlpha);
-        defines.setValue(this._defineLinearSpecularReflection, reflectionTexture!.linearSpecularLOD);
-        defines.setValue(this._defineOppositeZ, this._scene.useRightHandedSystem ? !reflectionTexture!.invertZ : reflectionTexture!.invertZ);
+        defines.setValue(this._defineLODReflectionAlpha, reflectionTexture!.lodLevelInAlpha, true);
+        defines.setValue(this._defineLinearSpecularReflection, reflectionTexture!.linearSpecularLOD, true);
+        defines.setValue(this._defineOppositeZ, this._scene.useRightHandedSystem ? !reflectionTexture!.invertZ : reflectionTexture!.invertZ, true);
 
-        defines.setValue("SPHERICAL_HARMONICS", this.useSphericalHarmonics);
+        defines.setValue("SPHERICAL_HARMONICS", this.useSphericalHarmonics, true);
 
         if (reflectionTexture && reflectionTexture.coordinatesMode !== Texture.SKYBOX_MODE) {
             if (reflectionTexture.isCube) {
