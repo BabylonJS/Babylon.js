@@ -27,6 +27,7 @@ import { _TypeStore } from '../../Misc/typeStore';
 import { SerializationHelper } from '../../Misc/decorators';
 import { TextureBlock } from './Blocks/Dual/textureBlock';
 import { ReflectionTextureBaseBlock } from './Blocks/Dual/reflectionTextureBaseBlock';
+import { RefractionBlock } from './Blocks/PBR/refractionBlock';
 import { EffectFallbacks } from '../effectFallbacks';
 import { WebRequest } from '../../Misc/webRequest';
 import { Effect } from '../effect';
@@ -87,9 +88,13 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
         this.rebuild();
     }
 
-    public setValue(name: string, value: any) {
+    public setValue(name: string, value: any, markAsUnprocessedIfDirty = false) {
         if (this[name] === undefined) {
             this._keys.push(name);
+        }
+
+        if (markAsUnprocessedIfDirty && this[name] !== value) {
+            this.markAsUnprocessed();
         }
 
         this[name] = value;
@@ -945,7 +950,7 @@ export class NodeMaterial extends PushMaterial {
      * Gets the list of texture blocks
      * @returns an array of texture blocks
      */
-    public getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock)[] {
+    public getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock | RefractionBlock)[] {
         if (!this._sharedData) {
             return [];
         }

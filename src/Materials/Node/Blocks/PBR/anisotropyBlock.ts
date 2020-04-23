@@ -181,7 +181,7 @@ export class AnisotropyBlock extends NodeMaterialBlock {
         super.prepareDefines(mesh, nodeMaterial, defines);
 
         defines.setValue("ANISOTROPIC", true);
-        defines.setValue("ANISOTROPIC_TEXTURE", this.texture.isConnected);
+        defines.setValue("ANISOTROPIC_TEXTURE", this.texture.isConnected, true);
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
