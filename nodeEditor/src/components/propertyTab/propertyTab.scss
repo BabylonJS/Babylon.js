@@ -497,6 +497,11 @@
                 cursor: pointer;
             }
 
+            .cbx ~ label.disabled {
+                background: rgb(85, 85, 85);
+                cursor: pointer;
+            }
+
             .hidden { 
                 display: none; 
             }               

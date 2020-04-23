@@ -148,5 +148,7 @@ export class NodeLink {
         }
 
         this.onDisposedObservable.notifyObservers(this);
+
+        this.onDisposedObservable.clear();
     }
 }
