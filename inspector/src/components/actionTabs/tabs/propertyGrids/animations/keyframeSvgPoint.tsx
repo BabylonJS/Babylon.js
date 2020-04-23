@@ -1,17 +1,12 @@
 import * as React from "react";
+import { Vector2 } from 'babylonjs';
 
-interface Point {
-    x: number;
-    y: number;
+interface IKeyframeSvgPointProps {
+    point: Vector2;
 }
 
-
-interface IKeyframeProps {
-    point: Point;
-}
-
-export class KeyframePoint extends React.Component<IKeyframeProps>{ 
-    constructor(props: IKeyframeProps) {
+export class KeyframeSvgPoint extends React.Component<IKeyframeSvgPointProps>{ 
+    constructor(props: IKeyframeSvgPointProps) {
         super(props);
     }
     render() {
