@@ -1,19 +1,15 @@
 
 import * as React from "react";
+import { Vector2 } from 'babylonjs';
 
-interface Point {
-    x: number;
-    y: number;
-}
-
-interface IAnchorPointProps {
-   point: Point;
-   anchor: Point;
+interface IAnchorSvgPointProps {
+   point: Vector2;
+   anchor: Vector2;
 }
 
 
-export class AnchorPoint extends React.Component<IAnchorPointProps>{ 
-    constructor(props: IAnchorPointProps) {
+export class AnchorSvgPoint extends React.Component<IAnchorSvgPointProps>{ 
+    constructor(props: IAnchorSvgPointProps) {
         super(props);
     }
     render() {
