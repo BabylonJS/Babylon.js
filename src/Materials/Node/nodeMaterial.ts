@@ -26,7 +26,7 @@ import { InputBlock } from './Blocks/Input/inputBlock';
 import { _TypeStore } from '../../Misc/typeStore';
 import { SerializationHelper } from '../../Misc/decorators';
 import { TextureBlock } from './Blocks/Dual/textureBlock';
-import { ReflectionTextureBlock } from './Blocks/Dual/reflectionTextureBlock';
+import { ReflectionTextureBaseBlock } from './Blocks/Dual/reflectionTextureBaseBlock';
 import { EffectFallbacks } from '../effectFallbacks';
 import { WebRequest } from '../../Misc/webRequest';
 import { Effect } from '../effect';
@@ -87,7 +87,7 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
         this.rebuild();
     }
 
-    public setValue(name: string, value: boolean) {
+    public setValue(name: string, value: any) {
         if (this[name] === undefined) {
             this._keys.push(name);
         }
@@ -757,6 +757,7 @@ export class NodeMaterial extends PushMaterial {
 
         // Need to recompile?
         if (defines.isDirty) {
+            const lightDisposed = defines._areLightsDisposed;
             defines.markAsProcessed();
 
             // Repeatable content generators
@@ -831,6 +832,13 @@ export class NodeMaterial extends PushMaterial {
                 if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
                     effect = previousEffect;
                     defines.markAsUnprocessed();
+
+                    if (lightDisposed) {
+                        // re register in case it takes more than one frame.
+                        defines._areLightsDisposed = true;
+                        return false;
+                    }
+
                 } else {
                     scene.resetCachedMaterial();
                     subMesh.setEffect(effect, defines);
@@ -906,7 +914,7 @@ export class NodeMaterial extends PushMaterial {
             if (effect && scene.getCachedEffect() !== effect) {
                 // Bindable blocks
                 for (var block of sharedData.bindableBlocks) {
-                    block.bind(effect, this, mesh);
+                    block.bind(effect, this, mesh, subMesh);
                 }
 
                 // Connection points
@@ -937,7 +945,7 @@ export class NodeMaterial extends PushMaterial {
      * Gets the list of texture blocks
      * @returns an array of texture blocks
      */
-    public getTextureBlocks(): (TextureBlock | ReflectionTextureBlock)[] {
+    public getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock)[] {
         if (!this._sharedData) {
             return [];
         }

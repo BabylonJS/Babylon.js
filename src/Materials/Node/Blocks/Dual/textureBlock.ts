@@ -21,6 +21,7 @@ import "../../../../Shaders/ShadersInclude/helperFunctions";
 export class TextureBlock extends NodeMaterialBlock {
     private _defineName: string;
     private _linearDefineName: string;
+    private _gammaDefineName: string;
     private _tempTextureRead: string;
     private _samplerName: string;
     private _transformedUVName: string;
@@ -38,6 +39,11 @@ export class TextureBlock extends NodeMaterialBlock {
      * Gets or sets a boolean indicating if content needs to be converted to gamma space
      */
     public convertToGammaSpace = false;
+
+    /**
+     * Gets or sets a boolean indicating if content needs to be converted to linear space
+     */
+    public convertToLinearSpace = false;
 
     /**
      * Create a new TextureBlock
@@ -189,6 +195,7 @@ export class TextureBlock extends NodeMaterialBlock {
         }
 
         defines.setValue(this._linearDefineName, this.convertToGammaSpace);
+        defines.setValue(this._gammaDefineName, this.convertToLinearSpace);
         if (this._isMixed) {
             if (!this.texture.getTextureMatrix().isIdentityAs3x2()) {
                 defines.setValue(this._defineName, true);
@@ -314,6 +321,10 @@ export class TextureBlock extends NodeMaterialBlock {
         state.compilationString += `#ifdef ${this._linearDefineName}\r\n`;
         state.compilationString += `${output.associatedVariableName} = toGammaSpace(${output.associatedVariableName});\r\n`;
         state.compilationString += `#endif\r\n`;
+
+        state.compilationString += `#ifdef ${this._gammaDefineName}\r\n`;
+        state.compilationString += `${output.associatedVariableName} = toLinearSpace(${output.associatedVariableName});\r\n`;
+        state.compilationString += `#endif\r\n`;
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
@@ -352,6 +363,7 @@ export class TextureBlock extends NodeMaterialBlock {
         }
 
         this._linearDefineName = state._getFreeDefineName("ISLINEAR");
+        this._gammaDefineName = state._getFreeDefineName("ISGAMMA");
 
         let comments = `//${this.name}`;
         state._emitFunctionFromInclude("helperFunctions", comments);
@@ -387,6 +399,7 @@ export class TextureBlock extends NodeMaterialBlock {
         codeString += `${this._codeVariableName}.texture.uScale = ${this.texture.uScale};\r\n`;
         codeString += `${this._codeVariableName}.texture.vScale = ${this.texture.vScale};\r\n`;
         codeString += `${this._codeVariableName}.convertToGammaSpace = ${this.convertToGammaSpace};\r\n`;
+        codeString += `${this._codeVariableName}.convertToLinearSpace = ${this.convertToLinearSpace};\r\n`;
 
         return codeString;
     }
@@ -395,6 +408,7 @@ export class TextureBlock extends NodeMaterialBlock {
         let serializationObject = super.serialize();
 
         serializationObject.convertToGammaSpace = this.convertToGammaSpace;
+        serializationObject.convertToLinearSpace = this.convertToLinearSpace;
         if (this.texture) {
             serializationObject.texture = this.texture.serialize();
         }
@@ -406,6 +420,7 @@ export class TextureBlock extends NodeMaterialBlock {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.convertToGammaSpace = serializationObject.convertToGammaSpace;
+        this.convertToLinearSpace = serializationObject.convertToLinearSpace;
 
         if (serializationObject.texture && !NodeMaterial.IgnoreTexturesAtLoadTime) {
             rootUrl = serializationObject.texture.url.indexOf("data:") === 0 ? "" : rootUrl;

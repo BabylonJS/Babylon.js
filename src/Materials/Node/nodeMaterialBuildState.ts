@@ -62,6 +62,8 @@ export class NodeMaterialBuildState {
     public _samplerDeclaration = "";
     /** @hidden */
     public _varyingTransfer = "";
+    /** @hidden */
+    public _injectAtEnd = "";
 
     private _repeatableContentAnchorIndex = 0;
     /** @hidden */
@@ -94,6 +96,10 @@ export class NodeMaterialBuildState {
 
         if (!isFragmentMode && this._varyingTransfer) {
             this.compilationString = `${this.compilationString}\r\n${this._varyingTransfer}`;
+        }
+
+        if (this._injectAtEnd) {
+            this.compilationString = `${this.compilationString}\r\n${this._injectAtEnd}`;
         }
 
         this.compilationString = `${this.compilationString}\r\n}`;
@@ -346,7 +352,11 @@ export class NodeMaterialBuildState {
         this.uniforms.push(name);
 
         if (define) {
-            this._uniformDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\r\n`;
+            if (StringTools.StartsWith(define, "defined(")) {
+                this._uniformDeclaration += `#if ${define}\r\n`;
+            } else {
+                this._uniformDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\r\n`;
+            }
         }
         this._uniformDeclaration += `uniform ${type} ${name};\r\n`;
         if (define) {

@@ -16,7 +16,7 @@ import { NodeMaterialSystemValues } from 'babylonjs/Materials/Node/Enums/nodeMat
 import { AnimatedInputBlockTypes } from 'babylonjs/Materials/Node/Blocks/Input/animatedInputBlockTypes';
 import { IPropertyComponentProps } from './propertyComponentProps';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
-import { GenericPropertyTabComponent } from './genericNodePropertyComponent';
+import { GeneralPropertyTabComponent } from './genericNodePropertyComponent';
 import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
 import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
 import { Color4PropertyTabComponent } from '../../components/propertyTab/properties/color4PropertyTabComponent';
@@ -206,7 +206,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
 
         return (
             <div>
-                <GenericPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
+                <GeneralPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
                 <LineContainerComponent title="PROPERTIES">
                     {
                         inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === AnimatedInputBlockTypes.None &&
