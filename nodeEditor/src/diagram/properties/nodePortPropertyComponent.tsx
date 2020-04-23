@@ -10,6 +10,7 @@ import { NodePort } from '../nodePort';
 import { GraphNode } from '../graphNode';
 import { NodeLink } from '../nodeLink';
 import { FramePortData } from '../graphCanvas';
+import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
 
 export interface IFrameNodePortPropertyTabComponentProps {
     globalState: GlobalState
@@ -27,6 +28,11 @@ export class NodePortPropertyTabComponent extends React.Component<IFrameNodePort
         this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
     }
 
+    toggleExposeOnFrame(value: boolean){
+        this.props.nodePort.exposedOnFrame = value;
+        this.props.globalState.onExposePortOnFrameObservable.notifyObservers(this.props.nodePort.node);
+    }
+
     render() {
         return (
             <div id="propertyTab">
@@ -39,6 +45,7 @@ export class NodePortPropertyTabComponent extends React.Component<IFrameNodePort
                 <div>
                     <LineContainerComponent title="GENERAL">
                         {this.props.nodePort.hasLabel() && <TextInputLineComponent globalState={this.props.globalState} label="Port Label" propertyName="portName" target={this.props.nodePort} />}
+                        {this.props.nodePort.node.enclosingFrameId !== undefined && <CheckBoxLineComponent label= "Expose Port on Frame" target={this.props.nodePort} isSelected={() => this.props.nodePort.exposedOnFrame} onSelect={(value: boolean) => this.toggleExposeOnFrame(value)}  propertyName="exposedOnFrame" disabled={this.props.nodePort.connectionPoint.isConnected} />}
                     </LineContainerComponent>
                 </div>
             </div>

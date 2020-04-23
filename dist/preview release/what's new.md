@@ -27,6 +27,7 @@
 - Frames are now resizable from the corners ([belfortk](https://github.com/belfortk)
 - Can now rename and re-order frame inputs and outputs ([belfortk](https://github.com/belfortk)
 - Can now edit Node port names ([belfortk](https://github.com/belfortk)
+- Updated which node ports are shown on frames by default so that only node ports connected to outside nodes are by default exposed on the frame ([belfortk](https://github.com/belfortk)
 
 ### Inspector
 
@@ -109,10 +110,15 @@
 
 - Fixed an issue with gulp webpack, webpack stream and the viewer ([RaananW](https://github.com/RaananW))
 
+### Playground
+
+- Added support for code templates in the playground ([sailro](http://www.github.com/sailro))
+
 ## Bugs
 
 - Fix infinite loop in `GlowLayer.unReferenceMeshFromUsingItsOwnMaterial` ([Popov72](https://github.com/Popov72)
 - Fix picking issue in the Solid Particle System when MultiMaterial is enabled ([jerome](https://github.com/jbousquie))
+- Fix picking issue in the Solid Particle System when expandable ([jerome](https://github.com/jbousquie))
 - `QuadraticErrorSimplification` was not exported ([RaananW](https://github.com/Raananw)
 - Fix NME Frames bug where collapsing and moving a frame removed the nodes inside ([belfortk](https://github.com/belfortk)
 - Fix moving / disappearing controls when freezing/unfreezing the ScrollViewer ([Popov72](https://github.com/Popov72)
@@ -148,8 +154,10 @@
 - Fix bug in `ShaderMaterial` when using morph targets ([Popov72](https://github.com/Popov72)
 - Fix bug in playground where child NME windows would not close before page unload events ([belfortk](https://github.com/belfortk)
 - Fixed an issue with stereoscopic rendering ([#8000](https://github.com/BabylonJS/Babylon.js/issues/8000)) ([RaananW](https://github.com/RaananW))
+- Fix bug with multiple scenes when resizing the screen and there's a glow or highlight layer active ([Popov72](https://github.com/Popov72)
 - Fix an error when compiling with the closure compiler ([ageneau](https://github.com/ageneau/))
 - Fix an error in applying texture to sides of `extrudePolygon` using faceUV[1] ([JohnK](https://github.com/BabylonJSGuide/))
+- Playground didn't work if query params were added to the URL ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 
