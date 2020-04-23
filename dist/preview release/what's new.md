@@ -27,6 +27,7 @@
 - Frames are now resizable from the corners ([belfortk](https://github.com/belfortk)
 - Can now rename and re-order frame inputs and outputs ([belfortk](https://github.com/belfortk)
 - Can now edit Node port names ([belfortk](https://github.com/belfortk)
+- Updated which node ports are shown on frames by default so that only node ports connected to outside nodes are by default exposed on the frame ([belfortk](https://github.com/belfortk)
 
 ### Inspector
 
@@ -117,6 +118,7 @@
 
 - Fix infinite loop in `GlowLayer.unReferenceMeshFromUsingItsOwnMaterial` ([Popov72](https://github.com/Popov72)
 - Fix picking issue in the Solid Particle System when MultiMaterial is enabled ([jerome](https://github.com/jbousquie))
+- Fix picking issue in the Solid Particle System when expandable ([jerome](https://github.com/jbousquie))
 - `QuadraticErrorSimplification` was not exported ([RaananW](https://github.com/Raananw)
 - Fix NME Frames bug where collapsing and moving a frame removed the nodes inside ([belfortk](https://github.com/belfortk)
 - Fix moving / disappearing controls when freezing/unfreezing the ScrollViewer ([Popov72](https://github.com/Popov72)

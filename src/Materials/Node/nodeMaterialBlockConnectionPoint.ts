@@ -178,10 +178,10 @@ export class NodeMaterialConnectionPoint {
     }
 
     /**
-     * Gets a boolean indicating that the current point is connected
+     * Gets a boolean indicating that the current point is connected to another NodeMaterialBlock
      */
     public get isConnected(): boolean {
-        return this.connectedPoint !== null;
+        return this.connectedPoint !== null || this.hasEndpoints;
     }
 
     /**
