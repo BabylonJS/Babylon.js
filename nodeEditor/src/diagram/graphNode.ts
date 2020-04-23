@@ -39,7 +39,7 @@ export class GraphNode {
     private _isSelected: boolean;
     private _displayManager: Nullable<IDisplayManager> = null;
     private _isVisible = true;
-    private _isEnclosedInAFrame: boolean;
+    private _enclosingFrameId: number;
 
     public get isVisible() {
         return this._isVisible;
@@ -145,12 +145,12 @@ export class GraphNode {
         return this._isSelected;
     }
 
-    public get isEnclosedInAFrame() {
-        return this._isEnclosedInAFrame;
+    public get enclosingFrameId() {
+        return this._enclosingFrameId;
     }
 
-    public set isEnclosedInAFrame(value: boolean) {
-        this._isEnclosedInAFrame = value;
+    public set enclosingFrameId(value: number) {
+        this._enclosingFrameId = value;
     }
 
     public set isSelected(value: boolean) {
@@ -225,7 +225,9 @@ export class GraphNode {
             rect1.bottom < rect2.top || 
             rect1.top > rect2.bottom);
 
-        this._isEnclosedInAFrame = isOverlappingFrame;
+        if (isOverlappingFrame) {
+            this.enclosingFrameId = frame.id;
+        }
         return isOverlappingFrame;
     }
 
