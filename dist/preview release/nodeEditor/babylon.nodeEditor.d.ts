@@ -149,6 +149,8 @@ declare module NODEEDITOR {
         private _mouseStartPointY;
         private _onSelectionChangedObserver;
         private _onGraphNodeRemovalObserver;
+        private _onExposePortOnFrameObserver;
+        private _onNodeLinkDisposedObservers;
         private _isCollapsed;
         private _frameInPorts;
         private _frameOutPorts;
@@ -167,6 +169,9 @@ declare module NODEEDITOR {
         get id(): number;
         get isCollapsed(): boolean;
         private _createInputPort;
+        private _markFramePortPositions;
+        private _createFramePorts;
+        private _redrawFramePorts;
         set isCollapsed(value: boolean);
         get nodes(): GraphNode[];
         get ports(): FrameNodePort[];
@@ -252,6 +257,7 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class NodePort {
+        private portContainer;
         connectionPoint: BABYLON.NodeMaterialConnectionPoint;
         node: GraphNode;
         protected _element: HTMLDivElement;
@@ -260,11 +266,15 @@ declare module NODEEDITOR {
         protected _portLabelElement: Element;
         protected _onCandidateLinkMovedObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.Nullable<BABYLON.Vector2>>>;
         protected _onSelectionChangedObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;
+        protected _exposedOnFrame: boolean;
         delegatedPort: BABYLON.Nullable<FrameNodePort>;
         get element(): HTMLDivElement;
         get portName(): string;
         set portName(newName: string);
         hasLabel(): boolean;
+        get exposedOnFrame(): boolean;
+        private _isConnectedToNodeInsideSameFrame;
+        set exposedOnFrame(value: boolean);
         refresh(): void;
         constructor(portContainer: HTMLElement, connectionPoint: BABYLON.NodeMaterialConnectionPoint, node: GraphNode, globalState: GlobalState);
         dispose(): void;
@@ -806,6 +816,7 @@ declare module NODEEDITOR {
         onSelect?: (value: boolean) => void;
         onValueChanged?: () => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        disabled?: boolean;
     }
     export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
         isSelected: boolean;
@@ -1136,6 +1147,7 @@ declare module NODEEDITOR {
         private _isSelected;
         private _displayManager;
         private _isVisible;
+        private _enclosingFrameId;
         get isVisible(): boolean;
         set isVisible(value: boolean);
         private _upateNodePortNames;
@@ -1153,6 +1165,8 @@ declare module NODEEDITOR {
         get id(): number;
         get name(): string;
         get isSelected(): boolean;
+        get enclosingFrameId(): number;
+        set enclosingFrameId(value: number);
         set isSelected(value: boolean);
         constructor(block: BABYLON.NodeMaterialBlock, globalState: GlobalState);
         isOverlappingFrame(frame: GraphFrame): boolean;
@@ -1199,6 +1213,7 @@ declare module NODEEDITOR {
         onGraphNodeRemovalObservable: BABYLON.Observable<GraphNode>;
         onGetNodeFromBlock: (block: BABYLON.NodeMaterialBlock) => GraphNode;
         onGridSizeChanged: BABYLON.Observable<void>;
+        onExposePortOnFrameObservable: BABYLON.Observable<GraphNode>;
         previewMeshType: PreviewMeshType;
         previewMeshFile: File;
         listOfCustomPreviewMeshFiles: File[];
@@ -1280,6 +1295,7 @@ declare module NODEEDITOR {
         private _onSelectionChangedObserver;
         constructor(props: IFrameNodePortPropertyTabComponentProps);
         componentWillUnmount(): void;
+        toggleExposeOnFrame(value: boolean): void;
         render(): JSX.Element;
     }
 }

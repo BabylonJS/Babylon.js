@@ -58896,7 +58896,7 @@ declare module BABYLON {
         get target(): NodeMaterialBlockTargets;
         set target(value: NodeMaterialBlockTargets);
         /**
-         * Gets a boolean indicating that the current point is connected
+         * Gets a boolean indicating that the current point is connected to another NodeMaterialBlock
          */
         get isConnected(): boolean;
         /**
