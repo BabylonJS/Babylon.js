@@ -10,18 +10,13 @@ import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConne
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { ReflectionBlock } from './reflectionBlock';
-//import { Scene } from '../../../../scene';
 import { Nullable } from '../../../../types';
-import { Mesh } from '../../../../Meshes/mesh';
-import { SubMesh } from '../../../../Meshes/subMesh';
-import { Effect } from '../../../effect';
+import { RefractionBlock } from './refractionBlock';
 
 /**
- * Block used to implement the clear coat module of the PBR material
+ * Block used to implement the sub surface module of the PBR material
  */
 export class SubSurfaceBlock extends NodeMaterialBlock {
-
-    //private _scene: Scene;
 
     /**
      * Create a new SubSurfaceBlock
@@ -131,9 +126,9 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
 
     public autoConfigure(material: NodeMaterial) {
         if (!this.minThickness.isConnected) {
-            let intensityInput = new InputBlock("SubSurface min thickness", NodeMaterialBlockTargets.Fragment, NodeMaterialBlockConnectionPointTypes.Float);
-            intensityInput.value = 0;
-            intensityInput.output.connectTo(this.minThickness);
+            let minThicknessInput = new InputBlock("SubSurface min thickness", NodeMaterialBlockTargets.Fragment, NodeMaterialBlockConnectionPointTypes.Float);
+            minThicknessInput.value = 0;
+            minThicknessInput.output.connectTo(this.minThickness);
         }
     }
 
@@ -146,14 +141,6 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
         defines.setValue("SS_TRANSLUCENCY", translucencyEnabled, true);
         defines.setValue("SS_THICKNESSANDMASK_TEXTURE", this.thicknessTexture.isConnected, true);
         defines.setValue("SS_MASK_FROM_THICKNESS_TEXTURE", this.useMaskFromThicknessTexture, true);
-    }
-
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh) {
-        super.bind(effect, nodeMaterial, mesh);
-
-        //const minThickness = this.minThickness.isConnectedToInputBlock ? this.minThickness.connectInputBlock!.value : 0;
-
-        //effect.setFloat2("vThicknessParam", this.minimumThickness, this.maximumThickness - this.minimumThickness);
     }
 
     /**
@@ -260,10 +247,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
-        //this._scene = state.sharedData.scene;
-
         if (state.target === NodeMaterialBlockTargets.Fragment) {
-            //state.sharedData.bindableBlocks.push(this);
             state.sharedData.blocksWithDefines.push(this);
         }
 
