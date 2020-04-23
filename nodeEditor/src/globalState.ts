@@ -42,6 +42,7 @@ export class GlobalState {
     onGraphNodeRemovalObservable = new Observable<GraphNode>();
     onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
     onGridSizeChanged = new Observable<void>();
+    onExposePortOnFrameObservable = new Observable<GraphNode>();
     previewMeshType: PreviewMeshType;
     previewMeshFile: File;
     listOfCustomPreviewMeshFiles: File[] = [];

@@ -39,6 +39,7 @@ export class GraphNode {
     private _isSelected: boolean;
     private _displayManager: Nullable<IDisplayManager> = null;
     private _isVisible = true;
+    private _enclosingFrameId: number;
 
     public get isVisible() {
         return this._isVisible;
@@ -144,6 +145,14 @@ export class GraphNode {
         return this._isSelected;
     }
 
+    public get enclosingFrameId() {
+        return this._enclosingFrameId;
+    }
+
+    public set enclosingFrameId(value: number) {
+        this._enclosingFrameId = value;
+    }
+
     public set isSelected(value: boolean) {
         if (this._isSelected === value) {
             return;            
@@ -211,10 +220,15 @@ export class GraphNode {
         rect1.width -= 5;
         rect1.height -= 5;
 
-        return !(rect1.right < rect2.left || 
+        const isOverlappingFrame = !(rect1.right < rect2.left || 
             rect1.left > rect2.right || 
             rect1.bottom < rect2.top || 
             rect1.top > rect2.bottom);
+
+        if (isOverlappingFrame) {
+            this.enclosingFrameId = frame.id;
+        }
+        return isOverlappingFrame;
     }
 
     public getPortForConnectionPoint(point: NodeMaterialConnectionPoint) {
