@@ -33,8 +33,8 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
         this.registerInput("tintColor", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("translucencyIntensity", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("translucencyDiffusionDistance", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
-        /*this.registerInput("refraction", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
-            new NodeMaterialConnectionPointCustomObject("refraction", this, NodeMaterialConnectionPointDirection.Input, RefractionBlock, "RefractionBlock"));*/
+        this.registerInput("refraction", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
+            new NodeMaterialConnectionPointCustomObject("refraction", this, NodeMaterialConnectionPointDirection.Input, RefractionBlock, "RefractionBlock"));
 
         this.registerOutput("subsurface", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("subsurface", this, NodeMaterialConnectionPointDirection.Output, SubSurfaceBlock, "SubSurfaceBlock"));
@@ -137,7 +137,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
 
         const translucencyEnabled = this.translucencyDiffusionDistance.isConnected || this.translucencyIntensity.isConnected;
 
-        defines.setValue("SUBSURFACE", true);
+        defines.setValue("SUBSURFACE", translucencyEnabled || this.refraction.isConnected, true);
         defines.setValue("SS_TRANSLUCENCY", translucencyEnabled, true);
         defines.setValue("SS_THICKNESSANDMASK_TEXTURE", this.thicknessTexture.isConnected, true);
         defines.setValue("SS_MASK_FROM_THICKNESS_TEXTURE", this.useMaskFromThicknessTexture, true);
@@ -161,15 +161,15 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
         const translucencyIntensity = ssBlock?.translucencyIntensity.isConnected ? ssBlock?.translucencyIntensity.associatedVariableName : "1.";
         const translucencyDiffusionDistance = ssBlock?.translucencyDiffusionDistance.isConnected ? ssBlock?.translucencyDiffusionDistance.associatedVariableName : "vec3(1.)";
 
-        const refractionTintAtDistance = "1.";
-        const refractionIntensity = "1.";
+        const refractionBlock: Nullable<RefractionBlock> = (ssBlock?.refraction.isConnected ? ssBlock?.refraction.connectedPoint?.ownerBlock : null) as Nullable<RefractionBlock>;
 
-        if (ssBlock) {
-            state._emitUniformFromString("vClearCoatRefractionParams", "vec4");
-            state._emitUniformFromString("vClearCoatTangentSpaceParams", "vec2");
-        }
+        const refractionTintAtDistance = refractionBlock?.tintAtDistance.isConnected ? refractionBlock.tintAtDistance.associatedVariableName : "1.";
+        const refractionIntensity = refractionBlock?.intensity.isConnected ? refractionBlock.intensity.associatedVariableName : "1.";
+        const refractionView = refractionBlock?.view.isConnected ? refractionBlock.view.associatedVariableName : "";
 
-        code = `subSurfaceOutParams subSurfaceOut;
+        code += refractionBlock?.getCode(state) ?? "";
+
+        code += `subSurfaceOutParams subSurfaceOut;
 
         #ifdef SUBSURFACE
             vec2 vThicknessParam = vec2(${minThickness}, ${maxThickness} - ${minThickness});
@@ -199,29 +199,38 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 #endif
             #endif
             #ifdef SS_REFRACTION
-                ${worldPosVarName},
+                ${worldPosVarName}.xyz,
                 viewDirectionW,
-                view,
+                ${refractionView},
                 surfaceAlbedo,
-                vRefractionInfos,
-                refractionMatrix,
-                vRefractionMicrosurfaceInfos,
+                ${refractionBlock?._vRefractionInfosName ?? ""},
+                ${refractionBlock?._refractionMatrixName ?? ""},
+                ${refractionBlock?._vRefractionMicrosurfaceInfosName ?? ""},
                 vLightingIntensity,
                 #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
                     alpha,
                 #endif
-                #ifdef SS_LODINREFRACTIONALPHA
+                #ifdef ${refractionBlock?._defineLODRefractionAlpha ?? "IGNORE"}
                     NdotVUnclamped,
                 #endif
-                #ifdef SS_LINEARSPECULARREFRACTION
+                #ifdef ${refractionBlock?._defineLinearSpecularRefraction ?? "IGNORE"}
                     roughness,
                 #else
                     alphaG,
                 #endif
-                refractionSampler,
+                #ifdef ${refractionBlock?._define3DName ?? "IGNORE"}
+                    ${refractionBlock?._cubeSamplerName ?? ""},
+                #else
+                    ${refractionBlock?._2DSamplerName ?? ""},
+                #endif
                 #ifndef LODBASEDMICROSFURACE
-                    refractionSamplerLow,
-                    refractionSamplerHigh,
+                    #ifdef ${refractionBlock?._define3DName ?? "IGNORE"}
+                        ${refractionBlock?._cubeSamplerName ?? ""},
+                        ${refractionBlock?._cubeSamplerName ?? ""},
+                    #else
+                        ${refractionBlock?._2DSamplerName ?? ""},
+                        ${refractionBlock?._2DSamplerName ?? ""},
+                    #endif
                 #endif
                 #ifdef ANISOTROPIC
                     anisotropicOut,
