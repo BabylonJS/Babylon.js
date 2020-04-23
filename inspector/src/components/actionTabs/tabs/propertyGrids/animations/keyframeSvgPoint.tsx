@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Vector2 } from 'babylonjs';
+import { Vector2 } from 'babylonjs/Maths/math.vector';
 
 interface IKeyframeSvgPointProps {
     point: Vector2;

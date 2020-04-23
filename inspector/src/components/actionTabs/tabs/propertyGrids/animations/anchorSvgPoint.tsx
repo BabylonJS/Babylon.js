@@ -1,6 +1,6 @@
 
 import * as React from "react";
-import { Vector2 } from 'babylonjs';
+import { Vector2 } from 'babylonjs/Maths/math.vector';
 
 interface IAnchorSvgPointProps {
    point: Vector2;
