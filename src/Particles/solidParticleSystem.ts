@@ -1291,7 +1291,7 @@ export class SolidParticleSystem implements IDisposable {
                                 pickedData.faceId = faceId;
                                 faceId++;
                             }
-                        }                       
+                        }
                     }
                 }
                 mesh.updateIndices(indices32);
