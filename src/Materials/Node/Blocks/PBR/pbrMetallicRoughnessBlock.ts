@@ -28,6 +28,7 @@ import { ReflectionBlock } from './reflectionBlock';
 import { ClearCoatBlock } from './clearCoatBlock';
 import { SubSurfaceBlock } from './subSurfaceBlock';
 import { RefractionBlock } from './refractionBlock';
+import { PerturbNormalBlock } from '../Fragment/perturbNormalBlock';
 
 const mapOutputToVariable: { [name: string] : [string, string] } = {
     "ambient":      ["finalAmbient", ""],
@@ -970,8 +971,16 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         // _____________________________ Clear Coat ____________________________
         const clearcoatBlock = this.clearcoat.isConnected ? this.clearcoat.connectedPoint?.ownerBlock as ClearCoatBlock : null;
+        const generateTBNSpace = !this.perturbedNormal.isConnected && !this.anisotropy.isConnected;
+        const isTangentConnectedToPerturbNormal = this.perturbedNormal.isConnected && (this.perturbedNormal.connectedPoint?.ownerBlock as PerturbNormalBlock).worldTangent.isConnected;
+        const isTangentConnectedToAnisotropy = this.anisotropy.isConnected && (this.anisotropy.connectedPoint?.ownerBlock as AnisotropyBlock).worldTangent.isConnected;
+        let vTBNAvailable = isTangentConnectedToPerturbNormal || (!this.perturbedNormal.isConnected && isTangentConnectedToAnisotropy);
 
-        state.compilationString += ClearCoatBlock.GetCode(state, clearcoatBlock, reflectionBlock, worldPosVarName);
+        state.compilationString += ClearCoatBlock.GetCode(state, clearcoatBlock, reflectionBlock, worldPosVarName, generateTBNSpace, vTBNAvailable, this.worldNormal.associatedVariableName);
+
+        if (generateTBNSpace) {
+            vTBNAvailable = clearcoatBlock?.worldTangent.isConnected ?? false;
+        }
 
         state._emitFunctionFromInclude("pbrBlockClearcoat", comments, {
             replaceStrings: [
@@ -982,6 +991,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 { search: /REFLECTIONMAP_SKYBOX/g, replace: reflectionBlock?._defineSkyboxName ?? "REFLECTIONMAP_SKYBOX" },
                 { search: /LODINREFLECTIONALPHA/g, replace: reflectionBlock?._defineLODReflectionAlpha ?? "LODINREFLECTIONALPHA" },
                 { search: /LINEARSPECULARREFLECTION/g, replace: reflectionBlock?._defineLinearSpecularReflection ?? "LINEARSPECULARREFLECTION" },
+                { search: /defined\(TANGENT\)/g, replace: vTBNAvailable ? "defined(TANGENT)" : "defined(IGNORE)" },
             ]
         });
 
