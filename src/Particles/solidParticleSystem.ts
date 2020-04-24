@@ -197,7 +197,7 @@ export class SolidParticleSystem implements IDisposable {
             this._materials = [];
             this._materialIndexesById = {};
         }
-        this._tmpVertex = new SolidParticleVertex;
+        this._tmpVertex = new SolidParticleVertex();
     }
 
     /**
@@ -959,7 +959,7 @@ export class SolidParticleSystem implements IDisposable {
         const maximum = tempVectors[9].setAll(-Number.MAX_VALUE);
         const camInvertedPosition = tempVectors[10].setAll(0);
 
-        const tmpVertex = this._tmpVertex
+        const tmpVertex = this._tmpVertex;
         const tmpVector = tmpVertex.position;
         const tmpColor = tmpVertex.color;
         const tmpUV = tmpVertex.uv;
