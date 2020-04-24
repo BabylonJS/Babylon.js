@@ -1,8 +1,8 @@
 import { IDisplayManager } from './displayManager';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/textureBlock';
+import { RefractionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/refractionBlock';
 import { ReflectionTextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/reflectionTextureBlock';
-import { RefractionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/refractioneBlock';
 import { TextureLineComponent } from '../../sharedComponents/textureLineComponent';
 
 export class TextureDisplayManager implements IDisplayManager {

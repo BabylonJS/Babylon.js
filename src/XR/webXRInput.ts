@@ -1,7 +1,7 @@
 import { Nullable } from "../types";
 import { Observer, Observable } from "../Misc/observable";
 import { IDisposable } from "../scene";
-import { WebXRInputSource } from './webXRInputSource';
+import { WebXRInputSource, IWebXRControllerOptions } from './webXRInputSource';
 import { WebXRSessionManager } from './webXRSessionManager';
 import { WebXRCamera } from './webXRCamera';
 import { WebXRMotionControllerManager } from './motionController/webXRMotionControllerManager';
@@ -38,6 +38,11 @@ export interface IWebXRInputOptions {
      * Should the controller model's components not move according to the user input
      */
     disableControllerAnimation?: boolean;
+
+    /**
+     * Optional options to pass to the controller. Will be overridden by the Input options where applicable
+     */
+    controllerOptions?: IWebXRControllerOptions;
 }
 /**
  * XR input used to track XR inputs such as controllers/rays
@@ -115,6 +120,7 @@ export class WebXRInput implements IDisposable {
         for (let input of addInputs) {
             if (sources.indexOf(input) === -1) {
                 let controller = new WebXRInputSource(this.xrSessionManager.scene, input, {
+                    ...(this.options.controllerOptions || {}),
                     forceControllerProfile: this.options.forceInputProfile,
                     doNotLoadControllerMesh: this.options.doNotLoadControllerMeshes,
                     disableMotionControllerAnimation: this.options.disableControllerAnimation
