@@ -194,9 +194,24 @@ export class GraphFrame {
         if(!this.isCollapsed) {
             return;
         }
-        this.isCollapsed = !this.isCollapsed
-        this.isCollapsed = !this.isCollapsed
-        this._moveFrame(25, 0);
+
+        this._outputPortContainer.innerHTML = "";
+        this._inputPortContainer.innerHTML = "";
+        this.ports.forEach((framePort:FrameNodePort) => {
+            framePort.dispose();
+        });
+
+        this._controlledPorts.forEach(port => {
+            port.delegatedPort = null;
+            port.refresh();
+        })
+
+        this._frameInPorts = [];
+        this._frameOutPorts = [];
+        this._controlledPorts = [];
+
+        this._createFramePorts();
+        this.ports.forEach((framePort: FrameNodePort) => framePort.node._refreshLinks());
     }
 
     public set isCollapsed(value: boolean) {
