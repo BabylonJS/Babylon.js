@@ -151,6 +151,7 @@ export class WebGPUEngine extends Engine {
     private _currentIndexBuffer: Nullable<DataBuffer> = null;
     private __colorWrite = true;
     private _uniformsBuffers: { [name: string]: WebGPUDataBuffer } = {};
+    private _maxBufferChunk = 1024 * 1024 * 15;
 
     // Caches
     private _compiledShaders: { [key: string]: {
@@ -518,18 +519,25 @@ export class WebGPUEngine extends Engine {
     //------------------------------------------------------------------------------
 
     private _createBuffer(view: ArrayBufferView, flags: GPUBufferUsageFlags): DataBuffer {
+        if (view.byteLength == 0) {
+            throw new Error("Unable to create WebGPU buffer"); // Zero size buffer would kill the tab in chrome
+        }
         const padding = view.byteLength % 4;
         const verticesBufferDescriptor = {
             size: view.byteLength + padding,
             usage: flags
         };
-        const buffer = this._device.createBuffer(verticesBufferDescriptor);
+        const [buffer, arrbuffer] = this._device.createBufferMapped(verticesBufferDescriptor)
         const dataBuffer = new WebGPUDataBuffer(buffer);
         dataBuffer.references = 1;
         dataBuffer.capacity = view.byteLength;
-
-        this._setSubData(dataBuffer, 0, view);
-
+        if (padding == 0 && view.byteLength < this._maxBufferChunk) {
+            new Uint8Array(arrbuffer).set(new Uint8Array(view.buffer));
+            buffer.unmap();
+        } else {
+            buffer.unmap();
+            this._setSubData(dataBuffer, 0, view);
+        }
         return dataBuffer;
     }
 
@@ -559,18 +567,17 @@ export class WebGPUEngine extends Engine {
         }
 
         // Chunk
-        const maxChunk = 1024 * 1024 * 15;
         const commandEncoder = this._device.createCommandEncoder();
         const tempBuffers: GPUBuffer[] = [];
-        for (let offset = 0; offset < src.byteLength; offset += maxChunk) {
-            const uploadCount = Math.min(src.byteLength - offset, maxChunk);
+        for (let offset = 0; offset < src.byteLength; offset += this._maxBufferChunk) {
+            const uploadCount = Math.min(src.byteLength - offset, this._maxBufferChunk);
 
             const [uploadBuffer, uploadMapping] = this._device.createBufferMapped({
                 usage: WebGPUConstants.GPUBufferUsage_TRANSFER_SRC,
                 size: uploadCount,
             });
             tempBuffers.push(uploadBuffer);
-            new Uint8Array(uploadMapping).set(new Uint8Array(src.buffer, srcByteOffset + offset, uploadCount ));
+            new Uint8Array(uploadMapping).set(new Uint8Array(src.buffer, srcByteOffset + offset, uploadCount));
             uploadBuffer.unmap();
             commandEncoder.copyBufferToBuffer(
                 uploadBuffer, 0,
@@ -578,7 +585,7 @@ export class WebGPUEngine extends Engine {
                 uploadCount);
         }
         this._device.defaultQueue.submit([commandEncoder.finish()]);
-        tempBuffers.forEach(buff => buff.destroy());
+        tempBuffers.forEach((buff) => buff.destroy());
     }
 
     //------------------------------------------------------------------------------
