@@ -173,6 +173,10 @@ export class PBRCustomMaterial extends PBRMaterial {
 
         this.FragmentShader = Effect.ShadersStore["pbrPixelShader"];
         this.VertexShader = Effect.ShadersStore["pbrVertexShader"];
+
+        this.FragmentShader = this.FragmentShader.replace(/#include<pbrBlockAlbedoOpacity>/g, Effect.IncludesShadersStore["pbrBlockAlbedoOpacity"]);
+        this.FragmentShader = this.FragmentShader.replace(/#include<pbrBlockReflectivity>/g, Effect.IncludesShadersStore["pbrBlockReflectivity"]);
+        this.FragmentShader = this.FragmentShader.replace(/#include<pbrBlockFinalColorComposition>/g, Effect.IncludesShadersStore["pbrBlockFinalColorComposition"]);
     }
 
     public AddUniform(name: string, kind: string, param: any): PBRCustomMaterial {
