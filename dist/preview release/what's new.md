@@ -15,6 +15,7 @@
 - Add a `CascadedShadowMap.IsSupported` method and log an error instead of throwing an exception when CSM is not supported ([Popov72](https://github.com/Popov72))
 - Added initial code for DeviceInputSystem ([PolygonalSun](https://github.com/PolygonalSun))
 - Added support for `material.disableColorWrite` ([Deltakosh](https://github.com/deltakosh))
+- The Mesh Asset Task also accepts File as sceneInput ([RaananW](https://github.com/RaananW))
 
 ### Engine
 
@@ -27,6 +28,7 @@
 - Frames are now resizable from the corners ([belfortk](https://github.com/belfortk)
 - Can now rename and re-order frame inputs and outputs ([belfortk](https://github.com/belfortk)
 - Can now edit Node port names ([belfortk](https://github.com/belfortk)
+- Updated which node ports are shown on frames by default so that only node ports connected to outside nodes are by default exposed on the frame ([belfortk](https://github.com/belfortk)
 
 ### Inspector
 
@@ -88,6 +90,8 @@
 - Pointer Selection feature now uses `selectstart` and `selectend` events when gamepad and motion controller are not present ([#7989](https://github.com/BabylonJS/Babylon.js/issues/7989)) ([RaananW](https://github.com/RaananW))
 - Removed forced `autoClear` = false settings ([RaananW](https://github.com/RaananW))
 - Added a warning that WebXR can only be served over HTTPS ([RaananW](https://github.com/RaananW))
+- Default (XR-global) rendering group ID can be defined when initializing a default experience ([RaananW](https://github.com/RaananW))
+- Added support for (experimental) haptic actuators ([#8068](https://github.com/BabylonJS/Babylon.js/issues/8068)) ([RaananW](https://github.com/RaananW))
 
 ### Collisions
 
@@ -104,15 +108,21 @@
 ### Particles
 
 - Added local space support for GPU particles ([CraigFeldpsar](https://github.com/craigfeldspar))
+- Added ability to update also colors and uvs of solid particle vertices ([jerome](https://github.com/jbousquie))
 
 ### Build
 
 - Fixed an issue with gulp webpack, webpack stream and the viewer ([RaananW](https://github.com/RaananW))
 
+### Playground
+
+- Added support for code templates in the playground ([sailro](http://www.github.com/sailro))
+
 ## Bugs
 
 - Fix infinite loop in `GlowLayer.unReferenceMeshFromUsingItsOwnMaterial` ([Popov72](https://github.com/Popov72)
 - Fix picking issue in the Solid Particle System when MultiMaterial is enabled ([jerome](https://github.com/jbousquie))
+- Fix picking issue in the Solid Particle System when expandable ([jerome](https://github.com/jbousquie))
 - `QuadraticErrorSimplification` was not exported ([RaananW](https://github.com/Raananw)
 - Fix NME Frames bug where collapsing and moving a frame removed the nodes inside ([belfortk](https://github.com/belfortk)
 - Fix moving / disappearing controls when freezing/unfreezing the ScrollViewer ([Popov72](https://github.com/Popov72)
@@ -156,3 +166,4 @@
 ## Breaking changes
 
 - `EffectRenderer.render` now takes a `RenderTargetTexture` or an `InternalTexture` as the output texture and only a single `EffectWrapper` for its first argument ([Popov72](https://github.com/Popov72))
+- Sound's `updateOptions` takes `options.length` and `options.offset` as seconds and not milliseconds ([RaananW](https://github.com/RaananW))

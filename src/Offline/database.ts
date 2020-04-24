@@ -92,7 +92,7 @@ export class Database implements IOfflineProvider {
     }
 
     private static _ReturnFullUrlLocation = (url: string): string => {
-        if (url.indexOf("http:/") === -1 && url.indexOf("https:/") === -1) {
+        if (url.indexOf("http:/") === -1 && url.indexOf("https:/") === -1 && typeof window !== "undefined") {
             return (Database._ParseURL(window.location.href) + url);
         }
         else {
