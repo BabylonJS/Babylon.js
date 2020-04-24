@@ -385,15 +385,18 @@ void main(void) {
     subSurfaceOutParams subSurfaceOut;
 
     #ifdef SUBSURFACE
+        #ifdef SS_THICKNESSANDMASK_TEXTURE
+            vec4 thicknessMap = texture2D(thicknessSampler, vThicknessUV + uvOffset);
+        #endif
+
         subSurfaceBlock(
+            vSubSurfaceIntensity,
             vThicknessParam,
             vTintColor,
             normalW,
             specularEnvironmentReflectance,
         #ifdef SS_THICKNESSANDMASK_TEXTURE
-            vThicknessUV,
-            uvOffset,
-            thicknessSampler,
+            thicknessMap,
         #endif
         #ifdef REFLECTION
             #ifdef SS_TRANSLUCENCY
