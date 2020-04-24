@@ -105,6 +105,7 @@
 ### Particles
 
 - Added local space support for GPU particles ([CraigFeldpsar](https://github.com/craigfeldspar))
+- Added ability to update also colors and uvs of solid particle vertices ([jerome](https://github.com/jbousquie))
 
 ### Build
 
