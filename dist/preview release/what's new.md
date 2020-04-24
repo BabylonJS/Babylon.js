@@ -89,6 +89,7 @@
 - Pointer Selection feature now uses `selectstart` and `selectend` events when gamepad and motion controller are not present ([#7989](https://github.com/BabylonJS/Babylon.js/issues/7989)) ([RaananW](https://github.com/RaananW))
 - Removed forced `autoClear` = false settings ([RaananW](https://github.com/RaananW))
 - Added a warning that WebXR can only be served over HTTPS ([RaananW](https://github.com/RaananW))
+- Default (XR-global) rendering group ID can be defined when initializing a default experience ([RaananW](https://github.com/RaananW))
 
 ### Collisions
 
