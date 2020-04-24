@@ -175,6 +175,8 @@ export class RefractionBlock extends NodeMaterialBlock {
         defines.setValue(this._defineOppositeZ, this._scene.useRightHandedSystem ? !refractionTexture!.invertZ : refractionTexture!.invertZ, true);
 
         defines.setValue("SS_LINKREFRACTIONTOTRANSPARENCY", this.linkRefractionWithTransparency, true);
+        defines.setValue("SS_GAMMAREFRACTION", refractionTexture!.gammaSpace, true);
+        defines.setValue("SS_RGBDREFRACTION", refractionTexture!.isRGBD, true);
     }
 
     public isReady() {
