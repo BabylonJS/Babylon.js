@@ -7,7 +7,7 @@ import { Mesh } from "../Meshes/mesh";
 import { DiscBuilder } from "../Meshes/Builders/discBuilder";
 import { EngineStore } from "../Engines/engineStore";
 import { Scene, IDisposable } from "../scene";
-import { DepthSortedParticle, SolidParticle, ModelShape } from "./solidParticle";
+import { DepthSortedParticle, SolidParticle, ModelShape, SolidParticleVertex } from "./solidParticle";
 import { TargetCamera } from "../Cameras/targetCamera";
 import { BoundingInfo } from "../Culling/boundingInfo";
 import { Axis } from '../Maths/math.axis';
@@ -148,6 +148,7 @@ export class SolidParticleSystem implements IDisposable {
     private _materialIndexesById: any;
     private _defaultMaterial: Material;
     private _autoUpdateSubMeshes: boolean = false;
+    private _tmpVertex: SolidParticleVertex;
 
     /**
      * Creates a SPS (Solid Particle System) object.
@@ -196,6 +197,7 @@ export class SolidParticleSystem implements IDisposable {
             this._materials = [];
             this._materialIndexesById = {};
         }
+        this._tmpVertex = new SolidParticleVertex;
     }
 
     /**
@@ -521,7 +523,10 @@ export class SolidParticleSystem implements IDisposable {
         }
 
         const rotMatrix = TmpVectors.Matrix[0];
-        const tmpVertex = TmpVectors.Vector3[0];
+        const tmpVertex = this._tmpVertex;
+        const tmpVector = tmpVertex.position;
+        const tmpColor = tmpVertex.color;
+        const tmpUV = tmpVertex.uv;
         const tmpRotated = TmpVectors.Vector3[1];
         const pivotBackTranslation = TmpVectors.Vector3[2];
         const scaledPivot = TmpVectors.Vector3[3];
@@ -539,24 +544,30 @@ export class SolidParticleSystem implements IDisposable {
 
         var someVertexFunction = (options && options.vertexFunction);
         for (i = 0; i < shape.length; i++) {
-            tmpVertex.copyFrom(shape[i]);
+            tmpVector.copyFrom(shape[i]);
+            if (copy.color) {
+                tmpColor.copyFrom(copy.color);
+            }
+            if (meshUV) {
+                tmpUV.copyFromFloats(meshUV[u], meshUV[u + 1]);
+            }
             if (someVertexFunction) {
                 options.vertexFunction(copy, tmpVertex, i);
             }
 
-            tmpVertex.multiplyInPlace(copy.scaling).subtractInPlace(scaledPivot);
-            Vector3.TransformCoordinatesToRef(tmpVertex, rotMatrix, tmpRotated);
+            tmpVector.multiplyInPlace(copy.scaling).subtractInPlace(scaledPivot);
+            Vector3.TransformCoordinatesToRef(tmpVector, rotMatrix, tmpRotated);
             tmpRotated.addInPlace(pivotBackTranslation).addInPlace(copy.position);
             positions.push(tmpRotated.x, tmpRotated.y, tmpRotated.z);
 
             if (meshUV) {
                 const copyUvs = copy.uvs;
-                uvs.push((copyUvs.z - copyUvs.x) * meshUV[u] + copyUvs.x, (copyUvs.w - copyUvs.y) * meshUV[u + 1] + copyUvs.y);
+                uvs.push((copyUvs.z - copyUvs.x) * tmpUV.x + copyUvs.x, (copyUvs.w - copyUvs.y) * tmpUV.y + copyUvs.y);
                 u += 2;
             }
 
             if (copy.color) {
-                this._color = copy.color;
+                this._color.copyFrom(tmpColor);
             } else {
                 const color = this._color;
                 if (meshCol && meshCol[c] !== undefined) {
@@ -575,8 +586,8 @@ export class SolidParticleSystem implements IDisposable {
             c += 4;
 
             if (!this.recomputeNormals && meshNor) {
-                Vector3.TransformNormalFromFloatsToRef(meshNor[n], meshNor[n + 1], meshNor[n + 2], rotMatrix, tmpVertex);
-                normals.push(tmpVertex.x, tmpVertex.y, tmpVertex.z);
+                Vector3.TransformNormalFromFloatsToRef(meshNor[n], meshNor[n + 1], meshNor[n + 2], rotMatrix, tmpVector);
+                normals.push(tmpVector.x, tmpVector.y, tmpVector.z);
                 n += 3;
             }
         }
@@ -948,6 +959,11 @@ export class SolidParticleSystem implements IDisposable {
         const maximum = tempVectors[9].setAll(-Number.MAX_VALUE);
         const camInvertedPosition = tempVectors[10].setAll(0);
 
+        const tmpVertex = this._tmpVertex
+        const tmpVector = tmpVertex.position;
+        const tmpColor = tmpVertex.color;
+        const tmpUV = tmpVertex.uv;
+
         // cases when the World Matrix is to be computed first
         if (this.billboard || this._depthSort) {
             this.mesh.computeWorldMatrix(true);
@@ -956,9 +972,9 @@ export class SolidParticleSystem implements IDisposable {
         // if the particles will always face the camera
         if (this.billboard) {
             // compute the camera position and un-rotate it by the current mesh rotation
-            const tmpVertex = tempVectors[0];
-            this._camera.getDirectionToRef(Axis.Z, tmpVertex);
-            Vector3.TransformNormalToRef(tmpVertex, invertedMatrix, camAxisZ);
+            const tmpVector0 = tempVectors[0];
+            this._camera.getDirectionToRef(Axis.Z, tmpVector0);
+            Vector3.TransformNormalToRef(tmpVector0, invertedMatrix, camAxisZ);
             camAxisZ.normalize();
             // same for camera up vector extracted from the cam view matrix
             var view = this._camera.getViewMatrix(true);
@@ -1115,17 +1131,24 @@ export class SolidParticleSystem implements IDisposable {
                     idx = index + pt * 3;
                     colidx = colorIndex + pt * 4;
                     uvidx = uvIndex + pt * 2;
+                    const iu  = 2 * pt;
+                    const iv = iu + 1;
 
-                    const tmpVertex = tempVectors[0];
-                    tmpVertex.copyFrom(shape[pt]);
+                    tmpVector.copyFrom(shape[pt]);
+                    if (this._computeParticleColor && particle.color) {
+                        tmpColor.copyFrom(particle.color);
+                    }
+                    if (this._computeParticleTexture) {
+                        tmpUV.copyFromFloats(shapeUV[iu], shapeUV[iv]);
+                    }
                     if (this._computeParticleVertex) {
                         this.updateParticleVertex(particle, tmpVertex, pt);
                     }
 
                     // positions
-                    const vertexX = tmpVertex.x * particleScaling.x - scaledPivot.x;
-                    const vertexY = tmpVertex.y * particleScaling.y - scaledPivot.y;
-                    const vertexZ = tmpVertex.z * particleScaling.z - scaledPivot.z;
+                    const vertexX = tmpVector.x * particleScaling.x - scaledPivot.x;
+                    const vertexY = tmpVector.y * particleScaling.y - scaledPivot.y;
+                    const vertexZ = tmpVector.z * particleScaling.z - scaledPivot.z;
 
                     let rotatedX = vertexX * particleRotationMatrix[0] + vertexY * particleRotationMatrix[3] + vertexZ * particleRotationMatrix[6];
                     let rotatedY = vertexX * particleRotationMatrix[1] + vertexY * particleRotationMatrix[4] + vertexZ * particleRotationMatrix[7];
@@ -1160,18 +1183,17 @@ export class SolidParticleSystem implements IDisposable {
                     }
 
                     if (this._computeParticleColor && particle.color) {
-                        const color = particle.color;
                         const colors32 = this._colors32;
-                        colors32[colidx] = color.r;
-                        colors32[colidx + 1] = color.g;
-                        colors32[colidx + 2] = color.b;
-                        colors32[colidx + 3] = color.a;
+                        colors32[colidx] = tmpColor.r;
+                        colors32[colidx + 1] = tmpColor.g;
+                        colors32[colidx + 2] = tmpColor.b;
+                        colors32[colidx + 3] = tmpColor.a;
                     }
 
                     if (this._computeParticleTexture) {
                         const uvs = particle.uvs;
-                        uvs32[uvidx] = shapeUV[pt * 2] * (uvs.z - uvs.x) + uvs.x;
-                        uvs32[uvidx + 1] = shapeUV[pt * 2 + 1] * (uvs.w - uvs.y) + uvs.y;
+                        uvs32[uvidx] = tmpUV.x * (uvs.z - uvs.x) + uvs.x;
+                        uvs32[uvidx + 1] = tmpUV.y * (uvs.w - uvs.y) + uvs.y;
                     }
                 }
             }
@@ -1805,14 +1827,14 @@ export class SolidParticleSystem implements IDisposable {
      * Updates a vertex of a particle : it can be overwritten by the user.
      * This will be called on each vertex particle by `setParticles()` if `computeParticleVertex` is set to true only.
      * @param particle the current particle
-     * @param vertex the current index of the current particle
+     * @param vertex the current vertex of the current particle : a SolidParticleVertex object
      * @param pt the index of the current vertex in the particle shape
      * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#update-each-particle-shape
-     * @example : just set a vertex particle position
-     * @returns the updated vertex
+     * @example : just set a vertex particle position or color
+     * @returns the sps
      */
-    public updateParticleVertex(particle: SolidParticle, vertex: Vector3, pt: number): Vector3 {
-        return vertex;
+    public updateParticleVertex(particle: SolidParticle, vertex: SolidParticleVertex, pt: number): SolidParticleSystem {
+        return this;
     }
 
     /**
