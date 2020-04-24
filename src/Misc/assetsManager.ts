@@ -248,7 +248,7 @@ export class MeshAssetTask extends AbstractAssetTask {
      * @param name defines the name of the task
      * @param meshesNames defines the list of mesh's names you want to load
      * @param rootUrl defines the root url to use as a base to load your meshes and associated resources
-     * @param sceneFilename defines the filename of the scene to load from
+     * @param sceneFilename defines the filename or File of the scene to load from
      */
     constructor(
         /**
@@ -264,9 +264,9 @@ export class MeshAssetTask extends AbstractAssetTask {
          */
         public rootUrl: string,
         /**
-         * Defines the filename of the scene to load from
+         * Defines the filename or File of the scene to load from
          */
-        public sceneFilename: string) {
+        public sceneFilename: string | File) {
         super(name);
     }
 
