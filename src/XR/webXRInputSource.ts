@@ -26,6 +26,11 @@ export interface IWebXRControllerOptions {
      * This can be used when creating your own profile or when testing different controllers
      */
     forceControllerProfile?: string;
+    /**
+     * Defines a rendering group ID for meshes that will be loaded.
+     * This is for the default controllers only.
+     */
+    renderingGroupId?: number;
 }
 
 /**
@@ -97,10 +102,15 @@ export class WebXRInputSource {
                 // should the model be loaded?
                 if (!this._options.doNotLoadControllerMesh) {
                     this.motionController.loadModel().then((success) => {
-                        if (success) {
-                            this.onMeshLoadedObservable.notifyObservers(this.motionController!.rootMesh!);
-                            this.motionController!.rootMesh!.parent = this.grip || this.pointer;
-                            this.motionController!.disableAnimation = !!this._options.disableMotionControllerAnimation;
+                        if (success && this.motionController && this.motionController.rootMesh) {
+                            if (this._options.renderingGroupId) {
+                                // anything other than 0?
+                                this.motionController.rootMesh.renderingGroupId = this._options.renderingGroupId;
+                                this.motionController.rootMesh.getChildMeshes(false).forEach((mesh) => mesh.renderingGroupId = this._options.renderingGroupId!);
+                            }
+                            this.onMeshLoadedObservable.notifyObservers(this.motionController.rootMesh);
+                            this.motionController.rootMesh.parent = this.grip || this.pointer;
+                            this.motionController.disableAnimation = !!this._options.disableMotionControllerAnimation;
                         }
                     });
                 }

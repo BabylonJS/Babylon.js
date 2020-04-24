@@ -27512,6 +27512,7 @@ declare module BABYLON {
         private _materialIndexesById;
         private _defaultMaterial;
         private _autoUpdateSubMeshes;
+        private _tmpVertex;
         /**
          * Creates a SPS (Solid Particle System) object.
          * @param name (String) is the SPS name, this will be the underlying mesh name.
@@ -27914,13 +27915,13 @@ declare module BABYLON {
          * Updates a vertex of a particle : it can be overwritten by the user.
          * This will be called on each vertex particle by `setParticles()` if `computeParticleVertex` is set to true only.
          * @param particle the current particle
-         * @param vertex the current index of the current particle
+         * @param vertex the current vertex of the current particle : a SolidParticleVertex object
          * @param pt the index of the current vertex in the particle shape
          * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#update-each-particle-shape
-         * @example : just set a vertex particle position
-         * @returns the updated vertex
+         * @example : just set a vertex particle position or color
+         * @returns the sps
          */
-        updateParticleVertex(particle: SolidParticle, vertex: Vector3, pt: number): Vector3;
+        updateParticleVertex(particle: SolidParticle, vertex: SolidParticleVertex, pt: number): SolidParticleSystem;
         /**
          * This will be called before any other treatment by `setParticles()` and will be passed three parameters.
          * This does nothing and may be overwritten by the user.
@@ -28217,6 +28218,36 @@ declare module BABYLON {
          * @param materialIndex
          */
         constructor(idx: number, ind: number, indLength: number, materialIndex: number);
+    }
+    /**
+     * Represents a solid particle vertex
+     */
+    export class SolidParticleVertex {
+        /**
+         * Vertex position
+         */
+        position: Vector3;
+        /**
+         * Vertex color
+         */
+        color: Color4;
+        /**
+         * Vertex UV
+         */
+        uv: Vector2;
+        /**
+         * Creates a new solid particle vertex
+         */
+        constructor();
+        /** Vertex x coordinate */
+        get x(): number;
+        set x(val: number);
+        /** Vertex y coordinate */
+        get y(): number;
+        set y(val: number);
+        /** Vertex z coordinate */
+        get z(): number;
+        set z(val: number);
     }
 }
 declare module BABYLON {
@@ -44304,6 +44335,12 @@ declare module BABYLON {
              */
             pressed: boolean;
         }>;
+        /**
+         * EXPERIMENTAL haptic support.
+         */
+        hapticActuators?: Array<{
+            pulse: (value: number, duration: number) => Promise<boolean>;
+        }>;
     }
     /**
      * An Abstract Motion controller
@@ -44410,6 +44447,17 @@ declare module BABYLON {
          * Backwards compatibility due to a deeply-integrated typo
          */
         get handness(): XREye;
+        /**
+         * Pulse (vibrate) this controller
+         * If the controller does not support pulses, this function will fail silently and return Promise<false> directly after called
+         * Consecutive calls to this function will cancel the last pulse call
+         *
+         * @param value the strength of the pulse in 0.0...1.0 range
+         * @param duration Duration of the pulse in milliseconds
+         * @param hapticActuatorIndex optional index of actuator (will usually be 0)
+         * @returns a promise that will send true when the pulse has ended and false if the device doesn't support pulse or an error accrued
+         */
+        pulse(value: number, duration: number, hapticActuatorIndex?: number): Promise<boolean>;
         protected _getChildByName(node: AbstractMesh, name: string): AbstractMesh;
         protected _getImmediateChildByName(node: AbstractMesh, name: string): AbstractMesh;
         /**
@@ -44646,6 +44694,11 @@ declare module BABYLON {
          * This can be used when creating your own profile or when testing different controllers
          */
         forceControllerProfile?: string;
+        /**
+         * Defines a rendering group ID for meshes that will be loaded.
+         * This is for the default controllers only.
+         */
+        renderingGroupId?: number;
     }
     /**
      * Represents an XR controller
@@ -44749,6 +44802,10 @@ declare module BABYLON {
          * Should the controller model's components not move according to the user input
          */
         disableControllerAnimation?: boolean;
+        /**
+         * Optional options to pass to the controller. Will be overridden by the Input options where applicable
+         */
+        controllerOptions?: IWebXRControllerOptions;
     }
     /**
      * XR input used to track XR inputs such as controllers/rays
@@ -45506,6 +45563,10 @@ declare module BABYLON {
          * When loading teleportation and pointer select, use stable versions instead of latest.
          */
         useStablePlugins?: boolean;
+        /**
+         * An optional rendering group id that will be set globally for teleportation, pointer selection and default controller meshes
+         */
+        renderingGroupId?: number;
     }
     /**
      * Default experience which provides a similar setup to the previous webVRExperience
@@ -69232,9 +69293,9 @@ declare module BABYLON {
          */
         rootUrl: string;
         /**
-         * Defines the filename of the scene to load from
+         * Defines the filename or File of the scene to load from
          */
-        sceneFilename: string;
+        sceneFilename: string | File;
         /**
          * Gets the list of loaded meshes
          */
@@ -69264,7 +69325,7 @@ declare module BABYLON {
          * @param name defines the name of the task
          * @param meshesNames defines the list of mesh's names you want to load
          * @param rootUrl defines the root url to use as a base to load your meshes and associated resources
-         * @param sceneFilename defines the filename of the scene to load from
+         * @param sceneFilename defines the filename or File of the scene to load from
          */
         constructor(
         /**
@@ -69280,9 +69341,9 @@ declare module BABYLON {
          */
         rootUrl: string, 
         /**
-         * Defines the filename of the scene to load from
+         * Defines the filename or File of the scene to load from
          */
-        sceneFilename: string);
+        sceneFilename: string | File);
         /**
          * Execute the current task
          * @param scene defines the scene where you want your assets to be loaded
