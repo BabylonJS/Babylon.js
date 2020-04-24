@@ -57683,7 +57683,8 @@ declare module BABYLON {
         protected _reflectionVectorName: string;
         /** @hidden */
         _reflectionCoordsName: string;
-        protected _reflectionMatrixName: string;
+        /** @hidden */
+        _reflectionMatrixName: string;
         protected _reflectionColorName: string;
         /**
          * Gets or sets the texture associated with the node
@@ -57769,6 +57770,184 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Defines a connection point to be used for points with a custom object type
+     */
+    export class NodeMaterialConnectionPointCustomObject<T extends NodeMaterialBlock> extends NodeMaterialConnectionPoint {
+        private _blockType;
+        private _blockName;
+        private _nameForCheking?;
+        /**
+         * Creates a new connection point
+         * @param name defines the connection point name
+         * @param ownerBlock defines the block hosting this connection point
+         * @param direction defines the direction of the connection point
+         */
+        constructor(name: string, ownerBlock: NodeMaterialBlock, direction: NodeMaterialConnectionPointDirection, _blockType: new (...args: any[]) => T, _blockName: string, _nameForCheking?: string | undefined);
+        /**
+         * Gets a number indicating if the current point can be connected to another point
+         * @param connectionPoint defines the other connection point
+         * @returns a number defining the compatibility state
+         */
+        checkCompatibilityState(connectionPoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPointCompatibilityStates;
+        /**
+         * Creates a block suitable to be used as an input for this input point.
+         * If null is returned, a block based on the point type will be created.
+         * @returns The returned string parameter is the name of the output point of NodeMaterialBlock (first parameter of the returned array) that can be connected to the input
+         */
+        createCustomInputBlock(): Nullable<[NodeMaterialBlock, string]>;
+    }
+}
+declare module BABYLON {
+    /**
+     * Enum defining the type of properties that can be edited in the property pages in the NME
+     */
+    export enum PropertyTypeForEdition {
+        /** property is a boolean */
+        Boolean = 0,
+        /** property is a float */
+        Float = 1,
+        /** property is a Vector2 */
+        Vector2 = 2,
+        /** property is a list of values */
+        List = 3
+    }
+    /**
+     * Interface that defines an option in a variable of type list
+     */
+    export interface IEditablePropertyListOption {
+        /** label of the option */
+        "label": string;
+        /** value of the option */
+        "value": number;
+    }
+    /**
+     * Interface that defines the options available for an editable property
+     */
+    export interface IEditablePropertyOption {
+        /** min value */
+        "min"?: number;
+        /** max value */
+        "max"?: number;
+        /** notifiers: indicates which actions to take when the property is changed */
+        "notifiers"?: {
+            /** the material should be rebuilt */
+            "rebuild"?: boolean;
+            /** the preview should be updated */
+            "update"?: boolean;
+        };
+        /** list of the options for a variable of type list */
+        "options"?: IEditablePropertyListOption[];
+    }
+    /**
+     * Interface that describes an editable property
+     */
+    export interface IPropertyDescriptionForEdition {
+        /** name of the property */
+        "propertyName": string;
+        /** display name of the property */
+        "displayName": string;
+        /** type of the property */
+        "type": PropertyTypeForEdition;
+        /** group of the property - all properties with the same group value will be displayed in a specific section */
+        "groupName": string;
+        /** options for the property */
+        "options": IEditablePropertyOption;
+    }
+    /**
+     * Decorator that flags a property in a node material block as being editable
+     */
+    export function editableInPropertyPage(displayName: string, propertyType?: PropertyTypeForEdition, groupName?: string, options?: IEditablePropertyOption): (target: any, propertyKey: string) => void;
+}
+declare module BABYLON {
+    /**
+     * Block used to implement the refraction part of the sub surface module of the PBR material
+     */
+    export class RefractionBlock extends NodeMaterialBlock {
+        /** @hidden */
+        _define3DName: string;
+        /** @hidden */
+        _refractionMatrixName: string;
+        /** @hidden */
+        _defineLODRefractionAlpha: string;
+        /** @hidden */
+        _defineLinearSpecularRefraction: string;
+        /** @hidden */
+        _defineOppositeZ: string;
+        /** @hidden */
+        _cubeSamplerName: string;
+        /** @hidden */
+        _2DSamplerName: string;
+        /** @hidden */
+        _vRefractionMicrosurfaceInfosName: string;
+        /** @hidden */
+        _vRefractionInfosName: string;
+        private _scene;
+        /**
+         * This parameters will make the material used its opacity to control how much it is refracting aginst not.
+         * Materials half opaque for instance using refraction could benefit from this control.
+         */
+        linkRefractionWithTransparency: boolean;
+        /**
+         * Controls if refraction needs to be inverted on Y. This could be useful for procedural texture.
+         */
+        invertRefractionY: boolean;
+        /**
+         * Gets or sets the texture associated with the node
+         */
+        texture: Nullable<BaseTexture>;
+        /**
+         * Create a new RefractionBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the intensity input component
+         */
+        get intensity(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the index of refraction input component
+         */
+        get indexOfRefraction(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the tint at distance input component
+         */
+        get tintAtDistance(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the view input component
+         */
+        get view(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the refraction object output component
+         */
+        get refraction(): NodeMaterialConnectionPoint;
+        /**
+         * Returns true if the block has a texture
+         */
+        get hasTexture(): boolean;
+        protected _getTexture(): Nullable<BaseTexture>;
+        autoConfigure(material: NodeMaterial): void;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        isReady(): boolean;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh): void;
+        /**
+         * Gets the main code of the block (fragment side)
+         * @param state current state of the node material building
+         * @returns the shader code
+         */
+        getCode(state: NodeMaterialBuildState): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+        protected _dumpPropertiesCode(): string;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Interface used to configure the node material editor
      */
     export interface INodeMaterialEditorOptions {
@@ -57808,7 +57987,7 @@ declare module BABYLON {
         /** MISC. */
         BUMPDIRECTUV: number;
         constructor();
-        setValue(name: string, value: any): void;
+        setValue(name: string, value: any, markAsUnprocessedIfDirty?: boolean): void;
     }
     /**
      * Class used to configure NodeMaterial
@@ -58026,7 +58205,7 @@ declare module BABYLON {
          * Gets the list of texture blocks
          * @returns an array of texture blocks
          */
-        getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock)[];
+        getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock | RefractionBlock)[];
         /**
          * Specifies if the material uses a texture
          * @param texture defines the texture to check against the material
@@ -58224,7 +58403,7 @@ declare module BABYLON {
         /**
          * Input blocks
          */
-        textureBlocks: (ReflectionTextureBaseBlock | TextureBlock)[];
+        textureBlocks: (ReflectionTextureBaseBlock | TextureBlock | RefractionBlock)[];
         /**
          * Bindable blocks (Blocks that need to set data to the effect)
          */
@@ -58896,7 +59075,7 @@ declare module BABYLON {
         get target(): NodeMaterialBlockTargets;
         set target(value: NodeMaterialBlockTargets);
         /**
-         * Gets a boolean indicating that the current point is connected
+         * Gets a boolean indicating that the current point is connected to another NodeMaterialBlock
          */
         get isConnected(): boolean;
         /**
@@ -59212,67 +59391,6 @@ declare module BABYLON {
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
-}
-declare module BABYLON {
-    /**
-     * Enum defining the type of properties that can be edited in the property pages in the NME
-     */
-    export enum PropertyTypeForEdition {
-        /** property is a boolean */
-        Boolean = 0,
-        /** property is a float */
-        Float = 1,
-        /** property is a Vector2 */
-        Vector2 = 2,
-        /** property is a list of values */
-        List = 3
-    }
-    /**
-     * Interface that defines an option in a variable of type list
-     */
-    export interface IEditablePropertyListOption {
-        /** label of the option */
-        "label": string;
-        /** value of the option */
-        "value": number;
-    }
-    /**
-     * Interface that defines the options available for an editable property
-     */
-    export interface IEditablePropertyOption {
-        /** min value */
-        "min"?: number;
-        /** max value */
-        "max"?: number;
-        /** notifiers: indicates which actions to take when the property is changed */
-        "notifiers"?: {
-            /** the material should be rebuilt */
-            "rebuild"?: boolean;
-            /** the preview should be updated */
-            "update"?: boolean;
-        };
-        /** list of the options for a variable of type list */
-        "options"?: IEditablePropertyListOption[];
-    }
-    /**
-     * Interface that describes an editable property
-     */
-    export interface IPropertyDescriptionForEdition {
-        /** name of the property */
-        "propertyName": string;
-        /** display name of the property */
-        "displayName": string;
-        /** type of the property */
-        "type": PropertyTypeForEdition;
-        /** group of the property - all properties with the same group value will be displayed in a specific section */
-        "groupName": string;
-        /** options for the property */
-        "options": IEditablePropertyOption;
-    }
-    /**
-     * Decorator that flags a property in a node material block as being editable
-     */
-    export function editableInPropertyPage(displayName: string, propertyType?: PropertyTypeForEdition, groupName?: string, options?: IEditablePropertyOption): (target: any, propertyKey: string) => void;
 }
 declare module BABYLON {
     /**
@@ -61078,35 +61196,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Defines a connection point to be used for points with a custom object type
-     */
-    export class NodeMaterialConnectionPointCustomObject<T extends NodeMaterialBlock> extends NodeMaterialConnectionPoint {
-        private _blockType;
-        private _blockName;
-        private _nameForCheking?;
-        /**
-         * Creates a new connection point
-         * @param name defines the connection point name
-         * @param ownerBlock defines the block hosting this connection point
-         * @param direction defines the direction of the connection point
-         */
-        constructor(name: string, ownerBlock: NodeMaterialBlock, direction: NodeMaterialConnectionPointDirection, _blockType: new (...args: any[]) => T, _blockName: string, _nameForCheking?: string | undefined);
-        /**
-         * Gets a number indicating if the current point can be connected to another point
-         * @param connectionPoint defines the other connection point
-         * @returns a number defining the compatibility state
-         */
-        checkCompatibilityState(connectionPoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPointCompatibilityStates;
-        /**
-         * Creates a block suitable to be used as an input for this input point.
-         * If null is returned, a block based on the point type will be created.
-         * @returns The returned string parameter is the name of the output point of NodeMaterialBlock (first parameter of the returned array) that can be connected to the input
-         */
-        createCustomInputBlock(): Nullable<[NodeMaterialBlock, string]>;
-    }
-}
-declare module BABYLON {
-    /**
      * Block used to implement the ambient occlusion module of the PBR material
      */
     export class AmbientOcclusionBlock extends NodeMaterialBlock {
@@ -61524,21 +61613,102 @@ declare module BABYLON {
          */
         get tintTexture(): NodeMaterialConnectionPoint;
         /**
+         * Gets the world tangent input component
+         */
+        get worldTangent(): NodeMaterialConnectionPoint;
+        /**
          * Gets the clear coat object output component
          */
         get clearcoat(): NodeMaterialConnectionPoint;
         autoConfigure(material: NodeMaterial): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh): void;
+        private _generateTBNSpace;
         /**
          * Gets the main code of the block (fragment side)
          * @param state current state of the node material building
          * @param ccBlock instance of a ClearCoatBlock or null if the code must be generated without an active clear coat module
          * @param reflectionBlock instance of a ReflectionBlock null if the code must be generated without an active reflection module
          * @param worldPosVarName name of the variable holding the world position
+         * @param generateTBNSpace if true, the code needed to create the TBN coordinate space is generated
+         * @param vTBNAvailable indicate that the vTBN variable is already existing because it has already been generated by another block (PerturbNormal or Anisotropy)
+         * @param worldNormalVarName name of the variable holding the world normal
          * @returns the shader code
          */
-        static GetCode(state: NodeMaterialBuildState, ccBlock: Nullable<ClearCoatBlock>, reflectionBlock: Nullable<ReflectionBlock>, worldPosVarName: string): string;
+        static GetCode(state: NodeMaterialBuildState, ccBlock: Nullable<ClearCoatBlock>, reflectionBlock: Nullable<ReflectionBlock>, worldPosVarName: string, generateTBNSpace: boolean, vTBNAvailable: boolean, worldNormalVarName: string): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to implement the sub surface module of the PBR material
+     */
+    export class SubSurfaceBlock extends NodeMaterialBlock {
+        /**
+         * Create a new SubSurfaceBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Stores the intensity of the different subsurface effects in the thickness texture.
+         * * the green channel is the translucency intensity.
+         * * the blue channel is the scattering intensity.
+         * * the alpha channel is the refraction intensity.
+         */
+        useMaskFromThicknessTexture: boolean;
+        /**
+         * Initialize the block and prepare the context for build
+         * @param state defines the state that will be used for the build
+         */
+        initialize(state: NodeMaterialBuildState): void;
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the min thickness input component
+         */
+        get minThickness(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the max thickness input component
+         */
+        get maxThickness(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the thickness texture component
+         */
+        get thicknessTexture(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the tint color input component
+         */
+        get tintColor(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the translucency intensity input component
+         */
+        get translucencyIntensity(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the translucency diffusion distance input component
+         */
+        get translucencyDiffusionDistance(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the refraction object parameters
+         */
+        get refraction(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the sub surface object output component
+         */
+        get subsurface(): NodeMaterialConnectionPoint;
+        autoConfigure(material: NodeMaterial): void;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        /**
+         * Gets the main code of the block (fragment side)
+         * @param state current state of the node material building
+         * @param ssBlock instance of a SubSurfaceBlock or null if the code must be generated without an active sub surface module
+         * @param reflectionBlock instance of a ReflectionBlock null if the code must be generated without an active reflection module
+         * @param worldPosVarName name of the variable holding the world position
+         * @returns the shader code
+         */
+        static GetCode(state: NodeMaterialBuildState, ssBlock: Nullable<SubSurfaceBlock>, reflectionBlock: Nullable<ReflectionBlock>, worldPosVarName: string): string;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -61562,6 +61732,21 @@ declare module BABYLON {
          * @param name defines the block name
          */
         constructor(name: string);
+        /**
+         * Intensity of the direct lights e.g. the four lights available in your scene.
+         * This impacts both the direct diffuse and specular highlights.
+         */
+        directIntensity: number;
+        /**
+         * Intensity of the environment e.g. how much the environment will light the object
+         * either through harmonics for rough material or through the refelction for shiny ones.
+         */
+        environmentIntensity: number;
+        /**
+         * This is a special control allowing the reduction of the specular highlights coming from the
+         * four lights of the scene. Those highlights may not be needed in full environment lighting.
+         */
+        specularIntensity: number;
         /**
          * Defines the  falloff type used in this material.
          * It by default is Physical.
@@ -61708,7 +61893,7 @@ declare module BABYLON {
         /**
          * Gets the sub surface object parameters
          */
-        get subSurface(): NodeMaterialConnectionPoint;
+        get subsurface(): NodeMaterialConnectionPoint;
         /**
          * Gets the anisotropy object parameters
          */

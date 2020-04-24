@@ -20,4 +20,5 @@ PropertyLedger.RegisteredControls["LightInformationBlock"] = LightInformationPro
 PropertyLedger.RegisteredControls["TextureBlock"] = TexturePropertyTabComponent;
 PropertyLedger.RegisteredControls["ReflectionTextureBlock"] = TexturePropertyTabComponent;
 PropertyLedger.RegisteredControls["ReflectionBlock"] = TexturePropertyTabComponent;
+PropertyLedger.RegisteredControls["RefractionBlock"] = TexturePropertyTabComponent;
 PropertyLedger.RegisteredControls["TrigonometryBlock"] = TrigonometryPropertyTabComponent;
