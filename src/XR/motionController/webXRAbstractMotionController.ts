@@ -214,6 +214,13 @@ export interface IMinimalMotionControllerObject {
          */
         pressed: boolean;
     }>;
+
+    /**
+     * EXPERIMENTAL haptic support.
+     */
+    hapticActuators?: Array<{
+        pulse: (value: number, duration: number) => Promise<boolean>
+    }>;
 }
 
 /**
@@ -388,6 +395,24 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      */
     public get handness() {
         return this.handedness;
+    }
+
+    /**
+     * Pulse (vibrate) this controller
+     * If the controller does not support pulses, this function will fail silently and return Promise<false> directly after called
+     * Consecutive calls to this function will cancel the last pulse call
+     *
+     * @param value the strength of the pulse in 0.0...1.0 range
+     * @param duration Duration of the pulse in milliseconds
+     * @param hapticActuatorIndex optional index of actuator (will usually be 0)
+     * @returns a promise that will send true when the pulse has ended and false if the device doesn't support pulse or an error accrued
+     */
+    public pulse(value: number, duration: number, hapticActuatorIndex: number = 0): Promise<boolean> {
+        if (this.gamepadObject.hapticActuators && this.gamepadObject.hapticActuators[hapticActuatorIndex]) {
+            return this.gamepadObject.hapticActuators[hapticActuatorIndex].pulse(value, duration);
+        } else {
+            return Promise.resolve(false);
+        }
     }
 
     // Look through all children recursively. This will return null if no mesh exists with the given name.
