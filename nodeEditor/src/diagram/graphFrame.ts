@@ -134,7 +134,7 @@ export class GraphFrame {
                     let portAdded = false;
 
                     for (var link of node.links) {
-                        if (link.portA === port && this.nodes.indexOf(link.nodeB!) === -1) {
+                        if (link.portA === port && this.nodes.indexOf(link.nodeB!) === -1 || (link.portA === port && port.exposedOnFrame)) {
                             let localPort: FrameNodePort;
 
                             if (!portAdded) {
@@ -150,6 +150,9 @@ export class GraphFrame {
 
                                 this._onNodeLinkDisposedObservers.push(onLinkDisposedObserver); 
 
+                            } else if (this.nodes.indexOf(link.nodeB!) === -1) {
+                                link.isVisible = true;
+                                localPort = this.ports.filter(p => p.connectionPoint === port.connectionPoint)[0];
                             } else {
                                 localPort = this.ports.filter(p => p.connectionPoint === port.connectionPoint)[0];
                             }
@@ -191,12 +194,9 @@ export class GraphFrame {
         if(!this.isCollapsed) {
             return;
         }
-        this.ports.forEach((framePort:FrameNodePort) => {
-            framePort.dispose()
-        });
-
-        this._createFramePorts();
-        this.ports.forEach((framePort: FrameNodePort) => framePort.node._refreshLinks());
+        this.isCollapsed = !this.isCollapsed
+        this.isCollapsed = !this.isCollapsed
+        this._moveFrame(25, 0);
     }
 
     public set isCollapsed(value: boolean) {
