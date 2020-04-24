@@ -59436,6 +59436,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
@@ -59809,6 +59811,10 @@ var BlockTools = /** @class */ (function () {
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ReflectionBlock"]("Reflection");
             case "ClearCoatBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ClearCoatBlock"]("ClearCoat");
+            case "RefractionBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["RefractionBlock"]("Refraction");
+            case "SubSurfaceBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["SubSurfaceBlock"]("SubSurface");
         }
         return null;
     };
@@ -60052,7 +60058,7 @@ var NodeListComponent = /** @class */ (function (_super) {
             Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"],
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
-            PBR: ["PBRMetallicRoughnessBlock", "AmbientOcclusionBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "ReflectivityBlock", "SheenBlock"],
+            PBR: ["PBRMetallicRoughnessBlock", "AmbientOcclusionBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "ReflectivityBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
             Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock"],
@@ -60191,6 +60197,8 @@ var NodeListComponent = /** @class */ (function (_super) {
         "AnisotropyBlock": "PBR Anisotropy block",
         "ReflectionBlock": "PBR Reflection block",
         "ClearCoatBlock": "PBR ClearCoat block",
+        "RefractionBlock": "PBR Refraction block",
+        "SubSurfaceBlock": "PBR SubSurface block",
     };
     return NodeListComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -61888,6 +61896,7 @@ DisplayLedger.RegisteredControls["TrigonometryBlock"] = _display_trigonometryDis
 DisplayLedger.RegisteredControls["TextureBlock"] = _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__["TextureDisplayManager"];
 DisplayLedger.RegisteredControls["ReflectionTextureBlock"] = _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__["TextureDisplayManager"];
 DisplayLedger.RegisteredControls["ReflectionBlock"] = _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__["TextureDisplayManager"];
+DisplayLedger.RegisteredControls["RefractionBlock"] = _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__["TextureDisplayManager"];
 DisplayLedger.RegisteredControls["DiscardBlock"] = _display_discardDisplayManager__WEBPACK_IMPORTED_MODULE_7__["DiscardDisplayManager"];
 
 
@@ -65764,6 +65773,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var TexturePropertyTabComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TexturePropertyTabComponent, _super);
     function TexturePropertyTabComponent(props) {
@@ -65814,7 +65824,7 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         }
         if (!texture) {
             if (!this.state.loadAsCubeTexture) {
-                this.textureBlock.texture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"](null, this.props.globalState.nodeMaterial.getScene(), false, this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionTextureBlock"] || this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionBlock"]);
+                this.textureBlock.texture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"](null, this.props.globalState.nodeMaterial.getScene(), false, this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionTextureBlock"] || this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionBlock"] || this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["RefractionBlock"]);
                 texture = this.textureBlock.texture;
                 texture.coordinatesMode = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].EQUIRECTANGULAR_MODE;
             }
@@ -65854,7 +65864,7 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         var _this = this;
         this._prepareTexture();
         var texture = this.textureBlock.texture;
-        if (texture.isCube || this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionTextureBlock"] || this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionBlock"]) {
+        if (texture.isCube || this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionTextureBlock"] || this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionBlock"] || this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["RefractionBlock"]) {
             var extension = undefined;
             if (url.toLowerCase().indexOf(".dds") > 0) {
                 extension = ".dds";
@@ -65876,7 +65886,7 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
             url = texture.name;
         }
         url = url.replace(/\?nocache=\d+/, "");
-        var isInReflectionMode = this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionTextureBlock"] || this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionBlock"];
+        var isInReflectionMode = this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionTextureBlock"] || this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionBlock"] || this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["RefractionBlock"];
         var reflectionModeOptions = [
             {
                 label: "Cubic", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CUBIC_MODE
@@ -66147,6 +66157,7 @@ PropertyLedger.RegisteredControls["LightInformationBlock"] = _properties_lightIn
 PropertyLedger.RegisteredControls["TextureBlock"] = _properties_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__["TexturePropertyTabComponent"];
 PropertyLedger.RegisteredControls["ReflectionTextureBlock"] = _properties_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__["TexturePropertyTabComponent"];
 PropertyLedger.RegisteredControls["ReflectionBlock"] = _properties_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__["TexturePropertyTabComponent"];
+PropertyLedger.RegisteredControls["RefractionBlock"] = _properties_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__["TexturePropertyTabComponent"];
 PropertyLedger.RegisteredControls["TrigonometryBlock"] = _properties_trigonometryNodePropertyComponent__WEBPACK_IMPORTED_MODULE_6__["TrigonometryPropertyTabComponent"];
 
 

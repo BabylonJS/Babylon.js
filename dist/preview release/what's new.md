@@ -15,6 +15,7 @@
 - Add a `CascadedShadowMap.IsSupported` method and log an error instead of throwing an exception when CSM is not supported ([Popov72](https://github.com/Popov72))
 - Added initial code for DeviceInputSystem ([PolygonalSun](https://github.com/PolygonalSun))
 - Added support for `material.disableColorWrite` ([Deltakosh](https://github.com/deltakosh))
+- The Mesh Asset Task also accepts File as sceneInput ([RaananW](https://github.com/RaananW))
 - Added support preserving vert colors for CSG objects ([PirateJC](https://github.com/PirateJC))
 
 ### Engine
@@ -90,6 +91,8 @@
 - Pointer Selection feature now uses `selectstart` and `selectend` events when gamepad and motion controller are not present ([#7989](https://github.com/BabylonJS/Babylon.js/issues/7989)) ([RaananW](https://github.com/RaananW))
 - Removed forced `autoClear` = false settings ([RaananW](https://github.com/RaananW))
 - Added a warning that WebXR can only be served over HTTPS ([RaananW](https://github.com/RaananW))
+- Default (XR-global) rendering group ID can be defined when initializing a default experience ([RaananW](https://github.com/RaananW))
+- Added support for (experimental) haptic actuators ([#8068](https://github.com/BabylonJS/Babylon.js/issues/8068)) ([RaananW](https://github.com/RaananW))
 
 ### Collisions
 
@@ -106,6 +109,7 @@
 ### Particles
 
 - Added local space support for GPU particles ([CraigFeldpsar](https://github.com/craigfeldspar))
+- Added ability to update also colors and uvs of solid particle vertices ([jerome](https://github.com/jbousquie))
 
 ### Build
 
@@ -163,3 +167,4 @@
 ## Breaking changes
 
 - `EffectRenderer.render` now takes a `RenderTargetTexture` or an `InternalTexture` as the output texture and only a single `EffectWrapper` for its first argument ([Popov72](https://github.com/Popov72))
+- Sound's `updateOptions` takes `options.length` and `options.offset` as seconds and not milliseconds ([RaananW](https://github.com/RaananW))

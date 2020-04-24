@@ -1033,6 +1033,9 @@ var PBRCustomMaterial = /** @class */ (function (_super) {
         _this.customShaderNameResolve = _this.Builder;
         _this.FragmentShader = babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore["pbrPixelShader"];
         _this.VertexShader = babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore["pbrVertexShader"];
+        _this.FragmentShader = _this.FragmentShader.replace(/#include<pbrBlockAlbedoOpacity>/g, babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["Effect"].IncludesShadersStore["pbrBlockAlbedoOpacity"]);
+        _this.FragmentShader = _this.FragmentShader.replace(/#include<pbrBlockReflectivity>/g, babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["Effect"].IncludesShadersStore["pbrBlockReflectivity"]);
+        _this.FragmentShader = _this.FragmentShader.replace(/#include<pbrBlockFinalColorComposition>/g, babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["Effect"].IncludesShadersStore["pbrBlockFinalColorComposition"]);
         return _this;
     }
     PBRCustomMaterial.prototype.AttachAfterBind = function (mesh, effect) {
