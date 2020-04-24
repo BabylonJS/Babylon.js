@@ -1,12 +1,12 @@
 import { WebXRExperienceHelper } from "./webXRExperienceHelper";
 import { Scene } from '../scene';
 import { WebXRInput, IWebXRInputOptions } from './webXRInput';
-import { WebXRControllerPointerSelection } from './features/WebXRControllerPointerSelection';
+import { WebXRControllerPointerSelection, IWebXRControllerPointerSelectionOptions } from './features/WebXRControllerPointerSelection';
 import { WebXRRenderTarget } from './webXRTypes';
 import { WebXREnterExitUI, WebXREnterExitUIOptions } from './webXREnterExitUI';
 import { AbstractMesh } from '../Meshes/abstractMesh';
 import { WebXRManagedOutputCanvasOptions } from './webXRManagedOutputCanvas';
-import { WebXRMotionControllerTeleportation } from './features/WebXRControllerTeleportation';
+import { WebXRMotionControllerTeleportation, IWebXRTeleportationOptions } from './features/WebXRControllerTeleportation';
 import { Logger } from '../Misc/logger';
 
 /**
@@ -47,6 +47,11 @@ export class WebXRDefaultExperienceOptions {
      * When loading teleportation and pointer select, use stable versions instead of latest.
      */
     public useStablePlugins?: boolean;
+
+    /**
+     * An optional rendering group id that will be set globally for teleportation, pointer selection and default controller meshes
+     */
+    public renderingGroupId?: number;
 }
 
 /**
@@ -99,16 +104,25 @@ export class WebXRDefaultExperience {
             }
 
             // Add controller support
-            result.input = new WebXRInput(xrHelper.sessionManager, xrHelper.camera, options.inputOptions);
-            result.pointerSelection = <WebXRControllerPointerSelection>result.baseExperience.featuresManager.enableFeature(WebXRControllerPointerSelection.Name, options.useStablePlugins ? "stable" : "latest", {
-                xrInput: result.input
+            result.input = new WebXRInput(xrHelper.sessionManager, xrHelper.camera, {
+                controllerOptions: {
+                    renderingGroupId: options.renderingGroupId
+                },
+                ...(options.inputOptions || {})
+            });
+            result.pointerSelection = <WebXRControllerPointerSelection>result.baseExperience.featuresManager.enableFeature(WebXRControllerPointerSelection.Name, options.useStablePlugins ? "stable" : "latest",
+            <IWebXRControllerPointerSelectionOptions>{
+                xrInput: result.input,
+                renderingGroupId: options.renderingGroupId
             });
 
             // Add default teleportation, including rotation
             if (!options.disableTeleportation) {
-                result.teleportation = <WebXRMotionControllerTeleportation>result.baseExperience.featuresManager.enableFeature(WebXRMotionControllerTeleportation.Name, options.useStablePlugins ? "stable" : "latest", {
+                result.teleportation = <WebXRMotionControllerTeleportation>result.baseExperience.featuresManager.enableFeature(WebXRMotionControllerTeleportation.Name, options.useStablePlugins ? "stable" : "latest",
+                <IWebXRTeleportationOptions>{
                     floorMeshes: options.floorMeshes,
-                    xrInput: result.input
+                    xrInput: result.input,
+                    renderingGroupId: options.renderingGroupId
                 });
                 result.teleportation.setSelectionFeature(result.pointerSelection);
             }
