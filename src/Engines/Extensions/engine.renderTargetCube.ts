@@ -48,13 +48,19 @@ ThinEngine.prototype.createRenderTargetCubeTexture = function(size: number, opti
         Logger.Warn("Float textures are not supported. Cube render target forced to TEXTURETYPE_UNESIGNED_BYTE type");
     }
 
+    for (var face = 0; face < 6; face++) {
+        gl.texImage2D((gl.TEXTURE_CUBE_MAP_POSITIVE_X + face), 0, this._getRGBABufferInternalSizedFormat(fullOptions.type, fullOptions.format), size, size, 0, this._getInternalFormat(fullOptions.format), this._getWebGLTextureType(fullOptions.type), null);
+    }
+
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, filters.mag);
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, filters.min);
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-    for (var face = 0; face < 6; face++) {
-        gl.texImage2D((gl.TEXTURE_CUBE_MAP_POSITIVE_X + face), 0, this._getRGBABufferInternalSizedFormat(fullOptions.type, fullOptions.format), size, size, 0, this._getInternalFormat(fullOptions.format), this._getWebGLTextureType(fullOptions.type), null);
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+    
+    // MipMaps
+    if (fullOptions.generateMipMaps) {
+        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
     }
 
     // Create the framebuffer
@@ -63,10 +69,6 @@ ThinEngine.prototype.createRenderTargetCubeTexture = function(size: number, opti
 
     texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(fullOptions.generateStencilBuffer, fullOptions.generateDepthBuffer, size, size);
 
-    // MipMaps
-    if (fullOptions.generateMipMaps) {
-        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-    }
 
     // Unbind
     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
