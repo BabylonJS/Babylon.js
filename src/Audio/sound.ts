@@ -459,8 +459,8 @@ export class Sound {
             this.refDistance = options.refDistance ?? this.refDistance;
             this.distanceModel = options.distanceModel ?? this.distanceModel;
             this._playbackRate = options.playbackRate ?? this._playbackRate;
-            this._length = options.length ?? undefined;
-            this._offset = options.offset ?? undefined;
+            this._length = options.length ?? this._length;
+            this._offset = options.offset ?? this._offset;
             this._updateSpatialParameters();
             if (this.isPlaying) {
                 if (this._streaming && this._htmlAudioElement) {
