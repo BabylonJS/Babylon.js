@@ -21,7 +21,7 @@ export class HDRFiltering {
 	private _engine: Engine;
 	private _effect: Effect;
 
-	private _numSamples: number = 128;
+	private _numSamples: number = 256;
 
 	constructor(scene: Scene) {
 		// pass
@@ -84,54 +84,68 @@ export class HDRFiltering {
 	        const a2 = alphaG * alphaG;
 	        // NdotH = samples[i].z
 	        const d = samples[i].z * samples[i].z * (a2 - 1) + 1;
-	        result.push(a2  / (Math.PI * d * d));
+	        // result.push(a2  / (Math.PI * d * d)); // TODO is it wrong in IBL baker ?
+	        result.push(a2  / (d * d));
 	    }
 
 	    return result;
 	}
 
-	// Todo merge hdrCubeTexture with CubeTexture
-	public prefilter(texture: CubeTexture | HDRCubeTexture) : RenderTargetTexture | null {
-		//
-		const nbRoughnessStops = 1;
-		const samples = 1024;
-		const mipmaps: InternalTexture[] = [];
-		let filteredTexture = null;
+	/**
+	 * Get a value indicating if the post-process is ready to be used
+	 * @returns true if the post-process is ready (shader is compiled)
+	 */
+	public isReady(texture: CubeTexture | HDRCubeTexture) {
+		return (texture.isReady() && this._effect.isReady())
+	}
 
-		for (let i = 0; i < nbRoughnessStops; i++) {
-			const roughness = i / nbRoughnessStops;
+	// Todo merge hdrCubeTexture with CubeTexture
+	public prefilter(texture: CubeTexture | HDRCubeTexture) : Promise<RenderTargetTexture | null> {
+		return new Promise((resolve) => {
+			const callback = () => {
+				if (this.isReady(texture)) {
+					resolve(this._prefilter(texture));
+					console.log("unregister");
+					this._scene.unregisterAfterRender(callback);
+				}
+			};
+			// Is dependence of renderloop really necessary ? maybe setInterval is more suited
+			this._scene.registerAfterRender(callback);
+		})
+	}
+
+	private _prefilter(texture: CubeTexture | HDRCubeTexture) : RenderTargetTexture | null {
+		// const nbRoughnessStops = 2;
+		const maxLodLevel = Math.round(Math.log(texture.getSize().width) / Math.log(2));
+		const samples = this._numSamples;
+		console.log(this._numSamples, maxLodLevel);
+		const outputTexture = new RenderTargetTexture("temp", texture.getSize(), this._scene, true, true, undefined, true, undefined, false);
+		outputTexture.gammaSpace = false;
+
+		for (let i = 0; i < maxLodLevel + 1; i++) {
+			const roughness = i / maxLodLevel;
 			const kernel = HDRFiltering.generateSamples(samples, roughness);
 			const weights = HDRFiltering.generateWeights(kernel, roughness);
 
-			filteredTexture = this.filter(texture, kernel, weights);
-			// mipmaps.push(filteredTexture);
+			this.filter(texture, outputTexture, kernel, weights, i);
 		}
 
-		this.setMipmaps(texture, mipmaps);
-
-		return filteredTexture;
+		return outputTexture;
 	}
 
-	public filter(texture: CubeTexture | HDRCubeTexture, kernel: Vector3[], weights: number[]) : RenderTargetTexture | null {
+	public filter(texture: CubeTexture | HDRCubeTexture, outputTexture: RenderTargetTexture, kernel: Vector3[], weights: number[], lodLevel: number = 0) : RenderTargetTexture | null {
 		if (!texture.isReady()) {
 			return null;
 		}
 
-		const outputTexture = new RenderTargetTexture("temp", texture.getSize(), this._scene, false, true, undefined, true);
-
-		// Wait for readyness
-		if (!outputTexture.isReady() || !texture.isReady()) {
-			return null;
-		}
-
-
+		// Direction are flipped because of LH vs RH
 		const directions = [
-			[new Vector3(0, 1, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)], // PositiveX
-			[new Vector3(0, 1, 0), new Vector3(0, 0, -1), new Vector3(-1, 0, 0)], // NegativeX
-			[new Vector3(-1, 0, 0), new Vector3(0, 0, 1), new Vector3(0, 1, 0)], // PositiveY
-			[new Vector3(1, 0, 0), new Vector3(0, 0, 1), new Vector3(0, -1, 0)], // NegativeY
-			[new Vector3(0, 1, 0), new Vector3(-1, 0, 0), new Vector3(0, 0, 1)], // PositiveZ
-			[new Vector3(0, 1, 0), new Vector3(1, 0, 0), new Vector3(0, 0, -1)], // NegativeZ
+			[new Vector3(0, 0, 1), new Vector3(0, 1, 0), new Vector3(-1, 0, 0)], // PositiveX
+			[new Vector3(0, 0, -1), new Vector3(0, 1, 0), new Vector3(1, 0, 0)], // NegativeX
+			[new Vector3(-1, 0, 0), new Vector3(0, 0, -1), new Vector3(0, -1, 0)], // PositiveY
+			[new Vector3(-1, 0, 0), new Vector3(0, 0, 1), new Vector3(0, 1, 0)], // NegativeY
+			[new Vector3(-1, 0, 0), new Vector3(0, 1, 0), new Vector3(0, 0, -1)], // PositiveZ
+			[new Vector3(1, 0, 0), new Vector3(0, 1, 0), new Vector3(0, 0, 1)], // NegativeZ
 		];
 
 		for (let i = 0; i < 6 ; i++) {
@@ -139,14 +153,10 @@ export class HDRFiltering {
 			this._effect.setVector3("up", directions[i][0]);
 			this._effect.setVector3("right", directions[i][1]);
 			this._effect.setVector3("front", directions[i][2]);
-			this.directRender(outputTexture._texture!, i);
+			this.directRender(outputTexture._texture!, i, lodLevel);
 		}
 
 		return outputTexture;
-	}
-
-	public setMipmaps(texture: CubeTexture | HDRCubeTexture, mipmaps: InternalTexture[]) {
-		// pass
 	}
 
 	public static flatten(arr: Vector3[]) : number[] {
@@ -180,17 +190,9 @@ export class HDRFiltering {
 	    // Parameters
 	    this._effect.setArray3("sampleDirections", HDRFiltering.flatten(kernel));
 	    this._effect.setArray("weights", weights);
-	    this._effect.setFloat("cubeSize", texture.getSize().width);
+	    this._effect.setFloat("cubeWidth", texture.getSize().width);
 	    this._effect.setFloat2("scale", 1, 1);
 	    return this._effect;
-	}
-
-	/**
-	 * Get a value indicating if the post-process is ready to be used
-	 * @returns true if the post-process is ready (shader is compiled)
-	 */
-	public isReady(): boolean {
-	    return this._effect && this._effect.isReady();
 	}
 
 	/**
@@ -219,24 +221,26 @@ export class HDRFiltering {
      * @param lodLevel defines which lod of the texture to render to
      */
     public directRender(targetTexture: InternalTexture, faceIndex = 0, lodLevel = 0): void {
-    	if (!this.isReady()) {
-    		return;
-    	}
-
+    	console.log("Rendering lod level " + lodLevel)
         var engine = this._engine;
-        engine.bindFramebuffer(targetTexture, faceIndex, undefined, undefined, false, lodLevel);
+        var gl = engine._gl;
+        engine._currentRenderTarget = null;
+        engine.bindFramebuffer(targetTexture, faceIndex, undefined, undefined, true, lodLevel);
+        const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
 
-        engine.clear(new Color4(1.0, 0.0, 0.0, 1.0), true, true);
+        console.assert(status === gl.FRAMEBUFFER_COMPLETE, 'incomplete!');
+
+        engine.clear(new Color4(0.0, 0.0, 0.0, 0.0), true, true);
         // VBOs
         this._prepareBuffers();
         engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._effect);
         engine.drawElementsType(Material.TriangleFillMode, 0, 6);
 
-        engine.restoreDefaultFramebuffer();
+        // engine.restoreDefaultFramebuffer();
         // Restore depth buffer
-	    engine.setState(true);
-        engine.setDepthBuffer(true);
-        engine.setDepthWrite(true);
+	    // engine.setState(true);
+     //    engine.setDepthBuffer(true);
+     //    engine.setDepthWrite(true);
     }
 
     private _indexBuffer: DataBuffer;
