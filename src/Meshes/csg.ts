@@ -458,7 +458,7 @@ export class CSG {
                 for (var j = 0; j < 3; j++) {
                     var sourceNormal = new Vector3(normals[indices[i + j] * 3], normals[indices[i + j] * 3 + 1], normals[indices[i + j] * 3 + 2]);
                     uv = new Vector2(uvs[indices[i + j] * 2], uvs[indices[i + j] * 2 + 1]);
-                    if(vertColors){
+                    if (vertColors) {
                         vertColor = new Color4(vertColors[indices[i + j] * 4], vertColors[indices[i + j] * 4 + 1], vertColors[indices[i + j] * 4 + 2], vertColors[indices[i + j] * 4 + 3]);
                     }
                     var sourcePosition = new Vector3(positions[indices[i + j] * 3], positions[indices[i + j] * 3 + 1], positions[indices[i + j] * 3 + 2]);
@@ -775,7 +775,7 @@ export class CSG {
         mesh.setVerticesData(VertexBuffer.PositionKind, vertices);
         mesh.setVerticesData(VertexBuffer.NormalKind, normals);
         mesh.setVerticesData(VertexBuffer.UVKind, uvs);
-        if(vertColors){
+        if (vertColors) {
             mesh.setVerticesData(VertexBuffer.ColorKind, vertColors);
         }
         mesh.setIndices(indices, null);
