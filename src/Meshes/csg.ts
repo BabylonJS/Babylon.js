@@ -735,9 +735,9 @@ export class CSG {
                     var localNormal = Vector3.TransformNormal(normal, matrix);
 
                     vertex_idx = (<any>vertice_dict)[localVertex.x + ',' + localVertex.y + ',' + localVertex.z];
-                    
+
                     let areColorsDifferent = false;
-                    
+
                     if (vertColors &&
                         !(vertColors[vertex_idx * 4] === vertColor.r ||
                         vertColors[vertex_idx * 4 + 1] === vertColor.g ||
@@ -745,6 +745,7 @@ export class CSG {
                         vertColors[vertex_idx * 4 + 3] === vertColor.a)) {
                         areColorsDifferent = true;
                     }
+
                     // Check if 2 points can be merged
                     if (!(typeof vertex_idx !== 'undefined' &&
                         normals[vertex_idx * 3] === localNormal.x &&
