@@ -198,11 +198,14 @@ export class NodeMaterialBuildState {
     }
 
     /** @hidden */
-    public _emitExtension(name: string, extension: string) {
+    public _emitExtension(name: string, extension: string, define: string = "") {
         if (this.extensions[name]) {
             return;
         }
 
+        if (define) {
+            extension = `#if ${define}\r\n${extension}\r\n#endif`;
+        }
         this.extensions[name] = extension;
     }
 
