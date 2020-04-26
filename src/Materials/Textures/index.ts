@@ -1,6 +1,5 @@
 export * from "./baseTexture";
 export * from "./baseTexture.polynomial";
-export * from "./baseTexture.prefiltering";
 export * from "./colorGradingTexture";
 export * from "./cubeTexture";
 export * from "./dynamicTexture";
@@ -22,4 +21,4 @@ export * from "./texture";
 export * from "./videoTexture";
 export * from "./htmlElementTexture";
 export * from "./Packer/index";
-export * from "./Filtering/hdrFiltering";
+export * from "./hdrFilteringSceneComponent";
