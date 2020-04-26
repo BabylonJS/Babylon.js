@@ -35,9 +35,10 @@ import { Constants } from "../../Engines/constants";
 import { IAnimatable } from '../../Animations/animatable.interface';
 
 import "../../Materials/Textures/baseTexture.polynomial";
-import "../../Materials/Textures/baseTexture.prefiltering";
 import "../../Shaders/pbr.fragment";
 import "../../Shaders/pbr.vertex";
+
+import { EnvironmentRealtimeFiltering } from "./pbrRealtimeFiltering";
 import { EffectFallbacks } from '../effectFallbacks';
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
@@ -751,6 +752,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public readonly subSurface = new PBRSubSurfaceConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
 
+    public realtimeFilter = new EnvironmentRealtimeFiltering(this);
+
     protected _rebuildInParallel = false;
 
     /**
@@ -797,8 +800,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     public getClassName(): string {
         return "PBRBaseMaterial";
     }
-
-    public debugRealtimeSampling = false;
 
     /**
      * Enabled the use of logarithmic depth buffers, which is good for wide depth buffers.
@@ -1284,8 +1285,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
                     defines.LINEARSPECULARREFLECTION = reflectionTexture.linearSpecularLOD;
 
-                    if (reflectionTexture.realTimeFiltering) {
-                        defines.NUM_SAMPLES = reflectionTexture.numSamples;
+                    if (this.realtimeFilter.enabled) {
+                        defines.NUM_SAMPLES = this.realtimeFilter.numSamples;
                         defines.DEBUG_REALTIME_SAMPLING = true;
                     }
                     
@@ -1695,11 +1696,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                             ubo.updateVector3("vReflectionSize", cubeTexture.boundingBoxSize);
                         }
 
-                        if (reflectionTexture.realTimeFiltering) {
-                            // TODO move this into pbrbasematerial
-                            reflectionTexture.generateFilterSamples(this._roughness!);           
-                            effect.setArray3("sampleDirections", reflectionTexture._sampleDirections);
-                            effect.setArray("weights", reflectionTexture._sampleWeights);
+                        if (this.realtimeFilter.enabled) {
+                            this.realtimeFilter.generateFilterSamples(this._roughness!);           
+                            effect.setArray3("sampleDirections", this.realtimeFilter.sampleDirections);
+                            effect.setArray("weights", this.realtimeFilter.sampleWeights);
                         }
 
                         if (!defines.USEIRRADIANCEMAP) {

@@ -6,8 +6,6 @@ uniform float weights[NUM_SAMPLES];
 varying vec3 direction;
 
 void main() {
-    // Rotation by PI around y is necessary for consistency with IBLBaker
-    // vec3 n = vec3(-direction.x, direction.y, -direction.z);
     vec3 n = normalize(direction);
     vec3 tangent = abs(n.z) < 0.999 ? vec3(0., 0., 1.) : vec3(1., 0., 0.);
     tangent = normalize(cross(tangent, n));
@@ -27,7 +25,7 @@ void main() {
         NoL = clamp(dot(l, n), 0.0, 1.0);
         if (NoL > 0.) {
             float solidAngleTexel = 4. * 3.14159 / (6. * cubeWidth * cubeWidth);
-            float solidAngleSample = 1.5 * 4.0 / (float(NUM_SAMPLES) * weights[i]); // Multiplying by 1.5 gives better results
+            float solidAngleSample = 1.5 * 4.0 / (float(NUM_SAMPLES) * weights[i]);
             float lod = 0.5 * log2(solidAngleSample / solidAngleTexel);
             // gamma correction needed ?
             color += textureCubeLodEXT(inputTexture, l, lod).xyz * NoL;

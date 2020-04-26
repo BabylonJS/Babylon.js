@@ -187,7 +187,7 @@
     uniform float weights[NUM_SAMPLES];
     vec4 sampleUnfiltered(samplerCube sampler, vec3 direction, float lod) {
         // Rotation by PI around y is necessary for consistency with IBLBaker
-        vec3 n = vec3(-direction.x, direction.y, -direction.z);
+        vec3 n = vec3(direction.x, direction.y, direction.z);
         vec3 tangent = abs(n.z) < 0.999 ? vec3(0., 0., 1.) : vec3(1., 0., 0.);
         tangent = normalize(cross(tangent, n));
         vec3 bitangent = cross(n, tangent);
@@ -205,7 +205,7 @@
             NoH = clamp(dot(h, n), 0.0, 1.0);
             NoL = clamp(dot(l, n), 0.0, 1.0);
             if (NoL > 0.) {
-                float solidAngleTexel = 4. / (6. * 128. * 128.);
+                float solidAngleTexel = 4.0 * 3.14159 / (6. * 128. * 128.);
                 float solidAngleSample = 4.0 / (float(NUM_SAMPLES) * weights[i]);
                 float lod = 0.5 * log2(solidAngleSample/solidAngleTexel);
                 // gamma correction needed ?
