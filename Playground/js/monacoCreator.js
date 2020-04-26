@@ -138,6 +138,7 @@ class MonacoCreator {
             for (const template of this.templates) {
                 template.kind = monaco.languages.CompletionItemKind.Snippet,
                 template.sortText = "!" + template.label; // make sure templates are on top of the completion window
+                template.insertTextRules = monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet;
             }
 
             // As explained above, we need the 'dev' version of Monaco to access this adapter!
@@ -309,7 +310,6 @@ class MonacoCreator {
                         continue;
 
                     template.range = undefined;
-                    template.insertTextRules = monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet;
                     suggestions.push(template);
                 }
             }
