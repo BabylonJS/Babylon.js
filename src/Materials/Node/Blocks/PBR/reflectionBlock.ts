@@ -179,6 +179,8 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         defines.setValue(this._defineOppositeZ, this._scene.useRightHandedSystem ? !reflectionTexture!.invertZ : reflectionTexture!.invertZ, true);
 
         defines.setValue("SPHERICAL_HARMONICS", this.useSphericalHarmonics, true);
+        defines.setValue("GAMMAREFLECTION", reflectionTexture!.gammaSpace, true);
+        defines.setValue("RGBDREFLECTION", reflectionTexture!.isRGBD, true);
 
         if (reflectionTexture && reflectionTexture.coordinatesMode !== Texture.SKYBOX_MODE) {
             if (reflectionTexture.isCube) {
@@ -264,7 +266,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         this._vEnvironmentIrradianceName = state._getFreeVariableName("vEnvironmentIrradiance");
 
-        state._emitVaryingFromString(this._vEnvironmentIrradianceName, "vec3", "defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX");
+        state._emitVaryingFromString(this._vEnvironmentIrradianceName, "vec3", "defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)");
 
         state._emitUniformFromString("vSphericalL00", "vec3", "SPHERICAL_HARMONICS");
         state._emitUniformFromString("vSphericalL1_1", "vec3", "SPHERICAL_HARMONICS");
