@@ -163,6 +163,14 @@ namespace android::content
         Context(jobject object);
 
         res::AssetManager getAssets() const;
+
+        template<typename ServiceT>
+        ServiceT getSystemService()
+        {
+            return {getSystemService(ServiceT::ServiceName)};
+        };
+
+        jobject getSystemService(const char* serviceName);
     };
 }
 
@@ -174,6 +182,26 @@ namespace android::content::res
         AssetManager(jobject object);
 
         operator AAssetManager*() const;
+    };
+}
+
+namespace android::view
+{
+    class Display : public java::lang::Object
+    {
+    public:
+        Display(jobject object);
+
+        int getRotation();
+    };
+
+    class WindowManager : public java::lang::Object
+    {
+    public:
+        static constexpr const char* ServiceName{"window"};
+        WindowManager(jobject object);
+
+        Display getDefaultDisplay();
     };
 }
 

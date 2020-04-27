@@ -280,7 +280,7 @@ namespace Babylon
             auto colorTexPtr = reinterpret_cast<uintptr_t>(view.ColorTexturePointer);
 
             auto it = m_texturesToFrameBuffers.find(colorTexPtr);
-            if (it == m_texturesToFrameBuffers.end())
+            if (it == m_texturesToFrameBuffers.end() || it->second.get()->Width != view.ColorTextureSize.Width || it->second.get()->Height != view.ColorTextureSize.Height)
             {
                 assert(view.ColorTextureSize.Width == view.DepthTextureSize.Width);
                 assert(view.ColorTextureSize.Height == view.DepthTextureSize.Height);
