@@ -13,7 +13,7 @@ export interface ICheckBoxLineComponentProps {
     disabled?: boolean;
 }
 
-export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, { isSelected: boolean }> {
+export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, { isSelected: boolean, isDisabled?: boolean }> {
     private static _UniqueIdSeed = 0;
     private _uniqueId: number;
     private _localChange = false;
@@ -27,9 +27,13 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
         } else {
             this.state = { isSelected: this.props.target[this.props.propertyName!] == true };
         }
+
+        if (this.props.disabled) {
+            this.state = { ...this.state, isDisabled: this.props.disabled };
+        }
     }
 
-    shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: { isSelected: boolean }) {
+    shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: { isSelected: boolean, isDisabled: boolean }) {
         var currentState: boolean;
 
         if (nextProps.isSelected) {
@@ -43,6 +47,11 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
             this._localChange = false;
             return true;
         }
+
+        if(nextProps.disabled !== !!nextState.isDisabled){
+            return true;
+        }
+        
         return nextProps.label !== this.props.label || nextProps.target !== this.props.target;
     }
 
