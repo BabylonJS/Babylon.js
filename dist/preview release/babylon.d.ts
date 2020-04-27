@@ -18155,6 +18155,10 @@ declare module BABYLON {
          * Gets or sets the associated action manager
          */
         actionManager: Nullable<ActionManager>;
+        /**
+        * An event triggered when the control has been disposed
+        */
+        onDisposeObservable: Observable<Sprite>;
         private _animationStarted;
         private _loopAnimation;
         private _fromIndex;
@@ -58624,7 +58628,7 @@ declare module BABYLON {
         /** @hidden */
         _getGLType(type: NodeMaterialBlockConnectionPointTypes): string;
         /** @hidden */
-        _emitExtension(name: string, extension: string): void;
+        _emitExtension(name: string, extension: string, define?: string): void;
         /** @hidden */
         _emitFunction(name: string, code: string, comments: string): void;
         /** @hidden */
