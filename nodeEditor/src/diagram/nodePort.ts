@@ -46,26 +46,50 @@ export class NodePort {
         }
     }
 
-    public hasLabel(){
-        return !!this._portLabelElement;
-    }
-
-    public get exposedOnFrame() {
-        return (this.connectionPoint.isConnected || !!this._exposedOnFrame) && !this._isConnectedToNodeInsideSameFrame() ;
-    }
-
-    private _isConnectedToNodeInsideSameFrame(){
-        const link = this.node.getLinksForConnectionPoint(this.connectionPoint)
-        if (link.length){
-            if (link[0].nodeA.enclosingFrameId == link[0].nodeB!.enclosingFrameId) {
-                return true;
+    public get disabled() {
+        if (!this.connectionPoint.isConnected) {
+            return false;
+        } else if (this._isConnectedToNodeOutsideOfFrame()) { //connected to outside node
+            return true;
+        } else {
+            const link = this.node.getLinksForConnectionPoint(this.connectionPoint)
+            if (link.length){
+                if (link[0].nodeB === this.node) { // check if this node is the receiving
+                    return true;
+                }
             }
         }
         return false;
     }
 
+    public hasLabel(){
+        return !!this._portLabelElement;
+    }
+
+    public get exposedOnFrame() {
+        if(!!this._exposedOnFrame || this._isConnectedToNodeOutsideOfFrame()) {
+            return true
+        } return false;
+    }
+
     public set exposedOnFrame(value: boolean) {
+        if(this.disabled){
+            return;
+        }
         this._exposedOnFrame = value;
+    }
+    
+    
+    private _isConnectedToNodeOutsideOfFrame() {
+        const link = this.node.getLinksForConnectionPoint(this.connectionPoint)
+        if (link.length){
+            for(let i = 0; i < link.length; i++){
+                if (link[i].nodeA.enclosingFrameId !== link[i].nodeB!.enclosingFrameId) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public refresh() {
@@ -95,7 +119,7 @@ export class NodePort {
         }
     }
 
-    public constructor(private portContainer: HTMLElement, public connectionPoint: NodeMaterialConnectionPoint, public node: GraphNode, globalState: GlobalState) {
+    public constructor(portContainer: HTMLElement, public connectionPoint: NodeMaterialConnectionPoint, public node: GraphNode, globalState: GlobalState) {
         this._element = portContainer.ownerDocument!.createElement("div");
         this._element.classList.add("port");
         portContainer.appendChild(this._element);
@@ -143,8 +167,6 @@ export class NodePort {
         if (this._onSelectionChangedObserver) {
             this._globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
         }
-
-        this.portContainer.remove();
     }
 
     public static CreatePortElement(connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement, 
