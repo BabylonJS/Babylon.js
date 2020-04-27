@@ -420,7 +420,7 @@ export class TextureBlock extends NodeMaterialBlock {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.convertToGammaSpace = serializationObject.convertToGammaSpace;
-        this.convertToLinearSpace = serializationObject.convertToLinearSpace;
+        this.convertToLinearSpace = !!serializationObject.convertToLinearSpace;
 
         if (serializationObject.texture && !NodeMaterial.IgnoreTexturesAtLoadTime) {
             rootUrl = serializationObject.texture.url.indexOf("data:") === 0 ? "" : rootUrl;

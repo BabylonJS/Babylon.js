@@ -15,10 +15,11 @@ import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponen
 import { IPropertyComponentProps } from './propertyComponentProps';
 import { ReflectionTextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/reflectionTextureBlock';
 import { ReflectionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/reflectionBlock';
+import { RefractionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/refractionBlock';
 import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/textureBlock';
 import { GeneralPropertyTabComponent, GenericPropertyTabComponent } from './genericNodePropertyComponent';
 
-type ReflectionTexture = ReflectionTextureBlock | ReflectionBlock;
+type ReflectionTexture = ReflectionTextureBlock | ReflectionBlock | RefractionBlock;
 
 export class TexturePropertyTabComponent extends React.Component<IPropertyComponentProps, {isEmbedded: boolean, loadAsCubeTexture: boolean}> {
 
@@ -79,7 +80,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
 
         if (!texture) {
             if (!this.state.loadAsCubeTexture) {
-                this.textureBlock.texture = new Texture(null, this.props.globalState.nodeMaterial.getScene(), false, this.textureBlock instanceof ReflectionTextureBlock || this.textureBlock instanceof ReflectionBlock);
+                this.textureBlock.texture = new Texture(null, this.props.globalState.nodeMaterial.getScene(), false, this.textureBlock instanceof ReflectionTextureBlock || this.textureBlock instanceof ReflectionBlock || this.textureBlock instanceof RefractionBlock);
                 texture = this.textureBlock.texture;
                 texture.coordinatesMode = Texture.EQUIRECTANGULAR_MODE;
             } else {
@@ -122,7 +123,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
         this._prepareTexture();
 
         let texture = this.textureBlock.texture as BaseTexture;       
-        if (texture.isCube || this.textureBlock instanceof ReflectionTextureBlock || this.textureBlock instanceof ReflectionBlock) {
+        if (texture.isCube || this.textureBlock instanceof ReflectionTextureBlock || this.textureBlock instanceof ReflectionBlock || this.textureBlock instanceof RefractionBlock) {
             let extension: string | undefined = undefined;
             if (url.toLowerCase().indexOf(".dds") > 0) {
                 extension = ".dds";
@@ -146,7 +147,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
 
         url = url.replace(/\?nocache=\d+/, "");
 
-        let isInReflectionMode = this.textureBlock instanceof ReflectionTextureBlock || this.textureBlock instanceof ReflectionBlock;
+        let isInReflectionMode = this.textureBlock instanceof ReflectionTextureBlock || this.textureBlock instanceof ReflectionBlock || this.textureBlock instanceof RefractionBlock;
 
         var reflectionModeOptions: {label: string, value: number}[] = [
             {
