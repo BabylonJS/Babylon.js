@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [     
         {
+            "title": "CSGVertColor",
+            "playgroundId": "#R0H1IX#0",            
+            "referenceImage": "csgVertColor.png"
+        },
+        {
             "title": "Particle subemitters",
             "playgroundId": "#1LK70I#20",            
             "renderCount": 50,
