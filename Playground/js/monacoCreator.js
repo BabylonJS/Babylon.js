@@ -115,7 +115,7 @@ class MonacoCreator {
         this.setupDefinitionWorker(libContent);
 
         // Load code templates
-        response = await fetch("templates.json");
+        response = await fetch("/templates.json");
         if (response.ok) {
             this.templates = await response.json();
         }
