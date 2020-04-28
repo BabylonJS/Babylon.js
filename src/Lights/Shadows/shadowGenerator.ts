@@ -23,6 +23,7 @@ import { Constants } from "../../Engines/constants";
 import "../../Shaders/shadowMap.fragment";
 import "../../Shaders/shadowMap.vertex";
 import "../../Shaders/depthBoxBlur.fragment";
+import "../../Shaders/ShadersInclude/shadowMapFragmentSoftTransparentShadow";
 import { Observable } from '../../Misc/observable';
 import { _DevTools } from '../../Misc/devTools';
 import { EffectFallbacks } from '../../Materials/effectFallbacks';
@@ -75,9 +76,10 @@ export interface IShadowGenerator {
      * Determine wheter the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
      * @param subMesh The submesh we want to render in the shadow map
      * @param useInstances Defines wether will draw in the map using instances
+     * @param isTransparent Indicates that isReady is called for a transparent subMesh
      * @returns true if ready otherwise, false
      */
-    isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+    isReady(subMesh: SubMesh, useInstances: boolean, isTransparent: boolean): boolean;
 
     /**
      * Prepare all the defines in a material relying on a shadow map at the specified light index.
@@ -661,6 +663,15 @@ export class ShadowGenerator implements IShadowGenerator {
         return this;
     }
 
+    /**
+     * Enables or disables shadows with varying strength based on the transparency
+     * When it is enabled, the strength of the shadow is taken equal to mesh.visibility
+     * If you enabled an alpha texture on your material, the alpha value red from the texture is also combined to compute the strength:
+     *          mesh.visibility * alphaTexture.a
+     * Note that by definition transparencyShadow must be set to true for enableSoftTransparentShadow to work!
+     */
+    public enableSoftTransparentShadow: boolean = false;
+
     protected _shadowMap: Nullable<RenderTargetTexture>;
     protected _shadowMap2: Nullable<RenderTargetTexture>;
 
@@ -1017,7 +1028,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
         if (this._transparencyShadow) {
             for (index = 0; index < transparentSubMeshes.length; index++) {
-                this._renderSubMeshForShadowMap(transparentSubMeshes.data[index]);
+                this._renderSubMeshForShadowMap(transparentSubMeshes.data[index], true);
             }
         }
     }
@@ -1040,7 +1051,7 @@ export class ShadowGenerator implements IShadowGenerator {
         effect.setMatrix(matriceNames?.worldView ?? "worldView", tmpMatrix2);
     }
 
-    protected _renderSubMeshForShadowMap(subMesh: SubMesh): void {
+    protected _renderSubMeshForShadowMap(subMesh: SubMesh, isTransparent: boolean = false): void {
         var ownerMesh = subMesh.getMesh();
         var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh : null;
         var renderingMesh = subMesh.getRenderingMesh();
@@ -1065,7 +1076,7 @@ export class ShadowGenerator implements IShadowGenerator {
         }
 
         var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
-        if (this.isReady(subMesh, hardwareInstancedRendering)) {
+        if (this.isReady(subMesh, hardwareInstancedRendering, isTransparent)) {
             const shadowDepthWrapper = renderingMesh.material?.shadowDepthWrapper;
 
             let effect = shadowDepthWrapper?.getEffect(subMesh, this) ?? this._effect;
@@ -1087,6 +1098,10 @@ export class ShadowGenerator implements IShadowGenerator {
 
             if (scene.activeCamera) {
                 effect.setFloat2("depthValuesSM", this.getLight().getDepthMinZ(scene.activeCamera), this.getLight().getDepthMinZ(scene.activeCamera) + this.getLight().getDepthMaxZ(scene.activeCamera));
+            }
+
+            if (isTransparent && this.enableSoftTransparentShadow) {
+                effect.setFloat("softTransparentShadowSM", effectiveMesh.visibility);
             }
 
             if (shadowDepthWrapper) {
@@ -1219,7 +1234,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 return;
             }
 
-            while (this.isReady(subMeshes[currentIndex], localOptions.useInstances)) {
+            while (this.isReady(subMeshes[currentIndex], localOptions.useInstances, subMeshes[currentIndex].getMaterial()?.needAlphaBlendingForMesh(subMeshes[currentIndex].getMesh()) ?? false)) {
                 currentIndex++;
                 if (currentIndex >= subMeshes.length) {
                     if (onCompiled) {
@@ -1250,7 +1265,7 @@ export class ShadowGenerator implements IShadowGenerator {
     protected _isReadyCustomDefines(defines: any, subMesh: SubMesh, useInstances: boolean): void {
     }
 
-    private _prepareShadowDefines(subMesh: SubMesh, useInstances: boolean, defines: string[]): string[] {
+    private _prepareShadowDefines(subMesh: SubMesh, useInstances: boolean, defines: string[], isTransparent: boolean): string[] {
         defines.push("#define SM_FLOAT " + (this._textureType !== Constants.TEXTURETYPE_UNSIGNED_INT ? "1" : "0"));
 
         defines.push("#define SM_ESM " + (this.useExponentialShadowMap || this.useBlurExponentialShadowMap ? "1" : "0"));
@@ -1266,6 +1281,9 @@ export class ShadowGenerator implements IShadowGenerator {
         // Point light
         defines.push("#define SM_USEDISTANCE " + (this._light.needCube() ? "1" : "0"));
 
+        // Soft transparent shadows
+        defines.push("#define SM_SOFTTRANSPARENTSHADOW " + (this.enableSoftTransparentShadow && isTransparent ? "1" : "0"));
+
         this._isReadyCustomDefines(defines, subMesh, useInstances);
 
         return defines;
@@ -1275,15 +1293,16 @@ export class ShadowGenerator implements IShadowGenerator {
      * Determine wheter the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
      * @param subMesh The submesh we want to render in the shadow map
      * @param useInstances Defines wether will draw in the map using instances
+     * @param isTransparent Indicates that isReady is called for a transparent subMesh
      * @returns true if ready otherwise, false
      */
-    public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
+    public isReady(subMesh: SubMesh, useInstances: boolean, isTransparent: boolean): boolean {
         const material = subMesh.getMaterial(),
               shadowDepthWrapper = material?.shadowDepthWrapper;
 
         const defines: string[] = [];
 
-        this._prepareShadowDefines(subMesh, useInstances, defines);
+        this._prepareShadowDefines(subMesh, useInstances, defines, isTransparent);
 
         if (shadowDepthWrapper) {
             if (!shadowDepthWrapper.isReadyForSubMesh(subMesh, defines, this, useInstances)) {
@@ -1402,7 +1421,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
                 let shaderName = "shadowMap";
                 let uniforms = ["world", "mBones", "viewProjection", "diffuseMatrix", "lightDataSM", "depthValuesSM", "biasAndScaleSM", "morphTargetInfluences", "boneTextureWidth",
-                                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6"];
+                                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "softTransparentShadowSM"];
                 let samplers = ["diffuseSampler", "boneSampler"];
 
                 // Custom shader?
