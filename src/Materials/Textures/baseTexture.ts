@@ -393,12 +393,23 @@ export class BaseTexture implements IAnimatable {
      * @param scene Define the scene the texture blongs to
      */
     constructor(scene: Nullable<Scene>) {
+        this._setScene(scene);
+        this._uid = null;
+    }
+
+    /**
+     * @param hidden
+     */
+    public _setScene(scene: Nullable<Scene>): void {
+        if (this._scene) {
+            this._scene.removeTexture(this);
+        }
+
         this._scene = scene || EngineStore.LastCreatedScene;
         if (this._scene) {
             this.uniqueId = this._scene.getUniqueId();
             this._scene.addTexture(this);
         }
-        this._uid = null;
     }
 
     /**
