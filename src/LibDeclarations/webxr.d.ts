@@ -69,8 +69,8 @@ interface XRInputSource {
 }
 
 interface XRSessionInit {
-    optionalFeatures?: XRReferenceSpaceType[];
-    requiredFeatures?: XRReferenceSpaceType[];
+    optionalFeatures?: string[];
+    requiredFeatures?: string[];
 }
 
 interface XRSession extends XRAnchorCreator {
