@@ -91,16 +91,18 @@ export class WebXRExperienceHelper implements IDisposable {
      * @param sessionMode options for the XR session
      * @param referenceSpaceType frame of reference of the XR session
      * @param renderTarget the output canvas that will be used to enter XR mode
+     * @param sessionCreationOptions optional XRSessionInit object to init the session with
      * @returns promise that resolves after xr mode has entered
      */
-    public enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget = this.sessionManager.getWebXRRenderTarget()): Promise<WebXRSessionManager> {
+    public enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget = this.sessionManager.getWebXRRenderTarget(), sessionCreationOptions: XRSessionInit = {}): Promise<WebXRSessionManager> {
         if (!this._supported) {
             throw "WebXR not supported in this browser or environment";
         }
         this._setState(WebXRState.ENTERING_XR);
-        let sessionCreationOptions: XRSessionInit = {
-            optionalFeatures: (referenceSpaceType !== "viewer" && referenceSpaceType !== "local") ? [referenceSpaceType] : []
-        };
+        if (referenceSpaceType !== "viewer" && referenceSpaceType !== "local") {
+            sessionCreationOptions.optionalFeatures = sessionCreationOptions.optionalFeatures || [];
+            sessionCreationOptions.optionalFeatures.push(referenceSpaceType);
+        }
         // we currently recommend "unbounded" space in AR (#7959)
         if (sessionMode === "immersive-ar" && referenceSpaceType !== "unbounded") {
             Logger.Warn("We recommend using 'unbounded' reference space type when using 'immersive-ar' session mode");
