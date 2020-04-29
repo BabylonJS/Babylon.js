@@ -63611,7 +63611,7 @@ var GraphFrame = /** @class */ (function () {
                     var portAdded = false;
                     for (var _d = 0, _e = node.links; _d < _e.length; _d++) {
                         var link = _e[_d];
-                        if (link.portA === port && this.nodes.indexOf(link.nodeB) === -1) {
+                        if (link.portA === port && this.nodes.indexOf(link.nodeB) === -1 || (link.portA === port && port.exposedOnFrame)) {
                             var localPort = void 0;
                             if (!portAdded) {
                                 portAdded = true;
@@ -63622,6 +63622,10 @@ var GraphFrame = /** @class */ (function () {
                                     _this_1._redrawFramePorts();
                                 });
                                 this._onNodeLinkDisposedObservers.push(onLinkDisposedObserver);
+                            }
+                            else if (this.nodes.indexOf(link.nodeB) === -1) {
+                                link.isVisible = true;
+                                localPort = this.ports.filter(function (p) { return p.connectionPoint === port.connectionPoint; })[0];
                             }
                             else {
                                 localPort = this.ports.filter(function (p) { return p.connectionPoint === port.connectionPoint; })[0];
@@ -63663,9 +63667,18 @@ var GraphFrame = /** @class */ (function () {
         if (!this.isCollapsed) {
             return;
         }
+        this._outputPortContainer.innerHTML = "";
+        this._inputPortContainer.innerHTML = "";
         this.ports.forEach(function (framePort) {
             framePort.dispose();
         });
+        this._controlledPorts.forEach(function (port) {
+            port.delegatedPort = null;
+            port.refresh();
+        });
+        this._frameInPorts = [];
+        this._frameOutPorts = [];
+        this._controlledPorts = [];
         this._createFramePorts();
         this.ports.forEach(function (framePort) { return framePort.node._refreshLinks(); });
     };
@@ -64738,7 +64751,6 @@ __webpack_require__.r(__webpack_exports__);
 var NodePort = /** @class */ (function () {
     function NodePort(portContainer, connectionPoint, node, globalState) {
         var _this = this;
-        this.portContainer = portContainer;
         this.connectionPoint = connectionPoint;
         this.node = node;
         this.delegatedPort = null;
@@ -64801,24 +64813,53 @@ var NodePort = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(NodePort.prototype, "disabled", {
+        get: function () {
+            if (!this.connectionPoint.isConnected) {
+                return false;
+            }
+            else if (this._isConnectedToNodeOutsideOfFrame()) { //connected to outside node
+                return true;
+            }
+            else {
+                var link = this.node.getLinksForConnectionPoint(this.connectionPoint);
+                if (link.length) {
+                    if (link[0].nodeB === this.node) { // check if this node is the receiving
+                        return true;
+                    }
+                }
+            }
+            return false;
+        },
+        enumerable: true,
+        configurable: true
+    });
     NodePort.prototype.hasLabel = function () {
         return !!this._portLabelElement;
     };
     Object.defineProperty(NodePort.prototype, "exposedOnFrame", {
         get: function () {
-            return (this.connectionPoint.isConnected || !!this._exposedOnFrame) && !this._isConnectedToNodeInsideSameFrame();
+            if (!!this._exposedOnFrame || this._isConnectedToNodeOutsideOfFrame()) {
+                return true;
+            }
+            return false;
         },
         set: function (value) {
+            if (this.disabled) {
+                return;
+            }
             this._exposedOnFrame = value;
         },
         enumerable: true,
         configurable: true
     });
-    NodePort.prototype._isConnectedToNodeInsideSameFrame = function () {
+    NodePort.prototype._isConnectedToNodeOutsideOfFrame = function () {
         var link = this.node.getLinksForConnectionPoint(this.connectionPoint);
         if (link.length) {
-            if (link[0].nodeA.enclosingFrameId == link[0].nodeB.enclosingFrameId) {
-                return true;
+            for (var i = 0; i < link.length; i++) {
+                if (link[i].nodeA.enclosingFrameId !== link[i].nodeB.enclosingFrameId) {
+                    return true;
+                }
             }
         }
         return false;
@@ -64854,7 +64895,6 @@ var NodePort = /** @class */ (function () {
         if (this._onSelectionChangedObserver) {
             this._globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
         }
-        this.portContainer.remove();
     };
     NodePort.CreatePortElement = function (connectionPoint, node, root, displayManager, globalState) {
         var portContainer = root.ownerDocument.createElement("div");
@@ -65724,7 +65764,7 @@ var NodePortPropertyTabComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" },
                     this.props.nodePort.hasLabel() && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Port Label", propertyName: "portName", target: this.props.nodePort }),
-                    this.props.nodePort.node.enclosingFrameId !== undefined && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Expose Port on Frame", target: this.props.nodePort, isSelected: function () { return _this.props.nodePort.exposedOnFrame; }, onSelect: function (value) { return _this.toggleExposeOnFrame(value); }, propertyName: "exposedOnFrame", disabled: this.props.nodePort.connectionPoint.isConnected })))));
+                    this.props.nodePort.node.enclosingFrameId !== undefined && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Expose Port on Frame", target: this.props.nodePort, isSelected: function () { return _this.props.nodePort.exposedOnFrame; }, onSelect: function (value) { return _this.toggleExposeOnFrame(value); }, propertyName: "exposedOnFrame", disabled: this.props.nodePort.disabled })))));
     };
     return NodePortPropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -67211,6 +67251,9 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
         else {
             _this.state = { isSelected: _this.props.target[_this.props.propertyName] == true };
         }
+        if (_this.props.disabled) {
+            _this.state = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, _this.state), { isDisabled: _this.props.disabled });
+        }
         return _this;
     }
     CheckBoxLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
@@ -67224,6 +67267,9 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
         if (currentState !== nextState.isSelected || this._localChange) {
             nextState.isSelected = currentState;
             this._localChange = false;
+            return true;
+        }
+        if (nextProps.disabled !== !!nextState.isDisabled) {
             return true;
         }
         return nextProps.label !== this.props.label || nextProps.target !== this.props.target;
