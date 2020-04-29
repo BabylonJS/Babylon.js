@@ -52,6 +52,12 @@ export class WebXRDefaultExperienceOptions {
      * An optional rendering group id that will be set globally for teleportation, pointer selection and default controller meshes
      */
     public renderingGroupId?: number;
+
+    /**
+     * A list of optional features to init the session with
+     * If set to true, all features we support will be added
+     */
+    optionalFeatures?: boolean | string[];
 }
 
 /**
@@ -131,11 +137,20 @@ export class WebXRDefaultExperience {
             result.renderTarget = result.baseExperience.sessionManager.getWebXRRenderTarget(options.outputCanvasOptions);
 
             if (!options.disableDefaultUI) {
-                if (options.uiOptions) {
-                    options.uiOptions.renderTarget = options.uiOptions.renderTarget || result.renderTarget;
+
+                const uiOptions: WebXREnterExitUIOptions = {
+                    renderTarget: result.renderTarget,
+                    ...(options.uiOptions || {})
+                };
+                if (options.optionalFeatures) {
+                    if (typeof options.optionalFeatures === 'boolean') {
+                        uiOptions.optionalFeatures = ['hit-test', 'anchors'/*, 'hand-tracking'*/];
+                    } else {
+                        uiOptions.optionalFeatures = options.optionalFeatures;
+                    }
                 }
                 // Create ui for entering/exiting xr
-                return WebXREnterExitUI.CreateAsync(scene, result.baseExperience, options.uiOptions || { renderTarget: result.renderTarget }).then((ui) => {
+                return WebXREnterExitUI.CreateAsync(scene, result.baseExperience, uiOptions).then((ui) => {
                     result.enterExitUI = ui;
                 });
             } else {
