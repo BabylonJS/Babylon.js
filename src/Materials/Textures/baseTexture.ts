@@ -397,9 +397,7 @@ export class BaseTexture implements IAnimatable {
         this._uid = null;
     }
 
-    /**
-     * @param hidden
-     */
+    /** @hidden */
     public _setScene(scene: Nullable<Scene>): void {
         if (this._scene) {
             this._scene.removeTexture(this);
