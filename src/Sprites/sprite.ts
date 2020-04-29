@@ -166,7 +166,7 @@ export class Sprite {
                 this._manager.sprites.splice(i, 1);
             }
         }
-        
+
         // Callback
         this.onDisposeObservable.notifyObservers(this);
         this.onDisposeObservable.clear();

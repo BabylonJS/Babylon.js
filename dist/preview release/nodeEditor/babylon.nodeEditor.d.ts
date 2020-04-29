@@ -257,7 +257,6 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class NodePort {
-        private portContainer;
         connectionPoint: BABYLON.NodeMaterialConnectionPoint;
         node: GraphNode;
         protected _element: HTMLDivElement;
@@ -271,10 +270,11 @@ declare module NODEEDITOR {
         get element(): HTMLDivElement;
         get portName(): string;
         set portName(newName: string);
+        get disabled(): boolean;
         hasLabel(): boolean;
         get exposedOnFrame(): boolean;
-        private _isConnectedToNodeInsideSameFrame;
         set exposedOnFrame(value: boolean);
+        private _isConnectedToNodeOutsideOfFrame;
         refresh(): void;
         constructor(portContainer: HTMLElement, connectionPoint: BABYLON.NodeMaterialConnectionPoint, node: GraphNode, globalState: GlobalState);
         dispose(): void;
@@ -820,6 +820,7 @@ declare module NODEEDITOR {
     }
     export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
         isSelected: boolean;
+        isDisabled?: boolean;
     }> {
         private static _UniqueIdSeed;
         private _uniqueId;
@@ -827,6 +828,7 @@ declare module NODEEDITOR {
         constructor(props: ICheckBoxLineComponentProps);
         shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: {
             isSelected: boolean;
+            isDisabled: boolean;
         }): boolean;
         onChange(): void;
         render(): JSX.Element;
