@@ -2,8 +2,8 @@ import * as React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { Animation } from 'babylonjs/Animations/animation';
-import { Vector2, Vector4 } from 'babylonjs/Maths/math.vector';
-import { EasingFunction, IEasingFunction } from 'babylonjs/Animations/easing';
+import { Vector2 } from 'babylonjs/Maths/math.vector';
+import { EasingFunction } from 'babylonjs/Animations/easing';
 import { IAnimationKey } from 'babylonjs/Animations/animationKey';
 import { AnchorSvgPoint } from './anchorSvgPoint';
 import { KeyframeSvgPoint } from './keyframeSvgPoint';
@@ -27,21 +27,21 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     }
 
     getAnimationProperties(animation: Animation) {
-
+        let easingType, easingMode;
         let easingFunction: EasingFunction = animation.getEasingFunction() as EasingFunction;
-        let easingType = easingFunction.constructor.name;
-        let easingMode = easingFunction.getEasingMode();
-
+        if (easingFunction === undefined){
+            easingType = undefined
+            easingMode = undefined;
+        } else {
+            easingType = easingFunction.constructor.name;
+            easingMode = easingFunction.getEasingMode();
+        }
         return { easingType, easingMode }
-
     }
 
     getPathData(animation: Animation) {
 
         const { easingMode, easingType } = this.getAnimationProperties(animation);
-
-        var easingFunction = animation.getEasingFunction();
-        console.log(easingFunction);
 
         const keyframes = animation.getKeys();
         if (keyframes === undefined) {
@@ -59,17 +59,71 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         // START OF LINE/CURVE
         let data: string | undefined = `M0, ${middle}`;
 
-        if (easingType === undefined){
+        if (easingType === undefined && easingMode === undefined){
             data = this.linearInterpolation(keyframes, data, heightScale, middle);
         } else {
-            var bezier = this.getEasingBezierValues(easingMode, easingType, easingFunction);
-            data = bezier && this.bezierEasePath(keyframes, data, heightScale, middle, [bezier.x, bezier.y], [bezier.z, bezier.w], easingMode);
+            let easingFunction = animation.getEasingFunction();
+            data = this.curvePath(keyframes, data, heightScale, middle, easingFunction as EasingFunction)
         }
 
         return data;
 
     }
 
+    curvePath(keyframes: BABYLON.IAnimationKey[], data: string, heightScale: number, middle: number, easingFunction: EasingFunction) {
+
+        // This will get 1/4 and 3/4 of points in eased curve
+        const u = .25;
+        const v = .75;
+
+        keyframes.forEach((key, i) => {
+            if (i !== 0) {
+
+                // Gets previous initial point of curve segment
+                var pointA =  new Vector2(0, 0);
+                if (i === 0) {
+                    pointA.x = 0
+                    pointA.y = middle;
+                } else {
+                    pointA.x = keyframes[i - 1].frame;
+                    pointA.y = heightScale - (keyframes[i - 1].value * middle)
+                }
+
+                // Gets the end point of this curve segment
+                var pointB = new Vector2(key.frame, heightScale - (key.value * middle));
+
+                // Get easing value of percentage to get the bezier control points below
+                let du = easingFunction.ease(u);
+                let dv = easingFunction.ease(v);
+
+                // Intermediate points in curve
+                let intermediatePoint25 = new Vector2(((pointB.x - pointA.x) * u) + pointA.x,  ((pointB.y - pointA.y) * du) + middle);
+                let intermediatePoint75 = new Vector2(((pointB.x - pointA.x) * v) + pointA.x,  ((pointB.y - pointA.y) * dv) + middle);
+                
+                // Gets the four control points of bezier curve
+                let controlPoints = this.interpolateControlPoints(pointA, intermediatePoint25, u, intermediatePoint75, v, pointB);
+
+                if (controlPoints === undefined){
+                    console.log("error getting bezier control points");
+                } else {
+                    this.setAnchorPoint(controlPoints[0], controlPoints[1]);
+                    this.setAnchorPoint(controlPoints[3], controlPoints[2]);
+    
+                    this.setKeyframePoint(pointA);
+                    this.setKeyframePoint(pointB);
+    
+                    data += ` C${controlPoints[1].x}, ${controlPoints[1].y} ${controlPoints[2].x}, ${controlPoints[2].y} ${pointB.x}, ${pointB.y}`
+
+                }
+            }
+
+        });
+
+        return data;
+
+    }
+
+    
     linearInterpolation(keyframes: IAnimationKey[], data: string, heightScale: number, middle: number): string {
         keyframes.forEach((key, i) => {
             if (i !== 0) {
@@ -80,226 +134,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         return data;
     }
 
-    getEasingBezierValues(easingMode: number, easingType: string, easingFunction: IEasingFunction): Vector4 | undefined {
-
-        // X, Y, W, Z
-        let easingFunctionMode = `${easingType}_${easingMode}`;
-        let bezierValues:Vector4 | undefined;
-
-        if (easingType === 'BezierCurveEase'){
-            let easeF = easingFunction as BABYLON.BezierCurveEase;   
-            bezierValues = new Vector4(easeF.x1, easeF.y1, easeF.x2, easeF.y2);
-        } else {
-               
-        switch (easingFunctionMode){
-            case 'CircleEase_0':
-                bezierValues = new Vector4(0.55,0,1,0.45);//cubic-bezier(0.55, 0, 1, 0.45);
-                break;
-            case 'CircleEase_1':
-                bezierValues = new Vector4(0,0.55,0.45,1);//cubic-bezier(0, 0.55, 0.45, 1);
-                break;
-            case 'CircleEase_2':
-                bezierValues = new Vector4(0.85, 0, 0.15, 1) //cubic-bezier(0.85, 0, 0.15, 1);
-                 break;
-            case 'CubicEase_0':
-                bezierValues = new Vector4(0.32, 0, 0.67, 0); //cubic-bezier(0.32, 0, 0.67, 0);
-                break;
-            case 'CubicEase_1':
-                bezierValues = new Vector4(0.33, 1, 0.68, 1); //cubic-bezier(0.33, 1, 0.68, 1);
-                break;
-            case 'CubicEase_2':
-                bezierValues = new Vector4(0.65, 0, 0.35, 1); //cubic-bezier(0.65, 0, 0.35, 1);
-                break;
-            case 'QuadraticEase_0':
-                bezierValues = new Vector4(0.11, 0, 0.5, 0); //cubic-bezier(0.11, 0, 0.5, 0);
-                break;
-            case 'QuadraticEase_1':
-                bezierValues = new Vector4(0.5, 1, 0.89, 1); //cubic-bezier(0.5, 1, 0.89, 1);
-                break;
-            case 'QuadraticEase_2':
-                bezierValues = new Vector4(0.45, 0, 0.55, 1); //cubic-bezier(0.45, 0, 0.55, 1);
-                break;
-            case 'QuarticEase_0':
-                bezierValues = new Vector4(0.5, 0, 0.75, 0); //cubic-bezier(0.5, 0, 0.75, 0);
-                break;
-            case 'QuarticEase_1':
-                bezierValues = new Vector4(0.25, 1, 0.5, 1); //cubic-bezier(0.25, 1, 0.5, 1);
-                break;
-            case 'QuarticEase_2':
-                bezierValues = new Vector4(0.76, 0, 0.24, 1); //cubic-bezier(0.76, 0, 0.24, 1);
-                break;
-            case 'QuinticEase_0':
-                bezierValues = new Vector4(0.64, 0, 0.78, 0); //cubic-bezier(0.64, 0, 0.78, 0);
-                break;
-            case 'QuinticEase_1':
-                bezierValues = new Vector4(0.22, 1, 0.36, 1); //cubic-bezier(0.22, 1, 0.36, 1);
-                break;
-            case 'QuinticEase_2':
-                bezierValues = new Vector4(0.83, 0, 0.17, 1); //cubic-bezier(0.83, 0, 0.17, 1);
-                break;
-            case 'SineEase_0':
-                bezierValues = new Vector4(0.12, 0, 0.39, 0); //cubic-bezier(0.12, 0, 0.39, 0);
-                break;
-            case 'SineEase_1':
-                bezierValues = new Vector4(0.61, 1, 0.88, 1); //cubic-bezier(0.61, 1, 0.88, 1);
-                break;
-            case 'SineEase_2':
-                bezierValues = new Vector4(0.37, 0, 0.63, 1); //cubic-bezier(0.37, 0, 0.63, 1);
-                break;
-            case 'BackEase_0':
-                bezierValues = new Vector4(0.36, 0, 0.66, -0.56); //cubic-bezier(0.36, 0, 0.66, -0.56);
-                break;
-            case 'BackEase_1':
-                bezierValues = new Vector4(0.34, 1.56, 0.64, 1); //cubic-bezier(0.34, 1.56, 0.64, 1);
-                break;
-            case 'BackEase_2':
-                bezierValues = new Vector4(0.68, -0.6, 0.32, 1.6); //cubic-bezier(0.68, -0.6, 0.32, 1.6);
-                break;
-            case 'BounceEase_0':
-                bezierValues = new Vector4(1, 1, 1, 1); //Create Function for number of bounces and bounciness inverse to BounceEase_1;
-                break;
-            case 'BounceEase_1':
-                bezierValues = new Vector4(1, 1, 1, 1); //Create Function for number of bounces and bounciness
-                break;
-            case 'BounceEase_2':
-                bezierValues = new Vector4(1, 1, 1, 1); //Create Function for number of bounces and bounciness inverse to BounceEase_1
-                break;
-            case 'ElasticEase_0':
-                bezierValues = new Vector4(1, 1, 1, 1); //Create Function for number of oscillations and springiness;
-                break;
-            case 'ElasticEase_1':
-                bezierValues = new Vector4(1, 1, 1, 1); //Create Function for number of oscillations and springiness;
-                break;
-            case 'ElasticEase_2':
-                bezierValues = new Vector4(1, 1, 1, 1); //Create Function for number of oscillations and springiness;
-                break;
-            case 'ExponentialEase_0':
-                bezierValues = new Vector4(0.7, 0, 0.84, 0); //cubic-bezier(0.7, 0, 0.84, 0); // Implement Exponential in Path
-                break;
-            case 'ExponentialEase_1':
-                bezierValues = new Vector4(0.16, 1, 0.3, 1); //cubic-bezier(0.16, 1, 0.3, 1); // Implement Exponential in Path
-                break;
-            case 'ExponentialEase_2':
-                bezierValues = new Vector4(0.87, 0, 0.13, 1); //cubic-bezier(0.87, 0, 0.13, 1); // Implement Exponential in Path
-                break;
-            case 'PowerEase_0':
-                bezierValues = new Vector4(0.11, 0, 0.5, 0); //cubic-bezier(0.11, 0, 0.5, 0); // Implement Power in Path
-                break;
-            case 'PowerEase_1':
-                bezierValues = new Vector4(0.5, 1, 0.89, 1); //cubic-bezier(0.5, 1, 0.89, 1); // Implement Power in Path
-                break;
-            case 'PowerEase_2':
-                bezierValues = new Vector4(0.45, 0, 0.55, 1); //cubic-bezier(0.45, 0, 0.55, 1); // Implement Power in Path
-                break;
-            default: undefined
-                bezierValues = undefined
-                break;
-            }
-        }
-        return bezierValues;
-
-    }
-
-    bezierEasePath(keyframes: BABYLON.IAnimationKey[], data: string, heightScale: number, middle: number, bezierA: [number, number], bezierB: [number, number], mode: number) {
-
-        if (mode === 0 || mode === 1){
-
-            console.log("value of mode = 0");
-            keyframes.forEach((key, i) => {
-                if (i !== 0) {
-
-                    var pointA =  new Vector2(0, 0);
-                    if (i === 0) {
-                        pointA.x = 0
-                        pointA.y = middle;
-                    } else {
-                        pointA.x = keyframes[i - 1].frame;
-                        pointA.y = heightScale - (keyframes[i - 1].value * middle)
-                    }
-
-                    var pointB = new Vector2(key.frame, heightScale - (key.value * middle));
-
-                    let anchorA_Y;
-                    let anchorB_X;
-                    let anchorA_X;
-                    let anchorB_Y;
-
-                    if (mode === 0){
-                        anchorA_Y = pointA.y;
-                        anchorB_X = pointB.x;
-                        anchorA_X = bezierA[0] * (pointB.x - pointA.x);
-                        anchorB_Y = (bezierB[1] * (pointA.y - pointB.y)) + pointB.y;
-                    }
-        
-                    if (mode === 1){
-                        anchorA_X = pointA.x;
-                        anchorB_Y = pointB.y;
-                        anchorB_X = bezierB[0] * (pointB.x - pointA.x);
-                        anchorA_Y = (bezierA[1] * (pointA.y - pointB.y)) + pointB.y;
-                    }
-
-
-                    var anchorA = new Vector2(anchorA_X, anchorA_Y);
-                    var anchorB = new Vector2(anchorB_X, anchorB_Y);
-
-                    this.setAnchorPoint(pointA, anchorA);
-                    this.setAnchorPoint(pointB, anchorB);
-
-                    this.setKeyframePoint(pointA);
-                    this.setKeyframePoint(pointB);
-
-                    data += ` C${anchorA.x}, ${anchorA.y} ${anchorB.x}, ${anchorB.y} ${pointB.x}, ${pointB.y}`
-
-                }
-
-            });
-
-        } else if (mode === 2){
-
-            //mode easeInOut
-            console.log("value of mode = 2");
-            keyframes.forEach((key, i) => {
-                if (i !== 0) {
-
-                    var pointA =  new Vector2(0, 0);
-                    if (i === 0) {
-                        pointA.x = 0
-                        pointA.y = middle;
-                    } else {
-                        pointA.x = keyframes[i - 1].frame;
-                        pointA.y = heightScale - (keyframes[i - 1].value * middle)
-                    }
-
-                    var pointB = new Vector2(key.frame, heightScale - (key.value * middle));
-
-                    var anchorA_Y = bezierA[1] === 0 ? pointA.y : pointA.y * bezierA[1];
-                    var anchorB_Y = bezierB[1] === 0 ? pointB.y : (pointB.y * bezierB[1]);
-
-                    var anchorA_X = bezierA[0] === 0 ? (pointB.x - pointA.x) + pointA.x : ((pointB.x - pointA.x) * bezierA[0]) + pointA.x;
-                    var anchorB_X = bezierB[0] === 0 ? (pointB.x - pointA.x) + pointA.x : ((pointB.x - pointA.x) * bezierB[0]) + pointA.x;
-
-                    var anchorA = new Vector2(anchorA_X, anchorA_Y);
-                    var anchorB = new Vector2(anchorB_X, anchorB_Y);
-
-                    
-                    this.setAnchorPoint(pointA, anchorA);
-                    this.setAnchorPoint(pointB, anchorB);
-
-                    this.setKeyframePoint(pointA);
-                    this.setKeyframePoint(pointB);
-
-                    data += ` C${anchorA.x}, ${anchorA.y} ${anchorB.x}, ${anchorB.y} ${pointB.x}, ${pointB.y}`
-
-                }
-
-            });
-
-        }
-
-        return data;
-
-    }
-
+    
     setAnchorPoint(point: Vector2, anchor: Vector2) {
         this._anchorPoints.push({ point, anchor });
     }
@@ -317,6 +152,47 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             console.log("no keyframes in this animation");
         }
         this.setState({ selected: animation, currentPathData: pathData, anchorPoints: this._anchorPoints, keyframes: this._keyframes });
+
+    }
+
+    interpolateControlPoints(p0: Vector2, p1: Vector2, u: number, p2: Vector2, v:number, p3: Vector2 ): Vector2[] | undefined {
+
+        let a=0.0;
+        let b=0.0;
+        let c=0.0;
+        let d=0.0;
+        let det=0.0;
+        let q1: Vector2 = new Vector2();
+        let q2: Vector2 = new Vector2();
+        let ControlA: Vector2 = p0;
+        let ControlB: Vector2 = new Vector2();
+        let ControlC: Vector2 = new Vector2();
+        let ControlD: Vector2 = p3;
+
+        if ( (u<=0.0) || (u>=1.0) || (v<=0.0) || (v>=1.0) || (u>=v) ){
+            return undefined;
+        }
+
+        a = 3*(1-u)*(1-u)*u; b = 3*(1-u)*u*u;
+        c = 3*(1-v)*(1-v)*v; d = 3*(1-v)*v*v;
+        det = a*d - b*c;
+
+        if (det == 0.0) return undefined;
+
+        q1.x = p1.x - ( (1-u)*(1-u)*(1-u)*p0.x + u*u*u*p3.x );
+        q1.y = p1.y - ( (1-u)*(1-u)*(1-u)*p0.y + u*u*u*p3.y );
+        
+        q2.x = p2.x - ( (1-v)*(1-v)*(1-v)*p0.x + v*v*v*p3.x );
+        q2.y = p2.y - ( (1-v)*(1-v)*(1-v)*p0.y + v*v*v*p3.y );
+
+
+        ControlB.x = (d*q1.x - b*q2.x)/det;
+        ControlB.y = (d*q1.y - b*q2.y)/det;
+
+        ControlC.x = ((-c)*q1.x + a*q2.x)/det;
+        ControlC.y = ((-c)*q1.y + a*q2.y)/det;
+
+        return [ControlA, ControlB, ControlC, ControlD];
 
     }
 
