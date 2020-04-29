@@ -203,6 +203,7 @@ export class ShadowDepthWrapper {
 
         const vertexNormalBiasCode = this._options && this._options.remappedVariables ? `#include<shadowMapVertexNormalBias>(${this._options.remappedVariables.join(",")})` : Effect.IncludesShadersStore["shadowMapVertexNormalBias"],
               vertexMetricCode = this._options && this._options.remappedVariables ? `#include<shadowMapVertexMetric>(${this._options.remappedVariables.join(",")})` : Effect.IncludesShadersStore["shadowMapVertexMetric"],
+              fragmentSoftTransparentShadow = this._options && this._options.remappedVariables ? `#include<shadowMapFragmentSoftTransparentShadow>(${this._options.remappedVariables.join(",")})` : Effect.IncludesShadersStore["shadowMapFragmentSoftTransparentShadow"],
               fragmentBlockCode = Effect.IncludesShadersStore["shadowMapFragment"];
 
         vertexCode = vertexCode.replace(/void\s+?main/g, Effect.IncludesShadersStore["shadowMapVertexDeclaration"] + "\r\nvoid main");
@@ -216,6 +217,7 @@ export class ShadowDepthWrapper {
         vertexCode = vertexCode.replace(/#define SHADER_NAME.*?\n|out vec4 glFragColor;\n/g, "");
 
         fragmentCode = fragmentCode.replace(/void\s+?main/g, Effect.IncludesShadersStore["shadowMapFragmentDeclaration"] + "\r\nvoid main");
+        fragmentCode = fragmentCode.replace(/#define SHADOWDEPTH_SOFTTRANSPARENTSHADOW|#define CUSTOM_FRAGMENT_BEFORE_FOG/g, fragmentSoftTransparentShadow);
         if (fragmentCode.indexOf("#define SHADOWDEPTH_FRAGMENT") !== -1) {
             fragmentCode = fragmentCode.replace(/#define SHADOWDEPTH_FRAGMENT/g, fragmentBlockCode);
         } else {
@@ -225,7 +227,7 @@ export class ShadowDepthWrapper {
 
         const uniforms = origEffect.getUniformNames().slice();
 
-        uniforms.push("biasAndScaleSM", "depthValuesSM", "lightDataSM");
+        uniforms.push("biasAndScaleSM", "depthValuesSM", "lightDataSM", "softTransparentShadowSM");
 
         params.depthEffect = this._scene.getEngine().createEffect({
             vertexSource: vertexCode,
