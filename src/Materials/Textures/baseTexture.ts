@@ -392,7 +392,7 @@ export class BaseTexture implements IAnimatable {
      * Base class of all the textures in babylon.
      * It groups all the common properties the materials, post process, lights... might need
      * in order to make a correct use of the texture.
-     * @param scene Define the scene the texture blongs to
+     * @param sceneOrEngine Define the scene or engine the texture blongs to
      */
     constructor(sceneOrEngine: Nullable<Scene | ThinEngine>) {
         if (sceneOrEngine) {

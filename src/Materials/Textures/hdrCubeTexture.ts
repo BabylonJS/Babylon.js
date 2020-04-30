@@ -109,7 +109,7 @@ export class HDRCubeTexture extends BaseTexture {
      * Instantiates an HDRTexture from the following parameters.
      *
      * @param url The location of the HDR raw data (Panorama stored in RGBE format)
-     * @param scene The scene the texture will be used in
+     * @param sceneOrEngine The scene or engine the texture will be used in
      * @param size The cubemap desired size (the more it increases the longer the generation will be)
      * @param noMipmap Forces to not generate the mipmap if true
      * @param generateHarmonics Specifies whether you want to extract the polynomial harmonics during the generation process
