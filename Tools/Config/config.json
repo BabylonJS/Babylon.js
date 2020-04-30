@@ -142,7 +142,8 @@
             },
             "es6": {
                 "packageName": "@babylonjs/core",
-                "readme": "readme-es6.md"
+                "readme": "readme-es6.md",
+                "license": "license.md"
             }
         }
     },
