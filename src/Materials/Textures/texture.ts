@@ -278,7 +278,7 @@ export class Texture extends BaseTexture {
      * @param mimeType defines an optional mime type information
      */
     constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, deleteBuffer: boolean = false, format?: number, mimeType?: string) {
-        super((sceneOrEngine && sceneOrEngine.getClassName() === "Scene") ? (sceneOrEngine as Scene) : null);
+        super(sceneOrEngine);
 
         this.name = url || "";
         this.url = url;
@@ -293,8 +293,7 @@ export class Texture extends BaseTexture {
         }
 
         var scene = this.getScene();
-        var engine = (sceneOrEngine && (sceneOrEngine as ThinEngine).getCaps) ? (sceneOrEngine as ThinEngine) : (scene ? scene.getEngine() : null);
-
+        var engine = this._getEngine();
         if (!engine) {
             return;
         }
@@ -399,7 +398,6 @@ export class Texture extends BaseTexture {
         }
 
         let scene = this.getScene();
-
         if (!scene) {
             return;
         }

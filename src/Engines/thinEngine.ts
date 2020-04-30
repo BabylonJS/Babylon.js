@@ -350,7 +350,9 @@ export class ThinEngine {
     private _uintIndicesCurrentlySet = false;
     protected _currentBoundBuffer = new Array<Nullable<WebGLBuffer>>();
     /** @hidden */
-    protected _currentFramebuffer: Nullable<WebGLFramebuffer> = null;
+    public _currentFramebuffer: Nullable<WebGLFramebuffer> = null;
+    /** @hidden */
+    public _dummyFramebuffer: Nullable<WebGLFramebuffer> = null;
     private _currentBufferPointers = new Array<BufferPointer>();
     private _currentInstanceLocations = new Array<number>();
     private _currentInstanceBuffers = new Array<DataBuffer>();
@@ -3734,6 +3736,10 @@ export class ThinEngine {
         if (this._emptyCubeTexture) {
             this._releaseTexture(this._emptyCubeTexture);
             this._emptyCubeTexture = null;
+        }
+
+        if (this._dummyFramebuffer) {
+            this._gl.deleteFramebuffer(this._dummyFramebuffer);
         }
 
         // Release effects
