@@ -82,7 +82,6 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         this.sceneExplorerRef = React.createRef();
         this._onNewSceneObserver = this.props.globalState.onNewSceneObservable.add((scene: Scene) => {
             this.setState({
-                ...this.state,
                 scene
             });
         })
