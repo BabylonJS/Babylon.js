@@ -7745,6 +7745,7 @@ declare module BABYLON {
         private _textureMatrix;
         private _format;
         private _createPolynomials;
+        private _engine;
         /** @hidden */
         _prefiltered: boolean;
         /**
@@ -7782,7 +7783,7 @@ declare module BABYLON {
          * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
          * @return the cube texture
          */
-        constructor(rootUrl: string, scene: Scene, extensions?: Nullable<string[]>, noMipmap?: boolean, files?: Nullable<string[]>, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, prefiltered?: boolean, forcedExtension?: any, createPolynomials?: boolean, lodScale?: number, lodOffset?: number);
+        constructor(rootUrl: string, sceneOrEngine: Scene | ThinEngine, extensions?: Nullable<string[]>, noMipmap?: boolean, files?: Nullable<string[]>, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, prefiltered?: boolean, forcedExtension?: any, createPolynomials?: boolean, lodScale?: number, lodOffset?: number);
         /**
          * Gets a boolean indicating if the cube texture contains prefiltered mips (used to simulate roughness with PBR)
          */
@@ -7828,6 +7829,7 @@ declare module BABYLON {
          * @returns a new cube texture
          */
         clone(): CubeTexture;
+        private static _isScene;
     }
 }
 declare module BABYLON {
@@ -9361,6 +9363,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var bayerDitherFunctions: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var shadowMapFragmentDeclaration: {
         name: string;
         shader: string;
@@ -9495,6 +9504,13 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export var depthBoxBlurPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var shadowMapFragmentSoftTransparentShadow: {
         name: string;
         shader: string;
     };
@@ -10613,7 +10629,7 @@ declare module BABYLON {
              * @param onError defines a callback called if there is an error
              * @returns the cube texture as an InternalTexture
              */
-            createRawCubeTextureFromUrl(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean, callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>, mipmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>, onLoad: Nullable<() => void>, onError: Nullable<(message?: string, exception?: any) => void>): InternalTexture;
+            createRawCubeTextureFromUrl(url: string, scene: Nullable<Scene>, size: number, format: number, type: number, noMipmap: boolean, callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>, mipmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>, onLoad: Nullable<() => void>, onError: Nullable<(message?: string, exception?: any) => void>): InternalTexture;
             /**
              * Creates a new raw cube texture from a specified url
              * @param url defines the url where the data is located
@@ -10630,7 +10646,7 @@ declare module BABYLON {
              * @param invertY defines if data must be stored with Y axis inverted
              * @returns the cube texture as an InternalTexture
              */
-            createRawCubeTextureFromUrl(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean, callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>, mipmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>, onLoad: Nullable<() => void>, onError: Nullable<(message?: string, exception?: any) => void>, samplingMode: number, invertY: boolean): InternalTexture;
+            createRawCubeTextureFromUrl(url: string, scene: Nullable<Scene>, size: number, format: number, type: number, noMipmap: boolean, callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>, mipmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>, onLoad: Nullable<() => void>, onError: Nullable<(message?: string, exception?: any) => void>, samplingMode: number, invertY: boolean): InternalTexture;
             /**
              * Creates a new raw 3D texture
              * @param data defines the data used to create the texture
@@ -16367,9 +16383,10 @@ declare module BABYLON {
          * Determine wheter the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
          * @param subMesh The submesh we want to render in the shadow map
          * @param useInstances Defines wether will draw in the map using instances
+         * @param isTransparent Indicates that isReady is called for a transparent subMesh
          * @returns true if ready otherwise, false
          */
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        isReady(subMesh: SubMesh, useInstances: boolean, isTransparent: boolean): boolean;
         /**
          * Prepare all the defines in a material relying on a shadow map at the specified light index.
          * @param defines Defines of the material we want to update
@@ -16723,6 +16740,14 @@ declare module BABYLON {
          * @returns the shadow generator allowing fluent coding
          */
         setTransparencyShadow(transparent: boolean): ShadowGenerator;
+        /**
+         * Enables or disables shadows with varying strength based on the transparency
+         * When it is enabled, the strength of the shadow is taken equal to mesh.visibility
+         * If you enabled an alpha texture on your material, the alpha value red from the texture is also combined to compute the strength:
+         *          mesh.visibility * alphaTexture.a
+         * Note that by definition transparencyShadow must be set to true for enableSoftTransparentShadow to work!
+         */
+        enableSoftTransparentShadow: boolean;
         protected _shadowMap: Nullable<RenderTargetTexture>;
         protected _shadowMap2: Nullable<RenderTargetTexture>;
         /**
@@ -16808,7 +16833,7 @@ declare module BABYLON {
         protected _initializeBlurRTTAndPostProcesses(): void;
         protected _renderForShadowMap(opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void;
         protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any, mesh: AbstractMesh): void;
-        protected _renderSubMeshForShadowMap(subMesh: SubMesh): void;
+        protected _renderSubMeshForShadowMap(subMesh: SubMesh, isTransparent?: boolean): void;
         protected _applyFilterValues(): void;
         /**
          * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
@@ -16832,9 +16857,10 @@ declare module BABYLON {
          * Determine wheter the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
          * @param subMesh The submesh we want to render in the shadow map
          * @param useInstances Defines wether will draw in the map using instances
+         * @param isTransparent Indicates that isReady is called for a transparent subMesh
          * @returns true if ready otherwise, false
          */
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        isReady(subMesh: SubMesh, useInstances: boolean, isTransparent: boolean): boolean;
         /**
          * Prepare all the defines in a material relying on a shadow map at the specified light index.
          * @param defines Defines of the material we want to update
@@ -30369,6 +30395,8 @@ declare module BABYLON {
          * @param scene Define the scene the texture blongs to
          */
         constructor(scene: Nullable<Scene>);
+        /** @hidden */
+        _setScene(scene: Nullable<Scene>): void;
         /**
          * Get the scene the texture belongs to.
          * @returns the scene or null if undefined
@@ -43553,9 +43581,10 @@ declare module BABYLON {
          * @param sessionMode options for the XR session
          * @param referenceSpaceType frame of reference of the XR session
          * @param renderTarget the output canvas that will be used to enter XR mode
+         * @param sessionCreationOptions optional XRSessionInit object to init the session with
          * @returns promise that resolves after xr mode has entered
          */
-        enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget?: WebXRRenderTarget): Promise<WebXRSessionManager>;
+        enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget?: WebXRRenderTarget, sessionCreationOptions?: XRSessionInit): Promise<WebXRSessionManager>;
         /**
          * Exits XR mode and returns the scene to its original state
          * @returns promise that resolves after xr mode has exited
@@ -45205,6 +45234,10 @@ declare module BABYLON {
          * Default is immersive-vr
          */
         sessionMode?: XRSessionMode;
+        /**
+         * A list of optional features to init the session with
+         */
+        optionalFeatures?: string[];
     }
     /**
      * UI to allow the user to enter/exit XR mode
@@ -45571,6 +45604,11 @@ declare module BABYLON {
          * An optional rendering group id that will be set globally for teleportation, pointer selection and default controller meshes
          */
         renderingGroupId?: number;
+        /**
+         * A list of optional features to init the session with
+         * If set to true, all features we support will be added
+         */
+        optionalFeatures?: boolean | string[];
     }
     /**
      * Default experience which provides a similar setup to the previous webVRExperience
@@ -55469,6 +55507,7 @@ declare module BABYLON {
         private _size;
         private _onLoad;
         private _onError;
+        private _engine;
         /**
          * The texture URL.
          */
@@ -55520,7 +55559,7 @@ declare module BABYLON {
          * @param gammaSpace Specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space, but the standard material would require them in Gamma space)
          * @param reserved Reserved flag for internal use.
          */
-        constructor(url: string, scene: Scene, size: number, noMipmap?: boolean, generateHarmonics?: boolean, gammaSpace?: boolean, reserved?: boolean, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>);
+        constructor(url: string, sceneOrEngine: Scene | ThinEngine, size: number, noMipmap?: boolean, generateHarmonics?: boolean, gammaSpace?: boolean, reserved?: boolean, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>);
         /**
          * Get the current class name of the texture useful for serialization or dynamic coding.
          * @returns "HDRCubeTexture"
@@ -55551,6 +55590,7 @@ declare module BABYLON {
          */
         static Parse(parsedTexture: any, scene: Scene, rootUrl: string): Nullable<HDRCubeTexture>;
         serialize(): any;
+        private static _isScene;
     }
 }
 declare module BABYLON {
@@ -72334,8 +72374,8 @@ interface XRInputSource {
 }
 
 interface XRSessionInit {
-    optionalFeatures?: XRReferenceSpaceType[];
-    requiredFeatures?: XRReferenceSpaceType[];
+    optionalFeatures?: string[];
+    requiredFeatures?: string[];
 }
 
 interface XRSession extends XRAnchorCreator {

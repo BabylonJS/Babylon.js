@@ -94,6 +94,7 @@
 - Added a warning that WebXR can only be served over HTTPS ([RaananW](https://github.com/RaananW))
 - Default (XR-global) rendering group ID can be defined when initializing a default experience ([RaananW](https://github.com/RaananW))
 - Added support for (experimental) haptic actuators ([#8068](https://github.com/BabylonJS/Babylon.js/issues/8068)) ([RaananW](https://github.com/RaananW))
+- It is now possible to enable experimental (AR) features using the options of the default xr helper ([RaananW](https://github.com/RaananW))
 
 ### Collisions
 
