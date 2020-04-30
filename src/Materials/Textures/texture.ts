@@ -266,7 +266,7 @@ export class Texture extends BaseTexture {
      * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
      * @see http://doc.babylonjs.com/babylon101/materials#texture
      * @param url defines the url of the picture to load as a texture
-     * @param scene defines the scene or engine the texture will belong to
+     * @param sceneOrEngine defines the scene or engine the texture will belong to
      * @param noMipmap defines if the texture will require mip maps or not
      * @param invertY defines if the texture needs to be inverted on the y axis during loading
      * @param samplingMode defines the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
