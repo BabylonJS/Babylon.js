@@ -105,6 +105,7 @@ namespace UrlLib
                                     .then(arcana::inline_scheduler, m_cancellationSource, [this](winrt::hstring string)
                                     {
                                         m_responseString = winrt::to_string(string);
+                                        m_statusCode = UrlStatusCode::Ok;
                                     });
                             }
                             case UrlResponseType::Buffer:
@@ -113,6 +114,7 @@ namespace UrlLib
                                     .then(arcana::inline_scheduler, m_cancellationSource, [this](Storage::Streams::IBuffer buffer)
                                     {
                                         m_responseBuffer = std::move(buffer);
+                                        m_statusCode = UrlStatusCode::Ok;
                                     });
                             }
                             default:

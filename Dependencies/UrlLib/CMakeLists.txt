@@ -6,6 +6,11 @@ if(ANDROID)
 elseif(APPLE)
     set(ADDITIONAL_SOURCES
         "Source/Apple/UrlRequest.mm")
+elseif(UNIX)
+    set(ADDITIONAL_SOURCES
+        "Source/Unix/UrlRequest.cpp")
+    set(ADDITIONAL_LIBRARIES
+        PRIVATE curl)
 elseif(WIN32)
     set(ADDITIONAL_SOURCES
         "Source/Windows/UrlRequest.cpp")

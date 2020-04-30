@@ -1,5 +1,7 @@
 #pragma once
 
+#include <condition_variable>
+#include <cstddef>
 #include <arcana/threading/dispatcher.h>
 
 #if defined(__APPLE__) || defined(__ANDROID__)

@@ -286,6 +286,38 @@ Android device plugged in or no Android image in the Android simulator, that opt
 be greyed and inaccessible. Instructions and tips on how to install the simulator are
 [available here](Documentation/AndroidSimulator.md).
 
+### **Building on Ubuntu, Targeting Linux**
+
+**Required Tools:** 
+[Clang](https://clang.llvm.org/)
+
+The minimal requirement target is an OpenGL 3.3 compatible GPU. Clang 8+ is required for building.
+
+First step is to install packages mandatory for building. For example, with Clang-8 toolchain:
+
+```
+sudo apt-get install libjavascriptcoregtk-4.0-dev libgl1-mesa-dev libcurl4-openssl-dev clang-8 libc++-8-dev libc++abi-8-dev lld-8 ninja-build
+```
+
+Then targeting a Ninja make file:
+
+```
+cmake -GNinja -DJSCORE_LIBRARY=/usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.0.so ..
+```
+
+Ninja is not mandatory and make can be used instead.
+And finaly, run a build:
+
+```
+ninja
+```
+
+or
+
+```
+make
+```
+
 ## Development Notes
 
 ### glslang and SPIRV-Cross

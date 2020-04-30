@@ -83,7 +83,7 @@ namespace Babylon
         for (uint32_t y = 0; y < height; y++)
         {
             const uint8_t* ptr = static_cast<const uint8_t*>(data) + (yflip ? (height - y - 1) : y) * pitch;
-            memcpy(&m_screenShotBitmap[y * width * 4], ptr, width * 4);
+            bx::memCopy(&m_screenShotBitmap[y * width * 4], ptr, width * 4);
         }
     }
 

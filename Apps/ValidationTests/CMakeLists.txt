@@ -1,4 +1,4 @@
-if(NOT WIN32 OR WINDOWS_STORE)
+if((NOT UNIX AND NOT WIN32) OR WINDOWS_STORE OR APPLE OR ANDROID)
     message(FATAL_ERROR "Unsupported platform: ${CMAKE_SYSTEM_NAME}")
 endif()
 
@@ -11,23 +11,38 @@ set(SCRIPTS
     "Scripts/validation_native.js"
     "Scripts/config.json")
 
-set(SOURCES
-    "Shared/TestUtils.h"
-    "Win32/App.cpp"
-    "Win32/App.h"
-    "Win32/App.ico"
-    "Win32/App.rc"
-    "Win32/Resource.h"
-    "Win32/small.ico"
-    "Win32/targetver.h")
+if(WIN32)
+    set(SOURCES
+        "Shared/TestUtils.h"
+        "Win32/App.cpp"
+        "Win32/App.h"
+        "Win32/App.ico"
+        "Win32/App.rc"
+        "Win32/Resource.h"
+        "Win32/small.ico"
+        "Win32/targetver.h")
 
-set(WIN32_EXECUTABLE TRUE)
-add_executable(ValidationTests WIN32 ${BABYLONSCRIPTS} ${SCRIPTS} ${SOURCES})
+    set(WIN32_EXECUTABLE TRUE)
+    add_executable(ValidationTests WIN32 ${BABYLONSCRIPTS} ${SCRIPTS} ${SOURCES})
+elseif(UNIX)
+    set(SOURCES
+        ${SOURCES}
+        "X11/App.cpp")
+    add_executable(ValidationTests ${BABYLONSCRIPTS} ${SCRIPTS} ${SOURCES})
+endif()
 
 target_compile_definitions(ValidationTests PRIVATE UNICODE)
 target_compile_definitions(ValidationTests PRIVATE _UNICODE)
 
 target_include_directories(ValidationTests PRIVATE "Source" ".")
+
+if (UNIX AND NOT APPLE AND NOT ANDROID)
+    # Ubuntu mixes old experimental header and new runtime libraries
+    # Resulting in crash at runtime for std::filesystem
+    # https://stackoverflow.com/questions/56738708/c-stdbad-alloc-on-stdfilesystempath-append
+    target_link_libraries(ValidationTests 
+        PRIVATE stdc++fs)
+endif()
 
 target_link_to_dependencies(ValidationTests
     PRIVATE bgfx
