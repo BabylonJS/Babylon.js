@@ -3471,7 +3471,8 @@ export class ThinEngine {
         }
 
         this._activeChannel = channel;
-        this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
+        const target = texture ? this._getTextureTarget(texture) : this._gl.TEXTURE_2D;
+        this._bindTextureDirectly(target, texture);
     }
 
     /**
