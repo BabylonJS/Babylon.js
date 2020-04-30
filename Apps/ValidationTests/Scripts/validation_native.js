@@ -4,53 +4,59 @@ var config;
 var justOnce;
 var threshold = 25;
 var errorRatio = 2.5;
+var saveResult = true;
+var testWidth = 600;
+var testHeight = 400;
 
 function compare(test, canvasImageData, referenceImage) {
-    var renderData = engine._native.getImageData(canvasImageData);
+    var renderData = TestUtils.getImageData(canvasImageData);
     var size = renderData.length;
-    var referenceData ={data: engine._native.getImageData(referenceImage)};
+    var referenceData = TestUtils.getImageData(referenceImage);
     var differencesCount = 0;
-    
+
     for (var index = 0; index < size; index += 4) {
-        if (Math.abs(renderData[index] - referenceData.data[index]) < threshold &&
-            Math.abs(renderData[index + 1] - referenceData.data[index + 1]) < threshold &&
-            Math.abs(renderData[index + 2] - referenceData.data[index + 2]) < threshold) {
+        if (Math.abs(renderData[index] - referenceData[index]) < threshold &&
+            Math.abs(renderData[index + 1] - referenceData[index + 1]) < threshold &&
+            Math.abs(renderData[index + 2] - referenceData[index + 2]) < threshold) {
             continue;
         }
 
         if (differencesCount === 0) {
-            console.log(`First pixel off at ${index}: Value: (${renderData[index]}, ${renderData[index + 1]}, ${renderData[index] + 2}) - Expected: (${referenceData.data[index]}, ${referenceData.data[index + 1]}, ${referenceData.data[index + 2]}) `);
+            console.log(`First pixel off at ${index}: Value: (${renderData[index]}, ${renderData[index + 1]}, ${renderData[index] + 2}) - Expected: (${referenceData[index]}, ${referenceData[index + 1]}, ${referenceData[index + 2]}) `);
         }
 
-        referenceData.data[index] = 255;
-        referenceData.data[index + 1] *= 0.5;
-        referenceData.data[index + 2] *= 0.5;
+        referenceData[index] = 255;
+        referenceData[index + 1] *= 0.5;
+        referenceData[index + 2] *= 0.5;
         differencesCount++;
     }
 
     if (differencesCount) {
-        console.log("%c Pixel difference: " + differencesCount + " pixels.", 'color: orange');
+        console.log("Pixel difference: " + differencesCount + " pixels.");
     }
-    
+
     let error = (differencesCount * 100) / (size / 4) > errorRatio;
 
     if (error) {
-        TestUtils.writePNG(referenceData.data, 600, 400, "Error "+test.title+".png");
+        TestUtils.writePNG(referenceData, testWidth, testHeight, TestUtils.getWorkingDirectory() + "/Errors/" + test.title + ".png");
+    }
+    if (saveResult || error) {
+        TestUtils.writePNG(renderData, testWidth, testHeight, TestUtils.getWorkingDirectory() + "/Results/" + test.title + ".png");
     }
     return error;
 }
 
 function evaluate(test, resultCanvas, result, referenceImage, index, waitRing, done) {
-    var canvasImageData = engine._native.getFramebufferData(0,0, engine._native.getRenderWidth(), engine._native.getRenderHeight());
+    var canvasImageData = engine._native.getFramebufferData(0, 0, testWidth, testHeight);
     var testRes = true;
     // Visual check
     if (!test.onlyVisual) {
         if (compare(test, canvasImageData, referenceImage)) {
             testRes = false;
-            console.log('%c failed', 'color: red');
+            console.log('failed');
         } else {
             testRes = true;
-            console.log('%c validated', 'color: green');
+            console.log('validated');
         }
     }
 
@@ -61,11 +67,11 @@ function evaluate(test, resultCanvas, result, referenceImage, index, waitRing, d
     done(testRes);
 }
 
-function processCurrentScene(test, resultCanvas, result, referenceImage, index, waitRing, done) {
+function processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done) {
     currentScene.useConstantAnimationDeltaTime = true;
     var renderCount = test.renderCount || 1;
+
     currentScene.executeWhenReady(function() {
-        
         if (currentScene.activeCamera && currentScene.activeCamera.useAutoRotationBehavior) {
             currentScene.activeCamera.useAutoRotationBehavior = false;
         }
@@ -73,9 +79,10 @@ function processCurrentScene(test, resultCanvas, result, referenceImage, index, 
             try {
                 currentScene.render();
                 renderCount--;
+
                 if (renderCount === 0) {
                     engine.stopRenderLoop();
-                    evaluate(test, resultCanvas, result, referenceImage, index, waitRing, done);
+                    evaluate(test, resultCanvas, result, renderImage, index, waitRing, done);
                 }
             }
             catch (e) {
@@ -83,7 +90,6 @@ function processCurrentScene(test, resultCanvas, result, referenceImage, index, 
                 done(false);
             }
         });
-
     });
 }
 
@@ -93,11 +99,13 @@ function runTest(index, done) {
     }
 
     var test = config.tests[index];
-
+    if (test.onlyVisual || test.excludeFromAutomaticTesting) {
+        done(true);
+    }
     let testInfo = "Running " + test.title;
     console.log(testInfo);
     TestUtils.setTitle(testInfo);
-    
+
     seed = 100000;
 
     let onLoadFileError = function(request, exception) {
@@ -108,8 +116,8 @@ function runTest(index, done) {
             throw new Error("Decode Image from string data not yet implemented.");
         }
 
-        var referenceImage = engine._native.decodeImage(data);
-        
+        var referenceImage = TestUtils.decodeImage(data);
+
         if (test.sceneFolder) {
             BABYLON.SceneLoader.Load(config.root + test.sceneFolder, test.sceneFilename, engine, function(newScene) {
                 currentScene = newScene;
@@ -172,7 +180,7 @@ function runTest(index, done) {
                             var resultCanvas = 0;
                             var result;
                             var waitRing;
-                            
+
                             if (currentScene.then) {
                                 // Handle if createScene returns a promise
                                 currentScene.then(function(scene) {
@@ -186,7 +194,7 @@ function runTest(index, done) {
                                 // Handle if createScene returns a scene
                                 processCurrentScene(test, resultCanvas, result, referenceImage, index, waitRing, done);
                             }
-                            
+
                         }
                         catch (e) {
                             console.error(e);
@@ -207,7 +215,7 @@ function runTest(index, done) {
             if (test.specificRoot) {
                 BABYLON.Tools.BaseUrl = config.root + test.specificRoot;
             }
-            
+
             var request = new XMLHttpRequest();
             request.open('GET', config.root + test.scriptToRun, true);
 
@@ -255,7 +263,7 @@ function runTest(index, done) {
             request.send(null);
         }
     };
-    
+
     let url = "https://raw.githubusercontent.com/BabylonJS/Babylon.js/master/tests/validation/ReferenceImages/" + test.referenceImage;
     BABYLON.Tools.LoadFile(url, onload, undefined, undefined, /*useArrayBuffer*/true, onLoadFileError);
 }
@@ -264,34 +272,51 @@ var engine = new BABYLON.NativeEngine();
 var scene = new BABYLON.Scene(engine);
 var canvas = window;
 
-OffscreenCanvas = function (width, height) {
-    return {width:width
-    , height:height
-    , getContext: function(type) { return {
-        fillRect: function(x, y, w, h) {}
-        , measureText: function(text) { return 8; }
-        , fillText: function(text, x, y) {}
-    }; 
-    }
+engine.getRenderingCanvas = function () {
+    return window;
+}
 
+engine.getInputElement = function () {
+    return 0;
+}
+
+OffscreenCanvas = function(width, height) {
+    return {
+        width: width
+        , height: height
+        , getContext: function(type) {
+            return {
+                fillRect: function(x, y, w, h) { }
+                , measureText: function(text) { return 8; }
+                , fillText: function(text, x, y) { }
+            };
+        }
     };
 }
 
-var xhr = new XMLHttpRequest();
+document = {
+    createElement: function (type) {
+        if (type === "canvas") {
+            return new OffscreenCanvas(64, 64);
+        }
+        return {};
+    }
+}
 
-xhr.open("GET", "https://raw.githubusercontent.com/BabylonJS/Babylon.js/master/tests/validation/config.json", true);
+var xhr = new XMLHttpRequest();
+xhr.open("GET", "file://" + TestUtils.getWorkingDirectory() + "/Scripts/config.json", true);
 
 xhr.addEventListener("readystatechange", function() {
     if (xhr.status === 200) {
         config = JSON.parse(xhr.responseText);
+
         // Run tests
         var index = 0;
-
         var recursiveRunTest = function(i) {
             runTest(i, function(status) {
-                if (!status)
-                {
+                if (!status) {
                     TestUtils.exit(-1);
+                    return;
                 }
                 i++;
                 if (justOnce || i >= config.tests.length) {
@@ -306,8 +331,9 @@ xhr.addEventListener("readystatechange", function() {
     }
 }, false);
 
+_native.RootUrl = "https://playground.babylonjs.com";
 console.log("Starting");
 TestUtils.setTitle("Starting Native Validation Tests");
-TestUtils.updateSize(600, 400);
+TestUtils.updateSize(testWidth, testHeight);
 xhr.send();
 

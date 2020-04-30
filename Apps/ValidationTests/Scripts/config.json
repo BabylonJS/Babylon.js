@@ -1,0 +1,25 @@
+﻿{
+    "root": "https://cdn.babylonjs.com",
+    "tests": [
+        {
+            "title": "setParent",
+            "playgroundId": "#JD49CT#2",
+            "referenceImage": "setParent.png"
+        },
+        {
+            "title": "Billboard",
+            "playgroundId": "#UJEIL#13",
+            "referenceImage": "Billboard.png"
+        },
+        {
+            "title": "Up Vector",
+            "playgroundId": "#2FNBTG#27",
+            "referenceImage": "upVector.png"
+        },
+        {
+            "title": "GLTF Normals",
+            "playgroundId": "#SMEAEB#0",
+            "referenceImage": "gltfnormals.png"
+        }
+    ]
+}

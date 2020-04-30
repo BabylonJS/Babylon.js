@@ -8,7 +8,8 @@ set(BABYLONSCRIPTS
     "../BabylonScripts/babylonjs.materials.js")
 
 set(SCRIPTS
-    "Scripts/validation_native.js")
+    "Scripts/validation_native.js"
+    "Scripts/config.json")
 
 set(SOURCES
     "Shared/TestUtils.h"

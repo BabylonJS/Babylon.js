@@ -406,9 +406,6 @@ namespace Babylon
                 InstanceMethod("getRenderHeight", &NativeEngine::GetRenderHeight),
                 InstanceMethod("setViewPort", &NativeEngine::SetViewPort),
                 InstanceMethod("getFramebufferData", &NativeEngine::GetFramebufferData),
-                InstanceMethod("decodeImage", &NativeEngine::DecodeImage),
-                InstanceMethod("getImageData", &NativeEngine::GetImageData),
-                InstanceMethod("encodeImage", &NativeEngine::EncodeImage),
             });
 
         env.Global().Get(JsRuntime::JS_NATIVE_NAME).As<Napi::Object>().Set(JS_ENGINE_CONSTRUCTOR_NAME, func);
@@ -1002,51 +999,6 @@ namespace Babylon
         return Napi::External<TextureData>::New(info.Env(), new TextureData());
     }
 
-    Napi::Value NativeEngine::DecodeImage(const Napi::CallbackInfo& info)
-    {
-        auto imageData = new ImageData();
-        const auto buffer = info[0].As<Napi::ArrayBuffer>();
-
-        imageData->Image.reset(bimg::imageParse(&m_allocator, buffer.Data(), static_cast<uint32_t>(buffer.ByteLength())));
-
-        return Napi::External<ImageData>::New(info.Env(), imageData);
-    }
-
-    Napi::Value NativeEngine::GetImageData(const Napi::CallbackInfo& info)
-    {
-        const auto imageData = info[0].As<Napi::External<ImageData>>().Data();
-
-        if (!imageData->Image || !imageData->Image->m_size)
-        {
-            return info.Env().Undefined();
-        }
-
-        auto data = Napi::Uint8Array::New(info.Env(), imageData->Image->m_size);
-        const auto ptr = static_cast<uint8_t*>(imageData->Image->m_data);
-        memcpy(data.Data(), ptr, imageData->Image->m_size);
-
-        return data;
-    }
-
-    Napi::Value NativeEngine::EncodeImage(const Napi::CallbackInfo& info)
-    {
-        const auto imageData = info[0].As<Napi::External<ImageData>>().Data();
-        if (!imageData->Image || !imageData->Image->m_size)
-        {
-            return info.Env().Undefined();
-        }
-
-        const auto image = imageData->Image.get();
-        bx::MemoryBlock mb(&m_allocator);
-        bx::MemoryWriter writer(&mb);
-        bimg::imageWritePng(&writer, image->m_width, image->m_height, image->m_size / image->m_height, image->m_data, image->m_format, false);
-
-        auto data = Napi::Uint8Array::New(info.Env(), mb.getSize());
-        memcpy(data.Data(), static_cast<uint8_t*>(mb.more()), imageData->Image->m_size);
-
-        return data;
-    }
-
     void NativeEngine::LoadTexture(const Napi::CallbackInfo& info)
     {
         const auto texture = info[0].As<Napi::External<TextureData>>().Data();
@@ -1061,6 +1013,8 @@ namespace Babylon
         arcana::make_task(arcana::threadpool_scheduler, m_cancelSource,
             [this, dataSpan, generateMips, invertY]() {
                 bimg::ImageContainer* image = bimg::imageParse(&m_allocator, dataSpan.data(), dataSpan.size());
+                // todo: bimg::imageParse will return nullptr when trying to load a texture with an url that is not a valid texture
+                // Like a 404 html page.
                 if (invertY)
                 {
                     FlipY(image);
