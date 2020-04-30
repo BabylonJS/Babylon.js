@@ -3,10 +3,6 @@
 
 #include <NativeWindow.h>
 
-#ifdef NATIVE_ENGINE_XR
-#include "NativeXr.h"
-#endif
-
 namespace Babylon::Plugins::NativeEngine
 {
     void InitializeGraphics(void* windowPtr, size_t width, size_t height)
@@ -17,9 +13,6 @@ namespace Babylon::Plugins::NativeEngine
     void Initialize(Napi::Env env)
     {
         Babylon::NativeEngine::Initialize(env);
-#ifdef NATIVE_ENGINE_XR
-        InitializeNativeXr(env);
-#endif
     }
 
     void Reinitialize(Napi::Env env, void* windowPtr, size_t width, size_t height)

@@ -3,6 +3,7 @@
 #include <Babylon/ScriptLoader.h>
 #include <Babylon/Plugins/NativeEngine.h>
 #include <Babylon/Plugins/NativeWindow.h>
+#include <Babylon/Plugins/NativeXr.h>
 #include <Babylon/Polyfills/Console.h>
 #include <Babylon/Polyfills/Window.h>
 #include <Babylon/Polyfills/XMLHttpRequest.h>
@@ -167,6 +168,9 @@ void App::RestartRuntime(Windows::Foundation::Rect bounds)
         // Initialize NativeEngine plugin.
         Babylon::Plugins::NativeEngine::InitializeGraphics(windowPtr, width, height);
         Babylon::Plugins::NativeEngine::Initialize(env);
+
+        // Initialize NativeXr plugin.
+        Babylon::Plugins::NativeXr::Initialize(env);
 
         auto& jsRuntime = Babylon::JsRuntime::GetFromJavaScript(env);
         inputBuffer = std::make_unique<InputManager::InputBuffer>(jsRuntime);
