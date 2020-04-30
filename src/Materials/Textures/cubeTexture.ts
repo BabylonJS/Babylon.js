@@ -103,7 +103,6 @@ export class CubeTexture extends BaseTexture {
 
     private _format: number;
     private _createPolynomials: boolean;
-    private _engine: ThinEngine;
 
     /** @hidden */
     public _prefiltered: boolean = false;
@@ -164,15 +163,7 @@ export class CubeTexture extends BaseTexture {
         onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format: number = Constants.TEXTUREFORMAT_RGBA, prefiltered = false,
         forcedExtension: any = null, createPolynomials: boolean = false,
         lodScale: number = 0.8, lodOffset: number = 0) {
-        super(null);
-        if (CubeTexture._isScene(sceneOrEngine)) {
-            this._setScene(sceneOrEngine);
-            this._engine = sceneOrEngine.getEngine();
-        }
-        else {
-            this._setScene(null);
-            this._engine = sceneOrEngine;
-        }
+        super(sceneOrEngine);
 
         this.name = rootUrl;
         this.url = rootUrl;
@@ -240,10 +231,10 @@ export class CubeTexture extends BaseTexture {
             const scene = this.getScene();
             if (!scene?.useDelayedTextureLoading) {
                 if (prefiltered) {
-                    this._texture = this._engine.createPrefilteredCubeTexture(rootUrl, scene, lodScale, lodOffset, onLoad, onError, format, forcedExtension, this._createPolynomials);
+                    this._texture = this._getEngine()!.createPrefilteredCubeTexture(rootUrl, scene, lodScale, lodOffset, onLoad, onError, format, forcedExtension, this._createPolynomials);
                 }
                 else {
-                    this._texture = this._engine.createCubeTexture(rootUrl, scene, files, noMipmap, onLoad, onError, this._format, forcedExtension, false, lodScale, lodOffset);
+                    this._texture = this._getEngine()!.createCubeTexture(rootUrl, scene, files, noMipmap, onLoad, onError, this._format, forcedExtension, false, lodScale, lodOffset);
                 }
                 this._texture?.onLoadedObservable.add(() => this.onLoadObservable.notifyObservers(this));
 
@@ -321,10 +312,10 @@ export class CubeTexture extends BaseTexture {
         if (!this._texture) {
             const scene = this.getScene();
             if (this._prefiltered) {
-                this._texture = this._engine.createPrefilteredCubeTexture(this.url, scene, 0.8, 0, this._delayedOnLoad, undefined, this._format, undefined, this._createPolynomials);
+                this._texture = this._getEngine()!.createPrefilteredCubeTexture(this.url, scene, 0.8, 0, this._delayedOnLoad, undefined, this._format, undefined, this._createPolynomials);
             }
             else {
-                this._texture = this._engine.createCubeTexture(this.url, scene, this._files, this._noMipmap, this._delayedOnLoad, null, this._format, forcedExtension);
+                this._texture = this._getEngine()!.createCubeTexture(this.url, scene, this._files, this._noMipmap, this._delayedOnLoad, null, this._format, forcedExtension);
             }
 
             this._texture?.onLoadedObservable.add(() => this.onLoadObservable.notifyObservers(this));
@@ -401,7 +392,7 @@ export class CubeTexture extends BaseTexture {
         let uniqueId = 0;
 
         let newCubeTexture = SerializationHelper.Clone(() => {
-            const cubeTexture = new CubeTexture(this.url, this.getScene() || this._engine, this._extensions, this._noMipmap, this._files);
+            const cubeTexture = new CubeTexture(this.url, this.getScene() || this._getEngine()!, this._extensions, this._noMipmap, this._files);
             uniqueId = cubeTexture.uniqueId;
 
             return cubeTexture;
@@ -410,10 +401,6 @@ export class CubeTexture extends BaseTexture {
         newCubeTexture.uniqueId = uniqueId;
 
         return newCubeTexture;
-    }
-
-    private static _isScene(sceneOrEngine: Scene | ThinEngine): sceneOrEngine is Scene {
-        return sceneOrEngine.getClassName() === "Scene";
     }
 }
 
