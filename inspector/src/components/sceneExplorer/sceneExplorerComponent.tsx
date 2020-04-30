@@ -63,6 +63,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
     private _onSelectionChangeObserver: Nullable<Observer<any>>;
     private _onSelectionRenamedObserver: Nullable<Observer<void>>;
     private _onNewSceneAddedObserver: Nullable<Observer<Scene>>;
+    private _onNewSceneObserver: Nullable<Observer<Scene>>;
     private sceneExplorerRef: React.RefObject<Resizable>;
 
 
@@ -79,6 +80,12 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         this.sceneMutationFunc = this.processMutation.bind(this);
 
         this.sceneExplorerRef = React.createRef();
+        this._onNewSceneObserver = this.props.globalState.onNewSceneObservable.add((scene: Scene) => {
+            this.setState({
+                ...this.state,
+                scene
+            });
+        })
     }
 
     processMutation() {
@@ -112,6 +119,10 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
 
         if (this._onNewSceneAddedObserver) {
             EngineStore.LastCreatedEngine!.onNewSceneAddedObservable.remove(this._onNewSceneAddedObserver);
+        }
+
+        if(this._onNewSceneObserver){
+            this.props.globalState.onNewSceneObservable.remove(this._onNewSceneObserver);
         }
 
         const scene = this.state.scene;
