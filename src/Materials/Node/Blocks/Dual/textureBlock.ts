@@ -12,6 +12,7 @@ import { Nullable } from '../../../../types';
 import { _TypeStore } from '../../../../Misc/typeStore';
 import { Texture } from '../../../Textures/texture';
 import { Scene } from '../../../../scene';
+import { NodeMaterialModes } from '../../Enums/nodeMaterialModes';
 
 import "../../../../Shaders/ShadersInclude/helperFunctions";
 
@@ -165,13 +166,21 @@ export class TextureBlock extends NodeMaterialBlock {
 
     public autoConfigure(material: NodeMaterial) {
         if (!this.uv.isConnected) {
-            let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "uv");
+            if (material.mode === NodeMaterialModes.PostProcess) {
+                let uvInput = material.getBlockByPredicate((b) => b.name === "uv");
 
-            if (!uvInput) {
-                uvInput = new InputBlock("uv");
-                uvInput.setAsAttribute();
+                if (uvInput) {
+                    uvInput.connectTo(this);
+                }
+            } else {
+                let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "uv");
+
+                if (!uvInput) {
+                    uvInput = new InputBlock("uv");
+                    uvInput.setAsAttribute();
+                }
+                uvInput.output.connectTo(this.uv);
             }
-            uvInput.output.connectTo(this.uv);
         }
     }
 
