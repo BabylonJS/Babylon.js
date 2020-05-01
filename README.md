@@ -365,13 +365,6 @@ details.
 This project uses [base-n](https://github.com/azawadzki/base-n) to implement base64 
 decoding for parsing data URLs.
 
-### curl
-
-This project uses [curl](https://curl.haxx.se/) (or, more accurately, 
-[libcurl](https://curl.haxx.se/libcurl/)) as the backend for the provided implementation 
-of XMLHttpRequest. At present, only a "golden path" is supported, but additional features 
-will be added as they are required.
-
 ## Contributing
 
 Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on our code of conduct, and 
