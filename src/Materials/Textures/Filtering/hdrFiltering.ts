@@ -65,7 +65,7 @@ export class HDRFiltering {
 	}
 
 	private static _convertRoughnessToAlphaG(roughness: number) : number {
-	    return roughness * roughness + 0.0005;
+	    return roughness * roughness;
 	}
 
 	public static flatten(arr: Vector3[]) : number[] {
@@ -135,6 +135,8 @@ export class HDRFiltering {
 		}
 
 		texture._texture!._webGLTexture = tempTexture._texture!._webGLTexture;
+		// texture.linearSpecularLOD = true;
+		// texture.lodLevelInAlpha = false;
 		return texture;
 	}
 
