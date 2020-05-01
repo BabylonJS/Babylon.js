@@ -6,4 +6,7 @@ set(SOURCES
 
 add_library(AndroidExtensions ${SOURCES})
 
+target_link_to_dependencies(AndroidExtensions 
+    PUBLIC arcana)
+
 target_include_directories(AndroidExtensions PUBLIC "Include")

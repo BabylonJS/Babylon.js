@@ -124,6 +124,7 @@ extern "C"
     JNIEXPORT void JNICALL
     Java_BabylonNative_Wrapper_activityOnPause(JNIEnv* env, jclass clazz)
     {
+        android::global::Pause();
         if (g_runtime)
         {
             g_runtime->Suspend();
@@ -137,6 +138,26 @@ extern "C"
         {
             g_runtime->Resume();
         }
+        android::global::Resume();
+    }
+
+    JNIEXPORT void JNICALL
+    Java_BabylonNative_Wrapper_activityOnRequestPermissionsResult(JNIEnv* env, jclass clazz, jint requestCode, jobjectArray permissions, jintArray grantResults)
+    {
+        std::vector<std::string> nativePermissions{};
+        for (int i = 0; i < env->GetArrayLength(permissions); i++)
+        {
+            jstring permission = (jstring)env->GetObjectArrayElement(permissions, i);
+            nativePermissions.push_back({env->GetStringUTFChars(permission, nullptr)});
+            env->ReleaseStringUTFChars(permission, nullptr);
+        }
+
+        auto grantResultElements{env->GetIntArrayElements(grantResults, nullptr)};
+        auto grantResultElementCount = env->GetArrayLength(grantResults);
+        std::vector<int32_t> nativeGrantResults{grantResultElements, grantResultElements + grantResultElementCount};
+        env->ReleaseIntArrayElements(grantResults, grantResultElements, 0);
+
+        android::global::RequestPermissionsResult(requestCode, nativePermissions, nativeGrantResults);
     }
 
     JNIEXPORT void JNICALL

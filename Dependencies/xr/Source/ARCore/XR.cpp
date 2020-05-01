@@ -218,6 +218,8 @@ namespace xr
 
         Impl(System::Impl& systemImpl, void* graphicsContext)
             : SystemImpl{ systemImpl }
+            , pauseTicket{AddPauseCallback([this]() { this->PauseSession(); }) }
+            , resumeTicket{AddResumeCallback([this]() { this->ResumeSession(); }) }
         {
             // Note: graphicsContext is an EGLContext
 
@@ -458,7 +460,26 @@ namespace xr
         ArFrame* frame{};
         ArPose* pose{};
 
-        float CameraFrameUVs[VERTEX_COUNT * 2];
+        float CameraFrameUVs[VERTEX_COUNT * 2]{};
+
+        AppStateChangedCallbackTicket pauseTicket;
+        AppStateChangedCallbackTicket resumeTicket;
+
+        void PauseSession()
+        {
+            if (session)
+            {
+                ArSession_pause(session);
+            }
+        }
+
+        void ResumeSession()
+        {
+            if (session)
+            {
+                ArSession_resume(session);
+            }
+        }
 
         void DestroyDisplayResources()
         {

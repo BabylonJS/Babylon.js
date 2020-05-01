@@ -40,6 +40,11 @@ public class PlaygroundActivity extends Activity implements BabylonView.ViewDele
     }
 
     @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
+        mView.onRequestPermissionsResult(requestCode, permissions, results);
+    }
+
+    @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus && mView.getVisibility() == View.GONE) {

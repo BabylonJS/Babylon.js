@@ -39,6 +39,10 @@ public class BabylonView extends SurfaceView implements SurfaceHolder.Callback2,
         BabylonNative.Wrapper.activityOnResume();
     }
 
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
+        BabylonNative.Wrapper.activityOnRequestPermissionsResult(requestCode, permissions, results);
+    }
+
     /**
      * This method is part of the SurfaceHolder.Callback interface, and is
      * not normally called or subclassed by clients of BabylonView.
