@@ -397,17 +397,22 @@ export class BaseTexture implements IAnimatable {
     constructor(sceneOrEngine: Nullable<Scene | ThinEngine>) {
         if (sceneOrEngine) {
             if (BaseTexture._isScene(sceneOrEngine)) {
-                this._scene = sceneOrEngine || EngineStore.LastCreatedScene;
-                if (this._scene) {
-                    this.uniqueId = this._scene.getUniqueId();
-                    this._scene.addTexture(this);
-                    this._engine = this._scene.getEngine();
-                }
+                this._scene = sceneOrEngine;
             }
             else {
                 this._engine = sceneOrEngine;
             }
         }
+        else {
+            this._scene = EngineStore.LastCreatedScene;
+        }
+
+        if (this._scene) {
+            this.uniqueId = this._scene.getUniqueId();
+            this._scene.addTexture(this);
+            this._engine = this._scene.getEngine();
+        }
+
         this._uid = null;
     }
 
