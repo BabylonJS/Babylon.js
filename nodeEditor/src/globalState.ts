@@ -1,5 +1,5 @@
-import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial"
-import { Nullable } from "babylonjs/types"
+import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial";
+import { Nullable } from "babylonjs/types";
 import { Observable } from 'babylonjs/Misc/observable';
 import { LogEntry } from './components/log/logComponent';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
@@ -56,7 +56,7 @@ export class GlobalState {
     directionalLight0: boolean;
     directionalLight1: boolean;
     controlCamera: boolean;
-    storeEditorData:(serializationObject: any) => void;
+    storeEditorData: (serializationObject: any) => void;
     _mode: NodeMaterialModes;
 
     /** Gets the mode */
