@@ -37,7 +37,6 @@ export class HDRCubeTexture extends BaseTexture {
     private _size: number;
     private _onLoad: Nullable<() => void> = null;
     private _onError: Nullable<() => void> = null;
-    private _engine: ThinEngine;
 
     /**
      * The texture URL.
@@ -110,7 +109,7 @@ export class HDRCubeTexture extends BaseTexture {
      * Instantiates an HDRTexture from the following parameters.
      *
      * @param url The location of the HDR raw data (Panorama stored in RGBE format)
-     * @param scene The scene the texture will be used in
+     * @param sceneOrEngine The scene or engine the texture will be used in
      * @param size The cubemap desired size (the more it increases the longer the generation will be)
      * @param noMipmap Forces to not generate the mipmap if true
      * @param generateHarmonics Specifies whether you want to extract the polynomial harmonics during the generation process
@@ -118,15 +117,7 @@ export class HDRCubeTexture extends BaseTexture {
      * @param reserved Reserved flag for internal use.
      */
     constructor(url: string, sceneOrEngine: Scene | ThinEngine, size: number, noMipmap = false, generateHarmonics = true, gammaSpace = false, reserved = false, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null) {
-        super(null);
-        if (HDRCubeTexture._isScene(sceneOrEngine)) {
-            this._setScene(sceneOrEngine);
-            this._engine = sceneOrEngine.getEngine();
-        }
-        else {
-            this._setScene(null);
-            this._engine = sceneOrEngine;
-        }
+        super(sceneOrEngine);
 
         if (!url) {
             return;
@@ -174,6 +165,7 @@ export class HDRCubeTexture extends BaseTexture {
      * Occurs when the file is raw .hdr file.
      */
     private loadTexture() {
+        const engine = this._getEngine()!;
         var callback = (buffer: ArrayBuffer): Nullable<ArrayBufferView[]> => {
 
             this.lodGenerationOffset = 0.0;
@@ -195,7 +187,7 @@ export class HDRCubeTexture extends BaseTexture {
             for (var j = 0; j < 6; j++) {
 
                 // Create uintarray fallback.
-                if (!this._engine.getCaps().textureFloat) {
+                if (!engine.getCaps().textureFloat) {
                     // 3 channels of 1 bytes per pixel in bytes.
                     var byteBuffer = new ArrayBuffer(this._size * this._size * 3);
                     byteArray = new Uint8Array(byteBuffer);
@@ -246,16 +238,16 @@ export class HDRCubeTexture extends BaseTexture {
             return results;
         };
 
-        this._texture = this._engine.createRawCubeTextureFromUrl(this.url, this.getScene(), this._size,
+        this._texture = engine.createRawCubeTextureFromUrl(this.url, this.getScene(), this._size,
             Constants.TEXTUREFORMAT_RGB,
-            this._engine.getCaps().textureFloat ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INT,
+            engine.getCaps().textureFloat ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INT,
             this._noMipmap,
             callback,
             null, this._onLoad, this._onError);
     }
 
     public clone(): HDRCubeTexture {
-        var newTexture = new HDRCubeTexture(this.url, this.getScene() || this._engine, this._size, this._noMipmap, this._generateHarmonics,
+        var newTexture = new HDRCubeTexture(this.url, this.getScene() || this._getEngine()!, this._size, this._noMipmap, this._generateHarmonics,
             this.gammaSpace);
 
         // Base texture
@@ -358,10 +350,6 @@ export class HDRCubeTexture extends BaseTexture {
         serializationObject.rotationY = this._rotationY;
 
         return serializationObject;
-    }
-
-    private static _isScene(sceneOrEngine: Scene | ThinEngine): sceneOrEngine is Scene {
-        return sceneOrEngine.getClassName() === "Scene";
     }
 }
 
