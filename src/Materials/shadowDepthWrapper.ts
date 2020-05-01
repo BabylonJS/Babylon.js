@@ -201,6 +201,7 @@ export class ShadowDepthWrapper {
         let vertexCode = origEffect.vertexSourceCode,
             fragmentCode = origEffect.fragmentSourceCode;
 
+        // vertex code
         const vertexNormalBiasCode = this._options && this._options.remappedVariables ? `#include<shadowMapVertexNormalBias>(${this._options.remappedVariables.join(",")})` : Effect.IncludesShadersStore["shadowMapVertexNormalBias"],
               vertexMetricCode = this._options && this._options.remappedVariables ? `#include<shadowMapVertexMetric>(${this._options.remappedVariables.join(",")})` : Effect.IncludesShadersStore["shadowMapVertexMetric"],
               fragmentSoftTransparentShadow = this._options && this._options.remappedVariables ? `#include<shadowMapFragmentSoftTransparentShadow>(${this._options.remappedVariables.join(",")})` : Effect.IncludesShadersStore["shadowMapFragmentSoftTransparentShadow"],
@@ -216,13 +217,29 @@ export class ShadowDepthWrapper {
         }
         vertexCode = vertexCode.replace(/#define SHADER_NAME.*?\n|out vec4 glFragColor;\n/g, "");
 
+        // fragment code
+        const hasLocationForSoftTransparentShadow = fragmentCode.indexOf("#define SHADOWDEPTH_SOFTTRANSPARENTSHADOW") >= 0 || fragmentCode.indexOf("#define CUSTOM_FRAGMENT_BEFORE_FOG") >= 0;
+        const hasLocationForFragment = fragmentCode.indexOf("#define SHADOWDEPTH_FRAGMENT") !== -1;
+
+        let fragmentCodeToInjectAtEnd = "";
+
+        if (!hasLocationForSoftTransparentShadow) {
+            fragmentCodeToInjectAtEnd = fragmentSoftTransparentShadow + "\r\n";
+        } else {
+            fragmentCode = fragmentCode.replace(/#define SHADOWDEPTH_SOFTTRANSPARENTSHADOW|#define CUSTOM_FRAGMENT_BEFORE_FOG/g, fragmentSoftTransparentShadow);
+        }
+
         fragmentCode = fragmentCode.replace(/void\s+?main/g, Effect.IncludesShadersStore["shadowMapFragmentDeclaration"] + "\r\nvoid main");
-        fragmentCode = fragmentCode.replace(/#define SHADOWDEPTH_SOFTTRANSPARENTSHADOW|#define CUSTOM_FRAGMENT_BEFORE_FOG/g, fragmentSoftTransparentShadow);
-        if (fragmentCode.indexOf("#define SHADOWDEPTH_FRAGMENT") !== -1) {
+
+        if (hasLocationForFragment) {
             fragmentCode = fragmentCode.replace(/#define SHADOWDEPTH_FRAGMENT/g, fragmentBlockCode);
         } else {
-            fragmentCode = fragmentCode.replace(/}\s*$/g, fragmentBlockCode + "\r\n}");
+            fragmentCodeToInjectAtEnd += fragmentBlockCode + "\r\n";
         }
+        if (fragmentCodeToInjectAtEnd) {
+            fragmentCode = fragmentCode.replace(/}\s*$/g, fragmentCodeToInjectAtEnd + "}");
+        }
+
         fragmentCode = fragmentCode.replace(/#define SHADER_NAME.*?\n|out vec4 glFragColor;\n/g, "");
 
         const uniforms = origEffect.getUniformNames().slice();
