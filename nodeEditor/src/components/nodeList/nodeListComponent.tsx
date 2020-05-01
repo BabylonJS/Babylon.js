@@ -126,6 +126,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "ClearCoatBlock": "PBR ClearCoat block",
         "RefractionBlock": "PBR Refraction block",
         "SubSurfaceBlock": "PBR SubSurface block",
+        "Position2DBlock": "A Vector2 representing the position of each vertex of the screen quad",
     };
 
     constructor(props: INodeListComponentProps) {
@@ -155,6 +156,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
             PBR: ["PBRMetallicRoughnessBlock", "AmbientOcclusionBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "ReflectivityBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
+            PostProcess: ["Position2DBlock", "CurrentScreenBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
             Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock"],
