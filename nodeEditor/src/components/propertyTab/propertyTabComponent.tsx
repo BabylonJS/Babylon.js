@@ -324,10 +324,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     </div>
                 </div>
                 <div>
-                    <LineContainerComponent title="MODE">
-                        <OptionsLineComponent ref={this._modeSelect} label="Mode" target={this} getSelection={(target) => this.props.globalState.mode} options={[{ label: "Material", value: NodeMaterialModes.Material }, { label: "Post Process", value: NodeMaterialModes.PostProcess }]} onSelect={(value) => this.changeMode(value)} />
-                    </LineContainerComponent>
                     <LineContainerComponent title="GENERAL">
+                        <OptionsLineComponent ref={this._modeSelect} label="Mode" target={this} getSelection={(target) => this.props.globalState.mode} options={[{ label: "Material", value: NodeMaterialModes.Material }, { label: "Post Process", value: NodeMaterialModes.PostProcess }]} onSelect={(value) => this.changeMode(value)} />
                         <TextLineComponent label="Version" value={Engine.Version}/>
                         <TextLineComponent label="Help" value="doc.babylonjs.com" underline={true} onLink={() => window.open('https://doc.babylonjs.com/how_to/node_material', '_blank')}/>
                         <ButtonLineComponent label="Reset to default" onClick={() => {
