@@ -22,6 +22,7 @@ import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
 import { Logger } from '../Misc/logger';
 
 import "./Extensions/engine.alpha";
+import "./Extensions/engine.readTexture";
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
@@ -417,7 +418,6 @@ export class Engine extends ThinEngine {
 
     private _loadingScreen: ILoadingScreen;
     private _pointerLockRequested: boolean;
-    private _dummyFramebuffer: WebGLFramebuffer;
     private _rescalePostProcess: PostProcess;
 
     // Deterministic lockstepMaxSteps
@@ -1776,49 +1776,6 @@ export class Engine extends ThinEngine {
         });
     }
 
-    /** @hidden */
-    public _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null): ArrayBufferView {
-        let gl = this._gl;
-        if (!this._dummyFramebuffer) {
-            let dummy = gl.createFramebuffer();
-
-            if (!dummy) {
-                throw new Error("Unable to create dummy framebuffer");
-            }
-
-            this._dummyFramebuffer = dummy;
-        }
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this._dummyFramebuffer);
-
-        if (faceIndex > -1) {
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture._webGLTexture, level);
-        } else {
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture._webGLTexture, level);
-        }
-
-        let readType = (texture.type !== undefined) ? this._getWebGLTextureType(texture.type) : gl.UNSIGNED_BYTE;
-
-        switch (readType) {
-            case gl.UNSIGNED_BYTE:
-                if (!buffer) {
-                    buffer = new Uint8Array(4 * width * height);
-                }
-                readType = gl.UNSIGNED_BYTE;
-                break;
-            default:
-                if (!buffer) {
-                    buffer = new Float32Array(4 * width * height);
-                }
-                readType = gl.FLOAT;
-                break;
-        }
-
-        gl.readPixels(0, 0, width, height, gl.RGBA, readType, <DataView>buffer);
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this._currentFramebuffer);
-
-        return buffer;
-    }
-
     public dispose(): void {
         this.hideLoadingUI();
 
@@ -1842,10 +1799,6 @@ export class Engine extends ThinEngine {
         // Release audio engine
         if (Engine.Instances.length === 1 && Engine.audioEngine) {
             Engine.audioEngine.dispose();
-        }
-
-        if (this._dummyFramebuffer) {
-            this._gl.deleteFramebuffer(this._dummyFramebuffer);
         }
 
         //WebVR

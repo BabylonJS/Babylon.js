@@ -263,6 +263,15 @@ export class DebugLayer {
     }
 
     /**
+     * Update the scene in the inspector
+     */
+    public setAsActiveScene() {
+        if (this.BJSINSPECTOR) {
+            this.BJSINSPECTOR.Inspector._SetNewScene(this._scene);
+        }
+    }
+
+    /**
       * Launch the debugLayer.
       * @param config Define the configuration of the inspector
       * @return a promise fulfilled when the debug layer is visible
