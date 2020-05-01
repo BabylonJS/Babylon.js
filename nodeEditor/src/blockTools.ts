@@ -341,6 +341,11 @@ export class BlockTools {
                 meshPosition.setAsAttribute("position");
                 return meshPosition;
             }
+            case "Position2DBlock": {
+                let meshPosition = new InputBlock("position");
+                meshPosition.setAsAttribute("position2d");
+                return meshPosition;
+            }
             case "UVBlock": {
                 let meshUV = new InputBlock("uv");
                 meshUV.setAsAttribute("uv");
