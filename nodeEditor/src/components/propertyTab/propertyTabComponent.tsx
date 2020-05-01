@@ -31,6 +31,8 @@ import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
 import { FrameNodePort } from '../../diagram/frameNodePort';
 import { NodePort } from '../../diagram/nodePort';
 import { isFramePortData } from '../../diagram/graphCanvas';
+import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
+import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
@@ -46,11 +48,14 @@ interface IPropertyTabComponentState {
 
 export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
     private _onBuiltObserver: Nullable<Observer<void>>;
+    private _modeSelect: React.RefObject<OptionsLineComponent>;
 
     constructor(props: IPropertyTabComponentProps) {
         super(props);
 
         this.state = { currentNode: null, currentFrame: null, currentFrameNodePort: null, currentNodePort: null };
+
+        this._modeSelect = React.createRef();
     }
 
     componentDidMount() {
@@ -150,6 +155,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             let decoder = new TextDecoder("utf-8");
             SerializationTools.Deserialize(JSON.parse(decoder.decode(data)), this.props.globalState);
 
+            this.changeMode(this.props.globalState.nodeMaterial!.mode, true, false);
+            this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         }, undefined, true);
     }
 
@@ -241,6 +248,36 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         });
     }
 
+    changeMode(value: any, force = false, loadDefault = true) {
+        if (this.props.globalState.mode === value) {
+            return;
+        }
+
+        if (!force && !confirm('Are your sure? You will loose your current changes (if any) if they are not saved!')) {
+            this._modeSelect.current?.setValue(this.props.globalState.mode);
+            return;
+        }
+
+        if (force) {
+            this._modeSelect.current?.setValue(value);
+        }
+
+        this.props.globalState.mode = value as NodeMaterialModes;
+
+        if (loadDefault) {
+            switch (value) {
+                case NodeMaterialModes.Material:
+                    this.props.globalState.nodeMaterial!.setToDefault();
+                    this.props.globalState.onResetRequiredObservable.notifyObservers();
+                    break;
+                case NodeMaterialModes.PostProcess:
+                    this.props.globalState.nodeMaterial!.setToDefaultPostProcess();
+                    this.props.globalState.onResetRequiredObservable.notifyObservers();
+                    break;
+            }
+        }
+    }
+
     render() {
         if (this.state.currentNode) {
             return (
@@ -285,6 +322,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     </div>
                 </div>
                 <div>
+                    <LineContainerComponent title="MODE">
+                        <OptionsLineComponent ref={this._modeSelect} label="Mode" target={this} getSelection={(target) => this.props.globalState.mode} options={[{ label: "Material", value: NodeMaterialModes.Material }, { label: "Post Process", value: NodeMaterialModes.PostProcess }]} onSelect={(value) => this.changeMode(value)} />
+                    </LineContainerComponent>
                     <LineContainerComponent title="GENERAL">
                         <TextLineComponent label="Version" value={Engine.Version}/>
                         <TextLineComponent label="Help" value="doc.babylonjs.com" underline={true} onLink={() => window.open('https://doc.babylonjs.com/how_to/node_material', '_blank')}/>

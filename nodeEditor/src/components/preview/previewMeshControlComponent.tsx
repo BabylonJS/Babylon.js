@@ -32,7 +32,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
         }
 
         this.props.globalState.previewMeshType = newOne;
-        this.props.globalState.onPreviewCommandActivated.notifyObservers();
+        this.props.globalState.onPreviewCommandActivated.notifyObservers(false);
 
         DataStorage.WriteNumber("PreviewMeshType", newOne);
 
@@ -46,7 +46,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
 
             this.props.globalState.previewMeshFile = file;
             this.props.globalState.previewMeshType = PreviewMeshType.Custom;
-            this.props.globalState.onPreviewCommandActivated.notifyObservers();
+            this.props.globalState.onPreviewCommandActivated.notifyObservers(false);
             this.props.globalState.listOfCustomPreviewMeshFiles = [file];       
             this.forceUpdate();
         }
