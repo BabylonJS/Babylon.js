@@ -3,6 +3,7 @@ import { Nullable } from "../types";
 import { ActionManager } from "../Actions/actionManager";
 import { ISpriteManager } from "./spriteManager";
 import { Color4 } from '../Maths/math.color';
+import { Observable } from '../Misc/observable';
 
 /**
  * Class used to represent a sprite
@@ -49,6 +50,11 @@ export class Sprite {
      * Gets or sets the associated action manager
      */
     public actionManager: Nullable<ActionManager>;
+
+    /**
+    * An event triggered when the control has been disposed
+    */
+   public onDisposeObservable = new Observable<Sprite>();
 
     private _animationStarted = false;
     private _loopAnimation = false;
@@ -160,5 +166,9 @@ export class Sprite {
                 this._manager.sprites.splice(i, 1);
             }
         }
+
+        // Callback
+        this.onDisposeObservable.notifyObservers(this);
+        this.onDisposeObservable.clear();
     }
 }

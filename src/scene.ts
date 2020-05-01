@@ -968,6 +968,12 @@ export class Scene extends AbstractScene implements IAnimatable {
         return this._texturesEnabled;
     }
 
+    // Physics
+    /**
+     * Gets or sets a boolean indicating if physic engines are enabled on this scene
+     */
+    public physicsEnabled = true;
+
     // Particles
     /**
     * Gets or sets a boolean indicating if particles are enabled on this scene
@@ -3873,7 +3879,9 @@ export class Scene extends AbstractScene implements IAnimatable {
                 this.onAfterAnimationsObservable.notifyObservers(this);
 
                 // Physics
-                this._advancePhysicsEngineStep(defaultFrameTime);
+                if (this.physicsEnabled) {
+                    this._advancePhysicsEngineStep(defaultFrameTime);
+                }
 
                 this.onAfterStepObservable.notifyObservers(this);
                 this._currentStepId++;
@@ -3894,7 +3902,9 @@ export class Scene extends AbstractScene implements IAnimatable {
             this.onAfterAnimationsObservable.notifyObservers(this);
 
             // Physics
-            this._advancePhysicsEngineStep(deltaTime);
+            if (this.physicsEnabled) {
+                this._advancePhysicsEngineStep(deltaTime);
+            }
         }
     }
 
@@ -3906,6 +3916,10 @@ export class Scene extends AbstractScene implements IAnimatable {
     public render(updateCameras = true, ignoreAnimations = false): void {
         if (this.isDisposed) {
             return;
+        }
+
+        if (this.onReadyObservable.hasObservers() && this._executeWhenReadyTimeoutId === -1) {
+            this._checkIsReady();
         }
 
         this._frameId++;
