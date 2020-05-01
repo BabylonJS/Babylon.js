@@ -5,6 +5,8 @@ import { Color3, Color4 } from 'babylonjs/Maths/math.color';
 import { PreviewMeshType } from './previewMeshType';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
+import { Observer } from 'babylonjs/Misc/observable';
+import { Nullable } from 'babylonjs/types';
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 
 const popUpIcon: string = require("./svgs/popOut.svg");
@@ -20,11 +22,20 @@ interface IPreviewMeshControlComponent {
 export class PreviewMeshControlComponent extends React.Component<IPreviewMeshControlComponent> {
     private colorInputRef: React.RefObject<HTMLInputElement>;
     private filePickerRef: React.RefObject<HTMLInputElement>;
+    private _onResetRequiredObserver: Nullable<Observer<void>>;
 
     constructor(props: IPreviewMeshControlComponent) {
         super(props);
         this.colorInputRef = React.createRef();
         this.filePickerRef = React.createRef();
+
+        this._onResetRequiredObserver = this.props.globalState.onResetRequiredObservable.add(() => {
+            this.forceUpdate();
+        });
+    }
+
+    componentWillUnmount() {
+        this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
     }
 
     changeMeshType(newOne: PreviewMeshType) {
@@ -80,19 +91,6 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
 
     changeBackgroundClick() {
         this.colorInputRef.current?.click();
-    }
-
-    eventNMERefresh() {
-        this.forceUpdate();
-    }
-
-    componentDidMount() {
-        this.eventNMERefresh = this.eventNMERefresh.bind(this);
-        window.addEventListener("nme_refresh", this.eventNMERefresh);
-    }
-
-    componentWillUnmount() {
-        window.removeEventListener('nme_refresh', this.eventNMERefresh);
     }
 
     render() {

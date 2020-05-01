@@ -268,16 +268,14 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             switch (value) {
                 case NodeMaterialModes.Material:
                     this.props.globalState.nodeMaterial!.setToDefault();
-                    this.props.globalState.onResetRequiredObservable.notifyObservers();
                     break;
                 case NodeMaterialModes.PostProcess:
                     this.props.globalState.nodeMaterial!.setToDefaultPostProcess();
-                    this.props.globalState.onResetRequiredObservable.notifyObservers();
                     break;
             }
         }
 
-        window.dispatchEvent(new CustomEvent('nme_refresh'));
+        this.props.globalState.onResetRequiredObservable.notifyObservers();
     }
 
     render() {
