@@ -127,6 +127,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "RefractionBlock": "PBR Refraction block",
         "SubSurfaceBlock": "PBR SubSurface block",
         "Position2DBlock": "A Vector2 representing the position of each vertex of the screen quad",
+        "CurrentScreenBlock": "The screen buffer used as input for the post process",
     };
 
     constructor(props: INodeListComponentProps) {

@@ -965,7 +965,7 @@ export class NodeMaterial extends PushMaterial {
      * Gets the list of texture blocks
      * @returns an array of texture blocks
      */
-    public getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock | RefractionBlock)[] {
+    public getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock)[] {
         if (!this._sharedData) {
             return [];
         }
