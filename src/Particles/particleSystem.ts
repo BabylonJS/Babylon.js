@@ -16,7 +16,7 @@ import { RawTexture } from "../Materials/Textures/rawTexture";
 import { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
 import { EngineStore } from "../Engines/engineStore";
 import { Scene, IDisposable } from "../scene";
-import { BoxParticleEmitter, IParticleEmitterType, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, ConeParticleEmitter } from "../Particles/EmitterTypes/index";
+import { BoxParticleEmitter, IParticleEmitterType, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, ConeParticleEmitter, PointParticleEmitter, MeshParticleEmitter } from "../Particles/EmitterTypes/index";
 import { IParticleSystem } from "./IParticleSystem";
 import { BaseParticleSystem } from "./baseParticleSystem";
 import { Particle } from "./particle";
@@ -2627,8 +2627,14 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                     break;
                 case "HemisphericParticleEmitter":
                     emitterType = new HemisphericParticleEmitter();
+                    break;                    
+                case "PointParticleEmitter":
+                    emitterType = new PointParticleEmitter();
                     break;
-                case "BoxEmitter":
+                case "MeshParticleEmitter":
+                    emitterType = new MeshParticleEmitter();
+                    break;
+                    case "BoxEmitter":
                 case "BoxParticleEmitter":
                 default:
                     emitterType = new BoxParticleEmitter();
