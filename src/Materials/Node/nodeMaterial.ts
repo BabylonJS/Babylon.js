@@ -39,6 +39,7 @@ import { VectorMergerBlock } from './Blocks/vectorMergerBlock';
 import { RemapBlock } from './Blocks/remapBlock';
 import { MultiplyBlock } from './Blocks/multiplyBlock';
 import { NodeMaterialModes } from './Enums/nodeMaterialModes';
+import { Texture } from '../Textures/texture';
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -1252,6 +1253,8 @@ export class NodeMaterial extends PushMaterial {
 
         const currentScreen = new CurrentScreenBlock("CurrentScreen");
         uv.connectTo(currentScreen);
+
+        currentScreen.texture = new Texture("https://assets.babylonjs.com/nme/currentScreenPostProcess.png", this.getScene());
 
         var fragmentOutput = new FragmentOutputBlock("FragmentOutput");
         currentScreen.connectTo(fragmentOutput, { output: "rgba" });
