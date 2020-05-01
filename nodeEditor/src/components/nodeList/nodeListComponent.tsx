@@ -4,6 +4,8 @@ import { GlobalState } from '../../globalState';
 import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
 import { DraggableLineComponent } from '../../sharedComponents/draggableLineComponent';
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
+import { Observer } from 'babylonjs/Misc/observable';
+import { Nullable } from 'babylonjs/types';
 
 require("./nodeList.scss");
 
@@ -12,6 +14,8 @@ interface INodeListComponentProps {
 }
 
 export class NodeListComponent extends React.Component<INodeListComponentProps, {filter: string}> {
+
+    private _onResetRequiredObserver: Nullable<Observer<void>>;
 
     private static _Tooltips: {[key: string]: string} = {
         "BonesBlock": "Provides a world matrix for each vertex, based on skeletal (bone/joint) animation",
@@ -135,23 +139,18 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         super(props);
 
         this.state = { filter: "" };
+
+        this._onResetRequiredObserver = this.props.globalState.onResetRequiredObservable.add(() => {
+            this.forceUpdate();
+        });
+    }
+
+    componentWillUnmount() {
+        this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
     }
 
     filterContent(filter: string) {
         this.setState({ filter: filter });
-    }
-
-    eventNMERefresh() {
-        this.forceUpdate();
-    }
-
-    componentDidMount() {
-        this.eventNMERefresh = this.eventNMERefresh.bind(this);
-        window.addEventListener("nme_refresh", this.eventNMERefresh);
-    }
-
-    componentWillUnmount() {
-        window.removeEventListener('nme_refresh', this.eventNMERefresh);
     }
 
     render() {
