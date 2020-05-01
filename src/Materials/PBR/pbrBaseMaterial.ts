@@ -57,7 +57,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public PBR = true;
 
     public NUM_SAMPLES = 0;
-    public DEBUG_REALTIME_SAMPLING = false;
+    public REALTIME_FILTERING = false;
 
     public MAINUV1 = false;
     public MAINUV2 = false;
@@ -1181,8 +1181,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "vReflectionMicrosurfaceInfos",
             "vTangentSpaceParams", "boneTextureWidth",
             "vDebugMode",
-            "sampleDirections",
-            "weights"
+            "vSampleDirections",
+            "vWeights",
+            "cubeWidth"
         ];
 
         var samplers = ["albedoSampler", "reflectivitySampler", "ambientSampler", "emissiveSampler",
@@ -1285,9 +1286,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
                     defines.LINEARSPECULARREFLECTION = reflectionTexture.linearSpecularLOD;
 
-                    if (this.realtimeFilter.enabled) {
+                    if (this.realtimeFilter.enabled && this.realtimeFilter.numSamples > 0) {
                         defines.NUM_SAMPLES = this.realtimeFilter.numSamples;
-                        defines.DEBUG_REALTIME_SAMPLING = true;
+                        defines.REALTIME_FILTERING = true;
                     }
                     
                     if (reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE) {
@@ -1698,8 +1699,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                         if (this.realtimeFilter.enabled) {
                             this.realtimeFilter.generateFilterSamples(this._roughness!);           
-                            effect.setArray3("sampleDirections", this.realtimeFilter.sampleDirections);
-                            effect.setArray("weights", this.realtimeFilter.sampleWeights);
+                            effect.setArray3("vSampleDirections", this.realtimeFilter.sampleDirections);
+                            effect.setArray("vWeights", this.realtimeFilter.sampleWeights);
+                            effect.setFloat("cubeWidth", reflectionTexture.getSize().width);
                         }
 
                         if (!defines.USEIRRADIANCEMAP) {
