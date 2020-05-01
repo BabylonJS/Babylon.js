@@ -3,6 +3,7 @@ import * as React from "react";
 import { GlobalState } from '../../globalState';
 import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
 import { DraggableLineComponent } from '../../sharedComponents/draggableLineComponent';
+import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 
 require("./nodeList.scss");
 
@@ -140,6 +141,19 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         this.setState({ filter: filter });
     }
 
+    eventNMERefresh() {
+        this.forceUpdate();
+    }
+
+    componentDidMount() {
+        this.eventNMERefresh = this.eventNMERefresh.bind(this);
+        window.addEventListener("nme_refresh", this.eventNMERefresh);
+    }
+
+    componentDidUnmount() {
+        window.removeEventListener('nme_refresh', this.eventNMERefresh);
+    }
+
     render() {
         // Block types used to create the menu from
         const allBlocks = {
@@ -162,6 +176,16 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
             Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock"],
         };
+
+        switch (this.props.globalState.mode) {
+            case NodeMaterialModes.Material:
+                delete allBlocks["PostProcess"];
+                break;
+            case NodeMaterialModes.PostProcess:
+                delete allBlocks["Animation"];
+                delete allBlocks["Mesh"];
+                break;
+        }
 
         // Create node menu
         var blockMenu = [];
