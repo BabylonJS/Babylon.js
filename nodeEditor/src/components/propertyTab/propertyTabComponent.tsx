@@ -276,6 +276,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     break;
             }
         }
+
+        window.dispatchEvent(new CustomEvent('nme_refresh'));
     }
 
     render() {
