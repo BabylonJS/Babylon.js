@@ -669,11 +669,15 @@ export class BaseTexture implements IAnimatable {
             height = Math.round(height);
         }
 
-        if (this._texture.isCube) {
-            return engine._readTexturePixels(this._texture, width, height, faceIndex, level, buffer);
-        }
+        try {
+            if (this._texture.isCube) {
+                return engine._readTexturePixels(this._texture, width, height, faceIndex, level, buffer);
+            }
 
-        return engine._readTexturePixels(this._texture, width, height, -1, level, buffer);
+            return engine._readTexturePixels(this._texture, width, height, -1, level, buffer);
+        } catch (e) {
+            return null;
+        }
     }
 
     /**

@@ -1779,6 +1779,9 @@ export class Engine extends ThinEngine {
     /** @hidden */
     public _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null): ArrayBufferView {
         let gl = this._gl;
+        if (!gl) {
+            throw new Error ("Engine does not have gl rendering context.");
+        }
         if (!this._dummyFramebuffer) {
             let dummy = gl.createFramebuffer();
 
