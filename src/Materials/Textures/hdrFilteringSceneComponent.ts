@@ -5,8 +5,7 @@ import { SceneComponentConstants, ISceneComponent } from "../../sceneComponent";
 declare module "../../scene" {
     export interface Scene {
         /**
-         * TODO Gets or sets the simplification queue attached to the scene
-         * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
+         * Gets or sets the HDRFiltering component
          */
         hdrFiltering: HDRFiltering;
         /** @hidden (Backing field) */
@@ -33,12 +32,11 @@ Object.defineProperty(Scene.prototype, "hdrFiltering", {
 });
 
 /**
- * Defines the simplification queue scene component responsible to help scheduling the various simplification task
- * created in a scene
+ * Defines the hdr filtering scene component responsible to filter unprefiltered HDR maps on load.
  */
 export class HDRFilteringSceneComponent implements ISceneComponent {
     /**
-     * The component name helpfull to identify the component in the list of scene components.
+     * The component name helpful to identify the component in the list of scene components.
      */
     public readonly name = SceneComponentConstants.NAME_HDRFILTERING;
 
