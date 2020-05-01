@@ -70,7 +70,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
     }
 
-    curvePath(keyframes: BABYLON.IAnimationKey[], data: string, heightScale: number, middle: number, easingFunction: EasingFunction) {
+    curvePath(keyframes: IAnimationKey[], data: string, heightScale: number, middle: number, easingFunction: EasingFunction) {
 
         // This will get 1/4 and 3/4 of points in eased curve
         const u = .25;
@@ -93,8 +93,8 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                 var pointB = new Vector2(key.frame, heightScale - (key.value * middle));
 
                 // Get easing value of percentage to get the bezier control points below
-                let du = easingFunction.ease(u);
-                let dv = easingFunction.ease(v);
+                let du = easingFunction.ease(u); // What to do here, when user edits the curve? Option 1: Modify the curve with the new control points as BezierEaseCurve(x,y,z,w)
+                let dv = easingFunction.ease(v); // Option 2: Create a easeInCore function and adapt it with the new control points values... needs more revision.
 
                 // Intermediate points in curve
                 let intermediatePoint25 = new Vector2(((pointB.x - pointA.x) * u) + pointA.x,  ((pointB.y - pointA.y) * du) + middle);
