@@ -30,32 +30,32 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         this.props.globalState.onIsLoadingChanged.remove(this._onIsLoadingChangedObserver);
     }
 
-    changeBackFaceCulling(value: boolean) {        
+    changeBackFaceCulling(value: boolean) {
         this.props.globalState.backFaceCulling = value;
         DataStorage.WriteBoolean("BackFaceCulling", value);
         this.props.globalState.onBackFaceCullingChanged.notifyObservers();
         this.forceUpdate();
     }
 
-    changeDepthPrePass(value: boolean) {        
+    changeDepthPrePass(value: boolean) {
         this.props.globalState.depthPrePass = value;
         DataStorage.WriteBoolean("DepthPrePass", value);
         this.props.globalState.onDepthPrePassChanged.notifyObservers();
         this.forceUpdate();
-    }    
+    }
 
     render() {
         return (
             <>
                 <div id="preview" style={{height: this.props.width + "px"}}>
                     <canvas id="preview-canvas"/>
-                    {                        
+                    {
                         <div className={"waitPanel" + (this.state.isLoading ? "" : " hidden")}>
                             Please wait, loading...
                         </div>
                     }
-                </div>                
-                <div id="preview-config-bar">              
+                </div>
+                <div id="preview-config-bar">
                     <div
                         title="Render without back face culling"
                         onClick={() => this.changeBackFaceCulling(!this.props.globalState.backFaceCulling)} className={"button back-face" + (!this.props.globalState.backFaceCulling ? " selected" : "")}>
@@ -67,9 +67,9 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                             <img src={depthPass} alt=""/>
                     </div>
                     <div
-                        title="Turn on/off hemispheric light"  
+                        title="Turn on/off hemispheric light"
                         onClick={() => {
-                            this.props.globalState.hemisphericLight = !this.props.globalState.hemisphericLight;                            
+                            this.props.globalState.hemisphericLight = !this.props.globalState.hemisphericLight;
                             DataStorage.WriteBoolean("HemisphericLight", this.props.globalState.hemisphericLight);
                             this.props.globalState.onLightUpdated.notifyObservers();
                             this.forceUpdate();
@@ -77,9 +77,9 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                         <img src={omni} alt=""/>
                     </div>
                     <div
-                        title="Turn on/off direction light #1"  
+                        title="Turn on/off direction light #1"
                         onClick={() => {
-                            this.props.globalState.directionalLight1 = !this.props.globalState.directionalLight1;                       
+                            this.props.globalState.directionalLight1 = !this.props.globalState.directionalLight1;
                             DataStorage.WriteBoolean("DirectionalLight1", this.props.globalState.directionalLight1);
                             this.props.globalState.onLightUpdated.notifyObservers();
                             this.forceUpdate();
@@ -88,9 +88,9 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
 
                     </div>
                     <div
-                        title="Turn on/off direction light #0"  
+                        title="Turn on/off direction light #0"
                         onClick={() => {
-                            this.props.globalState.directionalLight0 = !this.props.globalState.directionalLight0;                       
+                            this.props.globalState.directionalLight0 = !this.props.globalState.directionalLight0;
                             DataStorage.WriteBoolean("DirectionalLight0", this.props.globalState.directionalLight0);
                             this.props.globalState.onLightUpdated.notifyObservers();
                             this.forceUpdate();

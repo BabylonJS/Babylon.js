@@ -47,11 +47,11 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
             this.props.globalState.previewMeshFile = file;
             this.props.globalState.previewMeshType = PreviewMeshType.Custom;
             this.props.globalState.onPreviewCommandActivated.notifyObservers(false);
-            this.props.globalState.listOfCustomPreviewMeshFiles = [file];       
+            this.props.globalState.listOfCustomPreviewMeshFiles = [file];
             this.forceUpdate();
         }
-        if(this.filePickerRef.current){
-            this.filePickerRef.current.value = ""
+        if (this.filePickerRef.current) {
+            this.filePickerRef.current.value = "";
         }
     }
 
@@ -100,7 +100,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
 
         return (
             <div id="preview-mesh-bar">
-                <OptionsLineComponent label="" options={meshTypeOptions} target={this.props.globalState} 
+                <OptionsLineComponent label="" options={meshTypeOptions} target={this.props.globalState}
                             propertyName="previewMeshType"
                             noDirectUpdate={true}
                             onSelect={(value: any) => {
@@ -113,23 +113,23 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
                 <div style={{
                     display: "none"
                 }} title="Preview with a custom mesh" >
-                    <input ref={this.filePickerRef} id="file-picker" type="file" onChange={evt => this.useCustomMesh(evt)} accept=".gltf, .glb, .babylon, .obj"/>
+                    <input ref={this.filePickerRef} id="file-picker" type="file" onChange={(evt) => this.useCustomMesh(evt)} accept=".gltf, .glb, .babylon, .obj"/>
                 </div>
                 <div
                     title="Turn-table animation"
                     onClick={() => this.changeAnimation()} className="button" id="play-button">
                     {this.props.globalState.rotatePreview ? <img src={pauseIcon} alt=""/> : <img src={playIcon} alt=""/>}
                 </div>
-                <div 
+                <div
                 id="color-picker-button"
                     title="Background color"
                     className={"button align"}
-                    onClick={_ => this.changeBackgroundClick()}
+                    onClick={(_) => this.changeBackgroundClick()}
                     >
                     <img src={colorPicker} alt=""/>
                     <label htmlFor="color-picker" id="color-picker-label">
                     </label>
-                    <input ref={this.colorInputRef} id="color-picker" type="color" onChange={evt => this.changeBackground(evt.target.value)} />
+                    <input ref={this.colorInputRef} id="color-picker" type="color" onChange={(evt) => this.changeBackground(evt.target.value)} />
                 </div>
                 <div
                     title="Open preview in new window" id="preview-new-window"
