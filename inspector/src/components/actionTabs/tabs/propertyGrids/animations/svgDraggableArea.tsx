@@ -1,79 +1,99 @@
 import * as React from "react";
 import { Vector2 } from 'babylonjs/Maths/math.vector';
+import { KeyframeSvgPoint, IKeyframeSvgPoint } from './keyframeSvgPoint';
 
 interface ISvgDraggableAreaProps {
-    points: Vector2[];
+    keyframeSvgPoints: IKeyframeSvgPoint[];
+    updatePosition: (updatedKeyframe: IKeyframeSvgPoint, index: number) => void
 }
 
-export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps,{ points: Vector2[]}>{ 
+export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{ 
 
-    private _active: Vector2;
+    private _active: boolean;
+    private _isCurrentPointControl: string;
+    private _currentPointIndex: number;
+    private _draggableArea: React.RefObject<SVGSVGElement>;
 
     constructor(props: ISvgDraggableAreaProps) {
         super(props);
-        this.state = { points: this.props.points }
+        this._currentPointIndex = -1;
+        this._isCurrentPointControl = "";
+        this._draggableArea = React.createRef();     
     }
 
    
-    dragStart(e: React.TouchEvent<SVGSVGElement>, point: Vector2) : void;
-    dragStart(e: React.MouseEvent<SVGSVGElement, MouseEvent>, point: Vector2) : void;
-    dragStart(e: any, point: Vector2): void {
-        e.preventDefault();    
-            this._active = ;
-          
+    dragStart(e: React.TouchEvent<SVGSVGElement>) : void;
+    dragStart(e: React.MouseEvent<SVGSVGElement, MouseEvent>) : void;
+    dragStart(e: any): void {
+        e.preventDefault();  
+        if (e.target.classList.contains("draggable")){
+            this._active = true;
+            this._currentPointIndex = parseInt(e.target.getAttribute('data-id'));
+
+            if (e.target.classList.contains("control-point")){
+                this._isCurrentPointControl = e.target.getAttribute("type");
+            }
+        } 
     }
 
-    drag(e: React.TouchEvent<SVGSVGElement>, point: Vector2) : void;
-    drag(e: React.MouseEvent<SVGSVGElement, MouseEvent>, point: Vector2) : void;
-    drag(e: any, point: Vector2): void {
+    drag(e: React.TouchEvent<SVGSVGElement>) : void;
+    drag(e: React.MouseEvent<SVGSVGElement, MouseEvent>) : void;
+    drag(e: any): void {
         if (this._active) {
         
           e.preventDefault();
 
-          var coord = this.getMousePosition(e);//.subtract(this._offset)
-            this._local = this.getMousePosition(e);
-            //console.log(this._local.x, this._local.y)
-          //this.setTranslate(coord.x, coord.y, this._draggable);
-          //this._local = coord;
-          this.setState({ position: coord });
+          var coord = this.getMousePosition(e);
+
+          if (coord !== undefined){
+         
+            var newPoints = [...this.props.keyframeSvgPoints];
+
+            if (this._isCurrentPointControl === "left"){
+                newPoints[this._currentPointIndex].leftControlPoint = coord;
+            } else if (this._isCurrentPointControl === "right"){
+                newPoints[this._currentPointIndex].rightControlPoint = coord;
+            } else {
+                newPoints[this._currentPointIndex].keyframePoint = coord;
+            }
+
+            this.props.updatePosition(newPoints[this._currentPointIndex], this._currentPointIndex);
+
+          }     
 
         }
     }
 
-    dragEnd(e: React.TouchEvent<SVGSVGElement> | React.MouseEvent<SVGSVGElement, MouseEvent>, point: Vector2) {
-        this._active = false;  
+    dragEnd(e: React.TouchEvent<SVGSVGElement>): void;
+    dragEnd(e: React.MouseEvent<SVGSVGElement, MouseEvent>): void;
+    dragEnd(e: any): void  {
+        e.preventDefault(); 
+        this._active = false;
+        this._currentPointIndex = -1;
+        this._isCurrentPointControl = "";
     }
 
 
 
-    getMousePosition(e: React.TouchEvent<SVGSVGElement>, point: Vector2) : Vector2;
-    getMousePosition(e: React.MouseEvent<SVGSVGElement, MouseEvent>, point: Vector2) : Vector2;
-    getMousePosition(e: any, point: Vector2): Vector2 {
+    getMousePosition(e: React.TouchEvent<SVGSVGElement>) : Vector2 | undefined;
+    getMousePosition(e: React.MouseEvent<SVGSVGElement, MouseEvent>) : Vector2 | undefined;
+    getMousePosition(e: any): Vector2 | undefined {
 
         if (e.touches) { e = e.touches[0]; }
 
-        var svg = this._draggable.current as SVGSVGElement;
+        if (this._draggableArea.current){
+            var svg = this._draggableArea.current as SVGSVGElement;
+            var CTM = svg.getScreenCTM();
+            if (CTM){
+                return new Vector2((e.clientX - CTM.e) / CTM.a, (e.clientY - CTM.f) / CTM.d);
+            } else {
+                return undefined;
+            }
 
-        // var CTM = svg.getScreenCTM();
-        // if (CTM){
-        //     return new Vector2((e.clientX - CTM.e) / CTM.a,(e.clientY - CTM.f) / CTM.d)
-        // } else {
-        //     return new Vector2(e.clientX, e.clientY);
-        // }
-
-        var pt = svg.createSVGPoint();
-
-        pt.x = e.clientX;
-        pt.y = e.clientY;
-
-        var inverse = svg.getScreenCTM()?.inverse();
-
-        var cursorpt =  pt.matrixTransform(inverse);
-        
-
-        return new Vector2(cursorpt.x, cursorpt.y);
-
-     
+        } else {
+            return undefined;
+        }
+       
       }
 
 
@@ -81,28 +101,31 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps,{ p
     render() {
         return (
         <>
-            <svg className="linear" viewBox="0 0 100 100" preserveAspectRatio="none">
+        
+            <svg className="linear" style={{border: '1px solid black'}} ref={this._draggableArea} 
+            
+            onMouseMove={(e) => this.drag(e)}  
+            onTouchMove = {(e) => this.drag(e)} 
+            onTouchStart = {(e) => this.dragStart(e)}
+            onTouchEnd  ={(e) => this.dragEnd(e)}
+            
+            onMouseDown ={(e) => this.dragStart(e)}
+            onMouseUp  ={(e) => this.dragEnd(e)}
+            onMouseLeave = {(e) => this.dragEnd(e)}
+            // Add way to add new keyframe
+            
+            viewBox="0 0 100 100" preserveAspectRatio="none">
 
-            { this.state.points.map((point, i) => {
-            <svg key={i} className="draggable" x={point.x} y={point.y} style={{overflow:'visible'}}
-            onTouchMove = {(e, point) => this.drag(e, point)} 
-            onTouchStart = {(e,point) => this.dragStart(e, point)}
-            onTouchEnd  ={(e, point) => this.dragEnd(e, point)}
-            onMouseMove={(e, point) => this.drag(e, point)} 
-            onMouseDown ={(e, point) => this.dragStart(e, point)}
-            onMouseUp  ={(e, point) => this.dragEnd(e, point)}
-            onMouseLeave = {(e, point) => this.dragEnd(e, point)}
-            >
-            <circle cx="0" cy="0"  r="2" stroke="none" strokeWidth="0" fill="red" />
+                {this.props.children}
 
 
-            </svg>
+                { this.props.keyframeSvgPoints.map((keyframe, i) => 
+
+                    <KeyframeSvgPoint key={i} id={i.toString()} keyframePoint={keyframe.keyframePoint} leftControlPoint={keyframe.leftControlPoint} rightControlPoint={keyframe.rightControlPoint}/>
+                    
+                )}
 
 
-
-            })}
-                        
-      
         </svg>
         </>)
     }

@@ -5,8 +5,10 @@ import { Animation } from 'babylonjs/Animations/animation';
 import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { EasingFunction } from 'babylonjs/Animations/easing';
 import { IAnimationKey } from 'babylonjs/Animations/animationKey';
-import { AnchorSvgPoint } from './anchorSvgPoint';
-import { KeyframeSvgPoint } from './keyframeSvgPoint';
+import { IKeyframeSvgPoint } from './keyframeSvgPoint';
+import { SvgDraggableArea } from './svgDraggableArea';
+import { Scene } from "babylonjs/scene";
+import { Animatable } from 'babylonjs/Animations/animatable';
 
 require("./curveEditor.scss");
 
@@ -15,18 +17,19 @@ interface IAnimationCurveEditorComponentProps {
     title: string;
     animations: Animation[];
     entityName: string;
+    scene: Scene;
     entity: Animatable;
 }
 
-export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, { animations: Animation[], animationName: string, selectedProperty:string, isOpen: boolean, selected: Animation, currentPathData: string | undefined, anchorPoints: { point: Vector2, anchor: Vector2 }[] | undefined, keyframes: Vector2[] | undefined }> {
+export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, { animations: Animation[], animationName: string, selectedProperty:string, isOpen: boolean, selected: Animation, currentPathData: string | undefined, svgKeyframes: IKeyframeSvgPoint[] | undefined }> {
 
-    private _anchorPoints: { point: Vector2, anchor: Vector2 }[] = [];
+    readonly _heightScale: number = 100;
     private _newAnimations: Animation[] = [];
-    private _keyframes: Vector2[] = [];
+    private _svgKeyframes: IKeyframeSvgPoint[] = [];
     constructor(props: IAnimationCurveEditorComponentProps) {
         super(props);
-        this.state = { animations: this._newAnimations,selected: this.props.animations[0], isOpen: true, currentPathData: this.getPathData(this.props.animations[0]), anchorPoints: this._anchorPoints, keyframes: this._keyframes, selectedProperty: 'position.x', animationName: "" }
-        
+        this.state = { animations: this._newAnimations,selected: this.props.animations[0], isOpen: true, currentPathData: this.getPathData(this.props.animations[0]), svgKeyframes: this._svgKeyframes, selectedProperty: 'position.x', animationName: "" }
+
     }
 
     handlePropertyChange(event: React.ChangeEvent<HTMLSelectElement>){
@@ -35,7 +38,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     }
 
     handleNameChange(event: React.ChangeEvent<HTMLInputElement>){
-        //let value = (event.target as HTMLInputElement).value;
         event.preventDefault();
         this.setState({animationName: event.target.value});
     }
@@ -46,34 +48,21 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             let animation = new Animation(this.state.animationName, this.state.selectedProperty, 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
 
             var keys = []; 
-// //At the animation key 0, the value of scaling is "1"
-  keys.push({
-    frame: 0,
-    value: 1
-  });
-//   //At the animation key 20, the value of scaling is "0.2"
-//   keys.push({
-//     frame: 20,
-//     value: 0.2
-//   });
-//   //At the animation key 100, the value of scaling is "1"
-//   keys.push({
-//     frame: 100,
-//     value: 1
-//   });
+              keys.push({
+                frame: 0,
+                value: 1
+              });
 
-animation.setKeys(keys);
 
-var bezierEase = new BABYLON.CircleEase();
-//var bezierEase = new BABYLON.BezierCurveEase(0.55,0,1,0.45) as unknown;
-bezierEase.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
-animation.setEasingFunction((bezierEase as unknown) as EasingFunction);
+            animation.setKeys(keys);
+
+            var bezierEase = new BABYLON.CircleEase();
+            bezierEase.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
+            animation.setEasingFunction((bezierEase as unknown) as EasingFunction);
 
             this._newAnimations.push(animation);
             this.setState({animations: this._newAnimations, animationName: ""});
         }
-
-    
     }
 
     addKeyFrame(event: React.MouseEvent<SVGSVGElement>){
@@ -125,10 +114,10 @@ animation.setEasingFunction((bezierEase as unknown) as EasingFunction);
         let anim = this.state.selected as Animation;
         var keys: IAnimationKey[] = [];
 
-        var keyframes = this.state.keyframes?.map((k, i) => {
+        var svgKeyframes = this.state.svgKeyframes?.map((k, i) => {
             if (i === index){
-                k.x = keyframe.x;
-                k.y = keyframe.y;
+                k.keyframePoint.x = keyframe.x;
+                k.keyframePoint.y = keyframe.y;
             }
 
             var height = 100;
@@ -136,23 +125,21 @@ animation.setEasingFunction((bezierEase as unknown) as EasingFunction);
 
             var keyValue;
 
-            if (k.y < middle){
-                keyValue = 1 + ((100/k.y) * .1)
+            if (k.keyframePoint.y < middle){
+                keyValue = 1 + ((100/k.keyframePoint.y) * .1)
             }
 
-            if (k.y > middle){
-                keyValue = 1 - ((100/k.y) * .1)
+            if (k.keyframePoint.y > middle){
+                keyValue = 1 - ((100/k.keyframePoint.y) * .1)
             }
 
 
-            keys.push({frame: k.x, value: keyValue})
+            keys.push({frame: k.keyframePoint.x, value: keyValue})
             return k;
         });
         anim.setKeys(keys);
 
-        this.setState({ keyframes: keyframes})
-
-
+        this.setState({ svgKeyframes: svgKeyframes})
 
     }
 
@@ -174,57 +161,57 @@ animation.setEasingFunction((bezierEase as unknown) as EasingFunction);
         const { easingMode, easingType } = this.getAnimationProperties(animation);
 
         const keyframes = animation.getKeys();
+
+
         if (keyframes === undefined) {
             return "";
         }
 
         const startKey = keyframes[0];
 
-        // This will change when Graph width becomes dinamic
-        const heightScale = 100;
-
-        // This assumes the startkey is always 0... we will change this
-        let middle = (startKey.value / 2) * heightScale;
+        // This assumes the startkey is always 0... beed to change this
+        let middle = this._heightScale/2;
 
         // START OF LINE/CURVE
-        let data: string | undefined = `M0, ${middle}`;
+        let data: string | undefined = `M${startKey.frame}, ${this._heightScale - (startKey.value * middle)}`;
 
         if (easingType === undefined && easingMode === undefined){
-            data = this.linearInterpolation(keyframes, data, heightScale, middle);
+            data = this.linearInterpolation(keyframes, data, middle);
         } else {
             let easingFunction = animation.getEasingFunction();
-            data = this.curvePath(keyframes, data, heightScale, middle, easingFunction as EasingFunction)
+            data = this.curvePath(keyframes, data, middle, easingFunction as EasingFunction)
         }
 
         return data;
 
     }
 
-    curvePath(keyframes: BABYLON.IAnimationKey[], data: string, heightScale: number, middle: number, easingFunction: EasingFunction) {
+    curvePath(keyframes: BABYLON.IAnimationKey[], data: string, middle: number, easingFunction: EasingFunction) {
 
         // This will get 1/4 and 3/4 of points in eased curve
         const u = .25;
         const v = .75;
 
         keyframes.forEach((key, i) => {
-            if (i !== 0) {
 
-                // Gets previous initial point of curve segment
-                var pointA =  new Vector2(0, 0);
-                if (i === 0) {
-                    pointA.x = 0
-                    pointA.y = middle;
-                } else {
-                    pointA.x = keyframes[i - 1].frame;
-                    pointA.y = heightScale - (keyframes[i - 1].value * middle)
-                }
+            // Gets previous initial point of curve segment
+            var pointA =  new Vector2(0, 0);
+            if (i === 0) {
+                pointA.x = key.frame;
+                pointA.y = this._heightScale - (key.value * middle);
 
+                this.setKeyframePoint([pointA], i, keyframes.length);
+
+            } else {
+                pointA.x = keyframes[i - 1].frame;
+                pointA.y = this._heightScale - (keyframes[i - 1].value * middle)
+            
                 // Gets the end point of this curve segment
-                var pointB = new Vector2(key.frame, heightScale - (key.value * middle));
+                var pointB = new Vector2(key.frame, this._heightScale - (key.value * middle));
 
                 // Get easing value of percentage to get the bezier control points below
-                let du = easingFunction.ease(u);
-                let dv = easingFunction.ease(v);
+                let du = easingFunction.ease(u); // What happens to this function when we edit a curve? 
+                let dv = easingFunction.ease(v); // What happens to this function when we edit a curve? 
 
                 // Intermediate points in curve
                 let intermediatePoint25 = new Vector2(((pointB.x - pointA.x) * u) + pointA.x,  ((pointB.y - pointA.y) * du) + middle);
@@ -236,13 +223,10 @@ animation.setEasingFunction((bezierEase as unknown) as EasingFunction);
                 if (controlPoints === undefined){
                     console.log("error getting bezier control points");
                 } else {
-                    this.setAnchorPoint(controlPoints[0], controlPoints[1]);
-                    this.setAnchorPoint(controlPoints[3], controlPoints[2]);
     
-                    this.setKeyframePoint(pointA);
-                    this.setKeyframePoint(pointB);
+                    this.setKeyframePoint(controlPoints, i, keyframes.length);
     
-                    data += ` C${controlPoints[1].x}, ${controlPoints[1].y} ${controlPoints[2].x}, ${controlPoints[2].y} ${pointB.x}, ${pointB.y}`
+                    data += ` C${controlPoints[1].x}, ${controlPoints[1].y} ${controlPoints[2].x}, ${controlPoints[2].y} ${controlPoints[3].x}, ${controlPoints[3].y}`
 
                 }
             }
@@ -253,35 +237,68 @@ animation.setEasingFunction((bezierEase as unknown) as EasingFunction);
 
     }
 
+    renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number){
+
+
+        let animation = this.state.selected as Animation;
+
+        let keys = [...animation.getKeys()];
+
+        let newFrame = 0;
+        if (updatedSvgKeyFrame.keyframePoint.x !== 0){
+            if (updatedSvgKeyFrame.keyframePoint.x > 0 && updatedSvgKeyFrame.keyframePoint.x < 1){
+                newFrame = 1;
+            }else {
+                newFrame = Math.round(updatedSvgKeyFrame.keyframePoint.x);
+            }
+        }
+
+        keys[index].frame = newFrame; // This value comes as percentage/frame/time
+        keys[index].value =  ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y)/ this._heightScale)*2; // this value comes inverted svg from 0 = 100 to 100 = 0
+
+        animation.setKeys(keys);
+
+        this.selectAnimation(animation);
+
+    }
+
     
-    linearInterpolation(keyframes: IAnimationKey[], data: string, heightScale: number, middle: number): string {
+    linearInterpolation(keyframes: IAnimationKey[], data: string, middle: number): string {
         keyframes.forEach((key, i) => {
             if (i !== 0) {
-                data += ` L${key.frame} ${heightScale - (key.value * middle)}`
+                data += ` L${key.frame} ${this._heightScale - (key.value * middle)}`
             }
 
         });
         return data;
     }
 
-    
-    setAnchorPoint(point: Vector2, anchor: Vector2) {
-        this._anchorPoints.push({ point, anchor });
-    }
+    setKeyframePoint(controlPoints: Vector2[], index: number, keyframesCount: number) {
 
-    setKeyframePoint(point: Vector2) {
-        this._keyframes.push(point);
+        let svgKeyframe;
+        if (index === 0){
+            svgKeyframe = { keyframePoint: controlPoints[0], rightControlPoint: null, leftControlPoint: null, id: index.toString() }
+        }else if (index === 1) {
+            this._svgKeyframes[index-1].rightControlPoint = controlPoints[1];
+            svgKeyframe = { keyframePoint: controlPoints[3], leftControlPoint: controlPoints[2], rightControlPoint: null, id: index.toString() }
+        } else if (index === keyframesCount - 1){
+            this._svgKeyframes[index-1].rightControlPoint = controlPoints[1];
+            svgKeyframe = { keyframePoint: controlPoints[3], rightControlPoint: null, leftControlPoint: controlPoints[2], id: index.toString() }
+        } else {
+            svgKeyframe = { keyframePoint: controlPoints[0], rightControlPoint: controlPoints[1], leftControlPoint: this._svgKeyframes[index-1].rightControlPoint, id: index.toString() }
+        }
+
+        this._svgKeyframes.push(svgKeyframe);
     }
 
     selectAnimation(animation: Animation) {
-        this._anchorPoints = [];
-        this._keyframes = [];
+        this._svgKeyframes = [];
 
         const pathData = this.getPathData(animation);
         if (pathData === "") {
             console.log("no keyframes in this animation");
         }
-        this.setState({ selected: animation, currentPathData: pathData, anchorPoints: this._anchorPoints, keyframes: this._keyframes });
+        this.setState({ selected: animation, currentPathData: pathData, svgKeyframes: this._svgKeyframes });
 
     }
 
@@ -338,7 +355,7 @@ animation.setEasingFunction((bezierEase as unknown) as EasingFunction);
                 <div className="content">
                   
                     <div className="animation-list">
-
+                
                     <div>
                         <select value={this.state.selectedProperty} onChange={(e) => this.handlePropertyChange(e)}>
                             <option value="position.x">Position X</option>
@@ -369,16 +386,10 @@ animation.setEasingFunction((bezierEase as unknown) as EasingFunction);
 
                         </ul>
                     </div>
-                    <div className="sample-chart" style={{width:500, height:500}}>
-
-                        <svg className="linear" viewBox="0 0 100 100" preserveAspectRatio="none">
-                        
-                           <KeyframeSvgPoint key={0} point={new Vector2(50,50)} onUpdate={(keyframe: Vector2, index: number) => {}} index={0} />
-
-                        </svg>
-                    </div>
                     <div className="graph-chart">
-                        <svg className="linear" viewBox="0 0 100 100" preserveAspectRatio="none" onMouseDown={(e) => this.addKeyFrame(e)}>
+
+                           { this.state.svgKeyframes && <SvgDraggableArea keyframeSvgPoints={this.state.svgKeyframes} updatePosition={(updatedSvgKeyFrame: IKeyframeSvgPoint,index: number) => this.renderPoints(updatedSvgKeyFrame, index)}>
+                       
                              {/* Frame Labels  */}
                             <text x="10" y="0" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>10</text>
                             <text x="20" y="0" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>20</text>
@@ -426,15 +437,10 @@ animation.setEasingFunction((bezierEase as unknown) as EasingFunction);
                             { /* Single Curve -Modify this for multiple selection and view  */}
                             <path id="curve" d={this.state.currentPathData} style={{ stroke: 'red', fill: 'none', strokeWidth: '0.5' }}></path>
 
-                            {this.state.anchorPoints?.map((anchorPoint, i) =>
-                                <AnchorSvgPoint key={i} point={anchorPoint.point} anchor={anchorPoint.anchor} />
-                            )}
+                        
+                        </SvgDraggableArea>
 
-                            {this.state.keyframes?.map((keyframe, i) =>
-                                <KeyframeSvgPoint key={i} point={keyframe} onUpdate={(keyframe: Vector2, index: number) => this.updateKeyframe(keyframe, index)} index={i} />
-                            )}
-
-                        </svg>
+                        } 
 
                         Animation name: {this.state.selected.name}
 
