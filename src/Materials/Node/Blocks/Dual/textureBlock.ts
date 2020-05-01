@@ -215,7 +215,7 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
-        if (!mesh || !this.texture) {
+        if (!this.texture) {
             return;
         }
 
