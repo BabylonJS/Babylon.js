@@ -31,6 +31,7 @@ precision highp float;
 
 // Helper Functions
 #include<helperFunctions>
+#include<hdrFilteringFunctions>
 #include<pbrHelperFunctions>
 #include<imageProcessingFunctions>
 #include<shadowsFragmentFunctions>

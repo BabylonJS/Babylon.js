@@ -144,7 +144,11 @@
         uniform samplerCube reflectionSampler;
         
         #ifdef LODBASEDMICROSFURACE
-            #define sampleReflectionLod(s, c, l) textureCubeLodEXT(s, c, l)
+            #ifdef REALTIME_FILTERING
+                #define sampleReflectionLod(s, c, l) sampleFiltered(s, c)
+            #else
+                #define sampleReflectionLod(s, c, l) textureCubeLodEXT(s, c, l)
+            #endif
         #else
             uniform samplerCube reflectionSamplerLow;
             uniform samplerCube reflectionSamplerHigh;
@@ -177,50 +181,6 @@
             varying vec3 vDirectionW;
         #endif
     #endif
-#endif
-
-// debug
-#ifdef DEBUG_REALTIME_SAMPLING
-    #undef sampleReflectionLod
-
-    uniform vec3 sampleDirections[NUM_SAMPLES];
-    uniform float weights[NUM_SAMPLES];
-    vec4 sampleUnfiltered(samplerCube sampler, vec3 direction, float lod) {
-        // Rotation by PI around y is necessary for consistency with IBLBaker
-        vec3 n = vec3(direction.x, direction.y, direction.z);
-        vec3 tangent = abs(n.z) < 0.999 ? vec3(0., 0., 1.) : vec3(1., 0., 0.);
-        tangent = normalize(cross(tangent, n));
-        vec3 bitangent = cross(n, tangent);
-        mat3 tbn = mat3(tangent, bitangent, n);
-
-        vec3 color = vec3(0.);
-        vec3 h;
-        vec3 l;
-        float NoH;
-        float NoL;
-        float totalWeight = 0.;
-        for (int i = 0; i < NUM_SAMPLES; i++) {
-            h = tbn * sampleDirections[i];
-            l = 2. * dot(h, n) * h - n;
-            NoH = clamp(dot(h, n), 0.0, 1.0);
-            NoL = clamp(dot(l, n), 0.0, 1.0);
-            if (NoL > 0.) {
-                float solidAngleTexel = 4.0 * 3.14159 / (6. * 128. * 128.);
-                float solidAngleSample = 4.0 / (float(NUM_SAMPLES) * weights[i]);
-                float lod = 0.5 * log2(solidAngleSample/solidAngleTexel);
-                // gamma correction needed ?
-                color += textureCubeLodEXT(sampler, l, lod).xyz * NoL;
-                totalWeight += NoL;            
-            }
-        }
-
-        if (totalWeight != 0.) {
-            color /= totalWeight;
-        }
-        return vec4(color, 1.0);
-    }
-
-    #define sampleReflectionLod(s, c, l) sampleUnfiltered(s, c, l)
 #endif
 
 #ifdef ENVIRONMENTBRDF

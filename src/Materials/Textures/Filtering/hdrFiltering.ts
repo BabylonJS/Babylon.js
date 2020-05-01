@@ -13,8 +13,13 @@ import { VertexBuffer } from "../../../Meshes/Buffer"
 
 import "../../../Shaders/hdrFiltering.vertex";
 import "../../../Shaders/hdrFiltering.fragment";
+
+interface IHDRFilteringOptions {
+	hdrScale?: number
+}
+
 /**
- * Filters HDR maps to get correct  renderings of PBR reflections
+ * Filters HDR maps to get correct renderings of PBR reflections
  */
 export class HDRFiltering {
 
@@ -23,14 +28,17 @@ export class HDRFiltering {
 	private _effect: Effect;
 
 	private _numSamples: number = 128;
+	public hdrScale: number = 1;
 
-	constructor(scene: Scene) {
+	constructor(scene: Scene, options: IHDRFilteringOptions = {}) {
 		// pass
 		this._scene = scene;
 		this._engine = scene.getEngine();
 
 		this.createEffect();
 		this._prepareBuffers();
+
+		this.hdrScale = options.hdrScale || this.hdrScale;
 	}
 
 	private static _bits = new Uint32Array(1);
@@ -60,6 +68,21 @@ export class HDRFiltering {
 	    return roughness * roughness + 0.0005;
 	}
 
+	public static flatten(arr: Vector3[]) : number[] {
+		const result = [];
+
+		for (let i = 0; i < arr.length; i++) {
+			result.push(arr[i].x, arr[i].y, arr[i].z);
+		}
+
+		return result;
+	}
+
+	/**
+	  * Generates samples for importance sampling, according to the GGX model distribution
+	  * @param numSamples number of samples
+	  * @param roughness roughness value. The higher the roughness, the more scattered the distribution will be.
+	  */
 	public static generateSamples(numSamples: number, roughness: number): Vector3[] {
 	    const result = [];
 	    let vector;
@@ -74,6 +97,11 @@ export class HDRFiltering {
 	    return result;
 	}
 
+	/**
+	  * Generates weights for importance sampling, according to the GGX model distribution
+	  * @param samples generated samples from `generateSamples`
+	  * @param roughness roughness value. The higher the roughness, the more scattered the distribution will be.
+	  */
 	public static generateWeights(samples: Vector3[], roughness: number): number[] {
 	    // float a2 = square(alphaG);
 	    // float d = NdotH * NdotH * (a2 - 1.0) + 1.0;
@@ -92,33 +120,7 @@ export class HDRFiltering {
 	    return result;
 	}
 
-	/**
-	 * Get a value indicating if the post-process is ready to be used
-	 * @returns true if the post-process is ready (shader is compiled)
-	 */
-	public isReady(texture: CubeTexture | HDRCubeTexture) {
-		return (texture.isReady() && this._effect.isReady())
-	}
-
-	// Todo merge hdrCubeTexture with CubeTexture
-	public prefilter(texture: CubeTexture | HDRCubeTexture, onFinished?: () => void) {
-		return new Promise((resolve) => {
-			const callback = () => {
-				if (this.isReady(texture)) {
-					this._prefilter(texture);
-					resolve();
-					if (onFinished) {
-						onFinished();
-					}
-					this._scene.unregisterAfterRender(callback);
-				}
-			};
-			// Is dependence of renderloop really necessary ? maybe setInterval is more suited
-			this._scene.registerAfterRender(callback);
-		})
-	}
-
-	private _prefilter(texture: CubeTexture | HDRCubeTexture) : CubeTexture | HDRCubeTexture {
+	private prefilterInternal(texture: CubeTexture | HDRCubeTexture) : CubeTexture | HDRCubeTexture {
 		// const nbRoughnessStops = 2;
 		const maxLodLevel = Math.round(Math.log(texture.getSize().width) / Math.log(2));
 		const samples = this._numSamples;
@@ -136,11 +138,7 @@ export class HDRFiltering {
 		return texture;
 	}
 
-	public filter(texture: CubeTexture | HDRCubeTexture, outputTexture: RenderTargetTexture, kernel: Vector3[], weights: number[], lodLevel: number = 0) : Nullable<RenderTargetTexture> {
-		if (!texture.isReady()) {
-			return null;
-		}
-
+	private filter(texture: CubeTexture | HDRCubeTexture, outputTexture: RenderTargetTexture, kernel: Vector3[], weights: number[], lodLevel: number = 0) : Nullable<RenderTargetTexture> {
 		const directions = [
 			[new Vector3(0, 0, -1), new Vector3(0, -1, 0), new Vector3(1, 0, 0)], // PositiveX
 			[new Vector3(0, 0, 1), new Vector3(0, -1, 0), new Vector3(-1, 0, 0)], // NegativeX
@@ -150,6 +148,8 @@ export class HDRFiltering {
 			[new Vector3(-1, 0, 0), new Vector3(0, -1, 0), new Vector3(0, 0, -1)], // NegativeZ
 		];
 
+		this.beforeRender(texture);
+
 		for (let i = 0; i < 6 ; i++) {
 			this.apply(texture, kernel, weights);
 			this._effect.setVector3("up", directions[i][0]);
@@ -158,71 +158,54 @@ export class HDRFiltering {
 			this.directRender(outputTexture._texture!, i, lodLevel);
 		}
 
+		this.afterRender();
+
 		return outputTexture;
 	}
 
-	public static flatten(arr: Vector3[]) : number[] {
-		const result = [];
-
-		for (let i = 0; i < arr.length; i++) {
-			result.push(arr[i].x, arr[i].y, arr[i].z);
-		}
-
-		return result;
-	}
-
-	/**
-	 * Binds all textures and uniforms to the shader, this will be run on every pass.
-	 * @returns the effect corresponding to this post process. Null if not compiled or not ready.
-	 */
-	public apply(texture: CubeTexture | HDRCubeTexture, kernel: Vector3[], weights: number[]) {
-	    // Check
-	    if (!this._effect || !this._effect.isReady()) {
-	        return null;
-	    }
-
-	    // States
-	    this._engine.enableEffect(this._effect);
-	    this._engine.setState(false);
-	    this._engine.setDepthBuffer(false);
-	    this._engine.setDepthWrite(false);
+	private beforeRender(texture: CubeTexture | HDRCubeTexture) {
+		// States
+		this._engine.enableEffect(this._effect);
+		this._engine.setState(false);
+		this._engine.setDepthBuffer(false);
+		this._engine.setDepthWrite(false);
 
 	    this._effect.setTexture("inputTexture", texture);
-
-	    // Parameters
-	    this._effect.setArray3("sampleDirections", HDRFiltering.flatten(kernel));
-	    this._effect.setArray("weights", weights);
 	    this._effect.setFloat("cubeWidth", texture.getSize().width);
 	    this._effect.setFloat2("scale", 1, 1);
-	    return this._effect;
+	    this._effect.setFloat("hdrScale", this.hdrScale);
 	}
 
-	/**
-	 * Updates the effect with the current post process compile time values and recompiles the shader.
-	 * @param defines Define statements that should be added at the beginning of the shader. (default: null)
-	 * @param uniforms Set of uniform variables that will be passed to the shader. (default: null)
-	 * @param samplers Set of Texture2D variables that will be passed to the shader. (default: null)
-	 * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
-	 * @param onCompiled Called when the shader has been compiled.
-	 * @param onError Called if there is an error when compiling a shader.
-	 */
-	public createEffect() {
+	private afterRender() {
+        this._engine.restoreDefaultFramebuffer();
+		        // Restore depth buffer
+	    this._engine.setState(true);
+        this._engine.setDepthBuffer(true);
+        this._engine.setDepthWrite(true);
+	}
+
+	private apply(texture: CubeTexture | HDRCubeTexture, kernel: Vector3[], weights: number[]) {
+	    this._effect.setArray3("vSampleDirections", HDRFiltering.flatten(kernel));
+	    this._effect.setArray("vWeights", weights);
+	}
+
+	private createEffect() {
 		const defines = "#define NUM_SAMPLES " + this._numSamples;
 	    this._effect = this._engine.createEffect({ vertex: "hdrFiltering", fragment: "hdrFiltering" },
 	        ["position"],
-	        ["sampleDirections", "weights", "up", "right", "front", "cubeWidth"],
+	        ["vSampleDirections", "vWeights", "up", "right", "front", "cubeWidth", "hdrScale"],
 	        ["inputTexture"],
 	        defines
 	    );
 	}
 
    /**
-     * Manually render a set of post processes to a texture.
+     * Renders the filter effect on a texture
      * @param targetTexture The target texture to render to.
-     * @param faceIndex defines the face to render to if a cubemap is defined as the target
+     * @param faceIndex defines the face to render
      * @param lodLevel defines which lod of the texture to render to
      */
-    public directRender(targetTexture: InternalTexture, faceIndex = 0, lodLevel = 0): void {
+    private directRender(targetTexture: InternalTexture, faceIndex = 0, lodLevel = 0): void {
         var engine = this._engine;
         engine._currentRenderTarget = null;
         engine.bindFramebuffer(targetTexture, faceIndex, undefined, undefined, true, lodLevel);
@@ -231,27 +214,16 @@ export class HDRFiltering {
         this._prepareBuffers();
         engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._effect);
         engine.drawElementsType(Material.TriangleFillMode, 0, 6);
-
-        engine.restoreDefaultFramebuffer();
-        // Restore depth buffer
-	    engine.setState(true);
-        engine.setDepthBuffer(true);
-        engine.setDepthWrite(true);
     }
 
     private _indexBuffer: DataBuffer;
     private _vertexBuffers: { [key: string]: VertexBuffer } = {};
 
-    /**
-     * Creates a new instance PostProcess
-     * @param scene The scene that the post process is associated with.
-     */
     private _prepareBuffers(): void {
         if (this._vertexBuffers[VertexBuffer.PositionKind]) {
             return;
         }
 
-        // VBO
         var vertices = [];
         vertices.push(1, 1);
         vertices.push(-1, 1);
@@ -264,7 +236,6 @@ export class HDRFiltering {
     }
 
     private _buildIndexBuffer(): void {
-        // Indices
         var indices = [];
         indices.push(0);
         indices.push(1);
@@ -277,9 +248,44 @@ export class HDRFiltering {
         this._indexBuffer = this._scene.getEngine().createIndexBuffer(indices);
     }
 
+    /**
+     * Disposes the filter
+     */
     public dispose() {
     	this._vertexBuffers[VertexBuffer.PositionKind].dispose();
     	this._effect.dispose();
     }
 
+    /**
+     * Get a value indicating if the post-process is ready to be used
+     * @returns true if the post-process is ready (shader is compiled)
+     */
+    public isReady(texture: CubeTexture | HDRCubeTexture) {
+    	return (texture.isReady() && this._effect.isReady())
+    }
+
+    /**
+      * Prefilters a cube texture to have mipmap levels representing roughness values.
+      * Prefiltering will be invoked at the end of next rendering pass.
+      * This has to be done once the map is loaded, and has not been prefiltered by a third party software.
+      * See http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf for more information
+      * @param texture Texture to filter
+      * @param onFinished Callback when filtering is done
+      */
+    public prefilter(texture: CubeTexture | HDRCubeTexture, onFinished?: () => void) {
+    	return new Promise((resolve) => {
+    		const callback = () => {
+    			if (this.isReady(texture)) {
+    				this.prefilterInternal(texture);
+    				resolve();
+    				if (onFinished) {
+    					onFinished();
+    				}
+    				this._scene.unregisterAfterRender(callback);
+    			}
+    		};
+    		// Is dependence of renderloop really necessary ? maybe setInterval is more suited
+    		this._scene.registerAfterRender(callback);
+    	})
+    }
 }
