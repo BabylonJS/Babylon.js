@@ -27,7 +27,13 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         this._onIsLoadingChangedObserver = this.props.globalState.onIsLoadingChanged.add((state) => this.setState({isLoading: state}));
     }
 
+    componentDidMount() {
+        this.eventNMERefresh = this.eventNMERefresh.bind(this);
+        window.addEventListener("nme_refresh", this.eventNMERefresh);
+    }
+
     componentWillUnmount() {
+        window.removeEventListener('nme_refresh', this.eventNMERefresh);
         this.props.globalState.onIsLoadingChanged.remove(this._onIsLoadingChangedObserver);
     }
 
@@ -47,15 +53,6 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
 
     eventNMERefresh() {
         this.forceUpdate();
-    }
-
-    componentDidMount() {
-        this.eventNMERefresh = this.eventNMERefresh.bind(this);
-        window.addEventListener("nme_refresh", this.eventNMERefresh);
-    }
-
-    componentDidUnmount() {
-        window.removeEventListener('nme_refresh', this.eventNMERefresh);
     }
 
     render() {

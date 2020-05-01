@@ -150,7 +150,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         window.addEventListener("nme_refresh", this.eventNMERefresh);
     }
 
-    componentDidUnmount() {
+    componentWillUnmount() {
         window.removeEventListener('nme_refresh', this.eventNMERefresh);
     }
 
