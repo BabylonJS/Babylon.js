@@ -9,9 +9,9 @@ import { Quaternion, Vector3 } from '../../Maths/math.vector';
 import { Mesh } from '../../Meshes/mesh';
 
 /**
- * Handness type in xrInput profiles. These can be used to define layouts in the Layout Map.
+ * Handedness type in xrInput profiles. These can be used to define layouts in the Layout Map.
  */
-export type MotionControllerHandness = "none" | "left" | "right";
+export type MotionControllerHandedness = "none" | "left" | "right";
 /**
  * The type of components available in motion controllers.
  * This is not the name of the component.
@@ -122,9 +122,9 @@ export interface IMotionControllerLayout {
  */
 export interface IMotionControllerLayoutMap {
     /**
-     * Layouts with handness type as a key
+     * Layouts with handedness type as a key
      */
-    [handness: string /* handness */]: IMotionControllerLayout;
+    [handedness: string /* handedness */]: IMotionControllerLayout;
 }
 
 /**
@@ -138,7 +138,7 @@ export interface IMotionControllerProfile {
      */
     fallbackProfileIds: string[];
     /**
-     * The layout map, with handness as key
+     * The layout map, with handedness as key
      */
     layouts: IMotionControllerLayoutMap;
     /**
@@ -214,6 +214,13 @@ export interface IMinimalMotionControllerObject {
          */
         pressed: boolean;
     }>;
+
+    /**
+     * EXPERIMENTAL haptic support.
+     */
+    hapticActuators?: Array<{
+        pulse: (value: number, duration: number) => Promise<boolean>
+    }>;
 }
 
 /**
@@ -268,7 +275,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      * @param scene the scene to which the model of the controller will be added
      * @param layout The profile layout to load
      * @param gamepadObject The gamepad object correlating to this controller
-     * @param handness handness (left/right/none) of this controller
+     * @param handedness handedness (left/right/none) of this controller
      * @param _doNotLoadControllerMesh set this flag to ignore the mesh loading
      */
     constructor(protected scene: Scene, protected layout: IMotionControllerLayout,
@@ -277,9 +284,9 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
          */
         public gamepadObject: IMinimalMotionControllerObject,
         /**
-         * handness (left/right/none) of this controller
+         * handedness (left/right/none) of this controller
          */
-        public handness: MotionControllerHandness,
+        public handedness: MotionControllerHandedness,
         _doNotLoadControllerMesh: boolean = false) {
         // initialize the components
         if (layout.components) {
@@ -383,6 +390,31 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
         this.updateModel(xrFrame);
     }
 
+    /**
+     * Backwards compatibility due to a deeply-integrated typo
+     */
+    public get handness() {
+        return this.handedness;
+    }
+
+    /**
+     * Pulse (vibrate) this controller
+     * If the controller does not support pulses, this function will fail silently and return Promise<false> directly after called
+     * Consecutive calls to this function will cancel the last pulse call
+     *
+     * @param value the strength of the pulse in 0.0...1.0 range
+     * @param duration Duration of the pulse in milliseconds
+     * @param hapticActuatorIndex optional index of actuator (will usually be 0)
+     * @returns a promise that will send true when the pulse has ended and false if the device doesn't support pulse or an error accrued
+     */
+    public pulse(value: number, duration: number, hapticActuatorIndex: number = 0): Promise<boolean> {
+        if (this.gamepadObject.hapticActuators && this.gamepadObject.hapticActuators[hapticActuatorIndex]) {
+            return this.gamepadObject.hapticActuators[hapticActuatorIndex].pulse(value, duration);
+        } else {
+            return Promise.resolve(false);
+        }
+    }
+
     // Look through all children recursively. This will return null if no mesh exists with the given name.
     protected _getChildByName(node: AbstractMesh, name: string): AbstractMesh {
         return <AbstractMesh>node.getChildren((n) => n.name === name, false)[0];
@@ -470,7 +502,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
     }
 
     private _getGenericParentMesh(meshes: AbstractMesh[]): void {
-        this.rootMesh = new Mesh(this.profileId + " " + this.handness, this.scene);
+        this.rootMesh = new Mesh(this.profileId + " " + this.handedness, this.scene);
 
         meshes.forEach((mesh) => {
             if (!mesh.parent) {

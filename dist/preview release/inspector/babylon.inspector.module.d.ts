@@ -48,6 +48,7 @@ declare module "babylonjs-inspector/components/globalState" {
         onTabChangedObservable: Observable<number>;
         onSelectionRenamedObservable: Observable<void>;
         onPluginActivatedObserver: Nullable<Observer<ISceneLoaderPlugin | ISceneLoaderPluginAsync>>;
+        onNewSceneObservable: Observable<Scene>;
         sceneImportDefaults: {
             [key: string]: any;
         };
@@ -578,6 +579,44 @@ declare module "babylonjs-inspector/components/actionTabs/lines/floatLineCompone
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/animationCurveEditorComponent" {
+    import * as React from "react";
+    interface IAnimationCurveEditorComponentProps {
+        close: (event: any) => void;
+        title: string;
+    }
+    export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, {
+        isOpen: boolean;
+    }> {
+        constructor(props: IAnimationCurveEditorComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/popupComponent" {
+    import * as React from "react";
+    interface IPopupComponentProps {
+        id: string;
+        title: string;
+        size: {
+            width: number;
+            height: number;
+        };
+        onOpen: (window: Window) => void;
+        onClose: (window: Window) => void;
+    }
+    export class PopupComponent extends React.Component<IPopupComponentProps, {
+        isComponentMounted: boolean;
+        blockedByBrowser: boolean;
+    }> {
+        private _container;
+        private _window;
+        constructor(props: IPopupComponentProps);
+        componentDidMount(): void;
+        openPopup(): void;
+        componentWillUnmount(): void;
+        render(): React.ReactPortal | null;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/animationPropertyGridComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
@@ -602,6 +641,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _onBeforeRenderObserver;
         private _isPlaying;
         private timelineRef;
+        private _isCurveEditorOpen;
         private _animationControl;
         constructor(props: IAnimationGridComponentProps);
         playOrPause(): void;
@@ -609,6 +649,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         componentWillUnmount(): void;
         onCurrentFrameChange(value: number): void;
         onChangeFromOrTo(): void;
+        onOpenAnimationCurveEditor(): void;
+        onCloseAnimationCurveEditor(window: Window | null): void;
         render(): JSX.Element;
     }
 }
@@ -2683,6 +2725,7 @@ declare module "babylonjs-inspector/components/sceneExplorer/sceneExplorerCompon
         private _onSelectionChangeObserver;
         private _onSelectionRenamedObserver;
         private _onNewSceneAddedObserver;
+        private _onNewSceneObserver;
         private sceneExplorerRef;
         private _once;
         private _hooked;
@@ -2758,6 +2801,7 @@ declare module "babylonjs-inspector/inspector" {
         static get IsVisible(): boolean;
         static EarlyAttachToLoader(): void;
         static Show(scene: Scene, userOptions: Partial<IInspectorOptions>): void;
+        static _SetNewScene(scene: Scene): void;
         static _CreateCanvasContainer(parentControl: HTMLElement): void;
         private static _DestroyCanvasContainer;
         private static _Cleanup;
@@ -2811,6 +2855,7 @@ declare module INSPECTOR {
         onTabChangedObservable: BABYLON.Observable<number>;
         onSelectionRenamedObservable: BABYLON.Observable<void>;
         onPluginActivatedObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync>>;
+        onNewSceneObservable: BABYLON.Observable<BABYLON.Scene>;
         sceneImportDefaults: {
             [key: string]: any;
         };
@@ -3286,6 +3331,42 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IAnimationCurveEditorComponentProps {
+        close: (event: any) => void;
+        title: string;
+    }
+    export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, {
+        isOpen: boolean;
+    }> {
+        constructor(props: IAnimationCurveEditorComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IPopupComponentProps {
+        id: string;
+        title: string;
+        size: {
+            width: number;
+            height: number;
+        };
+        onOpen: (window: Window) => void;
+        onClose: (window: Window) => void;
+    }
+    export class PopupComponent extends React.Component<IPopupComponentProps, {
+        isComponentMounted: boolean;
+        blockedByBrowser: boolean;
+    }> {
+        private _container;
+        private _window;
+        constructor(props: IPopupComponentProps);
+        componentDidMount(): void;
+        openPopup(): void;
+        componentWillUnmount(): void;
+        render(): React.ReactPortal | null;
+    }
+}
+declare module INSPECTOR {
     interface IAnimationGridComponentProps {
         globalState: GlobalState;
         animatable: BABYLON.IAnimatable;
@@ -3302,6 +3383,7 @@ declare module INSPECTOR {
         private _onBeforeRenderObserver;
         private _isPlaying;
         private timelineRef;
+        private _isCurveEditorOpen;
         private _animationControl;
         constructor(props: IAnimationGridComponentProps);
         playOrPause(): void;
@@ -3309,6 +3391,8 @@ declare module INSPECTOR {
         componentWillUnmount(): void;
         onCurrentFrameChange(value: number): void;
         onChangeFromOrTo(): void;
+        onOpenAnimationCurveEditor(): void;
+        onCloseAnimationCurveEditor(window: Window | null): void;
         render(): JSX.Element;
     }
 }
@@ -4902,6 +4986,7 @@ declare module INSPECTOR {
         private _onSelectionChangeObserver;
         private _onSelectionRenamedObserver;
         private _onNewSceneAddedObserver;
+        private _onNewSceneObserver;
         private sceneExplorerRef;
         private _once;
         private _hooked;
@@ -4969,6 +5054,7 @@ declare module INSPECTOR {
         static get IsVisible(): boolean;
         static EarlyAttachToLoader(): void;
         static Show(scene: BABYLON.Scene, userOptions: Partial<BABYLON.IInspectorOptions>): void;
+        static _SetNewScene(scene: BABYLON.Scene): void;
         static _CreateCanvasContainer(parentControl: HTMLElement): void;
         private static _DestroyCanvasContainer;
         private static _Cleanup;

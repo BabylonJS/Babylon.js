@@ -4,6 +4,7 @@ import { Observable } from '../../Misc/observable';
 import { Vector3, Matrix, Quaternion } from '../../Maths/math.vector';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
 import { IWebXRLegacyHitTestOptions, IWebXRLegacyHitResult } from './WebXRHitTestLegacy';
+import { Tools } from '../../Misc/tools';
 
 /**
  * Options used for hit testing (version 2)
@@ -68,12 +69,19 @@ export class WebXRHitTest extends WebXRAbstractFeature {
     private _transientXrHitTestSource: XRTransientInputHitTestSource;
     // in XR space z-forward is negative
     private _xrHitTestSource: XRHitTestSource;
-    private initHitTestSource = () => {
+    private initHitTestSource = (referenceSpace: XRReferenceSpace) => {
+        if (!referenceSpace) {
+            return;
+        }
         const offsetRay = new XRRay(this.options.offsetRay || {});
         const options: XRHitTestOptionsInit = {
-            space: this.options.useReferenceSpace ? this._xrSessionManager.referenceSpace : this._xrSessionManager.viewerReferenceSpace,
+            space: this.options.useReferenceSpace ? referenceSpace : this._xrSessionManager.viewerReferenceSpace,
             offsetRay: offsetRay
         };
+        if (!options.space) {
+            Tools.Warn('waiting for viewer reference space to initialize');
+            return;
+        }
         this._xrSessionManager.session.requestHitTestSource(options).then((hitTestSource) => {
             if (this._xrHitTestSource) {
                 this._xrHitTestSource.cancel();
@@ -123,6 +131,7 @@ export class WebXRHitTest extends WebXRAbstractFeature {
          */
         public readonly options: IWebXRHitTestOptions = {}) {
         super(_xrSessionManager);
+        Tools.Warn('Hit test is an experimental and unstable feature. make sure you enable optionalFeatures when creating the XR session');
     }
 
     /**
@@ -138,7 +147,7 @@ export class WebXRHitTest extends WebXRAbstractFeature {
 
         if (!this.options.disablePermanentHitTest) {
             if (this._xrSessionManager.referenceSpace) {
-                this.initHitTestSource();
+                this.initHitTestSource(this._xrSessionManager.referenceSpace);
             }
             this._xrSessionManager.onXRReferenceSpaceChanged.add(this.initHitTestSource);
         }

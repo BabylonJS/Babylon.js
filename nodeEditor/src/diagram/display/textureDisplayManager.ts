@@ -1,6 +1,7 @@
 import { IDisplayManager } from './displayManager';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/textureBlock';
+import { RefractionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/refractionBlock';
 import { ReflectionTextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/reflectionTextureBlock';
 import { TextureLineComponent } from '../../sharedComponents/textureLineComponent';
 
@@ -25,7 +26,7 @@ export class TextureDisplayManager implements IDisplayManager {
     }
 
     public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {       
-        const textureBlock = block as TextureBlock | ReflectionTextureBlock;
+        const textureBlock = block as TextureBlock | ReflectionTextureBlock | RefractionBlock;
 
         if (!this._previewCanvas) {
             contentArea.classList.add("texture-block");

@@ -3870,6 +3870,10 @@ var Control = /** @class */ (function () {
          * An event triggered after the control was drawn
          */
         this.onAfterDrawObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        /**
+        * An event triggered when the control has been disposed
+        */
+        this.onDisposeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this._tmpMeasureA = new _measure__WEBPACK_IMPORTED_MODULE_2__["Measure"](0, 0, 0, 0);
     }
     Object.defineProperty(Control.prototype, "shadowOffsetX", {
@@ -5485,6 +5489,9 @@ var Control = /** @class */ (function () {
                 this.linkWithMesh(null);
             }
         }
+        // Callback
+        this.onDisposeObservable.notifyObservers(this);
+        this.onDisposeObservable.clear();
     };
     Object.defineProperty(Control, "HORIZONTAL_ALIGNMENT_LEFT", {
         /** HORIZONTAL_ALIGNMENT_LEFT */

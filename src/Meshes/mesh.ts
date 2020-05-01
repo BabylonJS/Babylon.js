@@ -987,7 +987,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             if (generator && (!generator.getShadowMap()?.renderList || generator.getShadowMap()?.renderList && generator.getShadowMap()?.renderList?.indexOf(this) !== -1)) {
                 for (var subMesh of this.subMeshes) {
-                    if (!generator.isReady(subMesh, hardwareInstancedRendering)) {
+                    if (!generator.isReady(subMesh, hardwareInstancedRendering, subMesh.getMaterial()?.needAlphaBlendingForMesh(this) ?? false)) {
                         return false;
                     }
                 }
@@ -3009,6 +3009,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             var serializationInstance: any = {
                 name: instance.name,
                 id: instance.id,
+                isPickable: instance.isPickable,
+                checkCollisions: instance.checkCollisions,
                 position: instance.position.asArray(),
                 scaling: instance.scaling.asArray()
             };
@@ -3022,6 +3024,24 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             } else if (instance.rotation) {
                 serializationInstance.rotation = instance.rotation.asArray();
             }
+
+            // Physics
+            //TODO implement correct serialization for physics impostors.
+            if (this.getScene()._getComponent(SceneComponentConstants.NAME_PHYSICSENGINE)) {
+                let impostor = instance.getPhysicsImpostor();
+                if (impostor) {
+                    serializationInstance.physicsMass = impostor.getParam("mass");
+                    serializationInstance.physicsFriction = impostor.getParam("friction");
+                    serializationInstance.physicsRestitution = impostor.getParam("mass");
+                    serializationInstance.physicsImpostor = impostor.type;
+                }
+            }
+
+            // Metadata
+            if (instance.metadata) {
+                serializationInstance.metadata = instance.metadata;
+            }
+
             serializationObject.instances.push(serializationInstance);
 
             // Animations
@@ -3373,6 +3393,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
                 if (parsedInstance.parentId) {
                     instance._waitingParentId = parsedInstance.parentId;
+                }
+
+                if (parsedInstance.isPickable !== undefined && parsedInstance.isPickable !== null) {
+                    instance.isPickable = parsedInstance.isPickable;
                 }
 
                 if (parsedInstance.rotationQuaternion) {

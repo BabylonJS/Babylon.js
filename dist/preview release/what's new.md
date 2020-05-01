@@ -2,19 +2,22 @@
 
 ## Major updates
 
-- Added particle editor to the Inspector ([Deltakosh](https://github.com/deltakosh)
+- Added particle editor to the Inspector ([Deltakosh](https://github.com/deltakosh))
 - Added the `ShadowDepthWrapper` class to support accurate shadow generation for custom as well as node material shaders. [Doc](https://doc.babylonjs.com/babylon101/shadows#custom-shadow-map-shaders) ([Popov72](https://github.com/Popov72))
 
 ## Updates
 
 ### General
 
-- Refactored React refs from old string API to React.createRef() API ([belfortk](https://github.com/belfortk)
+- Refactored React refs from old string API to React.createRef() API ([belfortk](https://github.com/belfortk))
 - Scale on one axis for `BoundingBoxGizmo` ([cedricguillemet](https://github.com/cedricguillemet))
 - Simplified code contributions by fully automating the dev setup with gitpod ([nisarhassan12](https://github.com/nisarhassan12))
 - Add a `CascadedShadowMap.IsSupported` method and log an error instead of throwing an exception when CSM is not supported ([Popov72](https://github.com/Popov72))
 - Added initial code for DeviceInputSystem ([PolygonalSun](https://github.com/PolygonalSun))
 - Added support for `material.disableColorWrite` ([Deltakosh](https://github.com/deltakosh))
+- The Mesh Asset Task also accepts File as sceneInput ([RaananW](https://github.com/RaananW))
+- Added support preserving vert colors for CSG objects ([PirateJC](https://github.com/PirateJC))
+- Added support in `ShadowGenerator` for fast fake soft transparent shadows ([Popov72](https://github.com/Popov72))
 
 ### Engine
 
@@ -24,8 +27,10 @@
 
 ### NME
 
-- Frames are now resizable from the corners ([belfortk](https://github.com/belfortk)
-- Can now rename and re-order frame inputs and outputs ([belfortk](https://github.com/belfortk)
+- Frames are now resizable from the corners ([belfortk](https://github.com/belfortk))
+- Can now rename and re-order frame inputs and outputs ([belfortk](https://github.com/belfortk))
+- Can now edit Node port names ([belfortk](https://github.com/belfortk))
+- Updated which node ports are shown on frames by default so that only node ports connected to outside nodes are by default exposed on the frame ([belfortk](https://github.com/belfortk))
 
 ### Inspector
 
@@ -34,6 +39,8 @@
 - Edit all textures (anisotropic, clear coat, sheen, ...) for the PBR materials ([Popov72](https://github.com/Popov72))
 - Added right click options to create PBR and Standard Materials ([Deltakosh](https://github.com/deltakosh))
 - Added support for recording GIF ([Deltakosh](https://github.com/deltakosh))
+- Popup Window available (To be used in Curve Editor) ([pixelspace](https://github.com/devpixelspace))
+- Add support to update inspector when switching to new scene ([belfortk](https://github.com/belfortk))
 
 ### Cameras
 
@@ -48,8 +55,10 @@
 ### Physics
 
 - Fixed time steps or delta time with sub time step for Oimo.js and Cannon.js ([cedricguillemet](https://github.com/cedricguillemet))
+- Ammo.js collision group and mask supported by impostor parameters ([cedricguillemet](https://github.com/cedricguillemet))
 - Ammo.js IDL exposed property update and raycast vehicle stablization support ([MackeyK24](https://github.com/MackeyK24))
 - Recast.js plugin nav mesh and crowd agent to ref performance optimizations. ([MackeyK24](https://github.com/MackeyK24))
+- Added `scene.physicsEnabled` boolean ([Deltakosh](https://github.com/deltakosh))
 
 ### Loaders
 
@@ -83,6 +92,10 @@
 - Support for pointer selection and teleportation in right handed systems ([#7967](https://github.com/BabylonJS/Babylon.js/issues/7967)) ([RaananW](https://github.com/RaananW))
 - Pointer Selection feature now uses `selectstart` and `selectend` events when gamepad and motion controller are not present ([#7989](https://github.com/BabylonJS/Babylon.js/issues/7989)) ([RaananW](https://github.com/RaananW))
 - Removed forced `autoClear` = false settings ([RaananW](https://github.com/RaananW))
+- Added a warning that WebXR can only be served over HTTPS ([RaananW](https://github.com/RaananW))
+- Default (XR-global) rendering group ID can be defined when initializing a default experience ([RaananW](https://github.com/RaananW))
+- Added support for (experimental) haptic actuators ([#8068](https://github.com/BabylonJS/Babylon.js/issues/8068)) ([RaananW](https://github.com/RaananW))
+- It is now possible to enable experimental (AR) features using the options of the default xr helper ([RaananW](https://github.com/RaananW))
 
 ### Collisions
 
@@ -93,38 +106,48 @@
 - Added support for Additive Animation Blending. Existing animations can be converted to additive using the new MakeAnimationAdditive method for Skeletons, AnimationGroups and Animations. Animations can be played additively using the new isAdditive input parameter to the begin animation methods. ([c-morten](https://github.com/c-morten))
 
 ### Maths
+
 - Added `Vector3.projectOnPlaneToRef` ([Deltakosh](https://github.com/deltakosh))
+
+### Particles
+
+- Added local space support for GPU particles ([CraigFeldpsar](https://github.com/craigfeldspar))
+- Added ability to update also colors and uvs of solid particle vertices ([jerome](https://github.com/jbousquie))
 
 ### Build
 
 - Fixed an issue with gulp webpack, webpack stream and the viewer ([RaananW](https://github.com/RaananW))
 
+### Playground
+
+- Added support for code templates in the playground ([sailro](http://www.github.com/sailro))
+
 ## Bugs
 
-- Fix infinite loop in `GlowLayer.unReferenceMeshFromUsingItsOwnMaterial` ([Popov72](https://github.com/Popov72)
+- Fix infinite loop in `GlowLayer.unReferenceMeshFromUsingItsOwnMaterial` ([Popov72](https://github.com/Popov72))
 - Fix picking issue in the Solid Particle System when MultiMaterial is enabled ([jerome](https://github.com/jbousquie))
-- `QuadraticErrorSimplification` was not exported ([RaananW](https://github.com/Raananw)
-- Fix NME Frames bug where collapsing and moving a frame removed the nodes inside ([belfortk](https://github.com/belfortk)
-- Fix moving / disappearing controls when freezing/unfreezing the ScrollViewer ([Popov72](https://github.com/Popov72)
-- Fix: when using instances, master mesh (if displayed) does not have correct instance buffer values ([Popov72](https://github.com/Popov72)
+- Fix picking issue in the Solid Particle System when expandable ([jerome](https://github.com/jbousquie))
+- `QuadraticErrorSimplification` was not exported ([RaananW](https://github.com/Raananw))
+- Fix NME Frames bug where collapsing and moving a frame removed the nodes inside ([belfortk](https://github.com/belfortk))
+- Fix moving / disappearing controls when freezing/unfreezing the ScrollViewer ([Popov72](https://github.com/Popov72))
+- Fix: when using instances, master mesh (if displayed) does not have correct instance buffer values ([Popov72](https://github.com/Popov72))
 - Exit XR will only trigger only if state is IN_XR ([RaananW](https://github.com/RaananW))
 - Fix improper baking of transformed textures in `KHR_texture_transform` serializer. ([drigax](https://github.com/Drigax))
 - Fixed NME codegen: missing common properties for float-value input block. ([ycw](https://github.com/ycw))
 - Fixed missing options for MeshBuilder.CreateBox. ([ycw](https://github.com/ycw))
-- Fix bug in `Plane.transform` when matrix passed in is not a pure rotation ([Popov72](https://github.com/Popov72)
-- Fix bug in PBR when anisotropy is enabled and no bump texture is provided ([Popov72](https://github.com/Popov72)
-- Fix horizon occlusion in PBR materials ([Popov72](https://github.com/Popov72)
+- Fix bug in `Plane.transform` when matrix passed in is not a pure rotation ([Popov72](https://github.com/Popov72))
+- Fix bug in PBR when anisotropy is enabled and no bump texture is provided ([Popov72](https://github.com/Popov72))
+- Fix horizon occlusion in PBR materials ([Popov72](https://github.com/Popov72))
 - Fix wrong relative position in applyImpulse/applyForce for ammojs plugin ([cedricguillemet](https://github.com/cedricguillemet))
-- Fixed delay calculation in Animatable.goToFrame when speedRatio != 1 ([Reimund Järnfors](https://github.com/reimund)
-- Fix bug in PBR when translucency is enabled and an irradiance texture is provided ([Popov72](https://github.com/Popov72)
-- Fix bug in PBR with translucency when irradiance texture is 2D ([Popov72](https://github.com/Popov72)
-- Fix bug in PBR when specific combinations of parameters are used ([Popov72](https://github.com/Popov72)
+- Fixed delay calculation in Animatable.goToFrame when speedRatio != 1 ([Reimund Järnfors](https://github.com/reimund))
+- Fix bug in PBR when translucency is enabled and an irradiance texture is provided ([Popov72](https://github.com/Popov72))
+- Fix bug in PBR with translucency when irradiance texture is 2D ([Popov72](https://github.com/Popov72))
+- Fix bug in PBR when specific combinations of parameters are used ([Popov72](https://github.com/Popov72))
 - Fix texture being inverted on the Y axis by default when using TextureAsset or AssetManager ([broederj](https://github.com/broederj))
 - Fix `TexturePacker` cross-origin image requests, fix falsy default options ([ludevik](https://github.com/ludevik))
-- Fix freeze (infinite loop) when disposing a scene that loaded some specific gLTF files ([Popov72](https://github.com/Popov72)
-
-- Fix submesh recreation when it should not ([Popov72](https://github.com/Popov72)
-- Fix `CustomMaterial` and `PBRCustomMaterial` not setting uniforms / samplers / attributes ([Popov72](https://github.com/Popov72)
+- Fix freeze (infinite loop) when disposing a scene that loaded some specific gLTF files ([Popov72](https://github.com/Popov72))
+- Fix submesh recreation when it should not ([Popov72](https://github.com/Popov72))
+- Fix `CustomMaterial` and `PBRCustomMaterial` not setting uniforms / samplers / attributes ([Popov72](https://github.com/Popov72))
 - Fix bug in NME where deleting a node from a frame would not remove its ports on the outside of a frame
 - Fix mesh winding order inversion when merging meshes with overridden side orientation ([drigax](https://github.com/Drigax))
 - Fixed a rendering issue with GearVR in WebXR mode ([RaananW](https://github.com/RaananW))
@@ -135,10 +158,16 @@
 - Fix bug in NME where collapsed frames didn't redraw output links to outside nodes ([belfortk](https://github.com/belfortk))
 - Fix bug in NME where links were not redrawn after moving frame port ([belfortk](https://github.com/belfortk))
 - Fix bugs in NME that were causing inconsistent behavior displaying Move Node Up and Down buttons on frame ports ([belfortk](https://github.com/belfortk))
-- Fix bug in `ShaderMaterial` when using morph targets ([Popov72](https://github.com/Popov72)
-- Fix bug in playground where child NME windows would not close before page unload events ([belfortk](https://github.com/belfortk)
+- Fix bug in `ShaderMaterial` when using morph targets ([Popov72](https://github.com/Popov72))
+- Fix bug in playground where child NME windows would not close before page unload events ([belfortk](https://github.com/belfortk))
 - Fixed an issue with stereoscopic rendering ([#8000](https://github.com/BabylonJS/Babylon.js/issues/8000)) ([RaananW](https://github.com/RaananW))
+- Fix bug with multiple scenes when resizing the screen and there's a glow or highlight layer active ([Popov72](https://github.com/Popov72))
+- Fix an error when compiling with the closure compiler ([ageneau](https://github.com/ageneau/))
+- Fix an error in applying texture to sides of `extrudePolygon` using faceUV[1] ([JohnK](https://github.com/BabylonJSGuide/))
+- Playground didn't work if query params were added to the URL ([RaananW](https://github.com/RaananW))
+- Fixed Path3D `_distances` / length computation ([Poolminer](https://github.com/Poolminer))
 
 ## Breaking changes
 
 - `EffectRenderer.render` now takes a `RenderTargetTexture` or an `InternalTexture` as the output texture and only a single `EffectWrapper` for its first argument ([Popov72](https://github.com/Popov72))
+- Sound's `updateOptions` takes `options.length` and `options.offset` as seconds and not milliseconds ([RaananW](https://github.com/RaananW))

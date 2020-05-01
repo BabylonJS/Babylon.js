@@ -486,6 +486,22 @@
                 background: rgb(22, 73, 117);
             }
 
+            .cbx:checked ~ label.disabled { 
+                background: rgb(22, 73, 117);
+                cursor: pointer;
+            }
+
+            .cbx:checked ~ label.disabled:after {
+                left: 20px;
+                background: rgb(85, 85, 85);
+                cursor: pointer;
+            }
+
+            .cbx ~ label.disabled {
+                background: rgb(85, 85, 85);
+                cursor: pointer;
+            }
+
             .hidden { 
                 display: none; 
             }               
