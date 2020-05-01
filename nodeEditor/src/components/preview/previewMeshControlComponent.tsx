@@ -5,6 +5,7 @@ import { Color3, Color4 } from 'babylonjs/Maths/math.color';
 import { PreviewMeshType } from './previewMeshType';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
+import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 
 const popUpIcon: string = require("./svgs/popOut.svg");
 const colorPicker: string = require("./svgs/colorPicker.svg");
@@ -81,6 +82,19 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
         this.colorInputRef.current?.click();
     }
 
+    eventNMERefresh() {
+        this.forceUpdate();
+    }
+
+    componentDidMount() {
+        this.eventNMERefresh = this.eventNMERefresh.bind(this);
+        window.addEventListener("nme_refresh", this.eventNMERefresh);
+    }
+
+    componentDidUnmount() {
+        window.removeEventListener('nme_refresh', this.eventNMERefresh);
+    }
+
     render() {
 
         var meshTypeOptions = [
@@ -100,37 +114,39 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
 
         return (
             <div id="preview-mesh-bar">
-                <OptionsLineComponent label="" options={meshTypeOptions} target={this.props.globalState}
-                            propertyName="previewMeshType"
-                            noDirectUpdate={true}
-                            onSelect={(value: any) => {
-                                if (value !== PreviewMeshType.Custom + 1) {
-                                    this.changeMeshType(value);
-                                } else {
-                                    this.filePickerRef.current?.click();
-                                }
-                            }} />
-                <div style={{
-                    display: "none"
-                }} title="Preview with a custom mesh" >
-                    <input ref={this.filePickerRef} id="file-picker" type="file" onChange={(evt) => this.useCustomMesh(evt)} accept=".gltf, .glb, .babylon, .obj"/>
-                </div>
-                <div
-                    title="Turn-table animation"
-                    onClick={() => this.changeAnimation()} className="button" id="play-button">
-                    {this.props.globalState.rotatePreview ? <img src={pauseIcon} alt=""/> : <img src={playIcon} alt=""/>}
-                </div>
-                <div
-                id="color-picker-button"
-                    title="Background color"
-                    className={"button align"}
-                    onClick={(_) => this.changeBackgroundClick()}
-                    >
-                    <img src={colorPicker} alt=""/>
-                    <label htmlFor="color-picker" id="color-picker-label">
-                    </label>
-                    <input ref={this.colorInputRef} id="color-picker" type="color" onChange={(evt) => this.changeBackground(evt.target.value)} />
-                </div>
+                { this.props.globalState.mode !== NodeMaterialModes.PostProcess && <>
+                    <OptionsLineComponent label="" options={meshTypeOptions} target={this.props.globalState}
+                                propertyName="previewMeshType"
+                                noDirectUpdate={true}
+                                onSelect={(value: any) => {
+                                    if (value !== PreviewMeshType.Custom + 1) {
+                                        this.changeMeshType(value);
+                                    } else {
+                                        this.filePickerRef.current?.click();
+                                    }
+                                }} />
+                    <div style={{
+                        display: "none"
+                    }} title="Preview with a custom mesh" >
+                        <input ref={this.filePickerRef} id="file-picker" type="file" onChange={(evt) => this.useCustomMesh(evt)} accept=".gltf, .glb, .babylon, .obj"/>
+                    </div>
+                    <div
+                        title="Turn-table animation"
+                        onClick={() => this.changeAnimation()} className="button" id="play-button">
+                        {this.props.globalState.rotatePreview ? <img src={pauseIcon} alt=""/> : <img src={playIcon} alt=""/>}
+                    </div>
+                    <div
+                    id="color-picker-button"
+                        title="Background color"
+                        className={"button align"}
+                        onClick={(_) => this.changeBackgroundClick()}
+                        >
+                        <img src={colorPicker} alt=""/>
+                        <label htmlFor="color-picker" id="color-picker-label">
+                        </label>
+                        <input ref={this.colorInputRef} id="color-picker" type="color" onChange={(evt) => this.changeBackground(evt.target.value)} />
+                    </div>
+                </> }
                 <div
                     title="Open preview in new window" id="preview-new-window"
                     onClick={() => this.onPopUp()} className="button">

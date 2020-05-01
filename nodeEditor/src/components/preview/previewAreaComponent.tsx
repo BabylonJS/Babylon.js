@@ -4,6 +4,7 @@ import { GlobalState } from '../../globalState';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { Observer } from 'babylonjs/Misc/observable';
 import { Nullable } from 'babylonjs/types';
+import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 
 const doubleSided: string = require("./svgs/doubleSided.svg");
 const depthPass: string = require("./svgs/depthPass.svg");
@@ -44,6 +45,19 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         this.forceUpdate();
     }
 
+    eventNMERefresh() {
+        this.forceUpdate();
+    }
+
+    componentDidMount() {
+        this.eventNMERefresh = this.eventNMERefresh.bind(this);
+        window.addEventListener("nme_refresh", this.eventNMERefresh);
+    }
+
+    componentDidUnmount() {
+        window.removeEventListener('nme_refresh', this.eventNMERefresh);
+    }
+
     render() {
         return (
             <>
@@ -55,49 +69,51 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                         </div>
                     }
                 </div>
-                <div id="preview-config-bar">
-                    <div
-                        title="Render without back face culling"
-                        onClick={() => this.changeBackFaceCulling(!this.props.globalState.backFaceCulling)} className={"button back-face" + (!this.props.globalState.backFaceCulling ? " selected" : "")}>
-                        <img src={doubleSided} alt=""/>
-                    </div>
-                    <div
-                        title="Render with depth pre-pass"
-                        onClick={() => this.changeDepthPrePass(!this.props.globalState.depthPrePass)} className={"button depth-pass" + (this.props.globalState.depthPrePass ? " selected" : "")}>
-                            <img src={depthPass} alt=""/>
-                    </div>
-                    <div
-                        title="Turn on/off hemispheric light"
-                        onClick={() => {
-                            this.props.globalState.hemisphericLight = !this.props.globalState.hemisphericLight;
-                            DataStorage.WriteBoolean("HemisphericLight", this.props.globalState.hemisphericLight);
-                            this.props.globalState.onLightUpdated.notifyObservers();
-                            this.forceUpdate();
-                        }} className={"button hemispheric-light" + (this.props.globalState.hemisphericLight ? " selected" : "")}>
-                        <img src={omni} alt=""/>
-                    </div>
-                    <div
-                        title="Turn on/off direction light #1"
-                        onClick={() => {
-                            this.props.globalState.directionalLight1 = !this.props.globalState.directionalLight1;
-                            DataStorage.WriteBoolean("DirectionalLight1", this.props.globalState.directionalLight1);
-                            this.props.globalState.onLightUpdated.notifyObservers();
-                            this.forceUpdate();
-                        }} className={"button direction-light-1" + (this.props.globalState.directionalLight1 ? " selected" : "")}>
-                        <img src={directionalRight} alt=""/>
+                { this.props.globalState.mode !== NodeMaterialModes.PostProcess && <>
+                    <div id="preview-config-bar">
+                        <div
+                            title="Render without back face culling"
+                            onClick={() => this.changeBackFaceCulling(!this.props.globalState.backFaceCulling)} className={"button back-face" + (!this.props.globalState.backFaceCulling ? " selected" : "")}>
+                            <img src={doubleSided} alt=""/>
+                        </div>
+                        <div
+                            title="Render with depth pre-pass"
+                            onClick={() => this.changeDepthPrePass(!this.props.globalState.depthPrePass)} className={"button depth-pass" + (this.props.globalState.depthPrePass ? " selected" : "")}>
+                                <img src={depthPass} alt=""/>
+                        </div>
+                        <div
+                            title="Turn on/off hemispheric light"
+                            onClick={() => {
+                                this.props.globalState.hemisphericLight = !this.props.globalState.hemisphericLight;
+                                DataStorage.WriteBoolean("HemisphericLight", this.props.globalState.hemisphericLight);
+                                this.props.globalState.onLightUpdated.notifyObservers();
+                                this.forceUpdate();
+                            }} className={"button hemispheric-light" + (this.props.globalState.hemisphericLight ? " selected" : "")}>
+                            <img src={omni} alt=""/>
+                        </div>
+                        <div
+                            title="Turn on/off direction light #1"
+                            onClick={() => {
+                                this.props.globalState.directionalLight1 = !this.props.globalState.directionalLight1;
+                                DataStorage.WriteBoolean("DirectionalLight1", this.props.globalState.directionalLight1);
+                                this.props.globalState.onLightUpdated.notifyObservers();
+                                this.forceUpdate();
+                            }} className={"button direction-light-1" + (this.props.globalState.directionalLight1 ? " selected" : "")}>
+                            <img src={directionalRight} alt=""/>
 
+                        </div>
+                        <div
+                            title="Turn on/off direction light #0"
+                            onClick={() => {
+                                this.props.globalState.directionalLight0 = !this.props.globalState.directionalLight0;
+                                DataStorage.WriteBoolean("DirectionalLight0", this.props.globalState.directionalLight0);
+                                this.props.globalState.onLightUpdated.notifyObservers();
+                                this.forceUpdate();
+                            }} className={"button direction-light-0" + (this.props.globalState.directionalLight0 ? " selected" : "")}>
+                            <img src={directionalLeft} alt=""/>
+                        </div>
                     </div>
-                    <div
-                        title="Turn on/off direction light #0"
-                        onClick={() => {
-                            this.props.globalState.directionalLight0 = !this.props.globalState.directionalLight0;
-                            DataStorage.WriteBoolean("DirectionalLight0", this.props.globalState.directionalLight0);
-                            this.props.globalState.onLightUpdated.notifyObservers();
-                            this.forceUpdate();
-                        }} className={"button direction-light-0" + (this.props.globalState.directionalLight0 ? " selected" : "")}>
-                        <img src={directionalLeft} alt=""/>
-                    </div>
-                </div>
+                </> }
             </>
         );
 
