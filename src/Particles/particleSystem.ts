@@ -2627,7 +2627,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                     break;
                 case "HemisphericParticleEmitter":
                     emitterType = new HemisphericParticleEmitter();
-                    break;                    
+                    break;
                 case "PointParticleEmitter":
                     emitterType = new PointParticleEmitter();
                     break;
