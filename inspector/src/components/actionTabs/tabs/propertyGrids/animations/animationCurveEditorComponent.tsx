@@ -1,6 +1,6 @@
 import * as React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faTimes, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 import { Animation } from 'babylonjs/Animations/animation';
 import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { EasingFunction } from 'babylonjs/Animations/easing';
@@ -15,15 +15,145 @@ interface IAnimationCurveEditorComponentProps {
     title: string;
     animations: Animation[];
     entityName: string;
+    entity: Animatable;
 }
 
-export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, { isOpen: boolean, selected: Animation, currentPathData: string | undefined, anchorPoints: { point: Vector2, anchor: Vector2 }[] | null, keyframes: Vector2[] | null }> {
+export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, { animations: Animation[], animationName: string, selectedProperty:string, isOpen: boolean, selected: Animation, currentPathData: string | undefined, anchorPoints: { point: Vector2, anchor: Vector2 }[] | undefined, keyframes: Vector2[] | undefined }> {
 
     private _anchorPoints: { point: Vector2, anchor: Vector2 }[] = [];
+    private _newAnimations: Animation[] = [];
     private _keyframes: Vector2[] = [];
     constructor(props: IAnimationCurveEditorComponentProps) {
         super(props);
-        this.state = { selected: this.props.animations[0], isOpen: true, currentPathData: this.getPathData(this.props.animations[0]), anchorPoints: this._anchorPoints, keyframes: this._keyframes }
+        this.state = { animations: this._newAnimations,selected: this.props.animations[0], isOpen: true, currentPathData: this.getPathData(this.props.animations[0]), anchorPoints: this._anchorPoints, keyframes: this._keyframes, selectedProperty: 'position.x', animationName: "" }
+        
+    }
+
+    handlePropertyChange(event: React.ChangeEvent<HTMLSelectElement>){
+        event.preventDefault();
+        this.setState({selectedProperty: event.target.value});
+    }
+
+    handleNameChange(event: React.ChangeEvent<HTMLInputElement>){
+        //let value = (event.target as HTMLInputElement).value;
+        event.preventDefault();
+        this.setState({animationName: event.target.value});
+    }
+
+    addAnimation(event: React.MouseEvent<HTMLDivElement>){
+        event.preventDefault();
+        if (this.state.animationName != ""){
+            let animation = new Animation(this.state.animationName, this.state.selectedProperty, 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+
+            var keys = []; 
+// //At the animation key 0, the value of scaling is "1"
+  keys.push({
+    frame: 0,
+    value: 1
+  });
+//   //At the animation key 20, the value of scaling is "0.2"
+//   keys.push({
+//     frame: 20,
+//     value: 0.2
+//   });
+//   //At the animation key 100, the value of scaling is "1"
+//   keys.push({
+//     frame: 100,
+//     value: 1
+//   });
+
+animation.setKeys(keys);
+
+var bezierEase = new BABYLON.CircleEase();
+//var bezierEase = new BABYLON.BezierCurveEase(0.55,0,1,0.45) as unknown;
+bezierEase.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
+animation.setEasingFunction((bezierEase as unknown) as EasingFunction);
+
+            this._newAnimations.push(animation);
+            this.setState({animations: this._newAnimations, animationName: ""});
+        }
+
+    
+    }
+
+    addKeyFrame(event: React.MouseEvent<SVGSVGElement>){
+
+        event.preventDefault();
+
+        if (event.button === 2){
+
+        var svg = event.target as SVGSVGElement;
+
+        var pt = svg.createSVGPoint();
+
+        pt.x = event.clientX;
+        pt.y = event.clientY;
+
+        var inverse = svg.getScreenCTM()?.inverse();
+
+        var cursorpt =  pt.matrixTransform(inverse);
+
+        var currentAnimation = this.state.selected;
+
+        var keys = currentAnimation.getKeys();
+
+        var height = 100;
+        var middle = (height / 2);
+
+        var keyValue;
+
+        if (cursorpt.y < middle){
+            keyValue = 1 + ((100/cursorpt.y) * .1)
+        }
+
+        if (cursorpt.y > middle){
+            keyValue = 1 - ((100/cursorpt.y) * .1)
+        }
+
+
+
+        keys.push({ frame: cursorpt.x, value: keyValue });
+
+        currentAnimation.setKeys(keys);
+
+        this.selectAnimation(currentAnimation);
+     }
+    }
+
+    updateKeyframe(keyframe: Vector2, index: number){
+
+        let anim = this.state.selected as Animation;
+        var keys: IAnimationKey[] = [];
+
+        var keyframes = this.state.keyframes?.map((k, i) => {
+            if (i === index){
+                k.x = keyframe.x;
+                k.y = keyframe.y;
+            }
+
+            var height = 100;
+            var middle = (height / 2);
+
+            var keyValue;
+
+            if (k.y < middle){
+                keyValue = 1 + ((100/k.y) * .1)
+            }
+
+            if (k.y > middle){
+                keyValue = 1 - ((100/k.y) * .1)
+            }
+
+
+            keys.push({frame: k.x, value: keyValue})
+            return k;
+        });
+        anim.setKeys(keys);
+
+        this.setState({ keyframes: keyframes})
+
+
+
     }
 
     getAnimationProperties(animation: Animation) {
@@ -206,16 +336,49 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                     </div>
                 </div>
                 <div className="content">
+                  
                     <div className="animation-list">
+
+                    <div>
+                        <select value={this.state.selectedProperty} onChange={(e) => this.handlePropertyChange(e)}>
+                            <option value="position.x">Position X</option>
+                            <option value="position.y">Position Y</option>
+                            <option value="position.z">Position Z</option>
+                        </select>
+
+                        <input type="text" value={this.state.animationName} onChange={(e) => this.handleNameChange(e)}></input>
+
+                        <div className="add" onClick={(e) => this.addAnimation(e)}>
+                        <FontAwesomeIcon icon={faPlusCircle} />
+                    </div>
+                    </div>
+
                         <h2>{this.props.entityName}</h2>
                         <ul>
-                            {this.props.animations.map((animation, i) => {
+                            {this.props.animations && this.props.animations.map((animation, i) => {
                                 return <li className={this.state.selected.name === animation.name ? 'active' : ''} key={i} onClick={() => this.selectAnimation(animation)}>{animation.name} <strong>{animation.targetProperty}</strong></li>
                             })}
+
+                        </ul>
+
+                        <h2>New Animations</h2>
+                        <ul>
+                            {this.state.animations && this.state.animations.map((animation, i) => {
+                                return <li className={this.state.selected.name === animation.name ? 'active' : ''} key={i} onClick={() => this.selectAnimation(animation)}>{animation.name} <strong>{animation.targetProperty}</strong></li>
+                            })}
+
                         </ul>
                     </div>
-                    <div className="graph-chart">
+                    <div className="sample-chart" style={{width:500, height:500}}>
+
                         <svg className="linear" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        
+                           <KeyframeSvgPoint key={0} point={new Vector2(50,50)} onUpdate={(keyframe: Vector2, index: number) => {}} index={0} />
+
+                        </svg>
+                    </div>
+                    <div className="graph-chart">
+                        <svg className="linear" viewBox="0 0 100 100" preserveAspectRatio="none" onMouseDown={(e) => this.addKeyFrame(e)}>
                              {/* Frame Labels  */}
                             <text x="10" y="0" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>10</text>
                             <text x="20" y="0" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>20</text>
@@ -268,7 +431,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                             )}
 
                             {this.state.keyframes?.map((keyframe, i) =>
-                                <KeyframeSvgPoint key={i} point={keyframe} />
+                                <KeyframeSvgPoint key={i} point={keyframe} onUpdate={(keyframe: Vector2, index: number) => this.updateKeyframe(keyframe, index)} index={i} />
                             )}
 
                         </svg>

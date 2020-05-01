@@ -204,7 +204,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                                     onOpen={(window: Window) => { window.console.log("Window opened!!") }}
                                     onClose={(window: Window) => this.onCloseAnimationCurveEditor(window)}>
 
-                                    <AnimationCurveEditorComponent title="Animations Curve Editor" entityName={animatableAsAny.id} close={(event) => this.onCloseAnimationCurveEditor(event.view)} animations={animations}/>
+                                    <AnimationCurveEditorComponent title="Animations Curve Editor" entity={animatableAsAny} entityName={animatableAsAny.id} close={(event) => this.onCloseAnimationCurveEditor(event.view)} animations={animations}/>
                                 </PopupComponent>
                             }
                         </LineContainerComponent>
