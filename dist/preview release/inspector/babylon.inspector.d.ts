@@ -35,6 +35,7 @@ declare module INSPECTOR {
         onTabChangedObservable: BABYLON.Observable<number>;
         onSelectionRenamedObservable: BABYLON.Observable<void>;
         onPluginActivatedObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync>>;
+        onNewSceneObservable: BABYLON.Observable<BABYLON.Scene>;
         sceneImportDefaults: {
             [key: string]: any;
         };
@@ -2165,6 +2166,7 @@ declare module INSPECTOR {
         private _onSelectionChangeObserver;
         private _onSelectionRenamedObserver;
         private _onNewSceneAddedObserver;
+        private _onNewSceneObserver;
         private sceneExplorerRef;
         private _once;
         private _hooked;
@@ -2232,6 +2234,7 @@ declare module INSPECTOR {
         static get IsVisible(): boolean;
         static EarlyAttachToLoader(): void;
         static Show(scene: BABYLON.Scene, userOptions: Partial<BABYLON.IInspectorOptions>): void;
+        static _SetNewScene(scene: BABYLON.Scene): void;
         static _CreateCanvasContainer(parentControl: HTMLElement): void;
         private static _DestroyCanvasContainer;
         private static _Cleanup;

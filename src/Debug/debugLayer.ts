@@ -262,11 +262,10 @@ export class DebugLayer {
         }
     }
 
-
     /**
-     * Update the scene in the inspector 
+     * Update the scene in the inspector
      */
-    public setAsActiveScene(){
+    public setAsActiveScene() {
         if (this.BJSINSPECTOR) {
             this.BJSINSPECTOR.Inspector._SetNewScene(this._scene);
         }
