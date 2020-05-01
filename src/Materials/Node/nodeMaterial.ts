@@ -723,6 +723,16 @@ export class NodeMaterial extends PushMaterial {
         }
     }
 
+    /**
+     * Create a post process from the material
+     * @param camera The camera to apply the render pass to.
+     * @param options The required width/height ratio to downsize to before computing the render pass. (Use 1.0 for full size)
+     * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
+     * @param engine The engine which the post process will be applied. (default: current engine)
+     * @param reusable If the post process can be reused on the same frame. (default: false)
+     * @param textureType Type of textures used when performing the post process. (default: 0)
+     * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
+     */
     public createPostProcess(
         camera: Nullable<Camera>, options: number | PostProcessOptions = 1, samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean,
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, textureFormat = Constants.TEXTUREFORMAT_RGBA): PostProcess {
