@@ -18,11 +18,15 @@ import { DirectionalLight } from 'babylonjs/Lights/directionalLight';
 import { LogEntry } from '../log/logComponent';
 import { PointerEventTypes } from 'babylonjs/Events/pointerEvents';
 import { Color3 } from 'babylonjs/Maths/math.color';
+import { PostProcess } from 'babylonjs/PostProcesses/postProcess';
+import { Constants } from 'babylonjs/Engines/constants';
+import { CurrentScreenBlock } from 'babylonjs/Materials/Node/Blocks/Dual/currentScreenBlock';
+import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 
 export class PreviewManager {
     private _nodeMaterial: NodeMaterial;
     private _onBuildObserver: Nullable<Observer<NodeMaterial>>;    
-    private _onPreviewCommandActivatedObserver: Nullable<Observer<void>>;
+    private _onPreviewCommandActivatedObserver: Nullable<Observer<boolean>>;
     private _onAnimationCommandActivatedObserver: Nullable<Observer<void>>;
     private _onUpdateRequiredObserver: Nullable<Observer<void>>;
     private _onPreviewBackgroundChangedObserver: Nullable<Observer<void>>;
@@ -37,6 +41,7 @@ export class PreviewManager {
     private _globalState: GlobalState;   
     private _currentType: number; 
     private _lightParent: TransformNode;
+    private _postprocess: Nullable<PostProcess>;
 
     public constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState) {
         this._nodeMaterial = globalState.nodeMaterial;
@@ -47,7 +52,10 @@ export class PreviewManager {
             this._updatePreview(serializationObject);
         });
 
-        this._onPreviewCommandActivatedObserver = globalState.onPreviewCommandActivated.add(() => {
+        this._onPreviewCommandActivatedObserver = globalState.onPreviewCommandActivated.add((forceRefresh: boolean) => {
+            if (forceRefresh) {
+                this._currentType = -1;
+            }
             this._refreshPreviewMesh();
         });
 
@@ -186,33 +194,35 @@ export class PreviewManager {
     }
 
     private _prepareMeshes() {
-        this._prepareLights();
+        if (this._globalState.mode !== NodeMaterialModes.PostProcess) {
+            this._prepareLights();
 
-        // Framing
-        this._camera.useFramingBehavior = true;
+            // Framing
+            this._camera.useFramingBehavior = true;
 
-        var framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
+            var framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
 
-        setTimeout(() => { // Let the behavior activate first
-            framingBehavior.framingTime = 0;
-            framingBehavior.elevationReturnTime = -1;
-    
-            if (this._scene.meshes.length) {
-                var worldExtends = this._scene.getWorldExtends();
-                this._camera.lowerRadiusLimit = null;
-                this._camera.upperRadiusLimit = null;
-                framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
-            }
-    
-            this._camera.pinchPrecision = 200 / this._camera.radius;
-            this._camera.upperRadiusLimit = 5 * this._camera.radius;    
-        });
+            setTimeout(() => { // Let the behavior activate first
+                framingBehavior.framingTime = 0;
+                framingBehavior.elevationReturnTime = -1;
+        
+                if (this._scene.meshes.length) {
+                    var worldExtends = this._scene.getWorldExtends();
+                    this._camera.lowerRadiusLimit = null;
+                    this._camera.upperRadiusLimit = null;
+                    framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
+                }
+        
+                this._camera.pinchPrecision = 200 / this._camera.radius;
+                this._camera.upperRadiusLimit = 5 * this._camera.radius;    
+            });
 
-        this._camera.wheelDeltaPercentage = 0.01;
-        this._camera.pinchDeltaPercentage = 0.01;
+            this._camera.wheelDeltaPercentage = 0.01;
+            this._camera.pinchDeltaPercentage = 0.01;
 
-        // Animations
-        this._handleAnimations();
+            // Animations
+            this._handleAnimations();
+        }
 
         // Material        
         let serializationObject = this._nodeMaterial.serialize();
@@ -222,7 +232,6 @@ export class PreviewManager {
     private _refreshPreviewMesh() {    
 
         if (this._currentType !== this._globalState.previewMeshType || this._currentType === PreviewMeshType.Custom) {
-
             this._currentType = this._globalState.previewMeshType;
             if (this._meshes && this._meshes.length) {
                 for (var mesh of this._meshes) {
@@ -241,46 +250,48 @@ export class PreviewManager {
             SceneLoader.ShowLoadingScreen = false;
 
             this._globalState.onIsLoadingChanged.notifyObservers(true);
-        
-            switch (this._globalState.previewMeshType) {
-                case PreviewMeshType.Box:
-                    SceneLoader.AppendAsync("https://models.babylonjs.com/", "roundedCube.glb", this._scene).then(() => {     
-                        this._meshes.push(...this._scene.meshes);
-                        this._prepareMeshes();
-                    });     
-                    break;
-                case PreviewMeshType.Sphere:
-                    this._meshes.push(Mesh.CreateSphere("dummy-sphere", 32, 2, this._scene));
-                    break;
-                case PreviewMeshType.Torus:
-                    this._meshes.push(Mesh.CreateTorus("dummy-torus", 2, 0.5, 32, this._scene));
-                    break;
-                case PreviewMeshType.Cylinder:
-                    SceneLoader.AppendAsync("https://models.babylonjs.com/", "roundedCylinder.glb", this._scene).then(() => {     
-                        this._meshes.push(...this._scene.meshes);
-                        this._prepareMeshes();
-                    });                    
-                    return;                   
-                case PreviewMeshType.Plane:
-                    let plane = Mesh.CreateGround("dummy-plane", 2, 2, 128, this._scene);
-                    plane.scaling.y = -1;
-                    plane.rotation.x = Math.PI;
-                    this._meshes.push(plane);
-                    break;    
-                case PreviewMeshType.ShaderBall:
-                    SceneLoader.AppendAsync("https://models.babylonjs.com/", "shaderBall.glb", this._scene).then(() => {     
-                        this._meshes.push(...this._scene.meshes);
-                        this._prepareMeshes();
-                    });
-                    return;                             
-                case PreviewMeshType.Custom:
-                    SceneLoader.AppendAsync("file:", this._globalState.previewMeshFile, this._scene).then(() => {     
-                        this._meshes.push(...this._scene.meshes);
-                        this._prepareMeshes();
-                    });
-                    return;     
+
+            if (this._globalState.mode !== NodeMaterialModes.PostProcess) {
+                switch (this._globalState.previewMeshType) {
+                    case PreviewMeshType.Box:
+                        SceneLoader.AppendAsync("https://models.babylonjs.com/", "roundedCube.glb", this._scene).then(() => {     
+                            this._meshes.push(...this._scene.meshes);
+                            this._prepareMeshes();
+                        });     
+                        return;
+                    case PreviewMeshType.Sphere:
+                        this._meshes.push(Mesh.CreateSphere("dummy-sphere", 32, 2, this._scene));
+                        break;
+                    case PreviewMeshType.Torus:
+                        this._meshes.push(Mesh.CreateTorus("dummy-torus", 2, 0.5, 32, this._scene));
+                        break;
+                    case PreviewMeshType.Cylinder:
+                        SceneLoader.AppendAsync("https://models.babylonjs.com/", "roundedCylinder.glb", this._scene).then(() => {     
+                            this._meshes.push(...this._scene.meshes);
+                            this._prepareMeshes();
+                        });                    
+                        return;                   
+                    case PreviewMeshType.Plane:
+                        let plane = Mesh.CreateGround("dummy-plane", 2, 2, 128, this._scene);
+                        plane.scaling.y = -1;
+                        plane.rotation.x = Math.PI;
+                        this._meshes.push(plane);
+                        break;    
+                    case PreviewMeshType.ShaderBall:
+                        SceneLoader.AppendAsync("https://models.babylonjs.com/", "shaderBall.glb", this._scene).then(() => {     
+                            this._meshes.push(...this._scene.meshes);
+                            this._prepareMeshes();
+                        });
+                        return;                             
+                    case PreviewMeshType.Custom:
+                        SceneLoader.AppendAsync("file:", this._globalState.previewMeshFile, this._scene).then(() => {     
+                            this._meshes.push(...this._scene.meshes);
+                            this._prepareMeshes();
+                        });
+                        return;     
+                }
             }
-            
+
             this._prepareMeshes();
         }
     }
@@ -296,7 +307,28 @@ export class PreviewManager {
             tempMaterial.backFaceCulling = this._globalState.backFaceCulling;
             tempMaterial.needDepthPrePass = this._globalState.depthPrePass;
 
-            if (this._meshes.length) {
+            if (this._postprocess) {
+                this._postprocess.dispose(this._camera);
+                this._postprocess = null;
+            }
+
+            if (this._globalState.mode === NodeMaterialModes.PostProcess) {
+                this._globalState.onIsLoadingChanged.notifyObservers(false);
+
+                this._postprocess = tempMaterial.createPostProcess(this._camera, 1.0, Constants.TEXTURE_NEAREST_SAMPLINGMODE, this._engine);
+
+                const currentScreen = tempMaterial.getBlockByPredicate((block) => block instanceof CurrentScreenBlock);
+                if (currentScreen) {
+                    this._postprocess!.onApplyObservable.add((effect) => {
+                        effect.setTexture("textureSampler", (currentScreen as CurrentScreenBlock).texture);
+                    });
+                }
+
+                if (this._material) {
+                    this._material.dispose();
+                }
+                this._material = tempMaterial;
+            } else if (this._meshes.length) {
                 let tasks = this._meshes.map(m => this._forceCompilationAsync(tempMaterial, m));
 
                 Promise.all(tasks).then(() => {
@@ -319,6 +351,7 @@ export class PreviewManager {
             }
         } catch(err) {
             // Ignore the error
+            this._globalState.onIsLoadingChanged.notifyObservers(false);
         }
     }
 

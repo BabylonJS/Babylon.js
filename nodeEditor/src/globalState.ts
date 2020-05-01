@@ -13,6 +13,7 @@ import { NodeLink } from './diagram/nodeLink';
 import { GraphFrame } from './diagram/graphFrame';
 import { FrameNodePort } from './diagram/frameNodePort';
 import { FramePortData } from './diagram/graphCanvas';
+import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 
 export class GlobalState {
     nodeMaterial: NodeMaterial;
@@ -29,7 +30,7 @@ export class GlobalState {
     onLogRequiredObservable = new Observable<LogEntry>();
     onErrorMessageDialogRequiredObservable = new Observable<string>();
     onIsLoadingChanged = new Observable<boolean>();
-    onPreviewCommandActivated = new Observable<void>();
+    onPreviewCommandActivated = new Observable<boolean>();
     onLightUpdated = new Observable<void>();
     onPreviewBackgroundChanged = new Observable<void>();
     onBackFaceCullingChanged = new Observable<void>();
@@ -56,6 +57,18 @@ export class GlobalState {
     directionalLight1: boolean;
     controlCamera: boolean;
     storeEditorData:(serializationObject: any) => void;
+    _mode: NodeMaterialModes;
+
+    /** Gets the mode */
+    public get mode(): NodeMaterialModes {
+        return this._mode;
+    }
+
+    /** Sets the mode */
+    public set mode(m: NodeMaterialModes) {
+        this._mode = m;
+        this.onPreviewCommandActivated.notifyObservers(true);
+    }
 
     customSave?: {label: string, action: (data: string) => Promise<void>};
 
@@ -67,6 +80,7 @@ export class GlobalState {
         this.directionalLight0 = DataStorage.ReadBoolean("DirectionalLight0", false);
         this.directionalLight1 = DataStorage.ReadBoolean("DirectionalLight1", false);
         this.controlCamera = DataStorage.ReadBoolean("ControlCamera", true);
+        this._mode = NodeMaterialModes.Material;
 
         let r = DataStorage.ReadNumber("BackgroundColorR", 0.12549019607843137);
         let g = DataStorage.ReadNumber("BackgroundColorG", 0.09803921568627451);

@@ -31,6 +31,7 @@ import { RefractionBlock } from './Blocks/PBR/refractionBlock';
 import { EffectFallbacks } from '../effectFallbacks';
 import { WebRequest } from '../../Misc/webRequest';
 import { Effect } from '../effect';
+import { NodeMaterialModes } from './Enums/nodeMaterialModes';
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -226,6 +227,20 @@ export class NodeMaterial extends PushMaterial {
      * Gets an array of blocks that needs to be serialized even if they are not yet connected
      */
     public attachedBlocks = new Array<NodeMaterialBlock>();
+
+    /**
+     * Specifies the mode of the node material
+     * @hidden
+     */
+    @serialize("mode")
+    public _mode: NodeMaterialModes = NodeMaterialModes.Material;
+
+    /**
+     * Gets the mode property
+     */
+    public get mode(): NodeMaterialModes {
+        return this._mode;
+    }
 
     /**
      * Create a new node based material
@@ -1083,6 +1098,11 @@ export class NodeMaterial extends PushMaterial {
         // Add to nodes
         this.addOutputNode(vertexOutput);
         this.addOutputNode(fragmentOutput);
+
+        this._mode = NodeMaterialModes.Material;
+    }
+
+    /**
     }
 
     /**
@@ -1316,6 +1336,8 @@ export class NodeMaterial extends PushMaterial {
 
             this.editorData.map = blockMap;
         }
+
+        this._mode = source.mode ?? NodeMaterialModes.Material;
     }
 
     /**
