@@ -65098,6 +65098,7 @@ var GlobalState = /** @class */ (function () {
         this.onInspectorClosedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onTabChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onSelectionRenamedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onNewSceneObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.sceneImportDefaults = {};
         this.validationResults = null;
         this.onValidationResultsUpdatedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -66618,6 +66619,11 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         _this.state = { filter: null, selectedEntity: null, scene: _this.props.scene };
         _this.sceneMutationFunc = _this.processMutation.bind(_this);
         _this.sceneExplorerRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._onNewSceneObserver = _this.props.globalState.onNewSceneObservable.add(function (scene) {
+            _this.setState({
+                scene: scene
+            });
+        });
         return _this;
     }
     SceneExplorerComponent.prototype.processMutation = function () {
@@ -66647,6 +66653,9 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         }
         if (this._onNewSceneAddedObserver) {
             babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["EngineStore"].LastCreatedEngine.onNewSceneAddedObservable.remove(this._onNewSceneAddedObserver);
+        }
+        if (this._onNewSceneObserver) {
+            this.props.globalState.onNewSceneObservable.remove(this._onNewSceneObserver);
         }
         var scene = this.state.scene;
         scene.onNewSkeletonAddedObservable.removeCallback(this.sceneMutationFunc);
@@ -67737,6 +67746,10 @@ var Inspector = /** @class */ (function () {
                 this._CreateActionTabs(scene, options, parentControl);
             }
         }
+    };
+    Inspector._SetNewScene = function (scene) {
+        this._Scene = scene;
+        this._GlobalState.onNewSceneObservable.notifyObservers(scene);
     };
     Inspector._CreateCanvasContainer = function (parentControl) {
         // Create a container for previous elements

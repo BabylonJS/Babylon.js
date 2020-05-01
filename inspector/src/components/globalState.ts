@@ -20,7 +20,7 @@ export class GlobalState {
     public onTabChangedObservable = new Observable<number>();
     public onSelectionRenamedObservable = new Observable<void>();
     public onPluginActivatedObserver: Nullable<Observer<ISceneLoaderPlugin | ISceneLoaderPluginAsync>>;
-
+    public onNewSceneObservable = new Observable<Scene>();
     public sceneImportDefaults: { [key: string]: any } = {};
 
     public validationResults: Nullable<IGLTFValidationResults> = null;

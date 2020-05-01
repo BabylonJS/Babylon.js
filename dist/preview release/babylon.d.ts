@@ -46845,6 +46845,10 @@ declare module BABYLON {
          */
         hide(): void;
         /**
+         * Update the scene in the inspector
+         */
+        setAsActiveScene(): void;
+        /**
           * Launch the debugLayer.
           * @param config Define the configuration of the inspector
           * @return a promise fulfilled when the debug layer is visible
