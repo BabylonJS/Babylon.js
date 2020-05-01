@@ -4,13 +4,15 @@ import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
-import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
+import { NodeMaterialDefines } from '../../nodeMaterial';
 import { BaseTexture } from '../../../Textures/baseTexture';
 import { Nullable } from '../../../../types';
 import { _TypeStore } from '../../../../Misc/typeStore';
 import { Texture } from '../../../Textures/texture';
 import { Scene } from '../../../../scene';
 import { InputBlock } from '../Input/inputBlock';
+
+declare type NodeMaterial = import("../../nodeMaterial").NodeMaterial;
 
 /**
  * Base block used as input for post process
@@ -317,7 +319,7 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
         this.convertToGammaSpace = serializationObject.convertToGammaSpace;
         this.convertToLinearSpace = !!serializationObject.convertToLinearSpace;
 
-        if (serializationObject.texture && !NodeMaterial.IgnoreTexturesAtLoadTime) {
+        if (serializationObject.texture) {
             rootUrl = serializationObject.texture.url.indexOf("data:") === 0 ? "" : rootUrl;
             this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl) as Texture;
         }
