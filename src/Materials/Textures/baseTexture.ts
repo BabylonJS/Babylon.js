@@ -11,6 +11,7 @@ import { GUID } from '../../Misc/guid';
 import { ISize, Size } from '../../Maths/math.size';
 
 import "../../Misc/fileTools";
+import { ThinEngine } from '../../Engines/thinEngine';
 
 declare type Animation = import("../../Animations/animation").Animation;
 
@@ -372,6 +373,7 @@ export class BaseTexture implements IAnimatable {
     public delayLoadState = Constants.DELAYLOADSTATE_NONE;
 
     private _scene: Nullable<Scene> = null;
+    private _engine: Nullable<ThinEngine> = null;
 
     /** @hidden */
     public _texture: Nullable<InternalTexture> = null;
@@ -390,24 +392,28 @@ export class BaseTexture implements IAnimatable {
      * Base class of all the textures in babylon.
      * It groups all the common properties the materials, post process, lights... might need
      * in order to make a correct use of the texture.
-     * @param scene Define the scene the texture blongs to
+     * @param sceneOrEngine Define the scene or engine the texture blongs to
      */
-    constructor(scene: Nullable<Scene>) {
-        this._setScene(scene);
-        this._uid = null;
-    }
-
-    /** @hidden */
-    public _setScene(scene: Nullable<Scene>): void {
-        if (this._scene) {
-            this._scene.removeTexture(this);
+    constructor(sceneOrEngine: Nullable<Scene | ThinEngine>) {
+        if (sceneOrEngine) {
+            if (BaseTexture._isScene(sceneOrEngine)) {
+                this._scene = sceneOrEngine;
+            }
+            else {
+                this._engine = sceneOrEngine;
+            }
+        }
+        else {
+            this._scene = EngineStore.LastCreatedScene;
         }
 
-        this._scene = scene || EngineStore.LastCreatedScene;
         if (this._scene) {
             this.uniqueId = this._scene.getUniqueId();
             this._scene.addTexture(this);
+            this._engine = this._scene.getEngine();
         }
+
+        this._uid = null;
     }
 
     /**
@@ -416,6 +422,11 @@ export class BaseTexture implements IAnimatable {
      */
     public getScene(): Nullable<Scene> {
         return this._scene;
+    }
+
+    /** @hidden */
+    protected _getEngine(): Nullable<ThinEngine> {
+        return this._engine;
     }
 
     /**
@@ -508,41 +519,40 @@ export class BaseTexture implements IAnimatable {
     }
 
     /**
-           * Update the sampling mode of the texture.
-           * Default is Trilinear mode.
-           *
-           * | Value | Type               | Description |
-           * | ----- | ------------------ | ----------- |
-           * | 1     | NEAREST_SAMPLINGMODE or NEAREST_NEAREST_MIPLINEAR  | Nearest is: mag = nearest, min = nearest, mip = linear |
-           * | 2     | BILINEAR_SAMPLINGMODE or LINEAR_LINEAR_MIPNEAREST | Bilinear is: mag = linear, min = linear, mip = nearest |
-           * | 3     | TRILINEAR_SAMPLINGMODE or LINEAR_LINEAR_MIPLINEAR | Trilinear is: mag = linear, min = linear, mip = linear |
-           * | 4     | NEAREST_NEAREST_MIPNEAREST |             |
-           * | 5    | NEAREST_LINEAR_MIPNEAREST |             |
-           * | 6    | NEAREST_LINEAR_MIPLINEAR |             |
-           * | 7    | NEAREST_LINEAR |             |
-           * | 8    | NEAREST_NEAREST |             |
-           * | 9   | LINEAR_NEAREST_MIPNEAREST |             |
-           * | 10   | LINEAR_NEAREST_MIPLINEAR |             |
-           * | 11   | LINEAR_LINEAR |             |
-           * | 12   | LINEAR_NEAREST |             |
-           *
-           *    > _mag_: magnification filter (close to the viewer)
-           *    > _min_: minification filter (far from the viewer)
-           *    > _mip_: filter used between mip map levels
-           *@param samplingMode Define the new sampling mode of the texture
-           */
+     * Update the sampling mode of the texture.
+     * Default is Trilinear mode.
+     *
+     * | Value | Type               | Description |
+     * | ----- | ------------------ | ----------- |
+     * | 1     | NEAREST_SAMPLINGMODE or NEAREST_NEAREST_MIPLINEAR  | Nearest is: mag = nearest, min = nearest, mip = linear |
+     * | 2     | BILINEAR_SAMPLINGMODE or LINEAR_LINEAR_MIPNEAREST | Bilinear is: mag = linear, min = linear, mip = nearest |
+     * | 3     | TRILINEAR_SAMPLINGMODE or LINEAR_LINEAR_MIPLINEAR | Trilinear is: mag = linear, min = linear, mip = linear |
+     * | 4     | NEAREST_NEAREST_MIPNEAREST |             |
+     * | 5    | NEAREST_LINEAR_MIPNEAREST |             |
+     * | 6    | NEAREST_LINEAR_MIPLINEAR |             |
+     * | 7    | NEAREST_LINEAR |             |
+     * | 8    | NEAREST_NEAREST |             |
+     * | 9   | LINEAR_NEAREST_MIPNEAREST |             |
+     * | 10   | LINEAR_NEAREST_MIPLINEAR |             |
+     * | 11   | LINEAR_LINEAR |             |
+     * | 12   | LINEAR_NEAREST |             |
+     *
+     *    > _mag_: magnification filter (close to the viewer)
+     *    > _min_: minification filter (far from the viewer)
+     *    > _mip_: filter used between mip map levels
+     *@param samplingMode Define the new sampling mode of the texture
+     */
     public updateSamplingMode(samplingMode: number): void {
         if (!this._texture) {
             return;
         }
 
-        let scene = this.getScene();
-
-        if (!scene) {
+        const engine = this._getEngine();
+        if (!engine) {
             return;
         }
 
-        scene.getEngine().updateTextureSamplingMode(samplingMode, this._texture);
+        engine.updateTextureSamplingMode(samplingMode, this._texture);
     }
 
     /**
@@ -561,11 +571,12 @@ export class BaseTexture implements IAnimatable {
 
     /** @hidden */
     public _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number, invertY?: boolean): Nullable<InternalTexture> {
-        if (!this._scene) {
+        const engine = this._getEngine();
+        if (!engine) {
             return null;
         }
 
-        var texturesCache = this._scene.getEngine().getLoadedTexturesCache();
+        var texturesCache = engine.getLoadedTexturesCache();
         for (var index = 0; index < texturesCache.length; index++) {
             var texturesCacheEntry = texturesCache[index];
 
@@ -653,13 +664,11 @@ export class BaseTexture implements IAnimatable {
         var size = this.getSize();
         var width = size.width;
         var height = size.height;
-        let scene = this.getScene();
 
-        if (!scene) {
+        const engine = this._getEngine();
+        if (!engine) {
             return null;
         }
-
-        var engine = scene.getEngine();
 
         if (level != 0) {
             width = width / Math.pow(2, level);
@@ -728,6 +737,7 @@ export class BaseTexture implements IAnimatable {
                 this._scene.textures.splice(index, 1);
             }
             this._scene.onTextureRemovedObservable.notifyObservers(this);
+            this._scene = null;
         }
 
         if (this._texture === undefined) {
@@ -740,6 +750,8 @@ export class BaseTexture implements IAnimatable {
         // Callback
         this.onDisposeObservable.notifyObservers(this);
         this.onDisposeObservable.clear();
+
+        this._engine = null;
     }
 
     /**
@@ -794,5 +806,9 @@ export class BaseTexture implements IAnimatable {
                 }
             }
         }
+    }
+
+    private static _isScene(sceneOrEngine: Scene | ThinEngine): sceneOrEngine is Scene {
+        return sceneOrEngine.getClassName() === "Scene";
     }
 }
