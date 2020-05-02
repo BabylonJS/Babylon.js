@@ -298,6 +298,9 @@ export class WebGPUEngine extends Engine {
         return Promise.reject("gslang is not available.");
     }
 
+    public getDevice(): GPUDevice {
+        return this._device;
+    }
     private _initializeLimits(): void {
         // Init caps
         // TODO WEBGPU Real Capability check once limits will be working.
@@ -517,25 +520,32 @@ export class WebGPUEngine extends Engine {
     //------------------------------------------------------------------------------
     //                              WebGPU Buffers
     //------------------------------------------------------------------------------
-
     private _createBuffer(view: ArrayBufferView, flags: GPUBufferUsageFlags): DataBuffer {
         if (view.byteLength == 0) {
             throw new Error("Unable to create WebGPU buffer"); // Zero size buffer would kill the tab in chrome
         }
         const padding = view.byteLength % 4;
+
         const verticesBufferDescriptor = {
             size: view.byteLength + padding,
             usage: flags
         };
-        const [buffer, arrbuffer] = this._device.createBufferMapped(verticesBufferDescriptor)
+        let buffer: GPUBuffer;
+        let arrBuffer: Nullable<ArrayBuffer> = null;
+        if (padding == 0 && view.byteLength < this._maxBufferChunk) {
+            [buffer, arrBuffer] = this._device.createBufferMapped(verticesBufferDescriptor);
+        }
+        else {
+            buffer = this._device.createBuffer(verticesBufferDescriptor);
+        }
+
         const dataBuffer = new WebGPUDataBuffer(buffer);
         dataBuffer.references = 1;
         dataBuffer.capacity = view.byteLength;
-        if (padding == 0 && view.byteLength < this._maxBufferChunk) {
-            new Uint8Array(arrbuffer).set(new Uint8Array(view.buffer));
+        if (arrBuffer) {
+            new Uint8Array(arrBuffer).set(new Uint8Array(view.buffer));
             buffer.unmap();
         } else {
-            buffer.unmap();
             this._setSubData(dataBuffer, 0, view);
         }
         return dataBuffer;
@@ -569,23 +579,30 @@ export class WebGPUEngine extends Engine {
         // Chunk
         const commandEncoder = this._device.createCommandEncoder();
         const tempBuffers: GPUBuffer[] = [];
-        for (let offset = 0; offset < src.byteLength; offset += this._maxBufferChunk) {
-            const uploadCount = Math.min(src.byteLength - offset, this._maxBufferChunk);
-
-            const [uploadBuffer, uploadMapping] = this._device.createBufferMapped({
-                usage: WebGPUConstants.GPUBufferUsage_TRANSFER_SRC,
-                size: uploadCount,
-            });
-            tempBuffers.push(uploadBuffer);
-            new Uint8Array(uploadMapping).set(new Uint8Array(src.buffer, srcByteOffset + offset, uploadCount));
-            uploadBuffer.unmap();
-            commandEncoder.copyBufferToBuffer(
-                uploadBuffer, 0,
-                buffer, dstByteOffset + offset,
-                uploadCount);
+        try {
+            for (let offset = 0; offset < src.byteLength; offset += this._maxBufferChunk) {
+                const uploadCount = Math.min(src.byteLength - offset, this._maxBufferChunk);
+                if (uploadCount == 0) {
+                    throw new Error("Unable to create WebGPU buffer"); // Zero size buffer would kill the tab in chrome
+                }
+                const [uploadBuffer, uploadMapping] = this._device.createBufferMapped({
+                    usage: WebGPUConstants.GPUBufferUsage_TRANSFER_SRC,
+                    size: uploadCount,
+                });
+                tempBuffers.push(uploadBuffer);
+                new Uint8Array(uploadMapping).set(new Uint8Array(src.buffer, srcByteOffset + offset, uploadCount));
+                uploadBuffer.unmap();
+                commandEncoder.copyBufferToBuffer(
+                    uploadBuffer, 0,
+                    buffer, dstByteOffset + offset,
+                    uploadCount);
+            }
+            this._device.defaultQueue.submit([commandEncoder.finish()]);
+        } catch (e) {
+            Logger.Error(e);
+        } finally {
+            tempBuffers.forEach((buff) => buff.destroy());
         }
-        this._device.defaultQueue.submit([commandEncoder.finish()]);
-        tempBuffers.forEach((buff) => buff.destroy());
     }
 
     //------------------------------------------------------------------------------
@@ -1970,65 +1987,6 @@ export class WebGPUEngine extends Engine {
         return inputStateDescriptor;
     }
 
-    private _getPipelineLayout(): GPUPipelineLayout {
-        const bindGroupLayouts: GPUBindGroupLayout[] = [];
-        const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
-
-        for (let i = 0; i < webgpuPipelineContext.orderedUBOsAndSamplers.length; i++) {
-            const setDefinition = webgpuPipelineContext.orderedUBOsAndSamplers[i];
-            if (setDefinition === undefined) {
-                const bindings: GPUBindGroupLayoutBinding[] = [];
-                const uniformsBindGroupLayout = this._device.createBindGroupLayout({
-                    bindings,
-                });
-                bindGroupLayouts[i] = uniformsBindGroupLayout;
-                continue;
-            }
-
-            const bindings: GPUBindGroupLayoutBinding[] = [];
-            for (let j = 0; j < setDefinition.length; j++) {
-                const bindingDefinition = webgpuPipelineContext.orderedUBOsAndSamplers[i][j];
-                if (bindingDefinition === undefined) {
-                    continue;
-                }
-
-                // TODO WEBGPU. Optimize shared samplers visibility for vertex/framgent.
-                if (bindingDefinition.isSampler) {
-                    bindings.push({
-                        binding: j,
-                        visibility: WebGPUConstants.GPUShaderStageBit_VERTEX | WebGPUConstants.GPUShaderStageBit_FRAGMENT,
-                        type: WebGPUConstants.GPUBindingType_sampledTexture,
-                        textureDimension: bindingDefinition.textureDimension,
-                        // TODO WEBGPU. Handle texture component type properly.
-                        // textureComponentType?: GPUTextureComponentType,
-                    }, {
-                        // TODO WEBGPU. No Magic + 1 (coming from current 1 texture 1 sampler startegy).
-                        binding: j + 1,
-                        visibility: WebGPUConstants.GPUShaderStageBit_VERTEX | WebGPUConstants.GPUShaderStageBit_FRAGMENT,
-                        type: WebGPUConstants.GPUBindingType_sampler
-                    });
-                }
-                else {
-                    bindings.push({
-                        binding: j,
-                        visibility: WebGPUConstants.GPUShaderStageBit_VERTEX | WebGPUConstants.GPUShaderStageBit_FRAGMENT,
-                        type: WebGPUConstants.GPUBindingType_uniformBuffer,
-                    });
-                }
-            }
-
-            if (bindings.length > 0) {
-                const uniformsBindGroupLayout = this._device.createBindGroupLayout({
-                    bindings,
-                });
-                bindGroupLayouts[i] = uniformsBindGroupLayout;
-            }
-        }
-
-        webgpuPipelineContext.bindGroupLayouts = bindGroupLayouts;
-        return this._device.createPipelineLayout({ bindGroupLayouts });
-    }
-
     private _getRenderPipeline(fillMode: number): GPURenderPipeline {
         // This is wrong to cache this way but workarounds the need of cache in the simple demo context.
         const gpuPipeline = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
@@ -2043,7 +2001,7 @@ export class WebGPUEngine extends Engine {
         const colorStateDescriptors = this._getColorStateDescriptors();
         const stages = this._getStages();
         const inputStateDescriptor = this._getVertexInputDescriptor();
-        const pipelineLayout = this._getPipelineLayout();
+        const pipelineLayout = this._currentEffect!.getPipelineLayout();
 
         gpuPipeline.renderPipeline = this._device.createRenderPipeline({
             sampleCount: this._mainPassSampleCount,
