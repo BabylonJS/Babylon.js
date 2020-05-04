@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 import { Animation } from 'babylonjs/Animations/animation';
 import { Vector2 } from 'babylonjs/Maths/math.vector';
-import { EasingFunction } from 'babylonjs/Animations/easing';
+import { EasingFunction, BezierCurveEase } from 'babylonjs/Animations/easing';
 import { IAnimationKey } from 'babylonjs/Animations/animationKey';
 import { IKeyframeSvgPoint } from './keyframeSvgPoint';
 import { SvgDraggableArea } from './svgDraggableArea';
@@ -46,7 +46,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     addAnimation(event: React.MouseEvent<HTMLDivElement>){
         event.preventDefault();
         if (this.state.animationName != "" && this.state.animationTargetProperty != ""){
-            let animation = new Animation(this.state.animationName, this.state.animationTargetProperty, 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            let animation = new Animation(this.state.animationName, this.state.animationTargetProperty, 30, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE);
 
             var keys = []; 
               keys.push({
@@ -62,8 +62,8 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
             animation.setKeys(keys);
 
-            var bezierEase = new BABYLON.BezierCurveEase(10,0,10,0);
-            bezierEase.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
+            var bezierEase = new BezierCurveEase(10,0,10,0);
+            bezierEase.setEasingMode(EasingFunction.EASINGMODE_EASEINOUT);
             animation.setEasingFunction((bezierEase as unknown) as EasingFunction);
 
             // Need to redefine/refactor not to update the prop collection
@@ -221,10 +221,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         const v = .75;
 
         keyframes.forEach((key, i) => {
-
-            // if (keyframes[i+1]){
-            // this.drawAllFrames(key, keyframes[i+1], easingFunction as EasingFunction);
-            //  }
 
             // Gets previous initial point of curve segment
             var pointA =  new Vector2(0, 0);
