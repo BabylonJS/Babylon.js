@@ -64,7 +64,9 @@ export class InputDisplayManager implements IDisplayManager {
         let inputBlock = block as InputBlock;
 
         if (inputBlock.isAttribute) {
-            value = "mesh." + inputBlock.name;
+            const attrVal = inputBlock.name === 'position2d' ? 'position' : inputBlock.name;
+            const attrName = inputBlock.name === 'position2d' ? 'postprocess' : 'mesh';
+            value = attrName + "." + attrVal;
         } else if (inputBlock.isSystemValue) {
             switch (inputBlock.systemValue) {
                 case NodeMaterialSystemValues.World:
