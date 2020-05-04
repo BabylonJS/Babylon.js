@@ -48032,10 +48032,10 @@ declare module BABYLON {
      * Helper class useful to convert panorama picture to their cubemap representation in 6 faces.
      */
     export class PanoramaToCubeMapTools {
+        private static FACE_LEFT;
+        private static FACE_RIGHT;
         private static FACE_FRONT;
         private static FACE_BACK;
-        private static FACE_RIGHT;
-        private static FACE_LEFT;
         private static FACE_DOWN;
         private static FACE_UP;
         /**
