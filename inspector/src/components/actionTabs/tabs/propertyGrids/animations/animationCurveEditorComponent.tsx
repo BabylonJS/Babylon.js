@@ -368,10 +368,10 @@ endKey.value = 100
         let det=0.0;
         let q1: Vector2 = new Vector2();
         let q2: Vector2 = new Vector2();
-        let ControlA: Vector2 = p0;
-        let ControlB: Vector2 = new Vector2();
-        let ControlC: Vector2 = new Vector2();
-        let ControlD: Vector2 = p3;
+        let controlA: Vector2 = p0;
+        let controlB: Vector2 = new Vector2();
+        let controlC: Vector2 = new Vector2();
+        let controlD: Vector2 = p3;
 
         if ( (u<=0.0) || (u>=1.0) || (v<=0.0) || (v>=1.0) || (u>=v) ){
             return undefined;
@@ -390,13 +390,13 @@ endKey.value = 100
         q2.y = p2.y - ( (1-v)*(1-v)*(1-v)*p0.y + v*v*v*p3.y );
 
 
-        ControlB.x = (d*q1.x - b*q2.x)/det;
-        ControlB.y = (d*q1.y - b*q2.y)/det;
+        controlB.x = (d*q1.x - b*q2.x)/det;
+        controlB.y = (d*q1.y - b*q2.y)/det;
 
-        ControlC.x = ((-c)*q1.x + a*q2.x)/det;
-        ControlC.y = ((-c)*q1.y + a*q2.y)/det;
+        controlC.x = ((-c)*q1.x + a*q2.x)/det;
+        controlC.y = ((-c)*q1.y + a*q2.y)/det;
 
-        return [ControlA, ControlB, ControlC, ControlD];
+        return [controlA, controlB, controlC, controlD];
 
     }
 
