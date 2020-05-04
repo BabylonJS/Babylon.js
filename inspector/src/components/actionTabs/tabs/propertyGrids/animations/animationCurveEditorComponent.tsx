@@ -8,7 +8,7 @@ import { IAnimationKey } from 'babylonjs/Animations/animationKey';
 import { IKeyframeSvgPoint } from './keyframeSvgPoint';
 import { SvgDraggableArea } from './svgDraggableArea';
 import { Scene } from "babylonjs/scene";
-import { Animatable } from 'babylonjs/Animations/animatable';
+import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 
 require("./curveEditor.scss");
 
@@ -18,10 +18,10 @@ interface IAnimationCurveEditorComponentProps {
     animations: Animation[];
     entityName: string;
     scene: Scene;
-    entity: Animatable;
+    entity: IAnimatable;
 }
 
-export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, { animations: Animation[], animationName: string, selectedProperty:string, isOpen: boolean, selected: Animation, currentPathData: string | undefined, svgKeyframes: IKeyframeSvgPoint[] | undefined }> {
+export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, { animations: Animation[], animationName: string, animationTargetProperty:string, isOpen: boolean, selected: Animation, currentPathData: string | undefined, svgKeyframes: IKeyframeSvgPoint[] | undefined }> {
 
     readonly _heightScale: number = 100;
     private _newAnimations: Animation[] = [];
@@ -29,13 +29,8 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     private _frames: Vector2[] = [];
     constructor(props: IAnimationCurveEditorComponentProps) {
         super(props);
-        this.state = { animations: this._newAnimations,selected: this.props.animations[0], isOpen: true, currentPathData: this.getPathData(this.props.animations[0]), svgKeyframes: this._svgKeyframes, selectedProperty: 'position.x', animationName: "" }
+        this.state = { animations: this._newAnimations,selected: this.props.animations[0], isOpen: true, currentPathData: this.getPathData(this.props.animations[0]), svgKeyframes: this._svgKeyframes, animationTargetProperty: 'position.x', animationName: "" }
 
-    }
-
-    handlePropertyChange(event: React.ChangeEvent<HTMLSelectElement>){
-        event.preventDefault();
-        this.setState({selectedProperty: event.target.value});
     }
 
     handleNameChange(event: React.ChangeEvent<HTMLInputElement>){
@@ -43,10 +38,15 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         this.setState({animationName: event.target.value});
     }
 
+    handlePropertyChange(event: React.ChangeEvent<HTMLInputElement>){
+        event.preventDefault();
+        this.setState({animationTargetProperty: event.target.value});
+    }
+
     addAnimation(event: React.MouseEvent<HTMLDivElement>){
         event.preventDefault();
-        if (this.state.animationName != ""){
-            let animation = new Animation(this.state.animationName, this.state.selectedProperty, 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+        if (this.state.animationName != "" && this.state.animationTargetProperty != ""){
+            let animation = new Animation(this.state.animationName, this.state.animationTargetProperty, 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
 
             var keys = []; 
               keys.push({
@@ -54,19 +54,27 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                 value: 1
               });
 
+              keys.push({
+                frame: 100,
+                value: 1
+              });
+
 
             animation.setKeys(keys);
 
-            var bezierEase = new BABYLON.CircleEase();
+            var bezierEase = new BABYLON.BezierCurveEase(10,0,10,0);
             bezierEase.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
             animation.setEasingFunction((bezierEase as unknown) as EasingFunction);
 
-            this._newAnimations.push(animation);
-            this.setState({animations: this._newAnimations, animationName: ""});
+            // Need to redefine/refactor not to update the prop collection
+            (this.props.entity as IAnimatable).animations?.push(animation);
+           
         }
     }
 
     addKeyFrame(event: React.MouseEvent<SVGSVGElement>){
+
+        
 
         event.preventDefault();
 
@@ -194,11 +202,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
         let i = initialKey.frame;
         
-initialKey.value = 0
-endKey.value = 100
-
-       
-
         for (i; i < endKey.frame; i++){
 
             (i * 100/ endKey.frame)
@@ -208,11 +211,6 @@ endKey.value = 100
             this. _frames.push(new Vector2(i,value));
            
         }
-
-       
-
-        
-
 
     }
 
@@ -414,14 +412,14 @@ endKey.value = 100
                     <div className="animation-list">
                 
                     <div>
-                        <select value={this.state.selectedProperty} onChange={(e) => this.handlePropertyChange(e)}>
-                            <option value="position.x">Position X</option>
-                            <option value="position.y">Position Y</option>
-                            <option value="position.z">Position Z</option>
-                        </select>
-
+                        <div>
+                        <label>Animation Name</label>
                         <input type="text" value={this.state.animationName} onChange={(e) => this.handleNameChange(e)}></input>
-
+                        </div>
+                        <div>
+                        <label>Target Property</label>
+                        <input type="text" value={this.state.animationTargetProperty} onChange={(e) => this.handlePropertyChange(e)}></input>
+                        </div>
                         <div className="add" onClick={(e) => this.addAnimation(e)}>
                         <FontAwesomeIcon icon={faPlusCircle} />
                     </div>
