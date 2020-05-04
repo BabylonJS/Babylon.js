@@ -3,6 +3,9 @@ import * as React from "react";
 import { GlobalState } from '../../globalState';
 import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
 import { DraggableLineComponent } from '../../sharedComponents/draggableLineComponent';
+import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
+import { Observer } from 'babylonjs/Misc/observable';
+import { Nullable } from 'babylonjs/types';
 
 require("./nodeList.scss");
 
@@ -11,6 +14,8 @@ interface INodeListComponentProps {
 }
 
 export class NodeListComponent extends React.Component<INodeListComponentProps, {filter: string}> {
+
+    private _onResetRequiredObserver: Nullable<Observer<void>>;
 
     private static _Tooltips: {[key: string]: string} = {
         "BonesBlock": "Provides a world matrix for each vertex, based on skeletal (bone/joint) animation",
@@ -126,12 +131,22 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "ClearCoatBlock": "PBR ClearCoat block",
         "RefractionBlock": "PBR Refraction block",
         "SubSurfaceBlock": "PBR SubSurface block",
+        "Position2DBlock": "A Vector2 representing the position of each vertex of the screen quad",
+        "CurrentScreenBlock": "The screen buffer used as input for the post process",
     };
 
     constructor(props: INodeListComponentProps) {
         super(props);
 
         this.state = { filter: "" };
+
+        this._onResetRequiredObserver = this.props.globalState.onResetRequiredObservable.add(() => {
+            this.forceUpdate();
+        });
+    }
+
+    componentWillUnmount() {
+        this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
     }
 
     filterContent(filter: string) {
@@ -155,10 +170,21 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
             PBR: ["PBRMetallicRoughnessBlock", "AmbientOcclusionBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "ReflectivityBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
+            PostProcess: ["Position2DBlock", "CurrentScreenBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
             Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock"],
         };
+
+        switch (this.props.globalState.mode) {
+            case NodeMaterialModes.Material:
+                delete allBlocks["PostProcess"];
+                break;
+            case NodeMaterialModes.PostProcess:
+                delete allBlocks["Animation"];
+                delete allBlocks["Mesh"];
+                break;
+        }
 
         // Create node menu
         var blockMenu = [];
