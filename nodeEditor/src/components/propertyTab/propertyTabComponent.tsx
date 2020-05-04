@@ -253,7 +253,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             return;
         }
 
-        if (!force && !confirm('Are your sure? You will loose your current changes (if any) if they are not saved!')) {
+        if (!force && !confirm('Are your sure? You will lose your current changes (if any) if they are not saved!')) {
             this._modeSelect.current?.setValue(this.props.globalState.mode);
             return;
         }

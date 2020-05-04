@@ -20088,8 +20088,10 @@ declare module BABYLON {
          * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
          * @param onCompiled Called when the shader has been compiled.
          * @param onError Called if there is an error when compiling a shader.
+         * @param vertexUrl The url of the vertex shader to be used (default: the one given at construction time)
+         * @param fragmentUrl The url of the fragment shader to be used (default: the one given at construction time)
          */
-        updateEffect(defines?: Nullable<string>, uniforms?: Nullable<string[]>, samplers?: Nullable<string[]>, indexParameters?: any, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): void;
+        updateEffect(defines?: Nullable<string>, uniforms?: Nullable<string[]>, samplers?: Nullable<string[]>, indexParameters?: any, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, vertexUrl?: string, fragmentUrl?: string): void;
         /**
          * The post process is reusable if it can be used multiple times within one frame.
          * @returns If the post process is reusable
@@ -55058,7 +55060,7 @@ declare module BABYLON {
         set numCascades(value: number);
         /**
          * Sets this to true if you want that the edges of the shadows don't "swimm" / "shimmer" when rotating the camera.
-         * The trade off is that you loose some precision in the shadow rendering when enabling this setting.
+         * The trade off is that you lose some precision in the shadow rendering when enabling this setting.
          */
         stabilizeCascades: boolean;
         private _freezeShadowCastersBoundingInfo;
@@ -57636,6 +57638,17 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Enum used to define the material modes
+     */
+    export enum NodeMaterialModes {
+        /** Regular material */
+        Material = 0,
+        /** For post process */
+        PostProcess = 1
+    }
+}
+declare module BABYLON {
+    /**
      * Root class for all node material optimizers
      */
     export class NodeMaterialOptimizer {
@@ -58047,6 +58060,229 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Base block used as input for post process
+     */
+    export class CurrentScreenBlock extends NodeMaterialBlock {
+        private _samplerName;
+        private _linearDefineName;
+        private _gammaDefineName;
+        private _mainUVName;
+        private _tempTextureRead;
+        /**
+         * Gets or sets the texture associated with the node
+         */
+        texture: Nullable<BaseTexture>;
+        /**
+         * Gets or sets a boolean indicating if content needs to be converted to gamma space
+         */
+        convertToGammaSpace: boolean;
+        /**
+         * Gets or sets a boolean indicating if content needs to be converted to linear space
+         */
+        convertToLinearSpace: boolean;
+        /**
+         * Create a new CurrentScreenBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the uv input component
+         */
+        get uv(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgba output component
+         */
+        get rgba(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb output component
+         */
+        get rgb(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the r output component
+         */
+        get r(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the g output component
+         */
+        get g(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the b output component
+         */
+        get b(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the a output component
+         */
+        get a(): NodeMaterialConnectionPoint;
+        /**
+         * Initialize the block and prepare the context for build
+         * @param state defines the state that will be used for the build
+         */
+        initialize(state: NodeMaterialBuildState): void;
+        get target(): NodeMaterialBlockTargets;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        isReady(): boolean;
+        private _injectVertexCode;
+        private _writeTextureRead;
+        private _writeOutput;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to create a Vector2/3/4 out of individual inputs (one for each component)
+     */
+    export class VectorMergerBlock extends NodeMaterialBlock {
+        /**
+         * Create a new VectorMergerBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the xyz component (input)
+         */
+        get xyzIn(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the xy component (input)
+         */
+        get xyIn(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the x component (input)
+         */
+        get x(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the y component (input)
+         */
+        get y(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the z component (input)
+         */
+        get z(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the w component (input)
+         */
+        get w(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyzw component (output)
+         */
+        get xyzw(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyz component (output)
+         */
+        get xyzOut(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the xy component (output)
+         */
+        get xyOut(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the xy component (output)
+         * @deprecated Please use xyOut instead.
+         */
+        get xy(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyz component (output)
+         * @deprecated Please use xyzOut instead.
+         */
+        get xyz(): NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to remap a float from a range to a new one
+     */
+    export class RemapBlock extends NodeMaterialBlock {
+        /**
+         * Gets or sets the source range
+         */
+        sourceRange: Vector2;
+        /**
+         * Gets or sets the target range
+         */
+        targetRange: Vector2;
+        /**
+         * Creates a new RemapBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the input component
+         */
+        get input(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the source min input component
+         */
+        get sourceMin(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the source max input component
+         */
+        get sourceMax(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the target min input component
+         */
+        get targetMin(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the target max input component
+         */
+        get targetMax(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        get output(): NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+        protected _dumpPropertiesCode(): string;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to multiply 2 values
+     */
+    export class MultiplyBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new MultiplyBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the left operand input component
+         */
+        get left(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the right operand input component
+         */
+        get right(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        get output(): NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
      * Interface used to configure the node material editor
      */
     export interface INodeMaterialEditorOptions {
@@ -58172,6 +58408,15 @@ declare module BABYLON {
          */
         attachedBlocks: NodeMaterialBlock[];
         /**
+         * Specifies the mode of the node material
+         * @hidden
+         */
+        _mode: NodeMaterialModes;
+        /**
+         * Gets the mode property
+         */
+        get mode(): NodeMaterialModes;
+        /**
          * Create a new node based material
          * @param name defines the material name
          * @param scene defines the hosting scene
@@ -58271,6 +58516,19 @@ declare module BABYLON {
         optimize(): void;
         private _prepareDefinesForAttributes;
         /**
+         * Create a post process from the material
+         * @param camera The camera to apply the render pass to.
+         * @param options The required width/height ratio to downsize to before computing the render pass. (Use 1.0 for full size)
+         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
+         * @param engine The engine which the post process will be applied. (default: current engine)
+         * @param reusable If the post process can be reused on the same frame. (default: false)
+         * @param textureType Type of textures used when performing the post process. (default: 0)
+         * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
+         * @returns the post process created
+         */
+        createPostProcess(camera: Nullable<Camera>, options?: number | PostProcessOptions, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, textureFormat?: number): PostProcess;
+        private _processDefines;
+        /**
           * Get if the submesh is ready to be used and all its information available.
           * Child classes can use it to update shaders
           * @param mesh defines the mesh to check
@@ -58304,7 +58562,7 @@ declare module BABYLON {
          * Gets the list of texture blocks
          * @returns an array of texture blocks
          */
-        getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock | RefractionBlock)[];
+        getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock)[];
         /**
          * Specifies if the material uses a texture
          * @param texture defines the texture to check against the material
@@ -58334,6 +58592,10 @@ declare module BABYLON {
          * Clear the current material and set it to a default state
          */
         setToDefault(): void;
+        /**
+         * Clear the current material and set it to a default state for post process
+         */
+        setToDefaultPostProcess(): void;
         /**
          * Loads the current Node Material from a url pointing to a file save by the Node Material Editor
          * @param url defines the url to load from
@@ -58502,7 +58764,7 @@ declare module BABYLON {
         /**
          * Input blocks
          */
-        textureBlocks: (ReflectionTextureBaseBlock | TextureBlock | RefractionBlock)[];
+        textureBlocks: (ReflectionTextureBaseBlock | TextureBlock | RefractionBlock | CurrentScreenBlock)[];
         /**
          * Bindable blocks (Blocks that need to set data to the effect)
          */
@@ -59800,36 +60062,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Block used to multiply 2 values
-     */
-    export class MultiplyBlock extends NodeMaterialBlock {
-        /**
-         * Creates a new MultiplyBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the left operand input component
-         */
-        get left(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the right operand input component
-         */
-        get right(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the output component
-         */
-        get output(): NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
      * Block used to add 2 vectors
      */
     export class AddBlock extends NodeMaterialBlock {
@@ -59983,59 +60215,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Block used to remap a float from a range to a new one
-     */
-    export class RemapBlock extends NodeMaterialBlock {
-        /**
-         * Gets or sets the source range
-         */
-        sourceRange: Vector2;
-        /**
-         * Gets or sets the target range
-         */
-        targetRange: Vector2;
-        /**
-         * Creates a new RemapBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the input component
-         */
-        get input(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the source min input component
-         */
-        get sourceMin(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the source max input component
-         */
-        get sourceMax(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the target min input component
-         */
-        get targetMin(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the target max input component
-         */
-        get targetMax(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the output component
-         */
-        get output(): NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-        protected _dumpPropertiesCode(): string;
-        serialize(): any;
-        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
-    }
-}
-declare module BABYLON {
-    /**
      * Block used to normalize a vector
      */
     export class NormalizeBlock extends NodeMaterialBlock {
@@ -60182,70 +60361,6 @@ declare module BABYLON {
          * @deprecated Please use rgbOut instead.
          */
         get rgb(): NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to create a Vector2/3/4 out of individual inputs (one for each component)
-     */
-    export class VectorMergerBlock extends NodeMaterialBlock {
-        /**
-         * Create a new VectorMergerBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the xyz component (input)
-         */
-        get xyzIn(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the xy component (input)
-         */
-        get xyIn(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the x component (input)
-         */
-        get x(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the y component (input)
-         */
-        get y(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the z component (input)
-         */
-        get z(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the w component (input)
-         */
-        get w(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the xyzw component (output)
-         */
-        get xyzw(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the xyz component (output)
-         */
-        get xyzOut(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the xy component (output)
-         */
-        get xyOut(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the xy component (output)
-         * @deprecated Please use xyOut instead.
-         */
-        get xy(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the xyz component (output)
-         * @deprecated Please use xyzOut instead.
-         */
-        get xyz(): NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
