@@ -26,6 +26,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     readonly _heightScale: number = 100;
     private _newAnimations: Animation[] = [];
     private _svgKeyframes: IKeyframeSvgPoint[] = [];
+    private _frames: Vector2[] = [];
     constructor(props: IAnimationCurveEditorComponentProps) {
         super(props);
         this.state = { animations: this._newAnimations,selected: this.props.animations[0], isOpen: true, currentPathData: this.getPathData(this.props.animations[0]), svgKeyframes: this._svgKeyframes, selectedProperty: 'position.x', animationName: "" }
@@ -179,10 +180,39 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             data = this.linearInterpolation(keyframes, data, middle);
         } else {
             let easingFunction = animation.getEasingFunction();
+            
             data = this.curvePath(keyframes, data, middle, easingFunction as EasingFunction)
         }
 
+      
+
         return data;
+
+    }
+
+    drawAllFrames(initialKey: IAnimationKey,endKey: IAnimationKey, easingFunction: EasingFunction) {
+
+        let i = initialKey.frame;
+        
+initialKey.value = 0
+endKey.value = 100
+
+       
+
+        for (i; i < endKey.frame; i++){
+
+            (i * 100/ endKey.frame)
+
+            let dy = easingFunction.easeInCore(i);
+            let value = this._heightScale - (dy * (this._heightScale/2));
+            this. _frames.push(new Vector2(i,value));
+           
+        }
+
+       
+
+        
+
 
     }
 
@@ -193,6 +223,10 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         const v = .75;
 
         keyframes.forEach((key, i) => {
+
+            // if (keyframes[i+1]){
+            // this.drawAllFrames(key, keyframes[i+1], easingFunction as EasingFunction);
+            //  }
 
             // Gets previous initial point of curve segment
             var pointA =  new Vector2(0, 0);
@@ -210,12 +244,28 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                 var pointB = new Vector2(key.frame, this._heightScale - (key.value * middle));
 
                 // Get easing value of percentage to get the bezier control points below
-                let du = easingFunction.ease(u); // What to do here, when user edits the curve? Option 1: Modify the curve with the new control points as BezierEaseCurve(x,y,z,w)
-                let dv = easingFunction.ease(v); // Option 2: Create a easeInCore function and adapt it with the new control points values... needs more revision.
+                let du = easingFunction.easeInCore(u); // What to do here, when user edits the curve? Option 1: Modify the curve with the new control points as BezierEaseCurve(x,y,z,w)
+                let dv = easingFunction.easeInCore(v); // Option 2: Create a easeInCore function and adapt it with the new control points values... needs more revision.
+
+                // Direction of curve up/down
+                let yInt25 = 0;
+                if (pointB.y > pointA.y) {  // if pointB.y > pointA.y = goes down 
+                    yInt25 = ((pointB.y - pointA.y) * du) + pointA.y
+                } else if (pointB.y < pointA.y) {     // if pointB.y < pointA.y = goes up
+                    yInt25 = pointA.y - ((pointA.y - pointB.y) * du);
+                }
+
+                let yInt75 = 0;
+                if (pointB.y > pointA.y) {
+                    yInt75 = ((pointB.y - pointA.y) * dv) + pointA.y
+                } else if (pointB.y < pointA.y) {
+                    yInt75 = pointA.y - ((pointA.y - pointB.y) * dv)
+                }
 
                 // Intermediate points in curve
-                let intermediatePoint25 = new Vector2(((pointB.x - pointA.x) * u) + pointA.x,  ((pointB.y - pointA.y) * du) + middle);
-                let intermediatePoint75 = new Vector2(((pointB.x - pointA.x) * v) + pointA.x,  ((pointB.y - pointA.y) * dv) + middle);
+                let intermediatePoint25 = new Vector2(((pointB.x - pointA.x) * u) + pointA.x, yInt25);
+                let intermediatePoint75 = new Vector2(((pointB.x - pointA.x) * v) + pointA.x, yInt75);
+
                 
                 // Gets the four control points of bezier curve
                 let controlPoints = this.interpolateControlPoints(pointA, intermediatePoint25, u, intermediatePoint75, v, pointB);
@@ -226,7 +276,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     
                     this.setKeyframePoint(controlPoints, i, keyframes.length);
     
-                    data += ` C${controlPoints[1].x}, ${controlPoints[1].y} ${controlPoints[2].x}, ${controlPoints[2].y} ${controlPoints[3].x}, ${controlPoints[3].y}`
+                    data += ` C${controlPoints[1].x} ${controlPoints[1].y} ${controlPoints[2].x} ${controlPoints[2].y} ${controlPoints[3].x} ${controlPoints[3].y}`
 
                 }
             }
@@ -236,6 +286,8 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         return data;
 
     }
+
+    
 
     renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number){
 
@@ -265,12 +317,22 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     
     linearInterpolation(keyframes: IAnimationKey[], data: string, middle: number): string {
         keyframes.forEach((key, i) => {
-            if (i !== 0) {
-                data += ` L${key.frame} ${this._heightScale - (key.value * middle)}`
-            }
 
+            var point =  new Vector2(0, 0);
+            point.x = key.frame;
+            point.y = this._heightScale - (key.value * middle);
+            this.setKeyframePointLinear(point, i);
+
+            if (i !== 0) { 
+                data += ` L${point.x} ${point.y}`
+            }
         });
         return data;
+    }
+
+    setKeyframePointLinear(point: Vector2,index: number){
+        let svgKeyframe = { keyframePoint: point, rightControlPoint: null, leftControlPoint: null, id: index.toString() }
+        this._svgKeyframes.push(svgKeyframe);
     }
 
     setKeyframePoint(controlPoints: Vector2[], index: number, keyframesCount: number) {
@@ -278,14 +340,9 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         let svgKeyframe;
         if (index === 0){
             svgKeyframe = { keyframePoint: controlPoints[0], rightControlPoint: null, leftControlPoint: null, id: index.toString() }
-        }else if (index === 1) {
-            this._svgKeyframes[index-1].rightControlPoint = controlPoints[1];
-            svgKeyframe = { keyframePoint: controlPoints[3], leftControlPoint: controlPoints[2], rightControlPoint: null, id: index.toString() }
-        } else if (index === keyframesCount - 1){
+        }else {
             this._svgKeyframes[index-1].rightControlPoint = controlPoints[1];
             svgKeyframe = { keyframePoint: controlPoints[3], rightControlPoint: null, leftControlPoint: controlPoints[2], id: index.toString() }
-        } else {
-            svgKeyframe = { keyframePoint: controlPoints[0], rightControlPoint: controlPoints[1], leftControlPoint: this._svgKeyframes[index-1].rightControlPoint, id: index.toString() }
         }
 
         this._svgKeyframes.push(svgKeyframe);
@@ -437,6 +494,12 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                             { /* Single Curve -Modify this for multiple selection and view  */}
                             <path id="curve" d={this.state.currentPathData} style={{ stroke: 'red', fill: 'none', strokeWidth: '0.5' }}></path>
 
+                            { this._frames && this._frames.map(frame => 
+                             <svg x={frame.x} y={frame.y} style={{overflow:'visible'}}>
+                             <circle cx="0" cy="0"  r="2" stroke="black" strokeWidth="1" fill="white"  />
+                             </svg>
+
+                            )}
                         
                         </SvgDraggableArea>
 
