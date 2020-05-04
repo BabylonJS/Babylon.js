@@ -132,14 +132,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.2.0-alpha.12";
+        return "babylonjs@4.2.0-alpha.14";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.2.0-alpha.12";
+        return "4.2.0-alpha.14";
     }
 
     /**
@@ -350,7 +350,9 @@ export class ThinEngine {
     private _uintIndicesCurrentlySet = false;
     protected _currentBoundBuffer = new Array<Nullable<WebGLBuffer>>();
     /** @hidden */
-    protected _currentFramebuffer: Nullable<WebGLFramebuffer> = null;
+    public _currentFramebuffer: Nullable<WebGLFramebuffer> = null;
+    /** @hidden */
+    public _dummyFramebuffer: Nullable<WebGLFramebuffer> = null;
     private _currentBufferPointers = new Array<BufferPointer>();
     private _currentInstanceLocations = new Array<number>();
     private _currentInstanceBuffers = new Array<DataBuffer>();
@@ -3471,7 +3473,8 @@ export class ThinEngine {
         }
 
         this._activeChannel = channel;
-        this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
+        const target = texture ? this._getTextureTarget(texture) : this._gl.TEXTURE_2D;
+        this._bindTextureDirectly(target, texture);
     }
 
     /**
@@ -3733,6 +3736,10 @@ export class ThinEngine {
         if (this._emptyCubeTexture) {
             this._releaseTexture(this._emptyCubeTexture);
             this._emptyCubeTexture = null;
+        }
+
+        if (this._dummyFramebuffer) {
+            this._gl.deleteFramebuffer(this._dummyFramebuffer);
         }
 
         // Release effects
