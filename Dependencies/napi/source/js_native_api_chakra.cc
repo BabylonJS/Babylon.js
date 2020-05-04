@@ -813,10 +813,8 @@ napi_status napi_define_properties(napi_env env,
     CHECK_JSRT(env, JsCreateObject(&descriptor));
 
     JsValueRef configurable;
-    CHECK_JSRT(env,
-      JsBoolToBoolean((p->attributes & napi_configurable), &configurable));
-    CHECK_JSRT(env,
-      JsSetProperty(descriptor, configurableProperty, configurable, true));
+    CHECK_JSRT(env, JsBoolToBoolean((p->attributes & napi_configurable), &configurable));
+    CHECK_JSRT(env, JsSetProperty(descriptor, configurableProperty, configurable, true));
 
     JsValueRef enumerable;
     CHECK_JSRT(env, JsBoolToBoolean((p->attributes & napi_enumerable), &enumerable));
@@ -1153,14 +1151,13 @@ napi_status napi_get_null(napi_env env, napi_value* result) {
   return napi_ok;
 }
 
-napi_status napi_get_cb_info(
-    napi_env env,               // [in] NAPI environment handle
-    napi_callback_info cbinfo,  // [in] Opaque callback-info handle
-    size_t* argc,      // [in-out] Specifies the size of the provided argv array
-                       // and receives the actual count of args.
-    napi_value* argv,  // [out] Array of values
-    napi_value* this_arg,  // [out] Receives the JS 'this' arg for the call
-    void** data) {         // [out] Receives the data pointer for the callback.
+napi_status napi_get_cb_info(napi_env env,              // [in] NAPI environment handle
+                             napi_callback_info cbinfo, // [in] Opaque callback-info handle
+                             size_t* argc,              // [in-out] Specifies the size of the provided argv array
+                                                        // and receives the actual count of args.
+                             napi_value* argv,          // [out] Array of values
+                             napi_value* this_arg,      // [out] Receives the JS 'this' arg for the call
+                             void** data) {             // [out] Receives the data pointer for the callback.
   CHECK_ENV(env);
   CHECK_ARG(env, cbinfo);
   const CallbackInfo* info = reinterpret_cast<CallbackInfo*>(cbinfo);
@@ -1324,6 +1321,8 @@ napi_status napi_get_value_double(napi_env env, napi_value value, double* result
 }
 
 napi_status napi_get_value_int32(napi_env env, napi_value v, int32_t* result) {
+  CHECK_ENV(env);
+  CHECK_ARG(env, v);
   CHECK_ARG(env, result);
   JsValueRef value = reinterpret_cast<JsValueRef>(v);
   int valueInt;
@@ -1332,9 +1331,7 @@ napi_status napi_get_value_int32(napi_env env, napi_value v, int32_t* result) {
   return napi_ok;
 }
 
-napi_status napi_get_value_uint32(napi_env env,
-                                  napi_value value,
-                                  uint32_t* result) {
+napi_status napi_get_value_uint32(napi_env env, napi_value value, uint32_t* result) {
   CHECK_ENV(env);
   CHECK_ARG(env, value);
   CHECK_ARG(env, result);
@@ -2385,7 +2382,7 @@ napi_status napi_run_script(napi_env env,
 
 napi_status napi_run_script(napi_env env,
                             napi_value script,
-                            const char* sourceUrl,
+                            const char* source_url,
                             napi_value* result) {
   CHECK_ARG(env, script);
   CHECK_ARG(env, result);
@@ -2394,7 +2391,7 @@ napi_status napi_run_script(napi_env env,
   const wchar_t* scriptStr;
   size_t scriptStrLen;
   CHECK_JSRT(env, JsStringToPointer(scriptVar, &scriptStr, &scriptStrLen));
-  CHECK_JSRT_EXPECTED(env, JsRunScript(scriptStr, ++env->source_context, NarrowToWide({ sourceUrl }).data(), reinterpret_cast<JsValueRef*>(result)), napi_string_expected);
+  CHECK_JSRT_EXPECTED(env, JsRunScript(scriptStr, ++env->source_context, NarrowToWide({ source_url }).data(), reinterpret_cast<JsValueRef*>(result)), napi_string_expected);
 
   return napi_ok;
 }
@@ -2405,7 +2402,7 @@ napi_status napi_add_finalizer(napi_env env,
                                napi_finalize finalize_cb,
                                void* finalize_hint,
                                napi_ref* result) {
-  return napi_ok;
+  throw std::runtime_error("not impl");
 }
 
 napi_status napi_adjust_external_memory(napi_env env,

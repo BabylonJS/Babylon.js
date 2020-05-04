@@ -439,7 +439,7 @@ NAPI_EXTERN napi_status napi_is_promise(napi_env env,
 // Running a script
 NAPI_EXTERN napi_status napi_run_script(napi_env env,
                                         napi_value script,
-                                        const char* sourceUrl,
+                                        const char* source_url,
                                         napi_value* result);
 
 // Memory management

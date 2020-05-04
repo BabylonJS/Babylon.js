@@ -2955,9 +2955,9 @@ napi_status napi_run_script(napi_env env,
 
 napi_status napi_run_script(napi_env env,
                             napi_value script,
-                            const char* sourceUrl,
+                            const char* source_url,
                             napi_value* result) {
-  // TODO: figure out what to do with sourceUrl
+  // TODO: figure out what to do with source_url
   return napi_run_script(env, script, result);
 }
 

@@ -17,9 +17,9 @@ namespace
 namespace Napi
 {
     template<>
-    Napi::Env Attach<>()
+    Env Attach<>()
     {
-        Napi:Env env{new napi_env__({})};
+        napi_env env_ptr{new napi_env__};
 
         JsValueRef global;
         ThrowIfFailed(JsGetGlobalObject(&global));
@@ -30,13 +30,14 @@ namespace Napi
         JsValueRef prototype;
         ThrowIfFailed(JsGetPrototype(object, &prototype));
         ThrowIfFailed(JsGetPropertyIdFromName(L"hasOwnProperty", &propertyId));
-        ThrowIfFailed(JsGetProperty(prototype, propertyId, &static_cast<napi_env>(env)->has_own_property_function));
+        ThrowIfFailed(JsGetProperty(prototype, propertyId, &env_ptr->has_own_property_function));
 
-        return env;
+        return {env_ptr};
     }
 
-    void Detach(Napi::Env env)
+    void Detach(Env env)
     {
-        delete env.operator napi_env();
+        napi_env env_ptr{env};
+        delete env_ptr;
     }
 }

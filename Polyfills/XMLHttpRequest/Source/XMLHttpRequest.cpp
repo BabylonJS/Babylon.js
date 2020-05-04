@@ -97,13 +97,7 @@ namespace Babylon::Polyfills::Internal
     Napi::Value XMLHttpRequest::GetResponse(const Napi::CallbackInfo&)
     {
         gsl::span<const std::byte> responseBuffer{m_request.ResponseBuffer()};
-
-        // TODO: put this back once JSC NAPI is implemented properly
-        //return Napi::ArrayBuffer::New(Env(), const_cast<std::byte*>(responseBuffer.data()), responseBuffer.size());
-
-        auto arrayBuffer{Napi::ArrayBuffer::New(Env(), responseBuffer.size())};
-        std::memcpy(arrayBuffer.Data(), responseBuffer.data(), arrayBuffer.ByteLength());
-        return arrayBuffer;
+        return Napi::ArrayBuffer::New(Env(), const_cast<std::byte*>(responseBuffer.data()), responseBuffer.size());
     }
 
     Napi::Value XMLHttpRequest::GetResponseText(const Napi::CallbackInfo&)
