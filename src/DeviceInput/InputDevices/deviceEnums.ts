@@ -14,16 +14,15 @@ export enum DeviceType {
     Xbox = 4,
     /** Switch Controller */
     Switch = 5,
-    /** Generic Device */
-    GenericDevice = 6
+    /** Generic */
+    Generic = 6
 }
 
 // Device Enums
 /**
  * Enum for All Pointers (Touch/Mouse)
  */
-export enum PointerInputs
-{
+export enum PointerInput {
     /** Horizontal Axis */
     Horizontal = 0,
     /** Vertical Axis */
@@ -43,7 +42,7 @@ export enum PointerInputs
 /**
  * Enum for Dual Shock Gamepad
  */
-export enum DualShockInputs {
+export enum DualShockInput {
     /** Cross */
     Cross = 0,
     /** Circle */
@@ -93,7 +92,7 @@ export enum DualShockInputs {
 /**
  * Enum for Xbox Gamepad
  */
-export enum XboxInputs {
+export enum XboxInput {
     /** A */
     A = 0,
     /** B */
@@ -141,7 +140,7 @@ export enum XboxInputs {
 /**
  * Enum for Switch (Pro/JoyCon L+R) Gamepad
  */
-export enum SwitchInputs {
+export enum SwitchInput {
     /** B */
     B = 0,
     /** A */
@@ -187,3 +186,14 @@ export enum SwitchInputs {
     /** RStickYAxis */
     RStickYAxis = 21
 }
+
+/**
+ * Type to handle enforcement of inputs
+ */
+export type DeviceInputs<T extends DeviceType> =
+    T extends DeviceType.Keyboard | DeviceType.Generic ? number :
+    T extends DeviceType.Mouse | DeviceType.Touch ? PointerInput :
+    T extends DeviceType.DualShock ? DualShockInput :
+    T extends DeviceType.Xbox ? XboxInput :
+    T extends DeviceType.Switch ? SwitchInput :
+    never;

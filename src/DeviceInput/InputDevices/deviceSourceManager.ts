@@ -1,7 +1,7 @@
-import { DeviceInputSystem } from '../deviceInputSystem';
+import { DeviceInputSystem, POINTER_DEVICE, KEYBOARD_DEVICE, MOUSE_DEVICE } from '../deviceInputSystem';
 import { Engine } from '../../Engines/engine';
 import { IDisposable } from '../../scene';
-import { DeviceType } from './deviceEnums';
+import { DeviceType, DeviceInputs } from './deviceEnums';
 import { Nullable } from '../../types';
 import { Observable } from '../../Misc/observable';
 
@@ -13,22 +13,22 @@ export class DeviceSourceManager implements IDisposable {
     /**
      * Observable to be triggered when before a device is connected
      */
-    public onBeforeDeviceConnectedObservable = new Observable<string>();
+    public onBeforeDeviceConnectedObservable = new Observable<{deviceType: DeviceType, deviceSlot: number}>();
 
     /**
      * Observable to be triggered when before a device is disconnected
      */
-    public onBeforeDeviceDisconnectedObservable = new Observable<string>();
+    public onBeforeDeviceDisconnectedObservable = new Observable<{deviceType: DeviceType, deviceSlot: number}>();
 
     /**
      * Observable to be triggered when after a device is connected
      */
-    public onAfterDeviceConnectedObservable = new Observable<string>();
+    public onAfterDeviceConnectedObservable = new Observable<{deviceType: DeviceType, deviceSlot: number}>();
 
     /**
      * Observable to be triggered when after a device is disconnected
      */
-    public onAfterDeviceDisconnectedObservable = new Observable<string>();
+    public onAfterDeviceDisconnectedObservable = new Observable<{deviceType: DeviceType, deviceSlot: number}>();
 
     // Private Members
     private _devices: Array<Array<string>>;
@@ -46,27 +46,33 @@ export class DeviceSourceManager implements IDisposable {
         this._firstDevice = new Array<number>(numberOfDeviceTypes);
         this._deviceInputSystem = new DeviceInputSystem(engine);
 
-        this._deviceInputSystem.onDeviceConnectedObservable.add((deviceName) => {
-            this.onBeforeDeviceConnectedObservable.notifyObservers(deviceName);
+        this._deviceInputSystem.onDeviceConnected = (deviceName) => {
+            const deviceType = this._getDeviceTypeFromName(deviceName);
+            const deviceSlot = this._getDeviceSlot(deviceName);
+
+            this.onBeforeDeviceConnectedObservable.notifyObservers({deviceType, deviceSlot});
             this._addDevice(deviceName);
-            this.onAfterDeviceConnectedObservable.notifyObservers(deviceName);
-        });
-        this._deviceInputSystem.onDeviceDisconnectedObservable.add((deviceName) => {
-            this.onBeforeDeviceDisconnectedObservable.notifyObservers(deviceName);
+            this.onAfterDeviceConnectedObservable.notifyObservers({deviceType, deviceSlot});
+        };
+        this._deviceInputSystem.onDeviceDisconnected = (deviceName) => {
+            const deviceType = this._getDeviceTypeFromName(deviceName);
+            const deviceSlot = this._getDeviceSlot(deviceName);
+
+            this.onBeforeDeviceDisconnectedObservable.notifyObservers({deviceType, deviceSlot});
             this._removeDevice(deviceName);
-            this.onAfterDeviceDisconnectedObservable.notifyObservers(deviceName);
-        });
+            this.onAfterDeviceDisconnectedObservable.notifyObservers({deviceType, deviceSlot});
+        };
     }
 
     // Public Functions
     /**
      * Checks for current device input value, given DeviceType, slot, and inputIndex
      * @param type Enum specifiying device type
-     * @param deviceSlot "Slot" or index that device is referenced in
      * @param inputIndex Index of device input
+     * @param deviceSlot "Slot" or index that device is referenced in
      * @returns Current value of input
      */
-    public getInput(type: DeviceType, inputIndex: number, deviceSlot: number = this._firstDevice[type]): Nullable<number> {
+    public getInput<T extends DeviceType>(type: T, inputIndex: DeviceInputs<T>, deviceSlot: number = this._firstDevice[type]): Nullable<number> {
         if (!this._devices[type] || this._firstDevice[type] === undefined)
         {
             return null;
@@ -99,10 +105,10 @@ export class DeviceSourceManager implements IDisposable {
         {
             this._devices[deviceType] = new Array<string>();
 
-            if(deviceType == DeviceType.Touch)
+            if (deviceType == DeviceType.Touch)
             {
                 this._touchPoints = new Array<string>();
-                this._devices[deviceType][deviceSlot] = DeviceInputSystem.POINTER_DEVICE;
+                this._devices[deviceType][deviceSlot] = POINTER_DEVICE;
             }
         }
 
@@ -115,7 +121,7 @@ export class DeviceSourceManager implements IDisposable {
         {
             this._devices[deviceType][deviceSlot] = deviceName;
         }
-        
+
         this._updateFirstDevices(deviceType);
     }
 
@@ -169,7 +175,7 @@ export class DeviceSourceManager implements IDisposable {
             case DeviceType.DualShock:
             case DeviceType.Xbox:
             case DeviceType.Switch:
-            case DeviceType.GenericDevice:
+            case DeviceType.Generic:
                 let i = 0;
                 let first = -1;
 
@@ -194,13 +200,13 @@ export class DeviceSourceManager implements IDisposable {
      */
     private _getDeviceTypeFromName(deviceName: string): DeviceType
     {
-        if (deviceName == DeviceInputSystem.KEYBOARD_DEVICE) {
+        if (deviceName == KEYBOARD_DEVICE) {
             return DeviceType.Keyboard;
         }
-        else if (deviceName == DeviceInputSystem.MOUSE_DEVICE) {
+        else if (deviceName == MOUSE_DEVICE) {
             return DeviceType.Mouse;
         }
-        else if (deviceName.search(DeviceInputSystem.POINTER_DEVICE) !== -1) {
+        else if (deviceName.search(POINTER_DEVICE) !== -1) {
             return DeviceType.Touch;
         }
         else if (deviceName.search("054c") !== -1) { // DualShock 4 Gamepad
@@ -213,6 +219,6 @@ export class DeviceSourceManager implements IDisposable {
             return DeviceType.Switch;
         }
 
-        return DeviceType.GenericDevice;
+        return DeviceType.Generic;
     }
 }
