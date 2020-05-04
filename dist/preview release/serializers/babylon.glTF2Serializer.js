@@ -4118,6 +4118,10 @@ var _GLTFMaterialExporter = /** @class */ (function () {
                 return _this._textureMap[textureUid];
             }
             else {
+                var pixels = _this.getPixelsFromTexture(babylonTexture);
+                if (!pixels) {
+                    return null;
+                }
                 var samplers = _this._exporter._samplers;
                 var sampler = _this._getGLTFTextureSampler(babylonTexture);
                 var samplerIndex_1 = null;
@@ -4138,7 +4142,6 @@ var _GLTFMaterialExporter = /** @class */ (function () {
                 else {
                     samplerIndex_1 = foundSamplerIndex;
                 }
-                var pixels = _this.getPixelsFromTexture(babylonTexture);
                 var size = babylonTexture.getSize();
                 return _this._createBase64FromCanvasAsync(pixels, size.width, size.height, mimeType).then(function (base64Data) {
                     var textureInfo = _this._getTextureInfoFromBase64(base64Data, babylonTexture.name.replace(/\.\/|\/|\.\\|\\/g, "_"), mimeType, babylonTexture.coordinatesIndex, samplerIndex_1);

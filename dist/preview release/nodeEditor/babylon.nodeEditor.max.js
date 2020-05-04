@@ -59438,6 +59438,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
@@ -59709,6 +59710,11 @@ var BlockTools = /** @class */ (function () {
                 meshPosition.setAsAttribute("position");
                 return meshPosition;
             }
+            case "Position2DBlock": {
+                var meshPosition = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("position");
+                meshPosition.setAsAttribute("position2d");
+                return meshPosition;
+            }
             case "UVBlock": {
                 var meshUV = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("uv");
                 meshUV.setAsAttribute("uv");
@@ -59815,6 +59821,8 @@ var BlockTools = /** @class */ (function () {
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["RefractionBlock"]("Refraction");
             case "SubSurfaceBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["SubSurfaceBlock"]("SubSurface");
+            case "CurrentScreenBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["CurrentScreenBlock"]("CurrentScreen");
         }
         return null;
     };
@@ -60027,6 +60035,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
 /* harmony import */ var _sharedComponents_draggableLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../sharedComponents/draggableLineComponent */ "./sharedComponents/draggableLineComponent.tsx");
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialModes__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialModes */ "babylonjs/Misc/dataStorage");
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialModes__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Enums_nodeMaterialModes__WEBPACK_IMPORTED_MODULE_4__);
+
 
 
 
@@ -60037,8 +60048,14 @@ var NodeListComponent = /** @class */ (function (_super) {
     function NodeListComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { filter: "" };
+        _this._onResetRequiredObserver = _this.props.globalState.onResetRequiredObservable.add(function () {
+            _this.forceUpdate();
+        });
         return _this;
     }
+    NodeListComponent.prototype.componentWillUnmount = function () {
+        this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
+    };
     NodeListComponent.prototype.filterContent = function (filter) {
         this.setState({ filter: filter });
     };
@@ -60059,10 +60076,20 @@ var NodeListComponent = /** @class */ (function (_super) {
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
             PBR: ["PBRMetallicRoughnessBlock", "AmbientOcclusionBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "ReflectivityBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
+            PostProcess: ["Position2DBlock", "CurrentScreenBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
             Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock"],
         };
+        switch (this.props.globalState.mode) {
+            case babylonjs_Materials_Node_Enums_nodeMaterialModes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialModes"].Material:
+                delete allBlocks["PostProcess"];
+                break;
+            case babylonjs_Materials_Node_Enums_nodeMaterialModes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialModes"].PostProcess:
+                delete allBlocks["Animation"];
+                delete allBlocks["Mesh"];
+                break;
+        }
         // Create node menu
         var blockMenu = [];
         for (var key in allBlocks) {
@@ -60199,6 +60226,8 @@ var NodeListComponent = /** @class */ (function (_super) {
         "ClearCoatBlock": "PBR ClearCoat block",
         "RefractionBlock": "PBR Refraction block",
         "SubSurfaceBlock": "PBR SubSurface block",
+        "Position2DBlock": "A Vector2 representing the position of each vertex of the screen quad",
+        "CurrentScreenBlock": "The screen buffer used as input for the post process",
     };
     return NodeListComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -60225,6 +60254,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var doubleSided = __webpack_require__(/*! ./svgs/doubleSided.svg */ "./components/preview/svgs/doubleSided.svg");
 var depthPass = __webpack_require__(/*! ./svgs/depthPass.svg */ "./components/preview/svgs/depthPass.svg");
 var omni = __webpack_require__(/*! ./svgs/omni.svg */ "./components/preview/svgs/omni.svg");
@@ -60236,10 +60266,14 @@ var PreviewAreaComponent = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this.state = { isLoading: true };
         _this._onIsLoadingChangedObserver = _this.props.globalState.onIsLoadingChanged.add(function (state) { return _this.setState({ isLoading: state }); });
+        _this._onResetRequiredObserver = _this.props.globalState.onResetRequiredObservable.add(function () {
+            _this.forceUpdate();
+        });
         return _this;
     }
     PreviewAreaComponent.prototype.componentWillUnmount = function () {
         this.props.globalState.onIsLoadingChanged.remove(this._onIsLoadingChangedObserver);
+        this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
     };
     PreviewAreaComponent.prototype.changeBackFaceCulling = function (value) {
         this.props.globalState.backFaceCulling = value;
@@ -60259,32 +60293,33 @@ var PreviewAreaComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview", style: { height: this.props.width + "px" } },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "preview-canvas" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "waitPanel" + (this.state.isLoading ? "" : " hidden") }, "Please wait, loading...")),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-config-bar" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Render without back face culling", onClick: function () { return _this.changeBackFaceCulling(!_this.props.globalState.backFaceCulling); }, className: "button back-face" + (!this.props.globalState.backFaceCulling ? " selected" : "") },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: doubleSided, alt: "" })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Render with depth pre-pass", onClick: function () { return _this.changeDepthPrePass(!_this.props.globalState.depthPrePass); }, className: "button depth-pass" + (this.props.globalState.depthPrePass ? " selected" : "") },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: depthPass, alt: "" })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn on/off hemispheric light", onClick: function () {
-                        _this.props.globalState.hemisphericLight = !_this.props.globalState.hemisphericLight;
-                        babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].WriteBoolean("HemisphericLight", _this.props.globalState.hemisphericLight);
-                        _this.props.globalState.onLightUpdated.notifyObservers();
-                        _this.forceUpdate();
-                    }, className: "button hemispheric-light" + (this.props.globalState.hemisphericLight ? " selected" : "") },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: omni, alt: "" })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn on/off direction light #1", onClick: function () {
-                        _this.props.globalState.directionalLight1 = !_this.props.globalState.directionalLight1;
-                        babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].WriteBoolean("DirectionalLight1", _this.props.globalState.directionalLight1);
-                        _this.props.globalState.onLightUpdated.notifyObservers();
-                        _this.forceUpdate();
-                    }, className: "button direction-light-1" + (this.props.globalState.directionalLight1 ? " selected" : "") },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: directionalRight, alt: "" })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn on/off direction light #0", onClick: function () {
-                        _this.props.globalState.directionalLight0 = !_this.props.globalState.directionalLight0;
-                        babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].WriteBoolean("DirectionalLight0", _this.props.globalState.directionalLight0);
-                        _this.props.globalState.onLightUpdated.notifyObservers();
-                        _this.forceUpdate();
-                    }, className: "button direction-light-0" + (this.props.globalState.directionalLight0 ? " selected" : "") },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: directionalLeft, alt: "" })))));
+            this.props.globalState.mode !== babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].PostProcess && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-config-bar" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Render without back face culling", onClick: function () { return _this.changeBackFaceCulling(!_this.props.globalState.backFaceCulling); }, className: "button back-face" + (!this.props.globalState.backFaceCulling ? " selected" : "") },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: doubleSided, alt: "" })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Render with depth pre-pass", onClick: function () { return _this.changeDepthPrePass(!_this.props.globalState.depthPrePass); }, className: "button depth-pass" + (this.props.globalState.depthPrePass ? " selected" : "") },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: depthPass, alt: "" })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn on/off hemispheric light", onClick: function () {
+                            _this.props.globalState.hemisphericLight = !_this.props.globalState.hemisphericLight;
+                            babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].WriteBoolean("HemisphericLight", _this.props.globalState.hemisphericLight);
+                            _this.props.globalState.onLightUpdated.notifyObservers();
+                            _this.forceUpdate();
+                        }, className: "button hemispheric-light" + (this.props.globalState.hemisphericLight ? " selected" : "") },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: omni, alt: "" })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn on/off direction light #1", onClick: function () {
+                            _this.props.globalState.directionalLight1 = !_this.props.globalState.directionalLight1;
+                            babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].WriteBoolean("DirectionalLight1", _this.props.globalState.directionalLight1);
+                            _this.props.globalState.onLightUpdated.notifyObservers();
+                            _this.forceUpdate();
+                        }, className: "button direction-light-1" + (this.props.globalState.directionalLight1 ? " selected" : "") },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: directionalRight, alt: "" })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn on/off direction light #0", onClick: function () {
+                            _this.props.globalState.directionalLight0 = !_this.props.globalState.directionalLight0;
+                            babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].WriteBoolean("DirectionalLight0", _this.props.globalState.directionalLight0);
+                            _this.props.globalState.onLightUpdated.notifyObservers();
+                            _this.forceUpdate();
+                        }, className: "button direction-light-0" + (this.props.globalState.directionalLight0 ? " selected" : "") },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: directionalLeft, alt: "" }))))));
     };
     return PreviewAreaComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -60322,6 +60357,9 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
+
 var PreviewManager = /** @class */ (function () {
     function PreviewManager(targetCanvas, globalState) {
         var _this = this;
@@ -60331,7 +60369,10 @@ var PreviewManager = /** @class */ (function () {
             var serializationObject = nodeMaterial.serialize();
             _this._updatePreview(serializationObject);
         });
-        this._onPreviewCommandActivatedObserver = globalState.onPreviewCommandActivated.add(function () {
+        this._onPreviewCommandActivatedObserver = globalState.onPreviewCommandActivated.add(function (forceRefresh) {
+            if (forceRefresh) {
+                _this._currentType = -1;
+            }
             _this._refreshPreviewMesh();
         });
         this._onLightUpdatedObserver = globalState.onLightUpdated.add(function () {
@@ -60370,7 +60411,7 @@ var PreviewManager = /** @class */ (function () {
         });
         //     let cameraLastRotation = 0;
         var lastOffsetX = undefined;
-        //   const lightRotationParallaxSpeed = 0.5;        
+        //   const lightRotationParallaxSpeed = 0.5;
         var lightRotationSpeed = 0.01;
         this._scene.onPointerObservable.add(function (evt) {
             if (_this._globalState.controlCamera) {
@@ -60397,7 +60438,7 @@ var PreviewManager = /** @class */ (function () {
         //     if (!this._globalState.controlCamera) {
         //         return;
         //     }
-        //     var rotateLighting = (this._camera.alpha - cameraLastRotation) * lightRotationParallaxSpeed; 
+        //     var rotateLighting = (this._camera.alpha - cameraLastRotation) * lightRotationParallaxSpeed;
         //     this._lightParent.rotate(Vector3.Up(), rotateLighting);
         //     cameraLastRotation = this._camera.alpha;
         // });
@@ -60446,27 +60487,29 @@ var PreviewManager = /** @class */ (function () {
     };
     PreviewManager.prototype._prepareMeshes = function () {
         var _this = this;
-        this._prepareLights();
-        // Framing
-        this._camera.useFramingBehavior = true;
-        var framingBehavior = this._camera.getBehaviorByName("Framing");
-        setTimeout(function () {
-            framingBehavior.framingTime = 0;
-            framingBehavior.elevationReturnTime = -1;
-            if (_this._scene.meshes.length) {
-                var worldExtends = _this._scene.getWorldExtends();
-                _this._camera.lowerRadiusLimit = null;
-                _this._camera.upperRadiusLimit = null;
-                framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
-            }
-            _this._camera.pinchPrecision = 200 / _this._camera.radius;
-            _this._camera.upperRadiusLimit = 5 * _this._camera.radius;
-        });
-        this._camera.wheelDeltaPercentage = 0.01;
-        this._camera.pinchDeltaPercentage = 0.01;
-        // Animations
-        this._handleAnimations();
-        // Material        
+        if (this._globalState.mode !== babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].PostProcess) {
+            this._prepareLights();
+            // Framing
+            this._camera.useFramingBehavior = true;
+            var framingBehavior = this._camera.getBehaviorByName("Framing");
+            setTimeout(function () {
+                framingBehavior.framingTime = 0;
+                framingBehavior.elevationReturnTime = -1;
+                if (_this._scene.meshes.length) {
+                    var worldExtends = _this._scene.getWorldExtends();
+                    _this._camera.lowerRadiusLimit = null;
+                    _this._camera.upperRadiusLimit = null;
+                    framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
+                }
+                _this._camera.pinchPrecision = 200 / _this._camera.radius;
+                _this._camera.upperRadiusLimit = 5 * _this._camera.radius;
+            });
+            this._camera.wheelDeltaPercentage = 0.01;
+            this._camera.pinchDeltaPercentage = 0.01;
+            // Animations
+            this._handleAnimations();
+        }
+        // Material
         var serializationObject = this._nodeMaterial.serialize();
         this._updatePreview(serializationObject);
     };
@@ -60489,47 +60532,49 @@ var PreviewManager = /** @class */ (function () {
             this._engine.releaseEffects();
             babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].ShowLoadingScreen = false;
             this._globalState.onIsLoadingChanged.notifyObservers(true);
-            switch (this._globalState.previewMeshType) {
-                case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Box:
-                    babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].AppendAsync("https://models.babylonjs.com/", "roundedCube.glb", this._scene).then(function () {
-                        var _a;
-                        (_a = _this._meshes).push.apply(_a, _this._scene.meshes);
-                        _this._prepareMeshes();
-                    });
-                    break;
-                case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Sphere:
-                    this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateSphere("dummy-sphere", 32, 2, this._scene));
-                    break;
-                case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Torus:
-                    this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateTorus("dummy-torus", 2, 0.5, 32, this._scene));
-                    break;
-                case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Cylinder:
-                    babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].AppendAsync("https://models.babylonjs.com/", "roundedCylinder.glb", this._scene).then(function () {
-                        var _a;
-                        (_a = _this._meshes).push.apply(_a, _this._scene.meshes);
-                        _this._prepareMeshes();
-                    });
-                    return;
-                case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Plane:
-                    var plane = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateGround("dummy-plane", 2, 2, 128, this._scene);
-                    plane.scaling.y = -1;
-                    plane.rotation.x = Math.PI;
-                    this._meshes.push(plane);
-                    break;
-                case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].ShaderBall:
-                    babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].AppendAsync("https://models.babylonjs.com/", "shaderBall.glb", this._scene).then(function () {
-                        var _a;
-                        (_a = _this._meshes).push.apply(_a, _this._scene.meshes);
-                        _this._prepareMeshes();
-                    });
-                    return;
-                case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Custom:
-                    babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].AppendAsync("file:", this._globalState.previewMeshFile, this._scene).then(function () {
-                        var _a;
-                        (_a = _this._meshes).push.apply(_a, _this._scene.meshes);
-                        _this._prepareMeshes();
-                    });
-                    return;
+            if (this._globalState.mode !== babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].PostProcess) {
+                switch (this._globalState.previewMeshType) {
+                    case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Box:
+                        babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].AppendAsync("https://models.babylonjs.com/", "roundedCube.glb", this._scene).then(function () {
+                            var _a;
+                            (_a = _this._meshes).push.apply(_a, _this._scene.meshes);
+                            _this._prepareMeshes();
+                        });
+                        return;
+                    case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Sphere:
+                        this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateSphere("dummy-sphere", 32, 2, this._scene));
+                        break;
+                    case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Torus:
+                        this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateTorus("dummy-torus", 2, 0.5, 32, this._scene));
+                        break;
+                    case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Cylinder:
+                        babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].AppendAsync("https://models.babylonjs.com/", "roundedCylinder.glb", this._scene).then(function () {
+                            var _a;
+                            (_a = _this._meshes).push.apply(_a, _this._scene.meshes);
+                            _this._prepareMeshes();
+                        });
+                        return;
+                    case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Plane:
+                        var plane = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateGround("dummy-plane", 2, 2, 128, this._scene);
+                        plane.scaling.y = -1;
+                        plane.rotation.x = Math.PI;
+                        this._meshes.push(plane);
+                        break;
+                    case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].ShaderBall:
+                        babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].AppendAsync("https://models.babylonjs.com/", "shaderBall.glb", this._scene).then(function () {
+                            var _a;
+                            (_a = _this._meshes).push.apply(_a, _this._scene.meshes);
+                            _this._prepareMeshes();
+                        });
+                        return;
+                    case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Custom:
+                        babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].AppendAsync("file:", this._globalState.previewMeshFile, this._scene).then(function () {
+                            var _a;
+                            (_a = _this._meshes).push.apply(_a, _this._scene.meshes);
+                            _this._prepareMeshes();
+                        });
+                        return;
+                }
             }
             this._prepareMeshes();
         }
@@ -60543,7 +60588,25 @@ var PreviewManager = /** @class */ (function () {
             var tempMaterial_1 = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterial"].Parse(serializationObject, this._scene);
             tempMaterial_1.backFaceCulling = this._globalState.backFaceCulling;
             tempMaterial_1.needDepthPrePass = this._globalState.depthPrePass;
-            if (this._meshes.length) {
+            if (this._postprocess) {
+                this._postprocess.dispose(this._camera);
+                this._postprocess = null;
+            }
+            if (this._globalState.mode === babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].PostProcess) {
+                this._globalState.onIsLoadingChanged.notifyObservers(false);
+                this._postprocess = tempMaterial_1.createPostProcess(this._camera, 1.0, babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Constants"].TEXTURE_NEAREST_SAMPLINGMODE, this._engine);
+                var currentScreen_1 = tempMaterial_1.getBlockByPredicate(function (block) { return block instanceof babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["CurrentScreenBlock"]; });
+                if (currentScreen_1) {
+                    this._postprocess.onApplyObservable.add(function (effect) {
+                        effect.setTexture("textureSampler", currentScreen_1.texture);
+                    });
+                }
+                if (this._material) {
+                    this._material.dispose();
+                }
+                this._material = tempMaterial_1;
+            }
+            else if (this._meshes.length) {
                 var tasks = this._meshes.map(function (m) { return _this._forceCompilationAsync(tempMaterial_1, m); });
                 Promise.all(tasks).then(function () {
                     for (var _i = 0, _a = _this._meshes; _i < _a.length; _i++) {
@@ -60566,6 +60629,7 @@ var PreviewManager = /** @class */ (function () {
         }
         catch (err) {
             // Ignore the error
+            this._globalState.onIsLoadingChanged.notifyObservers(false);
         }
     };
     PreviewManager.prototype.dispose = function () {
@@ -60618,6 +60682,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var popUpIcon = __webpack_require__(/*! ./svgs/popOut.svg */ "./components/preview/svgs/popOut.svg");
 var colorPicker = __webpack_require__(/*! ./svgs/colorPicker.svg */ "./components/preview/svgs/colorPicker.svg");
 var pauseIcon = __webpack_require__(/*! ./svgs/pauseIcon.svg */ "./components/preview/svgs/pauseIcon.svg");
@@ -60628,14 +60693,20 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this.colorInputRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         _this.filePickerRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._onResetRequiredObserver = _this.props.globalState.onResetRequiredObservable.add(function () {
+            _this.forceUpdate();
+        });
         return _this;
     }
+    PreviewMeshControlComponent.prototype.componentWillUnmount = function () {
+        this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
+    };
     PreviewMeshControlComponent.prototype.changeMeshType = function (newOne) {
         if (this.props.globalState.previewMeshType === newOne) {
             return;
         }
         this.props.globalState.previewMeshType = newOne;
-        this.props.globalState.onPreviewCommandActivated.notifyObservers();
+        this.props.globalState.onPreviewCommandActivated.notifyObservers(false);
         babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].WriteNumber("PreviewMeshType", newOne);
         this.forceUpdate();
     };
@@ -60645,7 +60716,7 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
             var file = files[0];
             this.props.globalState.previewMeshFile = file;
             this.props.globalState.previewMeshType = _previewMeshType__WEBPACK_IMPORTED_MODULE_3__["PreviewMeshType"].Custom;
-            this.props.globalState.onPreviewCommandActivated.notifyObservers();
+            this.props.globalState.onPreviewCommandActivated.notifyObservers(false);
             this.props.globalState.listOfCustomPreviewMeshFiles = [file];
             this.forceUpdate();
         }
@@ -60690,24 +60761,25 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
             });
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-mesh-bar" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_4__["OptionsLineComponent"], { label: "", options: meshTypeOptions, target: this.props.globalState, propertyName: "previewMeshType", noDirectUpdate: true, onSelect: function (value) {
-                    var _a;
-                    if (value !== _previewMeshType__WEBPACK_IMPORTED_MODULE_3__["PreviewMeshType"].Custom + 1) {
-                        _this.changeMeshType(value);
-                    }
-                    else {
-                        (_a = _this.filePickerRef.current) === null || _a === void 0 ? void 0 : _a.click();
-                    }
-                } }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: {
-                    display: "none"
-                }, title: "Preview with a custom mesh" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.filePickerRef, id: "file-picker", type: "file", onChange: function (evt) { return _this.useCustomMesh(evt); }, accept: ".gltf, .glb, .babylon, .obj" })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn-table animation", onClick: function () { return _this.changeAnimation(); }, className: "button", id: "play-button" }, this.props.globalState.rotatePreview ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: pauseIcon, alt: "" }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: playIcon, alt: "" })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "color-picker-button", title: "Background color", className: "button align", onClick: function (_) { return _this.changeBackgroundClick(); } },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: colorPicker, alt: "" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "color-picker", id: "color-picker-label" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.colorInputRef, id: "color-picker", type: "color", onChange: function (evt) { return _this.changeBackground(evt.target.value); } })),
+            this.props.globalState.mode !== babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].PostProcess && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_4__["OptionsLineComponent"], { label: "", options: meshTypeOptions, target: this.props.globalState, propertyName: "previewMeshType", noDirectUpdate: true, onSelect: function (value) {
+                        var _a;
+                        if (value !== _previewMeshType__WEBPACK_IMPORTED_MODULE_3__["PreviewMeshType"].Custom + 1) {
+                            _this.changeMeshType(value);
+                        }
+                        else {
+                            (_a = _this.filePickerRef.current) === null || _a === void 0 ? void 0 : _a.click();
+                        }
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: {
+                        display: "none"
+                    }, title: "Preview with a custom mesh" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.filePickerRef, id: "file-picker", type: "file", onChange: function (evt) { return _this.useCustomMesh(evt); }, accept: ".gltf, .glb, .babylon, .obj" })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn-table animation", onClick: function () { return _this.changeAnimation(); }, className: "button", id: "play-button" }, this.props.globalState.rotatePreview ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: pauseIcon, alt: "" }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: playIcon, alt: "" })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "color-picker-button", title: "Background color", className: "button align", onClick: function (_) { return _this.changeBackgroundClick(); } },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: colorPicker, alt: "" }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "color-picker", id: "color-picker-label" }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.colorInputRef, id: "color-picker", type: "color", onChange: function (evt) { return _this.changeBackground(evt.target.value); } }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Open preview in new window", id: "preview-new-window", onClick: function () { return _this.onPopUp(); }, className: "button" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: popUpIcon, alt: "" }))));
     };
@@ -61157,6 +61229,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_vector4LineComponent__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ../../sharedComponents/vector4LineComponent */ "./sharedComponents/vector4LineComponent.tsx");
 /* harmony import */ var _diagram_nodePort__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ../../diagram/nodePort */ "./diagram/nodePort.ts");
 /* harmony import */ var _diagram_graphCanvas__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ../../diagram/graphCanvas */ "./diagram/graphCanvas.tsx");
+/* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
+
+
 
 
 
@@ -61191,6 +61266,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
     function PropertyTabComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { currentNode: null, currentFrame: null, currentFrameNodePort: null, currentNodePort: null };
+        _this._modeSelect = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
     }
     PropertyTabComponent.prototype.componentDidMount = function () {
@@ -61257,6 +61333,8 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["Tools"].ReadFile(file, function (data) {
             var decoder = new TextDecoder("utf-8");
             _serializationTools__WEBPACK_IMPORTED_MODULE_7__["SerializationTools"].Deserialize(JSON.parse(decoder.decode(data)), _this.props.globalState);
+            _this.changeMode(_this.props.globalState.nodeMaterial.mode, true, false);
+            _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         }, undefined, true);
     };
     PropertyTabComponent.prototype.save = function () {
@@ -61332,6 +61410,33 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             alert("Unable to load your node material: " + err);
         });
     };
+    PropertyTabComponent.prototype.changeMode = function (value, force, loadDefault) {
+        if (force === void 0) { force = false; }
+        if (loadDefault === void 0) { loadDefault = true; }
+        var _a, _b;
+        if (this.props.globalState.mode === value) {
+            return;
+        }
+        if (!force && !confirm('Are your sure? You will lose your current changes (if any) if they are not saved!')) {
+            (_a = this._modeSelect.current) === null || _a === void 0 ? void 0 : _a.setValue(this.props.globalState.mode);
+            return;
+        }
+        if (force) {
+            (_b = this._modeSelect.current) === null || _b === void 0 ? void 0 : _b.setValue(value);
+        }
+        this.props.globalState.mode = value;
+        if (loadDefault) {
+            switch (value) {
+                case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].Material:
+                    this.props.globalState.nodeMaterial.setToDefault();
+                    break;
+                case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].PostProcess:
+                    this.props.globalState.nodeMaterial.setToDefaultPostProcess();
+                    break;
+            }
+        }
+        this.props.globalState.onResetRequiredObservable.notifyObservers();
+    };
     PropertyTabComponent.prototype.render = function () {
         var _this = this;
         var _a, _b;
@@ -61358,6 +61463,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "title" }, "NODE MATERIAL EDITOR")),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_24__["OptionsLineComponent"], { ref: this._modeSelect, label: "Mode", target: this, getSelection: function (target) { return _this.props.globalState.mode; }, options: [{ label: "Material", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].Material }, { label: "Post Process", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].PostProcess }], onSelect: function (value) { return _this.changeMode(value); } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextLineComponent"], { label: "Version", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["Engine"].Version }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextLineComponent"], { label: "Help", value: "doc.babylonjs.com", underline: true, onLink: function () { return window.open('https://doc.babylonjs.com/how_to/node_material', '_blank'); } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Reset to default", onClick: function () {
@@ -61594,7 +61700,9 @@ var InputDisplayManager = /** @class */ (function () {
         var value = "";
         var inputBlock = block;
         if (inputBlock.isAttribute) {
-            value = "mesh." + inputBlock.name;
+            var attrVal = inputBlock.name === 'position2d' ? 'position' : inputBlock.name;
+            var attrName = inputBlock.name === 'position2d' ? 'postprocess' : 'mesh';
+            value = attrName + "." + attrVal;
         }
         else if (inputBlock.isSystemValue) {
             switch (inputBlock.systemValue) {
@@ -61762,6 +61870,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_textureLineComponent__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../sharedComponents/textureLineComponent */ "./sharedComponents/textureLineComponent.tsx");
 
 
+
 var TextureDisplayManager = /** @class */ (function () {
     function TextureDisplayManager() {
     }
@@ -61782,7 +61891,7 @@ var TextureDisplayManager = /** @class */ (function () {
         var textureBlock = block;
         if (!this._previewCanvas) {
             contentArea.classList.add("texture-block");
-            if (block instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_0__["TextureBlock"]) {
+            if (block instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_0__["TextureBlock"] || block instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_0__["CurrentScreenBlock"]) {
                 contentArea.classList.add("regular-texture-block");
             }
             this._previewCanvas = contentArea.ownerDocument.createElement("canvas");
@@ -61897,6 +62006,7 @@ DisplayLedger.RegisteredControls["TextureBlock"] = _display_textureDisplayManage
 DisplayLedger.RegisteredControls["ReflectionTextureBlock"] = _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__["TextureDisplayManager"];
 DisplayLedger.RegisteredControls["ReflectionBlock"] = _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__["TextureDisplayManager"];
 DisplayLedger.RegisteredControls["RefractionBlock"] = _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__["TextureDisplayManager"];
+DisplayLedger.RegisteredControls["CurrentScreenBlock"] = _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__["TextureDisplayManager"];
 DisplayLedger.RegisteredControls["DiscardBlock"] = _display_discardDisplayManager__WEBPACK_IMPORTED_MODULE_7__["DiscardDisplayManager"];
 
 
@@ -65814,6 +65924,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
 var TexturePropertyTabComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TexturePropertyTabComponent, _super);
     function TexturePropertyTabComponent(props) {
@@ -65864,7 +65976,7 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         }
         if (!texture) {
             if (!this.state.loadAsCubeTexture) {
-                this.textureBlock.texture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"](null, this.props.globalState.nodeMaterial.getScene(), false, this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionTextureBlock"] || this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionBlock"] || this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["RefractionBlock"]);
+                this.textureBlock.texture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"](null, this.props.globalState.nodeMaterial.getScene(), false, this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionTextureBlock"] || this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionBlock"] || this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["RefractionBlock"] || this.props.globalState.mode === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["NodeMaterialModes"].PostProcess);
                 texture = this.textureBlock.texture;
                 texture.coordinatesMode = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].EQUIRECTANGULAR_MODE;
             }
@@ -65927,6 +66039,7 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         }
         url = url.replace(/\?nocache=\d+/, "");
         var isInReflectionMode = this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionTextureBlock"] || this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionBlock"] || this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["RefractionBlock"];
+        var isFrozenTexture = this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["CurrentScreenBlock"];
         var reflectionModeOptions = [
             {
                 label: "Cubic", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CUBIC_MODE
@@ -65976,41 +66089,41 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
                             _this.forceUpdate();
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
-                texture && !isInReflectionMode &&
+                texture && !isInReflectionMode && !isFrozenTexture &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Clamp U", isSelected: function () { return texture.wrapU === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
                             texture.wrapU = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
-                texture && !isInReflectionMode &&
+                texture && !isInReflectionMode && !isFrozenTexture &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Clamp V", isSelected: function () { return texture.wrapV === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
                             texture.wrapV = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
-                texture && !isInReflectionMode &&
+                texture && !isInReflectionMode && !isFrozenTexture &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { globalState: this.props.globalState, label: "Offset U", target: texture, propertyName: "uOffset", onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
-                texture && !isInReflectionMode &&
+                texture && !isInReflectionMode && !isFrozenTexture &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { globalState: this.props.globalState, label: "Offset V", target: texture, propertyName: "vOffset", onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
-                texture && !isInReflectionMode &&
+                texture && !isInReflectionMode && !isFrozenTexture &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { globalState: this.props.globalState, label: "Scale U", target: texture, propertyName: "uScale", onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
-                texture && !isInReflectionMode &&
+                texture && !isInReflectionMode && !isFrozenTexture &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { globalState: this.props.globalState, label: "Scale V", target: texture, propertyName: "vScale", onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
-                texture && !isInReflectionMode &&
+                texture && !isInReflectionMode && !isFrozenTexture &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Rotation U", target: texture, propertyName: "uAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
-                texture && !isInReflectionMode &&
+                texture && !isInReflectionMode && !isFrozenTexture &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Rotation V", target: texture, propertyName: "vAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
-                texture && !isInReflectionMode &&
+                texture && !isInReflectionMode && !isFrozenTexture &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Rotation W", target: texture, propertyName: "wAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } })),
@@ -66198,6 +66311,7 @@ PropertyLedger.RegisteredControls["TextureBlock"] = _properties_texturePropertyT
 PropertyLedger.RegisteredControls["ReflectionTextureBlock"] = _properties_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__["TexturePropertyTabComponent"];
 PropertyLedger.RegisteredControls["ReflectionBlock"] = _properties_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__["TexturePropertyTabComponent"];
 PropertyLedger.RegisteredControls["RefractionBlock"] = _properties_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__["TexturePropertyTabComponent"];
+PropertyLedger.RegisteredControls["CurrentScreenBlock"] = _properties_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__["TexturePropertyTabComponent"];
 PropertyLedger.RegisteredControls["TrigonometryBlock"] = _properties_trigonometryNodePropertyComponent__WEBPACK_IMPORTED_MODULE_6__["TrigonometryPropertyTabComponent"];
 
 
@@ -66216,6 +66330,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/dataStorage");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _components_preview_previewMeshType__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/preview/previewMeshType */ "./components/preview/previewMeshType.ts");
+
 
 
 
@@ -66254,11 +66369,25 @@ var GlobalState = /** @class */ (function () {
         this.directionalLight0 = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("DirectionalLight0", false);
         this.directionalLight1 = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("DirectionalLight1", false);
         this.controlCamera = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("ControlCamera", true);
+        this._mode = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].Material;
         var r = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorR", 0.12549019607843137);
         var g = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorG", 0.09803921568627451);
         var b = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorB", 0.25098039215686274);
         this.backgroundColor = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Color4"](r, g, b, 1.0);
     }
+    Object.defineProperty(GlobalState.prototype, "mode", {
+        /** Gets the mode */
+        get: function () {
+            return this._mode;
+        },
+        /** Sets the mode */
+        set: function (m) {
+            this._mode = m;
+            this.onPreviewCommandActivated.notifyObservers(true);
+        },
+        enumerable: true,
+        configurable: true
+    });
     return GlobalState;
 }());
 
@@ -67183,6 +67312,7 @@ var SerializationTools = /** @class */ (function () {
     SerializationTools.Deserialize = function (serializationObject, globalState) {
         globalState.onIsLoadingChanged.notifyObservers(true);
         globalState.nodeMaterial.loadFromSerialization(serializationObject, "");
+        globalState.mode = globalState.nodeMaterial.mode;
         globalState.onResetRequiredObservable.notifyObservers();
     };
     return SerializationTools;
@@ -68229,6 +68359,9 @@ var OptionsLineComponent = /** @class */ (function (_super) {
             return props.getSelection(props.target);
         }
         return (props.target && props.propertyName) ? props.target[props.propertyName] : props.options[props.defaultIfNull || 0];
+    };
+    OptionsLineComponent.prototype.setValue = function (value) {
+        this.setState({ value: value });
     };
     OptionsLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
         if (this._localChange) {

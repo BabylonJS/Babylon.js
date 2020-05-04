@@ -7745,7 +7745,6 @@ declare module BABYLON {
         private _textureMatrix;
         private _format;
         private _createPolynomials;
-        private _engine;
         /** @hidden */
         _prefiltered: boolean;
         /**
@@ -7769,7 +7768,7 @@ declare module BABYLON {
          * Creates a cube texture to use with reflection for instance. It can be based upon dds or six images as well
          * as prefiltered data.
          * @param rootUrl defines the url of the texture or the root name of the six images
-         * @param scene defines the scene the texture is attached to
+         * @param null defines the scene or engine the texture is attached to
          * @param extensions defines the suffixes add to the picture name in case six images are in use like _px.jpg...
          * @param noMipmap defines if mipmaps should be created or not
          * @param files defines the six files to load for the different faces in that order: px, py, pz, nx, ny, nz
@@ -7829,7 +7828,6 @@ declare module BABYLON {
          * @returns a new cube texture
          */
         clone(): CubeTexture;
-        private static _isScene;
     }
 }
 declare module BABYLON {
@@ -10465,7 +10463,6 @@ declare module BABYLON {
         private _generateMipMaps;
         private _canvas;
         private _context;
-        private _engine;
         /**
          * Creates a DynamicTexture
          * @param name defines the name of the texture
@@ -10726,7 +10723,6 @@ declare module BABYLON {
          * Define the format of the data (RGB, RGBA... Engine.TEXTUREFORMAT_xxx)
          */
         format: number;
-        private _engine;
         /**
          * Instantiates a new RawTexture.
          * Raw texture can help creating a texture directly from an array of data.
@@ -10941,7 +10937,7 @@ declare module BABYLON {
         private _vectors3;
         private _matrices;
         private _fallbackTextureUsed;
-        private _engine;
+        private _fullEngine;
         private _cachedDefines;
         private _contentUpdateId;
         private _contentData;
@@ -20092,8 +20088,10 @@ declare module BABYLON {
          * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
          * @param onCompiled Called when the shader has been compiled.
          * @param onError Called if there is an error when compiling a shader.
+         * @param vertexUrl The url of the vertex shader to be used (default: the one given at construction time)
+         * @param fragmentUrl The url of the fragment shader to be used (default: the one given at construction time)
          */
-        updateEffect(defines?: Nullable<string>, uniforms?: Nullable<string[]>, samplers?: Nullable<string[]>, indexParameters?: any, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): void;
+        updateEffect(defines?: Nullable<string>, uniforms?: Nullable<string[]>, samplers?: Nullable<string[]>, indexParameters?: any, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, vertexUrl?: string, fragmentUrl?: string): void;
         /**
          * The post process is reusable if it can be used multiple times within one frame.
          * @returns If the post process is reusable
@@ -20540,7 +20538,7 @@ declare module BABYLON {
          * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
          * @see http://doc.babylonjs.com/babylon101/materials#texture
          * @param url defines the url of the picture to load as a texture
-         * @param scene defines the scene or engine the texture will belong to
+         * @param sceneOrEngine defines the scene or engine the texture will belong to
          * @param noMipmap defines if the texture will require mip maps or not
          * @param invertY defines if the texture needs to be inverted on the y axis during loading
          * @param samplingMode defines the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
@@ -20846,7 +20844,6 @@ declare module BABYLON {
          * Gets render target creation options that were used.
          */
         get renderTargetOptions(): RenderTargetCreationOptions;
-        protected _engine: Engine;
         protected _onRatioRescale(): void;
         /**
          * Gets or sets the center of the bounding box associated with the texture (when in cube mode)
@@ -30379,6 +30376,7 @@ declare module BABYLON {
          */
         delayLoadState: number;
         private _scene;
+        private _engine;
         /** @hidden */
         _texture: Nullable<InternalTexture>;
         private _uid;
@@ -30392,16 +30390,16 @@ declare module BABYLON {
          * Base class of all the textures in babylon.
          * It groups all the common properties the materials, post process, lights... might need
          * in order to make a correct use of the texture.
-         * @param scene Define the scene the texture blongs to
+         * @param sceneOrEngine Define the scene or engine the texture blongs to
          */
-        constructor(scene: Nullable<Scene>);
-        /** @hidden */
-        _setScene(scene: Nullable<Scene>): void;
+        constructor(sceneOrEngine: Nullable<Scene | ThinEngine>);
         /**
          * Get the scene the texture belongs to.
          * @returns the scene or null if undefined
          */
         getScene(): Nullable<Scene>;
+        /** @hidden */
+        protected _getEngine(): Nullable<ThinEngine>;
         /**
          * Get the texture transform matrix used to offset tile the texture for istance.
          * @returns the transformation matrix
@@ -30440,29 +30438,29 @@ declare module BABYLON {
          */
         getBaseSize(): ISize;
         /**
-               * Update the sampling mode of the texture.
-               * Default is Trilinear mode.
-               *
-               * | Value | Type               | Description |
-               * | ----- | ------------------ | ----------- |
-               * | 1     | NEAREST_SAMPLINGMODE or NEAREST_NEAREST_MIPLINEAR  | Nearest is: mag = nearest, min = nearest, mip = linear |
-               * | 2     | BILINEAR_SAMPLINGMODE or LINEAR_LINEAR_MIPNEAREST | Bilinear is: mag = linear, min = linear, mip = nearest |
-               * | 3     | TRILINEAR_SAMPLINGMODE or LINEAR_LINEAR_MIPLINEAR | Trilinear is: mag = linear, min = linear, mip = linear |
-               * | 4     | NEAREST_NEAREST_MIPNEAREST |             |
-               * | 5    | NEAREST_LINEAR_MIPNEAREST |             |
-               * | 6    | NEAREST_LINEAR_MIPLINEAR |             |
-               * | 7    | NEAREST_LINEAR |             |
-               * | 8    | NEAREST_NEAREST |             |
-               * | 9   | LINEAR_NEAREST_MIPNEAREST |             |
-               * | 10   | LINEAR_NEAREST_MIPLINEAR |             |
-               * | 11   | LINEAR_LINEAR |             |
-               * | 12   | LINEAR_NEAREST |             |
-               *
-               *    > _mag_: magnification filter (close to the viewer)
-               *    > _min_: minification filter (far from the viewer)
-               *    > _mip_: filter used between mip map levels
-               *@param samplingMode Define the new sampling mode of the texture
-               */
+         * Update the sampling mode of the texture.
+         * Default is Trilinear mode.
+         *
+         * | Value | Type               | Description |
+         * | ----- | ------------------ | ----------- |
+         * | 1     | NEAREST_SAMPLINGMODE or NEAREST_NEAREST_MIPLINEAR  | Nearest is: mag = nearest, min = nearest, mip = linear |
+         * | 2     | BILINEAR_SAMPLINGMODE or LINEAR_LINEAR_MIPNEAREST | Bilinear is: mag = linear, min = linear, mip = nearest |
+         * | 3     | TRILINEAR_SAMPLINGMODE or LINEAR_LINEAR_MIPLINEAR | Trilinear is: mag = linear, min = linear, mip = linear |
+         * | 4     | NEAREST_NEAREST_MIPNEAREST |             |
+         * | 5    | NEAREST_LINEAR_MIPNEAREST |             |
+         * | 6    | NEAREST_LINEAR_MIPLINEAR |             |
+         * | 7    | NEAREST_LINEAR |             |
+         * | 8    | NEAREST_NEAREST |             |
+         * | 9   | LINEAR_NEAREST_MIPNEAREST |             |
+         * | 10   | LINEAR_NEAREST_MIPLINEAR |             |
+         * | 11   | LINEAR_LINEAR |             |
+         * | 12   | LINEAR_NEAREST |             |
+         *
+         *    > _mag_: magnification filter (close to the viewer)
+         *    > _min_: minification filter (far from the viewer)
+         *    > _mip_: filter used between mip map levels
+         *@param samplingMode Define the new sampling mode of the texture
+         */
         updateSamplingMode(samplingMode: number): void;
         /**
          * Scales the texture if is `canRescale()`
@@ -30533,6 +30531,7 @@ declare module BABYLON {
          * @param callback Define the callback triggered once the entire list will be ready
          */
         static WhenAllReady(textures: BaseTexture[], callback: () => void): void;
+        private static _isScene;
     }
 }
 declare module BABYLON {
@@ -31405,7 +31404,6 @@ declare module BABYLON {
          */
         get onUserActionRequestedObservable(): Observable<Texture>;
         private _generateMipMaps;
-        private _engine;
         private _stillImageCaptured;
         private _displayingPosterTexture;
         private _settings;
@@ -31726,7 +31724,9 @@ declare module BABYLON {
         private _uintIndicesCurrentlySet;
         protected _currentBoundBuffer: Nullable<WebGLBuffer>[];
         /** @hidden */
-        protected _currentFramebuffer: Nullable<WebGLFramebuffer>;
+        _currentFramebuffer: Nullable<WebGLFramebuffer>;
+        /** @hidden */
+        _dummyFramebuffer: Nullable<WebGLFramebuffer>;
         private _currentBufferPointers;
         private _currentInstanceLocations;
         private _currentInstanceBuffers;
@@ -33613,6 +33613,12 @@ declare module BABYLON {
         }
 }
 declare module BABYLON {
+        interface ThinEngine {
+            /** @hidden */
+            _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>): ArrayBufferView;
+        }
+}
+declare module BABYLON {
     /**
      * Defines the interface used by display changed events
      */
@@ -33936,7 +33942,6 @@ declare module BABYLON {
         static OfflineProviderFactory: (urlToScene: string, callbackManifestChecked: (checked: boolean) => any, disableManifestCheck: boolean) => IOfflineProvider;
         private _loadingScreen;
         private _pointerLockRequested;
-        private _dummyFramebuffer;
         private _rescalePostProcess;
         private _deterministicLockstep;
         private _lockstepMaxSteps;
@@ -34392,8 +34397,6 @@ declare module BABYLON {
         private _clientWaitAsync;
         /** @hidden */
         _readPixelsAsync(x: number, y: number, w: number, h: number, format: number, type: number, outputBuffer: ArrayBufferView): Promise<ArrayBufferView> | null;
-        /** @hidden */
-        _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>): ArrayBufferView;
         dispose(): void;
         private _disableTouchAction;
         /**
@@ -48173,7 +48176,7 @@ declare module BABYLON {
          * @param texture defines the cube texture to convert in env file
          * @return a promise containing the environment data if succesfull.
          */
-        static CreateEnvTextureAsync(texture: CubeTexture): Promise<ArrayBuffer>;
+        static CreateEnvTextureAsync(texture: BaseTexture): Promise<ArrayBuffer>;
         /**
          * Creates a JSON representation of the spherical data.
          * @param texture defines the texture containing the polynomials
@@ -55057,7 +55060,7 @@ declare module BABYLON {
         set numCascades(value: number);
         /**
          * Sets this to true if you want that the edges of the shadows don't "swimm" / "shimmer" when rotating the camera.
-         * The trade off is that you loose some precision in the shadow rendering when enabling this setting.
+         * The trade off is that you lose some precision in the shadow rendering when enabling this setting.
          */
         stabilizeCascades: boolean;
         private _freezeShadowCastersBoundingInfo;
@@ -55511,7 +55514,6 @@ declare module BABYLON {
         private _size;
         private _onLoad;
         private _onError;
-        private _engine;
         /**
          * The texture URL.
          */
@@ -55556,7 +55558,7 @@ declare module BABYLON {
          * Instantiates an HDRTexture from the following parameters.
          *
          * @param url The location of the HDR raw data (Panorama stored in RGBE format)
-         * @param scene The scene the texture will be used in
+         * @param sceneOrEngine The scene or engine the texture will be used in
          * @param size The cubemap desired size (the more it increases the longer the generation will be)
          * @param noMipmap Forces to not generate the mipmap if true
          * @param generateHarmonics Specifies whether you want to extract the polynomial harmonics during the generation process
@@ -55594,7 +55596,6 @@ declare module BABYLON {
          */
         static Parse(parsedTexture: any, scene: Scene, rootUrl: string): Nullable<HDRCubeTexture>;
         serialize(): any;
-        private static _isScene;
     }
 }
 declare module BABYLON {
@@ -56682,7 +56683,6 @@ declare module BABYLON {
          */
         private static _noneEmptyLineRegex;
         private _textureMatrix;
-        private _engine;
         private _onLoad;
         /**
          * Instantiates a ColorGradingTexture from the following parameters.
@@ -56729,11 +56729,6 @@ declare module BABYLON {
          * Serializes the LUT texture to json format.
          */
         serialize(): any;
-        /**
-         * Returns true if the passed parameter is a scene object (can be use for typings)
-         * @param sceneOrEngine The object to test.
-         */
-        private static _isScene;
     }
 }
 declare module BABYLON {
@@ -57170,7 +57165,6 @@ declare module BABYLON {
     export class RawTexture3D extends Texture {
         /** Gets or sets the texture format to use */
         format: number;
-        private _engine;
         /**
          * Create a new RawTexture3D
          * @param data defines the data of the texture
@@ -57201,7 +57195,6 @@ declare module BABYLON {
     export class RawTexture2DArray extends Texture {
         /** Gets or sets the texture format to use */
         format: number;
-        private _engine;
         /**
          * Create a new RawTexture2DArray
          * @param data defines the data of the texture
@@ -57302,7 +57295,6 @@ declare module BABYLON {
         element: HTMLVideoElement | HTMLCanvasElement;
         private static readonly DefaultOptions;
         private _textureMatrix;
-        private _engine;
         private _isVideo;
         private _generateMipMaps;
         private _samplingMode;
@@ -57642,6 +57634,17 @@ declare module BABYLON {
         FogColor = 8,
         /** Delta time */
         DeltaTime = 9
+    }
+}
+declare module BABYLON {
+    /**
+     * Enum used to define the material modes
+     */
+    export enum NodeMaterialModes {
+        /** Regular material */
+        Material = 0,
+        /** For post process */
+        PostProcess = 1
     }
 }
 declare module BABYLON {
@@ -58057,6 +58060,229 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Base block used as input for post process
+     */
+    export class CurrentScreenBlock extends NodeMaterialBlock {
+        private _samplerName;
+        private _linearDefineName;
+        private _gammaDefineName;
+        private _mainUVName;
+        private _tempTextureRead;
+        /**
+         * Gets or sets the texture associated with the node
+         */
+        texture: Nullable<BaseTexture>;
+        /**
+         * Gets or sets a boolean indicating if content needs to be converted to gamma space
+         */
+        convertToGammaSpace: boolean;
+        /**
+         * Gets or sets a boolean indicating if content needs to be converted to linear space
+         */
+        convertToLinearSpace: boolean;
+        /**
+         * Create a new CurrentScreenBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the uv input component
+         */
+        get uv(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgba output component
+         */
+        get rgba(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb output component
+         */
+        get rgb(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the r output component
+         */
+        get r(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the g output component
+         */
+        get g(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the b output component
+         */
+        get b(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the a output component
+         */
+        get a(): NodeMaterialConnectionPoint;
+        /**
+         * Initialize the block and prepare the context for build
+         * @param state defines the state that will be used for the build
+         */
+        initialize(state: NodeMaterialBuildState): void;
+        get target(): NodeMaterialBlockTargets;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        isReady(): boolean;
+        private _injectVertexCode;
+        private _writeTextureRead;
+        private _writeOutput;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to create a Vector2/3/4 out of individual inputs (one for each component)
+     */
+    export class VectorMergerBlock extends NodeMaterialBlock {
+        /**
+         * Create a new VectorMergerBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the xyz component (input)
+         */
+        get xyzIn(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the xy component (input)
+         */
+        get xyIn(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the x component (input)
+         */
+        get x(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the y component (input)
+         */
+        get y(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the z component (input)
+         */
+        get z(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the w component (input)
+         */
+        get w(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyzw component (output)
+         */
+        get xyzw(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyz component (output)
+         */
+        get xyzOut(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the xy component (output)
+         */
+        get xyOut(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the xy component (output)
+         * @deprecated Please use xyOut instead.
+         */
+        get xy(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyz component (output)
+         * @deprecated Please use xyzOut instead.
+         */
+        get xyz(): NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to remap a float from a range to a new one
+     */
+    export class RemapBlock extends NodeMaterialBlock {
+        /**
+         * Gets or sets the source range
+         */
+        sourceRange: Vector2;
+        /**
+         * Gets or sets the target range
+         */
+        targetRange: Vector2;
+        /**
+         * Creates a new RemapBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the input component
+         */
+        get input(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the source min input component
+         */
+        get sourceMin(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the source max input component
+         */
+        get sourceMax(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the target min input component
+         */
+        get targetMin(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the target max input component
+         */
+        get targetMax(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        get output(): NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+        protected _dumpPropertiesCode(): string;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to multiply 2 values
+     */
+    export class MultiplyBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new MultiplyBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the left operand input component
+         */
+        get left(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the right operand input component
+         */
+        get right(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        get output(): NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
      * Interface used to configure the node material editor
      */
     export interface INodeMaterialEditorOptions {
@@ -58182,6 +58408,15 @@ declare module BABYLON {
          */
         attachedBlocks: NodeMaterialBlock[];
         /**
+         * Specifies the mode of the node material
+         * @hidden
+         */
+        _mode: NodeMaterialModes;
+        /**
+         * Gets the mode property
+         */
+        get mode(): NodeMaterialModes;
+        /**
          * Create a new node based material
          * @param name defines the material name
          * @param scene defines the hosting scene
@@ -58281,6 +58516,19 @@ declare module BABYLON {
         optimize(): void;
         private _prepareDefinesForAttributes;
         /**
+         * Create a post process from the material
+         * @param camera The camera to apply the render pass to.
+         * @param options The required width/height ratio to downsize to before computing the render pass. (Use 1.0 for full size)
+         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
+         * @param engine The engine which the post process will be applied. (default: current engine)
+         * @param reusable If the post process can be reused on the same frame. (default: false)
+         * @param textureType Type of textures used when performing the post process. (default: 0)
+         * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
+         * @returns the post process created
+         */
+        createPostProcess(camera: Nullable<Camera>, options?: number | PostProcessOptions, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, textureFormat?: number): PostProcess;
+        private _processDefines;
+        /**
           * Get if the submesh is ready to be used and all its information available.
           * Child classes can use it to update shaders
           * @param mesh defines the mesh to check
@@ -58314,7 +58562,7 @@ declare module BABYLON {
          * Gets the list of texture blocks
          * @returns an array of texture blocks
          */
-        getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock | RefractionBlock)[];
+        getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock)[];
         /**
          * Specifies if the material uses a texture
          * @param texture defines the texture to check against the material
@@ -58344,6 +58592,10 @@ declare module BABYLON {
          * Clear the current material and set it to a default state
          */
         setToDefault(): void;
+        /**
+         * Clear the current material and set it to a default state for post process
+         */
+        setToDefaultPostProcess(): void;
         /**
          * Loads the current Node Material from a url pointing to a file save by the Node Material Editor
          * @param url defines the url to load from
@@ -58512,7 +58764,7 @@ declare module BABYLON {
         /**
          * Input blocks
          */
-        textureBlocks: (ReflectionTextureBaseBlock | TextureBlock | RefractionBlock)[];
+        textureBlocks: (ReflectionTextureBaseBlock | TextureBlock | RefractionBlock | CurrentScreenBlock)[];
         /**
          * Bindable blocks (Blocks that need to set data to the effect)
          */
@@ -59810,36 +60062,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Block used to multiply 2 values
-     */
-    export class MultiplyBlock extends NodeMaterialBlock {
-        /**
-         * Creates a new MultiplyBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the left operand input component
-         */
-        get left(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the right operand input component
-         */
-        get right(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the output component
-         */
-        get output(): NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
      * Block used to add 2 vectors
      */
     export class AddBlock extends NodeMaterialBlock {
@@ -59993,59 +60215,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Block used to remap a float from a range to a new one
-     */
-    export class RemapBlock extends NodeMaterialBlock {
-        /**
-         * Gets or sets the source range
-         */
-        sourceRange: Vector2;
-        /**
-         * Gets or sets the target range
-         */
-        targetRange: Vector2;
-        /**
-         * Creates a new RemapBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the input component
-         */
-        get input(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the source min input component
-         */
-        get sourceMin(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the source max input component
-         */
-        get sourceMax(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the target min input component
-         */
-        get targetMin(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the target max input component
-         */
-        get targetMax(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the output component
-         */
-        get output(): NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-        protected _dumpPropertiesCode(): string;
-        serialize(): any;
-        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
-    }
-}
-declare module BABYLON {
-    /**
      * Block used to normalize a vector
      */
     export class NormalizeBlock extends NodeMaterialBlock {
@@ -60192,70 +60361,6 @@ declare module BABYLON {
          * @deprecated Please use rgbOut instead.
          */
         get rgb(): NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to create a Vector2/3/4 out of individual inputs (one for each component)
-     */
-    export class VectorMergerBlock extends NodeMaterialBlock {
-        /**
-         * Create a new VectorMergerBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the xyz component (input)
-         */
-        get xyzIn(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the xy component (input)
-         */
-        get xyIn(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the x component (input)
-         */
-        get x(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the y component (input)
-         */
-        get y(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the z component (input)
-         */
-        get z(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the w component (input)
-         */
-        get w(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the xyzw component (output)
-         */
-        get xyzw(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the xyz component (output)
-         */
-        get xyzOut(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the xy component (output)
-         */
-        get xyOut(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the xy component (output)
-         * @deprecated Please use xyOut instead.
-         */
-        get xy(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the xyz component (output)
-         * @deprecated Please use xyzOut instead.
-         */
-        get xyz(): NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
