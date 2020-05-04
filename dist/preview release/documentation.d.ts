@@ -7745,7 +7745,6 @@ declare module BABYLON {
         private _textureMatrix;
         private _format;
         private _createPolynomials;
-        private _engine;
         /** @hidden */
         _prefiltered: boolean;
         /**
@@ -7769,7 +7768,7 @@ declare module BABYLON {
          * Creates a cube texture to use with reflection for instance. It can be based upon dds or six images as well
          * as prefiltered data.
          * @param rootUrl defines the url of the texture or the root name of the six images
-         * @param scene defines the scene the texture is attached to
+         * @param null defines the scene or engine the texture is attached to
          * @param extensions defines the suffixes add to the picture name in case six images are in use like _px.jpg...
          * @param noMipmap defines if mipmaps should be created or not
          * @param files defines the six files to load for the different faces in that order: px, py, pz, nx, ny, nz
@@ -7829,7 +7828,6 @@ declare module BABYLON {
          * @returns a new cube texture
          */
         clone(): CubeTexture;
-        private static _isScene;
     }
 }
 declare module BABYLON {
@@ -10465,7 +10463,6 @@ declare module BABYLON {
         private _generateMipMaps;
         private _canvas;
         private _context;
-        private _engine;
         /**
          * Creates a DynamicTexture
          * @param name defines the name of the texture
@@ -10726,7 +10723,6 @@ declare module BABYLON {
          * Define the format of the data (RGB, RGBA... Engine.TEXTUREFORMAT_xxx)
          */
         format: number;
-        private _engine;
         /**
          * Instantiates a new RawTexture.
          * Raw texture can help creating a texture directly from an array of data.
@@ -10941,7 +10937,7 @@ declare module BABYLON {
         private _vectors3;
         private _matrices;
         private _fallbackTextureUsed;
-        private _engine;
+        private _fullEngine;
         private _cachedDefines;
         private _contentUpdateId;
         private _contentData;
@@ -20540,7 +20536,7 @@ declare module BABYLON {
          * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
          * @see http://doc.babylonjs.com/babylon101/materials#texture
          * @param url defines the url of the picture to load as a texture
-         * @param scene defines the scene or engine the texture will belong to
+         * @param sceneOrEngine defines the scene or engine the texture will belong to
          * @param noMipmap defines if the texture will require mip maps or not
          * @param invertY defines if the texture needs to be inverted on the y axis during loading
          * @param samplingMode defines the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
@@ -20846,7 +20842,6 @@ declare module BABYLON {
          * Gets render target creation options that were used.
          */
         get renderTargetOptions(): RenderTargetCreationOptions;
-        protected _engine: Engine;
         protected _onRatioRescale(): void;
         /**
          * Gets or sets the center of the bounding box associated with the texture (when in cube mode)
@@ -30379,6 +30374,7 @@ declare module BABYLON {
          */
         delayLoadState: number;
         private _scene;
+        private _engine;
         /** @hidden */
         _texture: Nullable<InternalTexture>;
         private _uid;
@@ -30392,16 +30388,16 @@ declare module BABYLON {
          * Base class of all the textures in babylon.
          * It groups all the common properties the materials, post process, lights... might need
          * in order to make a correct use of the texture.
-         * @param scene Define the scene the texture blongs to
+         * @param sceneOrEngine Define the scene or engine the texture blongs to
          */
-        constructor(scene: Nullable<Scene>);
-        /** @hidden */
-        _setScene(scene: Nullable<Scene>): void;
+        constructor(sceneOrEngine: Nullable<Scene | ThinEngine>);
         /**
          * Get the scene the texture belongs to.
          * @returns the scene or null if undefined
          */
         getScene(): Nullable<Scene>;
+        /** @hidden */
+        protected _getEngine(): Nullable<ThinEngine>;
         /**
          * Get the texture transform matrix used to offset tile the texture for istance.
          * @returns the transformation matrix
@@ -30440,29 +30436,29 @@ declare module BABYLON {
          */
         getBaseSize(): ISize;
         /**
-               * Update the sampling mode of the texture.
-               * Default is Trilinear mode.
-               *
-               * | Value | Type               | Description |
-               * | ----- | ------------------ | ----------- |
-               * | 1     | NEAREST_SAMPLINGMODE or NEAREST_NEAREST_MIPLINEAR  | Nearest is: mag = nearest, min = nearest, mip = linear |
-               * | 2     | BILINEAR_SAMPLINGMODE or LINEAR_LINEAR_MIPNEAREST | Bilinear is: mag = linear, min = linear, mip = nearest |
-               * | 3     | TRILINEAR_SAMPLINGMODE or LINEAR_LINEAR_MIPLINEAR | Trilinear is: mag = linear, min = linear, mip = linear |
-               * | 4     | NEAREST_NEAREST_MIPNEAREST |             |
-               * | 5    | NEAREST_LINEAR_MIPNEAREST |             |
-               * | 6    | NEAREST_LINEAR_MIPLINEAR |             |
-               * | 7    | NEAREST_LINEAR |             |
-               * | 8    | NEAREST_NEAREST |             |
-               * | 9   | LINEAR_NEAREST_MIPNEAREST |             |
-               * | 10   | LINEAR_NEAREST_MIPLINEAR |             |
-               * | 11   | LINEAR_LINEAR |             |
-               * | 12   | LINEAR_NEAREST |             |
-               *
-               *    > _mag_: magnification filter (close to the viewer)
-               *    > _min_: minification filter (far from the viewer)
-               *    > _mip_: filter used between mip map levels
-               *@param samplingMode Define the new sampling mode of the texture
-               */
+         * Update the sampling mode of the texture.
+         * Default is Trilinear mode.
+         *
+         * | Value | Type               | Description |
+         * | ----- | ------------------ | ----------- |
+         * | 1     | NEAREST_SAMPLINGMODE or NEAREST_NEAREST_MIPLINEAR  | Nearest is: mag = nearest, min = nearest, mip = linear |
+         * | 2     | BILINEAR_SAMPLINGMODE or LINEAR_LINEAR_MIPNEAREST | Bilinear is: mag = linear, min = linear, mip = nearest |
+         * | 3     | TRILINEAR_SAMPLINGMODE or LINEAR_LINEAR_MIPLINEAR | Trilinear is: mag = linear, min = linear, mip = linear |
+         * | 4     | NEAREST_NEAREST_MIPNEAREST |             |
+         * | 5    | NEAREST_LINEAR_MIPNEAREST |             |
+         * | 6    | NEAREST_LINEAR_MIPLINEAR |             |
+         * | 7    | NEAREST_LINEAR |             |
+         * | 8    | NEAREST_NEAREST |             |
+         * | 9   | LINEAR_NEAREST_MIPNEAREST |             |
+         * | 10   | LINEAR_NEAREST_MIPLINEAR |             |
+         * | 11   | LINEAR_LINEAR |             |
+         * | 12   | LINEAR_NEAREST |             |
+         *
+         *    > _mag_: magnification filter (close to the viewer)
+         *    > _min_: minification filter (far from the viewer)
+         *    > _mip_: filter used between mip map levels
+         *@param samplingMode Define the new sampling mode of the texture
+         */
         updateSamplingMode(samplingMode: number): void;
         /**
          * Scales the texture if is `canRescale()`
@@ -30533,6 +30529,7 @@ declare module BABYLON {
          * @param callback Define the callback triggered once the entire list will be ready
          */
         static WhenAllReady(textures: BaseTexture[], callback: () => void): void;
+        private static _isScene;
     }
 }
 declare module BABYLON {
@@ -31405,7 +31402,6 @@ declare module BABYLON {
          */
         get onUserActionRequestedObservable(): Observable<Texture>;
         private _generateMipMaps;
-        private _engine;
         private _stillImageCaptured;
         private _displayingPosterTexture;
         private _settings;
@@ -31726,7 +31722,9 @@ declare module BABYLON {
         private _uintIndicesCurrentlySet;
         protected _currentBoundBuffer: Nullable<WebGLBuffer>[];
         /** @hidden */
-        protected _currentFramebuffer: Nullable<WebGLFramebuffer>;
+        _currentFramebuffer: Nullable<WebGLFramebuffer>;
+        /** @hidden */
+        _dummyFramebuffer: Nullable<WebGLFramebuffer>;
         private _currentBufferPointers;
         private _currentInstanceLocations;
         private _currentInstanceBuffers;
@@ -33613,6 +33611,12 @@ declare module BABYLON {
         }
 }
 declare module BABYLON {
+        interface ThinEngine {
+            /** @hidden */
+            _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>): ArrayBufferView;
+        }
+}
+declare module BABYLON {
     /**
      * Defines the interface used by display changed events
      */
@@ -33936,7 +33940,6 @@ declare module BABYLON {
         static OfflineProviderFactory: (urlToScene: string, callbackManifestChecked: (checked: boolean) => any, disableManifestCheck: boolean) => IOfflineProvider;
         private _loadingScreen;
         private _pointerLockRequested;
-        private _dummyFramebuffer;
         private _rescalePostProcess;
         private _deterministicLockstep;
         private _lockstepMaxSteps;
@@ -34392,8 +34395,6 @@ declare module BABYLON {
         private _clientWaitAsync;
         /** @hidden */
         _readPixelsAsync(x: number, y: number, w: number, h: number, format: number, type: number, outputBuffer: ArrayBufferView): Promise<ArrayBufferView> | null;
-        /** @hidden */
-        _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>): ArrayBufferView;
         dispose(): void;
         private _disableTouchAction;
         /**
@@ -48173,7 +48174,7 @@ declare module BABYLON {
          * @param texture defines the cube texture to convert in env file
          * @return a promise containing the environment data if succesfull.
          */
-        static CreateEnvTextureAsync(texture: CubeTexture): Promise<ArrayBuffer>;
+        static CreateEnvTextureAsync(texture: BaseTexture): Promise<ArrayBuffer>;
         /**
          * Creates a JSON representation of the spherical data.
          * @param texture defines the texture containing the polynomials
@@ -55511,7 +55512,6 @@ declare module BABYLON {
         private _size;
         private _onLoad;
         private _onError;
-        private _engine;
         /**
          * The texture URL.
          */
@@ -55556,7 +55556,7 @@ declare module BABYLON {
          * Instantiates an HDRTexture from the following parameters.
          *
          * @param url The location of the HDR raw data (Panorama stored in RGBE format)
-         * @param scene The scene the texture will be used in
+         * @param sceneOrEngine The scene or engine the texture will be used in
          * @param size The cubemap desired size (the more it increases the longer the generation will be)
          * @param noMipmap Forces to not generate the mipmap if true
          * @param generateHarmonics Specifies whether you want to extract the polynomial harmonics during the generation process
@@ -55594,7 +55594,6 @@ declare module BABYLON {
          */
         static Parse(parsedTexture: any, scene: Scene, rootUrl: string): Nullable<HDRCubeTexture>;
         serialize(): any;
-        private static _isScene;
     }
 }
 declare module BABYLON {
@@ -56682,7 +56681,6 @@ declare module BABYLON {
          */
         private static _noneEmptyLineRegex;
         private _textureMatrix;
-        private _engine;
         private _onLoad;
         /**
          * Instantiates a ColorGradingTexture from the following parameters.
@@ -56729,11 +56727,6 @@ declare module BABYLON {
          * Serializes the LUT texture to json format.
          */
         serialize(): any;
-        /**
-         * Returns true if the passed parameter is a scene object (can be use for typings)
-         * @param sceneOrEngine The object to test.
-         */
-        private static _isScene;
     }
 }
 declare module BABYLON {
@@ -57170,7 +57163,6 @@ declare module BABYLON {
     export class RawTexture3D extends Texture {
         /** Gets or sets the texture format to use */
         format: number;
-        private _engine;
         /**
          * Create a new RawTexture3D
          * @param data defines the data of the texture
@@ -57201,7 +57193,6 @@ declare module BABYLON {
     export class RawTexture2DArray extends Texture {
         /** Gets or sets the texture format to use */
         format: number;
-        private _engine;
         /**
          * Create a new RawTexture2DArray
          * @param data defines the data of the texture
@@ -57302,7 +57293,6 @@ declare module BABYLON {
         element: HTMLVideoElement | HTMLCanvasElement;
         private static readonly DefaultOptions;
         private _textureMatrix;
-        private _engine;
         private _isVideo;
         private _generateMipMaps;
         private _samplingMode;
