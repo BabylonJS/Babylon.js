@@ -798,6 +798,8 @@ export class TransformNode extends Node {
         this._transformToBoneReferal = affectedTransformNode;
         this.parent = bone;
 
+        bone.getSkeleton().prepare();
+
         if (bone.getWorldMatrix().determinant() < 0) {
             this.scalingDeterminant *= -1;
         }
