@@ -19,6 +19,41 @@ namespace xr
         size_t Height{};
     };
 
+    struct Pose
+    {
+        struct
+        {
+            float X{};
+            float Y{};
+            float Z{};
+        } Position;
+
+        struct
+        {
+            float X{};
+            float Y{};
+            float Z{};
+            float W{};
+        } Orientation;
+    };
+
+    struct Ray
+    {
+        struct
+        {
+            float X{};
+            float Y{};
+            float Z{};
+        } Origin;
+
+        struct
+        {
+            float X{};
+            float Y{};
+            float Z{};
+        } Direction;
+    };
+
     class System
     {
     public:
@@ -36,20 +71,7 @@ namespace xr
             public:
                 struct Space
                 {
-                    struct
-                    {
-                        float X{};
-                        float Y{};
-                        float Z{};
-                    } Position;
-
-                    struct
-                    {
-                        float X{};
-                        float Y{};
-                        float Z{};
-                        float W{};
-                    } Orientation;
+                    Pose Pose;
                 };
 
                 struct View
@@ -101,6 +123,8 @@ namespace xr
 
                 Frame(System::Session::Impl&);
                 ~Frame();
+
+                void GetHitTestResults(std::vector<Pose>&, Ray) const;
 
             private:
                 class Impl;

@@ -4,9 +4,10 @@ var logfps = true;
 var ibl = false;
 var rtt = false;
 var xr = false;
+var xrHitTest = false;
 
 function CreateBoxAsync() {
-    BABYLON.Mesh.CreateBox("box1", 0.7);
+    BABYLON.Mesh.CreateBox("box1", 0.2);
     return Promise.resolve();
 }
 
@@ -132,11 +133,28 @@ CreateBoxAsync().then(function () {
     if (xr) {
         setTimeout(function () {
             scene.createDefaultXRExperienceAsync({ disableDefaultUI: true, disableTeleportation: true }).then((xr) => {
-                setTimeout(function () {
-                    scene.meshes[0].position = scene.activeCamera.getFrontPosition(2);
-                    scene.meshes[0].rotate(BABYLON.Vector3.Up(), 3.14159);
-                }, 5000);
-                return xr.baseExperience.enterXRAsync("immersive-vr", "unbounded", xr.renderTarget);
+                if (xrHitTest) {
+                    const xrHitTestModule = xr.baseExperience.featuresManager.enableFeature(
+                        BABYLON.WebXRFeatureName.HIT_TEST,
+                        "latest",
+                         {offsetRay: {origin: {x: 0, y: 0, z: 0}, direction: {x: 0, y: 0, z: -1}}});
+
+                    xrHitTestModule.onHitTestResultObservable.add((results) => {
+                        if (results.length) {
+                            scene.meshes[0].position.x = results[0].position.x;
+                            scene.meshes[0].position.y = results[0].position.y;
+                            scene.meshes[0].position.z = results[0].position.z;
+                        }
+                    });
+                }
+                else {
+                    setTimeout(function () {
+                        scene.meshes[0].position = scene.activeCamera.getFrontPosition(2);
+                        scene.meshes[0].rotate(BABYLON.Vector3.Up(), 3.14159);
+                    }, 5000);
+                }
+
+                xr.baseExperience.enterXRAsync("immersive-vr", "unbounded", xr.renderTarget);
             });
         }, 5000);
     }

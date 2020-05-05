@@ -7,6 +7,7 @@
 #include <bx/bx.h>
 
 #include <set>
+#include <napi/napi.h>
 
 namespace
 {
@@ -58,8 +59,8 @@ namespace
 
     std::array<float, 16> CreateTransformMatrix(const xr::System::Session::Frame::Space& space, bool viewSpace = true)
     {
-        auto& quat = space.Orientation;
-        auto& pos = space.Position;
+        auto& quat = space.Pose.Orientation;
+        auto& pos = space.Pose.Position;
 
         // Quaternion to matrix from https://github.com/BabylonJS/Babylon.js/blob/v4.0.0/src/Maths/math.ts#L6245-L6283
         const float xx{quat.X * quat.X};
@@ -147,7 +148,7 @@ namespace Babylon
         ~NativeXr();
 
         void BeginSession(Napi::Env env); // TODO: Make this asynchronous.
-        void EndSession();   // TODO: Make this asynchronous.
+        void EndSession();                // TODO: Make this asynchronous.
 
         auto ActiveFrameBuffers() const
         {
@@ -342,7 +343,7 @@ namespace Babylon
         struct XRSessionType
         {
             static constexpr auto IMMERSIVE_VR{"immersive-vr"};
-            static constexpr auto IMMERSIVE_AR{"immersive-vr"};
+            static constexpr auto IMMERSIVE_AR{"immersive-ar"};
             static constexpr auto IMMERSIVE_INLINE{"inline"};
         };
 
@@ -492,18 +493,24 @@ namespace Babylon
             void Update(const xr::System::Session::Frame::Space& space, bool isViewSpace)
             {
                 auto position = m_position.Value();
-                position.Set("x", space.Position.X);
-                position.Set("y", space.Position.Y);
-                position.Set("z", space.Position.Z);
+                position.Set("x", space.Pose.Position.X);
+                position.Set("y", space.Pose.Position.Y);
+                position.Set("z", space.Pose.Position.Z);
                 position.Set("w", 1.f);
 
                 auto orientation = m_orientation.Value();
-                orientation.Set("x", space.Orientation.X);
-                orientation.Set("y", space.Orientation.Y);
-                orientation.Set("z", space.Orientation.Z);
-                orientation.Set("w", space.Orientation.W);
+                orientation.Set("x", space.Pose.Orientation.X);
+                orientation.Set("y", space.Pose.Orientation.Y);
+                orientation.Set("z", space.Pose.Orientation.Z);
+                orientation.Set("w", space.Pose.Orientation.W);
 
                 std::memcpy(m_matrix.Value().Data(), CreateTransformMatrix(space, isViewSpace).data(), m_matrix.Value().ByteLength());
+            }
+
+            void Update(const xr::Pose& pose)
+            {
+                xr::System::Session::Frame::Space space{{pose}};
+                Update(space, true);
             }
 
         private:
@@ -687,6 +694,188 @@ namespace Babylon
             }
         };
 
+        // Implementation of vanilla XRPose: https://immersive-web.github.io/webxr/#xrpose-interface
+        class XRPose : public Napi::ObjectWrap<XRPose>
+        {
+            static constexpr auto JS_CLASS_NAME = "XRPose";
+
+        public:
+            static void Initialize(Napi::Env env)
+            {
+                Napi::HandleScope scope{env};
+
+                Napi::Function func = DefineClass(
+                    env,
+                    JS_CLASS_NAME,
+                    {
+                        InstanceAccessor("transform", &XRPose::GetTransform, nullptr),
+                    });
+
+                env.Global().Set(JS_CLASS_NAME, func);
+            }
+
+            static Napi::Object New(const Napi::CallbackInfo& info)
+            {
+                return info.Env().Global().Get(JS_CLASS_NAME).As<Napi::Function>().New({});
+            }
+
+            XRPose(const Napi::CallbackInfo& info)
+                : Napi::ObjectWrap<XRPose>{info}
+                , m_jsTransform{Napi::Persistent(XRRigidTransform::New(info))}
+                , m_transform{*XRRigidTransform::Unwrap(m_jsTransform.Value())}
+            {
+            }
+
+            void Update(const Napi::CallbackInfo& info, const xr::Pose& pose)
+            {
+                // Update the transform.
+                m_transform.Update(pose);
+            }
+
+        private:
+            Napi::ObjectReference m_jsTransform{};
+            XRRigidTransform& m_transform;
+
+            Napi::Value GetTransform(const Napi::CallbackInfo& info)
+            {
+                return m_jsTransform.Value();
+            }
+        };
+
+        // Implementation of XRRay: https://immersive-web.github.io/hit-test/#xrray-interface
+        class XRRay : public Napi::ObjectWrap<XRRay>
+        {
+            static constexpr auto JS_CLASS_NAME = "XRRay";
+            static constexpr size_t MATRIX_SIZE = 16;
+
+        public:
+            static void Initialize(Napi::Env env)
+            {
+                Napi::HandleScope scope{env};
+
+                Napi::Function func = DefineClass(
+                    env,
+                    JS_CLASS_NAME,
+                    {
+                        InstanceAccessor("origin", &XRRay::Origin, nullptr),
+                        InstanceAccessor("direction", &XRRay::Direction, nullptr),
+                        InstanceAccessor("matrix", &XRRay::Matrix, nullptr),
+                    });
+
+                env.Global().Set(JS_CLASS_NAME, func);
+            }
+
+            static Napi::Object New(const Napi::CallbackInfo& info)
+            {
+                return info.Env().Global().Get(JS_CLASS_NAME).As<Napi::Function>().New({info[0]});
+            }
+
+            XRRay(const Napi::CallbackInfo& info)
+                : Napi::ObjectWrap<XRRay>{info}
+            {
+                bool originSet = false;
+                bool directionSet = false;
+                bool matrixSet = false;
+                if (info[0].IsObject())
+                {
+                    auto argumentObject = info[0].As<Napi::Object>();
+                    auto originValue = argumentObject.Get("origin");
+                    if (originValue.IsObject())
+                    {
+                        originSet = true;
+                        m_origin = Napi::Persistent(originValue.As<Napi::Object>());
+                    }
+
+                    auto directionValue = argumentObject.Get("direction");
+                    if (directionValue.IsObject())
+                    {
+                        directionSet = true;
+                        m_direction = Napi::Persistent(directionValue.As<Napi::Object>());
+                    }
+
+                    auto matrixValue = argumentObject.Get("matrix");
+                    if (matrixValue.IsArray())
+                    {
+                        matrixSet = true;
+                        m_matrix = Napi::Persistent(matrixValue.As<Napi::Float32Array>());
+                    }
+                }
+
+                if (!originSet)
+                {
+                    m_origin = Napi::Persistent(Napi::Object::New(info.Env()));
+                }
+
+                if (!directionSet)
+                {
+                    m_direction = Napi::Persistent(Napi::Object::New(info.Env()));
+                }
+
+                if (!matrixSet)
+                {
+                    m_matrix = Napi::Persistent(Napi::Float32Array::New(info.Env(), MATRIX_SIZE));
+                }
+            }
+
+            xr::Ray GetNativeRay()
+            {
+                xr::Ray nativeRay{{0, 0, 0}, {0, 0, -1}};
+                auto originObject = m_origin.Value();
+                if (originObject.HasOwnProperty("x"))
+                {
+                    nativeRay.Origin.X = originObject.Get("x").ToNumber().FloatValue();
+                }
+
+                if (originObject.HasOwnProperty("y"))
+                {
+                    nativeRay.Origin.Y = originObject.Get("y").ToNumber().FloatValue();
+                }
+
+                if (originObject.HasOwnProperty("z"))
+                {
+                    nativeRay.Origin.Z = originObject.Get("z").ToNumber().FloatValue();
+                }
+
+                auto directionObject = m_direction.Value();
+                if (directionObject.HasOwnProperty("x"))
+                {
+                    nativeRay.Direction.X = directionObject.Get("x").ToNumber().FloatValue();
+                }
+
+                if (directionObject.HasOwnProperty("y"))
+                {
+                    nativeRay.Direction.Y = directionObject.Get("y").ToNumber().FloatValue();
+                }
+
+                if (directionObject.HasOwnProperty("z"))
+                {
+                    nativeRay.Direction.Z = directionObject.Get("z").ToNumber().FloatValue();
+                }
+
+                return nativeRay;
+            }
+
+        private:
+            Napi::ObjectReference m_origin{};
+            Napi::ObjectReference m_direction{};
+            Napi::Reference<Napi::Float32Array> m_matrix{};
+
+            Napi::Value Origin(const Napi::CallbackInfo&)
+            {
+                return m_origin.Value();
+            }
+
+            Napi::Value Direction(const Napi::CallbackInfo&)
+            {
+                return m_direction.Value();
+            }
+
+            Napi::Value Matrix(const Napi::CallbackInfo&)
+            {
+                return m_matrix.Value();
+            }
+        };
+
         // Implementation of the XRReferenceSpace interface: https://immersive-web.github.io/webxr/#xrreferencespace-interface
         class XRReferenceSpace : public Napi::ObjectWrap<XRReferenceSpace>
         {
@@ -739,6 +928,128 @@ namespace Babylon
             }
         };
 
+        // Implementation of the XRHitTestSource interface: https://immersive-web.github.io/hit-test/#hit-test-source-interface
+        class XRHitTestSource : public Napi::ObjectWrap<XRHitTestSource>
+        {
+            static constexpr auto JS_CLASS_NAME = "XRHitTestSource";
+
+        public:
+            static void Initialize(Napi::Env env)
+            {
+                Napi::HandleScope scope{env};
+
+                Napi::Function func = DefineClass(
+                    env,
+                    JS_CLASS_NAME,
+                    {
+                        InstanceMethod("cancel", &XRHitTestSource::Cancel),
+                    });
+
+                env.Global().Set(JS_CLASS_NAME, func);
+            }
+
+            static Napi::Object New(const Napi::CallbackInfo& info)
+            {
+                return info.Env().Global().Get(JS_CLASS_NAME).As<Napi::Function>().New({info[0]});
+            }
+
+            XRHitTestSource(const Napi::CallbackInfo& info)
+                : Napi::ObjectWrap<XRHitTestSource>{info}
+            {
+                auto options = info[0].As<Napi::Object>();
+
+                if (options.HasOwnProperty("space"))
+                {
+                    auto spaceValue = options.Get("space");
+
+                    if (spaceValue.IsObject())
+                    {
+                        m_space = Napi::Persistent(spaceValue.As<Napi::Object>());
+                        hasSpace = true;
+                    }
+                }
+
+                if (options.HasOwnProperty("offsetRay"))
+                {
+                    m_offsetRay = Napi::Persistent(options.Get("offsetRay").As<Napi::Object>());
+                    hasOffsetRay = true;
+                }
+            }
+
+            XRRay* OffsetRay()
+            {
+                return hasOffsetRay ? XRRay::Unwrap(m_offsetRay.Value()) : nullptr;
+            }
+
+            XRReferenceSpace* Space()
+            {
+                return hasSpace ? XRReferenceSpace::Unwrap(m_space.Value()) : nullptr;
+            }
+
+        private:
+            void Cancel(const Napi::CallbackInfo& info)
+            {
+                // no-op we don't keep a persistent list of active XRHitTestSources..
+            }
+
+            bool hasSpace = false;
+            Napi::ObjectReference m_space;
+
+            bool hasOffsetRay = false;
+            Napi::ObjectReference m_offsetRay;
+        };
+
+        // Implementation of the XRHitTestResult interface: https://immersive-web.github.io/hit-test/#xr-hit-test-result-interface
+        class XRHitTestResult : public Napi::ObjectWrap<XRHitTestResult>
+        {
+            static constexpr auto JS_CLASS_NAME = "XRHitTestResult";
+
+        public:
+            static void Initialize(Napi::Env env)
+            {
+                Napi::HandleScope scope{env};
+
+                Napi::Function func = DefineClass(
+                    env,
+                    JS_CLASS_NAME,
+                    {
+                        InstanceMethod("getPose", &XRHitTestResult::GetPose),
+                    });
+
+                env.Global().Set(JS_CLASS_NAME, func);
+            }
+
+            static Napi::Object New(const Napi::CallbackInfo& info)
+            {
+                return info.Env().Global().Get(JS_CLASS_NAME).As<Napi::Function>().New({});
+            }
+
+            XRHitTestResult(const Napi::CallbackInfo& info)
+                : Napi::ObjectWrap<XRHitTestResult>{info}
+            {
+            }
+
+            // Sets the value of the hit pose in AR core space via struct copy.
+            void SetPose(const xr::Pose& inputPose)
+            {
+                m_hitPose = inputPose;
+            }
+
+        private:
+            Napi::Value GetPose(const Napi::CallbackInfo& info)
+            {
+                // TODO: Once multiple reference views are supported, we need to convert the values into the passed in reference space.
+                Napi::Object napiPose = XRPose::New(info);
+                XRPose* pose = XRPose::Unwrap(napiPose);
+                pose->Update(info, m_hitPose);
+
+                return napiPose;
+            }
+
+            // The hit pose in default ARCore space.
+            xr::Pose m_hitPose;
+        };
+
         class XRFrame : public Napi::ObjectWrap<XRFrame>
         {
             static constexpr auto JS_CLASS_NAME = "XRFrame";
@@ -754,6 +1065,7 @@ namespace Babylon
                     {
                         InstanceMethod("getViewerPose", &XRFrame::GetViewerPose),
                         InstanceMethod("getPose", &XRFrame::GetPose),
+                        InstanceMethod("getHitTestResults", &XRFrame::GetHitTestResults),
                     });
 
                 env.Global().Set(JS_CLASS_NAME, func);
@@ -799,7 +1111,7 @@ namespace Babylon
                 // Updating the reference space is currently not supported. Until it is, we assume the
                 // reference space is unmoving at identity (which is usually true).
 
-                m_xrViewerPose.Update(info, {{0, 0, 0}, {0, 0, 0, 1}}, m_frame->Views);
+                m_xrViewerPose.Update(info, {{{0, 0, 0}, {0, 0, 0, 1}}}, m_frame->Views);
 
                 return m_jsXRViewerPose.Value();
             }
@@ -810,6 +1122,39 @@ namespace Babylon
 
                 m_transform.Update(space, false);
                 return m_jsPose.Value();
+            }
+
+            Napi::Value GetHitTestResults(const Napi::CallbackInfo& info)
+            {
+                XRHitTestSource* hitTestSource = XRHitTestSource::Unwrap(info[0].As<Napi::Object>());
+                XRRay* offsetRay = hitTestSource->OffsetRay();
+                xr::Ray nativeRay{};
+                if (offsetRay != nullptr)
+                {
+                    nativeRay = offsetRay->GetNativeRay();
+                }
+                else
+                {
+                    nativeRay = {{0, 0, 0}, {0, 0, -1}};
+                }
+
+                // Get the native results
+                std::vector<xr::Pose> nativeHitResults{};
+                m_frame->GetHitTestResults(nativeHitResults, nativeRay);
+
+                // Translate those results into a napi array.
+                auto results = Napi::Array::New(info.Env(), nativeHitResults.size());
+                uint32_t i{0};
+                for (std::vector<xr::Pose>::iterator it = nativeHitResults.begin(); it != nativeHitResults.end(); ++it)
+                {
+                    Napi::Object currentResult = XRHitTestResult::New(info);
+                    XRHitTestResult* xrResult = XRHitTestResult::Unwrap(currentResult);
+                    xrResult->SetPose(*it);
+
+                    results[i++] = currentResult;
+                }
+
+                return results;
             }
         };
 
@@ -835,6 +1180,7 @@ namespace Babylon
                         InstanceMethod("updateRenderState", &XRSession::UpdateRenderState),
                         InstanceMethod("requestAnimationFrame", &XRSession::RequestAnimationFrame),
                         InstanceMethod("end", &XRSession::End),
+                        InstanceMethod("requestHitTestSource", &XRSession::RequestHitTestSource),
                     });
 
                 env.Global().Set(JS_CLASS_NAME, func);
@@ -858,8 +1204,8 @@ namespace Babylon
                 , m_xrFrame{*XRFrame::Unwrap(m_jsXRFrame.Value())}
                 , m_jsInputSources{Napi::Persistent(Napi::Array::New(info.Env()))}
             {
-                // Currently only immersive VR is supported.
-                assert(info[0].As<Napi::String>().Utf8Value() == XRSessionType::IMMERSIVE_VR);
+                // Support both immersive VR and immersive AR is supported.
+                assert(info[0].As<Napi::String>().Utf8Value() == XRSessionType::IMMERSIVE_VR || info[0].As<Napi::String>().Utf8Value() == XRSessionType::IMMERSIVE_AR);
             }
 
             void SetEngine(Napi::Object jsEngine)
@@ -1060,6 +1406,13 @@ namespace Babylon
                 deferred.Resolve(info.Env().Undefined());
                 return deferred.Promise();
             }
+
+            Napi::Value RequestHitTestSource(const Napi::CallbackInfo& info)
+            {
+                auto deferred = Napi::Promise::Deferred::New(info.Env());
+                deferred.Resolve(XRHitTestSource::New(info));
+                return deferred.Promise();
+            }
         };
 
         class NativeWebXRRenderTarget : public Napi::ObjectWrap<NativeWebXRRenderTarget>
@@ -1217,7 +1570,8 @@ namespace Babylon
                 auto sessionType = info[0].As<Napi::String>().Utf8Value();
                 bool isSupported = false;
 
-                if (sessionType == XRSessionType::IMMERSIVE_VR)
+                if (sessionType == XRSessionType::IMMERSIVE_VR ||
+                    sessionType == XRSessionType::IMMERSIVE_AR)
                 {
                     isSupported = true;
                 }
@@ -1254,8 +1608,12 @@ namespace Babylon
             XRRigidTransform::Initialize(env);
             XRView::Initialize(env);
             XRViewerPose::Initialize(env);
+            XRPose::Initialize(env);
             XRReferenceSpace::Initialize(env);
             XRFrame::Initialize(env);
+            XRHitTestSource::Initialize(env);
+            XRHitTestResult::Initialize(env);
+            XRRay::Initialize(env);
             XRSession::Initialize(env);
             NativeWebXRRenderTarget::Initialize(env);
             NativeRenderTargetProvider::Initialize(env);

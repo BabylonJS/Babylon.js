@@ -249,8 +249,15 @@ namespace xr
             // Create the ARCore ArFrame (this gets reused each time we query for the latest frame)
             ArFrame_create(session, &frame);
 
-            // Create the ARCore ArPose (this gets reused for each frame as well)
-            ArPose_create(session, nullptr, &pose);
+            // Create the ARCore ArPose that tracks camera position
+            ArPose_create(session, nullptr, &cameraPose);
+
+            // Create the hit result list, and hit result.
+            ArHitResultList_create(session, &hitResultList);
+            ArHitResult_create(session, &hitResult);
+
+            // Create the ARCore ArPose that tracks the current hit test result
+            ArPose_create(session, nullptr, &hitResultPose);
 
             // Set the texture ID that should be used for the camera frame
             ArSession_setCameraTextureName(session, static_cast<uint32_t>(cameraTextureId));
@@ -269,7 +276,10 @@ namespace xr
 
         ~Impl()
         {
-            ArPose_destroy(pose);
+            ArPose_destroy(cameraPose);
+            ArPose_destroy(hitResultPose);
+            ArHitResult_destroy(hitResult);
+            ArHitResultList_destroy(hitResultList);
             ArFrame_destroy(frame);
             ArSession_destroy(session);
 
@@ -292,15 +302,15 @@ namespace xr
 
             {
                 // Get the current pose of the device
-                ArCamera_getDisplayOrientedPose(session, camera, pose);
+                ArCamera_getDisplayOrientedPose(session, camera, cameraPose);
 
                 // The raw pose is exactly 7 floats: 4 for the orientation quaternion, and 3 for the position vector
-                float rawPose[7];
-                ArPose_getPoseRaw(session, pose, rawPose);
+                float rawPose[7]{};
+                ArPose_getPoseRaw(session, cameraPose, rawPose);
 
                 // Set the orientation and position
-                ActiveFrameViews[0].Space.Orientation = {rawPose[0], rawPose[1], rawPose[2], rawPose[3]};
-                ActiveFrameViews[0].Space.Position = {rawPose[4], rawPose[5], rawPose[6]};
+                ActiveFrameViews[0].Space.Pose.Orientation = {rawPose[0], rawPose[1], rawPose[2], rawPose[3]};
+                ActiveFrameViews[0].Space.Pose.Position = {rawPose[4], rawPose[5], rawPose[6]};
             }
 
             // Get the current surface dimensions
@@ -450,6 +460,93 @@ namespace xr
             }
         }
 
+        void GetHitTestResults(std::vector<Pose>& filteredResults, xr::Ray offsetRay) const
+        {
+            ArCamera* camera{};
+            ArFrame_acquireCamera(session, frame, &camera);
+
+            // Get the tracking state
+            ArTrackingState trackingState{};
+            ArCamera_getTrackingState(session, camera, &trackingState);
+
+            // If not tracking, back out and return.
+            if (trackingState != ArTrackingState::AR_TRACKING_STATE_TRACKING)
+            {
+                return;
+            }
+
+            // Push the camera orientation into a glm quaternion.
+            glm::quat cameraOrientationQuaternion
+            {
+                ActiveFrameViews[0].Space.Pose.Orientation.W,
+                ActiveFrameViews[0].Space.Pose.Orientation.X,
+                ActiveFrameViews[0].Space.Pose.Orientation.Y,
+                ActiveFrameViews[0].Space.Pose.Orientation.Z
+            };
+
+            // Pull out the direction from the offset ray into a GLM Vector3.
+            glm::vec3 direction{ offsetRay.Direction.X, offsetRay.Direction.Y, offsetRay.Direction.Z };
+
+            // Multiply the camera rotation quaternion by the direction vector to calculate the direction vector in viewer space.
+            glm::vec3 cameraOrientedDirection{cameraOrientationQuaternion * glm::normalize(direction)};
+            float cameraOrientedDirectionArray[3]{ cameraOrientedDirection.x, cameraOrientedDirection.y, cameraOrientedDirection.z };
+
+            // Convert the origin to camera space by multiplying the origin by the rotation quaternion, then adding that to the
+            // position of the camera.
+            glm::vec3 offsetOrigin{ offsetRay.Origin.X, offsetRay.Origin.Y, offsetRay.Origin.Z };
+            offsetOrigin = cameraOrientationQuaternion * offsetOrigin;
+
+            // Pull out the origin composited from the offsetRay and camera position into a float array.
+            float hitTestOrigin[3]
+            {
+                ActiveFrameViews[0].Space.Pose.Position.X + offsetOrigin.x,
+                ActiveFrameViews[0].Space.Pose.Position.Y + offsetOrigin.y,
+                ActiveFrameViews[0].Space.Pose.Position.Z + offsetOrigin.z
+            };
+
+            // Perform a hit test and process the results.
+            ArFrame_hitTestRay(session, frame, hitTestOrigin, cameraOrientedDirectionArray, hitResultList);
+
+            // Iterate over the results and pull out only those that match the desired TrackableType.  For now we are limiting results to
+            // just hits against the Plane, and further scoping that to Poses that are contained in the polygon of the detected mesh.
+            // This is equivalent to XRHitTestTrackableType.mesh (https://immersive-web.github.io/hit-test/#hit-test-trackable-type-enum).
+            int32_t size{};
+            ArHitResultList_getSize(session, hitResultList, &size);
+            for (int i = 0; i < size; i++)
+            {
+                ArTrackableType trackableType{};
+                ArTrackable* trackable;
+
+                ArHitResultList_getItem(session, hitResultList, i, hitResult);
+                ArHitResult_acquireTrackable(session, hitResult, &trackable);
+                ArTrackable_getType(session, trackable, &trackableType);
+                if (trackableType == AR_TRACKABLE_PLANE)
+                {
+                    int32_t isPoseInPolygon{};
+                    ArHitResult_getHitPose(session, hitResult, hitResultPose);
+                    ArPlane_isPoseInPolygon(session, (ArPlane*) trackable, hitResultPose, &isPoseInPolygon);
+
+                    if (isPoseInPolygon != 0)
+                    {
+                        float rawPose[7]{};
+                        ArPose_getPoseRaw(session, hitResultPose, rawPose);
+                        Pose pose{};
+                        pose.Orientation.X = rawPose[0];
+                        pose.Orientation.Y = rawPose[1];
+                        pose.Orientation.Z = rawPose[2];
+                        pose.Orientation.W = rawPose[3];
+                        pose.Position.X = rawPose[4];
+                        pose.Position.Y = rawPose[5];
+                        pose.Position.Z = rawPose[6];
+
+                        filteredResults.push_back(pose);
+                    }
+                }
+
+                ArTrackable_release(trackable);
+            }
+        }
+
     private:
         bool sessionEnded{false};
 
@@ -458,7 +555,10 @@ namespace xr
 
         ArSession* session{};
         ArFrame* frame{};
-        ArPose* pose{};
+        ArPose* cameraPose{};
+        ArPose* hitResultPose{};
+        ArHitResultList* hitResultList{};
+        ArHitResult* hitResult{};
 
         float CameraFrameUVs[VERTEX_COUNT * 2]{};
 
@@ -514,6 +614,11 @@ namespace xr
         , InputSources{ sessionImpl.InputSources}
         , m_impl{ std::make_unique<Session::Frame::Impl>(sessionImpl) }
     {
+    }
+
+    void System::Session::Frame::GetHitTestResults(std::vector<Pose>& filteredResults, xr::Ray offsetRay) const
+    {
+        m_impl->sessionImpl.GetHitTestResults(filteredResults, offsetRay);
     }
 
     System::Session::Frame::~Frame()

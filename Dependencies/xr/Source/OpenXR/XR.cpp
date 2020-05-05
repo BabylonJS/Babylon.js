@@ -621,13 +621,13 @@ namespace xr
 
                 // Populate the struct that consuming code will use for rendering.
                 auto& view = Views[idx];
-                view.Space.Position.X = renderResources.Views[idx].pose.position.x;
-                view.Space.Position.Y = renderResources.Views[idx].pose.position.y;
-                view.Space.Position.Z = renderResources.Views[idx].pose.position.z;
-                view.Space.Orientation.X = renderResources.Views[idx].pose.orientation.x;
-                view.Space.Orientation.Y = renderResources.Views[idx].pose.orientation.y;
-                view.Space.Orientation.Z = renderResources.Views[idx].pose.orientation.z;
-                view.Space.Orientation.W = renderResources.Views[idx].pose.orientation.w;
+                view.Space.Pose.Position.X = renderResources.Views[idx].pose.position.x;
+                view.Space.Pose.Position.Y = renderResources.Views[idx].pose.position.y;
+                view.Space.Pose.Position.Z = renderResources.Views[idx].pose.position.z;
+                view.Space.Pose.Orientation.X = renderResources.Views[idx].pose.orientation.x;
+                view.Space.Pose.Orientation.Y = renderResources.Views[idx].pose.orientation.y;
+                view.Space.Pose.Orientation.Z = renderResources.Views[idx].pose.orientation.z;
+                view.Space.Pose.Orientation.W = renderResources.Views[idx].pose.orientation.w;
                 view.FieldOfView.AngleUp = renderResources.Views[idx].fov.angleUp;
                 view.FieldOfView.AngleDown = renderResources.Views[idx].fov.angleDown;
                 view.FieldOfView.AngleLeft = renderResources.Views[idx].fov.angleLeft;
@@ -695,13 +695,13 @@ namespace xr
                     if (inputSource.TrackedThisFrame)
                     {
                         inputSource.Handedness = static_cast<InputSource::HandednessEnum>(idx);
-                        inputSource.GripSpace.Position.X = location.pose.position.x;
-                        inputSource.GripSpace.Position.Y = location.pose.position.y;
-                        inputSource.GripSpace.Position.Z = location.pose.position.z;
-                        inputSource.GripSpace.Orientation.X = location.pose.orientation.x;
-                        inputSource.GripSpace.Orientation.Y = location.pose.orientation.y;
-                        inputSource.GripSpace.Orientation.Z = location.pose.orientation.z;
-                        inputSource.GripSpace.Orientation.W = location.pose.orientation.w;
+                        inputSource.GripSpace.Pose.Position.X = location.pose.position.x;
+                        inputSource.GripSpace.Pose.Position.Y = location.pose.position.y;
+                        inputSource.GripSpace.Pose.Position.Z = location.pose.position.z;
+                        inputSource.GripSpace.Pose.Orientation.X = location.pose.orientation.x;
+                        inputSource.GripSpace.Pose.Orientation.Y = location.pose.orientation.y;
+                        inputSource.GripSpace.Pose.Orientation.Z = location.pose.orientation.z;
+                        inputSource.GripSpace.Pose.Orientation.W = location.pose.orientation.w;
                     }
                 }
 
@@ -722,17 +722,21 @@ namespace xr
                     if (inputSource.TrackedThisFrame)
                     {
                         inputSource.Handedness = static_cast<InputSource::HandednessEnum>(idx);
-                        inputSource.AimSpace.Position.X = location.pose.position.x;
-                        inputSource.AimSpace.Position.Y = location.pose.position.y;
-                        inputSource.AimSpace.Position.Z = location.pose.position.z;
-                        inputSource.AimSpace.Orientation.X = location.pose.orientation.x;
-                        inputSource.AimSpace.Orientation.Y = location.pose.orientation.y;
-                        inputSource.AimSpace.Orientation.Z = location.pose.orientation.z;
-                        inputSource.AimSpace.Orientation.W = location.pose.orientation.w;
+                        inputSource.AimSpace.Pose.Position.X = location.pose.position.x;
+                        inputSource.AimSpace.Pose.Position.Y = location.pose.position.y;
+                        inputSource.AimSpace.Pose.Position.Z = location.pose.position.z;
+                        inputSource.AimSpace.Pose.Orientation.X = location.pose.orientation.x;
+                        inputSource.AimSpace.Pose.Orientation.Y = location.pose.orientation.y;
+                        inputSource.AimSpace.Pose.Orientation.Z = location.pose.orientation.z;
+                        inputSource.AimSpace.Pose.Orientation.W = location.pose.orientation.w;
                     }
                 }
             }
         }
+    }
+
+    void System::Session::Frame::GetHitTestResults(std::vector<Pose>& filteredResults, Ray) const {
+        // Stubbed out for now, should be implemented if we want to support OpenXR based passthrough AR devices.
     }
 
     System::Session::Frame::~Frame()
