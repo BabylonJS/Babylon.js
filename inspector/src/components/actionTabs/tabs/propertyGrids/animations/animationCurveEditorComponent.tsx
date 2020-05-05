@@ -350,7 +350,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
     selectAnimation(animation: Animation) {
 
-        
         this.isAnimationPlaying();
 
         this._svgKeyframes = [];
