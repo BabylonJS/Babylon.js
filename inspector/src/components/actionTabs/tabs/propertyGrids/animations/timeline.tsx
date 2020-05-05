@@ -2,7 +2,7 @@
 import * as React from "react";
 import { IAnimationKey } from 'babylonjs/Animations/animationKey';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCaretRight, faCaretLeft, faStepBackward, faStepForward, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
+import { faCaretRight, faCaretLeft, faStepBackward, faStepForward } from "@fortawesome/free-solid-svg-icons";
 
 interface ITimelineProps {
    keyframes: IAnimationKey[];
