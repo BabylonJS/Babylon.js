@@ -519,7 +519,7 @@ export class WebGPUEngine extends Engine {
     //------------------------------------------------------------------------------
     private _createBuffer(view: ArrayBufferView, flags: GPUBufferUsageFlags): DataBuffer {
         if (view.byteLength == 0) {
-            throw new Error("Unable to create WebGPU buffer"); // Zero size buffer would kill the tab in chrome
+            throw new Error("Unable to create WebGPU buffer: cannot create zero-sized buffer"); // Zero size buffer would kill the tab in chrome
         }
         const padding = view.byteLength % 4;
 
@@ -580,7 +580,7 @@ export class WebGPUEngine extends Engine {
             for (let offset = 0; offset < src.byteLength; offset += this._maxBufferChunk) {
                 const uploadCount = Math.min(src.byteLength - offset, this._maxBufferChunk);
                 if (uploadCount == 0) {
-                    throw new Error("Unable to create WebGPU buffer"); // Zero size buffer would kill the tab in chrome
+                    throw new Error("Cannot create zero-sized buffer"); // Zero size buffer would kill the tab in chrome
                 }
                 const [uploadBuffer, uploadMapping] = this._device.createBufferMapped({
                     usage: WebGPUConstants.GPUBufferUsage_TRANSFER_SRC,
@@ -596,7 +596,7 @@ export class WebGPUEngine extends Engine {
             }
             this._device.defaultQueue.submit([commandEncoder.finish()]);
         } catch (e) {
-            Logger.Error(e);
+            Logger.Error('Unable to update WebGPU buffer: ' + e);
         } finally {
             tempBuffers.forEach((buff) => buff.destroy());
         }
