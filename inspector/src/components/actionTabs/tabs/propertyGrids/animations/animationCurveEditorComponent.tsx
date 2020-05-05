@@ -74,8 +74,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
     addKeyFrame(event: React.MouseEvent<SVGSVGElement>){
 
-        
-
         event.preventDefault();
 
         if (event.button === 2){
@@ -107,8 +105,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         if (cursorpt.y > middle){
             keyValue = 1 - ((100/cursorpt.y) * .1)
         }
-
-
 
         keys.push({ frame: cursorpt.x, value: keyValue });
 
