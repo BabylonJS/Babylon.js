@@ -18,7 +18,8 @@ export class NodePort {
     protected _globalState: GlobalState;
     protected _portLabelElement: Element;
     protected _onCandidateLinkMovedObserver: Nullable<Observer<Nullable<Vector2>>>;
-    protected _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;  
+    protected _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;
+    protected _exposedOnFrame: boolean;
     
     public delegatedPort: Nullable<FrameNodePort> = null;
 
@@ -31,7 +32,11 @@ export class NodePort {
     }
 
     public get portName(){
-        return this.connectionPoint.displayName || this.connectionPoint.name;
+        let portName = this.connectionPoint.displayName || this.connectionPoint.name;
+        if (this.connectionPoint.ownerBlock.isInput) {
+            portName = this.node.name;
+        }
+        return portName
     }
 
     public set portName(newName: string){
@@ -41,8 +46,50 @@ export class NodePort {
         }
     }
 
+    public get disabled() {
+        if (!this.connectionPoint.isConnected) {
+            return false;
+        } else if (this._isConnectedToNodeOutsideOfFrame()) { //connected to outside node
+            return true;
+        } else {
+            const link = this.node.getLinksForConnectionPoint(this.connectionPoint)
+            if (link.length){
+                if (link[0].nodeB === this.node) { // check if this node is the receiving
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public hasLabel(){
         return !!this._portLabelElement;
+    }
+
+    public get exposedOnFrame() {
+        if(!!this._exposedOnFrame || this._isConnectedToNodeOutsideOfFrame()) {
+            return true
+        } return false;
+    }
+
+    public set exposedOnFrame(value: boolean) {
+        if(this.disabled){
+            return;
+        }
+        this._exposedOnFrame = value;
+    }
+    
+    
+    private _isConnectedToNodeOutsideOfFrame() {
+        const link = this.node.getLinksForConnectionPoint(this.connectionPoint)
+        if (link.length){
+            for(let i = 0; i < link.length; i++){
+                if (link[i].nodeA.enclosingFrameId !== link[i].nodeB!.enclosingFrameId) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public refresh() {
@@ -65,6 +112,9 @@ export class NodePort {
                 break;
             case NodeMaterialBlockConnectionPointTypes.Matrix:
                 this._img.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMSAyMSI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiNmZmY7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5NYXRyaXg8L3RpdGxlPjxnIGlkPSJMYXllcl81IiBkYXRhLW5hbWU9IkxheWVyIDUiPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsNi4xMVY5LjVoMy4zOUE0LjUxLDQuNTEsMCwwLDAsMTEuNSw2LjExWiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsMTQuODlhNC41MSw0LjUxLDAsMCwwLDMuMzktMy4zOUgxMS41WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsMy4wN3YyQTUuNTQsNS41NCwwLDAsMSwxNS45Miw5LjVoMkE3LjUxLDcuNTEsMCwwLDAsMTEuNSwzLjA3WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTE1LjkyLDExLjVhNS41NCw1LjU0LDAsMCwxLTQuNDIsNC40MnYyYTcuNTEsNy41MSwwLDAsMCw2LjQzLTYuNDNaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNNS4wOCwxMS41aC0yQTcuNTEsNy41MSwwLDAsMCw5LjUsMTcuOTN2LTJBNS41NCw1LjU0LDAsMCwxLDUuMDgsMTEuNVoiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik05LjUsMy4wN0E3LjUxLDcuNTEsMCwwLDAsMy4wNyw5LjVoMkE1LjU0LDUuNTQsMCwwLDEsOS41LDUuMDhaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNOS41LDExLjVINi4xMUE0LjUxLDQuNTEsMCwwLDAsOS41LDE0Ljg5WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTkuNSw2LjExQTQuNTEsNC41MSwwLDAsMCw2LjExLDkuNUg5LjVaIi8+PC9nPjwvc3ZnPg==";
+                break;
+            case NodeMaterialBlockConnectionPointTypes.Object:
+                this._img.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMSAyMSI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiNmZmY7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5WZWN0b3IxPC90aXRsZT48ZyBpZD0iTGF5ZXJfNSIgZGF0YS1uYW1lPSJMYXllciA1Ij48Y2lyY2xlIGNsYXNzPSJjbHMtMSIgY3g9IjEwLjUiIGN5PSIxMC41IiByPSI3LjUiLz48L2c+PC9zdmc+";
                 break;
         }
     }

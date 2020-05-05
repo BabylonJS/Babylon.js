@@ -38,6 +38,10 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         this.state = { value: this._getValue(props) };
     }
 
+    setValue(value: string | number) {
+        this.setState({ value: value });
+    }
+
     shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: { value: number }) {
         if (this._localChange) {
             this._localChange = false;

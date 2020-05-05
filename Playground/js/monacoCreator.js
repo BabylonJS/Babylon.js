@@ -21,6 +21,7 @@ class MonacoCreator {
         this.blockEditorChange = false;
         this.definitionWorker = null;
         this.deprecatedCandidates = [];
+        this.templates = [];
 
         this.compilerTriggerTimeoutID = null;
 
@@ -113,6 +114,12 @@ class MonacoCreator {
 
         this.setupDefinitionWorker(libContent);
 
+        // Load code templates
+        response = await fetch("/templates.json");
+        if (response.ok) {
+            this.templates = await response.json();
+        }
+
         // WARNING !!! We need the 'dev' version of Monaco, as we use monkey-patching to hook into the suggestion adapter
         require.config({
             paths: {
@@ -126,6 +133,13 @@ class MonacoCreator {
 
             // This is used for a vscode-like color preview for ColorX types
             this.setupMonacoColorProvider();
+
+            // enhance templates with extra properties
+            for (const template of this.templates) {
+                template.kind = monaco.languages.CompletionItemKind.Snippet,
+                template.sortText = "!" + template.label; // make sure templates are on top of the completion window
+                template.insertTextRules = monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet;
+            }
 
             // As explained above, we need the 'dev' version of Monaco to access this adapter!
             require(['vs/language/typescript/languageFeatures'], module => {
@@ -286,6 +300,17 @@ class MonacoCreator {
                     if (owner.isDeprecatedEntry(details)) {
                         suggestion.tags = [monaco.languages.CompletionItemTag.Deprecated];
                     }
+                }
+            }
+
+            // add our own templates when invoked without context
+            if (context.triggerKind == monaco.languages.CompletionTriggerKind.Invoke) {
+                for (const template of owner.templates) {
+                    if (template.language && owner.monacoMode != template.language)
+                        continue;
+
+                    template.range = undefined;
+                    suggestions.push(template);
                 }
             }
 
