@@ -17233,9 +17233,10 @@ declare module BABYLON {
         /**
          * Returns a new Light object, named "name", from the current one.
          * @param name The name of the cloned light
+         * @param newParent The parent of this light, if it has one
          * @returns the new created light
          */
-        clone(name: string): Nullable<Light>;
+        clone(name: string, newParent?: Nullable<Node>): Nullable<Light>;
         /**
          * Serializes the current light into a Serialization object.
          * @returns the serialized object.

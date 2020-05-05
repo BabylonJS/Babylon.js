@@ -511,14 +511,55 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IAnchorSvgPointProps {
+        point: BABYLON.Vector2;
+        anchor: BABYLON.Vector2;
+    }
+    export class AnchorSvgPoint extends React.Component<IAnchorSvgPointProps> {
+        constructor(props: IAnchorSvgPointProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IKeyframeSvgPointProps {
+        point: BABYLON.Vector2;
+    }
+    export class KeyframeSvgPoint extends React.Component<IKeyframeSvgPointProps> {
+        constructor(props: IKeyframeSvgPointProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface IAnimationCurveEditorComponentProps {
         close: (event: any) => void;
         title: string;
+        animations: BABYLON.Animation[];
+        entityName: string;
     }
     export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, {
         isOpen: boolean;
+        selected: BABYLON.Animation;
+        currentPathData: string | undefined;
+        anchorPoints: {
+            point: BABYLON.Vector2;
+            anchor: BABYLON.Vector2;
+        }[] | null;
+        keyframes: BABYLON.Vector2[] | null;
     }> {
+        private _anchorPoints;
+        private _keyframes;
         constructor(props: IAnimationCurveEditorComponentProps);
+        getAnimationProperties(animation: BABYLON.Animation): {
+            easingType: string | undefined;
+            easingMode: number | undefined;
+        };
+        getPathData(animation: BABYLON.Animation): string;
+        curvePath(keyframes: BABYLON.IAnimationKey[], data: string, heightScale: number, middle: number, easingFunction: BABYLON.EasingFunction): string;
+        linearInterpolation(keyframes: BABYLON.IAnimationKey[], data: string, heightScale: number, middle: number): string;
+        setAnchorPoint(point: BABYLON.Vector2, anchor: BABYLON.Vector2): void;
+        setKeyframePoint(point: BABYLON.Vector2): void;
+        selectAnimation(animation: BABYLON.Animation): void;
+        interpolateControlPoints(p0: BABYLON.Vector2, p1: BABYLON.Vector2, u: number, p2: BABYLON.Vector2, v: number, p3: BABYLON.Vector2): BABYLON.Vector2[] | undefined;
         render(): JSX.Element;
     }
 }
