@@ -160,7 +160,6 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
             }
         }
 
-
         let animations = animatable.animations;
 
         return (
@@ -204,7 +203,14 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                                     onOpen={(window: Window) => { window.console.log("Window opened!!") }}
                                     onClose={(window: Window) => this.onCloseAnimationCurveEditor(window)}>
 
-                                    <AnimationCurveEditorComponent title="Animations Curve Editor" scene={this.props.scene} entity={animatableAsAny} entityName={animatableAsAny.id} close={(event) => this.onCloseAnimationCurveEditor(event.view)} animations={animations}/>
+                                    <AnimationCurveEditorComponent 
+                                        title="Animations Curve Editor" 
+                                        scene={this.props.scene} 
+                                        entity={animatableAsAny} 
+                                        entityName={animatableAsAny.id} 
+                                        close={(event) => this.onCloseAnimationCurveEditor(event.view)} 
+                                        playOrPause={() => this.playOrPause()}
+                                        animations={animations} />
                                 </PopupComponent>
                             }
                         </LineContainerComponent>
@@ -249,5 +255,4 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
             </div>
         );
     }
-
 }
