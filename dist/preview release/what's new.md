@@ -142,6 +142,7 @@
 - Fixed delay calculation in Animatable.goToFrame when speedRatio != 1 ([Reimund Järnfors](https://github.com/reimund))
 - Fix bug in PBR when translucency is enabled and an irradiance texture is provided ([Popov72](https://github.com/Popov72))
 - Fix bug in PBR with translucency when irradiance texture is 2D ([Popov72](https://github.com/Popov72))
+- Fix parenting and enabled state of cloned lights ([cedricguillemet](https://github.com/cedricguillemet))
 - Fix bug in PBR when specific combinations of parameters are used ([Popov72](https://github.com/Popov72))
 - Fix texture being inverted on the Y axis by default when using TextureAsset or AssetManager ([broederj](https://github.com/broederj))
 - Fix `TexturePacker` cross-origin image requests, fix falsy default options ([ludevik](https://github.com/ludevik))
