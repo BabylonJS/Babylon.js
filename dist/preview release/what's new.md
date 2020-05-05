@@ -5,6 +5,7 @@
 - Added particle editor to the Inspector ([Deltakosh](https://github.com/deltakosh))
 - Added the `ShadowDepthWrapper` class to support accurate shadow generation for custom as well as node material shaders. [Doc](https://doc.babylonjs.com/babylon101/shadows#custom-shadow-map-shaders) ([Popov72](https://github.com/Popov72))
 - Added Babylon.js Texture [tools](https://www.babylonjs.com/tools/ibl) to prefilter HDR files ([Sebavan](https://github.com/sebavan/))
+- Added editing of PBR materials and Post processes in the node material editor ([Popov72](https://github.com/Popov72))
 
 ## Updates
 
@@ -41,6 +42,7 @@
 - Added right click options to create PBR and Standard Materials ([Deltakosh](https://github.com/deltakosh))
 - Added support for recording GIF ([Deltakosh](https://github.com/deltakosh))
 - Popup Window available (To be used in Curve Editor) ([pixelspace](https://github.com/devpixelspace))
+- Curve Editor to view current entity's animations (Read only) ([pixelspace](https://github.com/devpixelspace))
 - Add support to update inspector when switching to new scene ([belfortk](https://github.com/belfortk))
 
 ### Cameras
@@ -143,6 +145,7 @@
 - Fixed delay calculation in Animatable.goToFrame when speedRatio != 1 ([Reimund Järnfors](https://github.com/reimund))
 - Fix bug in PBR when translucency is enabled and an irradiance texture is provided ([Popov72](https://github.com/Popov72))
 - Fix bug in PBR with translucency when irradiance texture is 2D ([Popov72](https://github.com/Popov72))
+- Fix parenting and enabled state of cloned lights ([cedricguillemet](https://github.com/cedricguillemet))
 - Fix bug in PBR when specific combinations of parameters are used ([Popov72](https://github.com/Popov72))
 - Fix texture being inverted on the Y axis by default when using TextureAsset or AssetManager ([broederj](https://github.com/broederj))
 - Fix `TexturePacker` cross-origin image requests, fix falsy default options ([ludevik](https://github.com/ludevik))
@@ -167,6 +170,7 @@
 - Fix an error in applying texture to sides of `extrudePolygon` using faceUV[1] ([JohnK](https://github.com/BabylonJSGuide/))
 - Playground didn't work if query params were added to the URL ([RaananW](https://github.com/RaananW))
 - Fixed Path3D `_distances` / length computation ([Poolminer](https://github.com/Poolminer))
+- Make sure bone matrices are up to date when calling `TransformNode.attachToBone` ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 

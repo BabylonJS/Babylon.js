@@ -242,6 +242,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
         NodeMaterial.ParseFromSnippetAsync(snippedID, scene, "", material).then(() => {
             material.build();
+            this.changeMode(this.props.globalState.nodeMaterial!.mode, true, false);
             this.props.globalState.onResetRequiredObservable.notifyObservers();
         }).catch((err) => {
             alert("Unable to load your node material: " + err);

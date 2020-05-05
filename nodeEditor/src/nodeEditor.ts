@@ -44,6 +44,7 @@ export class NodeEditor {
         
         let globalState = new GlobalState();
         globalState.nodeMaterial = options.nodeMaterial;
+        globalState.mode = options.nodeMaterial.mode;
         globalState.hostElement = hostElement;
         globalState.hostDocument = hostElement.ownerDocument!;
         globalState.customSave = options.customSave;

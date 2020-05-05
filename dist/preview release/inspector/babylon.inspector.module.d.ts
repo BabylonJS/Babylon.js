@@ -579,16 +579,65 @@ declare module "babylonjs-inspector/components/actionTabs/lines/floatLineCompone
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/anchorSvgPoint" {
+    import * as React from "react";
+    import { Vector2 } from 'babylonjs/Maths/math.vector';
+    interface IAnchorSvgPointProps {
+        point: Vector2;
+        anchor: Vector2;
+    }
+    export class AnchorSvgPoint extends React.Component<IAnchorSvgPointProps> {
+        constructor(props: IAnchorSvgPointProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/keyframeSvgPoint" {
+    import * as React from "react";
+    import { Vector2 } from 'babylonjs/Maths/math.vector';
+    interface IKeyframeSvgPointProps {
+        point: Vector2;
+    }
+    export class KeyframeSvgPoint extends React.Component<IKeyframeSvgPointProps> {
+        constructor(props: IKeyframeSvgPointProps);
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/animationCurveEditorComponent" {
     import * as React from "react";
+    import { Animation } from 'babylonjs/Animations/animation';
+    import { Vector2 } from 'babylonjs/Maths/math.vector';
+    import { EasingFunction } from 'babylonjs/Animations/easing';
+    import { IAnimationKey } from 'babylonjs/Animations/animationKey';
     interface IAnimationCurveEditorComponentProps {
         close: (event: any) => void;
         title: string;
+        animations: Animation[];
+        entityName: string;
     }
     export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, {
         isOpen: boolean;
+        selected: Animation;
+        currentPathData: string | undefined;
+        anchorPoints: {
+            point: Vector2;
+            anchor: Vector2;
+        }[] | null;
+        keyframes: Vector2[] | null;
     }> {
+        private _anchorPoints;
+        private _keyframes;
         constructor(props: IAnimationCurveEditorComponentProps);
+        getAnimationProperties(animation: Animation): {
+            easingType: string | undefined;
+            easingMode: number | undefined;
+        };
+        getPathData(animation: Animation): string;
+        curvePath(keyframes: IAnimationKey[], data: string, heightScale: number, middle: number, easingFunction: EasingFunction): string;
+        linearInterpolation(keyframes: IAnimationKey[], data: string, heightScale: number, middle: number): string;
+        setAnchorPoint(point: Vector2, anchor: Vector2): void;
+        setKeyframePoint(point: Vector2): void;
+        selectAnimation(animation: Animation): void;
+        interpolateControlPoints(p0: Vector2, p1: Vector2, u: number, p2: Vector2, v: number, p3: Vector2): Vector2[] | undefined;
         render(): JSX.Element;
     }
 }
@@ -3331,14 +3380,55 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IAnchorSvgPointProps {
+        point: BABYLON.Vector2;
+        anchor: BABYLON.Vector2;
+    }
+    export class AnchorSvgPoint extends React.Component<IAnchorSvgPointProps> {
+        constructor(props: IAnchorSvgPointProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IKeyframeSvgPointProps {
+        point: BABYLON.Vector2;
+    }
+    export class KeyframeSvgPoint extends React.Component<IKeyframeSvgPointProps> {
+        constructor(props: IKeyframeSvgPointProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface IAnimationCurveEditorComponentProps {
         close: (event: any) => void;
         title: string;
+        animations: BABYLON.Animation[];
+        entityName: string;
     }
     export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, {
         isOpen: boolean;
+        selected: BABYLON.Animation;
+        currentPathData: string | undefined;
+        anchorPoints: {
+            point: BABYLON.Vector2;
+            anchor: BABYLON.Vector2;
+        }[] | null;
+        keyframes: BABYLON.Vector2[] | null;
     }> {
+        private _anchorPoints;
+        private _keyframes;
         constructor(props: IAnimationCurveEditorComponentProps);
+        getAnimationProperties(animation: BABYLON.Animation): {
+            easingType: string | undefined;
+            easingMode: number | undefined;
+        };
+        getPathData(animation: BABYLON.Animation): string;
+        curvePath(keyframes: BABYLON.IAnimationKey[], data: string, heightScale: number, middle: number, easingFunction: BABYLON.EasingFunction): string;
+        linearInterpolation(keyframes: BABYLON.IAnimationKey[], data: string, heightScale: number, middle: number): string;
+        setAnchorPoint(point: BABYLON.Vector2, anchor: BABYLON.Vector2): void;
+        setKeyframePoint(point: BABYLON.Vector2): void;
+        selectAnimation(animation: BABYLON.Animation): void;
+        interpolateControlPoints(p0: BABYLON.Vector2, p1: BABYLON.Vector2, u: number, p2: BABYLON.Vector2, v: number, p3: BABYLON.Vector2): BABYLON.Vector2[] | undefined;
         render(): JSX.Element;
     }
 }
