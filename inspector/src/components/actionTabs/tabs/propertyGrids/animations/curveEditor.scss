@@ -26,11 +26,68 @@
         display: flex;
         align-items: flex-start;
         justify-content: flex-start;
+        flex-direction: column;
+
+        .row {
+            display: flex;
+            align-items: stretch;
+            justify-content: flex-start;
+            flex-direction: row;
+            width: 100vw;
+
+            .timeline{
+                width: 100vw;
+                background: gray;
+                display: flex;
+                align-items: center;
+                justify-content: stretch;
+                height: 2.5rem;
+
+                .display-line {
+                    width: 80vw;
+                    height: 2em;
+                    overflow: hidden;
+                    overflow-x: scroll;
+                    scrollbar-color: cornflowerblue slategrey;
+                    scrollbar-width: thin;
+                    margin-right: 2em;
+
+                    &::-webkit-scrollbar{
+                        height: 0.4em;
+                    }
+
+                    &::-webkit-scrollbar-track {
+                        box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+                      }
+                       
+                    &::-webkit-scrollbar-thumb {
+                        background-color: cornflowerblue;
+                        outline: 1px solid slategrey;
+                      }
+                }
+
+                .controls {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    width: 8em;
+
+                    .input-frame input {
+                        width: 3em;
+                    }
+
+                    .button {
+                        margin-left: 0.5em;
+                        margin-right: 0.5em;
+                    }
+                }
+            }
+        }
 
         .animation-list{
             padding: 1.5rem;
             background: lightgrey;
-            height: 100vh;
+            // height: 100vh;
             ul {
                 list-style:none;
                 padding-left: 0px;
