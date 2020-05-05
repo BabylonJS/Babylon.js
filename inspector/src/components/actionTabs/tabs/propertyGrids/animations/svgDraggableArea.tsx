@@ -101,7 +101,6 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
     render() {
         return (
         <>
-        
             <svg className="linear" style={{border: '1px solid black'}} ref={this._draggableArea} 
             
             onMouseMove={(e) => this.drag(e)}  
@@ -117,16 +116,10 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
             viewBox="0 0 100 100" preserveAspectRatio="none">
 
                 {this.props.children}
-
-
                 { this.props.keyframeSvgPoints.map((keyframe, i) => 
-
                     <KeyframeSvgPoint key={i} id={i.toString()} keyframePoint={keyframe.keyframePoint} leftControlPoint={keyframe.leftControlPoint} rightControlPoint={keyframe.rightControlPoint}/>
-                    
                 )}
-
-
-        </svg>
+            </svg>
         </>)
     }
 
