@@ -12,6 +12,7 @@ export class DeviceSource<T extends DeviceType> {
     /**
      * Observable to handle device input changes per device
      */
+    public onInputChangedObservable = new Observable<{ inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number> }>();
     private _deviceInputSystem: DeviceInputSystem;
     private _touchPoints: Array<string>;
 
@@ -22,7 +23,13 @@ export class DeviceSource<T extends DeviceType> {
      * @param deviceType Type of device
      * @param deviceSlot "Slot" or index that device is referenced in
      */
-    constructor(deviceInputSystem: DeviceInputSystem, public deviceName: string, public deviceType: DeviceInputs<T>, public deviceSlot: number = 0) {
+    constructor(deviceInputSystem: DeviceInputSystem,
+        /** Name of device to be used by DeviceInputSystem */
+        public deviceName: string,
+        /** Type of device */
+        public deviceType: DeviceInputs<T>,
+        /** "Slot" or index that device is referenced in */
+        public deviceSlot: number = 0) {
         this._deviceInputSystem = deviceInputSystem;
 
         if (deviceType == DeviceType.Touch) {
@@ -32,7 +39,7 @@ export class DeviceSource<T extends DeviceType> {
 
     /**
      * Get input for specific input
-     * @param inputIndex
+     * @param inputIndex index of specific input on device
      * @returns Input value from DeviceInputSystem
      */
     public getInput(inputIndex: T): Nullable<number> {
@@ -49,7 +56,7 @@ export class DeviceSource<T extends DeviceType> {
      */
     public addTouchPoints(name: string) {
         if (this.deviceType == DeviceType.Touch) {
-            this._touchPoints.push(name)
+            this._touchPoints.push(name);
         }
     }
 
@@ -97,9 +104,10 @@ export class DeviceSourceManager implements IDisposable {
 
     /**
      * Default Constructor
-     * @param engine - engine to pull input element from
+     * @param engine engine to pull input element from
+     * @param enableObserveEvents boolean to enable use of observe events
      */
-    constructor(engine: Engine) {
+    constructor(engine: Engine, enableObserveEvents: boolean = false) {
         const numberOfDeviceTypes = Object.keys(DeviceType).length / 2;
         this._devices = new Array<Array<DeviceSource<DeviceType>>>(numberOfDeviceTypes);
         this._firstDevice = new Array<number>(numberOfDeviceTypes);
@@ -121,6 +129,17 @@ export class DeviceSourceManager implements IDisposable {
             this._removeDevice(deviceName);
             this.onAfterDeviceDisconnectedObservable.notifyObservers({ deviceType, deviceSlot });
         };
+
+        if (!this._deviceInputSystem.observeInput && enableObserveEvents) {
+            this._deviceInputSystem.observeInput = (deviceName, inputIndex, previousState, currentState) => {
+                const deviceType = this._getDeviceTypeFromName(deviceName);
+                const deviceSlot = this._getDeviceSlot(deviceName);
+
+                if (deviceType == DeviceType.Keyboard || deviceType == DeviceType.Mouse || deviceType == DeviceType.Touch) {
+                    this.getDeviceSource(deviceType, deviceSlot)?.onInputChangedObservable.notifyObservers({ inputIndex, previousState, currentState });
+                }
+            };
+        }
     }
 
     // Public Functions
@@ -132,11 +151,34 @@ export class DeviceSourceManager implements IDisposable {
      * @returns Current value of input
      */
     public getInput<T extends DeviceType>(type: T, inputIndex: DeviceInputs<T>, deviceSlot: number = this._firstDevice[type]): Nullable<number> {
-        if (!this._devices[type] || this._firstDevice[type] === undefined) {
+        if (!this._devices[type] || this._firstDevice[type] === undefined || this._devices[type][deviceSlot] === undefined) {
             return null;
         }
 
         return this._devices[type][deviceSlot].getInput(inputIndex);
+    }
+
+    /**
+     * Gets a DeviceSource, given a type and slot
+     * @param deviceType Enum specifiying device type
+     * @param deviceSlot "Slot" or index that device is referenced in
+     * @returns DeviceSource object
+     */
+    public getDeviceSource(deviceType: DeviceType, deviceSlot: number = this._firstDevice[deviceType]): Nullable<DeviceSource<DeviceType>> {
+        if (!this._devices[deviceType] || this._firstDevice[deviceType] === undefined || this._devices[deviceType][deviceSlot] === undefined) {
+            return null;
+        }
+
+        return this._devices[deviceType][deviceSlot];
+    }
+
+    /**
+     * Gets an array of DeviceSource objects for a given device type
+     * @param deviceType Enum specifiying device type
+     * @returns Array of DeviceSource objects
+     */
+    public getDeviceSources(deviceType: DeviceType): ReadonlyArray<DeviceSource<DeviceType>> {
+        return this._devices[deviceType];
     }
 
     /**

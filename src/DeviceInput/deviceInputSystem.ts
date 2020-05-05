@@ -35,12 +35,17 @@ export class DeviceInputSystem implements IDisposable {
     /**
      * Callback to be triggered when a device is connected
      */
-    public onDeviceConnected = (deviceName: string) => {};
+    public onDeviceConnected: (deviceName: string) => void;
 
     /**
      * Callback to be triggered when a device is disconnected
      */
-    public onDeviceDisconnected = (deviceName: string) => {};
+    public onDeviceDisconnected: (deviceName: string) => void;
+
+    /**
+     * Callback to be triggered when event driven input is updated
+     */
+    public observeInput: (deviceName: string, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>) => void;
 
     // Private Members
     private _inputs: { [key: string]: Array<Nullable<number>> } = {};
@@ -163,7 +168,9 @@ export class DeviceInputSystem implements IDisposable {
 
             const kbKey = this._inputs[KEYBOARD_DEVICE];
             if (kbKey) {
-                //this.observeInput(KEYBOARD_DEVICE, evt.keyCode, kbKey[evt.keyCode], 1);
+                if (this.observeInput) {
+                    this.observeInput(KEYBOARD_DEVICE, evt.keyCode, kbKey[evt.keyCode], 1);
+                }
                 kbKey[evt.keyCode] = 1;
             }
         });
@@ -171,7 +178,9 @@ export class DeviceInputSystem implements IDisposable {
         this._keyboardUpEvent = ((evt) => {
             const kbKey = this._inputs[KEYBOARD_DEVICE];
             if (kbKey) {
-                //this.observeInput(KEYBOARD_DEVICE, evt.keyCode, kbKey[evt.keyCode], 0);
+                if (this.observeInput) {
+                    this.observeInput(KEYBOARD_DEVICE, evt.keyCode, kbKey[evt.keyCode], 0);
+                }
                 kbKey[evt.keyCode] = 0;
             }
         });
@@ -194,8 +203,10 @@ export class DeviceInputSystem implements IDisposable {
 
             const pointer = this._inputs[deviceName];
             if (pointer) {
-                //this.observeInput(deviceName, 0, pointer[0], evt.clientX);
-                //this.observeInput(deviceName, 1, pointer[1], evt.clientY);
+                if (this.observeInput) {
+                    this.observeInput(deviceName, 0, pointer[0], evt.clientX);
+                    this.observeInput(deviceName, 1, pointer[1], evt.clientY);
+                }
                 pointer[0] = evt.clientX;
                 pointer[1] = evt.clientY;
             }
@@ -211,9 +222,11 @@ export class DeviceInputSystem implements IDisposable {
 
             const pointer = this._inputs[deviceName];
             if (pointer) {
-                //this.observeInput(deviceName, 0, pointer[0], evt.clientX);
-                //this.observeInput(deviceName, 1, pointer[1], evt.clientY);
-                //this.observeInput(deviceName, evt.button + 2, pointer[evt.button + 2], 1);
+                if (this.observeInput) {
+                    this.observeInput(deviceName, 0, pointer[0], evt.clientX);
+                    this.observeInput(deviceName, 1, pointer[1], evt.clientY);
+                    this.observeInput(deviceName, evt.button + 2, pointer[evt.button + 2], 1);
+                }
                 pointer[0] = evt.clientX;
                 pointer[1] = evt.clientY;
                 pointer[evt.button + 2] = 1;
@@ -225,7 +238,9 @@ export class DeviceInputSystem implements IDisposable {
 
             const pointer = this._inputs[deviceName];
             if (pointer) {
-                //this.observeInput(deviceName, evt.button + 2, pointer[evt.button + 2], 0);
+                if (this.observeInput) {
+                    this.observeInput(deviceName, evt.button + 2, pointer[evt.button + 2], 0);
+                }
                 pointer[evt.button + 2] = 0;
             }
             if (evt.pointerType != "mouse") // Don't unregister the mouse
