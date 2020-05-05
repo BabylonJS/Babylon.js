@@ -56351,7 +56351,7 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
                 r: nextProps.value.r * 255,
                 g: nextProps.value.g * 255,
                 b: nextProps.value.b * 255,
-                a: nextProps instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"] ? nextProps.a * 100 : 100,
+                a: nextProps.value instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"] ? nextProps.value.a : 1,
             };
             nextState.hex = nextProps.value.toHexString();
         }

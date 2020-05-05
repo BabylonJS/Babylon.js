@@ -64,7 +64,7 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
                 r: nextProps.value.r * 255,
                 g: nextProps.value.g * 255,
                 b: nextProps.value.b * 255,
-                a: nextProps instanceof Color4 ? nextProps.a * 100 : 100,
+                a: nextProps.value instanceof Color4 ? nextProps.value.a : 1,
             };
             nextState.hex = nextProps.value.toHexString();
         }
