@@ -13,6 +13,7 @@ import { _TypeStore } from '../../../../Misc/typeStore';
 import { Color3, Color4 } from '../../../../Maths/math';
 import { AnimatedInputBlockTypes } from './animatedInputBlockTypes';
 import { Observable } from '../../../../Misc/observable';
+import { MaterialHelper } from '../../../../Materials/materialHelper';
 
 /**
  * Block used to expose an input value
@@ -94,6 +95,7 @@ export class InputBlock extends NodeMaterialBlock {
                         return this._type;
                     case "uv":
                     case "uv2":
+                    case "position2d":
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector2;
                         return this._type;
                     case "matricesIndices":
@@ -442,7 +444,7 @@ export class InputBlock extends NodeMaterialBlock {
 
         // Attribute
         if (this.isAttribute) {
-            this.associatedVariableName = this.name;
+            this.associatedVariableName = this.name === 'position2d' ? 'position' : this.name;
 
             if (this.target === NodeMaterialBlockTargets.Vertex && state._vertexState) { // Attribute for fragment need to be carried over by varyings
                 this._emit(state._vertexState, define);
@@ -507,7 +509,7 @@ export class InputBlock extends NodeMaterialBlock {
                     effect.setMatrix(variableName, scene.getTransformMatrix());
                     break;
                 case NodeMaterialSystemValues.CameraPosition:
-                    effect.setVector3(variableName, scene.activeCamera!.globalPosition);
+                    MaterialHelper.BindEyePosition(effect, scene, variableName);
                     break;
                 case NodeMaterialSystemValues.FogColor:
                     effect.setColor3(variableName, scene.fogColor);

@@ -417,6 +417,11 @@ export class Inspector {
         }
     }
 
+    public static _SetNewScene(scene: Scene) {
+        this._Scene = scene;
+        this._GlobalState.onNewSceneObservable.notifyObservers(scene);
+    }
+
     public static _CreateCanvasContainer(parentControl: HTMLElement) {
         // Create a container for previous elements
         this._NewCanvasContainer = parentControl.ownerDocument!.createElement("div");
