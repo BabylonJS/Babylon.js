@@ -201,13 +201,13 @@ export class DeviceSourceManager implements IDisposable {
             this._devices[deviceType] = new Array<DeviceSource<DeviceType>>();
 
             if (deviceType == DeviceType.Touch) {
-                this._devices[deviceType][deviceSlot] = new DeviceSource<DeviceType>(this._deviceInputSystem, POINTER_DEVICE, DeviceType.Touch, deviceSlot);
+                this._devices[deviceType][0] = new DeviceSource<DeviceType>(this._deviceInputSystem, POINTER_DEVICE, DeviceType.Touch, 0);
             }
         }
 
         // If device is a touch device, update only touch points.  Otherwise, add new device.
         if (deviceType == DeviceType.Touch) {
-            this._devices[deviceType][deviceSlot].addTouchPoints(deviceName);
+            this._devices[deviceType][0].addTouchPoints(deviceName);
         }
         else {
             this._devices[deviceType][deviceSlot] = new DeviceSource<DeviceType>(this._deviceInputSystem, deviceName, deviceType, deviceSlot);
@@ -225,7 +225,7 @@ export class DeviceSourceManager implements IDisposable {
         const deviceType = this._getDeviceTypeFromName(deviceName);
 
         if (deviceType == DeviceType.Touch) {
-            this._devices[deviceType][deviceSlot].removeTouchPoints(deviceName);
+            this._devices[deviceType][0].removeTouchPoints(deviceName);
         }
         else {
             delete this._devices[deviceType][deviceSlot];
