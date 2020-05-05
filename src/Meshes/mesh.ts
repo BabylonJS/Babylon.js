@@ -457,6 +457,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 Tags.AddTagsTo(this, Tags.GetTags(source, true));
             }
 
+            // Enabled
+            this.setEnabled(source.isEnabled());
+
             // Parent
             this.parent = source.parent;
 

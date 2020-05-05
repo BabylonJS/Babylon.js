@@ -200,11 +200,11 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                                 this._isCurveEditorOpen && <PopupComponent
                                     id="curve-editor"
                                     title="Curve Animation Editor"
-                                    size={{ width: 800, height: 600 }}
+                                    size={{ width: 950, height: 890 }}
                                     onOpen={(window: Window) => { window.console.log("Window opened!!") }}
                                     onClose={(window: Window) => this.onCloseAnimationCurveEditor(window)}>
 
-                                    <AnimationCurveEditorComponent title="Animations Curve Editor" close={(event) => this.onCloseAnimationCurveEditor(event.view)}/>
+                                    <AnimationCurveEditorComponent title="Animations Curve Editor" entityName={animatableAsAny.id} close={(event) => this.onCloseAnimationCurveEditor(event.view)} animations={animations}/>
                                 </PopupComponent>
                             }
                         </LineContainerComponent>
