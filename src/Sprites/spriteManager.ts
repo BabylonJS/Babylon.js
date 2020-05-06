@@ -140,7 +140,7 @@ export class SpriteManager implements ISpriteManager {
     /**
      * Gets or sets the unique id of the sprite
      */
-    public uniqueId: number;       
+    public uniqueId: number;
 
     /**
      * Gets the array of sprites
@@ -210,7 +210,6 @@ export class SpriteManager implements ISpriteManager {
         this._spriteTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
         this._spriteTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
 
-
         if (cellSize.width && cellSize.height) {
             this.cellWidth = cellSize.width;
             this.cellHeight = cellSize.height;
@@ -271,7 +270,7 @@ export class SpriteManager implements ISpriteManager {
         if (this._fromPacked) {
             this._makePacked(imgUrl, spriteJSON);
         }
-    } 
+    }
 
     /**
      * Returns the string "SpriteManager"
@@ -279,7 +278,7 @@ export class SpriteManager implements ISpriteManager {
      */
     public getClassName(): string {
         return "SpriteManager";
-    }    
+    }
 
     private _makePacked(imgUrl: string, spriteJSON: any) {
         if (spriteJSON !== null) {

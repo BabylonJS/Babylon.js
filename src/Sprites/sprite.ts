@@ -85,7 +85,7 @@ export class Sprite {
     /**
      * Gets or sets the unique id of the sprite
      */
-    public uniqueId: number;    
+    public uniqueId: number;
 
     /**
      * Creates a new Sprite
@@ -110,7 +110,7 @@ export class Sprite {
      */
     public getClassName(): string {
         return "Sprite";
-    }    
+    }
 
     /**
      * Starts an animation

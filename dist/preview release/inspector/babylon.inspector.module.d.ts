@@ -2248,6 +2248,42 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/par
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/sprites/spriteManagerPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { SpriteManager } from 'babylonjs/Sprites/spriteManager';
+    interface ISpriteManagerPropertyGridComponentProps {
+        globalState: GlobalState;
+        spriteManager: SpriteManager;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteManagerPropertyGridComponentProps> {
+        constructor(props: ISpriteManagerPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/sprites/spritePropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { Sprite } from 'babylonjs/Sprites/sprite';
+    interface ISpritePropertyGridComponentProps {
+        globalState: GlobalState;
+        sprite: Sprite;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class SpritePropertyGridComponent extends React.Component<ISpritePropertyGridComponentProps> {
+        constructor(props: ISpritePropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGridTabComponent" {
     import { PaneComponent, IPaneComponentProps } from "babylonjs-inspector/components/actionTabs/paneComponent";
     export class PropertyGridTabComponent extends PaneComponent {
@@ -2661,6 +2697,34 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/particleSy
     }
     export class ParticleSystemTreeItemComponent extends React.Component<IParticleSystemTreeItemComponentProps> {
         constructor(props: IParticleSystemTreeItemComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/sceneExplorer/entities/spriteManagerTreeItemComponent" {
+    import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+    import * as React from 'react';
+    import { SpriteManager } from 'babylonjs/Sprites/spriteManager';
+    interface ISpriteManagerTreeItemComponentProps {
+        spriteManager: SpriteManager;
+        extensibilityGroups?: IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class SpriteManagerTreeItemComponent extends React.Component<ISpriteManagerTreeItemComponentProps> {
+        constructor(props: ISpriteManagerTreeItemComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/sceneExplorer/entities/spriteTreeItemComponent" {
+    import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+    import * as React from 'react';
+    import { Sprite } from 'babylonjs/Sprites/sprite';
+    interface ISpriteTreeItemComponentProps {
+        sprite: Sprite;
+        extensibilityGroups?: IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class SpriteTreeItemComponent extends React.Component<ISpriteTreeItemComponentProps> {
+        constructor(props: ISpriteTreeItemComponentProps);
         render(): JSX.Element;
     }
 }
@@ -4682,6 +4746,30 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface ISpriteManagerPropertyGridComponentProps {
+        globalState: GlobalState;
+        spriteManager: BABYLON.SpriteManager;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteManagerPropertyGridComponentProps> {
+        constructor(props: ISpriteManagerPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface ISpritePropertyGridComponentProps {
+        globalState: GlobalState;
+        sprite: BABYLON.Sprite;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class SpritePropertyGridComponent extends React.Component<ISpritePropertyGridComponentProps> {
+        constructor(props: ISpritePropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     export class PropertyGridTabComponent extends PaneComponent {
         private _timerIntervalId;
         private _lockObject;
@@ -5031,6 +5119,28 @@ declare module INSPECTOR {
     }
     export class ParticleSystemTreeItemComponent extends React.Component<IParticleSystemTreeItemComponentProps> {
         constructor(props: IParticleSystemTreeItemComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface ISpriteManagerTreeItemComponentProps {
+        spriteManager: BABYLON.SpriteManager;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class SpriteManagerTreeItemComponent extends React.Component<ISpriteManagerTreeItemComponentProps> {
+        constructor(props: ISpriteManagerTreeItemComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface ISpriteTreeItemComponentProps {
+        sprite: BABYLON.Sprite;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class SpriteTreeItemComponent extends React.Component<ISpriteTreeItemComponentProps> {
+        constructor(props: ISpriteTreeItemComponentProps);
         render(): JSX.Element;
     }
 }

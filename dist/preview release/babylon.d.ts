@@ -10035,6 +10035,10 @@ declare module BABYLON {
          */
         isPickable: boolean;
         /**
+         * Gets the hosting scene
+         */
+        scene: Scene;
+        /**
          * Specifies the rendering group id for this mesh (0 by default)
          * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#rendering-groups
          */
@@ -10114,6 +10118,18 @@ declare module BABYLON {
         private _effectBase;
         private _effectFog;
         /**
+         * Gets or sets the unique id of the sprite
+         */
+        uniqueId: number;
+        /**
+         * Gets the array of sprites
+         */
+        get children(): Sprite[];
+        /**
+         * Gets the hosting scene
+         */
+        get scene(): Scene;
+        /**
          * Gets or sets the spritesheet texture
          */
         get texture(): Texture;
@@ -10146,6 +10162,11 @@ declare module BABYLON {
         constructor(
         /** defines the manager's name */
         name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode?: number, fromPacked?: boolean, spriteJSON?: any | null);
+        /**
+         * Returns the string "SpriteManager"
+         * @returns "SpriteManager"
+         */
+        getClassName(): string;
         private _makePacked;
         private _appendSpriteVertex;
         private _checkTextureAlpha;
@@ -18201,6 +18222,10 @@ declare module BABYLON {
         get size(): number;
         set size(value: number);
         /**
+         * Gets or sets the unique id of the sprite
+         */
+        uniqueId: number;
+        /**
          * Creates a new Sprite
          * @param name defines the name
          * @param manager defines the manager
@@ -18208,6 +18233,11 @@ declare module BABYLON {
         constructor(
         /** defines the name */
         name: string, manager: ISpriteManager);
+        /**
+         * Returns the string "Sprite"
+         * @returns "Sprite"
+         */
+        getClassName(): string;
         /**
          * Starts an animation
          * @param from defines the initial key
