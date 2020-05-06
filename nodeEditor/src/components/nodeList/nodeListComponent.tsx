@@ -133,6 +133,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "SubSurfaceBlock": "PBR SubSurface block",
         "Position2DBlock": "A Vector2 representing the position of each vertex of the screen quad",
         "CurrentScreenBlock": "The screen buffer used as input for the post process",
+        "ParticleTextureBlock": "The particle texture",
     };
 
     constructor(props: INodeListComponentProps) {
@@ -169,6 +170,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock" , "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"],
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
+            Particle: ["ParticleColorBlock", "ParticleTextureBlock", "ParticleUVBlock"],
             PBR: ["PBRMetallicRoughnessBlock", "AmbientOcclusionBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "ReflectivityBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
             PostProcess: ["Position2DBlock", "CurrentScreenBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],

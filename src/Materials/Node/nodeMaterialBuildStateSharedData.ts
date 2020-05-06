@@ -5,6 +5,7 @@ import { TextureBlock } from './Blocks/Dual/textureBlock';
 import { ReflectionTextureBaseBlock } from './Blocks/Dual/reflectionTextureBaseBlock';
 import { RefractionBlock } from './Blocks/PBR/refractionBlock';
 import { CurrentScreenBlock } from './Blocks/Dual/currentScreenBlock';
+import { ParticleTextureBlock } from './Blocks/Particle/particleTextureBlock';
 import { Scene } from '../../scene';
 
 /**
@@ -34,7 +35,7 @@ export class NodeMaterialBuildStateSharedData {
     /**
      * Input blocks
      */
-    public textureBlocks = new Array<TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock>();
+    public textureBlocks = new Array<TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock | ParticleTextureBlock>();
 
     /**
      * Bindable blocks (Blocks that need to set data to the effect)
