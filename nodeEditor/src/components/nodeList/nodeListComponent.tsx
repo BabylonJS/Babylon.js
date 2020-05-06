@@ -133,7 +133,9 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "SubSurfaceBlock": "PBR SubSurface block",
         "Position2DBlock": "A Vector2 representing the position of each vertex of the screen quad",
         "CurrentScreenBlock": "The screen buffer used as input for the post process",
+        "ParticleUVBlock": "The particle uv texture coordinate",
         "ParticleTextureBlock": "The particle texture",
+        "ParticleColorBlock": "The particle color",
     };
 
     constructor(props: INodeListComponentProps) {
