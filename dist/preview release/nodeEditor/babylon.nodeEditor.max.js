@@ -61405,6 +61405,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterial"].ParseFromSnippetAsync(snippedID, scene, "", material).then(function () {
             material.build();
+            _this.changeMode(_this.props.globalState.nodeMaterial.mode, true, false);
             _this.props.globalState.onResetRequiredObservable.notifyObservers();
         }).catch(function (err) {
             alert("Unable to load your node material: " + err);
@@ -67192,6 +67193,7 @@ var NodeEditor = /** @class */ (function () {
         }
         var globalState = new _globalState__WEBPACK_IMPORTED_MODULE_2__["GlobalState"]();
         globalState.nodeMaterial = options.nodeMaterial;
+        globalState.mode = options.nodeMaterial.mode;
         globalState.hostElement = hostElement;
         globalState.hostDocument = hostElement.ownerDocument;
         globalState.customSave = options.customSave;
