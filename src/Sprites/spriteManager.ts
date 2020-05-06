@@ -18,6 +18,7 @@ import { Logger } from "../Misc/logger";
 import "../Shaders/sprites.fragment";
 import "../Shaders/sprites.vertex";
 import { DataBuffer } from '../Meshes/dataBuffer';
+import { Engine } from '../Engines/engine';
 declare type Ray = import("../Culling/ray").Ray;
 
 /**
@@ -34,6 +35,11 @@ export interface ISpriteManager extends IDisposable {
      * Gets or sets a boolean indicating if the mesh can be picked (by scene.pick for instance or through actions). Default is true
      */
     isPickable: boolean;
+
+    /**
+     * Gets the hosting scene
+     */
+    scene: Scene;
 
     /**
      * Specifies the rendering group id for this mesh (0 by default)
@@ -132,6 +138,25 @@ export class SpriteManager implements ISpriteManager {
     private _effectFog: Effect;
 
     /**
+     * Gets or sets the unique id of the sprite
+     */
+    public uniqueId: number;       
+
+    /**
+     * Gets the array of sprites
+     */
+    public get children() {
+        return this.sprites;
+    }
+
+    /**
+     * Gets the hosting scene
+     */
+    public get scene() {
+        return this._scene;
+    }
+
+    /**
      * Gets or sets the spritesheet texture
      */
     public get texture(): Texture {
@@ -185,6 +210,7 @@ export class SpriteManager implements ISpriteManager {
         this._spriteTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
         this._spriteTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
 
+
         if (cellSize.width && cellSize.height) {
             this.cellWidth = cellSize.width;
             this.cellHeight = cellSize.height;
@@ -196,8 +222,9 @@ export class SpriteManager implements ISpriteManager {
         }
 
         this._epsilon = epsilon;
-        this._scene = scene;
+        this._scene = scene || Engine.LastCreatedScene;
         this._scene.spriteManagers.push(this);
+        this.uniqueId = this.scene.getUniqueId();
 
         var indices = [];
         var index = 0;
@@ -244,7 +271,15 @@ export class SpriteManager implements ISpriteManager {
         if (this._fromPacked) {
             this._makePacked(imgUrl, spriteJSON);
         }
-    }
+    } 
+
+    /**
+     * Returns the string "SpriteManager"
+     * @returns "SpriteManager"
+     */
+    public getClassName(): string {
+        return "SpriteManager";
+    }    
 
     private _makePacked(imgUrl: string, spriteJSON: any) {
         if (spriteJSON !== null) {
