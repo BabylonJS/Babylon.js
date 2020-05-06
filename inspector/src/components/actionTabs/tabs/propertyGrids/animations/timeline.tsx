@@ -39,23 +39,24 @@ export class Timeline extends React.Component<ITimelineProps, {selected: IAnimat
 
     nextKeyframe(event: React.MouseEvent<HTMLDivElement>){
         event.preventDefault();
-        // implement jumpTo keyframe
-        this.props.onCurrentFrameChange(this.state.selected.frame);
+        let first = this.props.keyframes.find(kf => kf.frame > this.props.currentFrame);
+        if (first) {
+            this.props.onCurrentFrameChange(first.frame);
+            this.setState({ selected: first });
+        }
     }
 
     previousKeyframe(event: React.MouseEvent<HTMLDivElement>){
         event.preventDefault();
-         // implement jumpTo keyframe
-        this.props.onCurrentFrameChange(this.state.selected.frame);
+        let first = this.props.keyframes.find(kf => kf.frame < this.props.currentFrame);
+        if (first) {
+            this.props.onCurrentFrameChange(first.frame);
+            this.setState({ selected: first });
+        }
     }
 
     scrollToFrame() {
         // scroll to current frame
-    }
-
-    selectKeyframe(frame: number){
-        let selected = this.props.keyframes[frame];
-        this.setState({ selected: selected });
     }
     
     render() {
@@ -63,7 +64,7 @@ export class Timeline extends React.Component<ITimelineProps, {selected: IAnimat
         <>
            <div className="timeline">
                <div className="display-line">
-                   <svg viewBox="0 0 2000 100" style={{width: 2000}}>
+                   <svg viewBox="0 0 2010 100" style={{width: 2000}}>
                 
                    <line x1={this.props.currentFrame*10} y1="10" x2={this.props.currentFrame*10} y2="20" style={{stroke: '#12506b',strokeWidth:6}} /> 
 
