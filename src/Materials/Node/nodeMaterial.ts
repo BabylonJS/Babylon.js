@@ -41,6 +41,7 @@ import { RemapBlock } from './Blocks/remapBlock';
 import { MultiplyBlock } from './Blocks/multiplyBlock';
 import { NodeMaterialModes } from './Enums/nodeMaterialModes';
 import { Texture } from '../Textures/texture';
+import { ParticleSystem } from '../../Particles/particleSystem';
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -807,6 +808,94 @@ export class NodeMaterial extends PushMaterial {
         });
 
         return postProcess;
+    }
+
+    private _createEffectForParticles(particleSystem?: ParticleSystem, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, effect?: Effect, defines?: NodeMaterialDefines, dummyMesh?: AbstractMesh): Effect {
+        let tempName = this.name + this._buildId;
+
+        if (!defines) {
+            defines = new NodeMaterialDefines();
+        }
+
+        if (!dummyMesh) {
+            dummyMesh = new AbstractMesh(tempName + "Particle", this.getScene());
+        }
+
+        let buildId = this._buildId;
+
+        if (!effect) {
+            const result = this._processDefines(dummyMesh, defines);
+
+            Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString);
+
+            effect = this.getScene().getEngine().createEffectForParticles(tempName, this._fragmentCompilationState.uniforms, this._fragmentCompilationState.samplers, defines.toString(), result?.fallbacks, onCompiled, onError);
+
+            if (particleSystem) {
+                particleSystem.customEffect = effect;
+            }
+        }
+
+        effect.onBindObservable.add((effect) => {
+            if (buildId !== this._buildId) {
+                delete Effect.ShadersStore[tempName + "PixelShader"];
+
+                tempName = this.name + this._buildId;
+
+                defines!.markAsUnprocessed();
+
+                buildId = this._buildId;
+            }
+
+            const result = this._processDefines(dummyMesh!, defines!);
+
+            if (result) {
+                Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString);
+
+                if (particleSystem) {
+                    particleSystem.customEffect = this.getScene().getEngine().createEffectForParticles(tempName, this._fragmentCompilationState.uniforms, this._fragmentCompilationState.samplers, defines!.toString(), result?.fallbacks, onCompiled, onError);
+                    this._createEffectForParticles(particleSystem, onCompiled, onError, particleSystem.customEffect, defines, dummyMesh);
+                    return;
+                }
+            }
+
+            // Animated blocks
+            if (this._sharedData.animatedInputs) {
+                const scene = this.getScene();
+
+                let frameId = scene.getFrameId();
+
+                if (this._animationFrame !== frameId) {
+                    for (var input of this._sharedData.animatedInputs) {
+                        input.animate(scene);
+                    }
+
+                    this._animationFrame = frameId;
+                }
+            }
+
+            // Bindable blocks
+            for (var block of this._sharedData.bindableBlocks) {
+                block.bind(effect, this);
+            }
+
+            // Connection points
+            for (var inputBlock of this._sharedData.inputBlocks) {
+                inputBlock._transmit(effect, this.getScene());
+            }
+        });
+
+        return effect;
+    }
+
+    /**
+     * Create the effect to be used as the custom effect for a particle system
+     * @param particleSystem Particle system to create the effect for
+     * @param onCompiled defines a function to call when the effect creation is successful
+     * @param onError defines a function to call when the effect creation has failed
+     * @returns The new effect
+     */
+    public createEffectForParticles(particleSystem?: ParticleSystem, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect {
+        return this._createEffectForParticles(particleSystem, onCompiled, onError);
     }
 
     private _processDefines(mesh: AbstractMesh, defines: NodeMaterialDefines, useInstances = false): Nullable<{
