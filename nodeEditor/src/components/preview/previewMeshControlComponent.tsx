@@ -112,7 +112,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
 
         return (
             <div id="preview-mesh-bar">
-                { this.props.globalState.mode !== NodeMaterialModes.PostProcess && <>
+                { this.props.globalState.mode === NodeMaterialModes.Material && <>
                     <OptionsLineComponent label="" options={meshTypeOptions} target={this.props.globalState}
                                 propertyName="previewMeshType"
                                 noDirectUpdate={true}

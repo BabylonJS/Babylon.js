@@ -17,11 +17,13 @@ import { FramingBehavior } from 'babylonjs/Behaviors/Cameras/framingBehavior';
 import { DirectionalLight } from 'babylonjs/Lights/directionalLight';
 import { LogEntry } from '../log/logComponent';
 import { PointerEventTypes } from 'babylonjs/Events/pointerEvents';
-import { Color3 } from 'babylonjs/Maths/math.color';
+import { Color3, Color4 } from 'babylonjs/Maths/math.color';
 import { PostProcess } from 'babylonjs/PostProcesses/postProcess';
 import { Constants } from 'babylonjs/Engines/constants';
 import { CurrentScreenBlock } from 'babylonjs/Materials/Node/Blocks/Dual/currentScreenBlock';
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
+import { ParticleSystem } from 'babylonjs/Particles/particleSystem';
+import { Texture } from 'babylonjs/Materials/Textures/texture';
 
 export class PreviewManager {
     private _nodeMaterial: NodeMaterial;
@@ -42,6 +44,7 @@ export class PreviewManager {
     private _currentType: number;
     private _lightParent: TransformNode;
     private _postprocess: Nullable<PostProcess>;
+    private _particleSystem: Nullable<ParticleSystem>;
 
     public constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState) {
         this._nodeMaterial = globalState.nodeMaterial;
@@ -194,7 +197,7 @@ export class PreviewManager {
     }
 
     private _prepareMeshes() {
-        if (this._globalState.mode !== NodeMaterialModes.PostProcess) {
+        if (this._globalState.mode === NodeMaterialModes.Material) {
             this._prepareLights();
 
             // Framing
@@ -251,7 +254,7 @@ export class PreviewManager {
 
             this._globalState.onIsLoadingChanged.notifyObservers(true);
 
-            if (this._globalState.mode !== NodeMaterialModes.PostProcess) {
+            if (this._globalState.mode === NodeMaterialModes.Material) {
                 switch (this._globalState.previewMeshType) {
                     case PreviewMeshType.Box:
                         SceneLoader.AppendAsync("https://models.babylonjs.com/", "roundedCube.glb", this._scene).then(() => {
@@ -312,42 +315,90 @@ export class PreviewManager {
                 this._postprocess = null;
             }
 
-            if (this._globalState.mode === NodeMaterialModes.PostProcess) {
-                this._globalState.onIsLoadingChanged.notifyObservers(false);
+            if (this._particleSystem) {
+                this._particleSystem.stop();
+                this._particleSystem.dispose();
+                this._particleSystem = null;
+            }
 
-                this._postprocess = tempMaterial.createPostProcess(this._camera, 1.0, Constants.TEXTURE_NEAREST_SAMPLINGMODE, this._engine);
+            switch (this._globalState.mode) {
+                case NodeMaterialModes.PostProcess: {
+                    this._globalState.onIsLoadingChanged.notifyObservers(false);
 
-                const currentScreen = tempMaterial.getBlockByPredicate((block) => block instanceof CurrentScreenBlock);
-                if (currentScreen) {
-                    this._postprocess!.onApplyObservable.add((effect) => {
-                        effect.setTexture("textureSampler", (currentScreen as CurrentScreenBlock).texture);
-                    });
-                }
+                    this._postprocess = tempMaterial.createPostProcess(this._camera, 1.0, Constants.TEXTURE_NEAREST_SAMPLINGMODE, this._engine);
 
-                if (this._material) {
-                    this._material.dispose();
-                }
-                this._material = tempMaterial;
-            } else if (this._meshes.length) {
-                let tasks = this._meshes.map((m) => this._forceCompilationAsync(tempMaterial, m));
-
-                Promise.all(tasks).then(() => {
-                    for (var mesh of this._meshes) {
-                        mesh.material = tempMaterial;
+                    const currentScreen = tempMaterial.getBlockByPredicate((block) => block instanceof CurrentScreenBlock);
+                    if (currentScreen) {
+                        this._postprocess!.onApplyObservable.add((effect) => {
+                            effect.setTexture("textureSampler", (currentScreen as CurrentScreenBlock).texture);
+                        });
                     }
 
                     if (this._material) {
                         this._material.dispose();
                     }
-
                     this._material = tempMaterial;
+                    break;
+                }
+
+                case NodeMaterialModes.Particle: {
                     this._globalState.onIsLoadingChanged.notifyObservers(false);
-                }).catch((reason) => {
-                    this._globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Shader compilation error:\r\n" + reason, true));
-                    this._globalState.onIsLoadingChanged.notifyObservers(false);
-                });
-            } else {
-                this._material = tempMaterial;
+
+                    (window as any).ss = this._scene;
+
+                    // Effect
+                    this._particleSystem = new ParticleSystem("particles", 4000, this._scene);
+
+                    const emitter0 = Mesh.CreateBox("emitter0", 0.1, this._scene);
+                    emitter0.isVisible = false;
+
+                    this._meshes.push(emitter0);
+
+                    this._particleSystem.particleTexture = new Texture("https://assets.babylonjs.com/particles/textures/explosion/Flare.png", this._scene);
+                    this._particleSystem.minSize = 0.1;
+                    this._particleSystem.maxSize = 1.0;
+                    this._particleSystem.minLifeTime = 0.5;
+                    this._particleSystem.maxLifeTime = 5.0;
+                    this._particleSystem.minEmitPower = 0.5;
+                    this._particleSystem.maxEmitPower = 3.0;
+                    this._particleSystem.emitter = emitter0;
+                    this._particleSystem.emitRate = 100;
+                    this._particleSystem.blendMode = ParticleSystem.BLENDMODE_ONEONE;
+                    this._particleSystem.direction1 = new Vector3(-1, 1, -1);
+                    this._particleSystem.direction2 = new Vector3(1, 1, 1);
+                    this._particleSystem.color1 = new Color4(1, 1, 0, 1);
+                    this._particleSystem.color2 = new Color4(1, 0.5, 0, 1);
+                    this._particleSystem.gravity = new Vector3(0, -1.0, 0);
+                    this._particleSystem.start();
+
+                    tempMaterial.createEffectForParticles(this._particleSystem);
+                    break;
+                }
+
+                default: {
+                    if (this._meshes.length) {
+                        let tasks = this._meshes.map((m) => this._forceCompilationAsync(tempMaterial, m));
+
+                        Promise.all(tasks).then(() => {
+                            for (var mesh of this._meshes) {
+                                mesh.material = tempMaterial;
+                            }
+
+                            if (this._material) {
+                                this._material.dispose();
+                            }
+
+                            this._material = tempMaterial;
+                            this._globalState.onIsLoadingChanged.notifyObservers(false);
+                        }).catch((reason) => {
+                            this._globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Shader compilation error:\r\n" + reason, true));
+                            this._globalState.onIsLoadingChanged.notifyObservers(false);
+                        });
+                    } else {
+                        this._material = tempMaterial;
+                    }
+                    break;
+                }
             }
         } catch (err) {
             // Ignore the error
