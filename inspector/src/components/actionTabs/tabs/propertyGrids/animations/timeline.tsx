@@ -30,7 +30,6 @@ export class Timeline extends React.Component<ITimelineProps, { selected: IAnima
         event.preventDefault();
         this.props.onCurrentFrameChange(this.props.currentFrame + 1);
         (this._scrollable.current as HTMLDivElement).scrollLeft = this.props.currentFrame * 5;
-
     }
 
     previousFrame(event: React.MouseEvent<HTMLDivElement>) {
@@ -59,11 +58,6 @@ export class Timeline extends React.Component<ITimelineProps, { selected: IAnima
             this.setState({ selected: first });
             (this._scrollable.current as HTMLDivElement).scrollLeft = -(first.frame * 5);
         }
-    }
-
-    scrollToFrame(frame: number) {
-        // scroll to current frame
-        (this._scrollable.current as HTMLDivElement).scrollLeft = frame * 10;
     }
 
     render() {
