@@ -6152,7 +6152,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../../../../node_mod
 
 
 // module
-exports.push([module.i, "#animation-curve-editor .header {\n  display: flex;\n  padding: 9px;\n  background: black;\n  color: white;\n  height: 1.3em;\n  justify-content: space-between;\n  align-items: center;\n  padding-left: 12px;\n  padding-right: 12px; }\n  #animation-curve-editor .header .title {\n    text-transform: uppercase; }\n  #animation-curve-editor .header .close {\n    grid-column: 2;\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n\n#animation-curve-editor .content {\n  display: flex;\n  align-items: flex-start;\n  justify-content: flex-start; }\n  #animation-curve-editor .content .animation-list {\n    padding: 1.5rem;\n    background: lightgrey;\n    height: 100vh; }\n    #animation-curve-editor .content .animation-list ul {\n      list-style: none;\n      padding-left: 0px; }\n      #animation-curve-editor .content .animation-list ul li {\n        cursor: pointer; }\n        #animation-curve-editor .content .animation-list ul li:before {\n          content: '';\n          display: inline-block;\n          height: 1em;\n          width: 1em;\n          background-size: contain;\n          background-repeat: no-repeat;\n          margin-right: 0.5em;\n          background-image: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"true\" focusable=\"false\" data-prefix=\"far\" data-icon=\"circle\" class=\"svg-inline--fa fa-circle fa-w-16\" role=\"img\" viewBox=\"0 0 512 512\"><path fill=\"currentColor\" d=\"M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200z\"/></svg>'); }\n    #animation-curve-editor .content .animation-list li.active {\n      cursor: pointer; }\n      #animation-curve-editor .content .animation-list li.active:before {\n        background-image: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"true\" focusable=\"false\" data-prefix=\"fas\" data-icon=\"check-circle\" class=\"svg-inline--fa fa-check-circle fa-w-16\" role=\"img\" viewBox=\"0 0 512 512\"><path fill=\"currentColor\" d=\"M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zM227.314 387.314l184-184c6.248-6.248 6.248-16.379 0-22.627l-22.627-22.627c-6.248-6.249-16.379-6.249-22.628 0L216 308.118l-70.059-70.059c-6.248-6.248-16.379-6.248-22.628 0l-22.627 22.627c-6.248 6.248-6.248 16.379 0 22.627l104 104c6.249 6.249 16.379 6.249 22.628.001z\"/></svg>'); }\n  #animation-curve-editor .content .graph-chart {\n    flex: 1 1 0%;\n    margin: 25% auto;\n    padding-left: 32px; }\n    #animation-curve-editor .content .graph-chart .linear {\n      width: 300px;\n      height: 300px;\n      overflow: visible;\n      background-color: 'aliceblue'; }\n", ""]);
+exports.push([module.i, "#animation-curve-editor .header {\n  display: flex;\n  padding: 9px;\n  background: black;\n  color: white;\n  height: 1.3em;\n  justify-content: space-between;\n  align-items: center;\n  padding-left: 12px;\n  padding-right: 12px; }\n  #animation-curve-editor .header .title {\n    text-transform: uppercase; }\n  #animation-curve-editor .header .close {\n    grid-column: 2;\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n\n#animation-curve-editor .content {\n  display: flex;\n  align-items: flex-start;\n  justify-content: flex-start; }\n  #animation-curve-editor .content .animation-list {\n    padding: 1.5rem;\n    background: lightgrey;\n    height: 100vh; }\n    #animation-curve-editor .content .animation-list ul {\n      list-style: none;\n      padding-left: 0px; }\n      #animation-curve-editor .content .animation-list ul li {\n        cursor: pointer; }\n        #animation-curve-editor .content .animation-list ul li:before {\n          content: '';\n          display: inline-block;\n          height: 1em;\n          width: 1em;\n          background-size: contain;\n          background-repeat: no-repeat;\n          margin-right: 0.5em;\n          background-image: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"true\" focusable=\"false\" data-prefix=\"far\" data-icon=\"circle\" class=\"svg-inline--fa fa-circle fa-w-16\" role=\"img\" viewBox=\"0 0 512 512\"><path fill=\"currentColor\" d=\"M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200z\"/></svg>'); }\n    #animation-curve-editor .content .animation-list li.active {\n      cursor: pointer; }\n      #animation-curve-editor .content .animation-list li.active:before {\n        background-image: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"true\" focusable=\"false\" data-prefix=\"fas\" data-icon=\"check-circle\" class=\"svg-inline--fa fa-check-circle fa-w-16\" role=\"img\" viewBox=\"0 0 512 512\"><path fill=\"currentColor\" d=\"M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zM227.314 387.314l184-184c6.248-6.248 6.248-16.379 0-22.627l-22.627-22.627c-6.248-6.249-16.379-6.249-22.628 0L216 308.118l-70.059-70.059c-6.248-6.248-16.379-6.248-22.628 0l-22.627 22.627c-6.248 6.248-6.248 16.379 0 22.627l104 104c6.249 6.249 16.379 6.249 22.628.001z\"/></svg>'); }\n  #animation-curve-editor .content .sample-chart .linear .draggable {\n    cursor: move; }\n  #animation-curve-editor .content .graph-chart {\n    flex: 1 1 0%;\n    margin: 25% auto;\n    padding-left: 32px; }\n    #animation-curve-editor .content .graph-chart .linear {\n      width: 300px;\n      height: 300px;\n      overflow: visible;\n      background-color: 'aliceblue'; }\n", ""]);
 
 // exports
 
@@ -58563,9 +58563,9 @@ var AnchorSvgPoint = /** @class */ (function (_super) {
     }
     AnchorSvgPoint.prototype.render = function () {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { x: this.props.anchor.x, y: this.props.anchor.y, style: { overflow: 'visible' } },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("circle", { cx: "0", cy: "0", r: "0.75", stroke: "none", strokeWidth: "0", fill: "blue" })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: this.props.point.x, y1: this.props.point.y, x2: this.props.anchor.x, y2: this.props.anchor.y, stroke: "green", strokeWidth: "0.75" })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { x: this.props.control.x, y: this.props.control.y, style: { overflow: 'visible' } },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("circle", { type: this.props.type, "data-id": this.props.index, className: "draggable control-point", cx: "0", cy: "0", r: "2", stroke: "none", strokeWidth: "0", fill: this.props.active ? "blue" : "black" })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: this.props.anchor.x, y1: this.props.anchor.y, x2: this.props.control.x, y2: this.props.control.y, stroke: "green", strokeWidth: "0.75" })));
     };
     return AnchorSvgPoint;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -58589,10 +58589,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
 /* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
-/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _anchorSvgPoint__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./anchorSvgPoint */ "./components/actionTabs/tabs/propertyGrids/animations/anchorSvgPoint.tsx");
-/* harmony import */ var _keyframeSvgPoint__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./keyframeSvgPoint */ "./components/actionTabs/tabs/propertyGrids/animations/keyframeSvgPoint.tsx");
+/* harmony import */ var babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Animations/animation */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _svgDraggableArea__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./svgDraggableArea */ "./components/actionTabs/tabs/propertyGrids/animations/svgDraggableArea.tsx");
+
 
 
 
@@ -58605,11 +58605,94 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AnimationCurveEditorComponent, _super);
     function AnimationCurveEditorComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this._anchorPoints = [];
-        _this._keyframes = [];
-        _this.state = { selected: _this.props.animations[0], isOpen: true, currentPathData: _this.getPathData(_this.props.animations[0]), anchorPoints: _this._anchorPoints, keyframes: _this._keyframes };
+        _this._heightScale = 100;
+        _this._newAnimations = [];
+        _this._svgKeyframes = [];
+        _this._frames = [];
+        _this._isPlaying = false;
+        _this.state = { animations: _this._newAnimations, selected: _this.props.animations[0], isOpen: true, currentPathData: _this.getPathData(_this.props.animations[0]), svgKeyframes: _this._svgKeyframes, animationTargetProperty: 'position.x', animationName: "" };
         return _this;
     }
+    AnimationCurveEditorComponent.prototype.handleNameChange = function (event) {
+        event.preventDefault();
+        this.setState({ animationName: event.target.value });
+    };
+    AnimationCurveEditorComponent.prototype.handlePropertyChange = function (event) {
+        event.preventDefault();
+        this.setState({ animationTargetProperty: event.target.value });
+    };
+    AnimationCurveEditorComponent.prototype.addAnimation = function (event) {
+        var _a;
+        event.preventDefault();
+        if (this.state.animationName != "" && this.state.animationTargetProperty != "") {
+            var animation = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Animation"](this.state.animationName, this.state.animationTargetProperty, 30, babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Animation"].ANIMATIONTYPE_FLOAT, babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Animation"].ANIMATIONLOOPMODE_CYCLE);
+            var keys = [];
+            keys.push({
+                frame: 0,
+                value: 1
+            });
+            keys.push({
+                frame: 100,
+                value: 1
+            });
+            animation.setKeys(keys);
+            var bezierEase = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["BezierCurveEase"](10, 0, 10, 0);
+            bezierEase.setEasingMode(babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["EasingFunction"].EASINGMODE_EASEINOUT);
+            animation.setEasingFunction(bezierEase);
+            // Need to redefine/refactor not to update the prop collection
+            (_a = this.props.entity.animations) === null || _a === void 0 ? void 0 : _a.push(animation);
+        }
+    };
+    AnimationCurveEditorComponent.prototype.addKeyFrame = function (event) {
+        var _a;
+        event.preventDefault();
+        if (event.button === 2) {
+            var svg = event.target;
+            var pt = svg.createSVGPoint();
+            pt.x = event.clientX;
+            pt.y = event.clientY;
+            var inverse = (_a = svg.getScreenCTM()) === null || _a === void 0 ? void 0 : _a.inverse();
+            var cursorpt = pt.matrixTransform(inverse);
+            var currentAnimation = this.state.selected;
+            var keys = currentAnimation.getKeys();
+            var height = 100;
+            var middle = (height / 2);
+            var keyValue;
+            if (cursorpt.y < middle) {
+                keyValue = 1 + ((100 / cursorpt.y) * .1);
+            }
+            if (cursorpt.y > middle) {
+                keyValue = 1 - ((100 / cursorpt.y) * .1);
+            }
+            keys.push({ frame: cursorpt.x, value: keyValue });
+            currentAnimation.setKeys(keys);
+            this.selectAnimation(currentAnimation);
+        }
+    };
+    AnimationCurveEditorComponent.prototype.updateKeyframe = function (keyframe, index) {
+        var _a;
+        var anim = this.state.selected;
+        var keys = [];
+        var svgKeyframes = (_a = this.state.svgKeyframes) === null || _a === void 0 ? void 0 : _a.map(function (k, i) {
+            if (i === index) {
+                k.keyframePoint.x = keyframe.x;
+                k.keyframePoint.y = keyframe.y;
+            }
+            var height = 100;
+            var middle = (height / 2);
+            var keyValue;
+            if (k.keyframePoint.y < middle) {
+                keyValue = 1 + ((100 / k.keyframePoint.y) * .1);
+            }
+            if (k.keyframePoint.y > middle) {
+                keyValue = 1 - ((100 / k.keyframePoint.y) * .1);
+            }
+            keys.push({ frame: k.keyframePoint.x, value: keyValue });
+            return k;
+        });
+        anim.setKeys(keys);
+        this.setState({ svgKeyframes: svgKeyframes });
+    };
     AnimationCurveEditorComponent.prototype.getAnimationProperties = function (animation) {
         var easingType, easingMode;
         var easingFunction = animation.getEasingFunction();
@@ -58630,84 +58713,142 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
             return "";
         }
         var startKey = keyframes[0];
-        // This will change when Graph width becomes dinamic
-        var heightScale = 100;
-        // This assumes the startkey is always 0... we will change this
-        var middle = (startKey.value / 2) * heightScale;
+        // This assumes the startkey is always 0... beed to change this
+        var middle = this._heightScale / 2;
         // START OF LINE/CURVE
-        var data = "M0, " + middle;
+        var data = "M" + startKey.frame + ", " + (this._heightScale - (startKey.value * middle));
         if (easingType === undefined && easingMode === undefined) {
-            data = this.linearInterpolation(keyframes, data, heightScale, middle);
+            data = this.linearInterpolation(keyframes, data, middle);
         }
         else {
             var easingFunction = animation.getEasingFunction();
-            data = this.curvePath(keyframes, data, heightScale, middle, easingFunction);
+            data = this.curvePath(keyframes, data, middle, easingFunction);
         }
         return data;
     };
-    AnimationCurveEditorComponent.prototype.curvePath = function (keyframes, data, heightScale, middle, easingFunction) {
+    AnimationCurveEditorComponent.prototype.drawAllFrames = function (initialKey, endKey, easingFunction) {
+        var i = initialKey.frame;
+        for (i; i < endKey.frame; i++) {
+            (i * 100 / endKey.frame);
+            var dy = easingFunction.easeInCore(i);
+            var value = this._heightScale - (dy * (this._heightScale / 2));
+            this._frames.push(new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Vector2"](i, value));
+        }
+    };
+    AnimationCurveEditorComponent.prototype.curvePath = function (keyframes, data, middle, easingFunction) {
         var _this = this;
         // This will get 1/4 and 3/4 of points in eased curve
         var u = .25;
         var v = .75;
         keyframes.forEach(function (key, i) {
-            if (i !== 0) {
-                // Gets previous initial point of curve segment
-                var pointA = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](0, 0);
-                if (i === 0) {
-                    pointA.x = 0;
-                    pointA.y = middle;
-                }
-                else {
-                    pointA.x = keyframes[i - 1].frame;
-                    pointA.y = heightScale - (keyframes[i - 1].value * middle);
-                }
+            // Gets previous initial point of curve segment
+            var pointA = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Vector2"](0, 0);
+            if (i === 0) {
+                pointA.x = key.frame;
+                pointA.y = _this._heightScale - (key.value * middle);
+                _this.setKeyframePoint([pointA], i, keyframes.length);
+            }
+            else {
+                pointA.x = keyframes[i - 1].frame;
+                pointA.y = _this._heightScale - (keyframes[i - 1].value * middle);
                 // Gets the end point of this curve segment
-                var pointB = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](key.frame, heightScale - (key.value * middle));
+                var pointB = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Vector2"](key.frame, _this._heightScale - (key.value * middle));
                 // Get easing value of percentage to get the bezier control points below
-                var du = easingFunction.ease(u); // What to do here, when user edits the curve? Option 1: Modify the curve with the new control points as BezierEaseCurve(x,y,z,w)
-                var dv = easingFunction.ease(v); // Option 2: Create a easeInCore function and adapt it with the new control points values... needs more revision.
+                var du = easingFunction.easeInCore(u); // What to do here, when user edits the curve? Option 1: Modify the curve with the new control points as BezierEaseCurve(x,y,z,w)
+                var dv = easingFunction.easeInCore(v); // Option 2: Create a easeInCore function and adapt it with the new control points values... needs more revision.
+                // Direction of curve up/down
+                var yInt25 = 0;
+                if (pointB.y > pointA.y) { // if pointB.y > pointA.y = goes down 
+                    yInt25 = ((pointB.y - pointA.y) * du) + pointA.y;
+                }
+                else if (pointB.y < pointA.y) { // if pointB.y < pointA.y = goes up
+                    yInt25 = pointA.y - ((pointA.y - pointB.y) * du);
+                }
+                var yInt75 = 0;
+                if (pointB.y > pointA.y) {
+                    yInt75 = ((pointB.y - pointA.y) * dv) + pointA.y;
+                }
+                else if (pointB.y < pointA.y) {
+                    yInt75 = pointA.y - ((pointA.y - pointB.y) * dv);
+                }
                 // Intermediate points in curve
-                var intermediatePoint25 = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](((pointB.x - pointA.x) * u) + pointA.x, ((pointB.y - pointA.y) * du) + middle);
-                var intermediatePoint75 = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](((pointB.x - pointA.x) * v) + pointA.x, ((pointB.y - pointA.y) * dv) + middle);
+                var intermediatePoint25 = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Vector2"](((pointB.x - pointA.x) * u) + pointA.x, yInt25);
+                var intermediatePoint75 = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Vector2"](((pointB.x - pointA.x) * v) + pointA.x, yInt75);
                 // Gets the four control points of bezier curve
                 var controlPoints = _this.interpolateControlPoints(pointA, intermediatePoint25, u, intermediatePoint75, v, pointB);
                 if (controlPoints === undefined) {
                     console.log("error getting bezier control points");
                 }
                 else {
-                    _this.setAnchorPoint(controlPoints[0], controlPoints[1]);
-                    _this.setAnchorPoint(controlPoints[3], controlPoints[2]);
-                    _this.setKeyframePoint(pointA);
-                    _this.setKeyframePoint(pointB);
-                    data += " C" + controlPoints[1].x + ", " + controlPoints[1].y + " " + controlPoints[2].x + ", " + controlPoints[2].y + " " + pointB.x + ", " + pointB.y;
+                    _this.setKeyframePoint(controlPoints, i, keyframes.length);
+                    data += " C" + controlPoints[1].x + " " + controlPoints[1].y + " " + controlPoints[2].x + " " + controlPoints[2].y + " " + controlPoints[3].x + " " + controlPoints[3].y;
                 }
             }
         });
         return data;
     };
-    AnimationCurveEditorComponent.prototype.linearInterpolation = function (keyframes, data, heightScale, middle) {
+    AnimationCurveEditorComponent.prototype.renderPoints = function (updatedSvgKeyFrame, index) {
+        var animation = this.state.selected;
+        var keys = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArrays"])(animation.getKeys());
+        var newFrame = 0;
+        if (updatedSvgKeyFrame.keyframePoint.x !== 0) {
+            if (updatedSvgKeyFrame.keyframePoint.x > 0 && updatedSvgKeyFrame.keyframePoint.x < 1) {
+                newFrame = 1;
+            }
+            else {
+                newFrame = Math.round(updatedSvgKeyFrame.keyframePoint.x);
+            }
+        }
+        keys[index].frame = newFrame; // This value comes as percentage/frame/time
+        keys[index].value = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2; // this value comes inverted svg from 0 = 100 to 100 = 0
+        animation.setKeys(keys);
+        this.selectAnimation(animation);
+    };
+    AnimationCurveEditorComponent.prototype.linearInterpolation = function (keyframes, data, middle) {
+        var _this = this;
         keyframes.forEach(function (key, i) {
+            var point = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Vector2"](0, 0);
+            point.x = key.frame;
+            point.y = _this._heightScale - (key.value * middle);
+            _this.setKeyframePointLinear(point, i);
             if (i !== 0) {
-                data += " L" + key.frame + " " + (heightScale - (key.value * middle));
+                data += " L" + point.x + " " + point.y;
             }
         });
         return data;
     };
-    AnimationCurveEditorComponent.prototype.setAnchorPoint = function (point, anchor) {
-        this._anchorPoints.push({ point: point, anchor: anchor });
+    AnimationCurveEditorComponent.prototype.setKeyframePointLinear = function (point, index) {
+        var svgKeyframe = { keyframePoint: point, rightControlPoint: null, leftControlPoint: null, id: index.toString() };
+        this._svgKeyframes.push(svgKeyframe);
     };
-    AnimationCurveEditorComponent.prototype.setKeyframePoint = function (point) {
-        this._keyframes.push(point);
+    AnimationCurveEditorComponent.prototype.setKeyframePoint = function (controlPoints, index, keyframesCount) {
+        var svgKeyframe;
+        if (index === 0) {
+            svgKeyframe = { keyframePoint: controlPoints[0], rightControlPoint: null, leftControlPoint: null, id: index.toString() };
+        }
+        else {
+            this._svgKeyframes[index - 1].rightControlPoint = controlPoints[1];
+            svgKeyframe = { keyframePoint: controlPoints[3], rightControlPoint: null, leftControlPoint: controlPoints[2], id: index.toString() };
+        }
+        this._svgKeyframes.push(svgKeyframe);
+    };
+    AnimationCurveEditorComponent.prototype.isAnimationPlaying = function () {
+        this._isPlaying = this.props.scene.getAllAnimatablesByTarget(this.props.entity).length > 0;
+        if (this._isPlaying) {
+            this.props.playOrPause();
+        }
+        else {
+            this._isPlaying = false;
+        }
     };
     AnimationCurveEditorComponent.prototype.selectAnimation = function (animation) {
-        this._anchorPoints = [];
-        this._keyframes = [];
+        this.isAnimationPlaying();
+        this._svgKeyframes = [];
         var pathData = this.getPathData(animation);
         if (pathData === "") {
             console.log("no keyframes in this animation");
         }
-        this.setState({ selected: animation, currentPathData: pathData, anchorPoints: this._anchorPoints, keyframes: this._keyframes });
+        this.setState({ selected: animation, currentPathData: pathData, svgKeyframes: this._svgKeyframes });
     };
     AnimationCurveEditorComponent.prototype.interpolateControlPoints = function (p0, p1, u, p2, v, p3) {
         var a = 0.0;
@@ -58715,11 +58856,11 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         var c = 0.0;
         var d = 0.0;
         var det = 0.0;
-        var q1 = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"]();
-        var q2 = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"]();
+        var q1 = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Vector2"]();
+        var q2 = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Vector2"]();
         var controlA = p0;
-        var controlB = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"]();
-        var controlC = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"]();
+        var controlB = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Vector2"]();
+        var controlC = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Vector2"]();
         var controlD = p3;
         if ((u <= 0.0) || (u >= 1.0) || (v <= 0.0) || (v >= 1.0) || (u >= v)) {
             return undefined;
@@ -58743,7 +58884,6 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
     };
     AnimationCurveEditorComponent.prototype.render = function () {
         var _this = this;
-        var _a, _b;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "animation-curve-editor" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "title" }, this.props.title),
@@ -58751,15 +58891,31 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faTimes"] }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "content" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "animation-list" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", null, "Animation Name"),
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", value: this.state.animationName, onChange: function (e) { return _this.handleNameChange(e); } })),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", null, "Target Property"),
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", value: this.state.animationTargetProperty, onChange: function (e) { return _this.handlePropertyChange(e); } })),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "add", onClick: function (e) { return _this.addAnimation(e); } },
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faPlusCircle"] }))),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("h2", null, this.props.entityName),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("ul", null, this.props.animations.map(function (animation, i) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("ul", null, this.props.animations && this.props.animations.map(function (animation, i) {
+                        return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { className: _this.state.selected.name === animation.name ? 'active' : '', key: i, onClick: function () { return _this.selectAnimation(animation); } },
+                            animation.name,
+                            " ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, animation.targetProperty));
+                    })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("h2", null, "New Animations"),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("ul", null, this.state.animations && this.state.animations.map(function (animation, i) {
                         return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { className: _this.state.selected.name === animation.name ? 'active' : '', key: i, onClick: function () { return _this.selectAnimation(animation); } },
                             animation.name,
                             " ",
                             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, animation.targetProperty));
                     }))),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "graph-chart" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { className: "linear", viewBox: "0 0 100 100", preserveAspectRatio: "none" },
+                    this.state.svgKeyframes && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_svgDraggableArea__WEBPACK_IMPORTED_MODULE_5__["SvgDraggableArea"], { keyframeSvgPoints: this.state.svgKeyframes, updatePosition: function (updatedSvgKeyFrame, index) { return _this.renderPoints(updatedSvgKeyFrame, index); } },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { x: "10", y: "0", dx: "-1em", style: { font: 'italic 0.2em sans-serif' } }, "10"),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { x: "20", y: "0", dx: "-1em", style: { font: 'italic 0.2em sans-serif' } }, "20"),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { x: "30", y: "0", dx: "-1em", style: { font: 'italic 0.2em sans-serif' } }, "30"),
@@ -58796,12 +58952,10 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: "0", y1: "70", x2: "100", y2: "70", style: { stroke: 'black', strokeWidth: '0.2px' } }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: "0", y1: "80", x2: "100", y2: "80", style: { stroke: 'black', strokeWidth: '0.2px' } }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: "0", y1: "90", x2: "100", y2: "90", style: { stroke: 'black', strokeWidth: '0.2px' } }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("path", { id: "curve", d: this.state.currentPathData, style: { stroke: 'red', fill: 'none', strokeWidth: '0.5' } }), (_a = this.state.anchorPoints) === null || _a === void 0 ? void 0 :
-                        _a.map(function (anchorPoint, i) {
-                            return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_anchorSvgPoint__WEBPACK_IMPORTED_MODULE_5__["AnchorSvgPoint"], { key: i, point: anchorPoint.point, anchor: anchorPoint.anchor });
-                        }), (_b = this.state.keyframes) === null || _b === void 0 ? void 0 :
-                        _b.map(function (keyframe, i) {
-                            return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_keyframeSvgPoint__WEBPACK_IMPORTED_MODULE_6__["KeyframeSvgPoint"], { key: i, point: keyframe });
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("path", { id: "curve", d: this.state.currentPathData, style: { stroke: 'red', fill: 'none', strokeWidth: '0.5' } }),
+                        this._frames && this._frames.map(function (frame) {
+                            return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { x: frame.x, y: frame.y, style: { overflow: 'visible' } },
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("circle", { cx: "0", cy: "0", r: "2", stroke: "black", strokeWidth: "1", fill: "white" }));
                         })),
                     "Animation name: ",
                     this.state.selected.name))));
@@ -59106,7 +59260,7 @@ var AnimationGridComponent = /** @class */ (function (_super) {
                             return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { key: anim.targetProperty + i, label: "#" + i + " >", value: anim.targetProperty }));
                         }),
                         this._isCurveEditorOpen && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_popupComponent__WEBPACK_IMPORTED_MODULE_10__["PopupComponent"], { id: "curve-editor", title: "Curve Animation Editor", size: { width: 950, height: 890 }, onOpen: function (window) { window.console.log("Window opened!!"); }, onClose: function (window) { return _this.onCloseAnimationCurveEditor(window); } },
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_animationCurveEditorComponent__WEBPACK_IMPORTED_MODULE_9__["AnimationCurveEditorComponent"], { title: "Animations Curve Editor", entityName: animatableAsAny.id, close: function (event) { return _this.onCloseAnimationCurveEditor(event.view); }, animations: animations }))),
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_animationCurveEditorComponent__WEBPACK_IMPORTED_MODULE_9__["AnimationCurveEditorComponent"], { title: "Animations Curve Editor", scene: this.props.scene, entity: animatableAsAny, entityName: animatableAsAny.id, close: function (event) { return _this.onCloseAnimationCurveEditor(event.view); }, playOrPause: function () { return _this.playOrPause(); }, animations: animations }))),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ANIMATION GENERAL CONTROL" },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { lockObject: this.props.lockObject, isInteger: true, label: "From", target: this._animationControl, propertyName: "from", onChange: function () { return _this.onChangeFromOrTo(); } }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { lockObject: this.props.lockObject, isInteger: true, label: "To", target: this._animationControl, propertyName: "to", onChange: function () { return _this.onChangeFromOrTo(); } }),
@@ -59181,6 +59335,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _anchorSvgPoint__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./anchorSvgPoint */ "./components/actionTabs/tabs/propertyGrids/animations/anchorSvgPoint.tsx");
+
 
 
 var KeyframeSvgPoint = /** @class */ (function (_super) {
@@ -59190,8 +59346,10 @@ var KeyframeSvgPoint = /** @class */ (function (_super) {
     }
     KeyframeSvgPoint.prototype.render = function () {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { x: this.props.point.x, y: this.props.point.y, style: { overflow: 'visible' } },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("circle", { cx: "0", cy: "0", r: "0.75", stroke: "none", strokeWidth: "0", fill: "red" }))));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { className: "draggable", x: this.props.keyframePoint.x, y: this.props.keyframePoint.y, style: { overflow: 'visible' } },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("circle", { "data-id": this.props.id, className: "draggable", cx: "0", cy: "0", r: "2", stroke: "none", strokeWidth: "0", fill: "red" })),
+            this.props.leftControlPoint && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_anchorSvgPoint__WEBPACK_IMPORTED_MODULE_2__["AnchorSvgPoint"], { type: "left", index: this.props.id, control: this.props.leftControlPoint, anchor: this.props.keyframePoint, active: false }),
+            this.props.rightControlPoint && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_anchorSvgPoint__WEBPACK_IMPORTED_MODULE_2__["AnchorSvgPoint"], { type: "right", index: this.props.id, control: this.props.rightControlPoint, anchor: this.props.keyframePoint, active: false })));
     };
     return KeyframeSvgPoint;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -59269,6 +59427,106 @@ var PopupComponent = /** @class */ (function (_super) {
         return react_dom__WEBPACK_IMPORTED_MODULE_2__["createPortal"](this.props.children, this._container);
     };
     return PopupComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/svgDraggableArea.tsx":
+/*!**********************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/svgDraggableArea.tsx ***!
+  \**********************************************************************************/
+/*! exports provided: SvgDraggableArea */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SvgDraggableArea", function() { return SvgDraggableArea; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _keyframeSvgPoint__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./keyframeSvgPoint */ "./components/actionTabs/tabs/propertyGrids/animations/keyframeSvgPoint.tsx");
+
+
+
+
+var SvgDraggableArea = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SvgDraggableArea, _super);
+    function SvgDraggableArea(props) {
+        var _this = _super.call(this, props) || this;
+        _this._currentPointIndex = -1;
+        _this._isCurrentPointControl = "";
+        _this._draggableArea = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        return _this;
+    }
+    SvgDraggableArea.prototype.dragStart = function (e) {
+        e.preventDefault();
+        if (e.target.classList.contains("draggable")) {
+            this._active = true;
+            this._currentPointIndex = parseInt(e.target.getAttribute('data-id'));
+            if (e.target.classList.contains("control-point")) {
+                this._isCurrentPointControl = e.target.getAttribute("type");
+            }
+        }
+    };
+    SvgDraggableArea.prototype.drag = function (e) {
+        if (this._active) {
+            e.preventDefault();
+            var coord = this.getMousePosition(e);
+            if (coord !== undefined) {
+                var newPoints = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArrays"])(this.props.keyframeSvgPoints);
+                if (this._isCurrentPointControl === "left") {
+                    newPoints[this._currentPointIndex].leftControlPoint = coord;
+                }
+                else if (this._isCurrentPointControl === "right") {
+                    newPoints[this._currentPointIndex].rightControlPoint = coord;
+                }
+                else {
+                    newPoints[this._currentPointIndex].keyframePoint = coord;
+                }
+                this.props.updatePosition(newPoints[this._currentPointIndex], this._currentPointIndex);
+            }
+        }
+    };
+    SvgDraggableArea.prototype.dragEnd = function (e) {
+        e.preventDefault();
+        this._active = false;
+        this._currentPointIndex = -1;
+        this._isCurrentPointControl = "";
+    };
+    SvgDraggableArea.prototype.getMousePosition = function (e) {
+        if (e.touches) {
+            e = e.touches[0];
+        }
+        if (this._draggableArea.current) {
+            var svg = this._draggableArea.current;
+            var CTM = svg.getScreenCTM();
+            if (CTM) {
+                return new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Vector2"]((e.clientX - CTM.e) / CTM.a, (e.clientY - CTM.f) / CTM.d);
+            }
+            else {
+                return undefined;
+            }
+        }
+        else {
+            return undefined;
+        }
+    };
+    SvgDraggableArea.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { className: "linear", style: { border: '1px solid black' }, ref: this._draggableArea, onMouseMove: function (e) { return _this.drag(e); }, onTouchMove: function (e) { return _this.drag(e); }, onTouchStart: function (e) { return _this.dragStart(e); }, onTouchEnd: function (e) { return _this.dragEnd(e); }, onMouseDown: function (e) { return _this.dragStart(e); }, onMouseUp: function (e) { return _this.dragEnd(e); }, onMouseLeave: function (e) { return _this.dragEnd(e); }, 
+                // Add way to add new keyframe
+                viewBox: "0 0 100 100", preserveAspectRatio: "none" },
+                this.props.children,
+                this.props.keyframeSvgPoints.map(function (keyframe, i) {
+                    return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_keyframeSvgPoint__WEBPACK_IMPORTED_MODULE_3__["KeyframeSvgPoint"], { key: i, id: i.toString(), keyframePoint: keyframe.keyframePoint, leftControlPoint: keyframe.leftControlPoint, rightControlPoint: keyframe.rightControlPoint });
+                }))));
+    };
+    return SvgDraggableArea;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 

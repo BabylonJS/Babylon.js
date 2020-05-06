@@ -512,8 +512,11 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IAnchorSvgPointProps {
-        point: BABYLON.Vector2;
+        control: BABYLON.Vector2;
         anchor: BABYLON.Vector2;
+        active: boolean;
+        type: string;
+        index: string;
     }
     export class AnchorSvgPoint extends React.Component<IAnchorSvgPointProps> {
         constructor(props: IAnchorSvgPointProps);
@@ -521,8 +524,17 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export interface IKeyframeSvgPoint {
+        keyframePoint: BABYLON.Vector2;
+        rightControlPoint: BABYLON.Vector2 | null;
+        leftControlPoint: BABYLON.Vector2 | null;
+        id: string;
+    }
     interface IKeyframeSvgPointProps {
-        point: BABYLON.Vector2;
+        keyframePoint: BABYLON.Vector2;
+        leftControlPoint: BABYLON.Vector2 | null;
+        rightControlPoint: BABYLON.Vector2 | null;
+        id: string;
     }
     export class KeyframeSvgPoint extends React.Component<IKeyframeSvgPointProps> {
         constructor(props: IKeyframeSvgPointProps);
@@ -530,34 +542,69 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface ISvgDraggableAreaProps {
+        keyframeSvgPoints: IKeyframeSvgPoint[];
+        updatePosition: (updatedKeyframe: IKeyframeSvgPoint, index: number) => void;
+    }
+    export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps> {
+        private _active;
+        private _isCurrentPointControl;
+        private _currentPointIndex;
+        private _draggableArea;
+        constructor(props: ISvgDraggableAreaProps);
+        dragStart(e: React.TouchEvent<SVGSVGElement>): void;
+        dragStart(e: React.MouseEvent<SVGSVGElement, MouseEvent>): void;
+        drag(e: React.TouchEvent<SVGSVGElement>): void;
+        drag(e: React.MouseEvent<SVGSVGElement, MouseEvent>): void;
+        dragEnd(e: React.TouchEvent<SVGSVGElement>): void;
+        dragEnd(e: React.MouseEvent<SVGSVGElement, MouseEvent>): void;
+        getMousePosition(e: React.TouchEvent<SVGSVGElement>): BABYLON.Vector2 | undefined;
+        getMousePosition(e: React.MouseEvent<SVGSVGElement, MouseEvent>): BABYLON.Vector2 | undefined;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface IAnimationCurveEditorComponentProps {
         close: (event: any) => void;
+        playOrPause: () => void;
         title: string;
         animations: BABYLON.Animation[];
         entityName: string;
+        scene: BABYLON.Scene;
+        entity: BABYLON.IAnimatable;
     }
     export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, {
+        animations: BABYLON.Animation[];
+        animationName: string;
+        animationTargetProperty: string;
         isOpen: boolean;
         selected: BABYLON.Animation;
         currentPathData: string | undefined;
-        anchorPoints: {
-            point: BABYLON.Vector2;
-            anchor: BABYLON.Vector2;
-        }[] | null;
-        keyframes: BABYLON.Vector2[] | null;
+        svgKeyframes: IKeyframeSvgPoint[] | undefined;
     }> {
-        private _anchorPoints;
-        private _keyframes;
+        readonly _heightScale: number;
+        private _newAnimations;
+        private _svgKeyframes;
+        private _frames;
+        private _isPlaying;
         constructor(props: IAnimationCurveEditorComponentProps);
+        handleNameChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        handlePropertyChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        addAnimation(event: React.MouseEvent<HTMLDivElement>): void;
+        addKeyFrame(event: React.MouseEvent<SVGSVGElement>): void;
+        updateKeyframe(keyframe: BABYLON.Vector2, index: number): void;
         getAnimationProperties(animation: BABYLON.Animation): {
             easingType: string | undefined;
             easingMode: number | undefined;
         };
         getPathData(animation: BABYLON.Animation): string;
-        curvePath(keyframes: BABYLON.IAnimationKey[], data: string, heightScale: number, middle: number, easingFunction: BABYLON.EasingFunction): string;
-        linearInterpolation(keyframes: BABYLON.IAnimationKey[], data: string, heightScale: number, middle: number): string;
-        setAnchorPoint(point: BABYLON.Vector2, anchor: BABYLON.Vector2): void;
-        setKeyframePoint(point: BABYLON.Vector2): void;
+        drawAllFrames(initialKey: BABYLON.IAnimationKey, endKey: BABYLON.IAnimationKey, easingFunction: BABYLON.EasingFunction): void;
+        curvePath(keyframes: BABYLON.IAnimationKey[], data: string, middle: number, easingFunction: BABYLON.EasingFunction): string;
+        renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number): void;
+        linearInterpolation(keyframes: BABYLON.IAnimationKey[], data: string, middle: number): string;
+        setKeyframePointLinear(point: BABYLON.Vector2, index: number): void;
+        setKeyframePoint(controlPoints: BABYLON.Vector2[], index: number, keyframesCount: number): void;
+        isAnimationPlaying(): void;
         selectAnimation(animation: BABYLON.Animation): void;
         interpolateControlPoints(p0: BABYLON.Vector2, p1: BABYLON.Vector2, u: number, p2: BABYLON.Vector2, v: number, p3: BABYLON.Vector2): BABYLON.Vector2[] | undefined;
         render(): JSX.Element;
