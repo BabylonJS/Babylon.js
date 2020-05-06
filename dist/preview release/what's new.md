@@ -45,6 +45,7 @@
 - Curve Editor to view current entity's animations (Read only) ([pixelspace](https://github.com/devpixelspace))
 - Add support to update inspector when switching to new scene ([belfortk](https://github.com/belfortk))
 - Drag keyframes in Curve Editor ([pixelspace](https://github.com/devpixelspace))
+- Add timeline control to move through frames and keyframes ([pixelspace](https://github.com/devpixelspace))
 
 ### Cameras
 
