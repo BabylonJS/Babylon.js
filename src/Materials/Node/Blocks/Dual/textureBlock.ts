@@ -173,11 +173,13 @@ export class TextureBlock extends NodeMaterialBlock {
                     uvInput.connectTo(this);
                 }
             } else {
-                let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "uv");
+                const attributeName = material.mode === NodeMaterialModes.Particle ? "particle_uv" : "uv";
+
+                let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === attributeName);
 
                 if (!uvInput) {
                     uvInput = new InputBlock("uv");
-                    uvInput.setAsAttribute();
+                    uvInput.setAsAttribute(attributeName);
                 }
                 uvInput.output.connectTo(this.uv);
             }

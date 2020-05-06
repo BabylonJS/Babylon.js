@@ -468,8 +468,18 @@ export class BlockTools {
                 return new SubSurfaceBlock("SubSurface");
             case "CurrentScreenBlock":
                 return new CurrentScreenBlock("CurrentScreen");
+            case "ParticleUVBlock": {
+                let uv = new InputBlock("uv");
+                uv.setAsAttribute("particle_uv");
+                return uv;
+            }
             case "ParticleTextureBlock":
                 return new ParticleTextureBlock("ParticleTexture");
+            case "ParticleColorBlock": {
+                let color = new InputBlock("Color");
+                color.setAsAttribute("particle_color");
+                return color;
+            }
         }
 
         return null;

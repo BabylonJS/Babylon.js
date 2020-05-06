@@ -9,6 +9,18 @@ import { Color3 } from 'babylonjs/Maths/math.color';
 import { BlockTools } from '../../blockTools';
 import { StringTools } from '../../stringTools';
 
+const inputNameToAttributeValue: { [name: string] : string } = {
+    "position2d" : "position",
+    "particle_uv" : "uv",
+    "particle_color" : "color",
+};
+
+const inputNameToAttributeName: { [name: string] : string } = {
+    "position2d" : "postprocess",
+    "particle_uv" : "particle",
+    "particle_color" : "particle",
+};
+
 export class InputDisplayManager implements IDisplayManager {
     public getHeaderClass(block: NodeMaterialBlock) {
         let inputBlock = block as InputBlock;
@@ -64,8 +76,8 @@ export class InputDisplayManager implements IDisplayManager {
         let inputBlock = block as InputBlock;
 
         if (inputBlock.isAttribute) {
-            const attrVal = inputBlock.name === 'position2d' ? 'position' : inputBlock.name;
-            const attrName = inputBlock.name === 'position2d' ? 'postprocess' : 'mesh';
+            const attrVal = inputNameToAttributeValue[inputBlock.name] ?? inputBlock.name;
+            const attrName = inputNameToAttributeName[inputBlock.name] ?? 'mesh';
             value = attrName + "." + attrVal;
         } else if (inputBlock.isSystemValue) {
             switch (inputBlock.systemValue) {
