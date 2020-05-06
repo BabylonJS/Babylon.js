@@ -29,6 +29,7 @@ import { TextureBlock } from './Blocks/Dual/textureBlock';
 import { ReflectionTextureBaseBlock } from './Blocks/Dual/reflectionTextureBaseBlock';
 import { RefractionBlock } from './Blocks/PBR/refractionBlock';
 import { CurrentScreenBlock } from './Blocks/Dual/currentScreenBlock';
+import { ParticleTextureBlock } from './Blocks/Particle/particleTextureBlock';
 import { EffectFallbacks } from '../effectFallbacks';
 import { WebRequest } from '../../Misc/webRequest';
 import { Effect } from '../effect';
@@ -1080,7 +1081,7 @@ export class NodeMaterial extends PushMaterial {
      * Gets the list of texture blocks
      * @returns an array of texture blocks
      */
-    public getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock)[] {
+    public getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock | ParticleTextureBlock)[] {
         if (!this._sharedData) {
             return [];
         }

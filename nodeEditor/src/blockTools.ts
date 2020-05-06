@@ -72,6 +72,7 @@ import { ClearCoatBlock } from 'babylonjs/Materials/Node/Blocks/PBR/clearCoatBlo
 import { RefractionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/refractionBlock';
 import { SubSurfaceBlock } from 'babylonjs/Materials/Node/Blocks/PBR/subSurfaceBlock';
 import { CurrentScreenBlock } from 'babylonjs/Materials/Node/Blocks/Dual/currentScreenBlock';
+import { ParticleTextureBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleTextureBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
@@ -467,6 +468,8 @@ export class BlockTools {
                 return new SubSurfaceBlock("SubSurface");
             case "CurrentScreenBlock":
                 return new CurrentScreenBlock("CurrentScreen");
+            case "ParticleTextureBlock":
+                return new ParticleTextureBlock("ParticleTexture");
         }
 
         return null;
