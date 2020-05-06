@@ -753,8 +753,7 @@ export class NodeMaterial extends PushMaterial {
 
         this._processDefines(dummyMesh, defines);
 
-        Effect.ShadersStore[tempName + "VertexShader"] = this._vertexCompilationState._builtCompilationString;
-        Effect.ShadersStore[tempName + "PixelShader"] = this._fragmentCompilationState._builtCompilationString;
+        Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString);
 
         const postProcess = new PostProcess(
             this.name + "PostProcess", tempName, this._fragmentCompilationState.uniforms, this._fragmentCompilationState.samplers,
@@ -776,8 +775,7 @@ export class NodeMaterial extends PushMaterial {
             const result = this._processDefines(dummyMesh, defines);
 
             if (result) {
-                Effect.ShadersStore[tempName + "VertexShader"] = this._vertexCompilationState._builtCompilationString;
-                Effect.ShadersStore[tempName + "PixelShader"] = this._fragmentCompilationState._builtCompilationString;
+                Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString);
 
                 postProcess.updateEffect(defines.toString(), this._fragmentCompilationState.uniforms, this._fragmentCompilationState.samplers, { maxSimultaneousLights: this.maxSimultaneousLights }, undefined, undefined, tempName, tempName);
             }
