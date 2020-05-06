@@ -8,6 +8,7 @@ import { IAnimationKey } from 'babylonjs/Animations/animationKey';
 import { IKeyframeSvgPoint } from './keyframeSvgPoint';
 import { SvgDraggableArea } from './svgDraggableArea';
 import { Timeline } from './timeline';
+import { Playhead } from './playhead';
 import { Scene } from "babylonjs/scene";
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 
@@ -454,6 +455,8 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                             </ul>
                         </div>
                         <div className="graph-chart">
+
+                            <Playhead frame={this.state.currentFrame}/>
 
                             {this.state.svgKeyframes && <SvgDraggableArea keyframeSvgPoints={this.state.svgKeyframes} updatePosition={(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number) => this.renderPoints(updatedSvgKeyFrame, index)}>
 

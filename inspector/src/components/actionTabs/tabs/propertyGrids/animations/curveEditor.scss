@@ -134,6 +134,40 @@
                 overflow: visible;
                 background-color: 'aliceblue';
             }
+
+            .playhead-wrapper {
+                position: relative;
+                left: -13px;
+            }
+
+            .playhead {
+                width: fit-content;
+                background-color: #ffc60e;
+                color: black;
+                text-align: center;
+                min-width: 2em;
+                justify-content: center;
+                display: flex;
+                padding: 0.1em;
+                font-size: 0.75em;
+            }
+
+            .playhead-triangle {
+                background-color: transparent;
+                width: 0px;
+                height: 0px;
+                border-left: 13.5px solid transparent;
+                border-right: 13.5px solid transparent;
+                border-top: 12px solid #ffc60e;
+            }
+
+            .playhead-line {
+                width: 2px;
+                height: calc(45vh - 100px);
+                background-color: rgb(255, 198, 14);
+                position: absolute;
+                margin-left: 12.5px;
+            }
         }
     }
 
