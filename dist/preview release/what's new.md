@@ -6,6 +6,7 @@
 - Added the `ShadowDepthWrapper` class to support accurate shadow generation for custom as well as node material shaders. [Doc](https://doc.babylonjs.com/babylon101/shadows#custom-shadow-map-shaders) ([Popov72](https://github.com/Popov72))
 - Added Babylon.js Texture [tools](https://www.babylonjs.com/tools/ibl) to prefilter HDR files ([Sebavan](https://github.com/sebavan/))
 - Added editing of PBR materials and Post processes in the node material editor ([Popov72](https://github.com/Popov72))
+- Added Curve editor to view selected entity's animations in the Inspector ([pixelspace](https://github.com/devpixelspace))
 
 ## Updates
 
@@ -42,9 +43,7 @@
 - Added right click options to create PBR and Standard Materials ([Deltakosh](https://github.com/deltakosh))
 - Added support for recording GIF ([Deltakosh](https://github.com/deltakosh))
 - Popup Window available (To be used in Curve Editor) ([pixelspace](https://github.com/devpixelspace))
-- Curve Editor to view current entity's animations (Read only) ([pixelspace](https://github.com/devpixelspace))
 - Add support to update inspector when switching to new scene ([belfortk](https://github.com/belfortk))
-- Drag keyframes in Curve Editor ([pixelspace](https://github.com/devpixelspace))
 
 ### Cameras
 
