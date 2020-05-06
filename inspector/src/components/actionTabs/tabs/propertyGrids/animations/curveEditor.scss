@@ -59,6 +59,14 @@
             }
         }
 
+        .sample-chart{
+            .linear {
+                .draggable {
+                    cursor: move;
+                }
+            }
+        }
+
         .graph-chart{
             flex: 1 1 0%;
             margin: 25% auto;
