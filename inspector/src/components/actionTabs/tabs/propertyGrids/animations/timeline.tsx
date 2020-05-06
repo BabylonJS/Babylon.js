@@ -14,9 +14,11 @@ interface ITimelineProps {
 
 export class Timeline extends React.Component<ITimelineProps, {selected: IAnimationKey }>{ 
     readonly _frames: object[] = Array(300).fill({});
+    private _scrollable: React.RefObject<HTMLDivElement>;
     constructor(props: ITimelineProps) {
         super(props);
         this.state = { selected: this.props.selected };
+        this._scrollable = React.createRef();
     }
 
     handleInputChange(event: React.ChangeEvent<HTMLInputElement>){
@@ -26,14 +28,16 @@ export class Timeline extends React.Component<ITimelineProps, {selected: IAnimat
 
     nextFrame(event: React.MouseEvent<HTMLDivElement>){
         event.preventDefault();
-        this.props.onCurrentFrameChange(this.props.currentFrame + 1)
+        this.props.onCurrentFrameChange(this.props.currentFrame + 1);
+        (this._scrollable.current as HTMLDivElement).scrollLeft = this.props.currentFrame * 5;
 
     }
 
     previousFrame(event: React.MouseEvent<HTMLDivElement>){
         event.preventDefault();
         if (this.props.currentFrame !== 0) {
-        this.props.onCurrentFrameChange(this.props.currentFrame - 1)
+        this.props.onCurrentFrameChange(this.props.currentFrame - 1);
+        (this._scrollable.current as HTMLDivElement).scrollLeft = -(this.props.currentFrame * 5);
         }
     }
 
@@ -43,6 +47,7 @@ export class Timeline extends React.Component<ITimelineProps, {selected: IAnimat
         if (first) {
             this.props.onCurrentFrameChange(first.frame);
             this.setState({ selected: first });
+            (this._scrollable.current as HTMLDivElement).scrollLeft = first.frame * 5;
         }
     }
 
@@ -52,18 +57,20 @@ export class Timeline extends React.Component<ITimelineProps, {selected: IAnimat
         if (first) {
             this.props.onCurrentFrameChange(first.frame);
             this.setState({ selected: first });
+            (this._scrollable.current as HTMLDivElement).scrollLeft = -(first.frame * 5);
         }
     }
 
-    scrollToFrame() {
+    scrollToFrame(frame: number) {
         // scroll to current frame
+        (this._scrollable.current as HTMLDivElement).scrollLeft = frame * 10;
     }
     
     render() {
         return (
         <>
            <div className="timeline">
-               <div className="display-line">
+               <div ref={this._scrollable} className="display-line">
                    <svg viewBox="0 0 2010 100" style={{width: 2000}}>
                 
                    <line x1={this.props.currentFrame*10} y1="10" x2={this.props.currentFrame*10} y2="20" style={{stroke: '#12506b',strokeWidth:6}} /> 
