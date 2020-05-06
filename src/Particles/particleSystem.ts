@@ -214,6 +214,17 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     }
 
     /**
+     * Gets or sets the custom effect used to render the particles
+     */
+    public get customEffect(): Nullable<Effect> {
+        return this._customEffect;
+    }
+
+    public set customEffect(effect: Nullable<Effect>) {
+        this._customEffect = effect;
+    }
+
+    /**
      * Instantiates a particle system.
      * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
      * @param name The name of the particle system
