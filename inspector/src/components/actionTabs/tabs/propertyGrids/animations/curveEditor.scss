@@ -51,6 +51,8 @@
                     scrollbar-color: cornflowerblue slategrey;
                     scrollbar-width: thin;
                     margin-right: 2em;
+                    padding-left: 1em;
+                    padding-right: 1em;
 
                     &::-webkit-scrollbar{
                         height: 0.4em;
