@@ -343,8 +343,15 @@ export class SpriteManager implements ISpriteManager {
         this._vertexData[arrayOffset + 5] = sprite.height;
         this._vertexData[arrayOffset + 6] = offsetX;
         this._vertexData[arrayOffset + 7] = offsetY;
-        // Inverts
-        this._vertexData[arrayOffset + 8] = sprite.invertU ? 1 : 0;
+
+        // Inverts according to Right Handed
+        if (this._scene.useRightHandedSystem) {
+            this._vertexData[arrayOffset + 8] = sprite.invertU ? 0 : 1;
+        }
+        else {
+            this._vertexData[arrayOffset + 8] = sprite.invertU ? 1 : 0;
+        }
+
         this._vertexData[arrayOffset + 9] = sprite.invertV ? 1 : 0;
         // CellIfo
         if (this._packedAndReady) {
@@ -633,6 +640,13 @@ export class SpriteManager implements ISpriteManager {
         // VBOs
         engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
 
+        // Handle Right Handed
+        const culling = engine.depthCullingState.cull || true;
+        const zOffset = engine.depthCullingState.zOffset;
+        if (this._scene.useRightHandedSystem) {
+            engine.setState(culling, zOffset, false, false);
+        }
+
         // Draw order
         engine.setDepthFunctionToLessOrEqual();
         if (!this.disableDepthWrite) {
@@ -646,6 +660,11 @@ export class SpriteManager implements ISpriteManager {
         engine.setAlphaMode(this._blendMode);
         engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
         engine.setAlphaMode(Constants.ALPHA_DISABLE);
+
+        // Restore Right Handed
+        if (this._scene.useRightHandedSystem) {
+            engine.setState(culling, zOffset, false, true);
+        }
     }
 
     /**
