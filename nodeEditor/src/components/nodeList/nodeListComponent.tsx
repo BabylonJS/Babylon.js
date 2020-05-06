@@ -183,10 +183,17 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         switch (this.props.globalState.mode) {
             case NodeMaterialModes.Material:
                 delete allBlocks["PostProcess"];
+                delete allBlocks["Particle"];
                 break;
             case NodeMaterialModes.PostProcess:
                 delete allBlocks["Animation"];
                 delete allBlocks["Mesh"];
+                delete allBlocks["Particle"];
+                break;
+            case NodeMaterialModes.Particle:
+                delete allBlocks["Animation"];
+                delete allBlocks["Mesh"];
+                delete allBlocks["PostProcess"];
                 break;
         }
 
