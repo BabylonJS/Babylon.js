@@ -83,6 +83,11 @@ export class Sprite {
     }
 
     /**
+     * Gets or sets the unique id of the sprite
+     */
+    public uniqueId: number;    
+
+    /**
      * Creates a new Sprite
      * @param name defines the name
      * @param manager defines the manager
@@ -94,9 +99,18 @@ export class Sprite {
         this._manager = manager;
 
         this._manager.sprites.push(this);
+        this.uniqueId = this._manager.scene.getUniqueId();
 
         this.position = Vector3.Zero();
     }
+
+    /**
+     * Returns the string "Sprite"
+     * @returns "Sprite"
+     */
+    public getClassName(): string {
+        return "Sprite";
+    }    
 
     /**
      * Starts an animation
