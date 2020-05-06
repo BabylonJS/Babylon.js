@@ -67,7 +67,8 @@ jobs:
       useXcpretty: false
     displayName: 'Build iOS'
     
-- job: win32_x64    
+- job: win32_x64
+  timeoutInMinutes: 20
   pool:
     vmImage: 'windows-latest'
 
@@ -88,8 +89,21 @@ jobs:
       maximumCpuCount: true
       configuration: 'Release'
     displayName: 'Build WIN32_x64'
+  - script: |
+      cd buildWin32_x64\Apps\ValidationTests
+      mkdir Results
+      mkdir Errors
+      cd Release
+      ValidationTests
+    displayName: 'Validation Tests'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      artifactName: 'Win32_x64 Rendered Pictures'
+      pathtoPublish: 'buildWin32_x64/Apps/ValidationTests/Results'
+    displayName: 'Publish Tests Win32_x64 Results'
     
-- job: win32_x86    
+- job: win32_x86
+  timeoutInMinutes: 20 
   pool:
     vmImage: 'windows-latest'
 
@@ -110,6 +124,18 @@ jobs:
       maximumCpuCount: true
       configuration: 'Release'
     displayName: 'Build WIN32_x86'
+  - script: |
+      cd buildWin32_x86\Apps\ValidationTests
+      mkdir Results
+      mkdir Errors
+      cd Release
+      ValidationTests
+    displayName: 'Validation Tests'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      artifactName: 'Win32_x86 Rendered Pictures'
+      pathtoPublish: 'buildWin32_x86/Apps/ValidationTests/Results'
+    displayName: 'Publish Tests Win32_x86 Results'
     
 - job: uwp_x64    
   pool:

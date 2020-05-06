@@ -30,7 +30,7 @@ namespace Babylon::Polyfills::Internal
         // TODO: Find why
         napi_ref result;
         napi_create_reference(env, jsWindow, 1, &result);
-        
+
         jsNative.Set(JS_WINDOW_NAME, jsWindow);
 
         if (global.Get(JS_SET_TIMEOUT_NAME).IsUndefined())

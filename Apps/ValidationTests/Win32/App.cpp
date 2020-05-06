@@ -11,8 +11,6 @@
 #include <filesystem>
 #include <algorithm>
 
-bool doExit = false;
-int errorCode{};
 #include <Shared/TestUtils.h>
 
 #include <Babylon/AppRuntime.h>
@@ -31,7 +29,6 @@ HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 std::unique_ptr<Babylon::AppRuntime> runtime{};
-bool _NoWindow{};                               // No window for CI
 
 // 600, 400 mandatory size for CI tests
 static const int TEST_WIDTH = 600;
@@ -144,17 +141,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
-
-    std::vector<std::string> args = GetCommandLineArguments();
-    if (std::find(args.begin(), args.end(), "-NoWindow") != args.end())
-    {
-        Initialize((HWND)1);
-        while (!doExit)
-        {
-        };
-        Uninitialize();
-        return errorCode;
-    }
 
     // Initialize global strings
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);

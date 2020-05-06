@@ -7,9 +7,6 @@
 #undef None
 #include <filesystem>
 
-bool exitPending{};
-int exitErrorCode{};
-
 #include <Shared/TestUtils.h>
 
 #include <Babylon/AppRuntime.h>
@@ -161,7 +158,7 @@ int main(int _argc, const char* const* _argv)
     UpdateWindowSize(width, height);
 
     
-    while (!exitPending)
+    while (!doExit)
     {
         XEvent event;
         XNextEvent(display, &event);
@@ -172,7 +169,7 @@ int main(int _argc, const char* const* _argv)
             case ClientMessage:
                 if ( (Atom)event.xclient.data.l[0] == wmDeleteWindow)
                 {
-                    exitPending = true;
+                    doExit = true;
                 }
                 break;
             case ConfigureNotify:
@@ -188,5 +185,5 @@ int main(int _argc, const char* const* _argv)
 
     XUnmapWindow(display, window);
     XDestroyWindow(display, window);
-    return exitErrorCode;
+    return errorCode;
 }
