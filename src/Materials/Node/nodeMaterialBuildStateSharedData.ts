@@ -111,6 +111,8 @@ export class NodeMaterialBuildStateSharedData {
         notConnectedNonOptionalInputs: new Array<NodeMaterialConnectionPoint>()
     };
 
+    public allowEmptyVertexProgram: boolean = false;
+
     /** Creates a new shared data */
     public constructor() {
         // Exclude usual attributes from free variable names
@@ -154,7 +156,7 @@ export class NodeMaterialBuildStateSharedData {
     public emitErrors() {
         let errorMessage = "";
 
-        if (!this.checks.emitVertex) {
+        if (!this.checks.emitVertex && !this.allowEmptyVertexProgram) {
             errorMessage += "NodeMaterial does not have a vertex output. You need to at least add a block that generates a glPosition value.\r\n";
         }
         if (!this.checks.emitFragment) {

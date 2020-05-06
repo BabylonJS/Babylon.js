@@ -598,7 +598,9 @@ export class NodeMaterial extends PushMaterial {
         this._buildWasSuccessful = false;
         var engine = this.getScene().getEngine();
 
-        if (this._vertexOutputNodes.length === 0) {
+        const allowEmptyVertexProgram = this._mode === NodeMaterialModes.Particle;
+
+        if (this._vertexOutputNodes.length === 0 && !allowEmptyVertexProgram) {
             throw "You must define at least one vertexOutputNode";
         }
 
@@ -622,6 +624,7 @@ export class NodeMaterial extends PushMaterial {
         this._sharedData.emitComments = this._options.emitComments;
         this._sharedData.verbose = verbose;
         this._sharedData.scene = this.getScene();
+        this._sharedData.allowEmptyVertexProgram = allowEmptyVertexProgram;
 
         // Initialize blocks
         let vertexNodes: NodeMaterialBlock[] = [];
