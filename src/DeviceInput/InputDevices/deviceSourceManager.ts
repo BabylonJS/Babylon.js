@@ -1,9 +1,10 @@
 import { DeviceInputSystem, POINTER_DEVICE, KEYBOARD_DEVICE, MOUSE_DEVICE } from '../deviceInputSystem';
 import { Engine } from '../../Engines/engine';
 import { IDisposable } from '../../scene';
-import { DeviceType, DeviceInputs } from './deviceEnums';
+import { DeviceType } from './deviceEnums';
 import { Nullable } from '../../types';
 import { Observable } from '../../Misc/observable';
+import { DeviceInput } from './deviceTypes';
 
 /**
  * Class that handles all input for a specific device
@@ -12,8 +13,8 @@ export class DeviceSource<T extends DeviceType> {
     /**
      * Observable to handle device input changes per device
      */
-    public onInputChangedObservable = new Observable<{ inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number> }>();
-    private _deviceInputSystem: DeviceInputSystem;
+    public readonly onInputChangedObservable = new Observable<{ inputIndex: DeviceInput<T>, previousState: Nullable<number>, currentState: Nullable<number> }>();
+    private readonly _deviceInputSystem: DeviceInputSystem;
     private _touchPoints: Array<string>;
 
     /**
@@ -25,11 +26,11 @@ export class DeviceSource<T extends DeviceType> {
      */
     constructor(deviceInputSystem: DeviceInputSystem,
         /** Name of device to be used by DeviceInputSystem */
-        public deviceName: string,
+        public readonly deviceName: string,
         /** Type of device */
-        public deviceType: DeviceInputs<T>,
+        public readonly deviceType: DeviceType,
         /** "Slot" or index that device is referenced in */
-        public deviceSlot: number = 0) {
+        public readonly deviceSlot: number = 0) {
         this._deviceInputSystem = deviceInputSystem;
 
         if (deviceType == DeviceType.Touch) {
@@ -42,7 +43,7 @@ export class DeviceSource<T extends DeviceType> {
      * @param inputIndex index of specific input on device
      * @returns Input value from DeviceInputSystem
      */
-    public getInput(inputIndex: T): Nullable<number> {
+    public getInput(inputIndex: DeviceInput<T>): Nullable<number> {
         if (this.deviceType == DeviceType.Touch) {
             return this._deviceInputSystem.pollInput(this._touchPoints[this.deviceSlot], inputIndex);
         }
@@ -114,7 +115,7 @@ export class DeviceSourceManager implements IDisposable {
         this._deviceInputSystem = new DeviceInputSystem(engine);
 
         this._deviceInputSystem.onDeviceConnected = (deviceName) => {
-            const deviceType = this._getDeviceTypeFromName(deviceName);
+            const deviceType = this._getDeviceType(deviceName);
             const deviceSlot = this._getDeviceSlot(deviceName);
 
             this.onBeforeDeviceConnectedObservable.notifyObservers({ deviceType, deviceSlot });
@@ -122,7 +123,7 @@ export class DeviceSourceManager implements IDisposable {
             this.onAfterDeviceConnectedObservable.notifyObservers({ deviceType, deviceSlot });
         };
         this._deviceInputSystem.onDeviceDisconnected = (deviceName) => {
-            const deviceType = this._getDeviceTypeFromName(deviceName);
+            const deviceType = this._getDeviceType(deviceName);
             const deviceSlot = this._getDeviceSlot(deviceName);
 
             this.onBeforeDeviceDisconnectedObservable.notifyObservers({ deviceType, deviceSlot });
@@ -130,9 +131,9 @@ export class DeviceSourceManager implements IDisposable {
             this.onAfterDeviceDisconnectedObservable.notifyObservers({ deviceType, deviceSlot });
         };
 
-        if (!this._deviceInputSystem.observeInput && enableObserveEvents) {
-            this._deviceInputSystem.observeInput = (deviceName, inputIndex, previousState, currentState) => {
-                const deviceType = this._getDeviceTypeFromName(deviceName);
+        if (!this._deviceInputSystem.onInputChanged && enableObserveEvents) {
+            this._deviceInputSystem.onInputChanged = (deviceName, inputIndex, previousState, currentState) => {
+                const deviceType = this._getDeviceType(deviceName);
                 const deviceSlot = this._getDeviceSlot(deviceName);
 
                 if (deviceType == DeviceType.Keyboard || deviceType == DeviceType.Mouse || deviceType == DeviceType.Touch) {
@@ -144,27 +145,12 @@ export class DeviceSourceManager implements IDisposable {
 
     // Public Functions
     /**
-     * Checks for current device input value, given DeviceType, slot, and inputIndex
-     * @param type Enum specifiying device type
-     * @param inputIndex Index of device input
-     * @param deviceSlot "Slot" or index that device is referenced in
-     * @returns Current value of input
-     */
-    public getInput<T extends DeviceType>(type: T, inputIndex: DeviceInputs<T>, deviceSlot: number = this._firstDevice[type]): Nullable<number> {
-        if (!this._devices[type] || this._firstDevice[type] === undefined || this._devices[type][deviceSlot] === undefined) {
-            return null;
-        }
-
-        return this._devices[type][deviceSlot].getInput(inputIndex);
-    }
-
-    /**
      * Gets a DeviceSource, given a type and slot
      * @param deviceType Enum specifiying device type
      * @param deviceSlot "Slot" or index that device is referenced in
      * @returns DeviceSource object
      */
-    public getDeviceSource(deviceType: DeviceType, deviceSlot: number = this._firstDevice[deviceType]): Nullable<DeviceSource<DeviceType>> {
+    public getDeviceSource<T extends DeviceType>(deviceType: T, deviceSlot: number = this._firstDevice[deviceType]): Nullable<DeviceSource<T>> {
         if (!this._devices[deviceType] || this._firstDevice[deviceType] === undefined || this._devices[deviceType][deviceSlot] === undefined) {
             return null;
         }
@@ -177,7 +163,7 @@ export class DeviceSourceManager implements IDisposable {
      * @param deviceType Enum specifiying device type
      * @returns Array of DeviceSource objects
      */
-    public getDeviceSources(deviceType: DeviceType): ReadonlyArray<DeviceSource<DeviceType>> {
+    public getDeviceSources<T extends DeviceType>(deviceType: T): ReadonlyArray<DeviceSource<T>> {
         return this._devices[deviceType];
     }
 
@@ -195,7 +181,7 @@ export class DeviceSourceManager implements IDisposable {
      */
     private _addDevice(deviceName: string) {
         const deviceSlot = this._getDeviceSlot(deviceName);
-        const deviceType = this._getDeviceTypeFromName(deviceName);
+        const deviceType = this._getDeviceType(deviceName);
 
         if (!this._devices[deviceType]) {
             this._devices[deviceType] = new Array<DeviceSource<DeviceType>>();
@@ -222,7 +208,7 @@ export class DeviceSourceManager implements IDisposable {
      */
     private _removeDevice(deviceName: string) {
         const deviceSlot = this._getDeviceSlot(deviceName);
-        const deviceType = this._getDeviceTypeFromName(deviceName);
+        const deviceType = this._getDeviceType(deviceName);
 
         if (deviceType == DeviceType.Touch) {
             this._devices[deviceType][0].removeTouchPoints(deviceName);
@@ -263,17 +249,13 @@ export class DeviceSourceManager implements IDisposable {
             case DeviceType.Xbox:
             case DeviceType.Switch:
             case DeviceType.Generic:
-                let i = 0;
-                let first = -1;
-
-                while (first < 0 && i < this._devices[type].length) {
-                    if (this._devices[type][i]) {
-                        first = i;
+                const devices = this._devices[type];
+                for (let i = 0; i < devices.length; i++) {
+                    if (devices[i]) {
+                        this._firstDevice[type] = i;
+                        break;
                     }
-                    i++;
                 }
-
-                this._firstDevice[type] = first;
                 break;
         }
     }
@@ -283,23 +265,23 @@ export class DeviceSourceManager implements IDisposable {
      * @param deviceName Name of Device from DeviceInputSystem
      * @returns DeviceType enum value
      */
-    private _getDeviceTypeFromName(deviceName: string): DeviceType {
+    private _getDeviceType(deviceName: string): DeviceType {
         if (deviceName == KEYBOARD_DEVICE) {
             return DeviceType.Keyboard;
         }
         else if (deviceName == MOUSE_DEVICE) {
             return DeviceType.Mouse;
         }
-        else if (deviceName.search(POINTER_DEVICE) !== -1) {
+        else if (deviceName.indexOf(POINTER_DEVICE) !== -1) {
             return DeviceType.Touch;
         }
-        else if (deviceName.search("054c") !== -1) { // DualShock 4 Gamepad
+        else if (deviceName.indexOf("054c") !== -1) { // DualShock 4 Gamepad
             return DeviceType.DualShock;
         }
-        else if (deviceName.search("Xbox One") !== -1 || deviceName.search("Xbox 360") !== -1 || deviceName.search("xinput") !== -1) { // Xbox Gamepad
+        else if (deviceName.indexOf("Xbox One") !== -1 || deviceName.search("Xbox 360") !== -1 || deviceName.search("xinput") !== -1) { // Xbox Gamepad
             return DeviceType.Xbox;
         }
-        else if (deviceName.search("057e") !== -1) { // Switch Gamepad
+        else if (deviceName.indexOf("057e") !== -1) { // Switch Gamepad
             return DeviceType.Switch;
         }
 

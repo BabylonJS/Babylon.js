@@ -3,27 +3,20 @@ import { IDisposable } from '../scene';
 import { Nullable } from '../types';
 
 /**
- * Pointer device string
+ * POINTER_DEVICE
  * @hidden
  */
-const POINTER_DEVICE: string = "Pointer";
+export const POINTER_DEVICE: string = "Pointer";
 /**
- * Keyboard device string
+ * KEYBOARD_DEVICE
  * @hidden
  */
-const KEYBOARD_DEVICE: string = "Keyboard";
+export const KEYBOARD_DEVICE: string = "Keyboard";
 /**
- * Mouse device string
+ * MOUSE_DEVICE
  * @hidden
  */
-const MOUSE_DEVICE: string = "Mouse";
-
-/** POINTER_DEVICE */
-export { POINTER_DEVICE };
-/** KEYBOARD_DEVICE */
-export { KEYBOARD_DEVICE };
-/** MOUSE_DEVICE */
-export { MOUSE_DEVICE };
+export const MOUSE_DEVICE: string = "Mouse";
 
 /**
  * This class will take all inputs from Keyboard, Pointer, and
@@ -45,7 +38,7 @@ export class DeviceInputSystem implements IDisposable {
     /**
      * Callback to be triggered when event driven input is updated
      */
-    public observeInput: (deviceName: string, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>) => void;
+    public onInputChanged: (deviceName: string, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>) => void;
 
     // Private Members
     private _inputs: { [key: string]: Array<Nullable<number>> } = {};
@@ -168,8 +161,8 @@ export class DeviceInputSystem implements IDisposable {
 
             const kbKey = this._inputs[KEYBOARD_DEVICE];
             if (kbKey) {
-                if (this.observeInput) {
-                    this.observeInput(KEYBOARD_DEVICE, evt.keyCode, kbKey[evt.keyCode], 1);
+                if (this.onInputChanged) {
+                    this.onInputChanged(KEYBOARD_DEVICE, evt.keyCode, kbKey[evt.keyCode], 1);
                 }
                 kbKey[evt.keyCode] = 1;
             }
@@ -178,8 +171,8 @@ export class DeviceInputSystem implements IDisposable {
         this._keyboardUpEvent = ((evt) => {
             const kbKey = this._inputs[KEYBOARD_DEVICE];
             if (kbKey) {
-                if (this.observeInput) {
-                    this.observeInput(KEYBOARD_DEVICE, evt.keyCode, kbKey[evt.keyCode], 0);
+                if (this.onInputChanged) {
+                    this.onInputChanged(KEYBOARD_DEVICE, evt.keyCode, kbKey[evt.keyCode], 0);
                 }
                 kbKey[evt.keyCode] = 0;
             }
@@ -203,9 +196,9 @@ export class DeviceInputSystem implements IDisposable {
 
             const pointer = this._inputs[deviceName];
             if (pointer) {
-                if (this.observeInput) {
-                    this.observeInput(deviceName, 0, pointer[0], evt.clientX);
-                    this.observeInput(deviceName, 1, pointer[1], evt.clientY);
+                if (this.onInputChanged) {
+                    this.onInputChanged(deviceName, 0, pointer[0], evt.clientX);
+                    this.onInputChanged(deviceName, 1, pointer[1], evt.clientY);
                 }
                 pointer[0] = evt.clientX;
                 pointer[1] = evt.clientY;
@@ -222,10 +215,10 @@ export class DeviceInputSystem implements IDisposable {
 
             const pointer = this._inputs[deviceName];
             if (pointer) {
-                if (this.observeInput) {
-                    this.observeInput(deviceName, 0, pointer[0], evt.clientX);
-                    this.observeInput(deviceName, 1, pointer[1], evt.clientY);
-                    this.observeInput(deviceName, evt.button + 2, pointer[evt.button + 2], 1);
+                if (this.onInputChanged) {
+                    this.onInputChanged(deviceName, 0, pointer[0], evt.clientX);
+                    this.onInputChanged(deviceName, 1, pointer[1], evt.clientY);
+                    this.onInputChanged(deviceName, evt.button + 2, pointer[evt.button + 2], 1);
                 }
                 pointer[0] = evt.clientX;
                 pointer[1] = evt.clientY;
@@ -238,12 +231,13 @@ export class DeviceInputSystem implements IDisposable {
 
             const pointer = this._inputs[deviceName];
             if (pointer) {
-                if (this.observeInput) {
-                    this.observeInput(deviceName, evt.button + 2, pointer[evt.button + 2], 0);
+                if (this.onInputChanged) {
+                    this.onInputChanged(deviceName, evt.button + 2, pointer[evt.button + 2], 0);
                 }
                 pointer[evt.button + 2] = 0;
             }
-            if (evt.pointerType != "mouse") // Don't unregister the mouse
+            // We don't want to unregister the mouse because we may miss input data when a mouse is moving after a click
+            if (evt.pointerType != "mouse")
             {
                 this._unregisterDevice(deviceName);
             }
