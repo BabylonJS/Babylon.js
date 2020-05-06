@@ -1270,6 +1270,27 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Clear the current material and set it to a default state for particle
+     */
+    public setToDefaultParticle() {
+        this.clear();
+
+        this.editorData = null;
+
+        // Pixel
+        var pixelColor = new InputBlock("color");
+        pixelColor.value = new Color4(0.8, 0.8, 0.8, 1);
+
+        var fragmentOutput = new FragmentOutputBlock("FragmentOutput");
+        pixelColor.connectTo(fragmentOutput);
+
+        // Add to nodes
+        this.addOutputNode(fragmentOutput);
+
+        this._mode = NodeMaterialModes.Particle;
+    }
+
+    /**
      * Loads the current Node Material from a url pointing to a file save by the Node Material Editor
      * @param url defines the url to load from
      * @returns a promise that will fullfil when the material is fully loaded
