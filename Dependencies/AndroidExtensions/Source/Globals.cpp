@@ -55,10 +55,10 @@ namespace android::global
         RequestPermissionsResultEvent g_requestPermissionsResultEvent{};
     }
 
-    void Initialize(JavaVM* javaVM, jobject appContext)
+    void Initialize(JavaVM* javaVM, jobject context)
     {
         g_javaVM = javaVM;
-        g_appContext = appContext;
+        g_appContext = GetEnvForCurrentThread()->NewGlobalRef(android::content::Context{context}.getApplicationContext());
     }
 
     JNIEnv* GetEnvForCurrentThread()

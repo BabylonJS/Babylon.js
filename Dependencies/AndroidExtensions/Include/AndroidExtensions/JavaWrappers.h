@@ -162,6 +162,8 @@ namespace android::content
     public:
         Context(jobject object);
 
+        Context getApplicationContext();
+
         res::AssetManager getAssets() const;
 
         template<typename ServiceT>

@@ -43,7 +43,7 @@ extern "C"
     }
 
     JNIEXPORT void JNICALL
-    Java_BabylonNative_Wrapper_surfaceCreated(JNIEnv* env, jclass clazz, jobject surface, jobject appContext)
+    Java_BabylonNative_Wrapper_surfaceCreated(JNIEnv* env, jclass clazz, jobject surface, jobject context)
     {
         if (!g_runtime)
         {
@@ -55,16 +55,13 @@ extern "C"
                 throw std::runtime_error("Failed to get Java VM");
             }
 
-            // TODO: This should be cleaned up via env->DeleteGlobalRef
-            auto globalAppContext = env->NewGlobalRef(appContext);
-
-            android::global::Initialize(javaVM, globalAppContext);
+            android::global::Initialize(javaVM, context);
 
             ANativeWindow* window = ANativeWindow_fromSurface(env, surface);
             int32_t width  = ANativeWindow_getWidth(window);
             int32_t height = ANativeWindow_getHeight(window);
 
-            g_runtime->Dispatch([javaVM, globalAppContext, window, width, height](Napi::Env env)
+            g_runtime->Dispatch([javaVM, window, width, height](Napi::Env env)
             {
                 Babylon::Polyfills::Console::Initialize(env, [](const char* message, Babylon::Polyfills::Console::LogLevel level)
                 {

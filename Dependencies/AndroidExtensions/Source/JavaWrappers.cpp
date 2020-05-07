@@ -171,6 +171,11 @@ namespace android::content
     {
     }
 
+    Context Context::getApplicationContext()
+    {
+        return {m_env->CallObjectMethod(m_object, m_env->GetMethodID(m_class, "getApplicationContext", "()Landroid/content/Context;"))};
+    }
+
     res::AssetManager Context::getAssets() const
     {
         return {m_env->CallObjectMethod(m_object, m_env->GetMethodID(m_class, "getAssets", "()Landroid/content/res/AssetManager;"))};
