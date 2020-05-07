@@ -1367,11 +1367,21 @@ export class NodeMaterial extends PushMaterial {
         this.editorData = null;
 
         // Pixel
-        var pixelColor = new InputBlock("color");
-        pixelColor.value = new Color4(0.8, 0.8, 0.8, 1);
+        const uv = new InputBlock("uv");
+        uv.setAsAttribute("particle_uv");
+
+        const texture = new ParticleTextureBlock("ParticleTexture");
+        uv.connectTo(texture);
+
+        const color = new InputBlock("Color");
+        color.setAsAttribute("particle_color");
+
+        const multiply = new MultiplyBlock("texture * color");
+        texture.connectTo(multiply);
+        color.connectTo(multiply);
 
         var fragmentOutput = new FragmentOutputBlock("FragmentOutput");
-        pixelColor.connectTo(fragmentOutput);
+        multiply.connectTo(fragmentOutput);
 
         // Add to nodes
         this.addOutputNode(fragmentOutput);
