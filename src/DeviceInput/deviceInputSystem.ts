@@ -188,7 +188,7 @@ export class DeviceInputSystem implements IDisposable {
         this._pointerMoveEvent = ((evt) => {
             const deviceType = (evt.pointerType == "mouse") ? DeviceType.Mouse : DeviceType.Touch;
             const deviceSlot = (evt.pointerType == "mouse") ? 0 : evt.pointerId;
-            
+
             if (!this._inputs[deviceType]) {
                 this._inputs[deviceType] = [];
             }
@@ -276,7 +276,7 @@ export class DeviceInputSystem implements IDisposable {
             if (this._gamepads) {
                 const deviceType = this._getGamepadDeviceType(evt.gamepad.id);
                 const deviceSlot = evt.gamepad.index;
-                
+
                 this._unregisterDevice(deviceType, deviceSlot);
                 delete this._gamepads[deviceSlot];
             }
