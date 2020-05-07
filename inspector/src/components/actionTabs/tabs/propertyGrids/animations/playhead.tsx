@@ -12,7 +12,7 @@ export class Playhead extends React.Component<IPlayheadProps>{
     
     render() { 
        return (
-           <div className="playhead-wrapper" id="playhead" style={{left: `calc(${this.props.frame * 3.02}px - 13px)`}}>
+           <div className="playhead-wrapper" id="playhead" style={{left: `calc(${this.props.frame * 4}px - 13px)`}}>
             <div className="playhead">{this.props.frame}</div>
             <div className="playhead-triangle"></div>
             <div className="playhead-line"></div>

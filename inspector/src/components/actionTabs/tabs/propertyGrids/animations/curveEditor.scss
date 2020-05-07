@@ -34,6 +34,7 @@
             justify-content: flex-start;
             flex-direction: row;
             width: 100vw;
+            height: 85vh;
 
             .timeline{
                 width: 100vw;
@@ -128,13 +129,32 @@
 
         .graph-chart{
             flex: 1 1 0%;
-            margin: 25% auto;
+            overflow-x: scroll;
             padding-left: 32px;
+            overflow-y: scroll;
+            scroll-behavior: smooth;
+            background-color: #444444;
+
             .linear{
-                width: 300px;
-                height: 300px;
+                height: 360px;
                 overflow: visible;
-                background-color: 'aliceblue';
+                border: 0px solid lightgrey;
+
+                svg {
+                    overflow: visible;
+                }
+
+                &:focus {
+                    outline-color: transparent;
+                }
+
+                line {
+                    stroke: #cecece;
+                    stroke-width: 0.2;
+                }
+                text {
+                    fill: #cecece;
+                }
             }
 
             .playhead-wrapper {
@@ -165,7 +185,7 @@
 
             .playhead-line {
                 width: 2px;
-                height: calc(45vh - 100px);
+                height: calc(90vh - 100px);
                 background-color: rgb(255, 198, 14);
                 position: absolute;
                 margin-left: 12.5px;
