@@ -14,7 +14,7 @@ export class DeviceSource<T extends DeviceType> {
     /**
      * Observable to handle device input changes per device
      */
-    public readonly onInputChangedObservable = new Observable<{ inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number> }>();
+    public readonly onInputChangedObservable = new Observable<{ inputIndex: DeviceInput<T>, previousState: Nullable<number>, currentState: Nullable<number> }>();
 
     // Private Members
     private readonly _deviceInputSystem: DeviceInputSystem;
