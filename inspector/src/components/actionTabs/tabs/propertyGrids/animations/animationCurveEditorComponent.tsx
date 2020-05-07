@@ -1,6 +1,6 @@
 import * as React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { Animation } from 'babylonjs/Animations/animation';
 import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { EasingFunction, BezierCurveEase } from 'babylonjs/Animations/easing';
@@ -10,6 +10,7 @@ import { SvgDraggableArea } from './svgDraggableArea';
 import { Timeline } from './timeline';
 import { Playhead } from './playhead';
 import { Scene } from "babylonjs/scene";
+import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 
 require("./curveEditor.scss");
@@ -31,7 +32,8 @@ interface ICanvasAxis {
 export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, { animations: Animation[], animationName: string, animationTargetProperty: string, isOpen: boolean, selected: Animation, currentPathData: string | undefined, svgKeyframes: IKeyframeSvgPoint[] | undefined, currentFrame: number, frameAxisLength: ICanvasAxis[] }> {
 
     readonly _heightScale: number = 100;
-    readonly _canvasLength: number = 100;
+    readonly _canvasLength: number = 20;
+    private _playheadOffset: number = 0;
     private _newAnimations: Animation[] = [];
     private _svgKeyframes: IKeyframeSvgPoint[] = [];
     private _frames: Vector2[] = [];
@@ -41,6 +43,13 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         super(props);
         this._graphCanvas = React.createRef();
         this.state = { animations: this._newAnimations, selected: this.props.animations[0], isOpen: true, currentPathData: this.getPathData(this.props.animations[0]), svgKeyframes: this._svgKeyframes, animationTargetProperty: 'position.x', animationName: "", currentFrame: 0, frameAxisLength: (new Array(this._canvasLength)).fill(0).map((s, i) => { return { value: i * 10 } }) }
+    }
+
+    componentDidMount() {
+        if (this._graphCanvas.current){
+            this._playheadOffset = (this._graphCanvas.current.children[1].clientWidth)/(this._canvasLength * 10)
+        }
+     
     }
 
     handleNameChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -53,8 +62,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         this.setState({ animationTargetProperty: event.target.value });
     }
 
-    addAnimation(event: React.MouseEvent<HTMLDivElement>) {
-        event.preventDefault();
+    addAnimation() {
         if (this.state.animationName != "" && this.state.animationTargetProperty != "") {
             let animation = new Animation(this.state.animationName, this.state.animationTargetProperty, 30, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE);
 
@@ -435,19 +443,18 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                         <div className="animation-list">
 
                             <div>
-                                <div>
+                                <div className="label-input">
                                     <label>Animation Name</label>
                                     <input type="text" value={this.state.animationName} onChange={(e) => this.handleNameChange(e)}></input>
                                 </div>
-                                <div>
+                                <div className="label-input">
                                     <label>Target Property</label>
                                     <input type="text" value={this.state.animationTargetProperty} onChange={(e) => this.handlePropertyChange(e)}></input>
                                 </div>
-                                <div className="add" onClick={(e) => this.addAnimation(e)}>
-                                    <FontAwesomeIcon icon={faPlusCircle} />
-                                </div>
+                                <ButtonLineComponent label={"Add Animation"} onClick={() => this.addAnimation()} />
                             </div>
 
+                            <div className="object-tree">
                             <h2>{this.props.entityName}</h2>
                             <ul>
                                 {this.props.animations && this.props.animations.map((animation, i) => {
@@ -455,18 +462,11 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                                 })}
 
                             </ul>
-
-                            <h2>New Animations</h2>
-                            <ul>
-                                {this.state.animations && this.state.animations.map((animation, i) => {
-                                    return <li className={this.state.selected.name === animation.name ? 'active' : ''} key={i} onClick={() => this.selectAnimation(animation)}>{animation.name} <strong>{animation.targetProperty}</strong></li>
-                                })}
-
-                            </ul>
+                            </div>
                         </div>
                         <div ref={this._graphCanvas} className="graph-chart" onScroll={() => this.graphCanvasScroll()}>
 
-                            <Playhead frame={this.state.currentFrame} />
+                            <Playhead frame={this.state.currentFrame} offset={this._playheadOffset} />
 
                             {this.state.svgKeyframes && <SvgDraggableArea keyframeSvgPoints={this.state.svgKeyframes} updatePosition={(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number) => this.renderPoints(updatedSvgKeyFrame, index)}>
 

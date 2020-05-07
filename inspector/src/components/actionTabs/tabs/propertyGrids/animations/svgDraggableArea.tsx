@@ -197,7 +197,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
                     // Add way to add new keyframe
                     onClick={(e) => this.focus(e)}
 
-                    viewBox="0 0 1000 100">
+                    viewBox="0 0 200 100">
 
                     {this.props.children}
                     {this.props.keyframeSvgPoints.map((keyframe, i) =>
