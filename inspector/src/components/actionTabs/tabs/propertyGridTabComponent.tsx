@@ -146,6 +146,7 @@ export class PropertyGridTabComponent extends PaneComponent {
                 return (<SpritePropertyGridComponent sprite={sprite}
                     globalState={this.props.globalState}
                     lockObject={this._lockObject}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
 
@@ -153,7 +154,8 @@ export class PropertyGridTabComponent extends PaneComponent {
                 const spriteManager = entity as SpriteManager;
                 return (<SpriteManagerPropertyGridComponent spriteManager={spriteManager}
                     globalState={this.props.globalState}
-                    lockObject={this._lockObject}
+                    lockObject={this._lockObject}                    
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
 
