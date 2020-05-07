@@ -224,6 +224,20 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         this._customEffect = effect;
     }
 
+    /** @hidden */
+    private _onBeforeDrawParticlesObservable: Nullable<Observable<Nullable<Effect>>> = null;
+
+    /**
+     * Observable that will be called just before the particles are drawn
+     */
+    public get onBeforeDrawParticlesObservable(): Observable<Nullable<Effect>> {
+        if (!this._onBeforeDrawParticlesObservable) {
+            this._onBeforeDrawParticlesObservable = new Observable<Nullable<Effect>>();
+        }
+
+        return this._onBeforeDrawParticlesObservable;
+    }
+
     /**
      * Instantiates a particle system.
      * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
@@ -1891,6 +1905,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                 break;
         }
 
+        if (this._onBeforeDrawParticlesObservable) {
+            this._onBeforeDrawParticlesObservable.notifyObservers(effect);
+        }
+
         if (this._useInstancing) {
             engine.drawArraysType(Material.TriangleFanDrawMode, 0, 4, this._particles.length);
         } else {
@@ -1980,6 +1998,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         if (this._disposeEmitterOnDispose && this.emitter && (this.emitter as AbstractMesh).dispose) {
             (<AbstractMesh>this.emitter).dispose(true);
+        }
+
+        if (this._onBeforeDrawParticlesObservable) {
+            this._onBeforeDrawParticlesObservable.clear();
         }
 
         // Remove from scene

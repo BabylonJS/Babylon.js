@@ -810,7 +810,7 @@ export class NodeMaterial extends PushMaterial {
         return postProcess;
     }
 
-    private _createEffectForParticles(particleSystem?: ParticleSystem, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, effect?: Effect, defines?: NodeMaterialDefines, dummyMesh?: AbstractMesh): Effect {
+    private _createEffectForParticles(particleSystem: ParticleSystem, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, effect?: Effect, defines?: NodeMaterialDefines, dummyMesh?: AbstractMesh) {
         let tempName = this.name + this._buildId;
 
         if (!defines) {
@@ -823,16 +823,21 @@ export class NodeMaterial extends PushMaterial {
 
         let buildId = this._buildId;
 
+        let particleSystemDefines: Array<string> = [];
+        let particleSystemDefinesJoined = "";
+
         if (!effect) {
             const result = this._processDefines(dummyMesh, defines);
 
             Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString);
 
-            effect = this.getScene().getEngine().createEffectForParticles(tempName, this._fragmentCompilationState.uniforms, this._fragmentCompilationState.samplers, defines.toString(), result?.fallbacks, onCompiled, onError);
+            particleSystem.fillDefines(particleSystemDefines, particleSystem.blendMode);
 
-            if (particleSystem) {
-                particleSystem.customEffect = effect;
-            }
+            particleSystemDefinesJoined = particleSystemDefines.join("\n");
+
+            effect = this.getScene().getEngine().createEffectForParticles(tempName, this._fragmentCompilationState.uniforms, this._fragmentCompilationState.samplers, defines.toString() + "\n" + particleSystemDefinesJoined, result?.fallbacks, onCompiled, onError, particleSystem);
+
+            particleSystem.customEffect = effect;
         }
 
         effect.onBindObservable.add((effect) => {
@@ -846,16 +851,26 @@ export class NodeMaterial extends PushMaterial {
                 buildId = this._buildId;
             }
 
+            particleSystemDefines.length = 0;
+
+            particleSystem.fillDefines(particleSystemDefines, particleSystem.blendMode);
+
+            const particleSystemDefinesJoinedCurrent = particleSystemDefines.join("\n");
+
+            if (particleSystemDefinesJoinedCurrent !== particleSystemDefinesJoined) {
+                defines!.markAsUnprocessed();
+                particleSystemDefinesJoined = particleSystemDefinesJoinedCurrent;
+            }
+
             const result = this._processDefines(dummyMesh!, defines!);
 
             if (result) {
                 Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString);
 
-                if (particleSystem) {
-                    particleSystem.customEffect = this.getScene().getEngine().createEffectForParticles(tempName, this._fragmentCompilationState.uniforms, this._fragmentCompilationState.samplers, defines!.toString(), result?.fallbacks, onCompiled, onError);
-                    this._createEffectForParticles(particleSystem, onCompiled, onError, particleSystem.customEffect, defines, dummyMesh);
-                    return;
-                }
+                effect = this.getScene().getEngine().createEffectForParticles(tempName, this._fragmentCompilationState.uniforms, this._fragmentCompilationState.samplers, defines!.toString() + "\n" + particleSystemDefinesJoined, result?.fallbacks, onCompiled, onError, particleSystem);
+                particleSystem.customEffect = effect;
+                this._createEffectForParticles(particleSystem, onCompiled, onError, effect, defines, dummyMesh); // add the effect.onBindObservable observer
+                return;
             }
 
             // Animated blocks
@@ -883,8 +898,6 @@ export class NodeMaterial extends PushMaterial {
                 inputBlock._transmit(effect, this.getScene());
             }
         });
-
-        return effect;
     }
 
     /**
@@ -892,10 +905,9 @@ export class NodeMaterial extends PushMaterial {
      * @param particleSystem Particle system to create the effect for
      * @param onCompiled defines a function to call when the effect creation is successful
      * @param onError defines a function to call when the effect creation has failed
-     * @returns The new effect
      */
-    public createEffectForParticles(particleSystem?: ParticleSystem, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect {
-        return this._createEffectForParticles(particleSystem, onCompiled, onError);
+    public createEffectForParticles(particleSystem: ParticleSystem, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void) {
+        this._createEffectForParticles(particleSystem, onCompiled, onError);
     }
 
     private _processDefines(mesh: AbstractMesh, defines: NodeMaterialDefines, useInstances = false): Nullable<{
