@@ -26,14 +26,13 @@ struct subSurfaceOutParams
 
 #ifdef SUBSURFACE
     void subSurfaceBlock(
+        const in vec3 vSubSurfaceIntensity,
         const in vec2 vThicknessParam,
         const in vec4 vTintColor,
         const in vec3 normalW,
         const in vec3 specularEnvironmentReflectance,
     #ifdef SS_THICKNESSANDMASK_TEXTURE
-        const in vec2 vThicknessUV,
-        const in vec2 uvOffset,
-        const in sampler2D thicknessSampler,
+        const in vec4 thicknessMap,
     #endif
     #ifdef REFLECTION
         #ifdef SS_TRANSLUCENCY
@@ -116,7 +115,6 @@ struct subSurfaceOutParams
     #endif
 
     #ifdef SS_THICKNESSANDMASK_TEXTURE
-        vec4 thicknessMap = texture2D(thicknessSampler, vThicknessUV + uvOffset);
         float thickness = thicknessMap.r * vThicknessParam.y + vThicknessParam.x;
 
         #if DEBUGMODE > 0

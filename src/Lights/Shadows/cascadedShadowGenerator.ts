@@ -113,7 +113,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
     /**
      * Sets this to true if you want that the edges of the shadows don't "swimm" / "shimmer" when rotating the camera.
-     * The trade off is that you loose some precision in the shadow rendering when enabling this setting.
+     * The trade off is that you lose some precision in the shadow rendering when enabling this setting.
      */
     public stabilizeCascades: boolean;
 

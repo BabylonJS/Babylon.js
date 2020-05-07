@@ -627,7 +627,7 @@ export class Path3D {
                 this._tangents[i] = alignTangentsWithPath ? cur : prev.add(cur);
                 this._tangents[i].normalize();
             }
-            this._distances[i] = this._distances[i - 1] + prev.length();
+            this._distances[i] = this._distances[i - 1] + this._curve[i].subtract(this._curve[i - 1]).length();
 
             // normals and binormals
             // http://www.cs.cmu.edu/afs/andrew/scs/cs/15-462/web/old/asst2camera.html

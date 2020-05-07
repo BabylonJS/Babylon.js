@@ -1,0 +1,44 @@
+[
+  {
+    "label" : "Create a sphere",
+    "documentation" : "https://doc.babylonjs.com/how_to/set_shapes",
+    "insertText" : "var sphere = BABYLON.MeshBuilder.CreateSphere(\"${1:sphere}\", {diameter: ${2:1}}, scene);",
+    "language" : "javascript"
+  },
+  {
+    "label" : "Create a box",
+    "documentation" : "https://doc.babylonjs.com/how_to/set_shapes",
+    "insertText" : "var box = BABYLON.MeshBuilder.CreateBox(\"${1:box}\", {size: ${2:1}}, scene);",
+    "language" : "javascript"
+  },
+  {
+    "label" : "Create a cylinder",
+    "documentation" : "https://doc.babylonjs.com/how_to/set_shapes",
+    "insertText" : "var cylinder = BABYLON.MeshBuilder.CreateCylinder(\"${1:cylinder}\", {height: ${2:2}, diameter: ${3:1}}, scene);",
+    "language" : "javascript"
+  },
+  {
+    "label" : "Create a ground plane",
+    "documentation" : "https://doc.babylonjs.com/how_to/set_shapes",
+    "insertText" : "var ground = BABYLON.MeshBuilder.CreateGround(\"${1:ground}\", {width: ${2:6}, height: ${3:6}}, scene);",
+    "language" : "javascript"
+  },
+  {
+    "label" : "Create an Arc Rotate Camera w/Degrees",
+    "documentation" : "https://doc.babylonjs.com/babylon101/cameras#arc-rotate-camera",
+    "insertText" : "var camera = new BABYLON.ArcRotateCamera(\"${1:camera}\", BABYLON.Tools.ToRadians(${2:90}), BABYLON.Tools.ToRadians(${3:65}), ${4:10}, ${5:BABYLON.Vector3.Zero()}, scene);",
+    "language" : "javascript"
+  },
+  {
+  "label" : "Create an Arc Rotate Camera w/Radians",
+  "documentation" : "https://doc.babylonjs.com/babylon101/cameras#arc-rotate-camera",
+  "insertText" : "var camera = new BABYLON.ArcRotateCamera(\"${1:camera}\", ${2:0}, ${3:Math.PI/2}, ${4:10}, ${5:BABYLON.Vector3.Zero()}, scene);",
+  "language" : "javascript"
+  },
+  {
+  "label" : "Import a Mesh w/callback",
+  "documentation" : "https://doc.babylonjs.com/resources/external_pg_assets",
+  "insertText" : "BABYLON.SceneLoader.ImportMesh(\"${1:meshName}\", \"${2:url to the mesh parent directory}\", \"${3:Mesh filename.fileextension}\", scene, function(newMeshes){\n\n});",
+  "language" : "javascript"
+  }
+]

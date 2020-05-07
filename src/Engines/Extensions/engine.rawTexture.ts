@@ -105,7 +105,7 @@ declare module "../../Engines/thinEngine" {
          * @param onError defines a callback called if there is an error
          * @returns the cube texture as an InternalTexture
          */
-        createRawCubeTextureFromUrl(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean,
+        createRawCubeTextureFromUrl(url: string, scene: Nullable<Scene>, size: number, format: number, type: number, noMipmap: boolean,
             callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>,
             mipmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>,
             onLoad: Nullable<() => void>,
@@ -127,7 +127,7 @@ declare module "../../Engines/thinEngine" {
          * @param invertY defines if data must be stored with Y axis inverted
          * @returns the cube texture as an InternalTexture
          */
-        createRawCubeTextureFromUrl(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean,
+        createRawCubeTextureFromUrl(url: string, scene: Nullable<Scene>, size: number, format: number, type: number, noMipmap: boolean,
             callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>,
             mipmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>,
             onLoad: Nullable<() => void>,
@@ -410,7 +410,7 @@ ThinEngine.prototype.updateRawCubeTexture = function(texture: InternalTexture, d
     texture.isReady = true;
 };
 
-ThinEngine.prototype.createRawCubeTextureFromUrl = function(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean,
+ThinEngine.prototype.createRawCubeTextureFromUrl = function(url: string, scene: Nullable<Scene>, size: number, format: number, type: number, noMipmap: boolean,
     callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>,
     mipmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>,
     onLoad: Nullable<() => void> = null,
@@ -420,12 +420,12 @@ ThinEngine.prototype.createRawCubeTextureFromUrl = function(url: string, scene: 
 
     var gl = this._gl;
     var texture = this.createRawCubeTexture(null, size, format, type, !noMipmap, invertY, samplingMode, null);
-    scene._addPendingData(texture);
+    scene?._addPendingData(texture);
     texture.url = url;
     this._internalTexturesCache.push(texture);
 
     var onerror = (request?: IWebRequest, exception?: any) => {
-        scene._removePendingData(texture);
+        scene?._removePendingData(texture);
         if (onError && request) {
             onError(request.status + " " + request.statusText, exception);
         }
@@ -474,7 +474,7 @@ ThinEngine.prototype.createRawCubeTextureFromUrl = function(url: string, scene: 
 
         texture.isReady = true;
         // this.resetTextureCache();
-        scene._removePendingData(texture);
+        scene?._removePendingData(texture);
 
         if (onLoad) {
             onLoad();
@@ -483,7 +483,7 @@ ThinEngine.prototype.createRawCubeTextureFromUrl = function(url: string, scene: 
 
     this._loadFile(url, (data) => {
         internalCallback(data);
-    }, undefined, scene.offlineProvider, true, onerror);
+    }, undefined, scene?.offlineProvider, true, onerror);
 
     return texture;
 };

@@ -2,7 +2,7 @@ import { NodeMaterialBlock } from './nodeMaterialBlock';
 import { PushMaterial } from '../pushMaterial';
 import { Scene } from '../../scene';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
-import { Matrix } from '../../Maths/math.vector';
+import { Matrix, Vector2 } from '../../Maths/math.vector';
 import { Color4 } from '../../Maths/math.color';
 import { Mesh } from '../../Meshes/mesh';
 import { Engine } from '../../Engines/engine';
@@ -24,12 +24,22 @@ import { VertexOutputBlock } from './Blocks/Vertex/vertexOutputBlock';
 import { FragmentOutputBlock } from './Blocks/Fragment/fragmentOutputBlock';
 import { InputBlock } from './Blocks/Input/inputBlock';
 import { _TypeStore } from '../../Misc/typeStore';
-import { SerializationHelper } from '../../Misc/decorators';
+import { serialize, SerializationHelper } from '../../Misc/decorators';
 import { TextureBlock } from './Blocks/Dual/textureBlock';
-import { ReflectionTextureBlock } from './Blocks/Dual/reflectionTextureBlock';
+import { ReflectionTextureBaseBlock } from './Blocks/Dual/reflectionTextureBaseBlock';
+import { RefractionBlock } from './Blocks/PBR/refractionBlock';
+import { CurrentScreenBlock } from './Blocks/Dual/currentScreenBlock';
 import { EffectFallbacks } from '../effectFallbacks';
 import { WebRequest } from '../../Misc/webRequest';
 import { Effect } from '../effect';
+import { PostProcess, PostProcessOptions } from '../../PostProcesses/postProcess';
+import { Constants } from '../../Engines/constants';
+import { Camera } from '../../Cameras/camera';
+import { VectorMergerBlock } from './Blocks/vectorMergerBlock';
+import { RemapBlock } from './Blocks/remapBlock';
+import { MultiplyBlock } from './Blocks/multiplyBlock';
+import { NodeMaterialModes } from './Enums/nodeMaterialModes';
+import { Texture } from '../Textures/texture';
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -87,9 +97,13 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
         this.rebuild();
     }
 
-    public setValue(name: string, value: boolean) {
+    public setValue(name: string, value: any, markAsUnprocessedIfDirty = false) {
         if (this[name] === undefined) {
             this._keys.push(name);
+        }
+
+        if (markAsUnprocessedIfDirty && this[name] !== value) {
+            this.markAsUnprocessed();
         }
 
         this[name] = value;
@@ -221,6 +235,20 @@ export class NodeMaterial extends PushMaterial {
      * Gets an array of blocks that needs to be serialized even if they are not yet connected
      */
     public attachedBlocks = new Array<NodeMaterialBlock>();
+
+    /**
+     * Specifies the mode of the node material
+     * @hidden
+     */
+    @serialize("mode")
+    public _mode: NodeMaterialModes = NodeMaterialModes.Material;
+
+    /**
+     * Gets the mode property
+     */
+    public get mode(): NodeMaterialModes {
+        return this._mode;
+    }
 
     /**
      * Create a new node based material
@@ -697,6 +725,165 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Create a post process from the material
+     * @param camera The camera to apply the render pass to.
+     * @param options The required width/height ratio to downsize to before computing the render pass. (Use 1.0 for full size)
+     * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
+     * @param engine The engine which the post process will be applied. (default: current engine)
+     * @param reusable If the post process can be reused on the same frame. (default: false)
+     * @param textureType Type of textures used when performing the post process. (default: 0)
+     * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
+     * @returns the post process created
+     */
+    public createPostProcess(
+        camera: Nullable<Camera>, options: number | PostProcessOptions = 1, samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, textureFormat = Constants.TEXTUREFORMAT_RGBA): PostProcess {
+
+        let tempName = this.name + this._buildId;
+
+        const defines = new NodeMaterialDefines();
+
+        const dummyMesh = new AbstractMesh(tempName + "PostProcess", this.getScene());
+
+        let buildId = this._buildId;
+
+        this._processDefines(dummyMesh, defines);
+
+        Effect.ShadersStore[tempName + "VertexShader"] = this._vertexCompilationState._builtCompilationString;
+        Effect.ShadersStore[tempName + "PixelShader"] = this._fragmentCompilationState._builtCompilationString;
+
+        const postProcess = new PostProcess(
+            this.name + "PostProcess", tempName, this._fragmentCompilationState.uniforms, this._fragmentCompilationState.samplers,
+            options, camera, samplingMode, engine, reusable, defines.toString(), textureType, tempName, { maxSimultaneousLights: this.maxSimultaneousLights }, false, textureFormat
+        );
+
+        postProcess.onApplyObservable.add((effect) => {
+            if (buildId !== this._buildId) {
+                delete Effect.ShadersStore[tempName + "VertexShader"];
+                delete Effect.ShadersStore[tempName + "PixelShader"];
+
+                tempName = this.name + this._buildId;
+
+                defines.markAsUnprocessed();
+
+                buildId = this._buildId;
+            }
+
+            const result = this._processDefines(dummyMesh, defines);
+
+            if (result) {
+                Effect.ShadersStore[tempName + "VertexShader"] = this._vertexCompilationState._builtCompilationString;
+                Effect.ShadersStore[tempName + "PixelShader"] = this._fragmentCompilationState._builtCompilationString;
+
+                postProcess.updateEffect(defines.toString(), this._fragmentCompilationState.uniforms, this._fragmentCompilationState.samplers, { maxSimultaneousLights: this.maxSimultaneousLights }, undefined, undefined, tempName, tempName);
+            }
+
+            // Animated blocks
+            if (this._sharedData.animatedInputs) {
+                const scene = this.getScene();
+
+                let frameId = scene.getFrameId();
+
+                if (this._animationFrame !== frameId) {
+                    for (var input of this._sharedData.animatedInputs) {
+                        input.animate(scene);
+                    }
+
+                    this._animationFrame = frameId;
+                }
+            }
+
+            // Bindable blocks
+            for (var block of this._sharedData.bindableBlocks) {
+                block.bind(effect, this);
+            }
+
+            // Connection points
+            for (var inputBlock of this._sharedData.inputBlocks) {
+                inputBlock._transmit(effect, this.getScene());
+            }
+        });
+
+        return postProcess;
+    }
+
+    private _processDefines(mesh: AbstractMesh, defines: NodeMaterialDefines, useInstances = false): Nullable<{
+        lightDisposed: boolean,
+        uniformBuffers: string[],
+        mergedUniforms: string[],
+        mergedSamplers: string[],
+        fallbacks: EffectFallbacks,
+     }> {
+         let result = null;
+
+        // Shared defines
+        this._sharedData.blocksWithDefines.forEach((b) => {
+            b.initializeDefines(mesh, this, defines, useInstances);
+        });
+
+        this._sharedData.blocksWithDefines.forEach((b) => {
+            b.prepareDefines(mesh, this, defines, useInstances);
+        });
+
+        // Need to recompile?
+        if (defines.isDirty) {
+            const lightDisposed = defines._areLightsDisposed;
+            defines.markAsProcessed();
+
+            // Repeatable content generators
+            this._vertexCompilationState.compilationString = this._vertexCompilationState._builtCompilationString;
+            this._fragmentCompilationState.compilationString = this._fragmentCompilationState._builtCompilationString;
+
+            this._sharedData.repeatableContentBlocks.forEach((b) => {
+                b.replaceRepeatableContent(this._vertexCompilationState, this._fragmentCompilationState, mesh, defines);
+            });
+
+            // Uniforms
+            let uniformBuffers: string[] = [];
+            this._sharedData.dynamicUniformBlocks.forEach((b) => {
+                b.updateUniformsAndSamples(this._vertexCompilationState, this, defines, uniformBuffers);
+            });
+
+            let mergedUniforms = this._vertexCompilationState.uniforms;
+
+            this._fragmentCompilationState.uniforms.forEach((u) => {
+                let index = mergedUniforms.indexOf(u);
+
+                if (index === -1) {
+                    mergedUniforms.push(u);
+                }
+            });
+
+            // Samplers
+            let mergedSamplers = this._vertexCompilationState.samplers;
+
+            this._fragmentCompilationState.samplers.forEach((s) => {
+                let index = mergedSamplers.indexOf(s);
+
+                if (index === -1) {
+                    mergedSamplers.push(s);
+                }
+            });
+
+            var fallbacks = new EffectFallbacks();
+
+            this._sharedData.blocksWithFallbacks.forEach((b) => {
+                b.provideFallbacks(mesh, fallbacks);
+            });
+
+            result = {
+                lightDisposed,
+                uniformBuffers,
+                mergedUniforms,
+                mergedSamplers,
+                fallbacks,
+            };
+        }
+
+        return result;
+    }
+
+    /**
       * Get if the submesh is ready to be used and all its information available.
       * Child classes can use it to update shaders
       * @param mesh defines the mesh to check
@@ -746,60 +933,9 @@ export class NodeMaterial extends PushMaterial {
             return false;
         }
 
-        // Shared defines
-        this._sharedData.blocksWithDefines.forEach((b) => {
-            b.initializeDefines(mesh, this, defines, useInstances);
-        });
+        const result = this._processDefines(mesh, defines, useInstances);
 
-        this._sharedData.blocksWithDefines.forEach((b) => {
-            b.prepareDefines(mesh, this, defines, useInstances);
-        });
-
-        // Need to recompile?
-        if (defines.isDirty) {
-            defines.markAsProcessed();
-
-            // Repeatable content generators
-            this._vertexCompilationState.compilationString = this._vertexCompilationState._builtCompilationString;
-            this._fragmentCompilationState.compilationString = this._fragmentCompilationState._builtCompilationString;
-
-            this._sharedData.repeatableContentBlocks.forEach((b) => {
-                b.replaceRepeatableContent(this._vertexCompilationState, this._fragmentCompilationState, mesh, defines);
-            });
-
-            // Uniforms
-            let uniformBuffers: string[] = [];
-            this._sharedData.dynamicUniformBlocks.forEach((b) => {
-                b.updateUniformsAndSamples(this._vertexCompilationState, this, defines, uniformBuffers);
-            });
-
-            let mergedUniforms = this._vertexCompilationState.uniforms;
-
-            this._fragmentCompilationState.uniforms.forEach((u) => {
-                let index = mergedUniforms.indexOf(u);
-
-                if (index === -1) {
-                    mergedUniforms.push(u);
-                }
-            });
-
-            // Samplers
-            let mergedSamplers = this._vertexCompilationState.samplers;
-
-            this._fragmentCompilationState.samplers.forEach((s) => {
-                let index = mergedSamplers.indexOf(s);
-
-                if (index === -1) {
-                    mergedSamplers.push(s);
-                }
-            });
-
-            var fallbacks = new EffectFallbacks();
-
-            this._sharedData.blocksWithFallbacks.forEach((b) => {
-                b.provideFallbacks(mesh, fallbacks);
-            });
-
+        if (result) {
             let previousEffect = subMesh.effect;
             // Compilation
             var join = defines.toString();
@@ -810,11 +946,11 @@ export class NodeMaterial extends PushMaterial {
                 fragmentSource: this._fragmentCompilationState.compilationString
             }, <IEffectCreationOptions>{
                 attributes: this._vertexCompilationState.attributes,
-                uniformsNames: mergedUniforms,
-                uniformBuffersNames: uniformBuffers,
-                samplers: mergedSamplers,
+                uniformsNames: result.mergedUniforms,
+                uniformBuffersNames: result.uniformBuffers,
+                samplers: result.mergedSamplers,
                 defines: join,
-                fallbacks: fallbacks,
+                fallbacks: result.fallbacks,
                 onCompiled: this.onCompiled,
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS }
@@ -831,6 +967,13 @@ export class NodeMaterial extends PushMaterial {
                 if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
                     effect = previousEffect;
                     defines.markAsUnprocessed();
+
+                    if (result.lightDisposed) {
+                        // re register in case it takes more than one frame.
+                        defines._areLightsDisposed = true;
+                        return false;
+                    }
+
                 } else {
                     scene.resetCachedMaterial();
                     subMesh.setEffect(effect, defines);
@@ -906,7 +1049,7 @@ export class NodeMaterial extends PushMaterial {
             if (effect && scene.getCachedEffect() !== effect) {
                 // Bindable blocks
                 for (var block of sharedData.bindableBlocks) {
-                    block.bind(effect, this, mesh);
+                    block.bind(effect, this, mesh, subMesh);
                 }
 
                 // Connection points
@@ -937,7 +1080,7 @@ export class NodeMaterial extends PushMaterial {
      * Gets the list of texture blocks
      * @returns an array of texture blocks
      */
-    public getTextureBlocks(): (TextureBlock | ReflectionTextureBlock)[] {
+    public getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock)[] {
         if (!this._sharedData) {
             return [];
         }
@@ -1070,6 +1213,58 @@ export class NodeMaterial extends PushMaterial {
         // Add to nodes
         this.addOutputNode(vertexOutput);
         this.addOutputNode(fragmentOutput);
+
+        this._mode = NodeMaterialModes.Material;
+    }
+
+    /**
+     * Clear the current material and set it to a default state for post process
+     */
+    public setToDefaultPostProcess() {
+        this.clear();
+
+        this.editorData = null;
+
+        const position = new InputBlock("Position");
+        position.setAsAttribute("position2d");
+
+        const const1 = new InputBlock("Constant1");
+        const1.isConstant = true;
+        const1.value = 1;
+
+        const vmerger = new VectorMergerBlock("Position3D");
+
+        position.connectTo(vmerger);
+        const1.connectTo(vmerger, { input: "w" });
+
+        const vertexOutput = new VertexOutputBlock("VertexOutput");
+        vmerger.connectTo(vertexOutput);
+
+        // Pixel
+        const scale = new InputBlock("scale");
+        scale.visibleInInspector = true;
+        scale.value = new Vector2(1, 1);
+
+        const uv0 = new RemapBlock("uv0");
+        position.connectTo(uv0);
+
+        const uv = new MultiplyBlock("uv");
+        uv0.connectTo(uv);
+        scale.connectTo(uv);
+
+        const currentScreen = new CurrentScreenBlock("CurrentScreen");
+        uv.connectTo(currentScreen);
+
+        currentScreen.texture = new Texture("https://assets.babylonjs.com/nme/currentScreenPostProcess.png", this.getScene());
+
+        var fragmentOutput = new FragmentOutputBlock("FragmentOutput");
+        currentScreen.connectTo(fragmentOutput, { output: "rgba" });
+
+        // Add to nodes
+        this.addOutputNode(vertexOutput);
+        this.addOutputNode(fragmentOutput);
+
+        this._mode = NodeMaterialModes.PostProcess;
     }
 
     /**
@@ -1303,6 +1498,8 @@ export class NodeMaterial extends PushMaterial {
 
             this.editorData.map = blockMap;
         }
+
+        this._mode = source.mode ?? NodeMaterialModes.Material;
     }
 
     /**

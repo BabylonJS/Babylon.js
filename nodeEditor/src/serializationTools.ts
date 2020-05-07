@@ -38,10 +38,11 @@ export class SerializationTools {
         return JSON.stringify(serializationObject, undefined, 2);
     }
 
-    public static Deserialize(serializationObject:any, globalState: GlobalState) {       
-        globalState.onIsLoadingChanged.notifyObservers(true); 
+    public static Deserialize(serializationObject: any, globalState: GlobalState) {
+        globalState.onIsLoadingChanged.notifyObservers(true);
         globalState.nodeMaterial!.loadFromSerialization(serializationObject, "");
-        
+        globalState.mode = globalState.nodeMaterial!.mode;
+
         globalState.onResetRequiredObservable.notifyObservers();
     }
 }
