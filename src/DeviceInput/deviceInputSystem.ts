@@ -66,6 +66,14 @@ export class DeviceInputSystem implements IDisposable {
      * @param inputIndex Index of device input
      * @returns Current value of input
      */
+
+     /**
+      * Checks for current device input value, given an id and input index
+      * @param deviceType Enum specifiying device type
+      * @param deviceSlot "Slot" or index that device is referenced in
+      * @param inputIndex Id of input to be checked
+      * @returns Current value of input
+      */
     public pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): Nullable<number> {
         const device = this._inputs[deviceType][deviceSlot];
 
@@ -105,11 +113,12 @@ export class DeviceInputSystem implements IDisposable {
     }
 
     // Private functions
-    /**
-     * Add device and inputs to device map
-     * @param deviceName Assigned name of device (may be SN)
-     * @param numberOfInputs Number of input entries to create for given device
-     */
+     /**
+      * Add device and inputs to device array
+      * @param deviceType Enum specifiying device type
+      * @param deviceSlot "Slot" or index that device is referenced in
+      * @param numberOfInputs Number of input entries to create for given device
+      */
     private _registerDevice(deviceType: DeviceType, deviceSlot: number, numberOfInputs: number) {
         if (!this._inputs[deviceType]) {
             this._inputs[deviceType] = [];
@@ -129,7 +138,8 @@ export class DeviceInputSystem implements IDisposable {
 
     /**
      * Given a specific device name, remove that device from the device map
-     * @param deviceName Name of device to be removed
+     * @param deviceType Enum specifiying device type
+     * @param deviceSlot "Slot" or index that device is referenced in
      */
     private _unregisterDevice(deviceType: DeviceType, deviceSlot: number) {
         if (this._inputs[deviceType][deviceSlot]) {
@@ -278,6 +288,9 @@ export class DeviceInputSystem implements IDisposable {
 
     /**
      * Update all non-event based devices with each frame
+     * @param deviceType Enum specifiying device type
+     * @param deviceSlot "Slot" or index that device is referenced in
+     * @param inputIndex Id of input to be checked
      */
     private _updateDevice(deviceType: DeviceType, deviceSlot: number, inputIndex: number) {
         // Gamepads

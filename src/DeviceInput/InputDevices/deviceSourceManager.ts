@@ -10,30 +10,27 @@ import { DeviceInput } from './deviceTypes';
  * Class that handles all input for a specific device
  */
 export class DeviceSource<T extends DeviceType> {
+    // Public Members
     /**
      * Observable to handle device input changes per device
      */
     public readonly onInputChangedObservable = new Observable<{ inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number> }>();
-    private readonly _deviceInputSystem: DeviceInputSystem;
-    private _touchPoints: Array<number>;
 
-    /**
-     * Default Constructor
-     * @param deviceInputSystem Reference to DeviceInputSystem
-     * @param deviceName Name of device to be used by DeviceInputSystem
-     * @param deviceType Type of device
-     * @param deviceSlot "Slot" or index that device is referenced in
-     */
+    // Private Members
+    private readonly _deviceInputSystem: DeviceInputSystem;
+
+     /**
+      * Default Constructor
+      * @param deviceInputSystem Reference to DeviceInputSystem
+      * @param deviceType Type of device
+      * @param deviceSlot "Slot" or index that device is referenced in
+      */
     constructor(deviceInputSystem: DeviceInputSystem,
         /** Type of device */
         public readonly deviceType: DeviceType,
         /** "Slot" or index that device is referenced in */
         public readonly deviceSlot: number = 0) {
         this._deviceInputSystem = deviceInputSystem;
-
-        if (deviceType == DeviceType.Touch) {
-            this._touchPoints = new Array<number>();
-        }
     }
 
     /**
@@ -42,32 +39,7 @@ export class DeviceSource<T extends DeviceType> {
      * @returns Input value from DeviceInputSystem
      */
     public getInput(inputIndex: DeviceInput<T>): Nullable<number> {
-        if (this.deviceType == DeviceType.Touch) {
-            return this._deviceInputSystem.pollInput(this.deviceType, this._touchPoints[this.deviceSlot], inputIndex);
-        }
-
         return this._deviceInputSystem.pollInput(this.deviceType, this.deviceSlot, inputIndex);
-    }
-
-    /**
-     * Add specific point to array of touch points (DeviceType.Touch only)
-     * @param name Name of Specific Touch Point
-     */
-    public addTouchPoints(slot: number) {
-        if (this.deviceType == DeviceType.Touch) {
-            this._touchPoints.push(slot);
-        }
-    }
-
-    /**
-     * Remove specific point from array of touch points (DeviceType.Touch only)
-     * @param name Name of Specific Touch Point
-     */
-    public removeTouchPoints(slot: number) {
-        if (this.deviceType == DeviceType.Touch) {
-            const touchIndex = this._touchPoints.indexOf(slot);
-            this._touchPoints.splice(touchIndex, 1);
-        }
     }
 }
 
@@ -104,9 +76,8 @@ export class DeviceSourceManager implements IDisposable {
     /**
      * Default Constructor
      * @param engine engine to pull input element from
-     * @param enableObserveEvents boolean to enable use of observe events
      */
-    constructor(engine: Engine, enableObserveEvents: boolean = false) {
+    constructor(engine: Engine) {
         const numberOfDeviceTypes = Object.keys(DeviceType).length / 2;
         this._devices = new Array<Array<DeviceSource<DeviceType>>>(numberOfDeviceTypes);
         this._firstDevice = new Array<number>(numberOfDeviceTypes);
@@ -123,7 +94,7 @@ export class DeviceSourceManager implements IDisposable {
             this.onAfterDeviceDisconnectedObservable.notifyObservers({ deviceType, deviceSlot });
         };
 
-        if (!this._deviceInputSystem.onInputChanged && enableObserveEvents) {
+        if (!this._deviceInputSystem.onInputChanged) {
             this._deviceInputSystem.onInputChanged = (deviceType, deviceSlot, inputIndex, previousState, currentState) => {
                 this.getDeviceSource(deviceType, deviceSlot)?.onInputChangedObservable.notifyObservers({ inputIndex, previousState, currentState });
             };
@@ -162,42 +133,28 @@ export class DeviceSourceManager implements IDisposable {
     }
 
     // Private Functions
-    /**
-     * Function to add device name to device list
-     * @param deviceName Name of Device
-     */
+     /**
+      * Function to add device name to device list
+      * @param deviceType Enum specifiying device type
+      * @param deviceSlot "Slot" or index that device is referenced in
+      */
     private _addDevice<T extends DeviceType>(deviceType: DeviceType, deviceSlot: number) {
         if (!this._devices[deviceType]) {
             this._devices[deviceType] = new Array<DeviceSource<T>>();
-
-            if (deviceType == DeviceType.Touch) {
-                this._devices[deviceType][0] = new DeviceSource<T>(this._deviceInputSystem, deviceType, 0);
-            }
         }
 
-        // If device is a touch device, update only touch points.  Otherwise, add new device.
-        if (deviceType == DeviceType.Touch) {
-            this._devices[deviceType][0].addTouchPoints(deviceSlot);
-        }
-        else {
-            this._devices[deviceType][deviceSlot] = new DeviceSource(this._deviceInputSystem, deviceType, deviceSlot);
-        }
-
+        this._devices[deviceType][deviceSlot] = new DeviceSource(this._deviceInputSystem, deviceType, deviceSlot);
         this._updateFirstDevices(deviceType);
     }
 
     /**
      * Function to remove device name to device list
-     * @param deviceName Name of Device
+     * @param deviceType Enum specifiying device type
+     * @param deviceSlot "Slot" or index that device is referenced in
      */
     private _removeDevice(deviceType: DeviceType, deviceSlot: number) {
-        if (deviceType == DeviceType.Touch) {
-            this._devices[deviceType][0].removeTouchPoints(deviceSlot);
-        }
-        else {
-            delete this._devices[deviceType][deviceSlot];
-            this._updateFirstDevices(deviceType);
-        }
+        delete this._devices[deviceType][deviceSlot];
+        this._updateFirstDevices(deviceType);
     }
 
     /**
@@ -208,9 +165,9 @@ export class DeviceSourceManager implements IDisposable {
         switch (type) {
             case DeviceType.Keyboard:
             case DeviceType.Mouse:
-            case DeviceType.Touch:
                 this._firstDevice[type] = 0;
                 break;
+            case DeviceType.Touch:
             case DeviceType.DualShock:
             case DeviceType.Xbox:
             case DeviceType.Switch:
