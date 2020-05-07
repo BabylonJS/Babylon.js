@@ -89,8 +89,8 @@
 
         .animation-list{
             padding: 1.5rem;
-            background: lightgrey;
-            // height: 100vh;
+            background: rgb(87, 86, 86);
+            color: white;
             ul {
                 list-style:none;
                 padding-left: 0px;
@@ -116,6 +116,20 @@
                     }
                 
                 
+            }
+
+            .object-tree{
+                background-color: rgba(0, 0, 0, 0.3);
+                padding: 10px;
+                margin-top: 19px;
+                height: 15em;
+            }
+
+            .label-input{
+                display: grid;
+                height: 54px;
+                place-items: center stretch;
+                color:white;
             }
         }
 
@@ -191,6 +205,60 @@
                 margin-left: 12.5px;
             }
         }
+    }
+
+    .buttonLine {
+        height: 30px;
+        display: grid;
+        align-items: center;
+        justify-items: stretch;
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-upload {
+            background: #222222;
+            border: 1px solid rgb(51, 122, 183);
+            margin: 5px 10px 5px 10px;
+            color:white;
+            padding: 4px 5px;
+            opacity: 0.9;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .file-upload:hover {
+            opacity: 1.0;
+        }
+
+        .file-upload:active {
+            transform: scale(0.98);
+            transform-origin: 0.5 0.5;
+        }
+
+        button {
+            background: #222222;
+            border: 1px solid rgb(51, 122, 183);
+            margin: 5px 10px 5px 10px;
+            color:white;
+            padding: 4px 5px;
+            opacity: 0.9;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 1.0;
+        }
+
+        button:active {
+            background: #282828;
+        }   
+        
+        button:focus {
+            border: 1px solid rgb(51, 122, 183);
+            outline: 0px;
+        }  
     }
 
 }
