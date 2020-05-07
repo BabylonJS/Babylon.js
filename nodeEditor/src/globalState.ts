@@ -66,6 +66,7 @@ export class GlobalState {
 
     /** Sets the mode */
     public set mode(m: NodeMaterialModes) {
+        DataStorage.WriteNumber("Mode", m);
         this._mode = m;
         this.onPreviewCommandActivated.notifyObservers(true);
     }
@@ -80,7 +81,7 @@ export class GlobalState {
         this.directionalLight0 = DataStorage.ReadBoolean("DirectionalLight0", false);
         this.directionalLight1 = DataStorage.ReadBoolean("DirectionalLight1", false);
         this.controlCamera = DataStorage.ReadBoolean("ControlCamera", true);
-        this._mode = NodeMaterialModes.Material;
+        this._mode = DataStorage.ReadNumber("Mode", NodeMaterialModes.Material);
 
         let r = DataStorage.ReadNumber("BackgroundColorR", 0.12549019607843137);
         let g = DataStorage.ReadNumber("BackgroundColorG", 0.09803921568627451);
