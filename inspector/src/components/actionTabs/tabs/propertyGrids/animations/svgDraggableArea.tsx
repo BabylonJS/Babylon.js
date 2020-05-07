@@ -91,7 +91,6 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
                 this.panDirection();
             }
         }
-
     }
 
     getMousePosition(e: React.TouchEvent<SVGSVGElement>): Vector2 | undefined;
@@ -156,7 +155,6 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
             case "down":
                 break;
         }
-
     }
 
     keyDown(e: KeyboardEvent) {
@@ -164,7 +162,6 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
         if (e.keyCode === 17) {
             this._draggableArea.current?.style.setProperty("cursor", "grab");
         }
-
     }
 
     keyUp(e: KeyboardEvent) {
@@ -172,14 +169,12 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
         if (e.keyCode === 17) {
             this._draggableArea.current?.style.setProperty("cursor", "initial");
         }
-
     }
 
     focus(e: React.MouseEvent<SVGSVGElement>) {
         e.preventDefault();
         this._draggableArea.current?.focus();
     }
-
 
     render() {
         return (
