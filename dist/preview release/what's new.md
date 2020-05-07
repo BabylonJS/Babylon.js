@@ -83,6 +83,7 @@
 - Added `AddAttribute` to `CustomMaterial` and `PBRCustomMaterial` ([Popov72](https://github.com/Popov72))
 - `setTexture` and `setTextureArray` from `ShaderMaterial` take now a `BaseTexture` as input instead of a `Texture`, allowing to pass a `CubeTexture` ([Popov72](https://github.com/Popov72))
 - Allow parenthesis usage in `#if` expressions in shader code ([Popov72](https://github.com/Popov72))
+- Added to `StandardMaterial` RGBD ReflectionTexture, RefractionTexture and LightmapTexture support. ([MackeyK24](https://github.com/MackeyK24))
 
 ### WebXR
 
