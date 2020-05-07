@@ -46,10 +46,9 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     }
 
     componentDidMount() {
-        if (this._graphCanvas.current){
-            this._playheadOffset = (this._graphCanvas.current.children[1].clientWidth)/(this._canvasLength * 10)
+        if (this._graphCanvas.current) {
+            this._playheadOffset = (this._graphCanvas.current.children[1].clientWidth) / (this._canvasLength * 10)
         }
-     
     }
 
     handleNameChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -163,7 +162,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         anim.setKeys(keys);
 
         this.setState({ svgKeyframes: svgKeyframes })
-
     }
 
     getAnimationProperties(animation: Animation) {
@@ -206,8 +204,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             data = this.curvePath(keyframes, data, middle, easingFunction as EasingFunction)
         }
 
-
-
         return data;
 
     }
@@ -225,7 +221,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             this._frames.push(new Vector2(i, value));
 
         }
-
     }
 
     curvePath(keyframes: IAnimationKey[], data: string, middle: number, easingFunction: EasingFunction) {
@@ -294,8 +289,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         return data;
 
     }
-
-
 
     renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number) {
 
@@ -424,10 +417,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         this.setState({ currentFrame: frame });
     }
 
-    graphCanvasScroll() {
-        // Set scroll info
-    }
-
     render() {
         return (
             <div id="animation-curve-editor">
@@ -455,16 +444,16 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                             </div>
 
                             <div className="object-tree">
-                            <h2>{this.props.entityName}</h2>
-                            <ul>
-                                {this.props.animations && this.props.animations.map((animation, i) => {
-                                    return <li className={this.state.selected.name === animation.name ? 'active' : ''} key={i} onClick={() => this.selectAnimation(animation)}>{animation.name} <strong>{animation.targetProperty}</strong></li>
-                                })}
+                                <h2>{this.props.entityName}</h2>
+                                <ul>
+                                    {this.props.animations && this.props.animations.map((animation, i) => {
+                                        return <li className={this.state.selected.name === animation.name ? 'active' : ''} key={i} onClick={() => this.selectAnimation(animation)}>{animation.name} <strong>{animation.targetProperty}</strong></li>
+                                    })}
 
-                            </ul>
+                                </ul>
                             </div>
                         </div>
-                        <div ref={this._graphCanvas} className="graph-chart" onScroll={() => this.graphCanvasScroll()}>
+                        <div ref={this._graphCanvas} className="graph-chart">
 
                             <Playhead frame={this.state.currentFrame} offset={this._playheadOffset} />
 
@@ -472,11 +461,11 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
                                 {/* Frame Labels  */}
                                 { /* Vertical Grid  */}
-                                {this.state.frameAxisLength.map((f,i) => 
-                                <svg key={i}>
-                                    <text x={f.value} y="0" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>{f.value}</text>
-                                    <line x1={f.value} y1="0" x2={f.value} y2="100"></line>
-                                </svg>
+                                {this.state.frameAxisLength.map((f, i) =>
+                                    <svg key={i}>
+                                        <text x={f.value} y="0" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>{f.value}</text>
+                                        <line x1={f.value} y1="0" x2={f.value} y2="100"></line>
+                                    </svg>
                                 )}
 
                                 { /* Value Labels  */}
@@ -521,8 +510,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                         <Timeline currentFrame={this.state.currentFrame} onCurrentFrameChange={(frame: number) => this.changeCurrentFrame(frame)} keyframes={this.state.selected.getKeys()} selected={this.state.selected.getKeys()[0]}></Timeline>
                     </div>
                 </div>
-
-
             </div>
         );
     }
