@@ -1575,14 +1575,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         return effectCreationOption;
     }
 
-    /** @hidden */
-    private _getEffect(blendMode: number): Effect {
-        if (this._customEffect) {
-            return this._customEffect;
-        }
-
-        var defines = [];
-
+    public fillDefines(defines: Array<string>, blendMode: number) {
         if (this._scene.clipPlane) {
             defines.push("#define CLIPPLANE");
         }
@@ -1639,21 +1632,41 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             this._imageProcessingConfiguration.prepareDefines(this._imageProcessingConfigurationDefines);
             defines.push(this._imageProcessingConfigurationDefines.toString());
         }
+    }
+
+    public fillUniformsAttributesAndSamplerNames(uniforms: Array<string>, attributes: Array<string>, samplers: Array<string>) {
+        attributes.push(...ParticleSystem._GetAttributeNamesOrOptions(this._isAnimationSheetEnabled, this._isBillboardBased && this.billboardMode !== ParticleSystem.BILLBOARDMODE_STRETCHED, this._useRampGradients));
+
+        uniforms.push(...ParticleSystem._GetEffectCreationOptions(this._isAnimationSheetEnabled));
+
+        samplers.push("diffuseSampler", "rampSampler");
+
+        if (this._imageProcessingConfiguration) {
+            ImageProcessingConfiguration.PrepareUniforms(uniforms, this._imageProcessingConfigurationDefines);
+            ImageProcessingConfiguration.PrepareSamplers(samplers, this._imageProcessingConfigurationDefines);
+        }
+    }
+
+    /** @hidden */
+    private _getEffect(blendMode: number): Effect {
+        if (this._customEffect) {
+            return this._customEffect;
+        }
+
+        var defines: Array<string> = [];
+
+        this.fillDefines(defines, blendMode);
 
         // Effect
         var join = defines.join("\n");
         if (this._cachedDefines !== join) {
             this._cachedDefines = join;
 
-            var attributesNamesOrOptions = ParticleSystem._GetAttributeNamesOrOptions(this._isAnimationSheetEnabled, this._isBillboardBased && this.billboardMode !== ParticleSystem.BILLBOARDMODE_STRETCHED, this._useRampGradients);
-            var effectCreationOption = ParticleSystem._GetEffectCreationOptions(this._isAnimationSheetEnabled);
+            var attributesNamesOrOptions: Array<string> = [];
+            var effectCreationOption: Array<string> = [];
+            var samplers: Array<string> = [];
 
-            var samplers = ["diffuseSampler", "rampSampler"];
-
-            if (ImageProcessingConfiguration) {
-                ImageProcessingConfiguration.PrepareUniforms(effectCreationOption, this._imageProcessingConfigurationDefines);
-                ImageProcessingConfiguration.PrepareSamplers(samplers, this._imageProcessingConfigurationDefines);
-            }
+            this.fillUniformsAttributesAndSamplerNames(effectCreationOption, attributesNamesOrOptions, samplers);
 
             this._effect = this._scene.getEngine().createEffect(
                 "particles",
