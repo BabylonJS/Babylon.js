@@ -20,4 +20,7 @@ DisplayLedger.RegisteredControls["RemapBlock"] = RemapDisplayManager;
 DisplayLedger.RegisteredControls["TrigonometryBlock"] = TrigonometryDisplayManager;
 DisplayLedger.RegisteredControls["TextureBlock"] = TextureDisplayManager;
 DisplayLedger.RegisteredControls["ReflectionTextureBlock"] = TextureDisplayManager;
+DisplayLedger.RegisteredControls["ReflectionBlock"] = TextureDisplayManager;
+DisplayLedger.RegisteredControls["RefractionBlock"] = TextureDisplayManager;
+DisplayLedger.RegisteredControls["CurrentScreenBlock"] = TextureDisplayManager;
 DisplayLedger.RegisteredControls["DiscardBlock"] = DiscardDisplayManager;

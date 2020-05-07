@@ -822,6 +822,10 @@ declare module BABYLON.GUI {
          */
         onAfterDrawObservable: BABYLON.Observable<Control>;
         /**
+        * An event triggered when the control has been disposed
+        */
+        onDisposeObservable: BABYLON.Observable<Control>;
+        /**
          * Get the hosting AdvancedDynamicTexture
          */
         get host(): AdvancedDynamicTexture;
