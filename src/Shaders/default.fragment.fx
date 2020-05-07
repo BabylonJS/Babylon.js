@@ -254,10 +254,11 @@ void main(void) {
 	float shadow = 1.;
 
 #ifdef LIGHTMAP
-	vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV + uvOffset).rgb * vLightmapInfos.y;
+	vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV + uvOffset).rgb;
     #ifdef RGBDLIGHTMAP
         lightmapColor.rgb = fromRGBD(lightmapColor);
     #endif
+	lightmapColor.rgb *= vLightmapInfos.y
 #endif
 
 #include<lightFragment>[0..maxSimultaneousLights]
