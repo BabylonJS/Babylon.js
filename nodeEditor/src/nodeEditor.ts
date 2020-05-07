@@ -8,6 +8,7 @@ import { SerializationTools } from './serializationTools';
 import { Observable } from 'babylonjs/Misc/observable';
 import { PreviewMeshType } from './components/preview/previewMeshType';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
+import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 /**
  * Interface used to specify creation options for the node editor
  */
@@ -83,7 +84,7 @@ export class NodeEditor {
         }
         window.addEventListener('beforeunload', () => {
             if(DataStorage.ReadNumber("PreviewMeshType", PreviewMeshType.Box) === PreviewMeshType.Custom){
-                DataStorage.WriteNumber("PreviewMeshType", PreviewMeshType.Box)
+                DataStorage.WriteNumber("PreviewMeshType", globalState.mode === NodeMaterialModes.Material ? PreviewMeshType.Box : PreviewMeshType.DefaultParticle);
             }
         });
     }

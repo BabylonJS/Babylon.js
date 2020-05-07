@@ -104,16 +104,32 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
             { label: "Load...", value: PreviewMeshType.Custom + 1 }
         ];
 
+        var particleTypeOptions = [
+            { label: "Default particle system", value: PreviewMeshType.DefaultParticle },
+            { label: "Explosion", value: PreviewMeshType.Explosion },
+            { label: "Fire", value: PreviewMeshType.Fire },
+            { label: "Rain", value: PreviewMeshType.Rain },
+            { label: "Smoke", value: PreviewMeshType.Smoke },
+            { label: "Load...", value: PreviewMeshType.Custom + 1 }
+        ];
+
         if (this.props.globalState.listOfCustomPreviewMeshFiles.length > 0) {
             meshTypeOptions.splice(0, 0, {
                 label: "Custom", value: PreviewMeshType.Custom
             });
+
+            particleTypeOptions.splice(0, 0, {
+                label: "Custom", value: PreviewMeshType.Custom
+            });
         }
+
+        var options = this.props.globalState.mode === NodeMaterialModes.Particle ? particleTypeOptions : meshTypeOptions;
+        var accept = this.props.globalState.mode === NodeMaterialModes.Particle ? ".json" : ".gltf, .glb, .babylon, .obj";
 
         return (
             <div id="preview-mesh-bar">
-                { this.props.globalState.mode === NodeMaterialModes.Material && <>
-                    <OptionsLineComponent label="" options={meshTypeOptions} target={this.props.globalState}
+                { (this.props.globalState.mode === NodeMaterialModes.Material || this.props.globalState.mode === NodeMaterialModes.Particle) && <>
+                    <OptionsLineComponent label="" options={options} target={this.props.globalState}
                                 propertyName="previewMeshType"
                                 noDirectUpdate={true}
                                 onSelect={(value: any) => {
@@ -126,8 +142,10 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
                     <div style={{
                         display: "none"
                     }} title="Preview with a custom mesh" >
-                        <input ref={this.filePickerRef} id="file-picker" type="file" onChange={(evt) => this.useCustomMesh(evt)} accept=".gltf, .glb, .babylon, .obj"/>
+                        <input ref={this.filePickerRef} id="file-picker" type="file" onChange={(evt) => this.useCustomMesh(evt)} accept={accept}/>
                     </div>
+                </> }
+                { this.props.globalState.mode === NodeMaterialModes.Material && <>
                     <div
                         title="Turn-table animation"
                         onClick={() => this.changeAnimation()} className="button" id="play-button">

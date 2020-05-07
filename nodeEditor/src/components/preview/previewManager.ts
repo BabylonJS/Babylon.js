@@ -23,7 +23,11 @@ import { Constants } from 'babylonjs/Engines/constants';
 import { CurrentScreenBlock } from 'babylonjs/Materials/Node/Blocks/Dual/currentScreenBlock';
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 import { ParticleSystem } from 'babylonjs/Particles/particleSystem';
+import { ParticleHelper } from 'babylonjs/Particles/particleHelper';
 import { Texture } from 'babylonjs/Materials/Textures/texture';
+import { ParticleTextureBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleTextureBlock';
+import { Effect } from 'babylonjs/Materials/effect';
+import { FileTools } from 'babylonjs/Misc/fileTools';
 
 export class PreviewManager {
     private _nodeMaterial: NodeMaterial;
@@ -45,10 +49,12 @@ export class PreviewManager {
     private _lightParent: TransformNode;
     private _postprocess: Nullable<PostProcess>;
     private _particleSystem: Nullable<ParticleSystem>;
+    private _particleSystemDrawObserver: Nullable<Observer<Effect>>;
 
     public constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState) {
         this._nodeMaterial = globalState.nodeMaterial;
         this._globalState = globalState;
+        this._particleSystemDrawObserver = null;
 
         this._onBuildObserver = this._nodeMaterial.onBuildObservable.add((nodeMaterial) => {
             let serializationObject = nodeMaterial.serialize();
@@ -233,7 +239,7 @@ export class PreviewManager {
     }
 
     private _refreshPreviewMesh() {
-
+        console.log("_refreshPreviewMesh", this._currentType, this._globalState.previewMeshType)
         if (this._currentType !== this._globalState.previewMeshType || this._currentType === PreviewMeshType.Custom) {
             this._currentType = this._globalState.previewMeshType;
             if (this._meshes && this._meshes.length) {
@@ -249,6 +255,17 @@ export class PreviewManager {
             }
 
             this._engine.releaseEffects();
+
+            if (this._particleSystem) {
+                if (this._particleSystemDrawObserver) {
+                    this._particleSystem.onBeforeDrawParticlesObservable.remove(this._particleSystemDrawObserver);
+                }
+                this._particleSystem.customEffect = null;
+                this._particleSystem.stop();
+                this._particleSystem.dispose();
+                this._particleSystem = null;
+                this._particleSystemDrawObserver = null;
+            }
 
             SceneLoader.ShowLoadingScreen = false;
 
@@ -293,10 +310,64 @@ export class PreviewManager {
                         });
                         return;
                 }
+            } else if (this._globalState.mode === NodeMaterialModes.Particle) {
+                switch (this._globalState.previewMeshType) {
+                    case PreviewMeshType.DefaultParticle:
+                        this._particleSystem = new ParticleSystem("particles", 4000, this._scene);
+                        this._particleSystem.particleTexture = new Texture("https://assets.babylonjs.com/particles/textures/explosion/Flare.png", this._scene);
+                        this._particleSystem.minSize = 0.1;
+                        this._particleSystem.maxSize = 1.0;
+                        this._particleSystem.minLifeTime = 0.5;
+                        this._particleSystem.maxLifeTime = 5.0;
+                        this._particleSystem.minEmitPower = 0.5;
+                        this._particleSystem.maxEmitPower = 3.0;
+                        this._particleSystem.createBoxEmitter(new Vector3(-1, 1, -1), new Vector3(1, 1, 1), new Vector3(-0.1, -0.1, -0.1), new Vector3(0.1, 0.1, 0.1));
+                        this._particleSystem.emitRate = 100;
+                        this._particleSystem.blendMode = ParticleSystem.BLENDMODE_ONEONE;
+                        this._particleSystem.color1 = new Color4(1, 1, 0, 1);
+                        this._particleSystem.color2 = new Color4(1, 0.5, 0, 1);
+                        this._particleSystem.gravity = new Vector3(0, -1.0, 0);
+                        this._particleSystem.start();
+
+                        console.log(JSON.stringify(this._particleSystem.serialize(false)));
+                        break;
+                    case PreviewMeshType.Explosion:
+                        this._loadParticleSystem("explosion");
+                        return;
+                    case PreviewMeshType.Fire:
+                        this._loadParticleSystem("fire");
+                        return;
+                    case PreviewMeshType.Rain:
+                        this._loadParticleSystem("rain");
+                        return;
+                    case PreviewMeshType.Smoke:
+                        this._loadParticleSystem("smoke");
+                        return;
+                    case PreviewMeshType.Custom:
+                        FileTools.ReadFile(this._globalState.previewMeshFile, (json) =>  {
+                            this._particleSystem = ParticleSystem.Parse(JSON.parse(json), this._scene, "");
+                            this._particleSystem.start();
+                            this._prepareMeshes();
+                        }, undefined, false, (error) => {
+                            console.log(error);
+                        });
+                        return;
+                }
             }
 
             this._prepareMeshes();
         }
+    }
+
+    private _loadParticleSystem(name: string) {
+        ParticleHelper.CreateAsync(name, this._scene).then((set) => {
+            for (let i = 1; i < set.systems.length; ++i) {
+                set.systems[i].dispose();
+            }
+            this._particleSystem = set.systems[0] as ParticleSystem;
+            this._particleSystem.start();
+            this._prepareMeshes();
+        });
     }
 
     private _forceCompilationAsync(material: NodeMaterial, mesh: AbstractMesh): Promise<void> {
@@ -304,6 +375,7 @@ export class PreviewManager {
     }
 
     private _updatePreview(serializationObject: any) {
+        console.log("_updatePreview", this._currentType, this._globalState.previewMeshType, this._globalState.mode);
         try {
             let tempMaterial = NodeMaterial.Parse(serializationObject, this._scene);
 
@@ -313,12 +385,6 @@ export class PreviewManager {
             if (this._postprocess) {
                 this._postprocess.dispose(this._camera);
                 this._postprocess = null;
-            }
-
-            if (this._particleSystem) {
-                this._particleSystem.stop();
-                this._particleSystem.dispose();
-                this._particleSystem = null;
             }
 
             switch (this._globalState.mode) {
@@ -345,32 +411,19 @@ export class PreviewManager {
                     this._globalState.onIsLoadingChanged.notifyObservers(false);
 
                     (window as any).ss = this._scene;
+                    (window as any).ps = this._particleSystem;
 
-                    // Effect
-                    this._particleSystem = new ParticleSystem("particles", 4000, this._scene);
+                    if (this._particleSystemDrawObserver) {
+                        this._particleSystem.onBeforeDrawParticlesObservable.remove(this._particleSystemDrawObserver);
+                    }
 
-                    const emitter0 = Mesh.CreateBox("emitter0", 0.1, this._scene);
-                    emitter0.isVisible = false;
-
-                    this._meshes.push(emitter0);
-
-                    this._particleSystem.particleTexture = new Texture("https://assets.babylonjs.com/particles/textures/explosion/Flare.png", this._scene);
-                    this._particleSystem.minSize = 0.1;
-                    this._particleSystem.maxSize = 1.0;
-                    this._particleSystem.minLifeTime = 0.5;
-                    this._particleSystem.maxLifeTime = 5.0;
-                    this._particleSystem.minEmitPower = 0.5;
-                    this._particleSystem.maxEmitPower = 3.0;
-                    this._particleSystem.emitter = emitter0;
-                    this._particleSystem.emitRate = 100;
-                    this._particleSystem.blendMode = ParticleSystem.BLENDMODE_ONEONE;
-                    this._particleSystem.direction1 = new Vector3(-1, 1, -1);
-                    this._particleSystem.direction2 = new Vector3(1, 1, 1);
-                    this._particleSystem.color1 = new Color4(1, 1, 0, 1);
-                    this._particleSystem.color2 = new Color4(1, 0.5, 0, 1);
-                    this._particleSystem.gravity = new Vector3(0, -1.0, 0);
-                    this._particleSystem.start();
-
+                    this._particleSystemDrawObserver = this._particleSystem.onBeforeDrawParticlesObservable.add((effect) => {
+                        const textureBlock = tempMaterial.getBlockByPredicate((block) => block instanceof ParticleTextureBlock);
+                        if (textureBlock && (textureBlock as ParticleTextureBlock).texture) {
+                            effect.setTexture("diffuseSampler", (textureBlock as ParticleTextureBlock).texture);
+                        }
+                    });
+                    console.log("create effect for particles", tempMaterial);
                     tempMaterial.createEffectForParticles(this._particleSystem);
                     break;
                 }
