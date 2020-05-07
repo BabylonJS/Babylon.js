@@ -2,20 +2,20 @@
  * Enum for Device Types
  */
 export enum DeviceType {
-    /** Keyboard */
-    Keyboard = 0,
-    /** Mouse */
-    Mouse = 1,
-    /** Touch Pointers */
-    Touch = 2,
-    /** PS4 Dual Shock */
-    DualShock = 3,
-    /** Xbox */
-    Xbox = 4,
-    /** Switch Controller */
-    Switch = 5,
     /** Generic */
-    Generic = 6
+    Generic = 0,
+    /** Keyboard */
+    Keyboard = 1,
+    /** Mouse */
+    Mouse = 2,
+    /** Touch Pointers */
+    Touch = 3,
+    /** PS4 Dual Shock */
+    DualShock = 4,
+    /** Xbox */
+    Xbox = 5,
+    /** Switch Controller */
+    Switch = 6
 }
 
 // Device Enums
