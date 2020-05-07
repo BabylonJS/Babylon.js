@@ -4,12 +4,14 @@ import { ActionManager } from "../Actions/actionManager";
 import { ISpriteManager } from "./spriteManager";
 import { Color4 } from '../Maths/math.color';
 import { Observable } from '../Misc/observable';
+import { IAnimatable } from '../Animations/animatable.interface';
+declare type Animation = import("../Animations/animation").Animation;
 
 /**
  * Class used to represent a sprite
  * @see http://doc.babylonjs.com/babylon101/sprites
  */
-export class Sprite {
+export class Sprite implements IAnimatable {
     /** Gets or sets the current world position */
     public position: Vector3;
     /** Gets or sets the main color */
@@ -25,13 +27,13 @@ export class Sprite {
     /** Gets or sets the cell reference in the sprite sheet, uses sprite's filename when added to sprite sheet */
     public cellRef: string;
     /** Gets or sets a boolean indicating if UV coordinates should be inverted in U axis */
-    public invertU = 0;
+    public invertU = false;
     /** Gets or sets a boolean indicating if UV coordinates should be inverted in B axis */
-    public invertV = 0;
+    public invertV = false;
     /** Gets or sets a boolean indicating that this sprite should be disposed after animation ends */
     public disposeWhenFinishedAnimating: boolean;
     /** Gets the list of attached animations */
-    public animations = new Array<Animation>();
+    public animations: Nullable<Array<Animation>> = new Array<Animation>();
     /** Gets or sets a boolean indicating if the sprite can be picked */
     public isPickable = false;
     /** Gets or sets a boolean indicating that sprite texture alpha will be used for precise picking (false by default) */
@@ -88,6 +90,13 @@ export class Sprite {
     public uniqueId: number;
 
     /**
+     * Gets the manager of this sprite
+     */
+    public get manager() {
+        return this._manager;
+    }
+
+    /**
      * Creates a new Sprite
      * @param name defines the name
      * @param manager defines the manager
@@ -112,6 +121,42 @@ export class Sprite {
         return "Sprite";
     }
 
+    /** Gets or sets the initial key for the animation (setting it will restart the animation)  */
+    public get fromIndex() {
+        return this._fromIndex;
+    }
+
+    public set fromIndex(value: number) {
+        this.playAnimation(value, this._toIndex, this._loopAnimation, this._delay, this._onAnimationEnd);
+    }
+
+    /** Gets or sets the end key for the animation (setting it will restart the animation)  */
+    public get toIndex() {
+        return this._toIndex;
+    }
+
+    public set toIndex(value: number) {
+        this.playAnimation(this._fromIndex, value, this._loopAnimation, this._delay, this._onAnimationEnd);
+    }
+
+    /** Gets or sets a boolean indicating if the animation is looping (setting it will restart the animation)  */
+    public get loopAnimation() {
+        return this._loopAnimation;
+    }
+
+    public set loopAnimation(value: boolean) {
+        this.playAnimation(this._fromIndex, this._toIndex, value, this._delay, this._onAnimationEnd);
+    }
+
+    /** Gets or sets the delay between cell changes (setting it will restart the animation)  */
+    public get delay() {
+        return Math.max(this._delay, 1);
+    }
+
+    public set delay(value: number) {
+        this.playAnimation(this._fromIndex, this._toIndex, this._loopAnimation, value, this._onAnimationEnd);
+    }
+
     /**
      * Starts an animation
      * @param from defines the initial key
@@ -124,7 +169,7 @@ export class Sprite {
         this._fromIndex = from;
         this._toIndex = to;
         this._loopAnimation = loop;
-        this._delay = delay;
+        this._delay = delay || 1;
         this._animationStarted = true;
 
         if (from < to) {

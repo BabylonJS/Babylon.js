@@ -679,7 +679,7 @@ export class Node implements IBehaviorAware<Node> {
      * @returns null if not found else the requested animation range
      */
     public getAnimationRange(name: string): Nullable<AnimationRange> {
-        return this._ranges[name];
+        return this._ranges[name] || null;
     }
 
     /**
