@@ -13,12 +13,14 @@ const inputNameToAttributeValue: { [name: string] : string } = {
     "position2d" : "position",
     "particle_uv" : "uv",
     "particle_color" : "color",
+    "particle_texturemask": "textureMask",
 };
 
 const inputNameToAttributeName: { [name: string] : string } = {
     "position2d" : "postprocess",
     "particle_uv" : "particle",
     "particle_color" : "particle",
+    "particle_texturemask": "particle",
 };
 
 export class InputDisplayManager implements IDisplayManager {

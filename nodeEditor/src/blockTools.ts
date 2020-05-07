@@ -480,6 +480,11 @@ export class BlockTools {
                 color.setAsAttribute("particle_color");
                 return color;
             }
+            case "ParticleTextureMaskBlock": {
+                let u = new InputBlock("TextureMask");
+                u.setAsAttribute("particle_texturemask");
+                return u;
+            }
         }
 
         return null;

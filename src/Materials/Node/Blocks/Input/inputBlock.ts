@@ -19,11 +19,17 @@ const remapAttributeName: { [name: string]: string }  = {
     "position2d": "position",
     "particle_uv": "vUV",
     "particle_color": "vColor",
+    "particle_texturemask": "textureMask",
 };
 
-export const attributeInFragmentOnly: { [name: string]: boolean }  = {
+const attributeInFragmentOnly: { [name: string]: boolean }  = {
     "particle_uv": true,
     "particle_color": true,
+    "particle_texturemask": true,
+};
+
+const attributeAsUniform: { [name: string]: boolean }  = {
+    "particle_texturemask": true,
 };
 
 /**
@@ -120,6 +126,7 @@ export class InputBlock extends NodeMaterialBlock {
                         return this._type;
                     case "color":
                     case "particle_color":
+                    case "particle_texturemask":
                         this._type = NodeMaterialBlockConnectionPointTypes.Color4;
                         return this._type;
                 }
@@ -466,7 +473,11 @@ export class InputBlock extends NodeMaterialBlock {
 
             if (this.target === NodeMaterialBlockTargets.Vertex && state._vertexState) { // Attribute for fragment need to be carried over by varyings
                 if (attributeInFragmentOnly[this.name]) {
-                    state._emitVaryingFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                    if (attributeAsUniform[this.name]) {
+                        state._emitUniformFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                    } else {
+                        state._emitVaryingFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                    }
                 } else {
                     this._emit(state._vertexState, define);
                 }
@@ -480,7 +491,11 @@ export class InputBlock extends NodeMaterialBlock {
             state.attributes.push(this.associatedVariableName);
 
             if (attributeInFragmentOnly[this.name]) {
-                state._emitVaryingFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                if (attributeAsUniform[this.name]) {
+                    state._emitUniformFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                } else {
+                    state._emitVaryingFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                }
             } else {
                 if (define) {
                     state._attributeDeclaration += this._emitDefine(define);
