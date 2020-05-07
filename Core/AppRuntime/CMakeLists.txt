@@ -3,8 +3,6 @@ set(SOURCES
     "Source/AppRuntime.cpp"
     "Source/AppRuntime${NAPI_JAVASCRIPT_ENGINE}.cpp"
     "Source/AppRuntime${BABYLON_NATIVE_PLATFORM}.cpp"
-    "Source/Common.h"
-    "Source/Common${BABYLON_NATIVE_PLATFORM}.cpp"
     "Source/WorkQueue.cpp"
     "Source/WorkQueue.h")
 

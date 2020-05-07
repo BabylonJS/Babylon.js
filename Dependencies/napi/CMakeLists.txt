@@ -25,7 +25,6 @@ set(SOURCES
     "include/napi/js_native_api_types.h"
     "include/napi/napi.h"
     "include/napi/napi-inl.h"
-    "include/napi/napi-shared-reference.h"
     "source/env.cc"
     "source/env_${NAPI_JAVASCRIPT_ENGINE}.cc"
     "source/js_native_api_${NAPI_JAVASCRIPT_ENGINE}.cc"

@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Common.h"
-
+#include <arcana/threading/dispatcher.h>
 #include <arcana/threading/task.h>
 #include <napi/env.h>
 
@@ -29,7 +28,7 @@ namespace Babylon
 
         arcana::cancellation_source m_cancelSource{};
         arcana::task<void, std::exception_ptr> m_task = arcana::task_from_result<std::exception_ptr>();
-        arcana::manual_dispatcher<babylon_dispatcher::work_size> m_dispatcher{};
+        arcana::manual_dispatcher<128> m_dispatcher{};
 
         std::thread m_thread;
     };
