@@ -561,6 +561,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/floatLineCompone
         step?: string;
         digits?: number;
         useEuler?: boolean;
+        min?: number;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
@@ -639,6 +640,39 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/timeline" {
+    import * as React from "react";
+    import { IAnimationKey } from 'babylonjs/Animations/animationKey';
+    interface ITimelineProps {
+        keyframes: IAnimationKey[];
+        selected: IAnimationKey;
+        currentFrame: number;
+        onCurrentFrameChange: (frame: number) => void;
+    }
+    export class Timeline extends React.Component<ITimelineProps, {
+        selected: IAnimationKey;
+    }> {
+        readonly _frames: object[];
+        private _scrollable;
+        constructor(props: ITimelineProps);
+        handleInputChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        nextFrame(event: React.MouseEvent<HTMLDivElement>): void;
+        previousFrame(event: React.MouseEvent<HTMLDivElement>): void;
+        nextKeyframe(event: React.MouseEvent<HTMLDivElement>): void;
+        previousKeyframe(event: React.MouseEvent<HTMLDivElement>): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/playhead" {
+    import * as React from "react";
+    interface IPlayheadProps {
+        frame: number;
+    }
+    export class Playhead extends React.Component<IPlayheadProps> {
+        constructor(props: IPlayheadProps);
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/animationCurveEditorComponent" {
     import * as React from "react";
     import { Animation } from 'babylonjs/Animations/animation';
@@ -665,6 +699,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         selected: Animation;
         currentPathData: string | undefined;
         svgKeyframes: IKeyframeSvgPoint[] | undefined;
+        currentFrame: number;
     }> {
         readonly _heightScale: number;
         private _newAnimations;
@@ -691,6 +726,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         isAnimationPlaying(): void;
         selectAnimation(animation: Animation): void;
         interpolateControlPoints(p0: Vector2, p1: Vector2, u: number, p2: Vector2, v: number, p3: Vector2): Vector2[] | undefined;
+        changeCurrentFrame(frame: number): void;
         render(): JSX.Element;
     }
 }
@@ -2259,6 +2295,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/spr
         globalState: GlobalState;
         spriteManager: SpriteManager;
         lockObject: LockObject;
+        onSelectionChangedObservable?: Observable<any>;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteManagerPropertyGridComponentProps> {
@@ -2278,9 +2315,11 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/spr
         sprite: Sprite;
         lockObject: LockObject;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        onSelectionChangedObservable?: Observable<any>;
     }
     export class SpritePropertyGridComponent extends React.Component<ISpritePropertyGridComponentProps> {
         constructor(props: ISpritePropertyGridComponentProps);
+        onManagerLink(): void;
         render(): JSX.Element;
     }
 }
@@ -2795,6 +2834,7 @@ declare module "babylonjs-inspector/components/sceneExplorer/treeItemComponent" 
         label: string;
         offset: number;
         filter: Nullable<string>;
+        forceSubitems?: boolean;
         globalState: GlobalState;
         entity?: any;
         selectedEntity: any;
@@ -3478,6 +3518,7 @@ declare module INSPECTOR {
         step?: string;
         digits?: number;
         useEuler?: boolean;
+        min?: number;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
@@ -3550,6 +3591,36 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface ITimelineProps {
+        keyframes: BABYLON.IAnimationKey[];
+        selected: BABYLON.IAnimationKey;
+        currentFrame: number;
+        onCurrentFrameChange: (frame: number) => void;
+    }
+    export class Timeline extends React.Component<ITimelineProps, {
+        selected: BABYLON.IAnimationKey;
+    }> {
+        readonly _frames: object[];
+        private _scrollable;
+        constructor(props: ITimelineProps);
+        handleInputChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        nextFrame(event: React.MouseEvent<HTMLDivElement>): void;
+        previousFrame(event: React.MouseEvent<HTMLDivElement>): void;
+        nextKeyframe(event: React.MouseEvent<HTMLDivElement>): void;
+        previousKeyframe(event: React.MouseEvent<HTMLDivElement>): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IPlayheadProps {
+        frame: number;
+    }
+    export class Playhead extends React.Component<IPlayheadProps> {
+        constructor(props: IPlayheadProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface IAnimationCurveEditorComponentProps {
         close: (event: any) => void;
         playOrPause: () => void;
@@ -3567,6 +3638,7 @@ declare module INSPECTOR {
         selected: BABYLON.Animation;
         currentPathData: string | undefined;
         svgKeyframes: IKeyframeSvgPoint[] | undefined;
+        currentFrame: number;
     }> {
         readonly _heightScale: number;
         private _newAnimations;
@@ -3593,6 +3665,7 @@ declare module INSPECTOR {
         isAnimationPlaying(): void;
         selectAnimation(animation: BABYLON.Animation): void;
         interpolateControlPoints(p0: BABYLON.Vector2, p1: BABYLON.Vector2, u: number, p2: BABYLON.Vector2, v: number, p3: BABYLON.Vector2): BABYLON.Vector2[] | undefined;
+        changeCurrentFrame(frame: number): void;
         render(): JSX.Element;
     }
 }
@@ -4750,6 +4823,7 @@ declare module INSPECTOR {
         globalState: GlobalState;
         spriteManager: BABYLON.SpriteManager;
         lockObject: LockObject;
+        onSelectionChangedObservable?: BABYLON.Observable<any>;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteManagerPropertyGridComponentProps> {
@@ -4763,9 +4837,11 @@ declare module INSPECTOR {
         sprite: BABYLON.Sprite;
         lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        onSelectionChangedObservable?: BABYLON.Observable<any>;
     }
     export class SpritePropertyGridComponent extends React.Component<ISpritePropertyGridComponentProps> {
         constructor(props: ISpritePropertyGridComponentProps);
+        onManagerLink(): void;
         render(): JSX.Element;
     }
 }
@@ -5200,6 +5276,7 @@ declare module INSPECTOR {
         label: string;
         offset: number;
         filter: BABYLON.Nullable<string>;
+        forceSubitems?: boolean;
         globalState: GlobalState;
         entity?: any;
         selectedEntity: any;

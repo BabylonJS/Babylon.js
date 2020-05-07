@@ -25,6 +25,12 @@ declare type Ray = import("../Culling/ray").Ray;
  * Defines the minimum interface to fullfil in order to be a sprite manager.
  */
 export interface ISpriteManager extends IDisposable {
+
+    /**
+     * Gets manager's name
+     */
+    name: string;
+
     /**
      * Restricts the camera to viewing objects with the same layerMask.
      * A camera with a layerMask of 1 will render spriteManager.layerMask & camera.layerMask!== 0
@@ -51,6 +57,16 @@ export interface ISpriteManager extends IDisposable {
      * Defines the list of sprites managed by the manager.
      */
     sprites: Array<Sprite>;
+
+    /**
+     * Gets or sets the spritesheet texture
+     */
+    texture: Texture;
+
+    /** Defines the default width of a cell in the spritesheet */
+    cellWidth: number;
+    /** Defines the default height of a cell in the spritesheet */
+    cellHeight: number;
 
     /**
      * Tests the intersection of a sprite with a specific ray.
@@ -154,6 +170,17 @@ export class SpriteManager implements ISpriteManager {
      */
     public get scene() {
         return this._scene;
+    }
+
+    /**
+     * Gets or sets the capacity of the manager
+     */
+    public get capacity() {
+        return this._capacity;
+    }
+
+    public set capacity(value: number) {
+        this._capacity = value;
     }
 
     /**
