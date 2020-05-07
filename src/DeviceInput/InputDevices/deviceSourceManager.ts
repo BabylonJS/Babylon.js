@@ -19,12 +19,12 @@ export class DeviceSource<T extends DeviceType> {
     // Private Members
     private readonly _deviceInputSystem: DeviceInputSystem;
 
-     /**
-      * Default Constructor
-      * @param deviceInputSystem Reference to DeviceInputSystem
-      * @param deviceType Type of device
-      * @param deviceSlot "Slot" or index that device is referenced in
-      */
+    /**
+     * Default Constructor
+     * @param deviceInputSystem Reference to DeviceInputSystem
+     * @param deviceType Type of device
+     * @param deviceSlot "Slot" or index that device is referenced in
+     */
     constructor(deviceInputSystem: DeviceInputSystem,
         /** Type of device */
         public readonly deviceType: DeviceType,
@@ -133,11 +133,11 @@ export class DeviceSourceManager implements IDisposable {
     }
 
     // Private Functions
-     /**
-      * Function to add device name to device list
-      * @param deviceType Enum specifiying device type
-      * @param deviceSlot "Slot" or index that device is referenced in
-      */
+    /**
+     * Function to add device name to device list
+     * @param deviceType Enum specifiying device type
+     * @param deviceSlot "Slot" or index that device is referenced in
+     */
     private _addDevice<T extends DeviceType>(deviceType: DeviceType, deviceSlot: number) {
         if (!this._devices[deviceType]) {
             this._devices[deviceType] = new Array<DeviceSource<T>>();

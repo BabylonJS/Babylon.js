@@ -13,12 +13,12 @@ export class DeviceInputSystem implements IDisposable {
     /**
      * Callback to be triggered when a device is connected
      */
-    public onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void = () => {};
+    public onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void = () => { };
 
     /**
      * Callback to be triggered when a device is disconnected
      */
-    public onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void = () => {};
+    public onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void = () => { };
 
     /**
      * Callback to be triggered when event driven input is updated
@@ -67,13 +67,13 @@ export class DeviceInputSystem implements IDisposable {
      * @returns Current value of input
      */
 
-     /**
-      * Checks for current device input value, given an id and input index
-      * @param deviceType Enum specifiying device type
-      * @param deviceSlot "Slot" or index that device is referenced in
-      * @param inputIndex Id of input to be checked
-      * @returns Current value of input
-      */
+    /**
+     * Checks for current device input value, given an id and input index
+     * @param deviceType Enum specifiying device type
+     * @param deviceSlot "Slot" or index that device is referenced in
+     * @param inputIndex Id of input to be checked
+     * @returns Current value of input
+     */
     public pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): Nullable<number> {
         const device = this._inputs[deviceType][deviceSlot];
 
@@ -113,12 +113,12 @@ export class DeviceInputSystem implements IDisposable {
     }
 
     // Private functions
-     /**
-      * Add device and inputs to device array
-      * @param deviceType Enum specifiying device type
-      * @param deviceSlot "Slot" or index that device is referenced in
-      * @param numberOfInputs Number of input entries to create for given device
-      */
+    /**
+     * Add device and inputs to device array
+     * @param deviceType Enum specifiying device type
+     * @param deviceSlot "Slot" or index that device is referenced in
+     * @param numberOfInputs Number of input entries to create for given device
+     */
     private _registerDevice(deviceType: DeviceType, deviceSlot: number, numberOfInputs: number) {
         if (!this._inputs[deviceType]) {
             this._inputs[deviceType] = [];
@@ -247,8 +247,7 @@ export class DeviceInputSystem implements IDisposable {
                 pointer[evt.button + 2] = 0;
             }
             // We don't want to unregister the mouse because we may miss input data when a mouse is moving after a click
-            if (evt.pointerType != "mouse")
-            {
+            if (evt.pointerType != "mouse") {
                 this._unregisterDevice(deviceType, deviceSlot);
             }
 
