@@ -7,6 +7,10 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
         let appDelegate = UIApplication.shared.delegate as? AppDelegate
         if appDelegate != nil {
             mtkView = MTKView()
@@ -22,26 +26,30 @@ class ViewController: UIViewController {
             mtkView.depthStencilPixelFormat = .depth32Float
             
             let gesture = UIPanGestureRecognizer(target: self, action:  #selector(self.panGesture))
-            self.mtkView.addGestureRecognizer(gesture)
+            mtkView.addGestureRecognizer(gesture)
 
             let rawMetalLayerPtr: UnsafeMutableRawPointer = Unmanaged.passUnretained(mtkView.layer).toOpaque()
-
-            let screenBounds = UIScreen.main.bounds
-            let width = screenBounds.size.width
-            let height = screenBounds.size.height
-
-            appDelegate!._bridge!.init(rawMetalLayerPtr, width:Int32(width), height:Int32(height))
+            
+            let scale = UIScreen.main.scale
+            let width = view.bounds.size.width
+            let height = view.bounds.size.height
+            
+            appDelegate!._bridge!.init(rawMetalLayerPtr, width:Int32(width * scale), height:Int32(height * scale))
         }
     }
 
     override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
         let appDelegate = UIApplication.shared.delegate as? AppDelegate
+        if mtkView == nil {
+            return
+        }
         if appDelegate != nil {
-            let screenBounds = UIScreen.main.bounds
-            let width = screenBounds.size.width
-            let height = screenBounds.size.height
+            let scale = UIScreen.main.scale
+            let width = view.bounds.size.width
+            let height = view.bounds.size.height
 
-            appDelegate!._bridge!.resize(Int32(width), height: Int32(height))
+            appDelegate!._bridge!.resize(Int32(width * scale), height: Int32(height * scale))
         }
     }
 
