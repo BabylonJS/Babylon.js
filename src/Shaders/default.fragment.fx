@@ -255,6 +255,9 @@ void main(void) {
 
 #ifdef LIGHTMAP
 	vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV + uvOffset).rgb * vLightmapInfos.y;
+    #ifdef RGBDLIGHTMAP
+        lightmapColor.rgb = fromRGBD(lightmapColor);
+    #endif
 #endif
 
 #include<lightFragment>[0..maxSimultaneousLights]
@@ -279,6 +282,9 @@ void main(void) {
 		
 		refractionColor = texture2D(refraction2DSampler, refractionCoords).rgb;
 	#endif
+    #ifdef RGBDREFRACTION
+        refractionColor.rgb = fromRGBD(refractionColor);
+    #endif
 	#ifdef IS_REFRACTION_LINEAR
 		refractionColor = toGammaSpace(refractionColor);
 	#endif
@@ -317,6 +323,9 @@ vec3 reflectionColor = vec3(0., 0., 0.);
 		coords.y = 1.0 - coords.y;
 		reflectionColor = texture2D(reflection2DSampler, coords).rgb;
 	#endif
+    #ifdef RGBDREFLECTION
+        reflectionColor.rgb = fromRGBD(reflectionColor);
+    #endif
 	#ifdef IS_REFLECTION_LINEAR
 		reflectionColor = toGammaSpace(reflectionColor);
 	#endif
