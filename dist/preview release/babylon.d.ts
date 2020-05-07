@@ -10026,6 +10026,10 @@ declare module BABYLON {
      */
     export interface ISpriteManager extends IDisposable {
         /**
+         * Gets manager's name
+         */
+        name: string;
+        /**
          * Restricts the camera to viewing objects with the same layerMask.
          * A camera with a layerMask of 1 will render spriteManager.layerMask & camera.layerMask!== 0
          */
@@ -10047,6 +10051,14 @@ declare module BABYLON {
          * Defines the list of sprites managed by the manager.
          */
         sprites: Array<Sprite>;
+        /**
+         * Gets or sets the spritesheet texture
+         */
+        texture: Texture;
+        /** Defines the default width of a cell in the spritesheet */
+        cellWidth: number;
+        /** Defines the default height of a cell in the spritesheet */
+        cellHeight: number;
         /**
          * Tests the intersection of a sprite with a specific ray.
          * @param ray The ray we are sending to test the collision
@@ -10129,6 +10141,11 @@ declare module BABYLON {
          * Gets the hosting scene
          */
         get scene(): Scene;
+        /**
+         * Gets or sets the capacity of the manager
+         */
+        get capacity(): number;
+        set capacity(value: number);
         /**
          * Gets or sets the spritesheet texture
          */
@@ -18158,7 +18175,7 @@ declare module BABYLON {
      * Class used to represent a sprite
      * @see http://doc.babylonjs.com/babylon101/sprites
      */
-    export class Sprite {
+    export class Sprite implements IAnimatable {
         /** defines the name */
         name: string;
         /** Gets or sets the current world position */
@@ -18176,13 +18193,13 @@ declare module BABYLON {
         /** Gets or sets the cell reference in the sprite sheet, uses sprite's filename when added to sprite sheet */
         cellRef: string;
         /** Gets or sets a boolean indicating if UV coordinates should be inverted in U axis */
-        invertU: number;
+        invertU: boolean;
         /** Gets or sets a boolean indicating if UV coordinates should be inverted in B axis */
-        invertV: number;
+        invertV: boolean;
         /** Gets or sets a boolean indicating that this sprite should be disposed after animation ends */
         disposeWhenFinishedAnimating: boolean;
         /** Gets the list of attached animations */
-        animations: Animation[];
+        animations: Nullable<Array<Animation>>;
         /** Gets or sets a boolean indicating if the sprite can be picked */
         isPickable: boolean;
         /** Gets or sets a boolean indicating that sprite texture alpha will be used for precise picking (false by default) */
@@ -18226,6 +18243,10 @@ declare module BABYLON {
          */
         uniqueId: number;
         /**
+         * Gets the manager of this sprite
+         */
+        get manager(): ISpriteManager;
+        /**
          * Creates a new Sprite
          * @param name defines the name
          * @param manager defines the manager
@@ -18238,6 +18259,18 @@ declare module BABYLON {
          * @returns "Sprite"
          */
         getClassName(): string;
+        /** Gets or sets the initial key for the animation (setting it will restart the animation)  */
+        get fromIndex(): number;
+        set fromIndex(value: number);
+        /** Gets or sets the end key for the animation (setting it will restart the animation)  */
+        get toIndex(): number;
+        set toIndex(value: number);
+        /** Gets or sets a boolean indicating if the animation is looping (setting it will restart the animation)  */
+        get loopAnimation(): boolean;
+        set loopAnimation(value: boolean);
+        /** Gets or sets the delay between cell changes (setting it will restart the animation)  */
+        get delay(): number;
+        set delay(value: number);
         /**
          * Starts an animation
          * @param from defines the initial key
@@ -26922,6 +26955,9 @@ declare module BABYLON {
         PREMULTIPLYALPHA: boolean;
         ALPHATEST_AFTERALLALPHACOMPUTATIONS: boolean;
         ALPHABLEND: boolean;
+        RGBDLIGHTMAP: boolean;
+        RGBDREFLECTION: boolean;
+        RGBDREFRACTION: boolean;
         IMAGEPROCESSING: boolean;
         VIGNETTE: boolean;
         VIGNETTEBLENDMODEMULTIPLY: boolean;
