@@ -5,5 +5,10 @@ export enum PreviewMeshType {
     Cylinder,
     Plane,
     ShaderBall,
-    Custom
+    DefaultParticle,
+    Smoke,
+    Rain,
+    Explosion,
+    Fire,
+    Custom,
 }
