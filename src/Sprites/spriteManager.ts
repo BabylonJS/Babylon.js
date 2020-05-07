@@ -18,12 +18,19 @@ import { Logger } from "../Misc/logger";
 import "../Shaders/sprites.fragment";
 import "../Shaders/sprites.vertex";
 import { DataBuffer } from '../Meshes/dataBuffer';
+import { Engine } from '../Engines/engine';
 declare type Ray = import("../Culling/ray").Ray;
 
 /**
  * Defines the minimum interface to fullfil in order to be a sprite manager.
  */
 export interface ISpriteManager extends IDisposable {
+
+    /**
+     * Gets manager's name
+     */
+    name: string;
+
     /**
      * Restricts the camera to viewing objects with the same layerMask.
      * A camera with a layerMask of 1 will render spriteManager.layerMask & camera.layerMask!== 0
@@ -36,6 +43,11 @@ export interface ISpriteManager extends IDisposable {
     isPickable: boolean;
 
     /**
+     * Gets the hosting scene
+     */
+    scene: Scene;
+
+    /**
      * Specifies the rendering group id for this mesh (0 by default)
      * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#rendering-groups
      */
@@ -45,6 +57,16 @@ export interface ISpriteManager extends IDisposable {
      * Defines the list of sprites managed by the manager.
      */
     sprites: Array<Sprite>;
+
+    /**
+     * Gets or sets the spritesheet texture
+     */
+    texture: Texture;
+
+    /** Defines the default width of a cell in the spritesheet */
+    cellWidth: number;
+    /** Defines the default height of a cell in the spritesheet */
+    cellHeight: number;
 
     /**
      * Tests the intersection of a sprite with a specific ray.
@@ -132,6 +154,36 @@ export class SpriteManager implements ISpriteManager {
     private _effectFog: Effect;
 
     /**
+     * Gets or sets the unique id of the sprite
+     */
+    public uniqueId: number;
+
+    /**
+     * Gets the array of sprites
+     */
+    public get children() {
+        return this.sprites;
+    }
+
+    /**
+     * Gets the hosting scene
+     */
+    public get scene() {
+        return this._scene;
+    }
+
+    /**
+     * Gets or sets the capacity of the manager
+     */
+    public get capacity() {
+        return this._capacity;
+    }
+
+    public set capacity(value: number) {
+        this._capacity = value;
+    }
+
+    /**
      * Gets or sets the spritesheet texture
      */
     public get texture(): Texture {
@@ -196,8 +248,9 @@ export class SpriteManager implements ISpriteManager {
         }
 
         this._epsilon = epsilon;
-        this._scene = scene;
+        this._scene = scene || Engine.LastCreatedScene;
         this._scene.spriteManagers.push(this);
+        this.uniqueId = this.scene.getUniqueId();
 
         var indices = [];
         var index = 0;
@@ -244,6 +297,14 @@ export class SpriteManager implements ISpriteManager {
         if (this._fromPacked) {
             this._makePacked(imgUrl, spriteJSON);
         }
+    }
+
+    /**
+     * Returns the string "SpriteManager"
+     * @returns "SpriteManager"
+     */
+    public getClassName(): string {
+        return "SpriteManager";
     }
 
     private _makePacked(imgUrl: string, spriteJSON: any) {
@@ -343,8 +404,15 @@ export class SpriteManager implements ISpriteManager {
         this._vertexData[arrayOffset + 5] = sprite.height;
         this._vertexData[arrayOffset + 6] = offsetX;
         this._vertexData[arrayOffset + 7] = offsetY;
-        // Inverts
-        this._vertexData[arrayOffset + 8] = sprite.invertU ? 1 : 0;
+
+        // Inverts according to Right Handed
+        if (this._scene.useRightHandedSystem) {
+            this._vertexData[arrayOffset + 8] = sprite.invertU ? 0 : 1;
+        }
+        else {
+            this._vertexData[arrayOffset + 8] = sprite.invertU ? 1 : 0;
+        }
+
         this._vertexData[arrayOffset + 9] = sprite.invertV ? 1 : 0;
         // CellIfo
         if (this._packedAndReady) {
@@ -633,6 +701,13 @@ export class SpriteManager implements ISpriteManager {
         // VBOs
         engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
 
+        // Handle Right Handed
+        const culling = engine.depthCullingState.cull || true;
+        const zOffset = engine.depthCullingState.zOffset;
+        if (this._scene.useRightHandedSystem) {
+            engine.setState(culling, zOffset, false, false);
+        }
+
         // Draw order
         engine.setDepthFunctionToLessOrEqual();
         if (!this.disableDepthWrite) {
@@ -646,6 +721,11 @@ export class SpriteManager implements ISpriteManager {
         engine.setAlphaMode(this._blendMode);
         engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
         engine.setAlphaMode(Constants.ALPHA_DISABLE);
+
+        // Restore Right Handed
+        if (this._scene.useRightHandedSystem) {
+            engine.setState(culling, zOffset, false, true);
+        }
     }
 
     /**

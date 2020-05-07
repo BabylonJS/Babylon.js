@@ -26,11 +26,70 @@
         display: flex;
         align-items: flex-start;
         justify-content: flex-start;
+        flex-direction: column;
+
+        .row {
+            display: flex;
+            align-items: stretch;
+            justify-content: flex-start;
+            flex-direction: row;
+            width: 100vw;
+
+            .timeline{
+                width: 100vw;
+                background: gray;
+                display: flex;
+                align-items: center;
+                justify-content: stretch;
+                height: 2.5rem;
+
+                .display-line {
+                    width: 80vw;
+                    height: 2em;
+                    overflow: hidden;
+                    overflow-x: scroll;
+                    scrollbar-color: cornflowerblue slategrey;
+                    scrollbar-width: thin;
+                    margin-right: 1.3em;
+                    padding-left: 1em;
+                    padding-right: 1em;
+
+                    &::-webkit-scrollbar{
+                        height: 0.4em;
+                    }
+
+                    &::-webkit-scrollbar-track {
+                        box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+                      }
+                       
+                    &::-webkit-scrollbar-thumb {
+                        background-color: cornflowerblue;
+                        outline: 1px solid slategrey;
+                      }
+                }
+
+                .controls {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    width: 8em;
+
+                    .input-frame input {
+                        width: 3em;
+                    }
+
+                    .button {
+                        margin-left: 0.5em;
+                        margin-right: 0.5em;
+                    }
+                }
+            }
+        }
 
         .animation-list{
             padding: 1.5rem;
             background: lightgrey;
-            height: 100vh;
+            // height: 100vh;
             ul {
                 list-style:none;
                 padding-left: 0px;
@@ -76,6 +135,40 @@
                 height: 300px;
                 overflow: visible;
                 background-color: 'aliceblue';
+            }
+
+            .playhead-wrapper {
+                position: relative;
+                left: -13px;
+            }
+
+            .playhead {
+                width: fit-content;
+                background-color: #ffc60e;
+                color: black;
+                text-align: center;
+                min-width: 2em;
+                justify-content: center;
+                display: flex;
+                padding: 0.1em;
+                font-size: 0.75em;
+            }
+
+            .playhead-triangle {
+                background-color: transparent;
+                width: 0px;
+                height: 0px;
+                border-left: 13.5px solid transparent;
+                border-right: 13.5px solid transparent;
+                border-top: 12px solid #ffc60e;
+            }
+
+            .playhead-line {
+                width: 2px;
+                height: calc(45vh - 100px);
+                background-color: rgb(255, 198, 14);
+                position: absolute;
+                margin-left: 12.5px;
             }
         }
     }
