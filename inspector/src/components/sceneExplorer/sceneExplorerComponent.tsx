@@ -418,6 +418,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                     extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.particleSystems} label="Particle systems" offset={1} filter={this.state.filter} />
                 <TreeItemComponent globalState={this.props.globalState} 
                     contextMenuItems={spriteManagersContextMenus} 
+                    forceSubitems={true}
                     extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.spriteManagers} label="Sprite managers" offset={1} filter={this.state.filter} />
                 {
                     guiElements && guiElements.length > 0 &&
