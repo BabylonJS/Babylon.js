@@ -113,9 +113,7 @@ export class PreviewManager {
             this._scene.render();
         });
 
-   //     let cameraLastRotation = 0;
         let lastOffsetX: number | undefined = undefined;
-     //   const lightRotationParallaxSpeed = 0.5;
         const lightRotationSpeed = 0.01;
 
         this._scene.onPointerObservable.add((evt) => {
@@ -239,7 +237,6 @@ export class PreviewManager {
     }
 
     private _refreshPreviewMesh() {
-        console.log("_refreshPreviewMesh", this._currentType, this._globalState.previewMeshType)
         if (this._currentType !== this._globalState.previewMeshType || this._currentType === PreviewMeshType.Custom) {
             this._currentType = this._globalState.previewMeshType;
             if (this._meshes && this._meshes.length) {
@@ -328,8 +325,6 @@ export class PreviewManager {
                         this._particleSystem.color2 = new Color4(1, 0.5, 0, 1);
                         this._particleSystem.gravity = new Vector3(0, -1.0, 0);
                         this._particleSystem.start();
-
-                        console.log(JSON.stringify(this._particleSystem.serialize(false)));
                         break;
                     case PreviewMeshType.Explosion:
                         this._loadParticleSystem("explosion");
@@ -375,7 +370,6 @@ export class PreviewManager {
     }
 
     private _updatePreview(serializationObject: any) {
-        console.log("_updatePreview", this._currentType, this._globalState.previewMeshType, this._globalState.mode);
         try {
             let tempMaterial = NodeMaterial.Parse(serializationObject, this._scene);
 
@@ -410,9 +404,6 @@ export class PreviewManager {
                 case NodeMaterialModes.Particle: {
                     this._globalState.onIsLoadingChanged.notifyObservers(false);
 
-                    (window as any).ss = this._scene;
-                    (window as any).ps = this._particleSystem;
-
                     if (this._particleSystemDrawObserver) {
                         this._particleSystem.onBeforeDrawParticlesObservable.remove(this._particleSystemDrawObserver);
                     }
@@ -423,7 +414,6 @@ export class PreviewManager {
                             effect.setTexture("diffuseSampler", (textureBlock as ParticleTextureBlock).texture);
                         }
                     });
-                    console.log("create effect for particles", tempMaterial);
                     tempMaterial.createEffectForParticles(this._particleSystem);
                     break;
                 }
