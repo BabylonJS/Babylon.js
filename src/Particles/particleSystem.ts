@@ -215,19 +215,19 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
     /**
      * Gets the custom effect used to render the particles
-     * @params blendMode Blend mode for which the effect should be retrieved
-     * @returns the effect
+     * @param blendMode Blend mode for which the effect should be retrieved
+     * @returns The effect
      */
-    public getCustomEffect(blendMode = 0): Nullable<Effect> {
+    public getCustomEffect(blendMode: number = 0): Nullable<Effect> {
         return this._customEffect[blendMode] ?? this._customEffect[0];
     }
 
     /**
      * Sets the custom effect used to render the particles
-     * @params effect The effect to set
-     * @params blendMode Blend mode for which the effect should be set
+     * @param effect The effect to set
+     * @param blendMode Blend mode for which the effect should be set
      */
-    public setCustomEffect(effect: Nullable<Effect>, blendMode = 0) {
+    public setCustomEffect(effect: Nullable<Effect>, blendMode: number = 0) {
         this._customEffect[blendMode] = effect;
     }
 
@@ -1596,6 +1596,11 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         return effectCreationOption;
     }
 
+    /**
+     * Fill the defines array according to the current settings of the particle system
+     * @param defines Array to be updated
+     * @param blendMode blend mode to take into account when updating the array
+     */
     public fillDefines(defines: Array<string>, blendMode: number) {
         if (this._scene.clipPlane) {
             defines.push("#define CLIPPLANE");
@@ -1655,6 +1660,12 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
     }
 
+    /**
+     * Fill the uniforms, attributes and samplers arrays according to the current settings of the particle system
+     * @param uniforms Uniforms array to fill
+     * @param attributes Attributes array to fill
+     * @param samplers Samplers array to fill
+     */
     public fillUniformsAttributesAndSamplerNames(uniforms: Array<string>, attributes: Array<string>, samplers: Array<string>) {
         attributes.push(...ParticleSystem._GetAttributeNamesOrOptions(this._isAnimationSheetEnabled, this._isBillboardBased && this.billboardMode !== ParticleSystem.BILLBOARDMODE_STRETCHED, this._useRampGradients));
 
