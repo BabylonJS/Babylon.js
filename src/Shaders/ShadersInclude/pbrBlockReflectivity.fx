@@ -21,6 +21,7 @@ void reflectivityBlock(
     const in vec4 vReflectivityColor,
 #ifdef METALLICWORKFLOW
     const in vec3 surfaceAlbedo,
+    const in vec4 metallicReflectanceFactors,
 #endif
 #ifdef REFLECTIVITY
     const in vec3 vReflectivityInfos,
@@ -82,7 +83,7 @@ void reflectivityBlock(
         // Diffuse is used as the base of the reflectivity.
         vec3 baseColor = surfaceAlbedo;
 
-        #ifdef REFLECTANCE
+        #ifdef FROSTBITE_REFLECTANCE
             // *** NOT USED ANYMORE ***
             // Following Frostbite Remapping,
             // https://seblagarde.files.wordpress.com/2015/07/course_notes_moving_frostbite_to_pbr_v32.pdf page 115
@@ -95,19 +96,15 @@ void reflectivityBlock(
             // Compute the converted reflectivity.
             surfaceReflectivityColor = mix(0.16 * reflectance * reflectance, baseColor, metallicRoughness.r);
         #else
-            vec3 metallicF0 = vec3(vReflectivityColor.a, vReflectivityColor.a, vReflectivityColor.a);
-            #ifdef METALLICF0FACTORFROMMETALLICMAP
-                #ifdef REFLECTIVITY
-                    metallicF0 *= surfaceMetallicOrReflectivityColorMap.a;
-                #endif
-            #endif
+            vec3 metallicF0 = metallicReflectanceFactors.rgb;
+            float metallicF90 = metallicReflectanceFactors.a;
 
             #if DEBUGMODE > 0
                 outParams.metallicF0 = metallicF0;
             #endif
 
             // Compute the converted diffuse.
-            outParams.surfaceAlbedo = mix(baseColor.rgb * (1.0 - metallicF0.r), vec3(0., 0., 0.), metallicRoughness.r);
+            outParams.surfaceAlbedo = mix(baseColor.rgb * (1.0 - metallicF0), vec3(0., 0., 0.), metallicRoughness.r);
 
             // Compute the converted reflectivity.
             surfaceReflectivityColor = mix(metallicF0, baseColor, metallicRoughness.r);

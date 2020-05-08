@@ -142,10 +142,21 @@ void main(void) {
     vec4 microSurfaceTexel = texture2D(microSurfaceSampler, vMicroSurfaceSamplerUV + uvOffset) * vMicroSurfaceSamplerInfos.y;
 #endif
 
+#ifdef METALLICWORKFLOW
+    vec4 metallicReflectanceFactors = vMetallicReflectanceFactors;
+    #ifdef METALLIC_REFLECTANCE
+        vec4 metallicReflectanceFactorsMap = texture2D(metallicReflectanceSampler, vMetallicReflectanceUV + uvOffset);
+        metallicReflectanceFactorsMap = toLinearSpace(metallicReflectanceFactorsMap);
+
+        metallicReflectanceFactors *= metallicReflectanceFactorsMap;
+    #endif
+#endif
+
     reflectivityBlock(
         vReflectivityColor,
     #ifdef METALLICWORKFLOW
         surfaceAlbedo,
+        metallicReflectanceFactors,
     #endif
     #ifdef REFLECTIVITY
         vReflectivityInfos,
