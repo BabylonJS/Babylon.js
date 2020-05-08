@@ -1,14 +1,18 @@
 export enum PreviewMeshType {
+    // Meshes
     Sphere,
-    Box, 
+    Box,
     Torus,
     Cylinder,
     Plane,
     ShaderBall,
-    DefaultParticle,
+
+    // Particle systems
+    Bubbles,
     Smoke,
     Rain,
     Explosion,
     Fire,
+
     Custom,
 }

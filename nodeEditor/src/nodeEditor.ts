@@ -84,7 +84,7 @@ export class NodeEditor {
         }
         window.addEventListener('beforeunload', () => {
             if(DataStorage.ReadNumber("PreviewMeshType", PreviewMeshType.Box) === PreviewMeshType.Custom){
-                DataStorage.WriteNumber("PreviewMeshType", globalState.mode === NodeMaterialModes.Material ? PreviewMeshType.Box : PreviewMeshType.DefaultParticle);
+                DataStorage.WriteNumber("PreviewMeshType", globalState.mode === NodeMaterialModes.Material ? PreviewMeshType.Box : PreviewMeshType.Bubbles);
             }
         });
     }
