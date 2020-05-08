@@ -180,3 +180,4 @@
 - `EffectRenderer.render` now takes a `RenderTargetTexture` or an `InternalTexture` as the output texture and only a single `EffectWrapper` for its first argument ([Popov72](https://github.com/Popov72))
 - Sound's `updateOptions` takes `options.length` and `options.offset` as seconds and not milliseconds ([RaananW](https://github.com/RaananW))
 - HDRCubeTexture default rotation is now similar to the industry one. You might need to add a rotation on y of 90 degrees if you scene changes ([Sebavan](https://github.com/sebavan/))
+- PBRMaterial index of refraction is now defined as index of refraction and not the inverse of it ([Sebavan](https://github.com/sebavan/))
