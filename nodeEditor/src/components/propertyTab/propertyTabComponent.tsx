@@ -274,7 +274,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     this.props.globalState.nodeMaterial!.setToDefaultPostProcess();
                     break;
                 case NodeMaterialModes.Particle:
-                    this.props.globalState.previewMeshType = PreviewMeshType.DefaultParticle;
+                    this.props.globalState.previewMeshType = PreviewMeshType.Bubbles;
                     this.props.globalState.nodeMaterial!.setToDefaultParticle();
                     break;
             }

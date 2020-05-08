@@ -309,7 +309,7 @@ export class PreviewManager {
                 }
             } else if (this._globalState.mode === NodeMaterialModes.Particle) {
                 switch (this._globalState.previewMeshType) {
-                    case PreviewMeshType.DefaultParticle:
+                    case PreviewMeshType.Bubbles:
                         this._particleSystem = new ParticleSystem("particles", 4000, this._scene);
                         this._particleSystem.particleTexture = new Texture("https://assets.babylonjs.com/particles/textures/explosion/Flare.png", this._scene);
                         this._particleSystem.minSize = 0.1;
