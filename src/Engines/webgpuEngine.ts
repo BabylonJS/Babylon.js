@@ -151,6 +151,7 @@ export class WebGPUEngine extends Engine {
     private _currentIndexBuffer: Nullable<DataBuffer> = null;
     private __colorWrite = true;
     private _uniformsBuffers: { [name: string]: WebGPUDataBuffer } = {};
+    private _maxBufferChunk = 1024 * 1024 * 15;
 
     // Caches
     private _compiledShaders: { [key: string]: {
@@ -516,20 +517,34 @@ export class WebGPUEngine extends Engine {
     //------------------------------------------------------------------------------
     //                              WebGPU Buffers
     //------------------------------------------------------------------------------
-
     private _createBuffer(view: ArrayBufferView, flags: GPUBufferUsageFlags): DataBuffer {
+        if (view.byteLength == 0) {
+            throw new Error("Unable to create WebGPU buffer: cannot create zero-sized buffer"); // Zero size buffer would kill the tab in chrome
+        }
         const padding = view.byteLength % 4;
+
         const verticesBufferDescriptor = {
             size: view.byteLength + padding,
             usage: flags
         };
-        const buffer = this._device.createBuffer(verticesBufferDescriptor);
+        let buffer: GPUBuffer;
+        let arrBuffer: Nullable<ArrayBuffer> = null;
+        if (padding == 0 && view.byteLength < this._maxBufferChunk) {
+            [buffer, arrBuffer] = this._device.createBufferMapped(verticesBufferDescriptor);
+        }
+        else {
+            buffer = this._device.createBuffer(verticesBufferDescriptor);
+        }
+
         const dataBuffer = new WebGPUDataBuffer(buffer);
         dataBuffer.references = 1;
         dataBuffer.capacity = view.byteLength;
-
-        this._setSubData(dataBuffer, 0, view);
-
+        if (arrBuffer) {
+            new Uint8Array(arrBuffer).set(new Uint8Array(view.buffer));
+            buffer.unmap();
+        } else {
+            this._setSubData(dataBuffer, 0, view);
+        }
         return dataBuffer;
     }
 
@@ -559,17 +574,32 @@ export class WebGPUEngine extends Engine {
         }
 
         // Chunk
-        const maxChunk = 1024 * 1024 * 15;
-        let offset = 0;
-        while ((chunkEnd - (chunkStart + offset)) > maxChunk) {
-            // TODO WEBGPU. Deprecated soon to be removed... replace by mappedBuffers
-            buffer.setSubData(dstByteOffset + offset, src, srcByteOffset + offset, maxChunk);
-            offset += maxChunk;
-
+        const commandEncoder = this._device.createCommandEncoder();
+        const tempBuffers: GPUBuffer[] = [];
+        try {
+            for (let offset = 0; offset < src.byteLength; offset += this._maxBufferChunk) {
+                const uploadCount = Math.min(src.byteLength - offset, this._maxBufferChunk);
+                if (uploadCount == 0) {
+                    throw new Error("Cannot create zero-sized buffer"); // Zero size buffer would kill the tab in chrome
+                }
+                const [uploadBuffer, uploadMapping] = this._device.createBufferMapped({
+                    usage: WebGPUConstants.GPUBufferUsage_TRANSFER_SRC,
+                    size: uploadCount,
+                });
+                tempBuffers.push(uploadBuffer);
+                new Uint8Array(uploadMapping).set(new Uint8Array(src.buffer, srcByteOffset + offset, uploadCount));
+                uploadBuffer.unmap();
+                commandEncoder.copyBufferToBuffer(
+                    uploadBuffer, 0,
+                    buffer, dstByteOffset + offset,
+                    uploadCount);
+            }
+            this._device.defaultQueue.submit([commandEncoder.finish()]);
+        } catch (e) {
+            Logger.Error('Unable to update WebGPU buffer: ' + e);
+        } finally {
+            tempBuffers.forEach((buff) => buff.destroy());
         }
-
-        // TODO WEBGPU. Deprecated soon to be removed... replace by mappedBuffers
-        buffer.setSubData(dstByteOffset + offset, src, srcByteOffset + offset, byteLength - offset);
     }
 
     //------------------------------------------------------------------------------
@@ -2116,13 +2146,17 @@ export class WebGPUEngine extends Engine {
         for (let i = 0; i < webgpuPipelineContext.orderedUBOsAndSamplers.length; i++) {
             const setDefinition = webgpuPipelineContext.orderedUBOsAndSamplers[i];
             if (setDefinition === undefined) {
-                const groupLayout = bindGroupLayouts[i];
-                if (groupLayout) {
-                    bindGroups[i] = this._device.createBindGroup({
-                        layout: groupLayout,
-                        bindings: [],
-                    });
+                let groupLayout: GPUBindGroupLayout;
+                if (bindGroupLayouts && bindGroupLayouts[i]) {
+                    groupLayout = bindGroupLayouts[i];
                 }
+                else {
+                    groupLayout = webgpuPipelineContext.renderPipeline.getBindGroupLayout(i);
+                }
+                bindGroups[i] = this._device.createBindGroup({
+                    layout: groupLayout,
+                    entries: [],
+                });
                 continue;
             }
 
@@ -2174,11 +2208,17 @@ export class WebGPUEngine extends Engine {
                 }
             }
 
-            const groupLayout = bindGroupLayouts[i];
-            if (groupLayout) {
+            if (bindings.length > 0) {
+                let groupLayout: GPUBindGroupLayout;
+                if (bindGroupLayouts && bindGroupLayouts[i]) {
+                    groupLayout = bindGroupLayouts[i];
+                }
+                else {
+                    groupLayout = webgpuPipelineContext.renderPipeline.getBindGroupLayout(i);
+                }
                 bindGroups[i] = this._device.createBindGroup({
                     layout: groupLayout,
-                    bindings,
+                    entries: bindings,
                 });
             }
         }

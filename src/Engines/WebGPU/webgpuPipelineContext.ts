@@ -63,7 +63,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
 
     public vertexInputs: IWebGPUPipelineContextVertexInputsCache;
 
-    public bindGroupLayouts: (GPUBindGroupLayout | undefined)[];
+    public bindGroupLayouts: GPUBindGroupLayout[];
     public bindGroups: GPUBindGroup[];
 
     public renderPipeline: GPURenderPipeline;
