@@ -105,7 +105,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     private _spriteBuffer: Nullable<Buffer>;
     private _indexBuffer: Nullable<DataBuffer>;
     private _effect: Effect;
-    private _customEffect: Nullable<Effect>;
+    private _customEffect: { [blendMode: number] : Nullable<Effect> };
     private _cachedDefines: string;
     private _scaledColorStep = new Color4(0, 0, 0, 0);
     private _colorDiff = new Color4(0, 0, 0, 0);
@@ -214,14 +214,21 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     }
 
     /**
-     * Gets or sets the custom effect used to render the particles
+     * Gets the custom effect used to render the particles
+     * @params blendMode Blend mode for which the effect should be retrieved
+     * @returns the effect
      */
-    public get customEffect(): Nullable<Effect> {
-        return this._customEffect;
+    public getCustomEffect(blendMode = 0): Nullable<Effect> {
+        return this._customEffect[blendMode] ?? this._customEffect[0];
     }
 
-    public set customEffect(effect: Nullable<Effect>) {
-        this._customEffect = effect;
+    /**
+     * Sets the custom effect used to render the particles
+     * @params effect The effect to set
+     * @params blendMode Blend mode for which the effect should be set
+     */
+    public setCustomEffect(effect: Nullable<Effect>, blendMode = 0) {
+        this._customEffect[blendMode] = effect;
     }
 
     /** @hidden */
@@ -263,7 +270,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
 
-        this._customEffect = customEffect;
+        this._customEffect = { 0: customEffect };
 
         this._scene.particleSystems.push(this);
 
@@ -1663,8 +1670,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
     /** @hidden */
     private _getEffect(blendMode: number): Effect {
-        if (this._customEffect) {
-            return this._customEffect;
+        const customEffect = this.getCustomEffect(blendMode);
+
+        if (customEffect) {
+            return customEffect;
         }
 
         var defines: Array<string> = [];
@@ -2027,17 +2036,16 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * @returns the cloned particle system
      */
     public clone(name: string, newEmitter: any): ParticleSystem {
-        var custom: Nullable<Effect> = null;
+        var custom = { ...this._customEffect };
         var program: any = null;
         if (this.customShader != null) {
             program = this.customShader;
             var defines: string = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
-            custom = this._scene.getEngine().createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
-        } else if (this._customEffect) {
-            custom = this._customEffect;
+            custom[0] = this._scene.getEngine().createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
         }
-        var result = new ParticleSystem(name, this._capacity, this._scene, custom);
+        var result = new ParticleSystem(name, this._capacity, this._scene, custom[0]);
         result.customShader = program;
+        result._customEffect = custom;
 
         DeepCopier.DeepCopy(this, result, ["particles", "customShader", "noiseTexture", "particleTexture", "onDisposeObservable"]);
 

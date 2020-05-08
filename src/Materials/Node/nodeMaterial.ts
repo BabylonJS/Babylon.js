@@ -42,6 +42,7 @@ import { MultiplyBlock } from './Blocks/multiplyBlock';
 import { NodeMaterialModes } from './Enums/nodeMaterialModes';
 import { Texture } from '../Textures/texture';
 import { ParticleSystem } from '../../Particles/particleSystem';
+import { BaseParticleSystem } from '../../Particles/baseParticleSystem';
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -810,7 +811,7 @@ export class NodeMaterial extends PushMaterial {
         return postProcess;
     }
 
-    private _createEffectForParticles(particleSystem: ParticleSystem, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, effect?: Effect, defines?: NodeMaterialDefines, dummyMesh?: AbstractMesh) {
+    private _createEffectForParticles(particleSystem: ParticleSystem, blendMode: number, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, effect?: Effect, defines?: NodeMaterialDefines, dummyMesh?: AbstractMesh) {
         let tempName = this.name + this._buildId;
 
         if (!defines) {
@@ -831,13 +832,13 @@ export class NodeMaterial extends PushMaterial {
 
             Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString);
 
-            particleSystem.fillDefines(particleSystemDefines, particleSystem.blendMode);
+            particleSystem.fillDefines(particleSystemDefines, blendMode);
 
             particleSystemDefinesJoined = particleSystemDefines.join("\n");
 
             effect = this.getScene().getEngine().createEffectForParticles(tempName, this._fragmentCompilationState.uniforms, this._fragmentCompilationState.samplers, defines.toString() + "\n" + particleSystemDefinesJoined, result?.fallbacks, onCompiled, onError, particleSystem);
 
-            particleSystem.customEffect = effect;
+            particleSystem.setCustomEffect(effect, blendMode);
         }
 
         effect.onBindObservable.add((effect) => {
@@ -853,7 +854,7 @@ export class NodeMaterial extends PushMaterial {
 
             particleSystemDefines.length = 0;
 
-            particleSystem.fillDefines(particleSystemDefines, particleSystem.blendMode);
+            particleSystem.fillDefines(particleSystemDefines, blendMode);
 
             const particleSystemDefinesJoinedCurrent = particleSystemDefines.join("\n");
 
@@ -868,8 +869,8 @@ export class NodeMaterial extends PushMaterial {
                 Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString);
 
                 effect = this.getScene().getEngine().createEffectForParticles(tempName, this._fragmentCompilationState.uniforms, this._fragmentCompilationState.samplers, defines!.toString() + "\n" + particleSystemDefinesJoined, result?.fallbacks, onCompiled, onError, particleSystem);
-                particleSystem.customEffect = effect;
-                this._createEffectForParticles(particleSystem, onCompiled, onError, effect, defines, dummyMesh); // add the effect.onBindObservable observer
+                particleSystem.setCustomEffect(effect, blendMode);
+                this._createEffectForParticles(particleSystem, blendMode, onCompiled, onError, effect, defines, dummyMesh); // add the effect.onBindObservable observer
                 return;
             }
 
@@ -907,7 +908,8 @@ export class NodeMaterial extends PushMaterial {
      * @param onError defines a function to call when the effect creation has failed
      */
     public createEffectForParticles(particleSystem: ParticleSystem, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void) {
-        this._createEffectForParticles(particleSystem, onCompiled, onError);
+        this._createEffectForParticles(particleSystem, BaseParticleSystem.BLENDMODE_ONEONE, onCompiled, onError);
+        this._createEffectForParticles(particleSystem, BaseParticleSystem.BLENDMODE_MULTIPLY, onCompiled, onError);
     }
 
     private _processDefines(mesh: AbstractMesh, defines: NodeMaterialDefines, useInstances = false): Nullable<{
