@@ -41,7 +41,7 @@
 
     vec3 getReflectanceFromBRDFLookup(const vec3 specularEnvironmentR0, const vec3 environmentBrdf) {
         #ifdef BRDF_V_HEIGHT_CORRELATED
-            vec3 reflectance = mix(environmentBrdf.xxx, specularEnvironmentR0, environmentBrdf.yyy);
+            vec3 reflectance = mix(environmentBrdf.xxx, environmentBrdf.yyy, specularEnvironmentR0);
         #else
             vec3 reflectance = specularEnvironmentR0 * environmentBrdf.x + environmentBrdf.y;
         #endif
