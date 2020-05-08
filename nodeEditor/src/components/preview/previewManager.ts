@@ -200,35 +200,47 @@ export class PreviewManager {
         }
     }
 
-    private _prepareMeshes() {
-        if (this._globalState.mode === NodeMaterialModes.Material) {
-            this._prepareLights();
+    private _prepareScene() {
+        this._camera.useFramingBehavior = this._globalState.mode === NodeMaterialModes.Material;
 
-            // Framing
-            this._camera.useFramingBehavior = true;
+        switch (this._globalState.mode) {
+            case NodeMaterialModes.Material: {
+                this._prepareLights();
 
-            var framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
+                var framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
 
-            setTimeout(() => { // Let the behavior activate first
-                framingBehavior.framingTime = 0;
-                framingBehavior.elevationReturnTime = -1;
+                setTimeout(() => { // Let the behavior activate first
+                    framingBehavior.framingTime = 0;
+                    framingBehavior.elevationReturnTime = -1;
 
-                if (this._scene.meshes.length) {
-                    var worldExtends = this._scene.getWorldExtends();
-                    this._camera.lowerRadiusLimit = null;
-                    this._camera.upperRadiusLimit = null;
-                    framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
-                }
+                    if (this._scene.meshes.length) {
+                        var worldExtends = this._scene.getWorldExtends();
+                        this._camera.lowerRadiusLimit = null;
+                        this._camera.upperRadiusLimit = null;
+                        framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
+                    }
 
-                this._camera.pinchPrecision = 200 / this._camera.radius;
-                this._camera.upperRadiusLimit = 5 * this._camera.radius;
-            });
+                    this._camera.pinchPrecision = 200 / this._camera.radius;
+                    this._camera.upperRadiusLimit = 5 * this._camera.radius;
+                });
 
-            this._camera.wheelDeltaPercentage = 0.01;
-            this._camera.pinchDeltaPercentage = 0.01;
+                this._camera.wheelDeltaPercentage = 0.01;
+                this._camera.pinchDeltaPercentage = 0.01;
 
-            // Animations
-            this._handleAnimations();
+                // Animations
+                this._handleAnimations();
+                break;
+            }
+            case NodeMaterialModes.PostProcess: {
+                this._camera.radius = 4;
+                this._camera.upperRadiusLimit = 10;
+                break;
+            }
+            case NodeMaterialModes.Particle: {
+                this._camera.radius = this._globalState.previewMeshType === PreviewMeshType.Explosion ? 50 : 20;
+                this._camera.upperRadiusLimit = 500;
+                break;
+            }
         }
 
         // Material
@@ -257,6 +269,7 @@ export class PreviewManager {
                 if (this._particleSystemDrawObserver) {
                     this._particleSystem.onBeforeDrawParticlesObservable.remove(this._particleSystemDrawObserver);
                 }
+                this._particleSystem.onDisposeObservable.clear();
                 this._particleSystem.customEffect = null;
                 this._particleSystem.stop();
                 this._particleSystem.dispose();
@@ -273,7 +286,7 @@ export class PreviewManager {
                     case PreviewMeshType.Box:
                         SceneLoader.AppendAsync("https://models.babylonjs.com/", "roundedCube.glb", this._scene).then(() => {
                             this._meshes.push(...this._scene.meshes);
-                            this._prepareMeshes();
+                            this._prepareScene();
                         });
                         return;
                     case PreviewMeshType.Sphere:
@@ -285,7 +298,7 @@ export class PreviewManager {
                     case PreviewMeshType.Cylinder:
                         SceneLoader.AppendAsync("https://models.babylonjs.com/", "roundedCylinder.glb", this._scene).then(() => {
                             this._meshes.push(...this._scene.meshes);
-                            this._prepareMeshes();
+                            this._prepareScene();
                         });
                         return;
                     case PreviewMeshType.Plane:
@@ -297,13 +310,13 @@ export class PreviewManager {
                     case PreviewMeshType.ShaderBall:
                         SceneLoader.AppendAsync("https://models.babylonjs.com/", "shaderBall.glb", this._scene).then(() => {
                             this._meshes.push(...this._scene.meshes);
-                            this._prepareMeshes();
+                            this._prepareScene();
                         });
                         return;
                     case PreviewMeshType.Custom:
                         SceneLoader.AppendAsync("file:", this._globalState.previewMeshFile, this._scene).then(() => {
                             this._meshes.push(...this._scene.meshes);
-                            this._prepareMeshes();
+                            this._prepareScene();
                         });
                         return;
                 }
@@ -327,22 +340,18 @@ export class PreviewManager {
                         this._particleSystem.start();
                         break;
                     case PreviewMeshType.Explosion:
-                        this._loadParticleSystem("explosion");
+                        this._loadParticleSystem(this._globalState.previewMeshType, 1);
                         return;
                     case PreviewMeshType.Fire:
-                        this._loadParticleSystem("fire");
-                        return;
                     case PreviewMeshType.Rain:
-                        this._loadParticleSystem("rain");
-                        return;
                     case PreviewMeshType.Smoke:
-                        this._loadParticleSystem("smoke");
+                        this._loadParticleSystem(this._globalState.previewMeshType);
                         return;
                     case PreviewMeshType.Custom:
                         FileTools.ReadFile(this._globalState.previewMeshFile, (json) =>  {
                             this._particleSystem = ParticleSystem.Parse(JSON.parse(json), this._scene, "");
                             this._particleSystem.start();
-                            this._prepareMeshes();
+                            this._prepareScene();
                         }, undefined, false, (error) => {
                             console.log(error);
                         });
@@ -350,18 +359,46 @@ export class PreviewManager {
                 }
             }
 
-            this._prepareMeshes();
+            this._prepareScene();
         }
     }
 
-    private _loadParticleSystem(name: string) {
+    private _loadParticleSystem(particleNumber: number, systemIndex = 0, prepareScene = true) {
+        let name = "";
+
+        switch (particleNumber) {
+            case PreviewMeshType.Explosion:
+                name = "explosion";
+                break;
+            case PreviewMeshType.Fire:
+                name = "fire";
+                break;
+            case PreviewMeshType.Rain:
+                name = "rain";
+                break;
+            case PreviewMeshType.Smoke:
+                name = "smoke";
+                break;
+        }
+
         ParticleHelper.CreateAsync(name, this._scene).then((set) => {
-            for (let i = 1; i < set.systems.length; ++i) {
-                set.systems[i].dispose();
+            for (let i = 0; i < set.systems.length; ++i) {
+                if (i == systemIndex) {
+                    this._particleSystem = set.systems[i] as ParticleSystem;
+                    this._particleSystem.disposeOnStop = true;
+                    this._particleSystem.onDisposeObservable.add(() => {
+                        if (this._globalState.mode === NodeMaterialModes.Particle && this._globalState.previewMeshType === particleNumber) {
+                            this._loadParticleSystem(particleNumber, systemIndex, false);
+                        }
+                    });
+                    this._particleSystem.start();
+                } else {
+                    set.systems[i].dispose();
+                }
             }
-            this._particleSystem = set.systems[0] as ParticleSystem;
-            this._particleSystem.start();
-            this._prepareMeshes();
+            if (prepareScene) {
+                this._prepareScene();
+            }
         });
     }
 
