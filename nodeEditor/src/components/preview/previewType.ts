@@ -8,6 +8,7 @@ export enum PreviewType {
     ShaderBall,
 
     // Particle systems
+    DefaultParticleSystem,
     Bubbles,
     Smoke,
     Rain,

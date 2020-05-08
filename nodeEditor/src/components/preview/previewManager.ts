@@ -235,7 +235,7 @@ export class PreviewManager {
                 break;
             }
             case NodeMaterialModes.Particle: {
-                this._camera.radius = this._globalState.previewType === PreviewType.Explosion ? 50 : 20;
+                this._camera.radius = this._globalState.previewType === PreviewType.Explosion ? 50 : this._globalState.previewType === PreviewType.DefaultParticleSystem ? 6 : 20;
                 this._camera.upperRadiusLimit = 5000;
                 break;
             }
@@ -316,6 +316,10 @@ export class PreviewManager {
                 }
             } else if (this._globalState.mode === NodeMaterialModes.Particle) {
                 switch (this._globalState.previewType) {
+                    case PreviewType.DefaultParticleSystem:
+                        this._particleSystem = ParticleHelper.CreateDefault(new Vector3(0, 0, 0), 500, this._scene) as ParticleSystem;
+                        this._particleSystem.start();
+                        break;
                     case PreviewType.Bubbles:
                         this._particleSystem = new ParticleSystem("particles", 4000, this._scene);
                         this._particleSystem.particleTexture = new Texture("https://assets.babylonjs.com/particles/textures/explosion/Flare.png", this._scene);
