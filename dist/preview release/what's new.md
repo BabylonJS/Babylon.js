@@ -69,6 +69,8 @@
 - Get the list of cameras retrieved from a gLTF file when loaded through the asset container ([Popov72](https://github.com/Popov72))
 - Fixed SceneLoader.ImportAnimations. Now targets nodes based on "targetProperty" ([#7931](https://github.com/BabylonJS/Babylon.js/issues/7931)) ([phenry20](https://github.com/phenry20))
 - Renamed KHR_mesh_instancing extension to EXT_mesh_gpu_instancing ([#7945](https://github.com/BabylonJS/Babylon.js/issues/7945)) ([drigax](https://github.com/Drigax))
+- Added support for KHR_materials_ior for glTF loader. ([Sebavan](https://github.com/sebavan/))
+- Added support for KHR_materials_specular for glTF loader. ([Sebavan](https://github.com/sebavan/))
 
 ### Navigation
 
