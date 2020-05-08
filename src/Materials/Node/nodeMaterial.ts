@@ -811,15 +811,18 @@ export class NodeMaterial extends PushMaterial {
         return postProcess;
     }
 
-    private _createEffectForParticles(particleSystem: ParticleSystem, blendMode: number, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, effect?: Effect, defines?: NodeMaterialDefines, dummyMesh?: AbstractMesh) {
-        let tempName = this.name + this._buildId;
+    private _createEffectForParticles(particleSystem: ParticleSystem, blendMode: number, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, effect?: Effect, defines?: NodeMaterialDefines, dummyMesh?: Nullable<AbstractMesh>) {
+        let tempName = this.name + this._buildId + "_" + blendMode;
 
         if (!defines) {
             defines = new NodeMaterialDefines();
         }
 
         if (!dummyMesh) {
-            dummyMesh = new AbstractMesh(tempName + "Particle", this.getScene());
+            dummyMesh = this.getScene().getMeshByName(this.name + "Particle");
+            if (!dummyMesh) {
+                dummyMesh = new AbstractMesh(this.name + "Particle", this.getScene());
+            }
         }
 
         let buildId = this._buildId;
@@ -845,7 +848,7 @@ export class NodeMaterial extends PushMaterial {
             if (buildId !== this._buildId) {
                 delete Effect.ShadersStore[tempName + "PixelShader"];
 
-                tempName = this.name + this._buildId;
+                tempName = this.name + this._buildId + "_" + blendMode;
 
                 defines!.markAsUnprocessed();
 
