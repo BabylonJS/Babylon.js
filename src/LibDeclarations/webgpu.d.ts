@@ -471,7 +471,7 @@ interface GPUTextureViewDescriptor extends GPUObjectDescriptorBase {
   mipLevelCount?: number;
 }
 
-class GPUAdapter {
+declare class GPUAdapter {
   readonly name: string;
   readonly extensions: GPUExtensionName[];
   readonly limits: GPULimitsOut;
@@ -479,15 +479,15 @@ class GPUAdapter {
   requestDevice(descriptor?: GPUDeviceDescriptor): Promise<GPUDevice>;
 }
 
-class GPUBindGroup implements GPUObjectBase {
+declare class GPUBindGroup implements GPUObjectBase {
   label: string | undefined;
 }
 
-class GPUBindGroupLayout implements GPUObjectBase {
+declare class GPUBindGroupLayout implements GPUObjectBase {
   label: string | undefined;
 }
 
-class GPUBuffer implements GPUObjectBase {
+declare class GPUBuffer implements GPUObjectBase {
   label: string | undefined;
   //readonly mapping: ArrayBuffer | null;
   destroy(): void;
@@ -504,13 +504,13 @@ class GPUBuffer implements GPUObjectBase {
   ): void;
 }
 
-class GPUCommandBuffer implements GPUObjectBase {
+declare class GPUCommandBuffer implements GPUObjectBase {
   label: string | undefined;
 }
 
 interface GPUCommandBufferDescriptor extends GPUObjectDescriptorBase {}
 
-class GPUCommandEncoder implements GPUObjectBase {
+declare class GPUCommandEncoder implements GPUObjectBase {
   label: string | undefined;
   beginComputePass(
     descriptor?: GPUComputePassDescriptor
@@ -547,7 +547,7 @@ class GPUCommandEncoder implements GPUObjectBase {
 
 interface GPUComputePassDescriptor extends GPUObjectDescriptorBase {}
 
-class GPUComputePassEncoder implements GPUProgrammablePassEncoder {
+declare class GPUComputePassEncoder implements GPUProgrammablePassEncoder {
   label: string | undefined;
 
   setBindGroup(
@@ -567,7 +567,7 @@ class GPUComputePassEncoder implements GPUProgrammablePassEncoder {
   endPass(): void;
 }
 
-class GPUComputePipeline implements GPUObjectBase {
+declare class GPUComputePipeline implements GPUObjectBase {
   label: string | undefined;
 }
 
@@ -580,13 +580,13 @@ interface GPUObjectDescriptorBase {
 }
 
 // SwapChain / CanvasContext
-class GPUCanvasContext {
+declare class GPUCanvasContext {
   configureSwapChain(descriptor: GPUSwapChainDescriptor): GPUSwapChain;
 
   getSwapChainPreferredFormat(device: GPUDevice): Promise<GPUTextureFormat>;
 }
 
-class GPUDevice extends EventTarget implements GPUObjectBase {
+declare class GPUDevice extends EventTarget implements GPUObjectBase {
   label: string | undefined;
   readonly adapter: GPUAdapter;
   readonly extensions: GPUExtensionName[];
@@ -631,14 +631,14 @@ class GPUDevice extends EventTarget implements GPUObjectBase {
   readonly lost: Promise<GPUDeviceLostInfo>;
 }
 
-class GPUFence implements GPUObjectBase {
+declare class GPUFence implements GPUObjectBase {
   label: string | undefined;
 
   getCompletedValue(): number;
   onCompletion(completionValue: number): Promise<void>;
 }
 
-class GPUPipelineLayout implements GPUObjectBase {
+declare class GPUPipelineLayout implements GPUObjectBase {
   label: string | undefined;
 }
 
@@ -654,7 +654,7 @@ interface GPUProgrammablePassEncoder extends GPUObjectBase {
   insertDebugMarker(markerLabel: string): void;
 }
 
-class GPUQueue implements GPUObjectBase {
+declare class GPUQueue implements GPUObjectBase {
   label: string | undefined;
   signal(fence: GPUFence, signalValue: number): void;
   submit(commandBuffers: GPUCommandBuffer[]): void;
@@ -694,7 +694,7 @@ interface GPURenderEncoderBase extends GPUProgrammablePassEncoder {
   ): void;
 }
 
-class GPURenderPassEncoder implements GPURenderEncoderBase {
+declare class GPURenderPassEncoder implements GPURenderEncoderBase {
   label: string | undefined;
 
   setBindGroup(
@@ -751,11 +751,11 @@ class GPURenderPassEncoder implements GPURenderEncoderBase {
 
 interface GPURenderBundleDescriptor extends GPUObjectDescriptorBase {}
 
-class GPURenderBundle implements GPUObjectBase {
+declare class GPURenderBundle implements GPUObjectBase {
   label: string | undefined;
 }
 
-class GPURenderBundleEncoder implements GPURenderEncoderBase {
+declare class GPURenderBundleEncoder implements GPURenderEncoderBase {
   label: string | undefined;
 
   setBindGroup(
@@ -804,29 +804,29 @@ interface GPURenderBundleEncoderDescriptor
 
 declare class GPURenderPipeline implements GPUObjectBase {
   label: string | undefined;
-  getBindGroupLayout: (number) => GPUBindGroupLayout;
+  getBindGroupLayout: (index: number) => GPUBindGroupLayout;
 }
 
-class GPUSampler implements GPUObjectBase {
+declare class GPUSampler implements GPUObjectBase {
   label: string | undefined;
 }
 
-class GPUShaderModule implements GPUObjectBase {
+declare class GPUShaderModule implements GPUObjectBase {
   label: string | undefined;
 }
 
-class GPUSwapChain implements GPUObjectBase {
+declare class GPUSwapChain implements GPUObjectBase {
   label: string | undefined;
   getCurrentTexture(): GPUTexture;
 }
 
-class GPUTexture implements GPUObjectBase {
+declare class GPUTexture implements GPUObjectBase {
   label: string | undefined;
   createView(descriptor?: GPUTextureViewDescriptor): GPUTextureView;
   destroy(): void;
 }
 
-class GPUTextureView implements GPUObjectBase {
+declare class GPUTextureView implements GPUObjectBase {
   label: string | undefined;
 }
 
@@ -835,7 +835,7 @@ interface GPURequestAdapterOptions {
   powerPreference?: GPUPowerPreference;
 }
 
-class GPU {
+declare class GPU {
   requestAdapter(options?: GPURequestAdapterOptions): Promise<GPUAdapter>;
 }
 
@@ -860,7 +860,7 @@ interface GPUUncapturedErrorEventInit extends EventInit {
   error: GPUError;
 }
 
-class GPUUncapturedErrorEvent extends Event {
+declare class GPUUncapturedErrorEvent extends Event {
   constructor(
     type: string,
     gpuUncapturedErrorEventInitDict: GPUUncapturedErrorEventInit
