@@ -30,6 +30,8 @@ import { ReflectionTextureBaseBlock } from './Blocks/Dual/reflectionTextureBaseB
 import { RefractionBlock } from './Blocks/PBR/refractionBlock';
 import { CurrentScreenBlock } from './Blocks/Dual/currentScreenBlock';
 import { ParticleTextureBlock } from './Blocks/Particle/particleTextureBlock';
+import { ParticleRampGradientBlock } from './Blocks/Particle/particleRampGradientBlock';
+import { ParticleBlendMultiplyBlock } from './Blocks/Particle/particleBlendMultiplyBlock';
 import { EffectFallbacks } from '../effectFallbacks';
 import { WebRequest } from '../../Misc/webRequest';
 import { Effect } from '../effect';
@@ -43,6 +45,7 @@ import { NodeMaterialModes } from './Enums/nodeMaterialModes';
 import { Texture } from '../Textures/texture';
 import { ParticleSystem } from '../../Particles/particleSystem';
 import { BaseParticleSystem } from '../../Particles/baseParticleSystem';
+import { ColorSplitterBlock } from './Blocks/colorSplitterBlock';
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -1397,8 +1400,19 @@ export class NodeMaterial extends PushMaterial {
         texture.connectTo(multiply);
         color.connectTo(multiply);
 
-        var fragmentOutput = new FragmentOutputBlock("FragmentOutput");
-        multiply.connectTo(fragmentOutput);
+        const rampGradient = new ParticleRampGradientBlock("ParticleRampGradient");
+        multiply.connectTo(rampGradient);
+
+        const cSplitter = new ColorSplitterBlock("ColorSplitter");
+        color.connectTo(cSplitter);
+
+        const blendMultiply = new ParticleBlendMultiplyBlock("ParticleBlendMultiply");
+        rampGradient.connectTo(blendMultiply);
+        texture.connectTo(blendMultiply, { "output": "a" });
+        cSplitter.connectTo(blendMultiply, { "output": "a" });
+
+        const fragmentOutput = new FragmentOutputBlock("FragmentOutput");
+        blendMultiply.connectTo(fragmentOutput);
 
         // Add to nodes
         this.addOutputNode(fragmentOutput);
