@@ -2,7 +2,7 @@
 import * as React from "react";
 import { GlobalState } from '../../globalState';
 import { Color3, Color4 } from 'babylonjs/Maths/math.color';
-import { PreviewMeshType } from './previewMeshType';
+import { PreviewType } from './previewType';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
 import { Observer } from 'babylonjs/Misc/observable';
@@ -38,15 +38,15 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
         this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
     }
 
-    changeMeshType(newOne: PreviewMeshType) {
-        if (this.props.globalState.previewMeshType === newOne) {
+    changeMeshType(newOne: PreviewType) {
+        if (this.props.globalState.previewType === newOne) {
             return;
         }
 
-        this.props.globalState.previewMeshType = newOne;
+        this.props.globalState.previewType = newOne;
         this.props.globalState.onPreviewCommandActivated.notifyObservers(false);
 
-        DataStorage.WriteNumber("PreviewMeshType", newOne);
+        DataStorage.WriteNumber("PreviewType", newOne);
 
         this.forceUpdate();
     }
@@ -56,10 +56,10 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
         if (files && files.length) {
             let file = files[0];
 
-            this.props.globalState.previewMeshFile = file;
-            this.props.globalState.previewMeshType = PreviewMeshType.Custom;
+            this.props.globalState.previewFile = file;
+            this.props.globalState.previewType = PreviewType.Custom;
             this.props.globalState.onPreviewCommandActivated.notifyObservers(false);
-            this.props.globalState.listOfCustomPreviewMeshFiles = [file];
+            this.props.globalState.listOfCustomPreviewFiles = [file];
             this.forceUpdate();
         }
         if (this.filePickerRef.current) {
@@ -96,30 +96,30 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
     render() {
 
         var meshTypeOptions = [
-            { label: "Cube", value: PreviewMeshType.Box },
-            { label: "Cylinder", value: PreviewMeshType.Cylinder },
-            { label: "Plane", value: PreviewMeshType.Plane },
-            { label: "Shader ball", value: PreviewMeshType.ShaderBall },
-            { label: "Sphere", value: PreviewMeshType.Sphere },
-            { label: "Load...", value: PreviewMeshType.Custom + 1 }
+            { label: "Cube", value: PreviewType.Box },
+            { label: "Cylinder", value: PreviewType.Cylinder },
+            { label: "Plane", value: PreviewType.Plane },
+            { label: "Shader ball", value: PreviewType.ShaderBall },
+            { label: "Sphere", value: PreviewType.Sphere },
+            { label: "Load...", value: PreviewType.Custom + 1 }
         ];
 
         var particleTypeOptions = [
-            { label: "Bubbles", value: PreviewMeshType.Bubbles },
-            { label: "Explosion", value: PreviewMeshType.Explosion },
-            { label: "Fire", value: PreviewMeshType.Fire },
-            { label: "Rain", value: PreviewMeshType.Rain },
-            { label: "Smoke", value: PreviewMeshType.Smoke },
-            { label: "Load...", value: PreviewMeshType.Custom + 1 }
+            { label: "Bubbles", value: PreviewType.Bubbles },
+            { label: "Explosion", value: PreviewType.Explosion },
+            { label: "Fire", value: PreviewType.Fire },
+            { label: "Rain", value: PreviewType.Rain },
+            { label: "Smoke", value: PreviewType.Smoke },
+            { label: "Load...", value: PreviewType.Custom + 1 }
         ];
 
-        if (this.props.globalState.listOfCustomPreviewMeshFiles.length > 0) {
+        if (this.props.globalState.listOfCustomPreviewFiles.length > 0) {
             meshTypeOptions.splice(0, 0, {
-                label: "Custom", value: PreviewMeshType.Custom
+                label: "Custom", value: PreviewType.Custom
             });
 
             particleTypeOptions.splice(0, 0, {
-                label: "Custom", value: PreviewMeshType.Custom
+                label: "Custom", value: PreviewType.Custom
             });
         }
 
@@ -130,10 +130,10 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
             <div id="preview-mesh-bar">
                 { (this.props.globalState.mode === NodeMaterialModes.Material || this.props.globalState.mode === NodeMaterialModes.Particle) && <>
                     <OptionsLineComponent label="" options={options} target={this.props.globalState}
-                                propertyName="previewMeshType"
+                                propertyName="previewType"
                                 noDirectUpdate={true}
                                 onSelect={(value: any) => {
-                                    if (value !== PreviewMeshType.Custom + 1) {
+                                    if (value !== PreviewType.Custom + 1) {
                                         this.changeMeshType(value);
                                     } else {
                                         this.filePickerRef.current?.click();

@@ -33,7 +33,7 @@ import { NodePort } from '../../diagram/nodePort';
 import { isFramePortData } from '../../diagram/graphCanvas';
 import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
-import { PreviewMeshType } from '../preview/previewMeshType';
+import { PreviewType } from '../preview/previewType';
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
@@ -267,22 +267,22 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         if (loadDefault) {
             switch (value) {
                 case NodeMaterialModes.Material:
-                    this.props.globalState.previewMeshType = PreviewMeshType.Sphere;
+                    this.props.globalState.previewType = PreviewType.Sphere;
                     this.props.globalState.nodeMaterial!.setToDefault();
                     break;
                 case NodeMaterialModes.PostProcess:
                     this.props.globalState.nodeMaterial!.setToDefaultPostProcess();
                     break;
                 case NodeMaterialModes.Particle:
-                    this.props.globalState.previewMeshType = PreviewMeshType.Bubbles;
+                    this.props.globalState.previewType = PreviewType.Bubbles;
                     this.props.globalState.nodeMaterial!.setToDefaultParticle();
                     break;
             }
 
-            this.props.globalState.listOfCustomPreviewMeshFiles = [];
-            (this.props.globalState.previewMeshFile as any) = undefined;
+            this.props.globalState.listOfCustomPreviewFiles = [];
+            (this.props.globalState.previewFile as any) = undefined;
 
-            DataStorage.WriteNumber("PreviewMeshType", this.props.globalState.previewMeshType);
+            DataStorage.WriteNumber("PreviewType", this.props.globalState.previewType);
         }
 
         this.props.globalState.mode = value as NodeMaterialModes;
