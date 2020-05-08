@@ -26,7 +26,6 @@ import { ParticleSystem } from 'babylonjs/Particles/particleSystem';
 import { ParticleHelper } from 'babylonjs/Particles/particleHelper';
 import { Texture } from 'babylonjs/Materials/Textures/texture';
 import { ParticleTextureBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleTextureBlock';
-import { Effect } from 'babylonjs/Materials/effect';
 import { FileTools } from 'babylonjs/Misc/fileTools';
 
 export class PreviewManager {
@@ -440,17 +439,15 @@ export class PreviewManager {
                 case NodeMaterialModes.Particle: {
                     this._globalState.onIsLoadingChanged.notifyObservers(false);
 
-                    if (this._particleSystemDrawObserver) {
-                        this._particleSystem.onBeforeDrawParticlesObservable.remove(this._particleSystemDrawObserver);
-                    }
+                    this._particleSystem!.onBeforeDrawParticlesObservable.clear();
 
-                    this._particleSystem.onBeforeDrawParticlesObservable.add((effect) => {
+                    this._particleSystem!.onBeforeDrawParticlesObservable.add((effect) => {
                         const textureBlock = tempMaterial.getBlockByPredicate((block) => block instanceof ParticleTextureBlock);
-                        if (textureBlock && (textureBlock as ParticleTextureBlock).texture) {
+                        if (textureBlock && (textureBlock as ParticleTextureBlock).texture && effect) {
                             effect.setTexture("diffuseSampler", (textureBlock as ParticleTextureBlock).texture);
                         }
                     });
-                    tempMaterial.createEffectForParticles(this._particleSystem);
+                    tempMaterial.createEffectForParticles(this._particleSystem!);
                     break;
                 }
 
