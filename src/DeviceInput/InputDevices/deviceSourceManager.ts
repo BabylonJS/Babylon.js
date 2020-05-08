@@ -51,27 +51,27 @@ export class DeviceSourceManager implements IDisposable {
     /**
      * Observable to be triggered when before a device is connected
      */
-    public onBeforeDeviceConnectedObservable = new Observable<{ deviceType: DeviceType, deviceSlot: number }>();
+    public readonly onBeforeDeviceConnectedObservable = new Observable<{ deviceType: DeviceType, deviceSlot: number }>();
 
     /**
      * Observable to be triggered when before a device is disconnected
      */
-    public onBeforeDeviceDisconnectedObservable = new Observable<{ deviceType: DeviceType, deviceSlot: number }>();
+    public readonly onBeforeDeviceDisconnectedObservable = new Observable<{ deviceType: DeviceType, deviceSlot: number }>();
 
     /**
      * Observable to be triggered when after a device is connected
      */
-    public onAfterDeviceConnectedObservable = new Observable<{ deviceType: DeviceType, deviceSlot: number }>();
+    public readonly onAfterDeviceConnectedObservable = new Observable<{ deviceType: DeviceType, deviceSlot: number }>();
 
     /**
      * Observable to be triggered when after a device is disconnected
      */
-    public onAfterDeviceDisconnectedObservable = new Observable<{ deviceType: DeviceType, deviceSlot: number }>();
+    public readonly onAfterDeviceDisconnectedObservable = new Observable<{ deviceType: DeviceType, deviceSlot: number }>();
 
     // Private Members
-    private _devices: Array<Array<DeviceSource<DeviceType>>>;
-    private _firstDevice: Array<number>;
-    private _deviceInputSystem: DeviceInputSystem;
+    private readonly _devices: Array<Array<DeviceSource<DeviceType>>>;
+    private readonly _firstDevice: Array<number>;
+    private readonly _deviceInputSystem: DeviceInputSystem;
 
     /**
      * Default Constructor
@@ -104,11 +104,11 @@ export class DeviceSourceManager implements IDisposable {
     // Public Functions
     /**
      * Gets a DeviceSource, given a type and slot
-     * @param deviceType Enum specifiying device type
+     * @param deviceType Enum specifying device type
      * @param deviceSlot "Slot" or index that device is referenced in
      * @returns DeviceSource object
      */
-    public getDeviceSource<T extends DeviceType>(deviceType: DeviceType, deviceSlot: number = this._firstDevice[deviceType]): Nullable<DeviceSource<T>> {
+    public getDeviceSource<T extends DeviceType>(deviceType: T, deviceSlot: number = this._firstDevice[deviceType]): Nullable<DeviceSource<T>> {
         if (!this._devices[deviceType] || this._firstDevice[deviceType] === undefined || this._devices[deviceType][deviceSlot] === undefined) {
             return null;
         }
@@ -118,10 +118,10 @@ export class DeviceSourceManager implements IDisposable {
 
     /**
      * Gets an array of DeviceSource objects for a given device type
-     * @param deviceType Enum specifiying device type
+     * @param deviceType Enum specifying device type
      * @returns Array of DeviceSource objects
      */
-    public getDeviceSources<T extends DeviceType>(deviceType: DeviceType): ReadonlyArray<DeviceSource<T>> {
+    public getDeviceSources<T extends DeviceType>(deviceType: T): ReadonlyArray<DeviceSource<T>> {
         return this._devices[deviceType];
     }
 
@@ -135,12 +135,12 @@ export class DeviceSourceManager implements IDisposable {
     // Private Functions
     /**
      * Function to add device name to device list
-     * @param deviceType Enum specifiying device type
+     * @param deviceType Enum specifying device type
      * @param deviceSlot "Slot" or index that device is referenced in
      */
-    private _addDevice<T extends DeviceType>(deviceType: DeviceType, deviceSlot: number) {
+    private _addDevice(deviceType: DeviceType, deviceSlot: number) {
         if (!this._devices[deviceType]) {
-            this._devices[deviceType] = new Array<DeviceSource<T>>();
+            this._devices[deviceType] = new Array<DeviceSource<DeviceType>>();
         }
 
         this._devices[deviceType][deviceSlot] = new DeviceSource(this._deviceInputSystem, deviceType, deviceSlot);
@@ -149,7 +149,7 @@ export class DeviceSourceManager implements IDisposable {
 
     /**
      * Function to remove device name to device list
-     * @param deviceType Enum specifiying device type
+     * @param deviceType Enum specifying device type
      * @param deviceSlot "Slot" or index that device is referenced in
      */
     private _removeDevice(deviceType: DeviceType, deviceSlot: number) {
