@@ -218,8 +218,9 @@ export class ConeParticleEmitter implements IParticleEmitterType {
         this.radius = serializationObject.radius;
         this.angle = serializationObject.angle;
         this.directionRandomizer = serializationObject.directionRandomizer;
-        this.radiusRange = serializationObject.radiusRange;
-        this.heightRange = serializationObject.heightRange;
-        this.emitFromSpawnPointOnly = serializationObject.emitFromSpawnPointOnly;
+
+        this.radiusRange = serializationObject.radiusRange !== undefined ? serializationObject.radiusRange : 1;
+        this.heightRange = serializationObject.radiusRange !== undefined ? serializationObject.heightRange : 1;
+        this.emitFromSpawnPointOnly = serializationObject.emitFromSpawnPointOnly !== undefined ? serializationObject.emitFromSpawnPointOnly : false;
     }
 }
