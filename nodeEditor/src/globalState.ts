@@ -3,7 +3,7 @@ import { Nullable } from "babylonjs/types";
 import { Observable } from 'babylonjs/Misc/observable';
 import { LogEntry } from './components/log/logComponent';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
-import { PreviewMeshType } from './components/preview/previewMeshType';
+import { PreviewType } from './components/preview/previewType';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { Color4 } from 'babylonjs/Maths/math.color';
 import { GraphNode } from './diagram/graphNode';
@@ -44,9 +44,9 @@ export class GlobalState {
     onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
     onGridSizeChanged = new Observable<void>();
     onExposePortOnFrameObservable = new Observable<GraphNode>();
-    previewMeshType: PreviewMeshType;
-    previewMeshFile: File;
-    listOfCustomPreviewMeshFiles: File[] = [];
+    previewType: PreviewType;
+    previewFile: File;
+    listOfCustomPreviewFiles: File[] = [];
     rotatePreview: boolean;
     backgroundColor: Color4;
     backFaceCulling: boolean;
@@ -74,7 +74,7 @@ export class GlobalState {
     customSave?: {label: string, action: (data: string) => Promise<void>};
 
     public constructor() {
-        this.previewMeshType = DataStorage.ReadNumber("PreviewMeshType", PreviewMeshType.Box);
+        this.previewType = DataStorage.ReadNumber("PreviewType", PreviewType.Box);
         this.backFaceCulling = DataStorage.ReadBoolean("BackFaceCulling", true);
         this.depthPrePass = DataStorage.ReadBoolean("DepthPrePass", false);
         this.hemisphericLight = DataStorage.ReadBoolean("HemisphericLight", true);

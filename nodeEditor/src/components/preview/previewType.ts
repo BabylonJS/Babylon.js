@@ -1,4 +1,4 @@
-export enum PreviewMeshType {
+export enum PreviewType {
     // Meshes
     Sphere,
     Box,
