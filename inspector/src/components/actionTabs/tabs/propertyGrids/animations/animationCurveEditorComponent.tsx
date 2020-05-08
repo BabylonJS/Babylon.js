@@ -1,6 +1,6 @@
 import * as React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { Animation } from 'babylonjs/Animations/animation';
 import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { EasingFunction, BezierCurveEase } from 'babylonjs/Animations/easing';
@@ -10,6 +10,7 @@ import { SvgDraggableArea } from './svgDraggableArea';
 import { Timeline } from './timeline';
 import { Playhead } from './playhead';
 import { Scene } from "babylonjs/scene";
+import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 
 require("./curveEditor.scss");
@@ -24,17 +25,30 @@ interface IAnimationCurveEditorComponentProps {
     entity: IAnimatable;
 }
 
-export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, { animations: Animation[], animationName: string, animationTargetProperty: string, isOpen: boolean, selected: Animation, currentPathData: string | undefined, svgKeyframes: IKeyframeSvgPoint[] | undefined, currentFrame: number }> {
+interface ICanvasAxis {
+    value: number;
+}
+
+export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, { animations: Animation[], animationName: string, animationTargetProperty: string, isOpen: boolean, selected: Animation, currentPathData: string | undefined, svgKeyframes: IKeyframeSvgPoint[] | undefined, currentFrame: number, frameAxisLength: ICanvasAxis[] }> {
 
     readonly _heightScale: number = 100;
+    readonly _canvasLength: number = 20;
+    private _playheadOffset: number = 0;
     private _newAnimations: Animation[] = [];
     private _svgKeyframes: IKeyframeSvgPoint[] = [];
     private _frames: Vector2[] = [];
     private _isPlaying: boolean = false;
+    private _graphCanvas: React.RefObject<HTMLDivElement>;
     constructor(props: IAnimationCurveEditorComponentProps) {
         super(props);
-        this.state = { animations: this._newAnimations, selected: this.props.animations[0], isOpen: true, currentPathData: this.getPathData(this.props.animations[0]), svgKeyframes: this._svgKeyframes, animationTargetProperty: 'position.x', animationName: "", currentFrame: 0 }
+        this._graphCanvas = React.createRef();
+        this.state = { animations: this._newAnimations, selected: this.props.animations[0], isOpen: true, currentPathData: this.getPathData(this.props.animations[0]), svgKeyframes: this._svgKeyframes, animationTargetProperty: 'position.x', animationName: "", currentFrame: 0, frameAxisLength: (new Array(this._canvasLength)).fill(0).map((s, i) => { return { value: i * 10 } }) }
+    }
 
+    componentDidMount() {
+        if (this._graphCanvas.current) {
+            this._playheadOffset = (this._graphCanvas.current.children[1].clientWidth) / (this._canvasLength * 10)
+        }
     }
 
     handleNameChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -47,8 +61,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         this.setState({ animationTargetProperty: event.target.value });
     }
 
-    addAnimation(event: React.MouseEvent<HTMLDivElement>) {
-        event.preventDefault();
+    addAnimation() {
         if (this.state.animationName != "" && this.state.animationTargetProperty != "") {
             let animation = new Animation(this.state.animationName, this.state.animationTargetProperty, 30, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE);
 
@@ -149,7 +162,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         anim.setKeys(keys);
 
         this.setState({ svgKeyframes: svgKeyframes })
-
     }
 
     getAnimationProperties(animation: Animation) {
@@ -192,8 +204,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             data = this.curvePath(keyframes, data, middle, easingFunction as EasingFunction)
         }
 
-
-
         return data;
 
     }
@@ -211,7 +221,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             this._frames.push(new Vector2(i, value));
 
         }
-
     }
 
     curvePath(keyframes: IAnimationKey[], data: string, middle: number, easingFunction: EasingFunction) {
@@ -280,8 +289,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         return data;
 
     }
-
-
 
     renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number) {
 
@@ -406,7 +413,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
     }
 
-    changeCurrentFrame(frame: number){
+    changeCurrentFrame(frame: number) {
         this.setState({ currentFrame: frame });
     }
 
@@ -425,62 +432,41 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                         <div className="animation-list">
 
                             <div>
-                                <div>
+                                <div className="label-input">
                                     <label>Animation Name</label>
                                     <input type="text" value={this.state.animationName} onChange={(e) => this.handleNameChange(e)}></input>
                                 </div>
-                                <div>
+                                <div className="label-input">
                                     <label>Target Property</label>
                                     <input type="text" value={this.state.animationTargetProperty} onChange={(e) => this.handlePropertyChange(e)}></input>
                                 </div>
-                                <div className="add" onClick={(e) => this.addAnimation(e)}>
-                                    <FontAwesomeIcon icon={faPlusCircle} />
-                                </div>
+                                <ButtonLineComponent label={"Add Animation"} onClick={() => this.addAnimation()} />
                             </div>
 
-                            <h2>{this.props.entityName}</h2>
-                            <ul>
-                                {this.props.animations && this.props.animations.map((animation, i) => {
-                                    return <li className={this.state.selected.name === animation.name ? 'active' : ''} key={i} onClick={() => this.selectAnimation(animation)}>{animation.name} <strong>{animation.targetProperty}</strong></li>
-                                })}
+                            <div className="object-tree">
+                                <h2>{this.props.entityName}</h2>
+                                <ul>
+                                    {this.props.animations && this.props.animations.map((animation, i) => {
+                                        return <li className={this.state.selected.name === animation.name ? 'active' : ''} key={i} onClick={() => this.selectAnimation(animation)}>{animation.name} <strong>{animation.targetProperty}</strong></li>
+                                    })}
 
-                            </ul>
-
-                            <h2>New Animations</h2>
-                            <ul>
-                                {this.state.animations && this.state.animations.map((animation, i) => {
-                                    return <li className={this.state.selected.name === animation.name ? 'active' : ''} key={i} onClick={() => this.selectAnimation(animation)}>{animation.name} <strong>{animation.targetProperty}</strong></li>
-                                })}
-
-                            </ul>
+                                </ul>
+                            </div>
                         </div>
-                        <div className="graph-chart">
+                        <div ref={this._graphCanvas} className="graph-chart">
 
-                            <Playhead frame={this.state.currentFrame}/>
+                            <Playhead frame={this.state.currentFrame} offset={this._playheadOffset} />
 
                             {this.state.svgKeyframes && <SvgDraggableArea keyframeSvgPoints={this.state.svgKeyframes} updatePosition={(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number) => this.renderPoints(updatedSvgKeyFrame, index)}>
 
                                 {/* Frame Labels  */}
-                                <text x="10" y="0" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>10</text>
-                                <text x="20" y="0" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>20</text>
-                                <text x="30" y="0" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>30</text>
-                                <text x="40" y="0" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>40</text>
-                                <text x="50" y="0" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>50</text>
-                                <text x="60" y="0" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>60</text>
-                                <text x="70" y="0" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>70</text>
-                                <text x="80" y="0" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>80</text>
-                                <text x="90" y="0" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>90</text>
-
                                 { /* Vertical Grid  */}
-                                <line x1="10" y1="0" x2="10" y2="100" style={{ stroke: 'black', strokeWidth: '0.2px' }}></line>
-                                <line x1="20" y1="0" x2="20" y2="100" style={{ stroke: 'black', strokeWidth: '0.2px' }}></line>
-                                <line x1="30" y1="0" x2="30" y2="100" style={{ stroke: 'black', strokeWidth: '0.2px' }}></line>
-                                <line x1="40" y1="0" x2="40" y2="100" style={{ stroke: 'black', strokeWidth: '0.2px' }}></line>
-                                <line x1="50" y1="0" x2="50" y2="100" style={{ stroke: 'black', strokeWidth: '0.2px' }}></line>
-                                <line x1="60" y1="0" x2="60" y2="100" style={{ stroke: 'black', strokeWidth: '0.2px' }}></line>
-                                <line x1="70" y1="0" x2="70" y2="100" style={{ stroke: 'black', strokeWidth: '0.2px' }}></line>
-                                <line x1="80" y1="0" x2="80" y2="100" style={{ stroke: 'black', strokeWidth: '0.2px' }}></line>
-                                <line x1="90" y1="0" x2="90" y2="100" style={{ stroke: 'black', strokeWidth: '0.2px' }}></line>
+                                {this.state.frameAxisLength.map((f, i) =>
+                                    <svg key={i}>
+                                        <text x={f.value} y="0" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>{f.value}</text>
+                                        <line x1={f.value} y1="0" x2={f.value} y2="100"></line>
+                                    </svg>
+                                )}
 
                                 { /* Value Labels  */}
                                 <text x="0" y="10" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>1.8</text>
@@ -494,15 +480,15 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                                 <text x="0" y="90" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>0.2</text>
 
                                 { /* Horizontal Grid  */}
-                                <line x1="0" y1="10" x2="100" y2="10" style={{ stroke: 'black', strokeWidth: '0.2px' }}></line>
-                                <line x1="0" y1="20" x2="100" y2="20" style={{ stroke: 'black', strokeWidth: '0.2px' }}></line>
-                                <line x1="0" y1="30" x2="100" y2="30" style={{ stroke: 'black', strokeWidth: '0.2px' }}></line>
-                                <line x1="0" y1="40" x2="100" y2="40" style={{ stroke: 'black', strokeWidth: '0.2px' }}></line>
-                                <line x1="0" y1="50" x2="100" y2="50" style={{ stroke: 'black', strokeWidth: '0.2px' }}></line>
-                                <line x1="0" y1="60" x2="100" y2="60" style={{ stroke: 'black', strokeWidth: '0.2px' }}></line>
-                                <line x1="0" y1="70" x2="100" y2="70" style={{ stroke: 'black', strokeWidth: '0.2px' }}></line>
-                                <line x1="0" y1="80" x2="100" y2="80" style={{ stroke: 'black', strokeWidth: '0.2px' }}></line>
-                                <line x1="0" y1="90" x2="100" y2="90" style={{ stroke: 'black', strokeWidth: '0.2px' }}></line>
+                                <line x1="0" y1="10" x2="1000" y2="10"></line>
+                                <line x1="0" y1="20" x2="1000" y2="20"></line>
+                                <line x1="0" y1="30" x2="1000" y2="30"></line>
+                                <line x1="0" y1="40" x2="1000" y2="40"></line>
+                                <line x1="0" y1="50" x2="1000" y2="50"></line>
+                                <line x1="0" y1="60" x2="1000" y2="60"></line>
+                                <line x1="0" y1="70" x2="1000" y2="70"></line>
+                                <line x1="0" y1="80" x2="1000" y2="80"></line>
+                                <line x1="0" y1="90" x2="1000" y2="90"></line>
 
                                 { /* Single Curve -Modify this for multiple selection and view  */}
                                 <path id="curve" d={this.state.currentPathData} style={{ stroke: 'red', fill: 'none', strokeWidth: '0.5' }}></path>
@@ -518,17 +504,12 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
                             }
 
-                        Animation name: {this.state.selected.name}
-
                         </div>
-                       
                     </div>
                     <div className="row">
-                            <Timeline currentFrame={this.state.currentFrame} onCurrentFrameChange={(frame: number) => this.changeCurrentFrame(frame)} keyframes={this.state.selected.getKeys()} selected={this.state.selected.getKeys()[0]}></Timeline>
+                        <Timeline currentFrame={this.state.currentFrame} onCurrentFrameChange={(frame: number) => this.changeCurrentFrame(frame)} keyframes={this.state.selected.getKeys()} selected={this.state.selected.getKeys()[0]}></Timeline>
                     </div>
                 </div>
-
-
             </div>
         );
     }
