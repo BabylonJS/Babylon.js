@@ -236,7 +236,7 @@ export class PreviewManager {
             }
             case NodeMaterialModes.Particle: {
                 this._camera.radius = this._globalState.previewType === PreviewType.Explosion ? 50 : 20;
-                this._camera.upperRadiusLimit = 500;
+                this._camera.upperRadiusLimit = 5000;
                 break;
             }
         }
