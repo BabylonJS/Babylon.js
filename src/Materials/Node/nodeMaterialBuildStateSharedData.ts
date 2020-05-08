@@ -111,6 +111,9 @@ export class NodeMaterialBuildStateSharedData {
         notConnectedNonOptionalInputs: new Array<NodeMaterialConnectionPoint>()
     };
 
+    /**
+     * Is vertex program allowed to be empty?
+     */
     public allowEmptyVertexProgram: boolean = false;
 
     /** Creates a new shared data */
