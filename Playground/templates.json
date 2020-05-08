@@ -26,31 +26,31 @@
   {
     "label" : "Create a point light",
     "documentation" : "https://doc.babylonjs.com/babylon101/lights#the-point-light",
-    "insertText" : "var pointLight = new BABYLON.PointLight(\"${1:pointLight}\", ${2:new BABYLON.Vector3(0,5,0)}, scene);",
+    "insertText" : "var pointLight = new BABYLON.PointLight(\"${1:pointLight}\", new BABYLON.Vector3(${2:0},${3:5},${4:0}), scene);",
     "language" : "javascript"
   },
   {
     "label" : "Create a directional light",
     "documentation" : "https://doc.babylonjs.com/babylon101/lights#the-directional-light",
-    "insertText" : "var dirLight = new BABYLON.DirectionalLight(\"${1:dirLight}\", ${2:new BABYLON.Vector3(-0.5,-1,-0.5)}, scene);",
+    "insertText" : "var dirLight = new BABYLON.DirectionalLight(\"${1:dirLight}\", new BABYLON.Vector3(${2:0.25},${3:-1},${4:-0.25})}, scene);",
     "language" : "javascript"
   },
   {
     "label" : "Create a spot light",
     "documentation" : "https://doc.babylonjs.com/babylon101/lights#the-spot-light",
-    "insertText" : "var spotLight = new BABYLON.SpotLight(\"${1:spotLight}\", ${2:new BABYLON.Vector3(0, 30, -10)}, ${3:new BABYLON.Vector3(0, -1, 0)}, ${4:Math.PI / 3}, ${5:2}, scene);",
+    "insertText" : "var spotLight = new BABYLON.SpotLight(\"${1:spotLight}\", new BABYLON.Vector3(${2:0}, ${3:30}, ${4:-10}), new BABYLON.Vector3(${5:0}, ${6:-1}, ${7:0}), ${8:Math.PI / 3}, ${9:2}, scene);",
     "language" : "javascript"
   },
   {
     "label" : "Create a hemispheric light",
     "documentation" : "https://doc.babylonjs.com/babylon101/lights#the-hemispheric-light",
-    "insertText" : "var hemiLight = new BABYLON.HemisphericLight(\"${1:hemiLight}\", ${3:new BABYLON.Vector3(0, 1, 0)}, scene);",
+    "insertText" : "var hemiLight = new BABYLON.HemisphericLight(\"${1:hemiLight}\", new BABYLON.Vector3(${2:0}, ${3:1}, ${4:0}), scene);",
     "language" : "javascript"
   },
   {
     "label" : "Load a Node Material from snippet w/callback",
     "documentation" : "https://doc.babylonjs.com/how_to/node_material#loading-from-a-file-saved-from-the-node-material-editor",
-    "insertText" : "BABYLON.NodeMaterial.ParseFromSnippetAsync(\"${1:your snippet url no #}\", scene).then(nodeMaterial => {\n     ${2:mesh_to_apply_node_material_to}.material = nodeMaterial;\n});",
+    "insertText" : "BABYLON.NodeMaterial.ParseFromSnippetAsync(\"${1:your_snippet_url_no_#}\", scene).then(nodeMaterial => {\n     ${2:mesh_to_apply_node_material_to}.material = nodeMaterial;\n});",
     "language" : "javascript"
   },
   {
@@ -80,7 +80,7 @@
   {
     "label" : "Setup a shadow generator",
     "documentation" : "https://doc.babylonjs.com/babylon101/shadows",
-    "insertText" : "var shadowGenerator = new BABYLON.ShadowGenerator(${1:size}, ${2:the pointlight source});\nshadowGenerator.getShadowMap().renderList.push(${3:the mesh that casts a shadow});\n${4:mesh that receives the shadow}.receiveShadows = true;",
+    "insertText" : "var shadowGenerator = new BABYLON.ShadowGenerator(${1:size}, ${2:the_light_source});\nshadowGenerator.getShadowMap().renderList.push(${3:the_mesh_that_casts_a_shadow});\n${4:mesh_that_receives_the_shadow}.receiveShadows = true;",
     "language" : "javascript"
   }
 ]
