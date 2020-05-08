@@ -73,6 +73,8 @@ import { RefractionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/refractionB
 import { SubSurfaceBlock } from 'babylonjs/Materials/Node/Blocks/PBR/subSurfaceBlock';
 import { CurrentScreenBlock } from 'babylonjs/Materials/Node/Blocks/Dual/currentScreenBlock';
 import { ParticleTextureBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleTextureBlock';
+import { ParticleRampGradientBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleRampGradientBlock';
+import { ParticleBlendMultiplyBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleBlendMultiplyBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
@@ -485,6 +487,10 @@ export class BlockTools {
                 u.setAsAttribute("particle_texturemask");
                 return u;
             }
+            case "ParticleRampGradientBlock":
+                return new ParticleRampGradientBlock("ParticleRampGradient");
+            case "ParticleBlendMultiplyBlock":
+                return new ParticleBlendMultiplyBlock("ParticleBlendMultiply");
         }
 
         return null;
