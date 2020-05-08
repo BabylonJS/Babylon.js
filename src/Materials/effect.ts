@@ -286,16 +286,27 @@ export class Effect implements IDisposable {
             processingContext: this._processingContext
         };
 
-        this._loadShader(vertexSource, "Vertex", "", (vertexCode) => {
-            this._loadShader(fragmentSource, "Fragment", "Pixel", (fragmentCode) => {
-                ShaderProcessor.Process(vertexCode, processorOptions, (migratedVertexCode) => {
-                    processorOptions.isFragment = true;
-                    ShaderProcessor.Process(fragmentCode, processorOptions, (migratedFragmentCode) => {
-                        const finalShaders = ShaderProcessor.Finalize(migratedVertexCode, migratedFragmentCode, processorOptions);
-                        this._useFinalCode(finalShaders.vertexCode, finalShaders.fragmentCode, baseName);
-                    });
+        let shaderCodes : [string | undefined, string | undefined] = [undefined, undefined];
+        let shadersLoaded = () => {
+            if (shaderCodes[0] && shaderCodes[1]) {
+                processorOptions.isFragment = true;
+                let [migratedVertexCode, fragmentCode] = shaderCodes;
+                ShaderProcessor.Process(fragmentCode, processorOptions, (migratedFragmentCode) => {
+                    const finalShaders = ShaderProcessor.Finalize(migratedVertexCode, migratedFragmentCode, processorOptions);
+                    this._useFinalCode(finalShaders.vertexCode, finalShaders.fragmentCode, baseName);
                 });
+            }
+
+        };
+        this._loadShader(vertexSource, "Vertex", "", (vertexCode) => {
+            ShaderProcessor.Process(vertexCode, processorOptions, (migratedVertexCode) => {
+                shaderCodes[0] = migratedVertexCode;
+                shadersLoaded();
             });
+        });
+        this._loadShader(fragmentSource, "Fragment", "Pixel", (fragmentCode) => {
+            shaderCodes[1] = fragmentCode;
+            shadersLoaded();
         });
     }
 
