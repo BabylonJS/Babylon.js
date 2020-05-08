@@ -6,18 +6,11 @@ var currentScene;
 var config;
 var justOnce;
 
-// Overload the random to make it deterministic
-var seed = 100000,
-    constant = Math.pow(2, 13) + 1,
-    prime = 37,
-    maximum = Math.pow(2, 50);
-
+// Random replacement
+var seed = 1;
 Math.random = function() {
-    seed *= constant;
-    seed += prime;
-    seed %= maximum;
-
-    return seed / maximum;
+    var x = Math.sin(seed++) * 10000;
+    return x - Math.floor(x);
 }
 
 function compare(renderData, referenceCanvas, threshold, errorRatio) {
@@ -37,13 +30,10 @@ function compare(renderData, referenceCanvas, threshold, errorRatio) {
             continue;
         }
 
-        if (differencesCount === 0) {
-            console.log(`First pixel off at ${index}: Value: (${renderData[index]}, ${renderData[index + 1]}, ${renderData[index] + 2}) - Expected: (${referenceData.data[index]}, ${referenceData.data[index + 1]}, ${referenceData.data[index + 2]}) `);
-        }
-
         referenceData.data[index] = 255;
         referenceData.data[index + 1] *= 0.5;
         referenceData.data[index + 2] *= 0.5;
+        referenceData.data[index + 3] = 255;
         differencesCount++;
     }
 
@@ -215,10 +205,9 @@ function runTest(index, done) {
         renderImage.className = "renderImage";
         container.appendChild(renderImage);
 
+        seed = 1;
         location.href = "#" + container.id;
        
-        seed = 100000;
-
         if (test.sceneFolder) {
             BABYLON.SceneLoader.Load(config.root + test.sceneFolder, test.sceneFilename, engine, function(newScene) {
                 currentScene = newScene;

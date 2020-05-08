@@ -1,7 +1,6 @@
 import { Tools } from "../../../Misc/tools";
 import { Scene } from "../../../scene";
 import { SceneComponentConstants, ISceneComponent } from "../../../sceneComponent";
-import { _TimeToken } from "../../../Instrumentation/timeToken";
 
 import { ProceduralTexture } from "./proceduralTexture";
 

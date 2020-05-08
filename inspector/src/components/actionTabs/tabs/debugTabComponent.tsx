@@ -64,7 +64,7 @@ export class DebugTabComponent extends PaneComponent {
                     <RenderGridPropertyGridComponent globalState={this.props.globalState} scene={scene} />
                     <CheckBoxLineComponent label="Physics" isSelected={() => this._physicsViewersEnabled} onSelect={() => this.switchPhysicsViewers()} />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="TEXTURE CHANNELS">
+                <LineContainerComponent globalState={this.props.globalState} title="CORE TEXTURE CHANNELS">
                     <CheckBoxLineComponent label="Diffuse" isSelected={() => StandardMaterial.DiffuseTextureEnabled} onSelect={() => StandardMaterial.DiffuseTextureEnabled = !StandardMaterial.DiffuseTextureEnabled} />
                     <CheckBoxLineComponent label="Ambient" isSelected={() => StandardMaterial.AmbientTextureEnabled} onSelect={() => StandardMaterial.AmbientTextureEnabled = !StandardMaterial.AmbientTextureEnabled} />
                     <CheckBoxLineComponent label="Specular" isSelected={() => StandardMaterial.SpecularTextureEnabled} onSelect={() => StandardMaterial.SpecularTextureEnabled = !StandardMaterial.SpecularTextureEnabled} />
@@ -79,6 +79,7 @@ export class DebugTabComponent extends PaneComponent {
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="FEATURES">
                     <CheckBoxLineComponent label="Animations" isSelected={() => scene.animationsEnabled} onSelect={() => scene.animationsEnabled = !scene.animationsEnabled} />
+                    <CheckBoxLineComponent label="Physics" isSelected={() => scene.physicsEnabled} onSelect={() => scene.physicsEnabled = !scene.physicsEnabled} />
                     <CheckBoxLineComponent label="Collisions" isSelected={() => scene.collisionsEnabled} onSelect={() => scene.collisionsEnabled = !scene.collisionsEnabled} />
                     <CheckBoxLineComponent label="Fog" isSelected={() => scene.fogEnabled} onSelect={() => scene.fogEnabled = !scene.fogEnabled} />
                     <CheckBoxLineComponent label="Lens flares" isSelected={() => scene.lensFlaresEnabled} onSelect={() => scene.lensFlaresEnabled = !scene.lensFlaresEnabled} />

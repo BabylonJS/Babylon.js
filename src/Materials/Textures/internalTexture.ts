@@ -1,7 +1,6 @@
 import { Observable } from "../../Misc/observable";
 import { Nullable, int } from "../../types";
 import { RenderTargetCreationOptions } from "../../Materials/Textures/renderTargetCreationOptions";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { Constants } from "../../Engines/constants";
 import { _DevTools } from '../../Misc/devTools';
 import { Engine } from '../../Engines/engine';

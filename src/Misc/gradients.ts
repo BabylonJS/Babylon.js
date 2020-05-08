@@ -11,17 +11,25 @@ export interface IValueGradient {
 /** Class used to store color4 gradient */
 export class ColorGradient implements IValueGradient {
     /**
-     * Gets or sets the gradient value (between 0 and 1)
+     * Creates a new color4 gradient
+     * @param gradient gets or sets the gradient value (between 0 and 1)
+     * @param color1 gets or sets first associated color
+     * @param color2 gets or sets first second color
      */
-    public gradient: number;
-    /**
-     * Gets or sets first associated color
-     */
-    public color1: Color4;
-    /**
-     * Gets or sets second associated color
-     */
-    public color2?: Color4;
+    public constructor(
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */
+        public gradient: number,
+        /**
+         * Gets or sets first associated color
+         */
+        public color1: Color4,
+        /**
+         * Gets or sets second associated color
+         */
+        public color2?: Color4) {
+    }
 
     /**
      * Will get a color picked randomly between color1 and color2.
@@ -41,29 +49,44 @@ export class ColorGradient implements IValueGradient {
 /** Class used to store color 3 gradient */
 export class Color3Gradient implements IValueGradient {
     /**
-     * Gets or sets the gradient value (between 0 and 1)
+     * Creates a new color3 gradient
+     * @param gradient gets or sets the gradient value (between 0 and 1)
+     * @param color gets or sets associated color
      */
-    public gradient: number;
-    /**
-     * Gets or sets the associated color
-     */
-    public color: Color3;
+    public constructor(
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */
+        public gradient: number,
+        /**
+         * Gets or sets the associated color
+         */
+        public color: Color3) {
+    }
 }
 
 /** Class used to store factor gradient */
 export class FactorGradient implements IValueGradient {
     /**
-     * Gets or sets the gradient value (between 0 and 1)
+     * Creates a new factor gradient
+     * @param gradient gets or sets the gradient value (between 0 and 1)
+     * @param factor1 gets or sets first associated factor
+     * @param factor2 gets or sets second associated factor
      */
-    public gradient: number;
-    /**
-     * Gets or sets first associated factor
-     */
-    public factor1: number;
-    /**
-     * Gets or sets second associated factor
-     */
-    public factor2?: number;
+    public constructor(
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */
+        public gradient: number,
+        /**
+         * Gets or sets first associated factor
+         */
+        public factor1: number,
+        /**
+         * Gets or sets second associated factor
+         */
+        public factor2?: number) {
+    }
 
     /**
      * Will get a number picked randomly between factor1 and factor2.
@@ -71,7 +94,7 @@ export class FactorGradient implements IValueGradient {
      * @returns the picked number
      */
     public getFactor(): number {
-        if (this.factor2 === undefined) {
+        if (this.factor2 === undefined || this.factor2 === this.factor1) {
             return this.factor1;
         }
 
@@ -90,6 +113,13 @@ export class GradientHelper {
      * @param updateFunc defines the callback function used to get the final value from the selected gradients
      */
     public static GetCurrentGradient(ratio: number, gradients: IValueGradient[], updateFunc: (current: IValueGradient, next: IValueGradient, scale: number) => void) {
+
+        // Use last index if over
+        if (gradients[0].gradient > ratio) {
+            updateFunc(gradients[0], gradients[0], 1.0);
+            return;
+        }
+
         for (var gradientIndex = 0; gradientIndex < gradients.length - 1; gradientIndex++) {
             let currentGradient = gradients[gradientIndex];
             let nextGradient = gradients[gradientIndex + 1];

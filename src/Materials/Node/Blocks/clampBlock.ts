@@ -5,14 +5,18 @@ import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint
 import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../Misc/typeStore';
 import { Scene } from '../../../scene';
+import { editableInPropertyPage, PropertyTypeForEdition } from "../nodeMaterialDecorator";
+
 /**
  * Block used to clamp a float
  */
 export class ClampBlock extends NodeMaterialBlock {
 
     /** Gets or sets the minimum range */
+    @editableInPropertyPage("Minimum", PropertyTypeForEdition.Float)
     public minimum = 0.0;
     /** Gets or sets the maximum range */
+    @editableInPropertyPage("Maximum", PropertyTypeForEdition.Float)
     public maximum = 1.0;
 
     /**
@@ -22,8 +26,10 @@ export class ClampBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Neutral);
 
-        this.registerInput("value", NodeMaterialBlockConnectionPointTypes.Float);
-        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Float);
+        this.registerInput("value", NodeMaterialBlockConnectionPointTypes.AutoDetect);
+        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
+
+        this._outputs[0]._typeConnectionSource = this._inputs[0];
     }
 
     /**

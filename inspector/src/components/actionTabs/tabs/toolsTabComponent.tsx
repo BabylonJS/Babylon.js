@@ -28,12 +28,20 @@ import { CheckBoxLineComponent } from '../lines/checkBoxLineComponent';
 import { TextLineComponent } from '../lines/textLineComponent';
 import { FileMultipleButtonLineComponent } from '../lines/fileMultipleButtonLineComponent';
 import { OptionsLineComponent } from '../lines/optionsLineComponent';
+import { MessageLineComponent } from '../lines/messageLineComponent';
+
+const GIF = require('gif.js.optimized')
 
 export class ToolsTabComponent extends PaneComponent {
     private _videoRecorder: Nullable<VideoRecorder>;
     private _screenShotSize: IScreenshotSize = { precision: 1 };
+    private _gifOptions = {width: 512, frequency: 200};
     private _useWidthHeight = false;
     private _isExporting = false;
+    private _gifWorkerBlob: Blob;
+    private _gifRecorder: any;
+    private _previousRenderingScale: number;
+    private _crunchingGIF = false;
 
     constructor(props: IPaneComponentProps) {
         super(props);
@@ -62,6 +70,12 @@ export class ToolsTabComponent extends PaneComponent {
             this._videoRecorder.stopRecording();
             this._videoRecorder.dispose();
             this._videoRecorder = null;
+        }
+
+        if (this._gifRecorder) {
+            this._gifRecorder.render();     
+            this._gifRecorder = null; 
+            return;            
         }
     }
 
@@ -104,6 +118,62 @@ export class ToolsTabComponent extends PaneComponent {
             this.setState({ tag: "Record video" });
         });
         this.setState({ tag: "Stop recording" });
+    }
+
+    recordGIFInternal() {
+        const workerUrl = URL.createObjectURL(this._gifWorkerBlob);
+        this._gifRecorder = new GIF({
+            workers: 2,
+            quality: 10,
+            workerScript: workerUrl
+        });
+        const scene = this.props.scene;
+        const engine = scene.getEngine();
+
+        this._previousRenderingScale = engine.getHardwareScalingLevel();
+        engine.setHardwareScalingLevel(engine.getRenderWidth() / this._gifOptions.width | 0);
+
+        let intervalId = setInterval(() => {
+            if (!this._gifRecorder) {
+                clearInterval(intervalId);
+                return;
+            }
+            this._gifRecorder.addFrame(engine.getRenderingCanvas(), {delay: this._gifOptions.frequency});
+        }, this._gifOptions.frequency);
+                        
+        this._gifRecorder.on('finished', (blob: Blob) =>{
+            this._crunchingGIF = false;
+            Tools.Download(blob, "record.gif");
+            
+            this.forceUpdate();
+
+            URL.revokeObjectURL(workerUrl);
+            engine.setHardwareScalingLevel(this._previousRenderingScale);
+        });
+                        
+        this.forceUpdate();
+    }
+
+    recordGIF() {
+        if (this._gifRecorder) {            
+            this._crunchingGIF = true;
+            this.forceUpdate();
+            this._gifRecorder.render();     
+            this._gifRecorder = null; 
+            return;            
+        }
+
+        if (this._gifWorkerBlob) {
+            this.recordGIFInternal();
+            return;
+        }
+
+        Tools.LoadFileAsync("https://cdn.jsdelivr.net/gh//terikon/gif.js.optimized@0.1.6/dist/gif.worker.js").then(value => {
+            this._gifWorkerBlob = new Blob([value], {
+                type: 'application/javascript'
+            });
+            this.recordGIFInternal();
+        });
     }
 
     importAnimations(event: any) {
@@ -222,18 +292,33 @@ export class ToolsTabComponent extends PaneComponent {
                         <CheckBoxLineComponent label="Use Width/Height" onSelect={ value => {
                             this._useWidthHeight = value;
                             this.forceUpdate();
-                        }
-                        } isSelected={() => this._useWidthHeight} />
+                        }} isSelected={() => this._useWidthHeight} />
                         {
                         this._useWidthHeight &&
                         <div className="secondLine">
                             <NumericInputComponent label="Width" precision={0} step={1} value={this._screenShotSize.width ? this._screenShotSize.width : 512} onChange={value => this._screenShotSize.width = value} />
                             <NumericInputComponent label="Height" precision={0} step={1} value={this._screenShotSize.height ? this._screenShotSize.height : 512} onChange={value => this._screenShotSize.height = value} />
                         </div>
-                        }
-                        
-                    </div>
+                        }      
+                    </div>              
                 </LineContainerComponent>
+                <LineContainerComponent globalState={this.props.globalState} title="GIF">
+                    {
+                        this._crunchingGIF &&
+                        <MessageLineComponent text="Creating the GIF file..." />
+                    }
+                    {
+                        !this._crunchingGIF &&
+                        <ButtonLineComponent label={this._gifRecorder ? "Stop" : "Record"} onClick={() => this.recordGIF()} />
+                    }
+                    {
+                        !this._crunchingGIF && !this._gifRecorder &&
+                        <>
+                            <FloatLineComponent label="Resolution" isInteger={true} target={this._gifOptions} propertyName="width" />
+                            <FloatLineComponent label="Frequency (ms)" isInteger={true} target={this._gifOptions} propertyName="frequency" />
+                        </>
+                    }
+                </LineContainerComponent>                
                 <LineContainerComponent globalState={this.props.globalState} title="REPLAY">
                     <ButtonLineComponent label="Generate replay code" onClick={() => this.exportReplay()} />
                     <ButtonLineComponent label="Reset" onClick={() => this.resetReplay()} />

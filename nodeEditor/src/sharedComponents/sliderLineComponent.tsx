@@ -49,7 +49,7 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
         }
 
         if (currentState !== nextState.value || nextProps.minimum !== this.props.minimum || nextProps.maximum !== this.props.maximum || this._localChange) {
-            nextState.value = currentState;
+            nextState.value = Math.min(Math.max(currentState, nextProps.minimum), nextProps.maximum);
             this._localChange = false;
             return true;
         }

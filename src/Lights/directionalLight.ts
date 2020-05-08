@@ -6,7 +6,6 @@ import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { Effect } from "../Materials/effect";
 Node.AddNodeConstructor("Light_Type_1", (name, scene) => {
     return () => new DirectionalLight(name, Vector3.Zero(), scene);
@@ -204,15 +203,9 @@ export class DirectionalLight extends ShadowLight {
         var xOffset = this._orthoRight - this._orthoLeft;
         var yOffset = this._orthoTop - this._orthoBottom;
 
-        if (this.getScene().useRightHandedSystem) {
-            Matrix.OrthoOffCenterRHToRef(this._orthoLeft - xOffset * this.shadowOrthoScale, this._orthoRight + xOffset * this.shadowOrthoScale,
-                this._orthoBottom - yOffset * this.shadowOrthoScale, this._orthoTop + yOffset * this.shadowOrthoScale,
-                this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix);
-        } else {
-            Matrix.OrthoOffCenterLHToRef(this._orthoLeft - xOffset * this.shadowOrthoScale, this._orthoRight + xOffset * this.shadowOrthoScale,
-                this._orthoBottom - yOffset * this.shadowOrthoScale, this._orthoTop + yOffset * this.shadowOrthoScale,
-                this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix);
-        }
+        Matrix.OrthoOffCenterLHToRef(this._orthoLeft - xOffset * this.shadowOrthoScale, this._orthoRight + xOffset * this.shadowOrthoScale,
+            this._orthoBottom - yOffset * this.shadowOrthoScale, this._orthoTop + yOffset * this.shadowOrthoScale,
+            this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix);
     }
 
     protected _buildUniformLayout(): void {
@@ -232,37 +225,20 @@ export class DirectionalLight extends ShadowLight {
      */
     public transferToEffect(effect: Effect, lightIndex: string): DirectionalLight {
         if (this.computeTransformedInformation()) {
-            if (this.getScene().useRightHandedSystem) {
-                this._uniformBuffer.updateFloat4("vLightData", -this.transformedDirection.x, -this.transformedDirection.y, -this.transformedDirection.z, 1, lightIndex);
-            } else {
-                this._uniformBuffer.updateFloat4("vLightData", this.transformedDirection.x, this.transformedDirection.y, this.transformedDirection.z, 1, lightIndex);
-            }
+            this._uniformBuffer.updateFloat4("vLightData", this.transformedDirection.x, this.transformedDirection.y, this.transformedDirection.z, 1, lightIndex);
             return this;
         }
-        if (this.getScene().useRightHandedSystem) {
-            this._uniformBuffer.updateFloat4("vLightData", -this.direction.x, -this.direction.y, -this.direction.z, 1, lightIndex);
-        } else {
-            this._uniformBuffer.updateFloat4("vLightData", this.direction.x, this.direction.y, this.direction.z, 1, lightIndex);
-        }
-
+        this._uniformBuffer.updateFloat4("vLightData", this.direction.x, this.direction.y, this.direction.z, 1, lightIndex);
         return this;
     }
 
     public transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string): Light {
         if (this.computeTransformedInformation()) {
-            if (this.getScene().useRightHandedSystem) {
-                effect.setFloat3(lightDataUniformName, -this.transformedDirection.x, -this.transformedDirection.y, -this.transformedDirection.z);
-            } else {
-                effect.setFloat3(lightDataUniformName, this.transformedDirection.x, this.transformedDirection.y, this.transformedDirection.z);
-            }
+            effect.setFloat3(lightDataUniformName, this.transformedDirection.x, this.transformedDirection.y, this.transformedDirection.z);
             return this;
         }
-        if (this.getScene().useRightHandedSystem) {
-            effect.setFloat3(lightDataUniformName, -this.direction.x, -this.direction.y, -this.direction.z);
-        } else {
-            effect.setFloat3(lightDataUniformName, this.direction.x, this.direction.y, this.direction.z);
-        }
 
+        effect.setFloat3(lightDataUniformName, this.direction.x, this.direction.y, this.direction.z);
         return this;
     }
 

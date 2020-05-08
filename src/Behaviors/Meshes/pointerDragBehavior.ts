@@ -245,14 +245,17 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      * Force relase the drag action by code.
      */
     public releaseDrag() {
-        this.dragging = false;
-        this.onDragEndObservable.notifyObservers({ dragPlanePoint: this.lastDragPosition, pointerId: this.currentDraggingPointerID });
+        if (this.dragging) {
+            this.onDragEndObservable.notifyObservers({ dragPlanePoint: this.lastDragPosition, pointerId: this.currentDraggingPointerID });
+            this.dragging = false;
+        }
+
         this.currentDraggingPointerID = -1;
         this._moving = false;
 
         // Reattach camera controls
         if (this.detachCameraControls && this._attachedElement && this._scene.activeCamera && !this._scene.activeCamera.leftCamera) {
-            this._scene.activeCamera.attachControl(this._attachedElement, true);
+            this._scene.activeCamera.attachControl(this._attachedElement, this._scene.activeCamera.inputs ? this._scene.activeCamera.inputs.noPreventDefault : true);
         }
     }
 

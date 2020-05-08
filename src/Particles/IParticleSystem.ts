@@ -243,10 +243,24 @@ export interface IParticleSystem {
     disposeOnStop: boolean;
 
     /**
+     * Specifies if the particles are updated in emitter local space or world space
+     */
+    isLocal: boolean;
+
+    /** Snippet ID if the particle system was created from the snippet server */
+    snippetId: string;
+
+    /**
      * Gets the maximum number of particles active at the same time.
      * @returns The max number of active particles.
      */
     getCapacity(): number;
+
+    /**
+     * Gets the number of particles active at the same time.
+     * @returns The number of active particles.
+     */
+    getActiveCount(): number;
 
     /**
      * Gets if the system has been started. (Note: this will still be true after stop is called)
@@ -276,14 +290,18 @@ export interface IParticleSystem {
      */
     clone(name: string, newEmitter: any): Nullable<IParticleSystem>;
     /**
-     * Serializes the particle system to a JSON object.
+     * Serializes the particle system to a JSON object
+     * @param serializeTexture defines if the texture must be serialized as well
      * @returns the JSON object
      */
-    serialize(): any;
+    serialize(serializeTexture: boolean): any;
     /**
      * Rebuild the particle system
      */
     rebuild(): void;
+
+    /** Force the system to rebuild all gradients that need to be resync */
+    forceRefreshGradients(): void;
 
     /**
      * Starts the particle system and begins to emit
@@ -302,10 +320,22 @@ export interface IParticleSystem {
     reset(): void;
 
     /**
+     * Gets a boolean indicating that the system is stopping
+     * @returns true if the system is currently stopping
+     */
+    isStopping(): boolean;
+
+    /**
      * Is this system ready to be used/rendered
      * @return true if the system is ready
      */
     isReady(): boolean;
+    /**
+     * Returns the string "ParticleSystem"
+     * @returns a string containing the class name
+     */
+    getClassName(): string;
+
     /**
      * Adds a new color gradient
      * @param gradient defines the gradient to use (between 0 and 1)

@@ -1,3 +1,5 @@
+var baseConfig = require('../karma-browsers.config')
+
 module.exports = function (config) {
     'use strict';
     config.set({
@@ -14,6 +16,7 @@ module.exports = function (config) {
         frameworks: ['mocha', 'chai', 'sinon'],
 
         files: [
+            'https://cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.5/seedrandom.min.js',
             '!./**/*.d.ts',
             './dist/preview release/earcut.min.js',
             './Tools/DevLoader/BabylonLoader.js',
@@ -63,8 +66,7 @@ module.exports = function (config) {
             classNameFormatter: undefined, // function (browser, result) to customize the classname attribute in xml testcase element
             properties: {} // key value pair of properties to add to the <properties> section of the report
         },
-
-        browsers: ['Chrome']
+        ...baseConfig
 
     });
 };

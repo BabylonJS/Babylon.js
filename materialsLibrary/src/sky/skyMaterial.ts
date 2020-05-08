@@ -115,8 +115,6 @@ export class SkyMaterial extends PushMaterial {
     // Private members
     private _cameraPosition: Vector3 = Vector3.Zero();
 
-    private _renderId: number;
-
     /**
      * Instantiates a new sky material.
      * This material allows to create dynamic and texture free
@@ -175,10 +173,8 @@ export class SkyMaterial extends PushMaterial {
         var defines = <SkyMaterialDefines>subMesh._materialDefines;
         var scene = this.getScene();
 
-        if (!this.checkReadyOnEveryCall && subMesh.effect) {
-            if (this._renderId === scene.getRenderId()) {
-                return true;
-            }
+        if (this._isReadyForSubMesh(subMesh)) {
+            return true;
         }
 
         MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, false, defines);
@@ -223,7 +219,7 @@ export class SkyMaterial extends PushMaterial {
             return false;
         }
 
-        this._renderId = scene.getRenderId();
+        defines._renderId = scene.getRenderId();
         subMesh.effect._wasPreviouslyReady = true;
 
         return true;

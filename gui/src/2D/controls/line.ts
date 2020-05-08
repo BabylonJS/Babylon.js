@@ -1,6 +1,6 @@
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
-import { Vector3, Matrix } from "babylonjs/Maths/math";
+import { Vector3, Matrix } from "babylonjs/Maths/math.vector";
 import { Tools } from "babylonjs/Misc/tools";
 import { Scene } from "babylonjs/scene";
 

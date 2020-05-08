@@ -26,6 +26,9 @@ ThinEngine.prototype.updateVideoTexture = function(texture: Nullable<InternalTex
     try {
         // Testing video texture support
         if (this._videoTextureSupported === undefined) {
+            // clear old errors just in case.
+            this._gl.getError();
+
             this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, video);
 
             if (this._gl.getError() !== 0) {
@@ -50,6 +53,7 @@ ThinEngine.prototype.updateVideoTexture = function(texture: Nullable<InternalTex
                 texture._workingCanvas.height = texture.height;
             }
 
+            texture._workingContext!.clearRect(0, 0, texture.width, texture.height);
             texture._workingContext!.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, texture.width, texture.height);
 
             this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, texture._workingCanvas);

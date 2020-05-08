@@ -1,9 +1,8 @@
-﻿
-var engine = null;
+﻿var engine = null;
 var canvas = null;
 var scene = null;
 
-fastEval = function(code) {
+fastEval = function (code) {
     var head = document.getElementsByTagName('head')[0];
     var script = document.createElement('script');
     script.setAttribute('type', 'text/javascript');
@@ -16,11 +15,11 @@ fastEval = function(code) {
     head.appendChild(script);
 }
 
-handleException = function(e) {
+handleException = function (e) {
     console.error(e);
 }
 
-run = function() {
+run = function () {
     var snippetUrl = "https://snippet.babylonjs.com";
     var fpsLabel = document.getElementById("fpsLabel");
     var refreshAnchor = document.getElementById("refresh");
@@ -40,7 +39,7 @@ run = function() {
 
     BABYLON.Engine.ShadersRepository = "/src/Shaders/";
 
-    compileAndRun = function(code) {
+    compileAndRun = function (code) {
         try {
 
             if (!BABYLON.Engine.isSupported()) {
@@ -56,7 +55,10 @@ run = function() {
             canvas = document.getElementById("renderCanvas");
 
             createDefaultEngine = function () {
-                return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+                return new BABYLON.Engine(canvas, true, {
+                    preserveDrawingBuffer: true,
+                    stencil: true
+                });
             }
 
             if (code.indexOf("createEngine") !== -1) {
@@ -116,22 +118,25 @@ run = function() {
                 if (scene.activeCamera || scene.activeCameras.length > 0) {
                     scene.render();
                 }
-
-                fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
-            }.bind(this));         
+                if (fpsLabel && !(scene.activeCamera && 
+                    scene.activeCamera.getClassName && 
+                    scene.activeCamera.getClassName() === 'WebXRCamera')) {
+                    fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
+                }
+            }.bind(this));
 
         } catch (e) {
             // showError(e.message);
         }
     };
-    window.addEventListener("resize", function() {
+    window.addEventListener("resize", function () {
         if (engine) {
             engine.resize();
         }
     });
 
     // UI
-    var cleanHash = function() {
+    var cleanHash = function () {
         var splits = decodeURIComponent(location.hash.substr(1)).split("#");
 
         if (splits.length > 2) {
@@ -141,22 +146,37 @@ run = function() {
         location.hash = splits.join("#");
     };
 
-    var checkHash = function() {
+    var checkHash = function () {
         if (location.hash) {
             cleanHash();
 
             try {
                 var xmlHttp = new XMLHttpRequest();
-                xmlHttp.onreadystatechange = function() {
+                xmlHttp.onreadystatechange = function () {
                     if (xmlHttp.readyState === 4) {
                         if (xmlHttp.status === 200) {
-                            var snippetCode = JSON.parse(JSON.parse(xmlHttp.responseText).jsonPayload).code;
+                            var snippet = JSON.parse(xmlHttp.responseText);
+                            var snippetCode = JSON.parse(snippet.jsonPayload).code;
                             compileAndRun(snippetCode);
 
                             var refresh = document.getElementById("refresh");
 
+                            if (snippet.name != null && snippet.name != "") {
+                                this.currentSnippetTitle = snippet.name;
+                            } else this.currentSnippetTitle = null;
+    
+                            if (snippet.description != null && snippet.description != "") {
+                                this.currentSnippetDescription = snippet.description;
+                            } else this.currentSnippetDescription = null;
+    
+                            if (snippet.tags != null && snippet.tags != "") {
+                                this.currentSnippetTags = snippet.tags;
+                            } else this.currentSnippetTags = null;
+
+                            updateMetadata.call(this);
+
                             if (refresh) {
-                                refresh.addEventListener("click", function() {
+                                refresh.addEventListener("click", function () {
                                     compileAndRun(snippetCode);
                                 });
                             }
@@ -181,6 +201,31 @@ run = function() {
             }
         }
     };
+
+    var updateMetadata = function() {
+        var selection;
+
+        if (this.currentSnippetTitle) {
+            selection = document.querySelector('title');
+            if (selection) {
+                selection.innerText = (this.currentSnippetTitle + " | Babylon.js Playground");
+            }
+        }
+
+        if (this.currentSnippetDescription) {
+            selection = document.querySelector('meta[name="description"]');
+            if (selection) {
+                selection.setAttribute("content", this.currentSnippetDescription + " - Babylon.js Playground");
+            }
+        }
+
+        if (this.currentSnippetTags) {
+            selection = document.querySelector('meta[name="keywords"]');
+            if (selection) {
+                selection.setAttribute("content", "babylon.js, game engine, webgl, 3d," + this.currentSnippetTags);
+            }
+        }
+    }
 
     checkHash();
 

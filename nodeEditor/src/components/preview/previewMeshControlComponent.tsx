@@ -1,16 +1,42 @@
 
 import * as React from "react";
 import { GlobalState } from '../../globalState';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCircle, faRing, faCube, faHockeyPuck, faSquareFull, faPlus, faDotCircle } from '@fortawesome/free-solid-svg-icons';
+import { Color3, Color4 } from 'babylonjs/Maths/math.color';
 import { PreviewMeshType } from './previewMeshType';
-import { DataStorage } from '../../dataStorage';
+import { DataStorage } from 'babylonjs/Misc/dataStorage';
+import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
+import { Observer } from 'babylonjs/Misc/observable';
+import { Nullable } from 'babylonjs/types';
+import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
+
+const popUpIcon: string = require("./svgs/popOut.svg");
+const colorPicker: string = require("./svgs/colorPicker.svg");
+const pauseIcon: string = require("./svgs/pauseIcon.svg");
+const playIcon: string = require("./svgs/playIcon.svg");
 
 interface IPreviewMeshControlComponent {
     globalState: GlobalState;
+    togglePreviewAreaComponent: () => void;
 }
 
 export class PreviewMeshControlComponent extends React.Component<IPreviewMeshControlComponent> {
+    private colorInputRef: React.RefObject<HTMLInputElement>;
+    private filePickerRef: React.RefObject<HTMLInputElement>;
+    private _onResetRequiredObserver: Nullable<Observer<void>>;
+
+    constructor(props: IPreviewMeshControlComponent) {
+        super(props);
+        this.colorInputRef = React.createRef();
+        this.filePickerRef = React.createRef();
+
+        this._onResetRequiredObserver = this.props.globalState.onResetRequiredObservable.add(() => {
+            this.forceUpdate();
+        });
+    }
+
+    componentWillUnmount() {
+        this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
+    }
 
     changeMeshType(newOne: PreviewMeshType) {
         if (this.props.globalState.previewMeshType === newOne) {
@@ -18,9 +44,9 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
         }
 
         this.props.globalState.previewMeshType = newOne;
-        this.props.globalState.onPreviewCommandActivated.notifyObservers();
+        this.props.globalState.onPreviewCommandActivated.notifyObservers(false);
 
-        DataStorage.StoreNumber("PreviewMeshType", newOne);
+        DataStorage.WriteNumber("PreviewMeshType", newOne);
 
         this.forceUpdate();
     }
@@ -32,53 +58,99 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
 
             this.props.globalState.previewMeshFile = file;
             this.props.globalState.previewMeshType = PreviewMeshType.Custom;
-            this.props.globalState.onPreviewCommandActivated.notifyObservers();        
+            this.props.globalState.onPreviewCommandActivated.notifyObservers(false);
+            this.props.globalState.listOfCustomPreviewMeshFiles = [file];
             this.forceUpdate();
         }
-        (document.getElementById("file-picker")! as HTMLInputElement).value = "";
+        if (this.filePickerRef.current) {
+            this.filePickerRef.current.value = "";
+        }
+    }
+
+    onPopUp() {
+        this.props.togglePreviewAreaComponent();
+    }
+
+    changeAnimation() {
+        this.props.globalState.rotatePreview = !this.props.globalState.rotatePreview;
+        this.props.globalState.onAnimationCommandActivated.notifyObservers();
+        this.forceUpdate();
+    }
+
+    changeBackground(value: string) {
+        const newColor = Color3.FromHexString(value);
+
+        DataStorage.WriteNumber("BackgroundColorR", newColor.r);
+        DataStorage.WriteNumber("BackgroundColorG", newColor.g);
+        DataStorage.WriteNumber("BackgroundColorB", newColor.b);
+
+        const newBackgroundColor = Color4.FromColor3(newColor, 1.0);
+        this.props.globalState.backgroundColor = newBackgroundColor;
+        this.props.globalState.onPreviewBackgroundChanged.notifyObservers();
+    }
+
+    changeBackgroundClick() {
+        this.colorInputRef.current?.click();
     }
 
     render() {
+
+        var meshTypeOptions = [
+            { label: "Cube", value: PreviewMeshType.Box },
+            { label: "Cylinder", value: PreviewMeshType.Cylinder },
+            { label: "Plane", value: PreviewMeshType.Plane },
+            { label: "Shader ball", value: PreviewMeshType.ShaderBall },
+            { label: "Sphere", value: PreviewMeshType.Sphere },
+            { label: "Load...", value: PreviewMeshType.Custom + 1 }
+        ];
+
+        if (this.props.globalState.listOfCustomPreviewMeshFiles.length > 0) {
+            meshTypeOptions.splice(0, 0, {
+                label: "Custom", value: PreviewMeshType.Custom
+            });
+        }
+
         return (
             <div id="preview-mesh-bar">
+                { this.props.globalState.mode !== NodeMaterialModes.PostProcess && <>
+                    <OptionsLineComponent label="" options={meshTypeOptions} target={this.props.globalState}
+                                propertyName="previewMeshType"
+                                noDirectUpdate={true}
+                                onSelect={(value: any) => {
+                                    if (value !== PreviewMeshType.Custom + 1) {
+                                        this.changeMeshType(value);
+                                    } else {
+                                        this.filePickerRef.current?.click();
+                                    }
+                                }} />
+                    <div style={{
+                        display: "none"
+                    }} title="Preview with a custom mesh" >
+                        <input ref={this.filePickerRef} id="file-picker" type="file" onChange={(evt) => this.useCustomMesh(evt)} accept=".gltf, .glb, .babylon, .obj"/>
+                    </div>
+                    <div
+                        title="Turn-table animation"
+                        onClick={() => this.changeAnimation()} className="button" id="play-button">
+                        {this.props.globalState.rotatePreview ? <img src={pauseIcon} alt=""/> : <img src={playIcon} alt=""/>}
+                    </div>
+                    <div
+                    id="color-picker-button"
+                        title="Background color"
+                        className={"button align"}
+                        onClick={(_) => this.changeBackgroundClick()}
+                        >
+                        <img src={colorPicker} alt=""/>
+                        <label htmlFor="color-picker" id="color-picker-label">
+                        </label>
+                        <input ref={this.colorInputRef} id="color-picker" type="color" onChange={(evt) => this.changeBackground(evt.target.value)} />
+                    </div>
+                </> }
                 <div
-                    title="Preview with a cube" 
-                    onClick={() => this.changeMeshType(PreviewMeshType.Box)} className={"button" + (this.props.globalState.previewMeshType === PreviewMeshType.Box ? " selected" : "")}>
-                    <FontAwesomeIcon icon={faCube} />
-                </div>
-                <div
-                    title="Preview with a sphere"  
-                    onClick={() => this.changeMeshType(PreviewMeshType.Sphere)} className={"button" + (this.props.globalState.previewMeshType === PreviewMeshType.Sphere ? " selected" : "")}>
-                    <FontAwesomeIcon icon={faCircle} />
-                </div>
-                <div
-                    title="Preview with a torus"  
-                    onClick={() => this.changeMeshType(PreviewMeshType.Torus)} className={"button" + (this.props.globalState.previewMeshType === PreviewMeshType.Torus ? " selected" : "")}>
-                    <FontAwesomeIcon icon={faRing} />
-                </div>
-                <div
-                    title="Preview with a cylinder"  
-                    onClick={() => this.changeMeshType(PreviewMeshType.Cylinder)} className={"button" + (this.props.globalState.previewMeshType === PreviewMeshType.Cylinder ? " selected" : "")}>
-                    <FontAwesomeIcon icon={faHockeyPuck} />
-                </div>
-                <div
-                    title="Preview with a plane"  
-                    onClick={() => this.changeMeshType(PreviewMeshType.Plane)} className={"button" + (this.props.globalState.previewMeshType === PreviewMeshType.Plane ? " selected" : "")}>
-                    <FontAwesomeIcon icon={faSquareFull} />
-                </div>      
-                <div
-                    title="Preview with a shader ball"  
-                    onClick={() => this.changeMeshType(PreviewMeshType.ShaderBall)} className={"button" + (this.props.globalState.previewMeshType === PreviewMeshType.ShaderBall ? " selected" : "")}>
-                    <FontAwesomeIcon icon={faDotCircle} />
-                </div>                           
-                <div className={"button align"} title="Preview with a custom mesh" >
-                    <label htmlFor="file-picker" id="file-picker-label">
-                        <FontAwesomeIcon icon={faPlus} />
-                    </label>
-                    <input ref="file-picker" id="file-picker" type="file" onChange={evt => this.useCustomMesh(evt)} accept=".gltf, .glb, .babylon, .obj"/>
+                    title="Open preview in new window" id="preview-new-window"
+                    onClick={() => this.onPopUp()} className="button">
+                    <img src={popUpIcon} alt=""/>
                 </div>
             </div>
         );
-
     }
 }

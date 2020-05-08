@@ -4,7 +4,6 @@ import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTextur
 import { ShadowGenerator } from "./shadowGenerator";
 import { CascadedShadowGenerator } from "./cascadedShadowGenerator";
 import { SceneComponentConstants, ISceneSerializableComponent } from "../../sceneComponent";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { AbstractScene } from "../../abstractScene";
 // Adds the parser to the scene parsers.
 AbstractScene.AddParser(SceneComponentConstants.NAME_SHADOWGENERATOR, (parsedData: any, scene: Scene) => {
@@ -12,7 +11,11 @@ AbstractScene.AddParser(SceneComponentConstants.NAME_SHADOWGENERATOR, (parsedDat
     if (parsedData.shadowGenerators !== undefined && parsedData.shadowGenerators !== null) {
         for (var index = 0, cache = parsedData.shadowGenerators.length; index < cache; index++) {
             var parsedShadowGenerator = parsedData.shadowGenerators[index];
-            ShadowGenerator.Parse(parsedShadowGenerator, scene);
+            if (parsedShadowGenerator.className === CascadedShadowGenerator.CLASSNAME) {
+                CascadedShadowGenerator.Parse(parsedShadowGenerator, scene);
+            } else {
+                ShadowGenerator.Parse(parsedShadowGenerator, scene);
+            }
             // SG would be available on their associated lights
         }
     }
@@ -117,14 +120,6 @@ export class ShadowGeneratorSceneComponent implements ISceneSerializableComponen
 }
 
 ShadowGenerator._SceneComponentInitialization = (scene: Scene) => {
-    let component = scene._getComponent(SceneComponentConstants.NAME_SHADOWGENERATOR);
-    if (!component) {
-        component = new ShadowGeneratorSceneComponent(scene);
-        scene._addComponent(component);
-    }
-};
-
-CascadedShadowGenerator._SceneComponentInitialization = (scene: Scene) => {
     let component = scene._getComponent(SceneComponentConstants.NAME_SHADOWGENERATOR);
     if (!component) {
         component = new ShadowGeneratorSceneComponent(scene);

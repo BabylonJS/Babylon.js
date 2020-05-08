@@ -285,7 +285,7 @@ export class Skeleton implements IAnimatable {
      * @returns the requested animation range or null if not found
      */
     public getAnimationRange(name: string): Nullable<AnimationRange> {
-        return this._ranges[name];
+        return this._ranges[name] || null;
     }
 
     /**
@@ -388,6 +388,58 @@ export class Skeleton implements IAnimatable {
         }
 
         return this._scene.beginAnimation(this, range.from, range.to, loop, speedRatio, onAnimationEnd);
+    }
+
+    /**
+     * Convert the keyframes for a range of animation on a skeleton to be relative to a given reference frame.
+     * @param skeleton defines the Skeleton containing the animation range to convert
+     * @param referenceFrame defines the frame that keyframes in the range will be relative to
+     * @param range defines the name of the AnimationRange belonging to the Skeleton to convert
+     * @returns the original skeleton
+     */
+    public static MakeAnimationAdditive(skeleton: Skeleton, referenceFrame = 0, range: string): Nullable<Skeleton> {
+        var rangeValue = skeleton.getAnimationRange(name);
+
+        // We can't make a range additive if it doesn't exist
+        if (!rangeValue) {
+            return null;
+        }
+
+        // Find any current scene-level animatable belonging to the target that matches the range
+        var sceneAnimatables = skeleton._scene.getAllAnimatablesByTarget(skeleton);
+        var rangeAnimatable: Nullable<Animatable> = null;
+
+        for (let index = 0; index < sceneAnimatables.length; index++) {
+            let sceneAnimatable = sceneAnimatables[index];
+
+            if (sceneAnimatable.fromFrame === rangeValue?.from && sceneAnimatable.toFrame === rangeValue?.to) {
+                rangeAnimatable = sceneAnimatable;
+                break;
+            }
+        }
+
+        // Convert the animations belonging to the skeleton to additive keyframes
+        var animatables = skeleton.getAnimatables();
+
+        for (let index = 0; index < animatables.length; index++) {
+            let animatable = animatables[index];
+            let animations = animatable.animations;
+
+            if (!animations) {
+                continue;
+            }
+
+            for (var animIndex = 0; animIndex < animations.length; animIndex++) {
+                Animation.MakeAnimationAdditive(animations[animIndex], referenceFrame, range);
+            }
+        }
+
+        // Mark the scene-level animatable as additive
+        if (rangeAnimatable) {
+            rangeAnimatable.isAdditive = true;
+        }
+
+        return skeleton;
     }
 
     /** @hidden */

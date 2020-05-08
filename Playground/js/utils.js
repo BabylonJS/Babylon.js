@@ -4,7 +4,7 @@
 class Utils {
     constructor(parent) {
         this.parent = parent;
-        
+
         this.multipleSize = [1280, 1024, 'Mobile'];
     }
 
@@ -14,7 +14,7 @@ class Utils {
     markDirty() {
         if (this.parent.monacoCreator.BlockEditorChange) return;
 
-        this.setToMultipleID("safemodeToggle", "addClass", "checked");!
+        this.setToMultipleID("safemodeToggle", "addClass", "checked");
         this.setToMultipleID('safemodeToggle', 'innerHTML', 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
     };
 
@@ -38,7 +38,7 @@ class Utils {
         }
 
         // Not an error with proper location
-        return null;        
+        return null;
     }
 
     /**
@@ -71,8 +71,8 @@ class Utils {
         const jsEditor = this.parent.monacoCreator.jsEditor;
         if (gotoLocation) {
             gotoLocation.addEventListener('click', function () {
-                const position = { 
-                    lineNumber: Number(locationError.lineNumber), 
+                const position = {
+                    lineNumber: Number(locationError.lineNumber),
                     column: Number(locationError.columnNumber)
                 };
 
@@ -89,24 +89,21 @@ class Utils {
         this.multipleSize.forEach(function (size) {
             if (thingToDo == "innerHTML") {
                 document.getElementById(id + size).innerHTML = param
-            }
-            else if (thingToDo == "click") {
+            } else if (thingToDo == "click") {
                 if (param.length > 1) {
                     for (var i = 0; i < param.length; i++) {
                         document.getElementById(id + size).addEventListener("click", param[i]);
                     }
-                }
-                else
+                } else
                     document.getElementById(id + size).addEventListener("click", param);
-            }
-            else if (thingToDo == "addClass") {
+            } else if (thingToDo == "addClass") {
                 document.getElementById(id + size).classList.add(param);
-            }
-            else if (thingToDo == "removeClass") {
+            } else if (thingToDo == "removeClass") {
                 document.getElementById(id + size).classList.remove(param);
-            }
-            else if (thingToDo == "display") {
+            } else if (thingToDo == "display") {
                 document.getElementById(id + size).style.display = param;
+            } else if (thingToDo === "title") {
+                document.getElementById(id + size).setAttribute("title", param);
             }
         });
     };
@@ -115,8 +112,8 @@ class Utils {
      * Function to get the current screen size
      */
     getCurrentSize() {
-        for(var i = 0; i < this.multipleSize.length; i++) {
-            if(document.getElementById("menuButton" + this.multipleSize[i]).offsetHeight > 0) return this.multipleSize[i];
+        for (var i = 0; i < this.multipleSize.length; i++) {
+            if (document.getElementById("menuButton" + this.multipleSize[i]).offsetHeight > 0) return this.multipleSize[i];
         }
     };
 
@@ -134,9 +131,9 @@ class Utils {
             lastCallAt = currentTime
 
             if (isCold && options.leading) {
-                return options.accumulate
-                    ? Promise.resolve(fn.call(this, [args])).then(result => result[0])
-                    : Promise.resolve(fn.call(this, ...args))
+                return options.accumulate ?
+                    Promise.resolve(fn.call(this, [args])).then(result => result[0]) :
+                    Promise.resolve(fn.call(this, ...args))
             }
 
             if (deferred) {
@@ -159,7 +156,7 @@ class Utils {
         function getWait(wait) {
             return (typeof wait === 'function') ? wait() : wait
         }
-    
+
         function defer() {
             const deferred = {}
             deferred.promise = new Promise((resolve, reject) => {
@@ -174,14 +171,14 @@ class Utils {
             clearTimeout(timer)
 
             Promise.resolve(
-                options.accumulate
-                    ? fn.call(this, pendingArgs)
-                    : fn.apply(this, pendingArgs[pendingArgs.length - 1])
-            )
+                    options.accumulate ?
+                    fn.call(this, pendingArgs) :
+                    fn.apply(this, pendingArgs[pendingArgs.length - 1])
+                )
                 .then(thisDeferred.resolve, thisDeferred.reject)
 
             pendingArgs = []
             deferred = null
         }
-    }    
+    }
 }

@@ -140,11 +140,15 @@ vec2 computeProjectionTextureDiffuseLightingUV(mat4 textureProjectionMatrix){
 
         // No Fresnel Effect with sheen
         // vec3 fresnel = fresnelSchlickGGX(info.VdotH, reflectance0, reflectance90);
-        vec3 fresnel = reflectance0;
+        float fresnel = 1.;
         float distribution = normalDistributionFunction_CharlieSheen(NdotH, alphaG);
-        float ashikhminvisibility = visibility_Ashikhmin(info.NdotL, info.NdotV);
+        /*#ifdef SHEEN_SOFTER
+            float visibility = visibility_CharlieSheen(info.NdotL, info.NdotV, alphaG);
+        #else */
+            float visibility = visibility_Ashikhmin(info.NdotL, info.NdotV);
+        /* #endif */
 
-        vec3 sheenTerm = fresnel * distribution * ashikhminvisibility;
+        float sheenTerm = fresnel * distribution * visibility;
         return sheenTerm * info.attenuation * info.NdotL * lightColor;
     }
 #endif

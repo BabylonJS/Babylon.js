@@ -9,7 +9,6 @@ import { VertexBuffer } from "../Meshes/buffer";
 import { Ray } from "../Culling/ray";
 import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { LensFlare } from "./lensFlare";
 import { Constants } from "../Engines/constants";
 

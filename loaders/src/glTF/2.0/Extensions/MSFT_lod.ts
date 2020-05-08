@@ -4,8 +4,8 @@ import { Deferred } from "babylonjs/Misc/deferred";
 import { Material } from "babylonjs/Materials/material";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Mesh } from "babylonjs/Meshes/mesh";
-
-import { INode, IMaterial, IBuffer } from "../glTFLoaderInterfaces";
+import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
+import { INode, IMaterial, IBuffer, IScene } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import { IProperty } from 'babylonjs-gltf2interface';
@@ -75,8 +75,6 @@ export class MSFT_lod implements IGLTFLoaderExtension {
 
     /** @hidden */
     public dispose() {
-        this._disposeUnusedMaterials();
-
         delete this._loader;
 
         this._nodeIndexLOD = null;
@@ -142,6 +140,15 @@ export class MSFT_lod implements IGLTFLoaderExtension {
     }
 
     /** @hidden */
+    public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
+        const promise = this._loader.loadSceneAsync(context, scene);
+        if (this._bufferLODs.length !== 0) {
+            this._loadBufferLOD(0);
+        }
+        return promise;
+    }
+
+    /** @hidden */
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
         return GLTFLoader.LoadExtensionAsync<IMSFTLOD, TransformNode>(context, node, this.name, (extensionContext, extension) => {
             let firstPromise: Promise<TransformNode>;
@@ -165,9 +172,8 @@ export class MSFT_lod implements IGLTFLoaderExtension {
                         // TODO: should not rely on _babylonTransformNode
                         const previousNodeLOD = nodeLODs[indexLOD - 1];
                         if (previousNodeLOD._babylonTransformNode) {
-                            previousNodeLOD._babylonTransformNode.dispose();
+                            this._disposeTransformNode(previousNodeLOD._babylonTransformNode);
                             delete previousNodeLOD._babylonTransformNode;
-                            this._disposeUnusedMaterials();
                         }
                     }
 
@@ -177,10 +183,6 @@ export class MSFT_lod implements IGLTFLoaderExtension {
 
                 if (indexLOD === 0) {
                     firstPromise = promise;
-
-                    if (this._bufferLODs.length !== 0) {
-                        this._loadBufferLOD(0);
-                    }
                 }
                 else {
                     this._nodeIndexLOD = null;
@@ -230,7 +232,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
                         // TODO: should not rely on _data
                         const previousDataLOD = materialLODs[indexLOD - 1]._data!;
                         if (previousDataLOD[babylonDrawMode]) {
-                            previousDataLOD[babylonDrawMode].babylonMaterial.dispose();
+                            this._disposeMaterials([previousDataLOD[babylonDrawMode].babylonMaterial]);
                             delete previousDataLOD[babylonDrawMode];
                         }
                     }
@@ -240,10 +242,6 @@ export class MSFT_lod implements IGLTFLoaderExtension {
 
                 if (indexLOD === 0) {
                     firstPromise = promise;
-
-                    if (this._bufferLODs.length !== 0) {
-                        this._loadBufferLOD(0);
-                    }
                 }
                 else {
                     this._materialIndexLOD = null;
@@ -343,22 +341,45 @@ export class MSFT_lod implements IGLTFLoaderExtension {
         return properties;
     }
 
-    private _disposeUnusedMaterials(): void {
-        // TODO: should not rely on _data
-        const materials = this._loader.gltf.materials;
-        if (materials) {
-            for (const material of materials) {
-                if (material._data) {
-                    for (const drawMode in material._data) {
-                        const data = material._data[drawMode];
-                        if (data.babylonMeshes.every((babylonMesh) => babylonMesh.material !== data.babylonMaterial)) {
-                            // TODO: check if texture is in use instead of force disposing textures
-                            data.babylonMaterial.dispose(false, true);
-                            delete material._data[drawMode];
-                        }
-                    }
+    private _disposeTransformNode(babylonTransformNode: TransformNode): void {
+        const babylonMaterials = new Array<Material>();
+        const babylonMaterial = (babylonTransformNode as Mesh).material;
+        if (babylonMaterial) {
+            babylonMaterials.push(babylonMaterial);
+        }
+        for (const babylonMesh of babylonTransformNode.getChildMeshes()) {
+            if (babylonMesh.material) {
+                babylonMaterials.push(babylonMesh.material);
+            }
+        }
+
+        babylonTransformNode.dispose();
+
+        const babylonMaterialsToDispose = babylonMaterials.filter((babylonMaterial) => this._loader.babylonScene.meshes.every((mesh) => mesh.material != babylonMaterial));
+        this._disposeMaterials(babylonMaterialsToDispose);
+    }
+
+    private _disposeMaterials(babylonMaterials: Material[]): void {
+        const babylonTextures: { [uniqueId: number]: BaseTexture } = {};
+
+        for (const babylonMaterial of babylonMaterials) {
+            for (const babylonTexture of babylonMaterial.getActiveTextures()) {
+                babylonTextures[babylonTexture.uniqueId] = babylonTexture;
+            }
+
+            babylonMaterial.dispose();
+        }
+
+        for (const uniqueId in babylonTextures) {
+            for (const babylonMaterial of this._loader.babylonScene.materials) {
+                if (babylonMaterial.hasTexture(babylonTextures[uniqueId])) {
+                    delete babylonTextures[uniqueId];
                 }
             }
+        }
+
+        for (const uniqueId in babylonTextures) {
+            babylonTextures[uniqueId].dispose();
         }
     }
 }

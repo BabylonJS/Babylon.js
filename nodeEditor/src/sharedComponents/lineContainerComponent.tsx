@@ -1,7 +1,7 @@
 import * as React from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
-import { DataStorage } from '../dataStorage';
+import { DataStorage } from 'babylonjs/Misc/dataStorage';
 
 
 interface ILineContainerComponentProps {
@@ -22,7 +22,7 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
     switchExpandedState(): void {
         const newState = !this.state.isExpanded;
 
-        DataStorage.StoreBoolean(this.props.title, newState);
+        DataStorage.WriteBoolean(this.props.title, newState);
 
         this.setState({ isExpanded: newState });
     }

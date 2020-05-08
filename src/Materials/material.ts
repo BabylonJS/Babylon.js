@@ -19,6 +19,7 @@ import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { IInspectable } from '../Misc/iInspectable';
 import { Plane } from '../Maths/math.plane';
+import { ShadowDepthWrapper } from './shadowDepthWrapper';
 
 declare type Mesh = import("../Meshes/mesh").Mesh;
 declare type Animation = import("../Animations/animation").Animation;
@@ -121,6 +122,37 @@ export class Material implements IAnimatable {
      * The all dirty flag value
      */
     public static readonly AllDirtyFlag = Constants.MATERIAL_AllDirtyFlag;
+
+    /**
+     * MaterialTransparencyMode: No transparency mode, Alpha channel is not use.
+     */
+    public static readonly MATERIAL_OPAQUE = 0;
+
+    /**
+     * MaterialTransparencyMode: Alpha Test mode, pixel are discarded below a certain threshold defined by the alpha cutoff value.
+     */
+    public static readonly MATERIAL_ALPHATEST = 1;
+
+    /**
+     * MaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
+     */
+    public static readonly MATERIAL_ALPHABLEND = 2;
+
+    /**
+     * MaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
+     * They are also discarded below the alpha cutoff threshold to improve performances.
+     */
+    public static readonly MATERIAL_ALPHATESTANDBLEND = 3;
+
+    /**
+     * Custom callback helping to override the default shader used in the material.
+     */
+    public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[]) => string;
+
+    /**
+     * Custom shadow depth material to use for shadow rendering instead of the in-built one
+     */
+    public shadowDepthWrapper: Nullable<ShadowDepthWrapper> = null;
 
     /**
      * The ID of the material
@@ -325,6 +357,19 @@ export class Material implements IAnimatable {
         return this._onUnBindObservable;
     }
 
+    protected _onEffectCreatedObservable: Nullable<Observable<{ effect: Effect, subMesh: Nullable<SubMesh>}>>;
+
+    /**
+    * An event triggered when the effect is (re)created
+    */
+    public get onEffectCreatedObservable(): Observable<{ effect: Effect, subMesh: Nullable<SubMesh>}> {
+        if (!this._onEffectCreatedObservable) {
+            this._onEffectCreatedObservable = new Observable<{effect: Effect, subMesh: Nullable<SubMesh>}>();
+        }
+
+        return this._onEffectCreatedObservable;
+    }
+
     /**
      * Stores the value of the alpha mode
      */
@@ -397,6 +442,12 @@ export class Material implements IAnimatable {
     public disableDepthWrite = false;
 
     /**
+     * Specifies if color writing should be disabled
+     */
+    @serialize()
+    public disableColorWrite = false;
+
+    /**
      * Specifies if depth writing should be forced
      */
     @serialize()
@@ -450,10 +501,6 @@ export class Material implements IAnimatable {
     @serialize()
     public zOffset = 0;
 
-    /**
-     * Gets a value specifying if wireframe mode is enabled
-     */
-    @serialize()
     public get wireframe(): boolean {
         switch (this._fillMode) {
             case Material.WireFrameFillMode:
@@ -539,6 +586,11 @@ export class Material implements IAnimatable {
      * Specifies if the depth write state should be cached
      */
     private _cachedDepthWriteState: boolean = false;
+
+    /**
+     * Specifies if the color write state should be cached
+     */
+    private _cachedColorWriteState: boolean = false;
 
     /**
      * Specifies if the depth function state should be cached
@@ -668,10 +720,63 @@ export class Material implements IAnimatable {
     }
 
     /**
-     * Specifies if the material will require alpha blending
+     * Enforces alpha test in opaque or blend mode in order to improve the performances of some situations.
+     */
+    protected _forceAlphaTest = false;
+
+    /**
+     * The transparency mode of the material.
+     */
+    protected _transparencyMode: Nullable<number> = null;
+
+    /**
+     * Gets the current transparency mode.
+     */
+    @serialize()
+    public get transparencyMode(): Nullable<number> {
+        return this._transparencyMode;
+    }
+
+    /**
+     * Sets the transparency mode of the material.
+     *
+     * | Value | Type                                | Description |
+     * | ----- | ----------------------------------- | ----------- |
+     * | 0     | OPAQUE                              |             |
+     * | 1     | ALPHATEST                           |             |
+     * | 2     | ALPHABLEND                          |             |
+     * | 3     | ALPHATESTANDBLEND                   |             |
+     *
+     */
+    public set transparencyMode(value: Nullable<number>) {
+        if (this._transparencyMode === value) {
+            return;
+        }
+
+        this._transparencyMode = value;
+
+        this._forceAlphaTest = (value === Material.MATERIAL_ALPHATESTANDBLEND);
+
+        this._markAllSubMeshesAsTexturesAndMiscDirty();
+    }
+
+    /**
+     * Returns true if alpha blending should be disabled.
+     */
+    protected get _disableAlphaBlending(): boolean {
+        return (this._transparencyMode === Material.MATERIAL_OPAQUE ||
+                this._transparencyMode === Material.MATERIAL_ALPHATEST);
+    }
+
+    /**
+     * Specifies whether or not this material should be rendered in alpha blend mode.
      * @returns a boolean specifying if alpha blending is needed
      */
     public needAlphaBlending(): boolean {
+        if (this._disableAlphaBlending) {
+            return false;
+        }
+
         return (this.alpha < 1.0);
     }
 
@@ -681,15 +786,31 @@ export class Material implements IAnimatable {
      * @returns a boolean specifying if alpha blending is needed for the mesh
      */
     public needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
+        if (this._disableAlphaBlending && mesh.visibility >= 1.0) {
+            return false;
+        }
+
         return this.needAlphaBlending() || (mesh.visibility < 1.0) || mesh.hasVertexAlpha;
     }
 
     /**
-     * Specifies if this material should be rendered in alpha test mode
+     * Specifies whether or not this material should be rendered in alpha test mode.
      * @returns a boolean specifying if an alpha test is needed.
      */
     public needAlphaTesting(): boolean {
+        if (this._forceAlphaTest) {
+            return true;
+        }
+
         return false;
+    }
+
+    /**
+     * Specifies if material alpha testing should be turned on for the mesh
+     * @param mesh defines the mesh to check
+     */
+    protected _shouldTurnAlphaTestOn(mesh: AbstractMesh): boolean {
+        return (!this.needAlphaBlendingForMesh(mesh) && this.needAlphaTesting());
     }
 
     /**
@@ -794,14 +915,6 @@ export class Material implements IAnimatable {
     }
 
     /**
-     * Specifies if material alpha testing should be turned on for the mesh
-     * @param mesh defines the mesh to check
-     */
-    protected _shouldTurnAlphaTestOn(mesh: AbstractMesh): boolean {
-        return (!this.needAlphaBlendingForMesh(mesh) && this.needAlphaTesting());
-    }
-
-    /**
      * Processes to execute after binding the material to a mesh
      * @param mesh defines the rendered mesh
      */
@@ -821,6 +934,12 @@ export class Material implements IAnimatable {
             var engine = this._scene.getEngine();
             this._cachedDepthWriteState = engine.getDepthWrite();
             engine.setDepthWrite(false);
+        }
+
+        if (this.disableColorWrite) {
+            var engine = this._scene.getEngine();
+            this._cachedColorWriteState = engine.getColorWrite();
+            engine.setColorWrite(false);
         }
 
         if (this.depthFunction !== 0) {
@@ -846,6 +965,11 @@ export class Material implements IAnimatable {
         if (this.disableDepthWrite) {
             var engine = this._scene.getEngine();
             engine.setDepthWrite(this._cachedDepthWriteState);
+        }
+
+        if (this.disableColorWrite) {
+            var engine = this._scene.getEngine();
+            engine.setColorWrite(this._cachedColorWriteState);
         }
     }
 
@@ -1190,6 +1314,10 @@ export class Material implements IAnimatable {
 
         if (this._onUnBindObservable) {
             this._onUnBindObservable.clear();
+        }
+
+        if (this._onEffectCreatedObservable) {
+            this._onEffectCreatedObservable.clear();
         }
     }
 

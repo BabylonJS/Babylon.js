@@ -6,6 +6,8 @@ import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial"
 import { Popup } from "../src/sharedComponents/popup"
 import { SerializationTools } from './serializationTools';
 import { Observable } from 'babylonjs/Misc/observable';
+import { PreviewMeshType } from './components/preview/previewMeshType';
+import { DataStorage } from 'babylonjs/Misc/dataStorage';
 /**
  * Interface used to specify creation options for the node editor
  */
@@ -41,10 +43,12 @@ export class NodeEditor {
         }
         
         let globalState = new GlobalState();
-        globalState.nodeMaterial = options.nodeMaterial
+        globalState.nodeMaterial = options.nodeMaterial;
+        globalState.mode = options.nodeMaterial.mode;
         globalState.hostElement = hostElement;
         globalState.hostDocument = hostElement.ownerDocument!;
         globalState.customSave = options.customSave;
+        globalState.hostWindow =  hostElement.ownerDocument!.defaultView!;
 
         const graphEditor = React.createElement(GraphEditor, {
             globalState: globalState
@@ -55,6 +59,7 @@ export class NodeEditor {
         if (options.customLoadObservable) {
             options.customLoadObservable.add(data => {
                 SerializationTools.Deserialize(data, globalState);
+                globalState.onBuiltObservable.notifyObservers();
             })
         }
 
@@ -73,8 +78,14 @@ export class NodeEditor {
                 if (popupWindow) {
                     popupWindow.close();
                 }
+
             };
         }
+        window.addEventListener('beforeunload', () => {
+            if(DataStorage.ReadNumber("PreviewMeshType", PreviewMeshType.Box) === PreviewMeshType.Custom){
+                DataStorage.WriteNumber("PreviewMeshType", PreviewMeshType.Box)
+            }
+        });
     }
 }
 

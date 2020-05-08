@@ -134,16 +134,16 @@ export class FileTools {
      * @param mimeType optional mime type
      * @returns the HTMLImageElement of the loaded image
      */
-    public static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): Nullable<HTMLImageElement> {
+    public static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType: string = ""): Nullable<HTMLImageElement> {
         let url: string;
         let usingObjectURL = false;
 
         if (input instanceof ArrayBuffer || ArrayBuffer.isView(input)) {
             if (typeof Blob !== 'undefined') {
-                url = URL.createObjectURL(new Blob([input]));
+                url = URL.createObjectURL(new Blob([input], { type: mimeType }));
                 usingObjectURL = true;
             } else {
-                url = `data:${mimeType || "image/jpg"};base64,` + StringTools.EncodeArrayBufferToBase64(input);
+                url = `data:${mimeType};base64,` + StringTools.EncodeArrayBufferToBase64(input);
             }
         }
         else if (input instanceof Blob) {
@@ -157,7 +157,7 @@ export class FileTools {
 
         if (typeof Image === "undefined") {
             FileTools.LoadFile(url, (data) => {
-                createImageBitmap(new Blob([data])).then((imgBmp) => {
+                createImageBitmap(new Blob([data], { type: mimeType })).then((imgBmp) => {
                     onLoad(imgBmp);
                     if (usingObjectURL) {
                         URL.revokeObjectURL(url);

@@ -19,7 +19,6 @@ import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { IShadowLight } from "../../Lights/shadowLight";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { Constants } from "../../Engines/constants";
 import { _TypeStore } from "../../Misc/typeStore";
 import { MaterialFlags } from "../materialFlags";
@@ -130,7 +129,6 @@ class BackgroundMaterialDefines extends MaterialDefines implements IImageProcess
     public REFLECTIONMAP_CUBIC = false;
     public REFLECTIONMAP_PROJECTION = false;
     public REFLECTIONMAP_SKYBOX = false;
-    public REFLECTIONMAP_SKYBOX_TRANSFORMED = false;
     public REFLECTIONMAP_EXPLICIT = false;
     public REFLECTIONMAP_EQUIRECTANGULAR = false;
     public REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
@@ -667,10 +665,9 @@ export class BackgroundMaterial extends PushMaterial {
 
         var scene = this.getScene();
         var defines = <BackgroundMaterialDefines>subMesh._materialDefines;
-        if (!this.checkReadyOnEveryCall && subMesh.effect) {
-            if (defines._renderId === scene.getRenderId()) {
-                return true;
-            }
+
+        if (this._isReadyForSubMesh(subMesh)) {
+            return true;
         }
 
         var engine = scene.getEngine();
@@ -739,7 +736,6 @@ export class BackgroundMaterial extends PushMaterial {
                             break;
                         case Texture.SKYBOX_MODE:
                             defines.REFLECTIONMAP_SKYBOX = true;
-                            defines.REFLECTIONMAP_SKYBOX_TRANSFORMED = !reflectionTexture.getReflectionTextureMatrix().isIdentity();
                             break;
                         case Texture.SPHERICAL_MODE:
                             defines.REFLECTIONMAP_SPHERICAL = true;
@@ -784,7 +780,6 @@ export class BackgroundMaterial extends PushMaterial {
                     defines.REFLECTIONMAP_CUBIC = false;
                     defines.REFLECTIONMAP_PROJECTION = false;
                     defines.REFLECTIONMAP_SKYBOX = false;
-                    defines.REFLECTIONMAP_SKYBOX_TRANSFORMED = false;
                     defines.REFLECTIONMAP_EXPLICIT = false;
                     defines.REFLECTIONMAP_EQUIRECTANGULAR = false;
                     defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;

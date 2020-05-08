@@ -53,6 +53,13 @@ export class InstancedMesh extends AbstractMesh {
             this.rotationQuaternion = source.rotationQuaternion.clone();
         }
 
+        this.animations = source.animations;
+        for (var range of source.getAnimationRanges()) {
+            if (range != null) {
+                this.createAnimationRange(range.name, range.from, range.to);
+            }
+        }
+
         this.infiniteDistance = source.infiniteDistance;
 
         this.setPivotMatrix(source.getPivotMatrix());
@@ -367,6 +374,11 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     /** @hidden */
+    public _preActivateForIntermediateRendering(renderId: number): Mesh {
+        return <Mesh>this.sourceMesh._preActivateForIntermediateRendering(renderId);
+    }
+
+    /** @hidden */
     public _syncSubMeshes(): InstancedMesh {
         this.releaseSubMeshes();
         if (this._sourceMesh.subMeshes) {
@@ -390,11 +402,18 @@ export class InstancedMesh extends AbstractMesh {
      *
      * Returns the clone.
      */
-    public clone(name: string, newParent: Nullable<Node>= null, doNotCloneChildren?: boolean): Nullable<AbstractMesh> {
+    public clone(name: string, newParent: Nullable<Node>= null, doNotCloneChildren?: boolean): InstancedMesh {
         var result = this._sourceMesh.createInstance(name);
 
         // Deep copy
-        DeepCopier.DeepCopy(this, result, ["name", "subMeshes", "uniqueId", "parent"], []);
+        DeepCopier.DeepCopy(this, result, [
+            "name", "subMeshes", "uniqueId", "parent", "lightSources",
+            "receiveShadows", "material", "visibility", "skeleton",
+            "sourceMesh", "isAnInstance", "facetNb", "isFacetDataEnabled",
+            "isBlocked", "useBones", "hasInstances", "collider", "edgesRenderer",
+            "forward", "up", "right", "absolutePosition", "absoluteScaling", "absoluteRotationQuaternion",
+            "isWorldMatrixFrozen", "nonUniformScaling", "behaviors", "worldMatrixFromCache"
+        ], []);
 
         // Bounding info
         this.refreshBoundingInfo();
@@ -523,7 +542,6 @@ Mesh.prototype._processInstancedBuffers = function(visibleInstances: InstancedMe
         // Update data buffer
         let offset = 0;
         if (renderSelf) {
-            offset += stride;
             let value = this.instancedBuffers[kind];
 
             if (value.toArray) {
@@ -531,6 +549,8 @@ Mesh.prototype._processInstancedBuffers = function(visibleInstances: InstancedMe
             } else {
                 value.copyToArray(data, offset);
             }
+
+            offset += stride;
         }
 
         for (var instanceIndex = 0; instanceIndex < instanceCount; instanceIndex++) {
