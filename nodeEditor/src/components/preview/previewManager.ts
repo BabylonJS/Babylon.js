@@ -49,12 +49,10 @@ export class PreviewManager {
     private _lightParent: TransformNode;
     private _postprocess: Nullable<PostProcess>;
     private _particleSystem: Nullable<ParticleSystem>;
-    private _particleSystemDrawObserver: Nullable<Observer<Effect>>;
 
     public constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState) {
         this._nodeMaterial = globalState.nodeMaterial;
         this._globalState = globalState;
-        this._particleSystemDrawObserver = null;
 
         this._onBuildObserver = this._nodeMaterial.onBuildObservable.add((nodeMaterial) => {
             let serializationObject = nodeMaterial.serialize();
@@ -266,15 +264,11 @@ export class PreviewManager {
             this._engine.releaseEffects();
 
             if (this._particleSystem) {
-                if (this._particleSystemDrawObserver) {
-                    this._particleSystem.onBeforeDrawParticlesObservable.remove(this._particleSystemDrawObserver);
-                }
+                this._particleSystem.onBeforeDrawParticlesObservable.clear();
                 this._particleSystem.onDisposeObservable.clear();
-                this._particleSystem.customEffect = null;
                 this._particleSystem.stop();
                 this._particleSystem.dispose();
                 this._particleSystem = null;
-                this._particleSystemDrawObserver = null;
             }
 
             SceneLoader.ShowLoadingScreen = false;
@@ -387,9 +381,7 @@ export class PreviewManager {
                     this._particleSystem = set.systems[i] as ParticleSystem;
                     this._particleSystem.disposeOnStop = true;
                     this._particleSystem.onDisposeObservable.add(() => {
-                        if (this._globalState.mode === NodeMaterialModes.Particle && this._globalState.previewType === particleNumber) {
-                            this._loadParticleSystem(particleNumber, systemIndex, false);
-                        }
+                        this._loadParticleSystem(particleNumber, systemIndex, false);
                     });
                     this._particleSystem.start();
                 } else {
@@ -448,7 +440,7 @@ export class PreviewManager {
                         this._particleSystem.onBeforeDrawParticlesObservable.remove(this._particleSystemDrawObserver);
                     }
 
-                    this._particleSystemDrawObserver = this._particleSystem.onBeforeDrawParticlesObservable.add((effect) => {
+                    this._particleSystem.onBeforeDrawParticlesObservable.add((effect) => {
                         const textureBlock = tempMaterial.getBlockByPredicate((block) => block instanceof ParticleTextureBlock);
                         if (textureBlock && (textureBlock as ParticleTextureBlock).texture) {
                             effect.setTexture("diffuseSampler", (textureBlock as ParticleTextureBlock).texture);
