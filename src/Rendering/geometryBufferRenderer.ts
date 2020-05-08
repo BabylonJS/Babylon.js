@@ -216,7 +216,7 @@ export class GeometryBufferRenderer {
         // Alpha test
         if (material) {
             let needUv = false;
-            if (material.needAlphaBlending()) {
+            if (material.needAlphaTesting()) {
                 defines.push("#define ALPHATEST");
                 needUv = true;
             }

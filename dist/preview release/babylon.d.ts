@@ -68866,6 +68866,14 @@ declare module BABYLON {
          */
         showBackLines: boolean;
         /**
+         * Observable raised before rendering a bounding box
+         */
+        onBeforeBoxRenderingObservable: Observable<BoundingBox>;
+        /**
+         * Observable raised after rendering a bounding box
+         */
+        onAfterBoxRenderingObservable: Observable<BoundingBox>;
+        /**
          * @hidden
          */
         renderList: SmartArray<BoundingBox>;
