@@ -97,7 +97,6 @@ void reflectivityBlock(
             surfaceReflectivityColor = mix(0.16 * reflectance * reflectance, baseColor, metallicRoughness.r);
         #else
             vec3 metallicF0 = metallicReflectanceFactors.rgb;
-            float metallicF90 = metallicReflectanceFactors.a;
 
             #if DEBUGMODE > 0
                 outParams.metallicF0 = metallicF0;
