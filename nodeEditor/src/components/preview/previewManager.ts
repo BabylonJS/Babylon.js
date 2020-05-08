@@ -398,6 +398,9 @@ export class PreviewManager {
             }
             if (prepareScene) {
                 this._prepareScene();
+            } else {
+                let serializationObject = this._nodeMaterial.serialize();
+                this._updatePreview(serializationObject);
             }
         });
     }
