@@ -105,6 +105,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
         ];
 
         var particleTypeOptions = [
+            { label: "Default", value: PreviewType.DefaultParticleSystem },
             { label: "Bubbles", value: PreviewType.Bubbles },
             { label: "Explosion", value: PreviewType.Explosion },
             { label: "Fire", value: PreviewType.Fire },
