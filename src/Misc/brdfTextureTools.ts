@@ -8,6 +8,11 @@ import { RGBDTextureTools } from "./rgbdTextureTools";
  */
 export class BRDFTextureTools {
     /**
+     * Prevents texture cache collision
+     */
+    private static _instanceNumber = 0;
+
+    /**
      * Gets a default environment BRDF for MS-BRDF Height Correlated BRDF
      * @param scene defines the hosting scene
      * @returns the environment BRDF texture
@@ -18,7 +23,10 @@ export class BRDFTextureTools {
             var useDelayedTextureLoading = scene.useDelayedTextureLoading;
             scene.useDelayedTextureLoading = false;
 
-            var texture = Texture.CreateFromBase64String(this._environmentBRDFBase64Texture, "EnvironmentBRDFTexture", scene, true, false, Texture.BILINEAR_SAMPLINGMODE);
+            const previousState = scene._blockEntityCollection;
+            scene._blockEntityCollection = false;
+            var texture = Texture.CreateFromBase64String(this._environmentBRDFBase64Texture, "EnvironmentBRDFTexture" + this._instanceNumber++, scene, true, false, Texture.BILINEAR_SAMPLINGMODE);
+            scene._blockEntityCollection = previousState;
             // BRDF Texture should not be cached here due to pre processing and redundant scene caches.
             var texturesCache = scene.getEngine().getLoadedTexturesCache();
             var index = texturesCache.indexOf(texture.getInternalTexture()!);

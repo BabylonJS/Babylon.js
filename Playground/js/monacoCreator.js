@@ -1,5 +1,14 @@
 /**
  * This JS file is for Monaco management
+ * This file is quite technical, please make sure that you understand all parts before making changes.
+ * Please also make sure that the following is still working before submitting a PR:
+ * - autocompletion.
+ * - deprecated members marking.
+ * - compilation and proper error reporting for both JS and TS.
+ * - private/internal member filtering (we should not see members starting with an underscore).
+ * - dedicated adornments, like the one used for previewing colors for BABYLON.ColorX types.
+ * - diff support.
+ * - minimap support.
  */
 class MonacoCreator {
     constructor(parent) {
@@ -12,8 +21,28 @@ class MonacoCreator {
         this.blockEditorChange = false;
         this.definitionWorker = null;
         this.deprecatedCandidates = [];
+        this.templates = [];
 
         this.compilerTriggerTimeoutID = null;
+
+        this.addOnMonacoLoadedCallback(
+            function () {
+                this.parent.main.run();
+
+                // Register a global observable for inspector to request code changes
+                window.Playground = {
+                    onRequestCodeChangeObservable: new BABYLON.Observable()
+                }
+
+                window.Playground.onRequestCodeChangeObservable.add((options) => {
+                    let code = this.getCode();
+                    code = code.replace(options.regex, options.replace);
+
+                    this.setCode(code);
+                });
+            },
+            this
+        );
     }
 
     // ACCESSORS
@@ -34,8 +63,8 @@ class MonacoCreator {
         return this.monacoMode;
     };
     set MonacoMode(mode) {
-        if (this.monacoMode != "javascript"
-            && this.monacoMode != "typescript")
+        if (this.monacoMode != "javascript" &&
+            this.monacoMode != "typescript")
             console.warn("Error while defining Monaco Mode");
         this.monacoMode = mode;
     };
@@ -49,10 +78,24 @@ class MonacoCreator {
 
     // FUNCTIONS
 
+    waitForDefine() {
+        return new Promise(function (resolve, reject) {
+            function timeout() {
+                if (!window.define) {
+                    setTimeout(timeout, 200);
+                } else {
+                    resolve();
+                }
+            }
+            timeout();
+        });
+    }
+
     /**
      * Load the Monaco Node module.
      */
     async loadMonaco(typings) {
+        await this.waitForDefine();
         let response = await fetch(typings || "https://preview.babylonjs.com/babylon.d.ts");
         if (!response.ok) {
             return;
@@ -71,42 +114,107 @@ class MonacoCreator {
 
         this.setupDefinitionWorker(libContent);
 
-        require.config({ paths: { 'vs': 'node_modules/monaco-editor/dev/vs' } });
+        // Load code templates
+        response = await fetch("/templates.json");
+        if (response.ok) {
+            this.templates = await response.json();
+        }
+
+        // WARNING !!! We need the 'dev' version of Monaco, as we use monkey-patching to hook into the suggestion adapter
+        require.config({
+            paths: {
+                'vs': '/node_modules/monaco-editor/dev/vs'
+            }
+        });
 
         require(['vs/editor/editor.main'], () => {
+            // Setup the Monaco compilation pipeline, so we can reuse it directly for our scrpting needs
             this.setupMonacoCompilationPipeline(libContent);
+
+            // This is used for a vscode-like color preview for ColorX types
             this.setupMonacoColorProvider();
 
+            // enhance templates with extra properties
+            for (const template of this.templates) {
+                template.kind = monaco.languages.CompletionItemKind.Snippet,
+                template.sortText = "!" + template.label; // make sure templates are on top of the completion window
+                template.insertTextRules = monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet;
+            }
+
+            // As explained above, we need the 'dev' version of Monaco to access this adapter!
             require(['vs/language/typescript/languageFeatures'], module => {
                 this.hookMonacoCompletionProvider(module.SuggestAdapter);
             });
 
-            this.parent.main.run();
+            this.onMonacoLoaded();
         });
     };
 
+    onMonacoLoaded() {
+        if (this.monacoLoaded) {
+            return;
+        }
+        this.onMonacoLoadedCallbacks.forEach((callbackDef) => {
+            callbackDef.func.call(callbackDef.context, this);
+        });
+        this.monacoLoaded = true;
+    }
+
+    /**
+     * This will register a new callback that will be triggered when the monaco loader is done.
+     * If the loader is already done, the function will be executed right away. 
+     * @param {Function} func the function to call when monaco is available
+     * @param {*} context The context of this function
+     */
+    addOnMonacoLoadedCallback(func, context) {
+        this.onMonacoLoadedCallbacks = this.onMonacoLoadedCallbacks || [];
+        if (this.monacoLoaded) {
+            func.call(context, this);
+        } else {
+            this.onMonacoLoadedCallbacks.push({
+                func: func,
+                context: context
+            });
+        }
+    }
+
+    // > This worker will analyze the syntaxtree and return an array of deprecated functions (but the goal is to do more in the future!)
+    // We need to do this because:
+    // - checking extended properties during completion is time consuming, so we need to prefilter potential candidates
+    // - we don't want to maintain a static list of deprecated members or to instrument this work on the CI
+    // - we have more plans involving syntaxtree analysis
+    // > This worker was carefully crafted to work even if the processing is super fast or super long. 
+    // In both cases the deprecation filter will start working after the worker is done.
+    // We will also need this worker in the future to compute Intellicode scores for completion using dedicated attributes.
     setupDefinitionWorker(libContent) {
-        this.definitionWorker = new Worker('js/definitionWorker.js');
-        this.definitionWorker.addEventListener('message', ({ data }) => {
+        this.definitionWorker = new Worker('/js/definitionWorker.js');
+        this.definitionWorker.addEventListener('message', ({
+            data
+        }) => {
             this.deprecatedCandidates = data.result;
             this.analyzeCode();
         });
-        this.definitionWorker.postMessage({ code: libContent });
+        this.definitionWorker.postMessage({
+            code: libContent
+        });
     }
 
     isDeprecatedEntry(details) {
-        return details
-            && details.tags
-            && details.tags.find(this.isDeprecatedTag);
+        return details &&
+            details.tags &&
+            details.tags.find(this.isDeprecatedTag);
     }
 
     isDeprecatedTag(tag) {
-        return tag
-            && tag.name == "deprecated";
+        return tag &&
+            tag.name == "deprecated";
     }
 
+    // This will make sure that all members marked with a deprecated jsdoc attribute will be marked as such in Monaco UI
+    // We use a prefiltered list of deprecated candidates, because the effective call to getCompletionEntryDetails is slow.
+    // @see setupDefinitionWorker
     async analyzeCode() {
-        // if the definition worker is very fast, this can be called out of context
+        // if the definition worker is very fast, this can be called out of context. @see setupDefinitionWorker
         if (!this.jsEditor)
             return;
 
@@ -131,7 +239,10 @@ class MonacoCreator {
         for (const candidate of this.deprecatedCandidates) {
             const matches = model.findMatches(candidate, null, false, true, null, false);
             for (const match of matches) {
-                const position = { lineNumber: match.range.startLineNumber, column: match.range.startColumn };
+                const position = {
+                    lineNumber: match.range.startLineNumber,
+                    column: match.range.startColumn
+                };
                 const wordInfo = model.getWordAtPosition(position);
                 const offset = model.getOffsetAt(position);
 
@@ -140,6 +251,7 @@ class MonacoCreator {
                     continue;
 
                 // the following is time consuming on all suggestions, that's why we precompute deprecated candidate names in the definition worker to filter calls
+                // @see setupDefinitionWorker
                 const details = await languageService.getCompletionEntryDetails(uri.toString(), offset, wordInfo.word);
                 if (this.isDeprecatedEntry(details)) {
                     const deprecatedInfo = details.tags.find(this.isDeprecatedTag);
@@ -159,6 +271,9 @@ class MonacoCreator {
         monaco.editor.setModelMarkers(model, source, markers);
     }
 
+    // This is our hook in the Monaco suggest adapter, we are called everytime a completion UI is displayed
+    // So we need to be super fast.
+    // We need the 'dev' version of Monaco, as we use monkey-patching to hook into this suggestion adapter
     hookMonacoCompletionProvider(provider) {
         const provideCompletionItems = provider.prototype.provideCompletionItems;
         const owner = this;
@@ -176,6 +291,7 @@ class MonacoCreator {
                 if (owner.deprecatedCandidates.includes(suggestion.label)) {
 
                     // the following is time consuming on all suggestions, that's why we precompute deprecated candidate names in the definition worker to filter calls
+                    // @see setupDefinitionWorker
                     const uri = suggestion.uri;
                     const worker = await this._worker(uri);
                     const model = monaco.editor.getModel(uri);
@@ -184,6 +300,17 @@ class MonacoCreator {
                     if (owner.isDeprecatedEntry(details)) {
                         suggestion.tags = [monaco.languages.CompletionItemTag.Deprecated];
                     }
+                }
+            }
+
+            // add our own templates when invoked without context
+            if (context.triggerKind == monaco.languages.CompletionTriggerKind.Invoke) {
+                for (const template of owner.templates) {
+                    if (template.language && owner.monacoMode != template.language)
+                        continue;
+
+                    template.range = undefined;
+                    suggestions.push(template);
                 }
             }
 
@@ -197,6 +324,7 @@ class MonacoCreator {
         }
     }
 
+    // Setup both JS and TS compilation pipelines to work with our scripts. 
     setupMonacoCompilationPipeline(libContent) {
         const typescript = monaco.languages.typescript;
 
@@ -226,6 +354,7 @@ class MonacoCreator {
         }
     }
 
+    // Provide an adornment for BABYLON.ColorX types: color preview
     setupMonacoColorProvider() {
         monaco.languages.registerColorProvider(this.monacoMode, {
             provideColorPresentations: (model, colorInfo) => {
@@ -241,7 +370,9 @@ class MonacoCreator {
                     label = `(${converter(color.red)}, ${converter(color.green)}, ${converter(color.blue)}, ${converter(color.alpha)})`;
                 }
 
-                return [{ label: label }];
+                return [{
+                    label: label
+                }];
             },
 
             provideDocumentColors: (model) => {
@@ -300,9 +431,15 @@ class MonacoCreator {
             }
         };
         editorOptions.minimap.enabled = document.getElementById("minimapToggle1280").classList.contains('checked');
-        this.jsEditor = monaco.editor.create(document.getElementById('jsEditor'), editorOptions);
+        var editorElement = document.getElementById('jsEditor');
+        editorElement.innerHTML = "";
+        editorElement.style.overflow = "unset";
+        this.jsEditor = monaco.editor.create(editorElement, editorOptions);
         this.jsEditor.setValue(oldCode);
 
+        // We cannot call 'analyzeCode' on every keystroke, that's time consuming
+        // So use a debounced version to prevent over processing.
+        // Be careful to keep the proper context for the effective call (this).
         const analyzeCodeDebounced = this.parent.utils.debounceAsync((async) => this.analyzeCode(), 500);
 
         this.jsEditor.onDidChangeModelContent(function () {
@@ -343,10 +480,16 @@ class MonacoCreator {
         const main = this.parent.main;
         const monacoCreator = this;
 
-        this.diffEditor.addCommand(monaco.KeyCode.Escape, function () { main.toggleDiffEditor(monacoCreator, menuPG); });
+        this.diffEditor.addCommand(monaco.KeyCode.Escape, function () {
+            main.toggleDiffEditor(monacoCreator, menuPG);
+        });
         // Adding default VSCode bindinds for previous/next difference
-        this.diffEditor.addCommand(monaco.KeyMod.Alt | monaco.KeyCode.F5, function () { main.navigateToNext(); });
-        this.diffEditor.addCommand(monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.F5, function () { main.navigateToPrevious(); });
+        this.diffEditor.addCommand(monaco.KeyMod.Alt | monaco.KeyCode.F5, function () {
+            main.navigateToNext();
+        });
+        this.diffEditor.addCommand(monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.F5, function () {
+            main.navigateToPrevious();
+        });
 
         this.diffEditor.focus();
     }
@@ -383,10 +526,18 @@ class MonacoCreator {
     toggleMinimap() {
         var minimapToggle = document.getElementById("minimapToggle1280");
         if (minimapToggle.classList.contains('checked')) {
-            this.jsEditor.updateOptions({ minimap: { enabled: false } });
+            this.jsEditor.updateOptions({
+                minimap: {
+                    enabled: false
+                }
+            });
             this.parent.utils.setToMultipleID("minimapToggle", "innerHTML", 'Minimap <i class="fa fa-square" aria-hidden="true"></i>');
         } else {
-            this.jsEditor.updateOptions({ minimap: { enabled: true } });
+            this.jsEditor.updateOptions({
+                minimap: {
+                    enabled: true
+                }
+            });
             this.parent.utils.setToMultipleID("minimapToggle", "innerHTML", 'Minimap <i class="fa fa-check-square" aria-hidden="true"></i>');
         }
         minimapToggle.classList.toggle('checked');

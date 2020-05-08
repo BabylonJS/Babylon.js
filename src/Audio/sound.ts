@@ -216,14 +216,14 @@ export class Sound {
             if (options.volume !== undefined) {
                 this._volume = options.volume;
             }
-            this.spatialSound = options.spatialSound || false;
-            this.maxDistance = options.maxDistance || 100;
-            this.useCustomAttenuation = options.useCustomAttenuation || false;
+            this.spatialSound = options.spatialSound ?? false;
+            this.maxDistance = options.maxDistance ?? 100;
+            this.useCustomAttenuation = options.useCustomAttenuation ?? false;
             this.rolloffFactor = options.rolloffFactor || 1;
             this.refDistance = options.refDistance || 1;
             this.distanceModel = options.distanceModel || "linear";
             this._playbackRate = options.playbackRate || 1;
-            this._streaming = options.streaming || false;
+            this._streaming = options.streaming ?? false;
             this._length = options.length;
             this._offset = options.offset;
         }
@@ -452,15 +452,15 @@ export class Sound {
      */
     public updateOptions(options: ISoundOptions): void {
         if (options) {
-            this.loop = options.loop || this.loop;
-            this.maxDistance = options.maxDistance || this.maxDistance;
-            this.useCustomAttenuation = options.useCustomAttenuation || this.useCustomAttenuation;
-            this.rolloffFactor = options.rolloffFactor || this.rolloffFactor;
-            this.refDistance = options.refDistance || this.refDistance;
-            this.distanceModel = options.distanceModel || this.distanceModel;
-            this._playbackRate = options.playbackRate || this._playbackRate;
-            this._length = options.length ? options.length / 1000 : undefined;
-            this._offset = options.offset ? options.offset / 1000 : undefined;
+            this.loop = options.loop ?? this.loop;
+            this.maxDistance = options.maxDistance ?? this.maxDistance;
+            this.useCustomAttenuation = options.useCustomAttenuation ?? this.useCustomAttenuation;
+            this.rolloffFactor = options.rolloffFactor ?? this.rolloffFactor;
+            this.refDistance = options.refDistance ?? this.refDistance;
+            this.distanceModel = options.distanceModel ?? this.distanceModel;
+            this._playbackRate = options.playbackRate ?? this._playbackRate;
+            this._length = options.length ?? undefined;
+            this._offset = options.offset ?? undefined;
             this._updateSpatialParameters();
             if (this.isPlaying) {
                 if (this._streaming && this._htmlAudioElement) {
@@ -746,6 +746,12 @@ export class Sound {
                             length = length || this._length;
                             offset = offset || this._offset;
 
+                            if (this._soundSource) {
+                                const oldSource = this._soundSource;
+                                oldSource.onended = () => {
+                                    oldSource.disconnect();
+                                };
+                            }
                             this._soundSource = Engine.audioEngine.audioContext.createBufferSource();
                             this._soundSource.buffer = this._audioBuffer;
                             this._soundSource.connect(this._inputAudioNode);
@@ -994,6 +1000,22 @@ export class Sound {
      */
     public getAudioBuffer(): Nullable<AudioBuffer> {
         return this._audioBuffer;
+    }
+
+    /**
+     * Gets the WebAudio AudioBufferSourceNode, lets you keep track of and stop instances of this Sound.
+     * @returns the source node
+     */
+    public getSoundSource(): Nullable<AudioBufferSourceNode> {
+        return this._soundSource;
+    }
+
+    /**
+     * Gets the WebAudio GainNode, gives you precise control over the gain of instances of this Sound.
+     * @returns the gain node
+     */
+    public getSoundGain(): Nullable<GainNode> {
+        return this._soundGain;
     }
 
     /**

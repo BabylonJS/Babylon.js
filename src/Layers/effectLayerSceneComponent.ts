@@ -4,7 +4,6 @@ import { Engine } from "../Engines/engine";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { SceneComponentConstants, ISceneSerializableComponent } from "../sceneComponent";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "../abstractScene";
 import { AssetContainer } from "../assetContainer";

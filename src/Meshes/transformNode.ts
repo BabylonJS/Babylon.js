@@ -520,6 +520,8 @@ export class TransformNode extends Node {
             this.position.y = absolutePositionY;
             this.position.z = absolutePositionZ;
         }
+
+        this._absolutePosition.copyFrom(absolutePosition);
         return this;
     }
 
@@ -795,6 +797,8 @@ export class TransformNode extends Node {
     public attachToBone(bone: Bone, affectedTransformNode: TransformNode): TransformNode {
         this._transformToBoneReferal = affectedTransformNode;
         this.parent = bone;
+
+        bone.getSkeleton().prepare();
 
         if (bone.getWorldMatrix().determinant() < 0) {
             this.scalingDeterminant *= -1;
@@ -1168,6 +1172,42 @@ export class TransformNode extends Node {
         return this._worldMatrix;
     }
 
+    /**
+     * Resets this nodeTransform's local matrix to Matrix.Identity().
+     * @param independentOfChildren indicates if all child nodeTransform's world-space transform should be preserved.
+     */
+    public resetLocalMatrix(independentOfChildren : boolean = true): void
+    {
+        this.computeWorldMatrix();
+        if (independentOfChildren) {
+            let children = this.getChildren();
+            for (let i = 0; i < children.length; ++i) {
+                let child = children[i] as TransformNode;
+                if (child) {
+                    child.computeWorldMatrix();
+                    let bakedMatrix = TmpVectors.Matrix[0];
+                    child._localMatrix.multiplyToRef(this._localMatrix, bakedMatrix);
+                    let tmpRotationQuaternion = TmpVectors.Quaternion[0];
+                    bakedMatrix.decompose(child.scaling, tmpRotationQuaternion, child.position);
+                    if (child.rotationQuaternion) {
+                        child.rotationQuaternion = tmpRotationQuaternion;
+                    } else {
+                        tmpRotationQuaternion.toEulerAnglesToRef(child.rotation);
+                    }
+                }
+            }
+        }
+        this.scaling.copyFromFloats(1, 1, 1);
+        this.position.copyFromFloats(0, 0, 0);
+        this.rotation.copyFromFloats(0, 0, 0);
+
+        //only if quaternion is already set
+        if (this.rotationQuaternion) {
+            this.rotationQuaternion = Quaternion.Identity();
+        }
+        this._worldMatrix = Matrix.Identity();
+    }
+
     protected _afterComputeWorldMatrix(): void {
     }
 
@@ -1202,7 +1242,7 @@ export class TransformNode extends Node {
             camera = (<Camera>this.getScene().activeCamera);
         }
 
-        return Vector3.TransformCoordinates(this.absolutePosition, camera.getViewMatrix());
+        return Vector3.TransformCoordinates(this.getAbsolutePosition(), camera.getViewMatrix());
     }
 
     /**
@@ -1214,7 +1254,7 @@ export class TransformNode extends Node {
         if (!camera) {
             camera = (<Camera>this.getScene().activeCamera);
         }
-        return this.absolutePosition.subtract(camera.globalPosition).length();
+        return this.getAbsolutePosition().subtract(camera.globalPosition).length();
     }
 
     /**
@@ -1224,7 +1264,7 @@ export class TransformNode extends Node {
      * @param doNotCloneChildren Do not clone children hierarchy
      * @returns the new transform node
      */
-    public clone(name: string, newParent: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<TransformNode> {
+    public clone(name: string, newParent: Nullable<Node>, doNotCloneChildren?: boolean) : Nullable<TransformNode> {
         var result = SerializationHelper.Clone(() => new TransformNode(name, this.getScene()), this);
 
         result.name = name;

@@ -80,9 +80,16 @@ export class ConeParticleEmitter implements IParticleEmitterType {
      * @param worldMatrix is the world matrix of the particle system
      * @param directionToUpdate is the direction vector to update with the result
      * @param particle is the particle we are computed the direction for
+     * @param isLocal defines if the direction should be set in local space
      */
-    public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
+    public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
         if (Math.abs(Math.cos(this._angle)) === 1.0) {
+            if (isLocal) {
+                directionToUpdate.x = 0;
+                directionToUpdate.y = 1.0;
+                directionToUpdate.z = 0;
+                return;
+            }
             Vector3.TransformNormalFromFloatsToRef(0, 1.0, 0, worldMatrix, directionToUpdate);
         }
         else {
@@ -96,6 +103,11 @@ export class ConeParticleEmitter implements IParticleEmitterType {
             direction.z += randZ;
             direction.normalize();
 
+            if (isLocal) {
+                directionToUpdate.copyFrom(direction);
+                return;
+            }
+
             Vector3.TransformNormalFromFloatsToRef(direction.x, direction.y, direction.z, worldMatrix, directionToUpdate);
         }
     }
@@ -105,8 +117,9 @@ export class ConeParticleEmitter implements IParticleEmitterType {
      * @param worldMatrix is the world matrix of the particle system
      * @param positionToUpdate is the position vector to update with the result
      * @param particle is the particle we are computed the position for
+     * @param isLocal defines if the position should be set in local space
      */
-    startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void {
+    startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
         var s = Scalar.RandomRange(0, Math.PI * 2);
         var h: number;
 
@@ -123,6 +136,13 @@ export class ConeParticleEmitter implements IParticleEmitterType {
         var randX = radius * Math.sin(s);
         var randZ = radius * Math.cos(s);
         var randY = h * this._height;
+
+        if (isLocal) {
+            positionToUpdate.x = randX;
+            positionToUpdate.y = randY;
+            positionToUpdate.z = randZ;
+            return;
+        }
 
         Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
     }
@@ -198,8 +218,9 @@ export class ConeParticleEmitter implements IParticleEmitterType {
         this.radius = serializationObject.radius;
         this.angle = serializationObject.angle;
         this.directionRandomizer = serializationObject.directionRandomizer;
-        this.radiusRange = serializationObject.radiusRange;
-        this.heightRange = serializationObject.heightRange;
-        this.emitFromSpawnPointOnly = serializationObject.emitFromSpawnPointOnly;
+
+        this.radiusRange = serializationObject.radiusRange !== undefined ? serializationObject.radiusRange : 1;
+        this.heightRange = serializationObject.radiusRange !== undefined ? serializationObject.heightRange : 1;
+        this.emitFromSpawnPointOnly = serializationObject.emitFromSpawnPointOnly !== undefined ? serializationObject.emitFromSpawnPointOnly : false;
     }
 }

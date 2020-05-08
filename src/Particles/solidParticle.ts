@@ -1,5 +1,5 @@
 import { Nullable } from "../types";
-import { Vector3, Matrix, TmpVectors, Quaternion, Vector4 } from "../Maths/math.vector";
+import { Vector3, Matrix, TmpVectors, Quaternion, Vector4, Vector2 } from "../Maths/math.vector";
 import { Color4 } from '../Maths/math.color';
 import { Mesh } from "../Meshes/mesh";
 import { BoundingInfo } from "../Culling/boundingInfo";
@@ -116,6 +116,10 @@ export class SolidParticle {
      * The particle material identifier (integer) when MultiMaterials are enabled in the SPS.
      */
     public materialIndex: Nullable<number> = null;
+    /**
+     * Custom object or properties.
+     */
+    public props: Nullable<any> = null;
     /**
      * The culling strategy to use to check whether the solid particle must be culled or not when using isInFrustum().
      * The possible values are :
@@ -358,6 +362,10 @@ export class ModelShape {
  */
 export class DepthSortedParticle {
     /**
+     * Particle index
+     */
+    public idx: number = 0;
+    /**
      * Index of the particle in the "indices" array
      */
     public ind: number = 0;
@@ -378,9 +386,58 @@ export class DepthSortedParticle {
      * Creates a new sorted particle
      * @param materialIndex
      */
-    constructor(ind: number, indLength: number, materialIndex: number) {
+    constructor(idx: number, ind: number, indLength: number, materialIndex: number) {
+        this.idx = idx;
         this.ind = ind;
         this.indicesLength = indLength;
         this.materialIndex = materialIndex;
+    }
+}
+
+/**
+ * Represents a solid particle vertex
+ */
+export class SolidParticleVertex {
+    /**
+     * Vertex position
+     */
+    public position: Vector3;
+    /**
+     * Vertex color
+     */
+    public color: Color4;
+    /**
+     * Vertex UV
+     */
+    public uv: Vector2;
+    /**
+     * Creates a new solid particle vertex
+     */
+    constructor() {
+        this.position = Vector3.Zero();
+        this.color = new Color4(1.0, 1.0, 1.0, 1.0);
+        this.uv = Vector2.Zero();
+    }
+    // Getters and Setters for back-compatibility
+    /** Vertex x coordinate */
+    public get x(): number {
+        return this.position.x;
+    }
+    public set x(val: number) {
+        this.position.x = val;
+    }
+    /** Vertex y coordinate */
+    public get y(): number {
+        return this.position.y;
+    }
+    public set y(val: number) {
+        this.position.y = val;
+    }
+    /** Vertex z coordinate */
+    public get z(): number {
+        return this.position.z;
+    }
+    public set z(val: number) {
+        this.position.z = val;
     }
 }

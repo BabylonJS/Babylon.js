@@ -31,12 +31,13 @@ export class TransformBlock extends NodeMaterialBlock {
         this.registerInput("vector", NodeMaterialBlockConnectionPointTypes.AutoDetect);
         this.registerInput("transform", NodeMaterialBlockConnectionPointTypes.Matrix);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector4);
+        this.registerOutput("xyz", NodeMaterialBlockConnectionPointTypes.Vector3);
 
         this._inputs[0].onConnectionObservable.add((other) => {
             if (other.ownerBlock.isInput) {
                 let otherAsInput = other.ownerBlock as InputBlock;
 
-                if (otherAsInput.name === "normal") {
+                if (otherAsInput.name === "normal" || otherAsInput.name === "tangent") {
                     this.complementW = 0;
                 }
             }
@@ -66,6 +67,13 @@ export class TransformBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the xyz output component
+     */
+    public get xyz(): NodeMaterialConnectionPoint {
+        return this._outputs[1];
+    }
+
+    /**
      * Gets the matrix transform input
      */
     public get transform(): NodeMaterialConnectionPoint {
@@ -75,22 +83,25 @@ export class TransformBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let output = this._outputs[0];
         let vector = this.vector;
         let transform = this.transform;
 
         if (vector.connectedPoint) {
             switch (vector.connectedPoint.type) {
                 case NodeMaterialBlockConnectionPointTypes.Vector2:
-                    state.compilationString += this._declareOutput(output, state) + ` = ${transform.associatedVariableName} * vec4(${vector.associatedVariableName}, ${this._writeFloat(this.complementZ)}, ${this._writeFloat(this.complementW)});\r\n`;
+                    state.compilationString += this._declareOutput(this.output, state) + ` = ${transform.associatedVariableName} * vec4(${vector.associatedVariableName}, ${this._writeFloat(this.complementZ)}, ${this._writeFloat(this.complementW)});\r\n`;
                     break;
                 case NodeMaterialBlockConnectionPointTypes.Vector3:
                 case NodeMaterialBlockConnectionPointTypes.Color3:
-                    state.compilationString += this._declareOutput(output, state) + ` = ${transform.associatedVariableName} * vec4(${vector.associatedVariableName}, ${this._writeFloat(this.complementW)});\r\n`;
+                    state.compilationString += this._declareOutput(this.output, state) + ` = ${transform.associatedVariableName} * vec4(${vector.associatedVariableName}, ${this._writeFloat(this.complementW)});\r\n`;
                     break;
                 default:
-                    state.compilationString += this._declareOutput(output, state) + ` = ${transform.associatedVariableName} * ${vector.associatedVariableName};\r\n`;
+                    state.compilationString += this._declareOutput(this.output, state) + ` = ${transform.associatedVariableName} * ${vector.associatedVariableName};\r\n`;
                     break;
+            }
+
+            if (this.xyz.hasEndpoints) {
+                state.compilationString += this._declareOutput(this.xyz, state) + ` = ${this.output.associatedVariableName}.xyz;\r\n`;
             }
         }
 

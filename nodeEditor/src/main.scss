@@ -7,6 +7,25 @@
     font: 14px "acumin-pro";   
 }
 
+.wait-screen {
+    display: grid;
+    justify-content: center;
+    align-content: center;
+    height: 100%;
+    width: 100%;
+    background: #464646;
+    opacity: 0.95;
+    color:white;
+    font: 24px "acumin-pro";  
+    position: absolute;
+    top: 0;
+    left: 0; 
+
+    &.hidden {
+        visibility: hidden;
+    }
+}
+
 #nodeList {
     grid-row: 1 / span 2;
     grid-column: 1;
@@ -42,7 +61,7 @@
     grid-row: 1 / span 2;
     grid-column: 5;
     display: grid;
-    grid-template-rows: 1fr 30px auto 30px;
+    grid-template-rows: 1fr 40px auto 40px;
     grid-template-columns: 100%;
     height: 100%;
     overflow-y: auto;
@@ -56,7 +75,7 @@
         display: grid;
         justify-content: center;
         align-content: center;
-        height: 30px;
+        height: auto;
         width: calc(100% / 7);
         cursor: pointer;
 
@@ -80,43 +99,147 @@
     #preview-mesh-bar {
         grid-row: 2;
         grid-column: 1;
-        display: flex;
-        color: white;
+        display: grid;
+        grid-template-columns: auto 1fr 40px 40px 40px;
         align-items: center;
-        font-size: 18px;    
+        font-size: 18px;
+        background-color: #555555;
 
         #file-picker {
             display: none;
         }
 
-        #file-picker-label {
-            width: 100%;
-            background: transparent;
-            cursor: pointer;            
+        .listLine {
+            grid-column: 1;
+            height: 40px;
+            display: grid;
+            grid-template-columns: 0px 1fr;  
+    
+            .label {
+                grid-column: 1;
+                display: flex;
+                align-items: center;
+                font-size: 14px;
+            }
+    
+            .options {
+                grid-column: 2;
+                
+                display: flex;
+                align-items: center;   
+                margin-left: 5px;
+    
+                select {
+                    width: 115px;
+                }
+            } 
+        }
+
+        .button{
+            color: #ffffff;
+            width: 40px;
+            height: 40px;
+            transform-origin: 50% 50%;
+            
+            &:active {
+                transform: scale(0.90);
+            }
+
+            &:hover {
+                background: #3f3461;
+            }
+            
+            &.selected {
+                background: #9379e6;
+            } 
+
+            img{
+                height: 40px;
+                width: 100%;
+            }
+        }
+
+
+        #play-button {
+            grid-column: 3;
+        }
+
+        #color-picker-button {
+            grid-column: 4;
+
+            #color-picker {
+                display: none;
+            }
+
+            #color-picker-label {
+                width: 100%;
+                background: transparent;
+                cursor: pointer;            
+            }
+        }
+
+        #preview-new-window {
+            grid-column: 5;
+        }
+
+        select {
+            background-color: #a3a3a3;
+            color: #333333;
         }
     }
 
     #preview-config-bar {
         grid-row: 4;
         grid-column: 1;
-        display: flex;
-        flex-direction: row-reverse;
+        display: grid;
+        grid-template-columns: 40px 40px 40px 1fr 40px 40px;
         color: white;
         align-items: center;
         font-size: 18px;    
 
         .button {
-            width: 60px;
-        }
+            width: 40px;
+            grid-row: 1;
+            height: 40px;
+            transform-origin: 50% 50%;
 
-        #color-picker {
-            display: none;
-        }
+            &:hover {
+                background: #3f3461;
+            }
 
-        #color-picker-label {
-            width: 100%;
-            background: transparent;
-            cursor: pointer;            
+            &.selected {
+                background: #9379e6;
+            } 
+            
+
+            &:active {
+                transform: scale(0.90);
+            }
+
+            img{
+                height: auto;
+                width: 100%;
+            }
+
+            &.back-face {
+                grid-column: 6
+            }
+
+            &.depth-pass {
+                grid-column: 5 / 6
+            }
+
+            &.hemispheric-light{
+                grid-column: 3 / 4
+            }
+            &.direction-light-1{
+                grid-column: 2 / 3
+
+            }
+            &.direction-light-0{
+                grid-column: 1 / 2
+                
+            }
         }
     }
     

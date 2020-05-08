@@ -40,11 +40,19 @@ export class BoxParticleEmitter implements IParticleEmitterType {
      * @param worldMatrix is the world matrix of the particle system
      * @param directionToUpdate is the direction vector to update with the result
      * @param particle is the particle we are computed the direction for
+     * @param isLocal defines if the direction should be set in local space
      */
-    public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
+    public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
         var randX = Scalar.RandomRange(this.direction1.x, this.direction2.x);
         var randY = Scalar.RandomRange(this.direction1.y, this.direction2.y);
         var randZ = Scalar.RandomRange(this.direction1.z, this.direction2.z);
+
+        if (isLocal) {
+            directionToUpdate.x = randX;
+            directionToUpdate.y = randY;
+            directionToUpdate.z = randZ;
+            return;
+        }
 
         Vector3.TransformNormalFromFloatsToRef(randX, randY, randZ, worldMatrix, directionToUpdate);
     }
@@ -54,11 +62,19 @@ export class BoxParticleEmitter implements IParticleEmitterType {
      * @param worldMatrix is the world matrix of the particle system
      * @param positionToUpdate is the position vector to update with the result
      * @param particle is the particle we are computed the position for
+     * @param isLocal defines if the position should be set in local space
      */
-    public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void {
+    public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
         var randX = Scalar.RandomRange(this.minEmitBox.x, this.maxEmitBox.x);
         var randY = Scalar.RandomRange(this.minEmitBox.y, this.maxEmitBox.y);
         var randZ = Scalar.RandomRange(this.minEmitBox.z, this.maxEmitBox.z);
+
+        if (isLocal) {
+            positionToUpdate.x = randX;
+            positionToUpdate.y = randY;
+            positionToUpdate.z = randZ;
+            return;
+        }
 
         Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
     }

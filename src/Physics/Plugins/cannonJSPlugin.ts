@@ -54,7 +54,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
     }
 
     public executeStep(delta: number): void {
-        this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta : 0, 3);
+        this.world.step(this._useDeltaForWorldStep ? delta : this._fixedTimeStep);
         this._removeMarkedPhysicsBodiesFromWorld();
     }
 
@@ -155,7 +155,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                 if (childImpostor) {
                     var parent = childImpostor.parent;
                     if (parent !== mainImpostor) {
-                        var pPosition = mesh.getAbsolutePosition().subtract(mainImpostor.object.getAbsolutePosition());
+                        var pPosition = mesh.position.clone();
                         let localRotation = mesh.rotationQuaternion.multiply(Quaternion.Inverse(currentRotation));
                         if (childImpostor.physicsBody) {
                             this.removePhysicsBody(childImpostor);
@@ -598,18 +598,6 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
     public updateDistanceJoint(joint: PhysicsJoint, maxDistance: number) {
         joint.physicsJoint.distance = maxDistance;
     }
-
-    // private enableMotor(joint: IMotorEnabledJoint, motorIndex?: number) {
-    //     if (!motorIndex) {
-    //         joint.physicsJoint.enableMotor();
-    //     }
-    // }
-
-    // private disableMotor(joint: IMotorEnabledJoint, motorIndex?: number) {
-    //     if (!motorIndex) {
-    //         joint.physicsJoint.disableMotor();
-    //     }
-    // }
 
     public setMotor(joint: IMotorEnabledJoint, speed?: number, maxForce?: number, motorIndex?: number) {
         if (!motorIndex) {

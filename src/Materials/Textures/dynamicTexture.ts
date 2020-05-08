@@ -2,9 +2,7 @@ import { Logger } from "../../Misc/logger";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { ISize } from "../../Maths/math.size";
-import { Engine } from "../../Engines/engine";
 import { Texture } from "../../Materials/Textures/texture";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { Constants } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.dynamicTexture";
 import { CanvasGenerator } from '../../Misc/canvasGenerator';
@@ -17,7 +15,6 @@ export class DynamicTexture extends Texture {
     private _generateMipMaps: boolean;
     private _canvas: HTMLCanvasElement | OffscreenCanvas;
     private _context: CanvasRenderingContext2D;
-    private _engine: Engine;
 
     /**
      * Creates a DynamicTexture
@@ -33,22 +30,26 @@ export class DynamicTexture extends Texture {
         super(null, scene, !generateMipMaps, undefined, samplingMode, undefined, undefined, undefined, undefined, format);
 
         this.name = name;
-        this._engine = (<Scene>this.getScene()).getEngine();
         this.wrapU = Texture.CLAMP_ADDRESSMODE;
         this.wrapV = Texture.CLAMP_ADDRESSMODE;
 
         this._generateMipMaps = generateMipMaps;
 
+        const engine = this._getEngine();
+        if (!engine) {
+            return;
+        }
+
         if (options.getContext) {
             this._canvas = options;
-            this._texture = this._engine.createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
+            this._texture = engine.createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
         } else {
             this._canvas = CanvasGenerator.CreateCanvas(1, 1);
 
             if (options.width || options.width === 0) {
-                this._texture = this._engine.createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
+                this._texture = engine.createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
             } else {
-                this._texture = this._engine.createDynamicTexture(options, options, generateMipMaps, samplingMode);
+                this._texture = engine.createDynamicTexture(options, options, generateMipMaps, samplingMode);
             }
         }
 
@@ -80,7 +81,7 @@ export class DynamicTexture extends Texture {
 
         this.releaseInternalTexture();
 
-        this._texture = this._engine.createDynamicTexture(textureSize.width, textureSize.height, this._generateMipMaps, this.samplingMode);
+        this._texture = this._getEngine()!.createDynamicTexture(textureSize.width, textureSize.height, this._generateMipMaps, this.samplingMode);
     }
 
     /**
@@ -132,7 +133,7 @@ export class DynamicTexture extends Texture {
      * @param premulAlpha defines if alpha is stored as premultiplied (default is false)
      */
     public update(invertY?: boolean, premulAlpha = false): void {
-        this._engine.updateDynamicTexture(this._texture, this._canvas, invertY === undefined ? true : invertY, premulAlpha, this._format || undefined);
+        this._getEngine()!.updateDynamicTexture(this._texture, this._canvas, invertY === undefined ? true : invertY, premulAlpha, this._format || undefined);
     }
 
     /**
@@ -146,7 +147,7 @@ export class DynamicTexture extends Texture {
      * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
      * @param update defines whether texture is immediately update (default is true)
      */
-    public drawText(text: string, x: number | null | undefined, y: number | null | undefined, font: string, color: string, clearColor: string, invertY?: boolean, update = true) {
+    public drawText(text: string, x: number | null | undefined, y: number | null | undefined, font: string, color: string | null, clearColor: string, invertY?: boolean, update = true) {
         var size = this.getSize();
         if (clearColor) {
             this._context.fillStyle = clearColor;
@@ -163,7 +164,7 @@ export class DynamicTexture extends Texture {
             y = (size.height / 2) + (fontSize / 3.65);
         }
 
-        this._context.fillStyle = color;
+        this._context.fillStyle = color || "";
         this._context.fillText(text, x, y);
 
         if (update) {

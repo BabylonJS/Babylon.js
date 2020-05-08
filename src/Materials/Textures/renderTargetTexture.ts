@@ -1,7 +1,7 @@
 import { Observer, Observable } from "../../Misc/observable";
 import { Tools } from "../../Misc/tools";
 import { SmartArray } from "../../Misc/smartArray";
-import { Nullable } from "../../types";
+import { Nullable, Immutable } from "../../types";
 import { Camera } from "../../Cameras/camera";
 import { Scene } from "../../scene";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
@@ -63,6 +63,17 @@ export class RenderTargetTexture extends Texture {
         }
     }
 
+    /**
+     * Use this function to overload the renderList array at rendering time.
+     * Return null to render with the curent renderList, else return the list of meshes to use for rendering.
+     * For 2DArray RTT, layerOrFace is the index of the layer that is going to be rendered, else it is the faceIndex of
+     * the cube (if the RTT is a cube, else layerOrFace=0).
+     * The renderList passed to the function is the current render list (the one that will be used if the function returns null).
+     * The length of this list is passed through renderListLength: don't use renderList.length directly because the array can
+     * hold dummy elements!
+    */
+    public getCustomRenderList: (layerOrFace: number, renderList: Nullable<Immutable<Array<AbstractMesh>>>, renderListLength: number) => Nullable<Array<AbstractMesh>>;
+
     private _hookArray(array: AbstractMesh[]): void {
         var oldPush = array.push;
         array.push = (...items: AbstractMesh[]) => {
@@ -109,6 +120,10 @@ export class RenderTargetTexture extends Texture {
      * Define the camera used to render the texture.
      */
     public activeCamera: Nullable<Camera>;
+    /**
+     * Override the mesh isReady function with your own one.
+     */
+    public customIsReadyFunction: (mesh: AbstractMesh, refreshRate: number) => boolean;
     /**
      * Override the render function of the texture with your own one.
      */
@@ -229,8 +244,6 @@ export class RenderTargetTexture extends Texture {
         return this._renderTargetOptions;
     }
 
-    protected _engine: Engine;
-
     protected _onRatioRescale(): void {
         if (this._sizeRatio) {
             this.resize(this._initialSizeParameter);
@@ -294,13 +307,11 @@ export class RenderTargetTexture extends Texture {
     constructor(name: string, size: number | { width: number, height: number, layers?: number } | { ratio: number }, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Constants.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false, format = Constants.TEXTUREFORMAT_RGBA, delayAllocation = false) {
         super(null, scene, !generateMipMaps);
         scene = this.getScene();
-
         if (!scene) {
             return;
         }
 
         this.renderList = new Array<AbstractMesh>();
-        this._engine = scene.getEngine();
         this.name = name;
         this.isRenderTarget = true;
         this._initialSizeParameter = size;
@@ -371,9 +382,10 @@ export class RenderTargetTexture extends Texture {
     private _processSizeParameter(size: number | { width: number, height: number } | { ratio: number }): void {
         if ((<{ ratio: number }>size).ratio) {
             this._sizeRatio = (<{ ratio: number }>size).ratio;
+            const engine = this._getEngine()!;
             this._size = {
-                width: this._bestReflectionRenderTargetDimension(this._engine.getRenderWidth(), this._sizeRatio),
-                height: this._bestReflectionRenderTargetDimension(this._engine.getRenderHeight(), this._sizeRatio)
+                width: this._bestReflectionRenderTargetDimension(engine.getRenderWidth(), this._sizeRatio),
+                height: this._bestReflectionRenderTargetDimension(engine.getRenderHeight(), this._sizeRatio)
             };
         } else {
             this._size = <number | { width: number, height: number, layers?: number }>size;
@@ -602,6 +614,8 @@ export class RenderTargetTexture extends Texture {
         }
     }
 
+    private _defaultRenderListPrepared: boolean;
+
     /**
      * Renders all the objects from the render list into the texture.
      * @param useCameraPostProcess Define if camera post processes should be used during the rendering
@@ -677,17 +691,68 @@ export class RenderTargetTexture extends Texture {
             }
         }
 
-        // Prepare renderingManager
+        this._defaultRenderListPrepared = false;
+
+        if (this.is2DArray) {
+            for (let layer = 0; layer < this.getRenderLayers(); layer++) {
+                this.renderToTarget(0, useCameraPostProcess, dumpForDebug, layer, camera);
+                scene.incrementRenderId();
+                scene.resetCachedMaterial();
+            }
+        }
+        else if (this.isCube) {
+            for (var face = 0; face < 6; face++) {
+                this.renderToTarget(face, useCameraPostProcess, dumpForDebug, undefined, camera);
+                scene.incrementRenderId();
+                scene.resetCachedMaterial();
+            }
+        } else {
+            this.renderToTarget(0, useCameraPostProcess, dumpForDebug, undefined, camera);
+        }
+
+        this.onAfterUnbindObservable.notifyObservers(this);
+
+        if (scene.activeCamera) {
+            // Do not avoid setting uniforms when multiple scenes are active as another camera may have overwrite these
+            if (scene.getEngine().scenes.length > 1 || (this.activeCamera && this.activeCamera !== scene.activeCamera)) {
+                scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
+            }
+            engine.setViewport(scene.activeCamera.viewport);
+        }
+
+        scene.resetCachedMaterial();
+    }
+
+    private _bestReflectionRenderTargetDimension(renderDimension: number, scale: number): number {
+        let minimum = 128;
+        let x = renderDimension * scale;
+        let curved = Engine.NearestPOT(x + (minimum * minimum / (minimum + x)));
+
+        // Ensure we don't exceed the render dimension (while staying POT)
+        return Math.min(Engine.FloorPOT(renderDimension), curved);
+    }
+
+    private _prepareRenderingManager(currentRenderList: Array<AbstractMesh>, currentRenderListLength: number, camera: Nullable<Camera>, checkLayerMask: boolean): void {
+        var scene = this.getScene();
+
+        if (!scene) {
+            return;
+        }
+
         this._renderingManager.reset();
 
-        var currentRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
-        var currentRenderListLength = this.renderList ? this.renderList.length : scene.getActiveMeshes().length;
         var sceneRenderId = scene.getRenderId();
         for (var meshIndex = 0; meshIndex < currentRenderListLength; meshIndex++) {
             var mesh = currentRenderList[meshIndex];
 
             if (mesh) {
-                if (!mesh.isReady(this.refreshRate === 0)) {
+                if (this.customIsReadyFunction) {
+                    if (!this.customIsReadyFunction(mesh, this.refreshRate)) {
+                        this.resetRefreshCounter();
+                        continue;
+                    }
+                }
+                else if (!mesh.isReady(this.refreshRate === 0)) {
                     this.resetRefreshCounter();
                     continue;
                 }
@@ -695,7 +760,7 @@ export class RenderTargetTexture extends Texture {
                 mesh._preActivateForIntermediateRendering(sceneRenderId);
 
                 let isMasked;
-                if (!this.renderList && camera) {
+                if (checkLayerMask && camera) {
                     isMasked = ((mesh.layerMask & camera.layerMask) === 0);
                 } else {
                     isMasked = false;
@@ -706,7 +771,9 @@ export class RenderTargetTexture extends Texture {
                         if (!mesh.isAnInstance) {
                             mesh._internalAbstractMeshDataInfo._onlyForInstancesIntermediate = false;
                         } else {
-                            mesh = (mesh as InstancedMesh).sourceMesh;
+                            if (!mesh._internalAbstractMeshDataInfo._actAsRegularMesh) {
+                                mesh = (mesh as InstancedMesh).sourceMesh;
+                            }
                         }
                         mesh._internalAbstractMeshDataInfo._isActiveIntermediate = true;
 
@@ -731,44 +798,6 @@ export class RenderTargetTexture extends Texture {
                 this._renderingManager.dispatchParticles(particleSystem);
             }
         }
-
-        if (this.is2DArray) {
-            for (let layer = 0; layer < this.getRenderLayers(); layer++) {
-                this.renderToTarget(0, currentRenderList, useCameraPostProcess, dumpForDebug, layer);
-                scene.incrementRenderId();
-                scene.resetCachedMaterial();
-            }
-        }
-        else if (this.isCube) {
-            for (var face = 0; face < 6; face++) {
-                this.renderToTarget(face, currentRenderList, useCameraPostProcess, dumpForDebug);
-                scene.incrementRenderId();
-                scene.resetCachedMaterial();
-            }
-        } else {
-            this.renderToTarget(0, currentRenderList, useCameraPostProcess, dumpForDebug);
-        }
-
-        this.onAfterUnbindObservable.notifyObservers(this);
-
-        if (scene.activeCamera) {
-            // Do not avoid setting uniforms when multiple scenes are active as another camera may have overwrite these
-            if (scene.getEngine().scenes.length > 1 || (this.activeCamera && this.activeCamera !== scene.activeCamera)) {
-                scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
-            }
-            engine.setViewport(scene.activeCamera.viewport);
-        }
-
-        scene.resetCachedMaterial();
-    }
-
-    private _bestReflectionRenderTargetDimension(renderDimension: number, scale: number): number {
-        let minimum = 128;
-        let x = renderDimension * scale;
-        let curved = Engine.NearestPOT(x + (minimum * minimum / (minimum + x)));
-
-        // Ensure we don't exceed the render dimension (while staying POT)
-        return Math.min(Engine.FloorPOT(renderDimension), curved);
     }
 
     /**
@@ -797,7 +826,7 @@ export class RenderTargetTexture extends Texture {
         });
     }
 
-    private renderToTarget(faceIndex: number, currentRenderList: AbstractMesh[], useCameraPostProcess: boolean, dumpForDebug: boolean, layer = 0): void {
+    private renderToTarget(faceIndex: number, useCameraPostProcess: boolean, dumpForDebug: boolean, layer = 0, camera: Nullable<Camera> = null): void {
         var scene = this.getScene();
 
         if (!scene) {
@@ -823,6 +852,28 @@ export class RenderTargetTexture extends Texture {
         }
         else {
             this.onBeforeRenderObservable.notifyObservers(faceIndex);
+        }
+
+        // Get the list of meshes to render
+        let currentRenderList: Nullable<Array<AbstractMesh>> = null;
+        let defaultRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
+        let defaultRenderListLength = this.renderList ? this.renderList.length : scene.getActiveMeshes().length;
+
+        if (this.getCustomRenderList) {
+            currentRenderList = this.getCustomRenderList(this.is2DArray ? layer : faceIndex, defaultRenderList, defaultRenderListLength);
+        }
+
+        if (!currentRenderList) {
+            // No custom render list provided, we prepare the rendering for the default list, but check
+            // first if we did not already performed the preparation before so as to avoid re-doing it several times
+            if (!this._defaultRenderListPrepared) {
+                this._prepareRenderingManager(defaultRenderList, defaultRenderListLength, camera, !this.renderList);
+                this._defaultRenderListPrepared = true;
+            }
+            currentRenderList = defaultRenderList;
+        } else {
+            // Prepare the rendering for the custom render list provided
+            this._prepareRenderingManager(currentRenderList, currentRenderList.length, camera, false);
         }
 
         // Clear

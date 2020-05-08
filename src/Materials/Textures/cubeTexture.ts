@@ -5,12 +5,13 @@ import { Scene } from "../../scene";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { Constants } from "../../Engines/constants";
 import { _TypeStore } from '../../Misc/typeStore';
+import { ThinEngine } from '../../Engines/thinEngine';
 
 import "../../Engines/Extensions/engine.cubeTexture";
 import { StringTools } from '../../Misc/stringTools';
+import { Observable } from '../../Misc/observable';
 
 /**
  * Class for creating a cube texture
@@ -19,8 +20,14 @@ export class CubeTexture extends BaseTexture {
     private _delayedOnLoad: Nullable<() => void>;
 
     /**
+     * Observable triggered once the texture has been loaded.
+     */
+    public onLoadObservable: Observable<CubeTexture> = new Observable<CubeTexture>();
+
+    /**
      * The url of the texture
      */
+    @serialize()
     public url: string;
 
     /**
@@ -138,7 +145,7 @@ export class CubeTexture extends BaseTexture {
      * Creates a cube texture to use with reflection for instance. It can be based upon dds or six images as well
      * as prefiltered data.
      * @param rootUrl defines the url of the texture or the root name of the six images
-     * @param scene defines the scene the texture is attached to
+     * @param null defines the scene or engine the texture is attached to
      * @param extensions defines the suffixes add to the picture name in case six images are in use like _px.jpg...
      * @param noMipmap defines if mipmaps should be created or not
      * @param files defines the six files to load for the different faces in that order: px, py, pz, nx, ny, nz
@@ -152,11 +159,11 @@ export class CubeTexture extends BaseTexture {
      * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
      * @return the cube texture
      */
-    constructor(rootUrl: string, scene: Scene, extensions: Nullable<string[]> = null, noMipmap: boolean = false, files: Nullable<string[]> = null,
+    constructor(rootUrl: string, sceneOrEngine: Scene | ThinEngine, extensions: Nullable<string[]> = null, noMipmap: boolean = false, files: Nullable<string[]> = null,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format: number = Constants.TEXTUREFORMAT_RGBA, prefiltered = false,
         forcedExtension: any = null, createPolynomials: boolean = false,
         lodScale: number = 0.8, lodOffset: number = 0) {
-        super(scene);
+        super(sceneOrEngine);
 
         this.name = rootUrl;
         this.url = rootUrl;
@@ -213,22 +220,32 @@ export class CubeTexture extends BaseTexture {
 
         this._files = files;
 
+        let onLoadProcessing = () => {
+            this.onLoadObservable.notifyObservers(this);
+            if (onLoad) {
+                onLoad();
+            }
+        };
+
         if (!this._texture) {
-            if (!scene.useDelayedTextureLoading) {
+            const scene = this.getScene();
+            if (!scene?.useDelayedTextureLoading) {
                 if (prefiltered) {
-                    this._texture = scene.getEngine().createPrefilteredCubeTexture(rootUrl, scene, lodScale, lodOffset, onLoad, onError, format, forcedExtension, this._createPolynomials);
+                    this._texture = this._getEngine()!.createPrefilteredCubeTexture(rootUrl, scene, lodScale, lodOffset, onLoad, onError, format, forcedExtension, this._createPolynomials);
                 }
                 else {
-                    this._texture = scene.getEngine().createCubeTexture(rootUrl, scene, files, noMipmap, onLoad, onError, this._format, forcedExtension, false, lodScale, lodOffset);
+                    this._texture = this._getEngine()!.createCubeTexture(rootUrl, scene, files, noMipmap, onLoad, onError, this._format, forcedExtension, false, lodScale, lodOffset);
                 }
+                this._texture?.onLoadedObservable.add(() => this.onLoadObservable.notifyObservers(this));
+
             } else {
                 this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
             }
-        } else if (onLoad) {
+        } else {
             if (this._texture.isReady) {
-                Tools.SetImmediate(() => onLoad());
+                Tools.SetImmediate(() => onLoadProcessing());
             } else {
-                this._texture.onLoadedObservable.add(onLoad);
+                this._texture.onLoadedObservable.add(() => onLoadProcessing());
             }
         }
     }
@@ -258,7 +275,7 @@ export class CubeTexture extends BaseTexture {
     public updateURL(url: string, forcedExtension?: string, onLoad?: () => void, prefiltered: boolean = false): void {
         if (this.url) {
             this.releaseInternalTexture();
-            this.getScene()!.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+            this.getScene()?.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
         if (!this.name || StringTools.StartsWith(this.name, "data:")) {
@@ -289,21 +306,19 @@ export class CubeTexture extends BaseTexture {
             return;
         }
 
-        let scene = this.getScene();
-
-        if (!scene) {
-            return;
-        }
         this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
         this._texture = this._getFromCache(this.url, this._noMipmap);
 
         if (!this._texture) {
+            const scene = this.getScene();
             if (this._prefiltered) {
-                this._texture = scene.getEngine().createPrefilteredCubeTexture(this.url, scene, 0.8, 0, this._delayedOnLoad, undefined, this._format, undefined, this._createPolynomials);
+                this._texture = this._getEngine()!.createPrefilteredCubeTexture(this.url, scene, 0.8, 0, this._delayedOnLoad, undefined, this._format, undefined, this._createPolynomials);
             }
             else {
-                this._texture = scene.getEngine().createCubeTexture(this.url, scene, this._files, this._noMipmap, this._delayedOnLoad, null, this._format, forcedExtension);
+                this._texture = this._getEngine()!.createCubeTexture(this.url, scene, this._files, this._noMipmap, this._delayedOnLoad, null, this._format, forcedExtension);
             }
+
+            this._texture?.onLoadedObservable.add(() => this.onLoadObservable.notifyObservers(this));
         }
     }
 
@@ -325,7 +340,7 @@ export class CubeTexture extends BaseTexture {
         }
 
         if (value.isIdentity() !== this._textureMatrix.isIdentity()) {
-            this.getScene()!.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => mat.getActiveTextures().indexOf(this) !== -1);
+            this.getScene()?.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => mat.getActiveTextures().indexOf(this) !== -1);
         }
 
         this._textureMatrix = value;
@@ -374,15 +389,10 @@ export class CubeTexture extends BaseTexture {
      * @returns a new cube texture
      */
     public clone(): CubeTexture {
-        let scene = this.getScene();
         let uniqueId = 0;
 
         let newCubeTexture = SerializationHelper.Clone(() => {
-
-            if (!scene) {
-                return this;
-            }
-            const cubeTexture = new CubeTexture(this.url, scene, this._extensions, this._noMipmap, this._files);
+            const cubeTexture = new CubeTexture(this.url, this.getScene() || this._getEngine()!, this._extensions, this._noMipmap, this._files);
             uniqueId = cubeTexture.uniqueId;
 
             return cubeTexture;

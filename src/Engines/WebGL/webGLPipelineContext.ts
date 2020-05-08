@@ -99,7 +99,7 @@ export class WebGLPipelineContext implements IPipelineContext {
     /** @hidden */
     public _cacheFloat2(uniformName: string, x: number, y: number): boolean {
         var cache = this._valueCache[uniformName];
-        if (!cache) {
+        if (!cache || cache.length !== 2) {
             cache = [x, y];
             this._valueCache[uniformName] = cache;
             return true;
@@ -121,7 +121,7 @@ export class WebGLPipelineContext implements IPipelineContext {
     /** @hidden */
     public _cacheFloat3(uniformName: string, x: number, y: number, z: number): boolean {
         var cache = this._valueCache[uniformName];
-        if (!cache) {
+        if (!cache || cache.length !== 3) {
             cache = [x, y, z];
             this._valueCache[uniformName] = cache;
             return true;
@@ -147,7 +147,7 @@ export class WebGLPipelineContext implements IPipelineContext {
     /** @hidden */
     public _cacheFloat4(uniformName: string, x: number, y: number, z: number, w: number): boolean {
         var cache = this._valueCache[uniformName];
-        if (!cache) {
+        if (!cache || cache.length !== 4) {
             cache = [x, y, z, w];
             this._valueCache[uniformName] = cache;
             return true;
@@ -438,5 +438,13 @@ export class WebGLPipelineContext implements IPipelineContext {
         if (this._cacheFloat4(uniformName, color4.r, color4.g, color4.b, color4.a)) {
             this.engine.setFloat4(this._uniforms[uniformName], color4.r, color4.g, color4.b, color4.a);
         }
+    }
+
+    public _getVertexShaderCode(): string | null {
+        return this.vertexShader ? this.engine._getShaderSource(this.vertexShader) : null;
+    }
+
+    public _getFragmentShaderCode(): string | null {
+        return this.fragmentShader ? this.engine._getShaderSource(this.fragmentShader) : null;
     }
 }

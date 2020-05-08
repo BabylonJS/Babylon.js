@@ -316,13 +316,14 @@ export class GlowLayer extends EffectLayer {
                     internalTexture,
                     true);
 
-                internalTexture = this._blurTexture2.getInternalTexture();
-                if (internalTexture) {
+                let internalTexture2 = this._blurTexture2.getInternalTexture();
+                if (internalTexture2) {
                     this._scene.postProcessManager.directRender(
                         this._postProcesses2,
-                        internalTexture,
+                        internalTexture2,
                         true);
                 }
+                this._engine.unBindFramebuffer(internalTexture2 ?? internalTexture, true);
             }
         });
 
@@ -350,7 +351,7 @@ export class GlowLayer extends EffectLayer {
     }
 
     /**
-     * Returns wether or nood the layer needs stencil enabled during the mesh rendering.
+     * Returns whether or nood the layer needs stencil enabled during the mesh rendering.
      */
     public needStencil(): boolean {
         return false;
@@ -512,7 +513,7 @@ export class GlowLayer extends EffectLayer {
     }
 
     /**
-     * Defines wether the current material of the mesh should be use to render the effect.
+     * Defines whether the current material of the mesh should be use to render the effect.
      * @param mesh defines the current mesh to render
      */
     protected _useMeshMaterial(mesh: AbstractMesh): boolean {
@@ -536,8 +537,8 @@ export class GlowLayer extends EffectLayer {
      */
     public unReferenceMeshFromUsingItsOwnMaterial(mesh: AbstractMesh): void {
         let index = this._meshesUsingTheirOwnMaterials.indexOf(mesh.uniqueId);
-        while (index > 0) {
-            this._meshesUsingTheirOwnMaterials.slice(index, index + 1);
+        while (index >= 0) {
+            this._meshesUsingTheirOwnMaterials.splice(index, 1);
             index = this._meshesUsingTheirOwnMaterials.indexOf(mesh.uniqueId);
         }
     }

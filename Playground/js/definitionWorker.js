@@ -1,3 +1,14 @@
+// > This worker will analyze the syntaxtree and return an array of deprecated functions (but the goal is to do more in the future!)
+// We need to do this because:
+// - checking extended properties during completion is time consuming, so we need to prefilter potential candidates
+// - we don't want to maintain a static list of deprecated members or to instrument this work on the CI
+// - we have more plans involving syntaxtree analysis
+// > This worker was carefully crafted to work even if the processing is super fast or super long. 
+// In both cases the deprecation filter will start working after the worker is done.
+// We will also need this worker in the future to compute Intellicode scores for completion using dedicated attributes.
+
+// see monacoCreator.js/setupDefinitionWorker
+
 // monaco is using 'define' for module dependencies and service lookup.
 // hopefully typescript is self-contained
 var ts = null;
@@ -8,6 +19,7 @@ importScripts("../node_modules/monaco-editor/dev/vs/language/typescript/lib/type
 // store deprecated names
 var deprecatedCandidates = [];
 
+// optimize syntaxtree visitor, we don't care about non documented nodes
 function canHaveJsDoc(node) {
     const kind = node.kind;
     switch (kind) {

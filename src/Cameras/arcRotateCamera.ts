@@ -298,6 +298,29 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     /**
+     * Gets or Set the pointer use natural pinch zoom to override the pinch precision
+     * and pinch delta percentage.
+     * When useNaturalPinchZoom is true, multi touch zoom will zoom in such
+     * that any object in the plane at the camera's target point will scale
+     * perfectly with finger motion.
+     */
+    public get useNaturalPinchZoom(): boolean {
+        var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+        if (pointers) {
+            return pointers.useNaturalPinchZoom;
+        }
+
+        return false;
+    }
+
+    public set useNaturalPinchZoom(value: boolean) {
+        var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+        if (pointers) {
+            pointers.useNaturalPinchZoom = value;
+        }
+    }
+
+    /**
      * Gets or Set the pointer panning sensibility or how fast is the camera moving.
      */
     public get panningSensibility(): number {
@@ -946,7 +969,7 @@ export class ArcRotateCamera extends TargetCamera {
      * Defines the target the camera should look at.
      * This will automatically adapt alpha beta and radius to fit within the new target.
      * @param target Defines the new target as a Vector or a mesh
-     * @param toBoundingCenter In case of a mesh target, defines wether to target the mesh position or its bounding information center
+     * @param toBoundingCenter In case of a mesh target, defines whether to target the mesh position or its bounding information center
      * @param allowSamePosition If false, prevents reapplying the new computed position if it is identical to the current one (optim)
      */
     public setTarget(target: AbstractMesh | Vector3, toBoundingCenter = false, allowSamePosition = false): void {
@@ -1118,6 +1141,7 @@ export class ArcRotateCamera extends TargetCamera {
             case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
             case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
             case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
+            case Camera.RIG_MODE_STEREOSCOPIC_INTERLACED:
             case Camera.RIG_MODE_VR:
                 alphaShift = this._cameraRigParams.stereoHalfAngle * (cameraIndex === 0 ? 1 : -1);
                 break;
@@ -1127,6 +1151,9 @@ export class ArcRotateCamera extends TargetCamera {
         }
         var rigCam = new ArcRotateCamera(name, this.alpha + alphaShift, this.beta, this.radius, this._target, this.getScene());
         rigCam._cameraRigParams = {};
+        rigCam.isRigCamera = true;
+        rigCam.rigParent = this;
+        rigCam.upVector = this.upVector;
         return rigCam;
     }
 
@@ -1145,6 +1172,7 @@ export class ArcRotateCamera extends TargetCamera {
             case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
             case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
             case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
+            case Camera.RIG_MODE_STEREOSCOPIC_INTERLACED:
             case Camera.RIG_MODE_VR:
                 camLeft.alpha = this.alpha - this._cameraRigParams.stereoHalfAngle;
                 camRight.alpha = this.alpha + this._cameraRigParams.stereoHalfAngle;

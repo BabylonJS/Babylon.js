@@ -23,7 +23,6 @@ layout(std140, column_major) uniform;
 //     uniform vec3 vSphericalZX;
 // }
 
-
 uniform Scene {
     mat4 viewProjection;
 #ifdef MULTIVIEW
@@ -84,6 +83,7 @@ uniform Material {
     mat4 anisotropyMatrix;
 
     vec4 vSheenColor;
+    float vSheenRoughness;
     vec2 vSheenInfos;
     mat4 sheenMatrix;
 

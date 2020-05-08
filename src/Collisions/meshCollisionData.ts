@@ -12,6 +12,7 @@ export class _MeshCollisionData {
     public _checkCollisions = false;
     public _collisionMask = -1;
     public _collisionGroup = -1;
+    public _surroundingMeshes: Nullable<AbstractMesh[]> = null;
     public _collider: Nullable<Collider> = null;
     public _oldPositionForCollisions = new Vector3(0, 0, 0);
     public _diffPositionForCollisions = new Vector3(0, 0, 0);

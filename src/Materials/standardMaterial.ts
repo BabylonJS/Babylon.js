@@ -15,6 +15,7 @@ import { Mesh } from "../Meshes/mesh";
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration";
 import { ColorCurves } from "./colorCurves";
 import { FresnelParameters } from "./fresnelParameters";
+import { Material } from "../Materials/material";
 import { MaterialDefines } from "../Materials/materialDefines";
 import { PushMaterial } from "./pushMaterial";
 import { MaterialHelper } from "./materialHelper";
@@ -30,7 +31,9 @@ import "../Shaders/default.fragment";
 import "../Shaders/default.vertex";
 import { Constants } from "../Engines/constants";
 import { EffectFallbacks } from './effectFallbacks';
-import { IEffectCreationOptions } from './effect';
+import { Effect, IEffectCreationOptions } from './effect';
+
+const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
 /** @hidden */
 export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
@@ -96,7 +99,6 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public USE_LOCAL_REFLECTIONMAP_CUBIC = false;
     public REFLECTIONMAP_PROJECTION = false;
     public REFLECTIONMAP_SKYBOX = false;
-    public REFLECTIONMAP_SKYBOX_TRANSFORMED = false;
     public REFLECTIONMAP_EXPLICIT = false;
     public REFLECTIONMAP_EQUIRECTANGULAR = false;
     public REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
@@ -115,6 +117,12 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public NUM_MORPH_INFLUENCERS = 0;
     public NONUNIFORMSCALING = false; // https://playground.babylonjs.com#V6DWIH
     public PREMULTIPLYALPHA = false; // https://playground.babylonjs.com#LNVJJ7
+    public ALPHATEST_AFTERALLALPHACOMPUTATIONS = false;
+    public ALPHABLEND = true;
+
+    public RGBDLIGHTMAP = false;
+    public RGBDREFLECTION = false;
+    public RGBDREFRACTION = false;
 
     public IMAGEPROCESSING = false;
     public VIGNETTE = false;
@@ -287,7 +295,7 @@ export class StandardMaterial extends PushMaterial {
     /**
      * Does the transparency come from the diffuse texture alpha channel.
      */
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
     public useAlphaFromDiffuseTexture: boolean;
 
     @serialize("useEmissiveAsIllumination")
@@ -660,11 +668,6 @@ export class StandardMaterial extends PushMaterial {
         this._imageProcessingConfiguration.colorCurves = value;
     }
 
-    /**
-     * Custom callback helping to override the default shader used in the material.
-     */
-    public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines) => string;
-
     protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
     protected _worldViewProjectionMatrix = Matrix.Zero();
     protected _globalAmbientColor = new Color3(0, 0, 0);
@@ -745,6 +748,10 @@ export class StandardMaterial extends PushMaterial {
      * @returns a boolean specifying if alpha blending is needed
      */
     public needAlphaBlending(): boolean {
+        if (this._disableAlphaBlending) {
+            return false;
+        }
+
         return (this.alpha < 1.0) || (this._opacityTexture != null) || this._shouldUseAlphaFromDiffuseTexture() || this._opacityFresnelParameters && this._opacityFresnelParameters.isEnabled;
     }
 
@@ -753,11 +760,15 @@ export class StandardMaterial extends PushMaterial {
      * @returns a boolean specifying if an alpha test is needed.
      */
     public needAlphaTesting(): boolean {
-        return this._diffuseTexture != null && this._diffuseTexture.hasAlpha;
+        if (this._forceAlphaTest) {
+            return true;
+        }
+
+        return this._diffuseTexture != null && this._diffuseTexture.hasAlpha && (this._transparencyMode == null || this._transparencyMode === Material.MATERIAL_ALPHATEST);
     }
 
     protected _shouldUseAlphaFromDiffuseTexture(): boolean {
-        return this._diffuseTexture != null && this._diffuseTexture.hasAlpha && this._useAlphaFromDiffuseTexture;
+        return this._diffuseTexture != null && this._diffuseTexture.hasAlpha && this._useAlphaFromDiffuseTexture && this._transparencyMode !== Material.MATERIAL_OPAQUE;
     }
 
     /**
@@ -789,10 +800,8 @@ export class StandardMaterial extends PushMaterial {
 
         var scene = this.getScene();
         var defines = <StandardMaterialDefines>subMesh._materialDefines;
-        if (!this.checkReadyOnEveryCall && subMesh.effect) {
-            if (defines._renderId === scene.getRenderId()) {
-                return true;
-            }
+        if (this._isReadyForSubMesh(subMesh)) {
+            return true;
         }
 
         var engine = scene.getEngine();
@@ -851,6 +860,7 @@ export class StandardMaterial extends PushMaterial {
                         defines.REFLECTIONOVERALPHA = this._useReflectionOverAlpha;
                         defines.INVERTCUBICMAP = (this._reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE);
                         defines.REFLECTIONMAP_3D = this._reflectionTexture.isCube;
+                        defines.RGBDREFLECTION = this._reflectionTexture.isRGBD;
 
                         switch (this._reflectionTexture.coordinatesMode) {
                             case Texture.EXPLICIT_MODE:
@@ -864,7 +874,6 @@ export class StandardMaterial extends PushMaterial {
                                 break;
                             case Texture.SKYBOX_MODE:
                                 defines.setReflectionMode("REFLECTIONMAP_SKYBOX");
-                                defines.REFLECTIONMAP_SKYBOX_TRANSFORMED = !this._reflectionTexture.getReflectionTextureMatrix().isIdentity();
                                 break;
                             case Texture.SPHERICAL_MODE:
                                 defines.setReflectionMode("REFLECTIONMAP_SPHERICAL");
@@ -907,6 +916,7 @@ export class StandardMaterial extends PushMaterial {
                     } else {
                         MaterialHelper.PrepareDefinesForMergedUV(this._lightmapTexture, defines, "LIGHTMAP");
                         defines.USELIGHTMAPASSHADOWMAP = this._useLightmapAsShadowmap;
+                        defines.RGBDLIGHTMAP = this._lightmapTexture.isRGBD;
                     }
                 } else {
                     defines.LIGHTMAP = false;
@@ -947,6 +957,7 @@ export class StandardMaterial extends PushMaterial {
                         defines.REFRACTION = true;
 
                         defines.REFRACTIONMAP_3D = this._refractionTexture.isCube;
+                        defines.RGBDREFRACTION = this._refractionTexture.isRGBD;
                     }
                 } else {
                     defines.REFRACTION = false;
@@ -973,6 +984,10 @@ export class StandardMaterial extends PushMaterial {
             defines.SPECULAROVERALPHA = this._useSpecularOverAlpha;
 
             defines.PREMULTIPLYALPHA = (this.alphaMode === Constants.ALPHA_PREMULTIPLIED || this.alphaMode === Constants.ALPHA_PREMULTIPLIED_PORTERDUFF);
+
+            defines.ALPHATEST_AFTERALLALPHACOMPUTATIONS = this.transparencyMode !== null;
+
+            defines.ALPHABLEND = this.transparencyMode === null || this.needAlphaBlendingForMesh(mesh); // check on null for backward compatibility
         }
 
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
@@ -1014,7 +1029,7 @@ export class StandardMaterial extends PushMaterial {
         }
 
         // Misc.
-        MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
+        MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh) || this._forceAlphaTest, defines);
 
         // Attribs
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
@@ -1150,7 +1165,7 @@ export class StandardMaterial extends PushMaterial {
             });
 
             if (this.customShaderNameResolve) {
-                shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines);
+                shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines, attribs);
             }
 
             var join = defines.toString();
@@ -1169,6 +1184,12 @@ export class StandardMaterial extends PushMaterial {
             }, engine);
 
             if (effect) {
+                if (this._onEffectCreatedObservable) {
+                    onCreatedEffectParameters.effect = effect;
+                    onCreatedEffectParameters.subMesh = subMesh;
+                    this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
+                }
+
                 // Use previous effect while new one is compiling
                 if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
                     effect = previousEffect;
@@ -1422,12 +1443,12 @@ export class StandardMaterial extends PushMaterial {
                 }
                 ubo.updateColor3("vEmissiveColor", StandardMaterial.EmissiveTextureEnabled ? this.emissiveColor : Color3.BlackReadOnly);
 
-                // Visibility
-                ubo.updateFloat("visibility", mesh.visibility);
-
                 // Diffuse
                 ubo.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha);
             }
+
+            // Visibility
+            ubo.updateFloat("visibility", mesh.visibility);
 
             // Textures
             if (scene.texturesEnabled) {

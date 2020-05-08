@@ -1,10 +1,11 @@
 import * as React from "react";
-import { Vector3, Matrix, Vector4, Quaternion } from "babylonjs/Maths/math";
+import { Vector3, Matrix, Vector4, Quaternion } from "babylonjs/Maths/math.vector";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
 import { Vector4LineComponent } from './vector4LineComponent';
 import { OptionsLineComponent } from './optionsLineComponent';
 import { SliderLineComponent } from './sliderLineComponent';
+import { GlobalState } from '../globalState';
 
 interface IMatrixLineComponentProps {
     label: string;
@@ -15,6 +16,7 @@ interface IMatrixLineComponentProps {
     onModeChange?: (mode: number) => void;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     mode?: number;
+    globalState: GlobalState;
 }
 
 export class MatrixLineComponent extends React.Component<IMatrixLineComponentProps, { value: Matrix, mode: number, angle: number}> {
@@ -151,10 +153,10 @@ export class MatrixLineComponent extends React.Component<IMatrixLineComponentPro
                 {
                     this.state.mode === 0 &&
                     <div className="secondLine">
-                        <Vector4LineComponent label="Row #0" value={this.state.value.getRow(0)!} onChange={value => this.updateRow(value, 0)}/>
-                        <Vector4LineComponent label="Row #1" value={this.state.value.getRow(1)!} onChange={value => this.updateRow(value, 1)}/>
-                        <Vector4LineComponent label="Row #2" value={this.state.value.getRow(2)!} onChange={value => this.updateRow(value, 2)}/>
-                        <Vector4LineComponent label="Row #3" value={this.state.value.getRow(3)!} onChange={value => this.updateRow(value, 3)}/>
+                        <Vector4LineComponent globalState={this.props.globalState} label="Row #0" value={this.state.value.getRow(0)!} onChange={value => this.updateRow(value, 0)}/>
+                        <Vector4LineComponent globalState={this.props.globalState} label="Row #1" value={this.state.value.getRow(1)!} onChange={value => this.updateRow(value, 1)}/>
+                        <Vector4LineComponent globalState={this.props.globalState} label="Row #2" value={this.state.value.getRow(2)!} onChange={value => this.updateRow(value, 2)}/>
+                        <Vector4LineComponent globalState={this.props.globalState} label="Row #3" value={this.state.value.getRow(3)!} onChange={value => this.updateRow(value, 3)}/>
                     </div>
                 }
                 {
