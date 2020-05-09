@@ -1,4 +1,4 @@
-#ifdef NUM_SAMPLES
+#if defined(WEBGL2) && defined(NUM_SAMPLES)
 	#if NUM_SAMPLES > 0u
 		uniform vec2 vFilteringInfo;
 		uniform float linearRoughness;

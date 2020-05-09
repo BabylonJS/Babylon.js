@@ -254,7 +254,7 @@
                     irradianceVector.z *= -1.0;
                 #endif
 
-                #ifdef REALTIME_FILTERING
+                #if defined(WEBGL2) && defined(REALTIME_FILTERING)
                     environmentIrradiance = irradiance(reflectionSampler, irradianceVector);
                 #else
                     environmentIrradiance = computeEnvironmentIrradiance(irradianceVector);
