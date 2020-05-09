@@ -155,7 +155,11 @@
         uniform samplerCube reflectionSampler;
         
         #ifdef LODBASEDMICROSFURACE
-            #define sampleReflectionLod(s, c, l) textureCubeLodEXT(s, c, l)
+            #ifdef REALTIME_FILTERING
+                #define sampleReflectionLod(s, c, l) vec4(radiance(s, c), 1.0)
+            #else
+                #define sampleReflectionLod(s, c, l) textureCubeLodEXT(s, c, l)
+            #endif
         #else
             uniform samplerCube reflectionSamplerLow;
             uniform samplerCube reflectionSamplerHigh;
