@@ -123,7 +123,9 @@ export class ShaderProcessor {
     private static _BuildExpression(line: string, start: number): ShaderCodeTestNode {
         let node = new ShaderCodeTestNode();
         let command = line.substring(0, start);
-        let expression = line.substring(start).trim();
+        let expression = line.substring(start);
+
+        expression = expression.substring(0, ((expression.indexOf("//") + 1) || (expression.length + 1)) - 1).trim();
 
         if (command === "#ifdef") {
             node.testExpression = new ShaderDefineIsDefinedOperator(expression);
