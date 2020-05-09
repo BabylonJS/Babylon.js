@@ -9,7 +9,7 @@ import { Constants } from "../../Engines/constants";
 import { IAnimatable } from '../../Animations/animatable.interface';
 import { GUID } from '../../Misc/guid';
 import { ISize, Size } from '../../Maths/math.size';
-import { HDRFiltering } from "./Filtering/hdrFiltering"
+import { HDRFiltering } from "./Filtering/hdrFiltering";
 
 import "../../Misc/fileTools";
 import { ThinEngine } from '../../Engines/thinEngine';

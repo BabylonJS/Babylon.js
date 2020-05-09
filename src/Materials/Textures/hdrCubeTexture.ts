@@ -241,14 +241,12 @@ export class HDRCubeTexture extends BaseTexture {
             return results;
         };
 
-        
         if (this._prefilterOnLoad) {
             const previousOnLoad = this._onLoad;
-            const hdrFiltering = new HDRFiltering(engine)
+            const hdrFiltering = new HDRFiltering(engine);
             this._onLoad = () => hdrFiltering.prefilter(this, previousOnLoad || undefined);
         }
 
-            
         this._texture = engine.createRawCubeTextureFromUrl(this.url, this.getScene(), this._size,
             Constants.TEXTUREFORMAT_RGB,
             engine.getCaps().textureFloat ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INT,

@@ -1288,7 +1288,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     } else {
                         defines.REALTIME_FILTERING = false;
                     }
-                    
+
                     if (reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE) {
                         defines.INVERTCUBICMAP = true;
                     }
