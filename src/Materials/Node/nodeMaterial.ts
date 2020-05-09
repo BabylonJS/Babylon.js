@@ -43,7 +43,7 @@ import { RemapBlock } from './Blocks/remapBlock';
 import { MultiplyBlock } from './Blocks/multiplyBlock';
 import { NodeMaterialModes } from './Enums/nodeMaterialModes';
 import { Texture } from '../Textures/texture';
-import { ParticleSystem } from '../../Particles/particleSystem';
+import { IParticleSystem } from '../../Particles/IParticleSystem';
 import { BaseParticleSystem } from '../../Particles/baseParticleSystem';
 import { ColorSplitterBlock } from './Blocks/colorSplitterBlock';
 
@@ -814,7 +814,7 @@ export class NodeMaterial extends PushMaterial {
         return postProcess;
     }
 
-    private _createEffectForParticles(particleSystem: ParticleSystem, blendMode: number, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, effect?: Effect, defines?: NodeMaterialDefines, dummyMesh?: Nullable<AbstractMesh>) {
+    private _createEffectForParticles(particleSystem: IParticleSystem, blendMode: number, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, effect?: Effect, defines?: NodeMaterialDefines, dummyMesh?: Nullable<AbstractMesh>) {
         let tempName = this.name + this._buildId + "_" + blendMode;
 
         if (!defines) {
@@ -913,7 +913,7 @@ export class NodeMaterial extends PushMaterial {
      * @param onCompiled defines a function to call when the effect creation is successful
      * @param onError defines a function to call when the effect creation has failed
      */
-    public createEffectForParticles(particleSystem: ParticleSystem, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void) {
+    public createEffectForParticles(particleSystem: IParticleSystem, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void) {
         this._createEffectForParticles(particleSystem, BaseParticleSystem.BLENDMODE_ONEONE, onCompiled, onError);
         this._createEffectForParticles(particleSystem, BaseParticleSystem.BLENDMODE_MULTIPLY, onCompiled, onError);
     }

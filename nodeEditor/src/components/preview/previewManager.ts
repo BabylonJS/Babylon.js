@@ -23,6 +23,7 @@ import { Constants } from 'babylonjs/Engines/constants';
 import { CurrentScreenBlock } from 'babylonjs/Materials/Node/Blocks/Dual/currentScreenBlock';
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 import { ParticleSystem } from 'babylonjs/Particles/particleSystem';
+import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
 import { ParticleHelper } from 'babylonjs/Particles/particleHelper';
 import { Texture } from 'babylonjs/Materials/Textures/texture';
 import { ParticleTextureBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleTextureBlock';
@@ -47,7 +48,7 @@ export class PreviewManager {
     private _currentType: number;
     private _lightParent: TransformNode;
     private _postprocess: Nullable<PostProcess>;
-    private _particleSystem: Nullable<ParticleSystem>;
+    private _particleSystem: Nullable<IParticleSystem>;
 
     public constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState) {
         this._nodeMaterial = globalState.nodeMaterial;
@@ -316,7 +317,7 @@ export class PreviewManager {
             } else if (this._globalState.mode === NodeMaterialModes.Particle) {
                 switch (this._globalState.previewType) {
                     case PreviewType.DefaultParticleSystem:
-                        this._particleSystem = ParticleHelper.CreateDefault(new Vector3(0, 0, 0), 500, this._scene) as ParticleSystem;
+                        this._particleSystem = ParticleHelper.CreateDefault(new Vector3(0, 0, 0), 500, this._scene);
                         this._particleSystem.start();
                         break;
                     case PreviewType.Bubbles:
@@ -381,7 +382,7 @@ export class PreviewManager {
         ParticleHelper.CreateAsync(name, this._scene).then((set) => {
             for (let i = 0; i < set.systems.length; ++i) {
                 if (i == systemIndex) {
-                    this._particleSystem = set.systems[i] as ParticleSystem;
+                    this._particleSystem = set.systems[i];
                     this._particleSystem.disposeOnStop = true;
                     this._particleSystem.onDisposeObservable.add(() => {
                         this._loadParticleSystem(particleNumber, systemIndex, false);
