@@ -3,6 +3,7 @@
 ## Major updates
 
 - Added particle editor to the Inspector ([Deltakosh](https://github.com/deltakosh))
+- Added sprite editor to the Inspector ([Deltakosh](https://github.com/deltakosh))
 - Added the `ShadowDepthWrapper` class to support accurate shadow generation for custom as well as node material shaders. [Doc](https://doc.babylonjs.com/babylon101/shadows#custom-shadow-map-shaders) ([Popov72](https://github.com/Popov72))
 - Added Babylon.js Texture [tools](https://www.babylonjs.com/tools/ibl) to prefilter HDR files ([Sebavan](https://github.com/sebavan/))
 - Added editing of PBR materials and Post processes in the node material editor ([Popov72](https://github.com/Popov72))
@@ -21,6 +22,7 @@
 - Added support for `material.disableColorWrite` ([Deltakosh](https://github.com/deltakosh))
 - The Mesh Asset Task also accepts File as sceneInput ([RaananW](https://github.com/RaananW))
 - Added support preserving vert colors for CSG objects ([PirateJC](https://github.com/PirateJC))
+- Added `boundingBoxRenderer.onBeforeBoxRenderingObservable` and `boundingBoxRenderer.onAfterBoxRenderingObservable` ([Deltakosh](https://github.com/deltakosh))
 
 ### Engine
 
@@ -119,6 +121,11 @@
 - Added local space support for GPU particles ([CraigFeldpsar](https://github.com/craigfeldspar))
 - Added ability to update also colors and uvs of solid particle vertices ([jerome](https://github.com/jbousquie))
 
+### Textures
+
+- .HDR environment files will now give accurate PBR reflections ([CraigFeldpsar](https://github.com/craigfeldspar))
+- Reflection probes can now be used to give accurate shading with PBR ([CraigFeldpsar](https://github.com/craigfeldspar))
+
 ### Build
 
 - Fixed an issue with gulp webpack, webpack stream and the viewer ([RaananW](https://github.com/RaananW))
@@ -173,6 +180,7 @@
 - Playground didn't work if query params were added to the URL ([RaananW](https://github.com/RaananW))
 - Fixed Path3D `_distances` / length computation ([Poolminer](https://github.com/Poolminer))
 - Make sure bone matrices are up to date when calling `TransformNode.attachToBone` ([Popov72](https://github.com/Popov72))
+- Fix display problem with transparent objects and SSAO2 pipeline (bug in the `GeometryBufferRenderer`) ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 

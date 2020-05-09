@@ -4,7 +4,7 @@ import { KeyframeSvgPoint, IKeyframeSvgPoint } from './keyframeSvgPoint';
 
 interface ISvgDraggableAreaProps {
     keyframeSvgPoints: IKeyframeSvgPoint[];
-    updatePosition: (updatedKeyframe: IKeyframeSvgPoint, index: number) => void
+    updatePosition: (updatedKeyframe: IKeyframeSvgPoint, index: number) => void;
 }
 
 export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
@@ -13,13 +13,22 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
     private _isCurrentPointControl: string;
     private _currentPointIndex: number;
     private _draggableArea: React.RefObject<SVGSVGElement>;
+    private _panStart: Vector2;
+    private _panStop: Vector2;
 
     constructor(props: ISvgDraggableAreaProps) {
         super(props);
         this._currentPointIndex = -1;
         this._isCurrentPointControl = "";
         this._draggableArea = React.createRef();
+        this._panStart = new Vector2(0, 0);
+        this._panStop = new Vector2(0, 0);
     }
+
+    componentDidMount() {
+        this._draggableArea.current?.addEventListener("keydown", this.keyDown.bind(this));
+        this._draggableArea.current?.addEventListener("keyup", this.keyUp.bind(this));
+    }  
 
     dragStart(e: React.TouchEvent<SVGSVGElement>): void;
     dragStart(e: React.MouseEvent<SVGSVGElement, MouseEvent>): void;
@@ -31,6 +40,12 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
 
             if (e.target.classList.contains("control-point")) {
                 this._isCurrentPointControl = e.target.getAttribute("type");
+            }
+        }
+
+        if (e.target.classList.contains("pannable")) {
+            if (e.buttons === 1 && e.ctrlKey) {
+                this._panStart.set(e.clientX, e.clientY);
             }
         }
     }
@@ -69,6 +84,13 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
         this._active = false;
         this._currentPointIndex = -1;
         this._isCurrentPointControl = "";
+
+        if (e.target.classList.contains("pannable")) {
+            if (this._panStart.x !== 0 && this._panStart.y !== 0) {
+                this._panStop.set(e.clientX, e.clientY);
+                this.panDirection();
+            }
+        }
     }
 
     getMousePosition(e: React.TouchEvent<SVGSVGElement>): Vector2 | undefined;
@@ -90,10 +112,74 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
         }
     }
 
+    panDirection() {
+
+        // Movement Right to Left
+        if (this._panStart.x > this._panStop.x) {
+            console.log("right to left");
+            this.panTo("right", Math.abs(this._panStart.x - this._panStop.x));
+        }
+
+        // Movement Right to Left
+        if (this._panStart.x < this._panStop.x) {
+            this.panTo("left", Math.abs(this._panStart.x - this._panStop.x));
+            console.log("left to right");
+        }
+
+        // Movement Bottom to Up
+        if (this._panStart.y > this._panStop.y) {
+            console.log("down up");
+        }
+
+        // Movement Up to Bottom
+        if (this._panStart.y < this._panStop.y) {
+            console.log("up down");
+        }
+
+        this._panStart.set(0, 0);
+        this._panStop.set(0, 0);
+
+    }
+
+    panTo(direction: string, value: number) {
+
+        switch (direction) {
+            case "left":
+                (this._draggableArea.current?.parentElement as HTMLDivElement).scrollLeft -= (value * 1);
+                break;
+            case "right":
+                (this._draggableArea.current?.parentElement as HTMLDivElement).scrollLeft += (value * 1);
+                break;
+            case "top":
+                break;
+            case "down":
+                break;
+        }
+    }
+
+    keyDown(e: KeyboardEvent) {
+        e.preventDefault();
+        if (e.keyCode === 17) {
+            this._draggableArea.current?.style.setProperty("cursor", "grab");
+        }
+    }
+
+    keyUp(e: KeyboardEvent) {
+        e.preventDefault();
+        if (e.keyCode === 17) {
+            this._draggableArea.current?.style.setProperty("cursor", "initial");
+        }
+    }
+
+    focus(e: React.MouseEvent<SVGSVGElement>) {
+        e.preventDefault();
+        this._draggableArea.current?.focus();
+    }
+
     render() {
         return (
             <>
-                <svg className="linear" style={{ border: '1px solid black' }} ref={this._draggableArea}
+                <svg className="linear pannable" ref={this._draggableArea}  tabIndex={0}
 
                     onMouseMove={(e) => this.drag(e)}
                     onTouchMove={(e) => this.drag(e)}
@@ -104,8 +190,9 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
                     onMouseUp={(e) => this.dragEnd(e)}
                     onMouseLeave={(e) => this.dragEnd(e)}
                     // Add way to add new keyframe
+                    onClick={(e) => this.focus(e)}
 
-                    viewBox="0 0 100 100" preserveAspectRatio="none">
+                    viewBox="0 0 200 100">
 
                     {this.props.children}
                     {this.props.keyframeSvgPoints.map((keyframe, i) =>
