@@ -32,9 +32,9 @@ export class HDRFiltering {
 	public hdrScale: number = 1;
 	
 	public static readonly QUALITY_OFFLINE = 4096;
-	public static readonly QUALITY_HIGH = 128;
-	public static readonly QUALITY_MEDIUM = 64;
-	public static readonly QUALITY_LOW = 16;
+	public static readonly QUALITY_HIGH = 64;
+	public static readonly QUALITY_MEDIUM = 16;
+	public static readonly QUALITY_LOW = 8;
 
 	constructor(engine: ThinEngine, options: IHDRFilteringOptions = {}) {
 		// pass
