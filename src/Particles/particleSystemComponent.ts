@@ -57,12 +57,12 @@ declare module "../Engines/engine" {
          * @returns the new Effect
          */
         createEffectForParticles(fragmentName: string, uniformsNames: string[], samplers: string[], defines: string, fallbacks?: EffectFallbacks,
-            onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, particleSystem?: ParticleSystem): Effect;
+            onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, particleSystem?: IParticleSystem): Effect;
     }
 }
 
 Engine.prototype.createEffectForParticles = function(fragmentName: string, uniformsNames: string[] = [], samplers: string[] = [], defines = "", fallbacks?: EffectFallbacks,
-    onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, particleSystem?: ParticleSystem): Effect {
+    onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, particleSystem?: IParticleSystem): Effect {
 
     var attributesNamesOrOptions: Array<string> = [];
     var effectCreationOption: Array<string> = [];
@@ -85,7 +85,7 @@ Engine.prototype.createEffectForParticles = function(fragmentName: string, unifo
 
     return this.createEffect(
         {
-            vertex: "particles",
+            vertex: particleSystem?.vertexShaderName ?? "particles",
             fragmentElement: fragmentName
         },
         attributesNamesOrOptions,

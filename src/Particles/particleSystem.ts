@@ -81,9 +81,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     /**
     * An event triggered when the system is disposed
     */
-    public onDisposeObservable = new Observable<ParticleSystem>();
+    public onDisposeObservable = new Observable<IParticleSystem>();
 
-    private _onDisposeObserver: Nullable<Observer<ParticleSystem>>;
+    private _onDisposeObserver: Nullable<Observer<IParticleSystem>>;
     /**
      * Sets a callback that will be triggered when the system is disposed
      */
@@ -243,6 +243,13 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
 
         return this._onBeforeDrawParticlesObservable;
+    }
+
+    /**
+     * Gets the name of the particle vertex shader
+     */
+    public get vertexShaderName(): string {
+        return "particles";
     }
 
     /**
