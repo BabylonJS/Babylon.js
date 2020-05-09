@@ -21,7 +21,7 @@ interface IHDRFilteringOptions {
     hdrScale?: number;
 
     /**
-     * Quality of the filter. Should be `HDRFiltering.QUALITY_OFFLINE` for prefiltering
+     * Quality of the filter. Should be `Constants.TEXTURE_FILTERING_QUALITY_OFFLINE` for prefiltering
      */
     quality?: number;
 }
@@ -39,35 +39,15 @@ export class HDRFiltering {
     private _lodGenerationScale: number = 0.8;
 
     /**
-     * Quality switch for prefiltering. Should be set to ` HDRFiltering.QUALITY_OFFLINE` unless
+     * Quality switch for prefiltering. Should be set to `Constants.TEXTURE_FILTERING_QUALITY_OFFLINE` unless
      * you care about baking speed.
      */
-    public quality: number = HDRFiltering.QUALITY_OFFLINE;
+    public quality: number = Constants.TEXTURE_FILTERING_QUALITY_OFFLINE;
 
     /**
      * Scales pixel intensity for the input HDR map.
      */
     public hdrScale: number = 1;
-
-    /**
-     * Offline (baking) quality
-     */
-    public static readonly QUALITY_OFFLINE = 4096;
-
-    /**
-     * High quality
-     */
-    public static readonly QUALITY_HIGH = 64;
-
-    /**
-     * Medium quality
-     */
-    public static readonly QUALITY_MEDIUM = 16;
-
-    /**
-     * Low quality
-     */
-    public static readonly QUALITY_LOW = 8;
 
     /**
      * Instantiates HDR filter for reflection maps
@@ -82,7 +62,7 @@ export class HDRFiltering {
         this.quality = options.hdrScale || this.quality;
     }
 
-    private createRenderTarget(size: number): InternalTexture {
+    private _createRenderTarget(size: number): InternalTexture {
         const texture = this._engine.createRenderTargetCubeTexture(size, {
             format: Constants.TEXTUREFORMAT_RGBA,
             type: Constants.TEXTURETYPE_FLOAT,
@@ -101,13 +81,13 @@ export class HDRFiltering {
         return texture;
     }
 
-    private prefilterInternal(texture: BaseTexture): BaseTexture {
+    private _prefilterInternal(texture: BaseTexture): BaseTexture {
         // const nbRoughnessStops = 2;
         const width = texture.getSize().width;
         const mipmapsCount = Math.round(Scalar.Log2(width)) + 1;
 
         const effect = this._effectWrapper.effect;
-        const outputTexture = this.createRenderTarget(width);
+        const outputTexture = this._createRenderTarget(width);
         this._effectRenderer.setViewport();
 
         const intTexture = texture.getInternalTexture();
@@ -157,7 +137,7 @@ export class HDRFiltering {
         return texture;
     }
 
-    private createEffect(texture: BaseTexture, onCompiled?: Nullable<(effect: Effect) => void>): EffectWrapper {
+    private _createEffect(texture: BaseTexture, onCompiled?: Nullable<(effect: Effect) => void>): EffectWrapper {
         const defines = [];
         if (texture.gammaSpace) {
             defines.push("#define GAMMA_INPUT");
@@ -201,7 +181,7 @@ export class HDRFiltering {
     public prefilter(texture: BaseTexture, onFinished?: () => void) {
         return new Promise((resolve) => {
             const callback = () => {
-                this.prefilterInternal(texture);
+                this._prefilterInternal(texture);
                 this._effectRenderer.dispose();
                 this._effectWrapper.dispose();
                 resolve();
@@ -211,7 +191,7 @@ export class HDRFiltering {
             };
 
             this._effectRenderer = new EffectRenderer(this._engine);
-            this._effectWrapper = this.createEffect(texture, callback);
+            this._effectWrapper = this._createEffect(texture, callback);
         });
     }
 }
