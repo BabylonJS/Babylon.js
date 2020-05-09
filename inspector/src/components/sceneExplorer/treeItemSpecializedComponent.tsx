@@ -32,6 +32,10 @@ import { BoneTreeItemComponent } from './entities/boneTreeItemComponent';
 import { Bone } from 'babylonjs/Bones/bone';
 import { ParticleSystemTreeItemComponent } from './entities/particleSystemTreeItemComponent';
 import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
+import { SpriteManagerTreeItemComponent } from './entities/spriteManagerTreeItemComponent';
+import { SpriteManager } from 'babylonjs/Sprites/spriteManager';
+import { SpriteTreeItemComponent } from './entities/spriteTreeItemComponent';
+import { Sprite } from 'babylonjs/Sprites/sprite';
 
 
 interface ITreeItemSpecializedComponentProps {
@@ -68,6 +72,14 @@ export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpeci
                 } else {
                     return (<TransformNodeItemComponent extensibilityGroups={this.props.extensibilityGroups} transformNode={entity as TransformNode} onClick={() => this.onClick()} />);
                 }
+            }
+
+            if (className.indexOf("SpriteManager") !== -1) {
+                return (<SpriteManagerTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} spriteManager={entity as SpriteManager} onClick={() => this.onClick()} />);
+            }
+
+            if (className.indexOf("Sprite") !== -1) {
+                return (<SpriteTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} sprite={entity as Sprite} onClick={() => this.onClick()} />);
             }
 
             if (className.indexOf("Skeleton") !== -1) {

@@ -3,7 +3,11 @@
 ## Major updates
 
 - Added particle editor to the Inspector ([Deltakosh](https://github.com/deltakosh))
+- Added sprite editor to the Inspector ([Deltakosh](https://github.com/deltakosh))
 - Added the `ShadowDepthWrapper` class to support accurate shadow generation for custom as well as node material shaders. [Doc](https://doc.babylonjs.com/babylon101/shadows#custom-shadow-map-shaders) ([Popov72](https://github.com/Popov72))
+- Added Babylon.js Texture [tools](https://www.babylonjs.com/tools/ibl) to prefilter HDR files ([Sebavan](https://github.com/sebavan/))
+- Added editing of PBR materials and Post processes in the node material editor ([Popov72](https://github.com/Popov72))
+- Added Curve editor to view selected entity's animations in the Inspector. ([pixelspace](https://github.com/devpixelspace))
 
 ## Updates
 
@@ -18,6 +22,7 @@
 - The Mesh Asset Task also accepts File as sceneInput ([RaananW](https://github.com/RaananW))
 - Added support preserving vert colors for CSG objects ([PirateJC](https://github.com/PirateJC))
 - Added support in `ShadowGenerator` for fast fake soft transparent shadows ([Popov72](https://github.com/Popov72))
+- Added `boundingBoxRenderer.onBeforeBoxRenderingObservable` and `boundingBoxRenderer.onAfterBoxRenderingObservable` ([Deltakosh](https://github.com/deltakosh))
 
 ### Engine
 
@@ -80,6 +85,7 @@
 - Added `AddAttribute` to `CustomMaterial` and `PBRCustomMaterial` ([Popov72](https://github.com/Popov72))
 - `setTexture` and `setTextureArray` from `ShaderMaterial` take now a `BaseTexture` as input instead of a `Texture`, allowing to pass a `CubeTexture` ([Popov72](https://github.com/Popov72))
 - Allow parenthesis usage in `#if` expressions in shader code ([Popov72](https://github.com/Popov72))
+- Added to `StandardMaterial` RGBD ReflectionTexture, RefractionTexture and LightmapTexture support. ([MackeyK24](https://github.com/MackeyK24))
 
 ### WebXR
 
@@ -146,6 +152,7 @@
 - Fixed delay calculation in Animatable.goToFrame when speedRatio != 1 ([Reimund Järnfors](https://github.com/reimund))
 - Fix bug in PBR when translucency is enabled and an irradiance texture is provided ([Popov72](https://github.com/Popov72))
 - Fix bug in PBR with translucency when irradiance texture is 2D ([Popov72](https://github.com/Popov72))
+- Fix parenting and enabled state of cloned lights ([cedricguillemet](https://github.com/cedricguillemet))
 - Fix bug in PBR when specific combinations of parameters are used ([Popov72](https://github.com/Popov72))
 - Fix texture being inverted on the Y axis by default when using TextureAsset or AssetManager ([broederj](https://github.com/broederj))
 - Fix `TexturePacker` cross-origin image requests, fix falsy default options ([ludevik](https://github.com/ludevik))
@@ -170,8 +177,11 @@
 - Fix an error in applying texture to sides of `extrudePolygon` using faceUV[1] ([JohnK](https://github.com/BabylonJSGuide/))
 - Playground didn't work if query params were added to the URL ([RaananW](https://github.com/RaananW))
 - Fixed Path3D `_distances` / length computation ([Poolminer](https://github.com/Poolminer))
+- Make sure bone matrices are up to date when calling `TransformNode.attachToBone` ([Popov72](https://github.com/Popov72))
+- Fix display problem with transparent objects and SSAO2 pipeline (bug in the `GeometryBufferRenderer`) ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
 - `EffectRenderer.render` now takes a `RenderTargetTexture` or an `InternalTexture` as the output texture and only a single `EffectWrapper` for its first argument ([Popov72](https://github.com/Popov72))
 - Sound's `updateOptions` takes `options.length` and `options.offset` as seconds and not milliseconds ([RaananW](https://github.com/RaananW))
+- HDRCubeTexture default rotation is now similar to the industry one. You might need to add a rotation on y of 90 degrees if you scene changes ([Sebavan](https://github.com/sebavan/))
