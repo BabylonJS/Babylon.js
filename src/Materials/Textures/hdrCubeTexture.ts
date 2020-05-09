@@ -117,7 +117,7 @@ export class HDRCubeTexture extends BaseTexture {
      * @param gammaSpace Specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space, but the standard material would require them in Gamma space)
      * @param prefilterOnLoad Prefilters HDR texture to allow use of this texture as a PBR reflection texture.
      */
-    constructor(url: string, sceneOrEngine: Scene | ThinEngine, size: number, noMipmap = false, generateHarmonics = true, gammaSpace = false, prefilterOnLoad = true, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null) {
+    constructor(url: string, sceneOrEngine: Scene | ThinEngine, size: number, noMipmap = false, generateHarmonics = true, gammaSpace = false, prefilterOnLoad = false, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null) {
         super(sceneOrEngine);
 
         if (!url) {
@@ -244,7 +244,9 @@ export class HDRCubeTexture extends BaseTexture {
         if (this._prefilterOnLoad) {
             const previousOnLoad = this._onLoad;
             const hdrFiltering = new HDRFiltering(engine);
-            this._onLoad = () => hdrFiltering.prefilter(this, previousOnLoad || undefined);
+            this._onLoad = () => {
+                hdrFiltering.prefilter(this, previousOnLoad);
+            };
         }
 
         this._texture = engine.createRawCubeTextureFromUrl(this.url, this.getScene(), this._size,
