@@ -23,7 +23,7 @@
 - Added support preserving vert colors for CSG objects ([PirateJC](https://github.com/PirateJC))
 - Added support in `ShadowGenerator` for fast fake soft transparent shadows ([Popov72](https://github.com/Popov72))
 - Added `boundingBoxRenderer.onBeforeBoxRenderingObservable` and `boundingBoxRenderer.onAfterBoxRenderingObservable` ([Deltakosh](https://github.com/deltakosh))
-
+- Added support to return all affected Meshes by a HighlightLayer ([erik-pilgrim](https://github.com/erik-pilgrim))
 ### Engine
 
 - Allow logging of shader code when a compilation error occurs ([Popov72](https://github.com/Popov72))
