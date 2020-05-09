@@ -17,6 +17,7 @@ import { IMaterialBRDFDefines, PBRBRDFConfiguration } from "./pbrBRDFConfigurati
 import { IMaterialSheenDefines, PBRSheenConfiguration } from "./pbrSheenConfiguration";
 import { IMaterialSubSurfaceDefines, PBRSubSurfaceConfiguration } from "./pbrSubSurfaceConfiguration";
 import { Color3, TmpColors } from '../../Maths/math.color';
+import { Scalar } from "../../Maths/math.scalar";
 
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
 import { Effect, IEffectCreationOptions } from "../../Materials/effect";
@@ -38,7 +39,6 @@ import "../../Materials/Textures/baseTexture.polynomial";
 import "../../Shaders/pbr.fragment";
 import "../../Shaders/pbr.vertex";
 
-import { EnvironmentRealtimeFiltering } from "./pbrRealtimeFiltering";
 import { EffectFallbacks } from '../effectFallbacks';
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
@@ -56,7 +56,7 @@ export class PBRMaterialDefines extends MaterialDefines
     IMaterialSubSurfaceDefines {
     public PBR = true;
 
-    public NUM_SAMPLES = 0;
+    public NUM_SAMPLES = "0u";
     public REALTIME_FILTERING = false;
 
     public MAINUV1 = false;
@@ -752,8 +752,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public readonly subSurface = new PBRSubSurfaceConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
 
-    public realtimeFilter = new EnvironmentRealtimeFiltering(this);
-
     protected _rebuildInParallel = false;
 
     /**
@@ -1181,9 +1179,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "vReflectionMicrosurfaceInfos",
             "vTangentSpaceParams", "boneTextureWidth",
             "vDebugMode",
-            "vSampleDirections",
-            "vWeights",
-            "cubeWidth"
+            "vFilteringInfo", "linearRoughness"
         ];
 
         var samplers = ["albedoSampler", "reflectivitySampler", "ambientSampler", "emissiveSampler",
@@ -1286,9 +1282,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
                     defines.LINEARSPECULARREFLECTION = reflectionTexture.linearSpecularLOD;
 
-                    if (this.realtimeFilter.enabled && this.realtimeFilter.numSamples > 0) {
-                        defines.NUM_SAMPLES = this.realtimeFilter.numSamples;
+                    if (reflectionTexture.realTimeFiltering && reflectionTexture.realTimeFilteringQuality > 0) {
+                        defines.NUM_SAMPLES = reflectionTexture.realTimeFilteringQuality + "u";
                         defines.REALTIME_FILTERING = true;
+                    } else {
+                        defines.REALTIME_FILTERING = false;
                     }
                     
                     if (reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE) {
@@ -1349,7 +1347,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                         else if (reflectionTexture.isCube) {
                             defines.USESPHERICALFROMREFLECTIONMAP = true;
                             defines.USEIRRADIANCEMAP = false;
-                            if (this._forceIrradianceInFragment || scene.getEngine().getCaps().maxVaryingVectors <= 8) {
+                            if (this._forceIrradianceInFragment || reflectionTexture.realTimeFiltering || scene.getEngine().getCaps().maxVaryingVectors <= 8) {
                                 defines.USESPHERICALINVERTEX = false;
                             }
                             else {
@@ -1697,11 +1695,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                             ubo.updateVector3("vReflectionSize", cubeTexture.boundingBoxSize);
                         }
 
-                        if (this.realtimeFilter.enabled) {
-                            this.realtimeFilter.generateFilterSamples(this._roughness!);           
-                            effect.setArray3("vSampleDirections", this.realtimeFilter.sampleDirections);
-                            effect.setArray("vWeights", this.realtimeFilter.sampleWeights);
-                            effect.setFloat("cubeWidth", reflectionTexture.getSize().width);
+                        if (reflectionTexture.realTimeFiltering) {
+                            const width = reflectionTexture.getSize().width;
+                            const alpha = this._roughness! * this._roughness!;
+
+                            this._activeEffect.setFloat2("vFilteringInfo", width, Scalar.Log2(width));
+                            this._activeEffect.setFloat("linearRoughness", alpha);
                         }
 
                         if (!defines.USEIRRADIANCEMAP) {

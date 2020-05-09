@@ -31,7 +31,7 @@ precision highp float;
 
 // Helper Functions
 #include<helperFunctions>
-#include<hdrFilteringFunctions>
+#include<importanceSampling>
 #include<pbrHelperFunctions>
 #include<imageProcessingFunctions>
 #include<shadowsFragmentFunctions>
@@ -39,6 +39,7 @@ precision highp float;
 #include<pbrDirectLightingSetupFunctions>
 #include<pbrDirectLightingFalloffFunctions>
 #include<pbrBRDFFunctions>
+#include<hdrFilteringFunctions>
 #include<pbrDirectLightingFunctions>
 #include<pbrIBLFunctions>
 #include<bumpFragmentMainFunctions>

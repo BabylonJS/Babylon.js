@@ -9,6 +9,7 @@ import { Constants } from "../../Engines/constants";
 import { IAnimatable } from '../../Animations/animatable.interface';
 import { GUID } from '../../Misc/guid';
 import { ISize, Size } from '../../Maths/math.size';
+import { HDRFiltering } from "./Filtering/hdrFiltering"
 
 import "../../Misc/fileTools";
 import { ThinEngine } from '../../Engines/thinEngine';
@@ -343,6 +344,36 @@ export class BaseTexture implements IAnimatable {
      */
     public getClassName(): string {
         return "BaseTexture";
+    }
+
+    private _realTimeFiltering: boolean = false;
+    /**
+     * Enables realtime filtering on the texture.
+     */
+    public get realTimeFiltering() {
+        return this._realTimeFiltering;
+    }
+    public set realTimeFiltering(b: boolean) {
+        this._realTimeFiltering = b;
+        let scene = this.getScene();
+        if (scene) {
+            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        }
+    }
+
+    private _realTimeFilteringQuality: number = HDRFiltering.QUALITY_MEDIUM;
+    /**
+     * Number of samples used to evaluate BRDF on the texture.
+     */
+    public get realTimeFilteringQuality() : number {
+        return this._realTimeFilteringQuality;
+    }
+    public set realTimeFilteringQuality(n: number) {
+        this._realTimeFilteringQuality = n;
+        let scene = this.getScene();
+        if (scene) {
+            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        }
     }
 
     /**
