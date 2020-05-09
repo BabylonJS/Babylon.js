@@ -38,7 +38,7 @@ gulp.task("webserver", function () {
                         });
                         return res.end();
                     }
-                    if (referer.indexOf('/localdev/') !== -1) {
+                    if (referer.indexOf('/localdev/') !== -1 && referer.indexOf(req.originalUrl) === -1) {
                         if (!fs.existsSync(rootRelativePath + req.originalUrl)) {
                             req.url = "/Playground/" + req.url.replace(/localDev/ig, "");
                         }
