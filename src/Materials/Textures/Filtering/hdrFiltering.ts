@@ -63,9 +63,17 @@ export class HDRFiltering {
     }
 
     private _createRenderTarget(size: number): InternalTexture {
+        let textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        if (this._engine.getCaps().textureHalfFloatRender) {
+            textureType = Constants.TEXTURETYPE_HALF_FLOAT;
+        }
+        else if (this._engine.getCaps().textureFloatRender) {
+            textureType = Constants.TEXTURETYPE_FLOAT;
+        }
+
         const texture = this._engine.createRenderTargetCubeTexture(size, {
             format: Constants.TEXTUREFORMAT_RGBA,
-            type: Constants.TEXTURETYPE_FLOAT,
+            type: textureType,
             generateMipMaps: false,
             generateDepthBuffer: false,
             generateStencilBuffer: false,
@@ -82,7 +90,6 @@ export class HDRFiltering {
     }
 
     private _prefilterInternal(texture: BaseTexture): BaseTexture {
-        // const nbRoughnessStops = 2;
         const width = texture.getSize().width;
         const mipmapsCount = Math.round(Scalar.Log2(width)) + 1;
 
@@ -129,11 +136,17 @@ export class HDRFiltering {
                 effect.setFloat("linearRoughness", alpha);
 
                 this._effectRenderer.draw();
-                this._effectRenderer.restoreStates();
             }
         }
 
-        texture._texture!._webGLTexture = outputTexture._webGLTexture;
+        // Cleanup
+        this._effectRenderer.restoreStates();
+        this._engine.restoreDefaultFramebuffer();
+        this._engine._releaseFramebufferObjects(outputTexture);
+        this._engine._releaseTexture(texture._texture!);
+
+        // Internal Swap
+        outputTexture._swapAndDie(texture._texture!);
         return texture;
     }
 
@@ -178,9 +191,11 @@ export class HDRFiltering {
       * @param onFinished Callback when filtering is done
       * @return Promise called when prefiltering is done
       */
-    public prefilter(texture: BaseTexture, onFinished?: () => void) {
+    public prefilter(texture: BaseTexture, onFinished: Nullable<() => void> = null) {
         return new Promise((resolve) => {
-            const callback = () => {
+            this._effectRenderer = new EffectRenderer(this._engine);
+            this._effectWrapper = this._createEffect(texture);
+            this._effectWrapper.effect.executeWhenCompiled(() => {
                 this._prefilterInternal(texture);
                 this._effectRenderer.dispose();
                 this._effectWrapper.dispose();
@@ -188,10 +203,7 @@ export class HDRFiltering {
                 if (onFinished) {
                     onFinished();
                 }
-            };
-
-            this._effectRenderer = new EffectRenderer(this._engine);
-            this._effectWrapper = this._createEffect(texture, callback);
+            });
         });
     }
 }
