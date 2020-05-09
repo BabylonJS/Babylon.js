@@ -254,8 +254,12 @@
                     irradianceVector.z *= -1.0;
                 #endif
 
-                environmentIrradiance = computeEnvironmentIrradiance(irradianceVector);
-
+                #ifdef REALTIME_FILTERING
+                    environmentIrradiance = irradiance(reflectionSampler, irradianceVector);
+                #else
+                    environmentIrradiance = computeEnvironmentIrradiance(irradianceVector);
+                #endif
+                
                 #ifdef SS_TRANSLUCENCY
                     outParams.irradianceVector = irradianceVector;
                 #endif
@@ -273,7 +277,6 @@
         #endif
 
         environmentIrradiance *= vReflectionColor.rgb;
-
         outParams.environmentRadiance = environmentRadiance;
         outParams.environmentIrradiance = environmentIrradiance;
         outParams.reflectionCoords = reflectionCoords;
