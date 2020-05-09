@@ -11,8 +11,18 @@ import { Nullable } from '../../../types';
 import "../../../Shaders/hdrFiltering.vertex";
 import "../../../Shaders/hdrFiltering.fragment";
 
+/**
+ * Options for texture filtering
+ */
 interface IHDRFilteringOptions {
+    /**
+     * Scales pixel intensity for the input HDR map.
+     */
     hdrScale?: number;
+
+    /**
+     * Quality of the filter. Should be `HDRFiltering.QUALITY_OFFLINE` for prefiltering
+     */
     quality?: number;
 }
 
@@ -29,7 +39,7 @@ export class HDRFiltering {
     private _lodGenerationScale: number = 0.8;
 
     /**
-     * Quality switch for baking. Should be set to ` HDRFiltering.QUALITY_OFFLINE` unless
+     * Quality switch for prefiltering. Should be set to ` HDRFiltering.QUALITY_OFFLINE` unless
      * you care about baking speed.
      */
     public quality: number = HDRFiltering.QUALITY_OFFLINE;
@@ -59,6 +69,12 @@ export class HDRFiltering {
      */
     public static readonly QUALITY_LOW = 8;
 
+    /**
+     * Instantiates HDR filter for reflection maps
+     *
+     * @param engine Thin engine
+     * @param options Options
+     */
     constructor(engine: ThinEngine, options: IHDRFilteringOptions = {}) {
         // pass
         this._engine = engine;
@@ -166,9 +182,9 @@ export class HDRFiltering {
 
     /**
      * Get a value indicating if the filter is ready to be used
+     * @param texture Texture to filter
      * @returns true if the filter is ready
      */
-
     public isReady(texture: BaseTexture) {
         return (texture.isReady() && this._effectWrapper.effect.isReady());
     }
