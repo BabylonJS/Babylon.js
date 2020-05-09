@@ -27,13 +27,35 @@ export class HDRFiltering {
 	private _lodGenerationOffset: number = 0;
 	private _lodGenerationScale: number = 0.8;
 
-
+	/**
+	 * Quality switch for baking. Should be set to ` HDRFiltering.QUALITY_OFFLINE` unless
+	 * you care about baking speed.
+	 */
 	public quality: number = HDRFiltering.QUALITY_OFFLINE;
+
+	/**
+	 * Scales pixel intensity for the input HDR map.
+	 */
 	public hdrScale: number = 1;
 	
+	/**
+	 * Offline (baking) quality
+	 */
 	public static readonly QUALITY_OFFLINE = 4096;
+
+	/**
+	 * High quality
+	 */
 	public static readonly QUALITY_HIGH = 64;
+
+	/**
+	 * Medium quality
+	 */
 	public static readonly QUALITY_MEDIUM = 16;
+
+	/**
+	 * Low quality
+	 */
 	public static readonly QUALITY_LOW = 8;
 
 	constructor(engine: ThinEngine, options: IHDRFilteringOptions = {}) {
