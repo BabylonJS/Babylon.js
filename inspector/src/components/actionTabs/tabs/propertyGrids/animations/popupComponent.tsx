@@ -1,5 +1,6 @@
 import * as React from "react";
 import * as ReactDOM from 'react-dom';
+import { Inspector } from '../../../../../inspector';
 
 interface IPopupComponentProps {
     id: string,
@@ -11,7 +12,7 @@ interface IPopupComponentProps {
 
 export class PopupComponent extends React.Component<IPopupComponentProps, { isComponentMounted: boolean, blockedByBrowser: boolean }> {
 
-    private _container: HTMLDivElement;
+    private _container: HTMLDivElement | null;
     private _window: Window | null;
 
     constructor(props: IPopupComponentProps) {
@@ -33,26 +34,16 @@ export class PopupComponent extends React.Component<IPopupComponentProps, { isCo
     }
 
     openPopup() {
-        const { title, size, onOpen, onClose } = this.props
 
-        const windowCreationOptionsList = {
-            width: size.width,
-            height: size.height,
-            top: (window.innerHeight - size.width) / 2 + window.screenY,
-            left: (window.innerWidth - size.height) / 2 + window.screenX
-        };
+        const { title, size, onClose, onOpen } = this.props;
 
-        var windowCreationOptions = Object.keys(windowCreationOptionsList)
-            .map(
-                (key) => key + '=' + (windowCreationOptionsList as any)[key]
-            )
-            .join(',');
+        let windowVariableName = `window_${title}`;
 
-        this._window = window.open("", title, windowCreationOptions);
+        this._container = Inspector._CreatePopup(title, windowVariableName, size.width, size.height);
+
+        this._window = (Inspector as any)[windowVariableName];
 
         if (this._window) {
-            this._window.document.title = title;
-            this._window.document.body.appendChild(this._container);
             onOpen(this._window);
             this._window.addEventListener('beforeunload', () => this._window && onClose(this._window));
 
@@ -77,8 +68,11 @@ export class PopupComponent extends React.Component<IPopupComponentProps, { isCo
     }
 
     render() {
-        if (!this.state.isComponentMounted) return null
-        return ReactDOM.createPortal(this.props.children, this._container)
+        if (!this.state.isComponentMounted || this._container === null) return null
+        return ReactDOM.createPortal(this.props.children, this._container);
+
     }
+
+   
 
 }

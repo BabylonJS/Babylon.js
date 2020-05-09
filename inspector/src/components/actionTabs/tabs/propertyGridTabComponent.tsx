@@ -91,6 +91,10 @@ import { MultiMaterial } from 'babylonjs/Materials/multiMaterial';
 import { MultiMaterialPropertyGridComponent } from './propertyGrids/materials/multiMaterialPropertyGridComponent';
 import { ParticleSystemPropertyGridComponent } from './propertyGrids/particleSystems/particleSystemPropertyGridComponent';
 import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
+import { SpriteManagerPropertyGridComponent } from './propertyGrids/sprites/spriteManagerPropertyGridComponent';
+import { SpriteManager } from 'babylonjs/Sprites/spriteManager';
+import { SpritePropertyGridComponent } from './propertyGrids/sprites/spritePropertyGridComponent';
+import { Sprite } from 'babylonjs/Sprites/sprite';
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
@@ -133,6 +137,24 @@ export class PropertyGridTabComponent extends PaneComponent {
                 return (<ScenePropertyGridComponent scene={scene}
                     globalState={this.props.globalState}
                     lockObject={this._lockObject}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className === "Sprite") {
+                const sprite = entity as Sprite;
+                return (<SpritePropertyGridComponent sprite={sprite}
+                    globalState={this.props.globalState}
+                    lockObject={this._lockObject}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className === "SpriteManager") {
+                const spriteManager = entity as SpriteManager;
+                return (<SpriteManagerPropertyGridComponent spriteManager={spriteManager}
+                    globalState={this.props.globalState}
+                    lockObject={this._lockObject}                    
                     onSelectionChangedObservable={this.props.onSelectionChangedObservable}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }

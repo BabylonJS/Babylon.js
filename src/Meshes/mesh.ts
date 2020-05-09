@@ -457,6 +457,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 Tags.AddTagsTo(this, Tags.GetTags(source, true));
             }
 
+            // Enabled
+            this.setEnabled(source.isEnabled());
+
             // Parent
             this.parent = source.parent;
 
@@ -1771,7 +1774,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         var sideOrientation: Nullable<number>;
 
-        if (!instanceDataStorage.isFrozen && this._effectiveMaterial.backFaceCulling) {
+        if (!instanceDataStorage.isFrozen &&
+            (this._effectiveMaterial.backFaceCulling || this.overrideMaterialSideOrientation !== null)) {
             let mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
             sideOrientation = this.overrideMaterialSideOrientation;
             if (sideOrientation == null) {
