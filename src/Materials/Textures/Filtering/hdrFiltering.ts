@@ -12,58 +12,59 @@ import "../../../Shaders/hdrFiltering.vertex";
 import "../../../Shaders/hdrFiltering.fragment";
 
 interface IHDRFilteringOptions {
-	hdrScale?: number,
-	quality?: number
+    hdrScale?: number;
+    quality?: number;
 }
+
 /**
  * Filters HDR maps to get correct renderings of PBR reflections
  */
 export class HDRFiltering {
 
-	private _engine: ThinEngine;
-	private _effectRenderer: EffectRenderer;
-	private _effectWrapper: EffectWrapper;
+    private _engine: ThinEngine;
+    private _effectRenderer: EffectRenderer;
+    private _effectWrapper: EffectWrapper;
 
-	private _lodGenerationOffset: number = 0;
-	private _lodGenerationScale: number = 0.8;
+    private _lodGenerationOffset: number = 0;
+    private _lodGenerationScale: number = 0.8;
 
-	/**
-	 * Quality switch for baking. Should be set to ` HDRFiltering.QUALITY_OFFLINE` unless
-	 * you care about baking speed.
-	 */
-	public quality: number = HDRFiltering.QUALITY_OFFLINE;
+    /**
+     * Quality switch for baking. Should be set to ` HDRFiltering.QUALITY_OFFLINE` unless
+     * you care about baking speed.
+     */
+    public quality: number = HDRFiltering.QUALITY_OFFLINE;
 
-	/**
-	 * Scales pixel intensity for the input HDR map.
-	 */
-	public hdrScale: number = 1;
-	
-	/**
-	 * Offline (baking) quality
-	 */
-	public static readonly QUALITY_OFFLINE = 4096;
+    /**
+     * Scales pixel intensity for the input HDR map.
+     */
+    public hdrScale: number = 1;
 
-	/**
-	 * High quality
-	 */
-	public static readonly QUALITY_HIGH = 64;
+    /**
+     * Offline (baking) quality
+     */
+    public static readonly QUALITY_OFFLINE = 4096;
 
-	/**
-	 * Medium quality
-	 */
-	public static readonly QUALITY_MEDIUM = 16;
+    /**
+     * High quality
+     */
+    public static readonly QUALITY_HIGH = 64;
 
-	/**
-	 * Low quality
-	 */
-	public static readonly QUALITY_LOW = 8;
+    /**
+     * Medium quality
+     */
+    public static readonly QUALITY_MEDIUM = 16;
 
-	constructor(engine: ThinEngine, options: IHDRFilteringOptions = {}) {
-		// pass
-		this._engine = engine;
-		this.hdrScale = options.hdrScale || this.hdrScale;
-		this.quality = options.hdrScale || this.quality;
-	}
+    /**
+     * Low quality
+     */
+    public static readonly QUALITY_LOW = 8;
+
+    constructor(engine: ThinEngine, options: IHDRFilteringOptions = {}) {
+        // pass
+        this._engine = engine;
+        this.hdrScale = options.hdrScale || this.hdrScale;
+        this.quality = options.hdrScale || this.quality;
+    }
 
     private createRenderTarget(size: number): InternalTexture {
         const texture = this._engine.createRenderTargetCubeTexture(size, {
@@ -84,92 +85,92 @@ export class HDRFiltering {
         return texture;
     }
 
-	private prefilterInternal(texture: BaseTexture) : BaseTexture {
-		// const nbRoughnessStops = 2;
-		const width = texture.getSize().width;
-		const mipmapsCount = Math.round(Scalar.Log2(width)) + 1;
+    private prefilterInternal(texture: BaseTexture): BaseTexture {
+        // const nbRoughnessStops = 2;
+        const width = texture.getSize().width;
+        const mipmapsCount = Math.round(Scalar.Log2(width)) + 1;
 
-		const effect = this._effectWrapper.effect;
-		const outputTexture = this.createRenderTarget(width);
-		this._effectRenderer.setViewport();
+        const effect = this._effectWrapper.effect;
+        const outputTexture = this.createRenderTarget(width);
+        this._effectRenderer.setViewport();
 
-		const intTexture = texture.getInternalTexture();
-		if (intTexture) {
-		    // Just in case generate fresh clean mips.
-		    this._engine.updateTextureSamplingMode(Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, intTexture, true);
-		}
+        const intTexture = texture.getInternalTexture();
+        if (intTexture) {
+            // Just in case generate fresh clean mips.
+            this._engine.updateTextureSamplingMode(Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, intTexture, true);
+        }
 
-		this._effectRenderer.applyEffectWrapper(this._effectWrapper);
+        this._effectRenderer.applyEffectWrapper(this._effectWrapper);
 
-		const directions = [
-			[new Vector3(0, 0, -1), new Vector3(0, -1, 0), new Vector3(1, 0, 0)], // PositiveX
-			[new Vector3(0, 0, 1), new Vector3(0, -1, 0), new Vector3(-1, 0, 0)], // NegativeX
-			[new Vector3(1, 0, 0), new Vector3(0, 0, 1), new Vector3(0, 1, 0)], // PositiveY
-			[new Vector3(1, 0, 0), new Vector3(0, 0, -1), new Vector3(0, -1, 0)], // NegativeY
-			[new Vector3(1, 0, 0), new Vector3(0, -1, 0), new Vector3(0, 0, 1)], // PositiveZ
-			[new Vector3(-1, 0, 0), new Vector3(0, -1, 0), new Vector3(0, 0, -1)], // NegativeZ
-		];
+        const directions = [
+            [new Vector3(0, 0, -1), new Vector3(0, -1, 0), new Vector3(1, 0, 0)], // PositiveX
+            [new Vector3(0, 0, 1), new Vector3(0, -1, 0), new Vector3(-1, 0, 0)], // NegativeX
+            [new Vector3(1, 0, 0), new Vector3(0, 0, 1), new Vector3(0, 1, 0)], // PositiveY
+            [new Vector3(1, 0, 0), new Vector3(0, 0, -1), new Vector3(0, -1, 0)], // NegativeY
+            [new Vector3(1, 0, 0), new Vector3(0, -1, 0), new Vector3(0, 0, 1)], // PositiveZ
+            [new Vector3(-1, 0, 0), new Vector3(0, -1, 0), new Vector3(0, 0, -1)], // NegativeZ
+        ];
 
-		effect.setFloat("hdrScale", this.hdrScale);
-		effect.setFloat2("vFilteringInfo", texture.getSize().width, mipmapsCount);
-		effect.setTexture("inputTexture", texture);
+        effect.setFloat("hdrScale", this.hdrScale);
+        effect.setFloat2("vFilteringInfo", texture.getSize().width, mipmapsCount);
+        effect.setTexture("inputTexture", texture);
 
-		for (let face = 0; face < 6 ; face++) {
-			effect.setVector3("up", directions[face][0]);
-			effect.setVector3("right", directions[face][1]);
-			effect.setVector3("front", directions[face][2]);
+        for (let face = 0; face < 6; face++) {
+            effect.setVector3("up", directions[face][0]);
+            effect.setVector3("right", directions[face][1]);
+            effect.setVector3("front", directions[face][2]);
 
-			for (let lod = 0; lod < mipmapsCount; lod++) {
+            for (let lod = 0; lod < mipmapsCount; lod++) {
 
-				this._engine.bindFramebuffer(outputTexture, face, undefined, undefined, true, lod);
-				this._effectRenderer.applyEffectWrapper(this._effectWrapper);
+                this._engine.bindFramebuffer(outputTexture, face, undefined, undefined, true, lod);
+                this._effectRenderer.applyEffectWrapper(this._effectWrapper);
 
-				let alpha = Math.pow(2, (lod - this._lodGenerationOffset) / this._lodGenerationScale) / width;
-				if (lod === 0) {
-				    alpha = 0;
-				}
+                let alpha = Math.pow(2, (lod - this._lodGenerationOffset) / this._lodGenerationScale) / width;
+                if (lod === 0) {
+                    alpha = 0;
+                }
 
-				effect.setFloat("linearRoughness", alpha);
+                effect.setFloat("linearRoughness", alpha);
 
-				this._effectRenderer.draw();	
-				this._effectRenderer.restoreStates();
-			}
-		}
+                this._effectRenderer.draw();
+                this._effectRenderer.restoreStates();
+            }
+        }
 
-		texture._texture!._webGLTexture = outputTexture._webGLTexture;
-		return texture;
-	}
+        texture._texture!._webGLTexture = outputTexture._webGLTexture;
+        return texture;
+    }
 
-	private createEffect(texture: BaseTexture, onCompiled?: Nullable<(effect: Effect) => void>) : EffectWrapper {
-	    const defines = [];
-	    if (texture.gammaSpace) {
-	        defines.push("#define GAMMA_INPUT");
-	    }
+    private createEffect(texture: BaseTexture, onCompiled?: Nullable<(effect: Effect) => void>): EffectWrapper {
+        const defines = [];
+        if (texture.gammaSpace) {
+            defines.push("#define GAMMA_INPUT");
+        }
 
-	    defines.push("#define NUM_SAMPLES " + this.quality + "u"); // unsigned int
+        defines.push("#define NUM_SAMPLES " + this.quality + "u"); // unsigned int
 
-	    const effectWrapper = new EffectWrapper({
-	        engine: this._engine,
-	        name: "hdrFiltering",
-	        vertexShader: "hdrFiltering",
-	        fragmentShader: "hdrFiltering",
-	        samplerNames: ["inputTexture"],
-	        uniformNames: ["vSampleDirections", "vWeights", "up", "right", "front", "vFilteringInfo", "hdrScale", "linearRoughness"],
-	        useShaderStore: true,
-	        defines,
-	        onCompiled: onCompiled
-	    });
+        const effectWrapper = new EffectWrapper({
+            engine: this._engine,
+            name: "hdrFiltering",
+            vertexShader: "hdrFiltering",
+            fragmentShader: "hdrFiltering",
+            samplerNames: ["inputTexture"],
+            uniformNames: ["vSampleDirections", "vWeights", "up", "right", "front", "vFilteringInfo", "hdrScale", "linearRoughness"],
+            useShaderStore: true,
+            defines,
+            onCompiled: onCompiled
+        });
 
-	    return effectWrapper;
-	}
+        return effectWrapper;
+    }
 
     /**
      * Get a value indicating if the filter is ready to be used
      * @returns true if the filter is ready
      */
-     
+
     public isReady(texture: BaseTexture) {
-    	return (texture.isReady() && this._effectWrapper.effect.isReady())
+        return (texture.isReady() && this._effectWrapper.effect.isReady());
     }
 
     /**
@@ -181,18 +182,19 @@ export class HDRFiltering {
       * @param onFinished Callback when filtering is done
       */
     public prefilter(texture: BaseTexture, onFinished?: () => void) {
-    	return new Promise((resolve) => {
-    		const callback = () => {
-				this.prefilterInternal(texture);
-				this._effectRenderer.dispose();
-				this._effectWrapper.dispose();
-				resolve();
-				if (onFinished) {
-					onFinished();
-				}
-			}
-			this._effectRenderer = new EffectRenderer(this._engine);
-    		this._effectWrapper = this.createEffect(texture, callback);
-    	});
+        return new Promise((resolve) => {
+            const callback = () => {
+                this.prefilterInternal(texture);
+                this._effectRenderer.dispose();
+                this._effectWrapper.dispose();
+                resolve();
+                if (onFinished) {
+                    onFinished();
+                }
+            };
+
+            this._effectRenderer = new EffectRenderer(this._engine);
+            this._effectWrapper = this.createEffect(texture, callback);
+        });
     }
 }

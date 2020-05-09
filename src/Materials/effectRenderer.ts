@@ -97,7 +97,6 @@ export class EffectRenderer {
         this.engine.stencilState.stencilTest = true;
     }
 
-
     /**
      * Draws a full screen quad.
      */
@@ -273,7 +272,7 @@ export class EffectWrapper {
                 creationOptions.engine,
                 defines,
                 undefined,
-                creationOptions.onCompiled 
+                creationOptions.onCompiled,
             );
         }
     }
