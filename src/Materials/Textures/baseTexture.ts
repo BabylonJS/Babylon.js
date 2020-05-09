@@ -9,7 +9,6 @@ import { Constants } from "../../Engines/constants";
 import { IAnimatable } from '../../Animations/animatable.interface';
 import { GUID } from '../../Misc/guid';
 import { ISize, Size } from '../../Maths/math.size';
-import { HDRFiltering } from "./Filtering/hdrFiltering";
 
 import "../../Misc/fileTools";
 import { ThinEngine } from '../../Engines/thinEngine';
@@ -361,7 +360,7 @@ export class BaseTexture implements IAnimatable {
         }
     }
 
-    private _realTimeFilteringQuality: number = HDRFiltering.QUALITY_MEDIUM;
+    private _realTimeFilteringQuality: number = Constants.TEXTURE_FILTERING_QUALITY_LOW;
     /**
      * Quality switch for realtime filtering
      */
