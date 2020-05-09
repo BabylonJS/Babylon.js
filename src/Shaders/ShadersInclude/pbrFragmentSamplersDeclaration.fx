@@ -145,7 +145,7 @@
         
         #ifdef LODBASEDMICROSFURACE
             #ifdef REALTIME_FILTERING
-                #define sampleReflectionLod(s, c, l) sampleFiltered(s, c)
+                #define sampleReflectionLod(s, c, l) vec4(radiance(s, c), 1.0)
             #else
                 #define sampleReflectionLod(s, c, l) textureCubeLodEXT(s, c, l)
             #endif

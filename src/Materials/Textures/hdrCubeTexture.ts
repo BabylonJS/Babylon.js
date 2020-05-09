@@ -10,7 +10,7 @@ import { _TypeStore } from '../../Misc/typeStore';
 import { Tools } from '../../Misc/tools';
 import { ToGammaSpace } from '../../Maths/math.constants';
 import { ThinEngine } from '../../Engines/thinEngine';
-
+import { HDRFiltering } from "../../Materials/Textures/Filtering/hdrFiltering";
 import "../../Engines/Extensions/engine.rawTexture";
 import "../../Materials/Textures/baseTexture.polynomial";
 
@@ -242,9 +242,10 @@ export class HDRCubeTexture extends BaseTexture {
         };
 
         
-        if (this._prefilterOnLoad && this.getScene()) {
+        if (this._prefilterOnLoad) {
             const previousOnLoad = this._onLoad;
-            this._onLoad = () => this.getScene()!.hdrFiltering.prefilter(this, previousOnLoad || undefined);
+            const hdrFiltering = new HDRFiltering(engine)
+            this._onLoad = () => hdrFiltering.prefilter(this, previousOnLoad || undefined);
         }
 
             
