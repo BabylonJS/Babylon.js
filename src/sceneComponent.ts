@@ -23,7 +23,6 @@ export class SceneComponentConstants {
     public static readonly NAME_PARTICLESYSTEM = "ParticleSystem";
     public static readonly NAME_GAMEPAD = "Gamepad";
     public static readonly NAME_SIMPLIFICATIONQUEUE = "SimplificationQueue";
-    public static readonly NAME_HDRFILTERING = "HDRFiltering";
     public static readonly NAME_GEOMETRYBUFFERRENDERER = "GeometryBufferRenderer";
     public static readonly NAME_DEPTHRENDERER = "DepthRenderer";
     public static readonly NAME_POSTPROCESSRENDERPIPELINEMANAGER = "PostProcessRenderPipelineManager";

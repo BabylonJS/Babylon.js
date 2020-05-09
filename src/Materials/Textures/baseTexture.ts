@@ -363,7 +363,7 @@ export class BaseTexture implements IAnimatable {
 
     private _realTimeFilteringQuality: number = HDRFiltering.QUALITY_MEDIUM;
     /**
-     * Number of samples used to evaluate BRDF on the texture.
+     * Quality switch for realtime filtering
      */
     public get realTimeFilteringQuality() : number {
         return this._realTimeFilteringQuality;
