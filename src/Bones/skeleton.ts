@@ -285,7 +285,7 @@ export class Skeleton implements IAnimatable {
      * @returns the requested animation range or null if not found
      */
     public getAnimationRange(name: string): Nullable<AnimationRange> {
-        return this._ranges[name];
+        return this._ranges[name] || null;
     }
 
     /**

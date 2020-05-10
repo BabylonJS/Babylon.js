@@ -2,6 +2,12 @@
 	#include<packingFunctions>
 #endif
 
+#if SM_SOFTTRANSPARENTSHADOW == 1
+	#include<bayerDitherFunctions>
+
+    uniform float softTransparentShadowSM;
+#endif
+
 varying float vDepthMetricSM;
 
 #if SM_USEDISTANCE == 1

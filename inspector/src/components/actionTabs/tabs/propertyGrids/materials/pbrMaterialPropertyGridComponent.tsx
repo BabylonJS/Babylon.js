@@ -151,11 +151,11 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="METALLIC WORKFLOW">
                     <SliderLineComponent label="Metallic" target={material} propertyName="metallic" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <SliderLineComponent label="Metallic F0" target={material} propertyName="metallicF0Factor" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <CheckBoxLineComponent label="Metallic F0 From Map" target={material} propertyName="useMetallicF0FactorFromMetallicTexture"
-                        onValueChanged={() => this.forceUpdate()}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Roughness" target={material} propertyName="roughness" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent label="Index of Refraction" target={material} propertyName="indexOfRefraction" minimum={1} maximum={2} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent label="F0 Factor" target={material} propertyName="metallicF0Factor" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Color3LineComponent label="Reflectance Color" target={material} propertyName="metallicReflectanceColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} isLinear={true} />
+                    <TextureLinkLineComponent label="Reflectance Texture" texture={material.metallicReflectanceTexture} onTextureCreated={(texture) => material.metallicReflectanceTexture = texture} onTextureRemoved={() => material.metallicReflectanceTexture = null} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="CLEAR COAT">
                     <CheckBoxLineComponent label="Enabled" target={material.clearCoat} propertyName="isEnabled"

@@ -1,5 +1,4 @@
 import { Scene } from "../../scene";
-import { Engine } from "../../Engines/engine";
 import { Texture } from "./texture";
 import { Constants } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.rawTexture";
@@ -7,8 +6,6 @@ import "../../Engines/Extensions/engine.rawTexture";
  * Class used to store 2D array textures containing user data
  */
 export class RawTexture2DArray extends Texture {
-    private _engine: Engine;
-
     /**
      * Create a new RawTexture2DArray
      * @param data defines the data of the texture
@@ -30,7 +27,6 @@ export class RawTexture2DArray extends Texture {
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
         textureType = Constants.TEXTURETYPE_UNSIGNED_INT) {
         super(null, scene, !generateMipMaps, invertY);
-        this._engine = scene.getEngine();
 
         this._texture = scene.getEngine().createRawTexture2DArray(
             data,
@@ -56,6 +52,6 @@ export class RawTexture2DArray extends Texture {
         if (!this._texture) {
             return;
         }
-        this._engine.updateRawTexture2DArray(this._texture, data, this._texture.format, this._texture!.invertY, null, this._texture.type);
+        this._getEngine()!.updateRawTexture2DArray(this._texture, data, this._texture.format, this._texture!.invertY, null, this._texture.type);
     }
 }

@@ -57,6 +57,9 @@ export class NodeMaterialConnectionPoint {
         return this._direction;
     }
 
+    /** Indicates that this connection point needs dual validation before being connected to another point */
+    public needDualDirectionValidation: boolean = false;
+
     /**
      * Gets or sets the additional types supported by this connection point
      */
@@ -134,6 +137,11 @@ export class NodeMaterialConnectionPoint {
     public name: string;
 
     /**
+     * Gets or sets the connection point name
+     */
+    public displayName: string;
+
+    /**
      * Gets or sets a boolean indicating that this connection point can be omitted
      */
     public isOptional: boolean;
@@ -170,10 +178,10 @@ export class NodeMaterialConnectionPoint {
     }
 
     /**
-     * Gets a boolean indicating that the current point is connected
+     * Gets a boolean indicating that the current point is connected to another NodeMaterialBlock
      */
     public get isConnected(): boolean {
-        return this.connectedPoint !== null;
+        return this.connectedPoint !== null || this.hasEndpoints;
     }
 
     /**
@@ -284,6 +292,15 @@ export class NodeMaterialConnectionPoint {
         }
 
         return false;
+    }
+
+    /**
+     * Creates a block suitable to be used as an input for this input point.
+     * If null is returned, a block based on the point type will be created.
+     * @returns The returned string parameter is the name of the output point of NodeMaterialBlock (first parameter of the returned array) that can be connected to the input
+     */
+    public createCustomInputBlock(): Nullable<[NodeMaterialBlock, string]> {
+        return null;
     }
 
     /**
@@ -426,14 +443,16 @@ export class NodeMaterialConnectionPoint {
 
     /**
      * Serializes this point in a JSON representation
+     * @param isInput defines if the connection point is an input (default is true)
      * @returns the serialized point object
      */
-    public serialize(): any {
+    public serialize(isInput = true): any {
         let serializationObject: any = {};
 
         serializationObject.name = this.name;
+        serializationObject.displayName = this.displayName;
 
-        if (this.connectedPoint) {
+        if (isInput && this.connectedPoint) {
             serializationObject.inputName = this.name;
             serializationObject.targetBlockId = this.connectedPoint.ownerBlock.uniqueId;
             serializationObject.targetConnectionName = this.connectedPoint.name;

@@ -62,7 +62,7 @@ export class FrameNodePortPropertyTabComponent extends React.Component<IFrameNod
                 </div>
                 <div>
                     <LineContainerComponent title="GENERAL">
-                        <TextInputLineComponent globalState={this.props.globalState} label="Port Label" propertyName="portLabel" target={this.props.frameNodePort} />
+                        <TextInputLineComponent globalState={this.props.globalState} label="Port Name" propertyName="portName" target={this.props.frameNodePort} />
                         {this.props.frameNodePort.framePortPosition !== FramePortPosition.Top && <ButtonLineComponent label="Move Port Up" onClick={() => {
                             this.props.frame.moveFramePortUp(this.props.frameNodePort);
                         }} />}

@@ -29,6 +29,7 @@ import { AbstractMesh } from 'babylonjs/Meshes/abstractMesh';
 import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
 import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
+import { RenderingManager } from 'babylonjs/Rendering/renderingManager';
 
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;
@@ -389,6 +390,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                         !mesh.parent &&
                         <CheckBoxLineComponent label="Infinite distance" target={mesh} propertyName="infiniteDistance" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
+                    <SliderLineComponent label="Rendering group ID" decimalCount={0} target={mesh} propertyName="renderingGroupId" minimum={RenderingManager.MIN_RENDERINGGROUPS} maximum={RenderingManager.MAX_RENDERINGGROUPS - 1} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />                    
                 </LineContainerComponent>
                 {
                     mesh.morphTargetManager != null &&

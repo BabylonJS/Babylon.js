@@ -62,6 +62,10 @@ varying vec2 vReflectivityUV;
 varying vec2 vMicroSurfaceSamplerUV;
 #endif
 
+#if defined(METALLIC_REFLECTANCE) && METALLIC_REFLECTANCEDIRECTUV == 0
+varying vec2 vMetallicReflectanceUV;
+#endif
+
 #if defined(BUMP) && BUMPDIRECTUV == 0
 varying vec2 vBumpUV;
 #endif
@@ -163,10 +167,6 @@ void main(void) {
 #include<instancesVertex>
 #include<bonesVertex>
 
-#if DEBUGMODE > 0
-    vClipSpacePosition = gl_Position;
-#endif
-
     vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
     vPositionW = vec3(worldPos);
 
@@ -198,6 +198,10 @@ void main(void) {
 	}
 #else
 	gl_Position = viewProjection * worldPos;
+#endif
+
+#if DEBUGMODE > 0
+    vClipSpacePosition = gl_Position;
 #endif
 
 #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
@@ -294,6 +298,17 @@ void main(void) {
     else
     {
         vMicroSurfaceSamplerUV = vec2(microSurfaceSamplerMatrix * vec4(uv2, 1.0, 0.0));
+    }
+#endif
+
+#if defined(METALLIC_REFLECTANCE) && METALLIC_REFLECTANCEDIRECTUV == 0 
+    if (vMetallicReflectanceInfos.x == 0.)
+    {
+        vMetallicReflectanceUV = vec2(metallicReflectanceMatrix * vec4(uvUpdated, 1.0, 0.0));
+    }
+    else
+    {
+        vMetallicReflectanceUV = vec2(metallicReflectanceMatrix * vec4(uv2, 1.0, 0.0));
     }
 #endif
 

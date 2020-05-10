@@ -31,6 +31,7 @@ precision highp float;
 
 // Helper Functions
 #include<helperFunctions>
+#include<importanceSampling>
 #include<pbrHelperFunctions>
 #include<imageProcessingFunctions>
 #include<shadowsFragmentFunctions>
@@ -38,8 +39,10 @@ precision highp float;
 #include<pbrDirectLightingSetupFunctions>
 #include<pbrDirectLightingFalloffFunctions>
 #include<pbrBRDFFunctions>
+#include<hdrFilteringFunctions>
 #include<pbrDirectLightingFunctions>
 #include<pbrIBLFunctions>
+#include<bumpFragmentMainFunctions>
 #include<bumpFragmentFunctions>
 
 #ifdef REFLECTION
@@ -129,24 +132,43 @@ void main(void) {
 
     reflectivityOutParams reflectivityOut;
 
+#if defined(REFLECTIVITY)
+    vec4 surfaceMetallicOrReflectivityColorMap = texture2D(reflectivitySampler, vReflectivityUV + uvOffset);
+    #ifndef METALLICWORKFLOW
+        surfaceMetallicOrReflectivityColorMap = toLinearSpace(surfaceMetallicOrReflectivityColorMap);
+        surfaceMetallicOrReflectivityColorMap.rgb *= vReflectivityInfos.y;
+    #endif
+#endif
+
+#if defined(MICROSURFACEMAP)
+    vec4 microSurfaceTexel = texture2D(microSurfaceSampler, vMicroSurfaceSamplerUV + uvOffset) * vMicroSurfaceSamplerInfos.y;
+#endif
+
+#ifdef METALLICWORKFLOW
+    vec4 metallicReflectanceFactors = vMetallicReflectanceFactors;
+    #ifdef METALLIC_REFLECTANCE
+        vec4 metallicReflectanceFactorsMap = texture2D(metallicReflectanceSampler, vMetallicReflectanceUV + uvOffset);
+        metallicReflectanceFactorsMap = toLinearSpace(metallicReflectanceFactorsMap);
+
+        metallicReflectanceFactors *= metallicReflectanceFactorsMap;
+    #endif
+#endif
+
     reflectivityBlock(
         vReflectivityColor,
-        uvOffset,
     #ifdef METALLICWORKFLOW
         surfaceAlbedo,
+        metallicReflectanceFactors,
     #endif
     #ifdef REFLECTIVITY
         vReflectivityInfos,
-        vReflectivityUV,
-        reflectivitySampler,
+        surfaceMetallicOrReflectivityColorMap,
     #endif
     #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY)  && defined(AOSTOREINMETALMAPRED)
         aoOut.ambientOcclusionColor,
     #endif
     #ifdef MICROSURFACEMAP
-        vMicroSurfaceSamplerUV,
-        vMicroSurfaceSamplerInfos,
-        microSurfaceSampler,
+        microSurfaceTexel,
     #endif
         reflectivityOut
     );
@@ -185,13 +207,14 @@ void main(void) {
     #ifdef ANISOTROPIC
         anisotropicOutParams anisotropicOut;
 
+        #ifdef ANISOTROPIC_TEXTURE
+            vec3 anisotropyMapData = texture2D(anisotropySampler, vAnisotropyUV + uvOffset).rgb * vAnisotropyInfos.y;
+        #endif
+
         anisotropicBlock(
             vAnisotropy,
         #ifdef ANISOTROPIC_TEXTURE
-            vAnisotropyInfos,
-            vAnisotropyUV,
-            uvOffset,
-            anisotropySampler,
+            anisotropyMapData,
         #endif
             TBN,
             normalW,
@@ -210,6 +233,7 @@ void main(void) {
             alphaG,
             vReflectionMicrosurfaceInfos,
             vReflectionInfos,
+            vReflectionColor,
         #ifdef ANISOTROPIC
             anisotropicOut,
         #endif
@@ -231,6 +255,10 @@ void main(void) {
         #ifdef USEIRRADIANCEMAP
             irradianceSampler,
         #endif
+        #ifndef LODBASEDMICROSFURACE
+            reflectionSamplerLow,
+            reflectionSamplerHigh,
+        #endif
             reflectionOut
         );
     #endif
@@ -242,6 +270,10 @@ void main(void) {
     #ifdef SHEEN
         sheenOutParams sheenOut;
 
+        #ifdef SHEEN_TEXTURE
+            vec4 sheenMapData = toLinearSpace(texture2D(sheenSampler, vSheenUV + uvOffset)) * vSheenInfos.y;
+        #endif
+
         sheenBlock(
             vSheenColor,
         #ifdef SHEEN_ROUGHNESS
@@ -249,10 +281,7 @@ void main(void) {
         #endif
             roughness,
         #ifdef SHEEN_TEXTURE
-            vSheenUV,
-            vSheenInfos,
-            uvOffset,
-            sheenSampler,
+            sheenMapData,
         #endif
             reflectance,
         #ifdef SHEEN_LINKWITHALBEDO
@@ -295,31 +324,39 @@ void main(void) {
     clearcoatOutParams clearcoatOut;
 
     #ifdef CLEARCOAT
+        #ifdef CLEARCOAT_TEXTURE
+            vec2 clearCoatMapData = texture2D(clearCoatSampler, vClearCoatUV + uvOffset).rg * vClearCoatInfos.y;
+        #endif
+
+        #if defined(CLEARCOAT_TINT) && defined(CLEARCOAT_TINT_TEXTURE)
+            vec4 clearCoatTintMapData = toLinearSpace(texture2D(clearCoatTintSampler, vClearCoatTintUV + uvOffset));
+        #endif
+
+        #ifdef CLEARCOAT_BUMP
+            vec4 clearCoatBumpMapData = texture2D(clearCoatBumpSampler, vClearCoatBumpUV + uvOffset);
+        #endif
+
         clearcoatBlock(
             vPositionW,
             geometricNormalW,
             viewDirectionW,
             vClearCoatParams,
-            uvOffset,
             specularEnvironmentR0,
         #ifdef CLEARCOAT_TEXTURE
-            vClearCoatUV,
-            vClearCoatInfos,
-            clearCoatSampler,
+            clearCoatMapData,
         #endif
         #ifdef CLEARCOAT_TINT
             vClearCoatTintParams,
             clearCoatColorAtDistance,
             vClearCoatRefractionParams,
             #ifdef CLEARCOAT_TINT_TEXTURE
-                vClearCoatTintUV,
-                clearCoatTintSampler,
+                clearCoatTintMapData,
             #endif
         #endif
         #ifdef CLEARCOAT_BUMP
             vClearCoatBumpInfos,
+            clearCoatBumpMapData,
             vClearCoatBumpUV,
-            clearCoatBumpSampler,
             #if defined(TANGENT) && defined(NORMAL)
                 vTBN,
             #else
@@ -334,6 +371,8 @@ void main(void) {
         #endif
         #ifdef REFLECTION
             vReflectionMicrosurfaceInfos,
+            vReflectionInfos,
+            vReflectionColor,
             vLightingIntensity,
             reflectionSampler,
             #ifndef LODBASEDMICROSFURACE
@@ -359,15 +398,18 @@ void main(void) {
     subSurfaceOutParams subSurfaceOut;
 
     #ifdef SUBSURFACE
+        #ifdef SS_THICKNESSANDMASK_TEXTURE
+            vec4 thicknessMap = texture2D(thicknessSampler, vThicknessUV + uvOffset);
+        #endif
+
         subSurfaceBlock(
+            vSubSurfaceIntensity,
             vThicknessParam,
             vTintColor,
             normalW,
             specularEnvironmentReflectance,
         #ifdef SS_THICKNESSANDMASK_TEXTURE
-            vThicknessUV,
-            uvOffset,
-            thicknessSampler,
+            thicknessMap,
         #endif
         #ifdef REFLECTION
             #ifdef SS_TRANSLUCENCY

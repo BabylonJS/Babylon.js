@@ -120,6 +120,10 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public ALPHATEST_AFTERALLALPHACOMPUTATIONS = false;
     public ALPHABLEND = true;
 
+    public RGBDLIGHTMAP = false;
+    public RGBDREFLECTION = false;
+    public RGBDREFRACTION = false;
+
     public IMAGEPROCESSING = false;
     public VIGNETTE = false;
     public VIGNETTEBLENDMODEMULTIPLY = false;
@@ -856,6 +860,7 @@ export class StandardMaterial extends PushMaterial {
                         defines.REFLECTIONOVERALPHA = this._useReflectionOverAlpha;
                         defines.INVERTCUBICMAP = (this._reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE);
                         defines.REFLECTIONMAP_3D = this._reflectionTexture.isCube;
+                        defines.RGBDREFLECTION = this._reflectionTexture.isRGBD;
 
                         switch (this._reflectionTexture.coordinatesMode) {
                             case Texture.EXPLICIT_MODE:
@@ -911,6 +916,7 @@ export class StandardMaterial extends PushMaterial {
                     } else {
                         MaterialHelper.PrepareDefinesForMergedUV(this._lightmapTexture, defines, "LIGHTMAP");
                         defines.USELIGHTMAPASSHADOWMAP = this._useLightmapAsShadowmap;
+                        defines.RGBDLIGHTMAP = this._lightmapTexture.isRGBD;
                     }
                 } else {
                     defines.LIGHTMAP = false;
@@ -951,6 +957,7 @@ export class StandardMaterial extends PushMaterial {
                         defines.REFRACTION = true;
 
                         defines.REFRACTIONMAP_3D = this._refractionTexture.isCube;
+                        defines.RGBDREFRACTION = this._refractionTexture.isRGBD;
                     }
                 } else {
                     defines.REFRACTION = false;
@@ -1436,12 +1443,12 @@ export class StandardMaterial extends PushMaterial {
                 }
                 ubo.updateColor3("vEmissiveColor", StandardMaterial.EmissiveTextureEnabled ? this.emissiveColor : Color3.BlackReadOnly);
 
-                // Visibility
-                ubo.updateFloat("visibility", mesh.visibility);
-
                 // Diffuse
                 ubo.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha);
             }
+
+            // Visibility
+            ubo.updateFloat("visibility", mesh.visibility);
 
             // Textures
             if (scene.texturesEnabled) {
