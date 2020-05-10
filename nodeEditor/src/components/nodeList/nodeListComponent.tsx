@@ -197,6 +197,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 delete allBlocks["Animation"];
                 delete allBlocks["Mesh"];
                 delete allBlocks["PostProcess"];
+                allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("VertexOutputBlock"), 1);
                 break;
         }
 
