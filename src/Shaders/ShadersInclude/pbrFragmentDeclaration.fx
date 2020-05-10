@@ -5,6 +5,7 @@ uniform vec4 vAlbedoColor;
 uniform vec4 vLightingIntensity;
 
 uniform vec4 vReflectivityColor;
+uniform vec4 vMetallicReflectanceFactors;
 uniform vec3 vEmissiveColor;
 
 uniform float visibility;
