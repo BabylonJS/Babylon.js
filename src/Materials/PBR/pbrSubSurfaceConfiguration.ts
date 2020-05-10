@@ -113,14 +113,18 @@ export class PBRSubSurfaceConfiguration {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public refractionTexture: Nullable<BaseTexture> = null;
 
-    private _indexOfRefraction = 1;
+    private _indexOfRefraction = 1.5;
     /**
-     * Defines the index of refraction used in the material.
+     * Index of refraction of the material base layer.
      * https://en.wikipedia.org/wiki/List_of_refractive_indices
+     *
+     * This does not only impact refraction but also the Base F0 of Dielectric Materials.
+     *
+     * From dielectric fresnel rules: F0 = square((iorT - iorI) / (iorT + iorI))
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public indexOfRefraction = 1;
+    public indexOfRefraction = 1.5;
 
     private _invertRefractionY = false;
     /**

@@ -31,6 +31,11 @@ uniform vec3 vReflectivityInfos;
 uniform mat4 reflectivityMatrix;
 #endif
 
+#ifdef METALLIC_REFLECTANCE
+uniform vec2 vMetallicReflectanceInfos;
+uniform mat4 metallicReflectanceMatrix;
+#endif
+
 #ifdef MICROSURFACEMAP
 uniform vec2 vMicroSurfaceSamplerInfos;
 uniform mat4 microSurfaceSamplerMatrix;
