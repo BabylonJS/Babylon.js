@@ -75,6 +75,7 @@ import { CurrentScreenBlock } from 'babylonjs/Materials/Node/Blocks/Dual/current
 import { ParticleTextureBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleTextureBlock';
 import { ParticleRampGradientBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleRampGradientBlock';
 import { ParticleBlendMultiplyBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleBlendMultiplyBlock';
+import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
@@ -114,7 +115,7 @@ export class BlockTools {
             case "VectorSplitterBlock":
                 return new VectorSplitterBlock("VectorSplitter");
             case "TextureBlock":
-                return new TextureBlock("Texture");
+                return new TextureBlock("Texture", nodeMaterial.mode === NodeMaterialModes.Particle);
             case "ReflectionTextureBlock":
                 return new ReflectionTextureBlock("Reflection texture");
             case "LightBlock":
