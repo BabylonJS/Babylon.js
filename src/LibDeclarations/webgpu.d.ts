@@ -502,7 +502,7 @@ declare class GPUBuffer implements GPUObjectBase {
   mapWriteAsync(): Promise<ArrayBuffer>;
   mapReadAsync(): Promise<ArrayBuffer>;
   // TODO: Remove setSubData (#280)
-  setSubData(
+  writeBuffer(
     offset: number,
     src: ArrayBufferView,
     srcOffset?: number,
@@ -687,16 +687,16 @@ interface GPURenderEncoderBase extends GPUProgrammablePassEncoder {
 
   draw(
     vertexCount: number,
-    instanceCount: number,
-    firstVertex: number,
-    firstInstance: number
+    instanceCount?: number,
+    firstVertex?: number,
+    firstInstance?: number
   ): void;
   drawIndexed(
     indexCount: number,
-    instanceCount: number,
-    firstIndex: number,
-    baseVertex: number,
-    firstInstance: number
+    instanceCount?: number,
+    firstIndex?: number,
+    baseVertex?: number,
+    firstInstance?: number
   ): void;
 
   drawIndirect(indirectBuffer: GPUBuffer, indirectOffset: number): void;
