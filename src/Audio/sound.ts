@@ -937,17 +937,18 @@ export class Sound {
     }
 
     private _onRegisterAfterWorldMatrixUpdate(node: TransformNode): void {
-        if (!(<any>node).getBoundingInfo) {
-            return;
-        }
-        let mesh = node as AbstractMesh;
         if (this._positionInEmitterSpace) {
-            mesh.worldMatrixFromCache.invertToRef(TmpVectors.Matrix[0]);
+            node.worldMatrixFromCache.invertToRef(TmpVectors.Matrix[0]);
             this.setPosition(TmpVectors.Matrix[0].getTranslation());
         }
         else {
-            let boundingInfo = mesh.getBoundingInfo();
-            this.setPosition(boundingInfo.boundingSphere.centerWorld);
+            if(!(<any>node).getBoundingInfo){
+                this.setPosition(node.position);
+            } else {
+                let mesh = node as AbstractMesh;
+                let boundingInfo = mesh.getBoundingInfo();
+                this.setPosition(boundingInfo.boundingSphere.centerWorld);
+            }
         }
         if (Engine.audioEngine.canUseWebAudio && this._isDirectional && this.isPlaying) {
             this._updateDirection();
