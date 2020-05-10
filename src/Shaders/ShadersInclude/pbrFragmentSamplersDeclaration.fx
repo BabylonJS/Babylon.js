@@ -1,50 +1,3 @@
-#ifdef ENVIRONMENTBRDF
-    uniform sampler2D environmentBrdfSampler;
-#endif
-
-// Reflection
-#ifdef REFLECTION
-    #ifdef REFLECTIONMAP_3D
-        #define sampleReflection(s, c) textureCube(s, c)
-
-        uniform samplerCube reflectionSampler;
-
-        #ifdef LODBASEDMICROSFURACE
-            #define sampleReflectionLod(s, c, l) textureCubeLodEXT(s, c, l)
-        #else
-            uniform samplerCube reflectionSamplerLow;
-            uniform samplerCube reflectionSamplerHigh;
-        #endif
-
-        #ifdef USEIRRADIANCEMAP
-            uniform samplerCube irradianceSampler;
-        #endif
-    #else
-        #define sampleReflection(s, c) texture2D(s, c)
-
-        uniform sampler2D reflectionSampler;
-
-        #ifdef LODBASEDMICROSFURACE
-            #define sampleReflectionLod(s, c, l) texture2DLodEXT(s, c, l)
-        #else
-            uniform samplerCube reflectionSamplerLow;
-            uniform samplerCube reflectionSamplerHigh;
-        #endif
-
-        #ifdef USEIRRADIANCEMAP
-            uniform samplerCube irradianceSampler;
-        #endif
-    #endif
-
-    #ifdef REFLECTIONMAP_SKYBOX
-        varying vec3 vPositionUVW;
-    #else
-        #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
-            varying vec3 vDirectionW;
-        #endif
-    #endif
-#endif
-
 #ifdef ALBEDO
     #if ALBEDODIRECTUV == 1
         #define vAlbedoUV vMainUV1
@@ -138,6 +91,17 @@
     uniform sampler2D microSurfaceSampler;
 #endif
 
+#ifdef METALLIC_REFLECTANCE
+    #if METALLIC_REFLECTANCEDIRECTUV == 1
+        #define vMetallicReflectanceUV vMainUV1
+    #elif METALLIC_REFLECTANCEDIRECTUV == 2
+        #define vMetallicReflectanceUV vMainUV2
+    #else
+        varying vec2 vMetallicReflectanceUV;
+    #endif
+    uniform sampler2D metallicReflectanceSampler;
+#endif
+
 #ifdef CLEARCOAT
     #ifdef CLEARCOAT_TEXTURE
         #if CLEARCOAT_TEXTUREDIRECTUV == 1
@@ -197,6 +161,57 @@
         #endif
         uniform sampler2D anisotropySampler;
     #endif
+#endif
+
+// Reflection
+#ifdef REFLECTION
+    #ifdef REFLECTIONMAP_3D
+        #define sampleReflection(s, c) textureCube(s, c)
+
+        uniform samplerCube reflectionSampler;
+        
+        #ifdef LODBASEDMICROSFURACE
+            #if defined(WEBGL2) && defined(REALTIME_FILTERING)
+                #define sampleReflectionLod(s, c, l) vec4(radiance(s, c), 1.0)
+            #else
+                #define sampleReflectionLod(s, c, l) textureCubeLodEXT(s, c, l)
+            #endif
+        #else
+            uniform samplerCube reflectionSamplerLow;
+            uniform samplerCube reflectionSamplerHigh;
+        #endif
+
+        #ifdef USEIRRADIANCEMAP
+            uniform samplerCube irradianceSampler;
+        #endif
+    #else
+        #define sampleReflection(s, c) texture2D(s, c)
+
+        uniform sampler2D reflectionSampler;
+
+        #ifdef LODBASEDMICROSFURACE
+            #define sampleReflectionLod(s, c, l) texture2DLodEXT(s, c, l)
+        #else
+            uniform sampler2D reflectionSamplerLow;
+            uniform sampler2D reflectionSamplerHigh;
+        #endif
+
+        #ifdef USEIRRADIANCEMAP
+            uniform sampler2D irradianceSampler;
+        #endif
+    #endif
+
+    #ifdef REFLECTIONMAP_SKYBOX
+        varying vec3 vPositionUVW;
+    #else
+        #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
+            varying vec3 vDirectionW;
+        #endif
+    #endif
+#endif
+
+#ifdef ENVIRONMENTBRDF
+    uniform sampler2D environmentBrdfSampler;
 #endif
 
 // SUBSURFACE
