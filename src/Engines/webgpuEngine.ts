@@ -1021,24 +1021,24 @@ export class WebGPUEngine extends Engine {
         };
 
         const commandEncoder = this._device.createCommandEncoder({});
-        const rowPitch = Math.ceil(width * 4 / 256) * 256;
+        const bytesPerRow = Math.ceil(width * 4 / 256) * 256;
 
         let dataBuffer: DataBuffer;
-        if (rowPitch == width * 4) {
+        if (bytesPerRow == width * 4) {
             dataBuffer = this._createBuffer(pixels, WebGPUConstants.GPUBufferUsage_TRANSFER_SRC | WebGPUConstants.GPUBufferUsage_TRANSFER_DST);
             const bufferView: GPUBufferCopyView = {
                 buffer: dataBuffer.underlyingResource,
-                rowPitch: rowPitch,
-                imageHeight: height,
+                bytesPerRow: bytesPerRow,
+                rowsPerImage: height,
                 offset: 0,
             };
             commandEncoder.copyBufferToTexture(bufferView, textureView, textureExtent);
         } else {
-            const alignedPixels = new Uint8Array(rowPitch * height);
+            const alignedPixels = new Uint8Array(bytesPerRow * height);
             let pixelsIndex = 0;
             for (let y = 0; y < height; ++y) {
                 for (let x = 0; x < width; ++x) {
-                    let i = x * 4 + y * rowPitch;
+                    let i = x * 4 + y * bytesPerRow;
 
                     alignedPixels[i] = (pixels as any)[pixelsIndex];
                     alignedPixels[i + 1] = (pixels as any)[pixelsIndex + 1];
@@ -1050,8 +1050,8 @@ export class WebGPUEngine extends Engine {
             dataBuffer = this._createBuffer(alignedPixels, WebGPUConstants.GPUBufferUsage_TRANSFER_SRC | WebGPUConstants.GPUBufferUsage_TRANSFER_DST);
             const bufferView: GPUBufferCopyView = {
                 buffer: dataBuffer.underlyingResource,
-                rowPitch: rowPitch,
-                imageHeight: height,
+                bytesPerRow: bytesPerRow,
+                rowsPerImage: height,
                 offset: 0,
             };
             commandEncoder.copyBufferToTexture(bufferView, textureView, textureExtent);
@@ -1990,15 +1990,15 @@ export class WebGPUEngine extends Engine {
         for (let i = 0; i < webgpuPipelineContext.orderedUBOsAndSamplers.length; i++) {
             const setDefinition = webgpuPipelineContext.orderedUBOsAndSamplers[i];
             if (setDefinition === undefined) {
-                const bindings: GPUBindGroupLayoutBinding[] = [];
+                const entries: GPUBindGroupLayoutEntry[] = [];
                 const uniformsBindGroupLayout = this._device.createBindGroupLayout({
-                    bindings,
+                    entries,
                 });
                 bindGroupLayouts[i] = uniformsBindGroupLayout;
                 continue;
             }
 
-            const bindings: GPUBindGroupLayoutBinding[] = [];
+            const entries: GPUBindGroupLayoutEntry[] = [];
             for (let j = 0; j < setDefinition.length; j++) {
                 const bindingDefinition = webgpuPipelineContext.orderedUBOsAndSamplers[i][j];
                 if (bindingDefinition === undefined) {
@@ -2007,13 +2007,16 @@ export class WebGPUEngine extends Engine {
 
                 // TODO WEBGPU. Optimize shared samplers visibility for vertex/framgent.
                 if (bindingDefinition.isSampler) {
-                    bindings.push({
+                    entries.push({
                         binding: j,
                         visibility: WebGPUConstants.GPUShaderStageBit_VERTEX | WebGPUConstants.GPUShaderStageBit_FRAGMENT,
                         type: WebGPUConstants.GPUBindingType_sampledTexture,
-                        textureDimension: bindingDefinition.textureDimension,
+                        viewDimension: bindingDefinition.textureDimension,
                         // TODO WEBGPU. Handle texture component type properly.
                         // textureComponentType?: GPUTextureComponentType,
+                        // multisampled?: boolean;
+                        // hasDynamicOffset?: boolean;
+                        // storageTextureFormat?: GPUTextureFormat;
                     }, {
                         // TODO WEBGPU. No Magic + 1 (coming from current 1 texture 1 sampler startegy).
                         binding: j + 1,
@@ -2022,7 +2025,7 @@ export class WebGPUEngine extends Engine {
                     });
                 }
                 else {
-                    bindings.push({
+                    entries.push({
                         binding: j,
                         visibility: WebGPUConstants.GPUShaderStageBit_VERTEX | WebGPUConstants.GPUShaderStageBit_FRAGMENT,
                         type: WebGPUConstants.GPUBindingType_uniformBuffer,
@@ -2030,9 +2033,9 @@ export class WebGPUEngine extends Engine {
                 }
             }
 
-            if (bindings.length > 0) {
+            if (entries.length > 0) {
                 const uniformsBindGroupLayout = this._device.createBindGroupLayout({
-                    bindings,
+                    entries,
                 });
                 bindGroupLayouts[i] = uniformsBindGroupLayout;
             }
@@ -2159,7 +2162,7 @@ export class WebGPUEngine extends Engine {
                 continue;
             }
 
-            const bindings: GPUBindGroupBinding[] = [];
+            const entries: GPUBindGroupEntry[] = [];
             for (let j = 0; j < setDefinition.length; j++) {
                 const bindingDefinition = webgpuPipelineContext.orderedUBOsAndSamplers[i][j];
                 if (bindingDefinition === undefined) {
@@ -2176,7 +2179,7 @@ export class WebGPUEngine extends Engine {
                             bindingInfo.texture._webGPUSampler = gpuSampler;
                         }
 
-                        bindings.push({
+                        entries.push({
                             binding: bindingInfo.textureBinding,
                             resource: bindingInfo.texture._webGPUTextureView!,
                         }, {
@@ -2192,7 +2195,7 @@ export class WebGPUEngine extends Engine {
                     const dataBuffer = this._uniformsBuffers[bindingDefinition.name];
                     if (dataBuffer) {
                         const webgpuBuffer = dataBuffer.underlyingResource as GPUBuffer;
-                        bindings.push({
+                        entries.push({
                             binding: j,
                             resource: {
                                 buffer: webgpuBuffer,
@@ -2207,7 +2210,7 @@ export class WebGPUEngine extends Engine {
                 }
             }
 
-            if (bindings.length > 0) {
+            if (entries.length > 0) {
                 let groupLayout: GPUBindGroupLayout;
                 if (bindGroupLayouts && bindGroupLayouts[i]) {
                     groupLayout = bindGroupLayouts[i];
@@ -2217,7 +2220,7 @@ export class WebGPUEngine extends Engine {
                 }
                 bindGroups[i] = this._device.createBindGroup({
                     layout: groupLayout,
-                    entries: bindings,
+                    entries,
                 });
             }
         }
