@@ -345,36 +345,6 @@ export class BaseTexture implements IAnimatable {
         return "BaseTexture";
     }
 
-    private _realTimeFiltering: boolean = false;
-    /**
-     * Enables realtime filtering on the texture.
-     */
-    public get realTimeFiltering() {
-        return this._realTimeFiltering;
-    }
-    public set realTimeFiltering(b: boolean) {
-        this._realTimeFiltering = b;
-        let scene = this.getScene();
-        if (scene) {
-            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
-        }
-    }
-
-    private _realTimeFilteringQuality: number = Constants.TEXTURE_FILTERING_QUALITY_LOW;
-    /**
-     * Quality switch for realtime filtering
-     */
-    public get realTimeFilteringQuality() : number {
-        return this._realTimeFilteringQuality;
-    }
-    public set realTimeFilteringQuality(n: number) {
-        this._realTimeFilteringQuality = n;
-        let scene = this.getScene();
-        if (scene) {
-            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
-        }
-    }
-
     /**
      * Define the list of animation attached to the texture.
      */

@@ -126,13 +126,19 @@ export class HDRFiltering {
                     alpha = 0;
                 }
 
-                effect.setFloat("linearRoughness", alpha);
+                effect.setFloat("alphaG", alpha);
 
                 this._effectRenderer.draw();
                 this._effectRenderer.restoreStates();
             }
         }
 
+        const engine = this._engine;
+
+        engine._gl.deleteTexture(texture._texture!._webGLTexture);
+
+        // Unbind channels
+        engine.unbindAllTextures();
         texture._texture!._webGLTexture = outputTexture._webGLTexture;
         return texture;
     }
@@ -151,7 +157,7 @@ export class HDRFiltering {
             vertexShader: "hdrFiltering",
             fragmentShader: "hdrFiltering",
             samplerNames: ["inputTexture"],
-            uniformNames: ["vSampleDirections", "vWeights", "up", "right", "front", "vFilteringInfo", "hdrScale", "linearRoughness"],
+            uniformNames: ["vSampleDirections", "vWeights", "up", "right", "front", "vFilteringInfo", "hdrScale", "alphaG"],
             useShaderStore: true,
             defines,
             onCompiled: onCompiled

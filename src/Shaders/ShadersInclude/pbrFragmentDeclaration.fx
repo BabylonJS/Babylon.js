@@ -51,6 +51,9 @@ uniform mat4 view;
 // Reflection
 #ifdef REFLECTION
     uniform vec2 vReflectionInfos;
+    #ifdef REALTIME_FILTERING
+        uniform vec2 vReflectionFilteringInfo
+    #endif
     uniform mat4 reflectionMatrix;
     uniform vec3 vReflectionMicrosurfaceInfos;
 
@@ -116,6 +119,9 @@ uniform mat4 view;
         uniform vec3 vRefractionMicrosurfaceInfos;
         uniform vec4 vRefractionInfos;
         uniform mat4 refractionMatrix;
+        #ifdef REALTIME_FILTERING
+            uniform vec2 vRefractionFilteringInfo;
+        #endif
     #endif
 
     #ifdef SS_THICKNESSANDMASK_TEXTURE

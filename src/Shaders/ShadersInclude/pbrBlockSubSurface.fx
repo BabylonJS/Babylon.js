@@ -202,7 +202,15 @@ struct subSurfaceOutParams
                 float requestedRefractionLOD = refractionLOD;
             #endif
 
-            environmentRefraction = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);
+            #ifdef REALTIME_FILTERING
+                #ifdef SS_LINEARSPECULARREFRACTION
+                    environmentRefraction = vec4(radiance(roughness, refractionSampler, refractionCoords, vRefractionFilteringInfo), 1.0);
+                #else
+                    environmentRefraction = vec4(radiance(alphaG, refractionSampler, refractionCoords, vRefractionFilteringInfo), 1.0);
+                #endif
+            #else
+                environmentRefraction = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);
+            #endif
         #else
             float lodRefractionNormalized = saturate(refractionLOD / log2(vRefractionMicrosurfaceInfos.x));
             float lodRefractionNormalizedDoubled = lodRefractionNormalized * 2.0;
