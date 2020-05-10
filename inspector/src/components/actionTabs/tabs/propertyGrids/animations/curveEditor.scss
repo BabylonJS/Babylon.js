@@ -26,11 +26,71 @@
         display: flex;
         align-items: flex-start;
         justify-content: flex-start;
+        flex-direction: column;
+
+        .row {
+            display: flex;
+            align-items: stretch;
+            justify-content: flex-start;
+            flex-direction: row;
+            width: 100vw;
+            height: 85vh;
+
+            .timeline{
+                width: 100vw;
+                background: gray;
+                display: flex;
+                align-items: center;
+                justify-content: stretch;
+                height: 2.5rem;
+
+                .display-line {
+                    width: 80vw;
+                    height: 2em;
+                    overflow: hidden;
+                    overflow-x: scroll;
+                    scrollbar-color: cornflowerblue slategrey;
+                    scrollbar-width: thin;
+                    margin-right: 1.3em;
+                    padding-left: 1em;
+                    padding-right: 1em;
+
+                    &::-webkit-scrollbar{
+                        height: 0.4em;
+                    }
+
+                    &::-webkit-scrollbar-track {
+                        box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+                      }
+                       
+                    &::-webkit-scrollbar-thumb {
+                        background-color: cornflowerblue;
+                        outline: 1px solid slategrey;
+                      }
+                }
+
+                .controls {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    width: 8em;
+
+                    .input-frame input {
+                        width: 3em;
+                    }
+
+                    .button {
+                        margin-left: 0.5em;
+                        margin-right: 0.5em;
+                    }
+                }
+            }
+        }
 
         .animation-list{
             padding: 1.5rem;
-            background: lightgrey;
-            height: 100vh;
+            background: rgb(87, 86, 86);
+            color: white;
             ul {
                 list-style:none;
                 padding-left: 0px;
@@ -57,19 +117,148 @@
                 
                 
             }
+
+            .object-tree{
+                background-color: rgba(0, 0, 0, 0.3);
+                padding: 10px;
+                margin-top: 19px;
+                height: 15em;
+            }
+
+            .label-input{
+                display: grid;
+                height: 54px;
+                place-items: center stretch;
+                color:white;
+            }
+        }
+
+        .sample-chart{
+            .linear {
+                .draggable {
+                    cursor: move;
+                }
+            }
         }
 
         .graph-chart{
             flex: 1 1 0%;
-            margin: 25% auto;
+            overflow-x: scroll;
             padding-left: 32px;
+            overflow-y: scroll;
+            scroll-behavior: smooth;
+            background-color: #444444;
+
             .linear{
-                width: 300px;
-                height: 300px;
+                height: 360px;
                 overflow: visible;
-                background-color: 'aliceblue';
+                border: 0px solid lightgrey;
+
+                svg {
+                    overflow: visible;
+                }
+
+                &:focus {
+                    outline-color: transparent;
+                }
+
+                line {
+                    stroke: #cecece;
+                    stroke-width: 0.2;
+                }
+                text {
+                    fill: #cecece;
+                }
+            }
+
+            .playhead-wrapper {
+                position: relative;
+                left: -13px;
+            }
+
+            .playhead {
+                width: fit-content;
+                background-color: #ffc60e;
+                color: black;
+                text-align: center;
+                min-width: 2em;
+                justify-content: center;
+                display: flex;
+                padding: 0.1em;
+                font-size: 0.75em;
+            }
+
+            .playhead-triangle {
+                background-color: transparent;
+                width: 0px;
+                height: 0px;
+                border-left: 13.5px solid transparent;
+                border-right: 13.5px solid transparent;
+                border-top: 12px solid #ffc60e;
+            }
+
+            .playhead-line {
+                width: 2px;
+                height: calc(90vh - 100px);
+                background-color: rgb(255, 198, 14);
+                position: absolute;
+                margin-left: 12.5px;
             }
         }
+    }
+
+    .buttonLine {
+        height: 30px;
+        display: grid;
+        align-items: center;
+        justify-items: stretch;
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-upload {
+            background: #222222;
+            border: 1px solid rgb(51, 122, 183);
+            margin: 5px 10px 5px 10px;
+            color:white;
+            padding: 4px 5px;
+            opacity: 0.9;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .file-upload:hover {
+            opacity: 1.0;
+        }
+
+        .file-upload:active {
+            transform: scale(0.98);
+            transform-origin: 0.5 0.5;
+        }
+
+        button {
+            background: #222222;
+            border: 1px solid rgb(51, 122, 183);
+            margin: 5px 10px 5px 10px;
+            color:white;
+            padding: 4px 5px;
+            opacity: 0.9;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 1.0;
+        }
+
+        button:active {
+            background: #282828;
+        }   
+        
+        button:focus {
+            border: 1px solid rgb(51, 122, 183);
+            outline: 0px;
+        }  
     }
 
 }
