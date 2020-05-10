@@ -111,8 +111,15 @@
             #else
                 float requestedReflectionLOD = reflectionLOD;
             #endif
-
-            environmentRadiance = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD);
+            #ifdef REALTIME_FILTERING
+                #ifdef LINEARSPECULARREFLECTION
+                    environmentRadiance = vec4(radiance(roughness, reflectionSampler, reflectionCoords, vReflectionFilteringInfo), 1.0);
+                #else
+                    environmentRadiance = vec4(radiance(alphaG, reflectionSampler, reflectionCoords, vReflectionFilteringInfo), 1.0);
+                #endif
+            #else
+                environmentRadiance = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD);
+            #endif
         #else
             float lodReflectionNormalized = saturate(reflectionLOD / log2(vReflectionMicrosurfaceInfos.x));
             float lodReflectionNormalizedDoubled = lodReflectionNormalized * 2.0;
@@ -255,7 +262,7 @@
                 #endif
 
                 #ifdef REALTIME_FILTERING
-                    environmentIrradiance = irradiance(reflectionSampler, irradianceVector);
+                    environmentIrradiance = irradiance(reflectionSampler, vec3(irradianceVector.x, -irradianceVector.y, irradianceVector.z), vReflectionFilteringInfo);
                 #else
                     environmentIrradiance = computeEnvironmentIrradiance(irradianceVector);
                 #endif
