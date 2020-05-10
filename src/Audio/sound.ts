@@ -942,7 +942,7 @@ export class Sound {
             this.setPosition(TmpVectors.Matrix[0].getTranslation());
         }
         else {
-            if(!(<any>node).getBoundingInfo){
+            if (!(<any>node).getBoundingInfo) {
                 this.setPosition(node.position);
             } else {
                 let mesh = node as AbstractMesh;
