@@ -40,12 +40,6 @@ export class ReflectivityBlock extends NodeMaterialBlock {
     public useRoughnessFromMetallicTextureGreen: boolean = true;
 
     /**
-     * Specifies whether the F0 factor can be fetched from the mettalic texture.
-     */
-    @editableInPropertyPage("Metallic F0 from alpha channel", PropertyTypeForEdition.Boolean, "METALLIC WORKFLOW", { "notifiers": { "update": true }})
-    public useMetallicF0FactorFromMetallicTexture: boolean = false;
-
-    /**
      * Create a new ReflectivityBlock
      * @param name defines the block name
      */
@@ -122,9 +116,10 @@ export class ReflectivityBlock extends NodeMaterialBlock {
             reflectivityOutParams reflectivityOut;
 
             reflectivityBlock(
-                vec4(${this.metallic.associatedVariableName}, ${this.roughness.associatedVariableName}, 0., 0.04),
+                vec4(${this.metallic.associatedVariableName}, ${this.roughness.associatedVariableName}, 0., 0.),
             #ifdef METALLICWORKFLOW
                 surfaceAlbedo,
+                vec4(1.),
             #endif
             #ifdef REFLECTIVITY
                 vec3(0., 0., ${aoIntensityVarName}),
@@ -160,7 +155,6 @@ export class ReflectivityBlock extends NodeMaterialBlock {
         defines.setValue("METALLNESSSTOREINMETALMAPBLUE", this.useMetallnessFromMetallicTextureBlue, true);
         defines.setValue("ROUGHNESSSTOREINMETALMAPALPHA", this.useRoughnessFromMetallicTextureAlpha, true);
         defines.setValue("ROUGHNESSSTOREINMETALMAPGREEN",  !this.useRoughnessFromMetallicTextureAlpha && this.useRoughnessFromMetallicTextureGreen, true);
-        defines.setValue("METALLICF0FACTORFROMMETALLICMAP", this.useMetallicF0FactorFromMetallicTexture, true);
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
@@ -178,7 +172,6 @@ export class ReflectivityBlock extends NodeMaterialBlock {
         codeString += `${this._codeVariableName}.useMetallnessFromMetallicTextureBlue = ${this.useMetallnessFromMetallicTextureBlue};\r\n`;
         codeString += `${this._codeVariableName}.useRoughnessFromMetallicTextureAlpha = ${this.useRoughnessFromMetallicTextureAlpha};\r\n`;
         codeString += `${this._codeVariableName}.useRoughnessFromMetallicTextureGreen = ${this.useRoughnessFromMetallicTextureGreen};\r\n`;
-        codeString += `${this._codeVariableName}.useMetallicF0FactorFromMetallicTexture = ${this.useMetallicF0FactorFromMetallicTexture};\r\n`;
 
         return codeString;
     }
@@ -190,7 +183,6 @@ export class ReflectivityBlock extends NodeMaterialBlock {
         serializationObject.useMetallnessFromMetallicTextureBlue = this.useMetallnessFromMetallicTextureBlue;
         serializationObject.useRoughnessFromMetallicTextureAlpha = this.useRoughnessFromMetallicTextureAlpha;
         serializationObject.useRoughnessFromMetallicTextureGreen = this.useRoughnessFromMetallicTextureGreen;
-        serializationObject.useMetallicF0FactorFromMetallicTexture = this.useMetallicF0FactorFromMetallicTexture;
 
         return serializationObject;
     }
@@ -202,7 +194,6 @@ export class ReflectivityBlock extends NodeMaterialBlock {
         this.useMetallnessFromMetallicTextureBlue = serializationObject.useMetallnessFromMetallicTextureBlue;
         this.useRoughnessFromMetallicTextureAlpha = serializationObject.useRoughnessFromMetallicTextureAlpha;
         this.useRoughnessFromMetallicTextureGreen = serializationObject.useRoughnessFromMetallicTextureGreen;
-        this.useMetallicF0FactorFromMetallicTexture = serializationObject.useMetallicF0FactorFromMetallicTexture;
     }
 }
 
