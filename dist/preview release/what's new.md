@@ -36,6 +36,7 @@
 - Can now rename and re-order frame inputs and outputs ([belfortk](https://github.com/belfortk))
 - Can now edit Node port names ([belfortk](https://github.com/belfortk))
 - Updated which node ports are shown on frames by default so that only node ports connected to outside nodes are by default exposed on the frame ([belfortk](https://github.com/belfortk))
+- Added a modulo block ([ageneau](https://github.com/ageneau))
 
 ### Inspector
 

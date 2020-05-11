@@ -1356,6 +1356,7 @@ declare module INSPECTOR {
     }
     export class PostProcessPropertyGridComponent extends React.Component<IPostProcessPropertyGridComponentProps> {
         constructor(props: IPostProcessPropertyGridComponentProps);
+        edit(): void;
         render(): JSX.Element;
     }
 }
