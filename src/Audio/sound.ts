@@ -943,7 +943,7 @@ export class Sound {
         }
         else {
             if (!(<any>node).getBoundingInfo) {
-                this.setPosition(node.position);
+                this.setPosition(node.absolutePosition);
             } else {
                 let mesh = node as AbstractMesh;
                 let boundingInfo = mesh.getBoundingInfo();
