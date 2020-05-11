@@ -623,7 +623,7 @@ export class HighlightLayer extends EffectLayer {
         if (!this._meshes) {
             return;
         }
-        return this._meshes;
+        return [...this._meshes];
     }
     /**
      * Add a mesh in the highlight layer in order to make it glow with the chosen color.
