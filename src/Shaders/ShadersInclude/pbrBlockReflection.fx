@@ -261,8 +261,12 @@
                     irradianceVector.z *= -1.0;
                 #endif
 
+                #ifdef INVERTCUBICMAP
+                    irradianceVector.y *= -1.0;
+                #endif
+
                 #if defined(WEBGL2) && defined(REALTIME_FILTERING)
-                    environmentIrradiance = irradiance(reflectionSampler, vec3(irradianceVector.x, -irradianceVector.y, irradianceVector.z), vReflectionFilteringInfo);
+                    environmentIrradiance = irradiance(reflectionSampler, irradianceVector, vReflectionFilteringInfo);
                 #else
                     environmentIrradiance = computeEnvironmentIrradiance(irradianceVector);
                 #endif

@@ -308,12 +308,19 @@ struct subSurfaceOutParams
             #ifdef REFLECTIONMAP_OPPOSITEZ
                 irradianceVector.z *= -1.0;
             #endif
+            #ifdef INVERTCUBICMAP
+                irradianceVector.y *= -1.0;
+            #endif
         #else
             vec3 irradianceVector = irradianceVector_;
         #endif
 
         #if defined(USESPHERICALFROMREFLECTIONMAP)
-            vec3 refractionIrradiance = computeEnvironmentIrradiance(-irradianceVector);
+            #if defined(WEBGL2) && defined(REALTIME_FILTERING)
+                vec3 refractionIrradiance = irradiance(reflectionSampler, -irradianceVector, vReflectionFilteringInfo);
+            #else
+                vec3 refractionIrradiance = computeEnvironmentIrradiance(-irradianceVector);
+            #endif
         #elif defined(USEIRRADIANCEMAP)
             #ifdef REFLECTIONMAP_3D
                 vec3 irradianceCoords = irradianceVector;

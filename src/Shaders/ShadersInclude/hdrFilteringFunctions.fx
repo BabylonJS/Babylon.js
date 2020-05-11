@@ -123,7 +123,6 @@
 
 		vec3 irradiance(samplerCube inputTexture, vec3 N, vec2 filteringInfo) {
 			vec3 n = normalize(N);
-
 		    vec3 result = vec3(0.0);
 			vec3 tangent = abs(n.z) < 0.999 ? vec3(0., 0., 1.) : vec3(1., 0., 0.);
 			tangent = normalize(cross(tangent, n));
