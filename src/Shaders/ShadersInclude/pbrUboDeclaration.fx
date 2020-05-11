@@ -34,6 +34,10 @@ uniform Material
 
     uniform float visibility;
 
+    uniform vec4 vMetallicReflectanceFactors;
+    uniform vec2 vMetallicReflectanceInfos;
+    uniform mat4 metallicReflectanceMatrix;
+
     uniform vec2 vClearCoatParams;
     uniform vec4 vClearCoatRefractionParams;
     uniform vec2 vClearCoatInfos;
