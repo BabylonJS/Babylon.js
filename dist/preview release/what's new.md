@@ -128,6 +128,10 @@
 - .HDR environment files will now give accurate PBR reflections ([CraigFeldpsar](https://github.com/craigfeldspar))
 - Reflection probes can now be used to give accurate shading with PBR ([CraigFeldpsar](https://github.com/craigfeldspar))
 
+### Audio
+
+- Added support of `metadata` in `Sound` class. ([julien-moreau](https://github.com/julien-moreau))
+
 ### Build
 
 - Fixed an issue with gulp webpack, webpack stream and the viewer ([RaananW](https://github.com/RaananW))

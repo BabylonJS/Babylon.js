@@ -140,6 +140,10 @@ export class Sound {
      * Back Compat
      **/
     public onended: () => any;
+    /**
+     * Gets or sets an object used to store user defined information for the sound.
+     */
+    public metadata: any = null;
 
     /**
      * Observable event when the current playing sound finishes.
@@ -1036,7 +1040,8 @@ export class Sound {
             distanceModel: this.distanceModel,
             playbackRate: this._playbackRate,
             panningModel: this._panningModel,
-            soundTrackId: this.soundTrackId
+            soundTrackId: this.soundTrackId,
+            metadata: this.metadata
         };
 
         if (this.spatialSound) {
@@ -1124,6 +1129,10 @@ export class Sound {
             if (connectedMesh) {
                 newSound.attachToMesh(connectedMesh);
             }
+        }
+
+        if (parsedSound.metadata) {
+            newSound.metadata = parsedSound.metadata;
         }
 
         return newSound;
