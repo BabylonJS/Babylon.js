@@ -11,6 +11,7 @@ import { Engine } from '../Engines/engine';
 import { Color4 } from '../Maths/math.color';
 
 import "../Engines/Extensions/engine.renderTarget";
+import { NodeMaterial } from '../Materials/Node/nodeMaterial';
 
 declare type Scene = import("../scene").Scene;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -36,10 +37,16 @@ export class PostProcess {
     * Width of the texture to apply the post process on
     */
     public width = -1;
+
     /**
     * Height of the texture to apply the post process on
     */
     public height = -1;
+
+    /**
+     * Gets the node material used to create this postprocess (null if the postprocess was manually created)
+     */
+    public nodeMaterialSource: Nullable<NodeMaterial> = null;
 
     /**
     * Internal, reference to the location where this postprocess was output to. (Typically the texture on the next postprocess in the chain)

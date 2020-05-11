@@ -1356,6 +1356,7 @@ declare module INSPECTOR {
     }
     export class PostProcessPropertyGridComponent extends React.Component<IPostProcessPropertyGridComponentProps> {
         constructor(props: IPostProcessPropertyGridComponentProps);
+        edit(): void;
         render(): JSX.Element;
     }
 }
@@ -1833,6 +1834,7 @@ declare module INSPECTOR {
     export class SpritePropertyGridComponent extends React.Component<ISpritePropertyGridComponentProps> {
         constructor(props: ISpritePropertyGridComponentProps);
         onManagerLink(): void;
+        switchPlayStopState(): void;
         render(): JSX.Element;
     }
 }

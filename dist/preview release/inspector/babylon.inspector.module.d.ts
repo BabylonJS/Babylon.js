@@ -1697,6 +1697,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/pos
     }
     export class PostProcessPropertyGridComponent extends React.Component<IPostProcessPropertyGridComponentProps> {
         constructor(props: IPostProcessPropertyGridComponentProps);
+        edit(): void;
         render(): JSX.Element;
     }
 }
@@ -2337,6 +2338,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/spr
     export class SpritePropertyGridComponent extends React.Component<ISpritePropertyGridComponentProps> {
         constructor(props: ISpritePropertyGridComponentProps);
         onManagerLink(): void;
+        switchPlayStopState(): void;
         render(): JSX.Element;
     }
 }
@@ -4399,6 +4401,7 @@ declare module INSPECTOR {
     }
     export class PostProcessPropertyGridComponent extends React.Component<IPostProcessPropertyGridComponentProps> {
         constructor(props: IPostProcessPropertyGridComponentProps);
+        edit(): void;
         render(): JSX.Element;
     }
 }
@@ -4876,6 +4879,7 @@ declare module INSPECTOR {
     export class SpritePropertyGridComponent extends React.Component<ISpritePropertyGridComponentProps> {
         constructor(props: ISpritePropertyGridComponentProps);
         onManagerLink(): void;
+        switchPlayStopState(): void;
         render(): JSX.Element;
     }
 }
