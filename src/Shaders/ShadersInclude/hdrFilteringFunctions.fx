@@ -1,4 +1,4 @@
-#ifdef NUM_SAMPLES
+#if defined(WEBGL2) && defined(NUM_SAMPLES)
 	#if NUM_SAMPLES > 0u
 		const float NUM_SAMPLES_FLOAT = float(NUM_SAMPLES);
 		const float NUM_SAMPLES_FLOAT_INVERSED = 1. / NUM_SAMPLES_FLOAT;
