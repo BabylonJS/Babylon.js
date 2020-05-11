@@ -46,3 +46,4 @@ export * from "./reflectBlock";
 export * from "./refractBlock";
 export * from "./desaturateBlock";
 export * from "./PBR/index";
+export * from "./Particle/index";
