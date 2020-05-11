@@ -213,7 +213,9 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
             rootMesh.setParent(this.rootMesh);
         }
 
-        this.rootMesh.rotationQuaternion = Quaternion.FromEulerAngles(0, Math.PI, 0);
+        if (!this.scene.useRightHandedSystem) {
+            this.rootMesh.rotationQuaternion = Quaternion.FromEulerAngles(0, Math.PI, 0);
+        }
     }
 
     protected _updateModel(): void {
