@@ -106,6 +106,7 @@ var engine;
 try {
     engine = ${createEngineFunction}();
 } catch(e) {
+    console.log("the available createEngine function failed. Creating the default engine instead");
     engine = createDefaultEngine();
 }`;
                 code += "\r\nif (!engine) throw 'engine should not be null.';";
