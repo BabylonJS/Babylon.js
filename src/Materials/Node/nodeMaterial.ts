@@ -765,6 +765,8 @@ export class NodeMaterial extends PushMaterial {
             options, camera, samplingMode, engine, reusable, defines.toString(), textureType, tempName, { maxSimultaneousLights: this.maxSimultaneousLights }, false, textureFormat
         );
 
+        postProcess.nodeMaterialSource = this;
+
         postProcess.onApplyObservable.add((effect) => {
             if (buildId !== this._buildId) {
                 delete Effect.ShadersStore[tempName + "VertexShader"];
