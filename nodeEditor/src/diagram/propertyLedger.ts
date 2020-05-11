@@ -22,4 +22,5 @@ PropertyLedger.RegisteredControls["ReflectionTextureBlock"] = TexturePropertyTab
 PropertyLedger.RegisteredControls["ReflectionBlock"] = TexturePropertyTabComponent;
 PropertyLedger.RegisteredControls["RefractionBlock"] = TexturePropertyTabComponent;
 PropertyLedger.RegisteredControls["CurrentScreenBlock"] = TexturePropertyTabComponent;
+PropertyLedger.RegisteredControls["ParticleTextureBlock"] = TexturePropertyTabComponent;
 PropertyLedger.RegisteredControls["TrigonometryBlock"] = TrigonometryPropertyTabComponent;

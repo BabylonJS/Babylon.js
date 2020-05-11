@@ -159,7 +159,7 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
                         {this.props.label}
                     </div>
                     <div className="color3">
-                        <ColorPickerLineComponent value={this.state.color} onColorChanged={color => {
+                        <ColorPickerLineComponent globalState={this.props.globalState} value={this.state.color} onColorChanged={color => {
                                 this.onChange(color);
                             }} />  
                     </div>
