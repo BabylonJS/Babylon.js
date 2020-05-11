@@ -6,4 +6,6 @@ export enum NodeMaterialModes {
     Material = 0,
     /** For post process */
     PostProcess = 1,
+    /** For particle system */
+    Particle = 2,
 }

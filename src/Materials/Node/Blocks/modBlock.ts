@@ -5,11 +5,11 @@ import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint
 import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../Misc/typeStore';
 /**
- * Block used to lerp between 2 values
+ * Block used to compute value of one parameter modulo another
  */
-export class LerpBlock extends NodeMaterialBlock {
+export class ModBlock extends NodeMaterialBlock {
     /**
-     * Creates a new LerpBlock
+     * Creates a new ModBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
@@ -17,14 +17,10 @@ export class LerpBlock extends NodeMaterialBlock {
 
         this.registerInput("left", NodeMaterialBlockConnectionPointTypes.AutoDetect);
         this.registerInput("right", NodeMaterialBlockConnectionPointTypes.AutoDetect);
-        this.registerInput("gradient", NodeMaterialBlockConnectionPointTypes.AutoDetect);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
 
         this._outputs[0]._typeConnectionSource = this._inputs[0];
         this._linkConnectionTypes(0, 1);
-        this._linkConnectionTypes(1, 2);
-
-        this._inputs[2].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Float);
     }
 
     /**
@@ -32,7 +28,7 @@ export class LerpBlock extends NodeMaterialBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "LerpBlock";
+        return "ModBlock";
     }
 
     /**
@@ -50,13 +46,6 @@ export class LerpBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the gradient operand input component
-     */
-    public get gradient(): NodeMaterialConnectionPoint {
-        return this._inputs[2];
-    }
-
-    /**
      * Gets the output component
      */
     public get output(): NodeMaterialConnectionPoint {
@@ -68,10 +57,10 @@ export class LerpBlock extends NodeMaterialBlock {
 
         let output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = mix(${this.left.associatedVariableName} , ${this.right.associatedVariableName}, ${this.gradient.associatedVariableName});\r\n`;
+      state.compilationString += this._declareOutput(output, state) + ` = mod(${this.left.associatedVariableName}, ${this.right.associatedVariableName});\r\n`;
 
         return this;
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.LerpBlock"] = LerpBlock;
+_TypeStore.RegisteredTypes["BABYLON.ModBlock"] = ModBlock;
