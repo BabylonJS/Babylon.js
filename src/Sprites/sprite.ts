@@ -85,6 +85,13 @@ export class Sprite implements IAnimatable {
     }
 
     /**
+     * Returns a boolean indicating if the animation is started
+     */
+    public get animationStarted() {
+        return this._animationStarted;
+    }
+
+    /**
      * Gets or sets the unique id of the sprite
      */
     public uniqueId: number;
