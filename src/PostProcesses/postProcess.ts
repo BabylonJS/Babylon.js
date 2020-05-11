@@ -11,7 +11,7 @@ import { Engine } from '../Engines/engine';
 import { Color4 } from '../Maths/math.color';
 
 import "../Engines/Extensions/engine.renderTarget";
-import { NodeMaterial } from '../Materials';
+import { NodeMaterial } from '../Materials/Node/nodeMaterial';
 
 declare type Scene = import("../scene").Scene;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -37,7 +37,7 @@ export class PostProcess {
     * Width of the texture to apply the post process on
     */
     public width = -1;
-    
+
     /**
     * Height of the texture to apply the post process on
     */
