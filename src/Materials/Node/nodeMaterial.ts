@@ -1396,7 +1396,7 @@ export class NodeMaterial extends PushMaterial {
         const color = new InputBlock("Color");
         color.setAsAttribute("particle_color");
 
-        const multiply = new MultiplyBlock("texture * color");
+        const multiply = new MultiplyBlock("Texture * Color");
         texture.connectTo(multiply);
         color.connectTo(multiply);
 
