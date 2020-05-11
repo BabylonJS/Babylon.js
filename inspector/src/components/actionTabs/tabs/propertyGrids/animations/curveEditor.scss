@@ -22,6 +22,26 @@
         }   
     }
 
+    .actions-wrapper {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-end;
+        align-items: flex-end;
+        padding: 6px;
+
+        .action-input{
+            display: flex;
+            justify-content: center;
+            flex-direction: row;
+            align-items: center;
+            label { margin-right: 0.5em }
+            input {
+                width: 4em;
+                height: 2em;
+            }
+        }
+    }
+
     .content{
         display: flex;
         align-items: flex-start;
@@ -34,7 +54,7 @@
             justify-content: flex-start;
             flex-direction: row;
             width: 100vw;
-            height: 85vh;
+            height: 78.5vh;
 
             .timeline{
                 width: 100vw;
