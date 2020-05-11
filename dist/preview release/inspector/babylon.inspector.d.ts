@@ -1834,6 +1834,7 @@ declare module INSPECTOR {
     export class SpritePropertyGridComponent extends React.Component<ISpritePropertyGridComponentProps> {
         constructor(props: ISpritePropertyGridComponentProps);
         onManagerLink(): void;
+        switchPlayStopState(): void;
         render(): JSX.Element;
     }
 }

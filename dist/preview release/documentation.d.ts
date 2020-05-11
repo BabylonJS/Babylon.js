@@ -10214,6 +10214,10 @@ declare module BABYLON {
         get size(): number;
         set size(value: number);
         /**
+         * Returns a boolean indicating if the animation is started
+         */
+        get animationStarted(): boolean;
+        /**
          * Gets or sets the unique id of the sprite
          */
         uniqueId: number;
