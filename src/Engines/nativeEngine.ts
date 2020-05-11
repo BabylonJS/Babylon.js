@@ -34,13 +34,13 @@ interface INativeEngine {
     bindVertexArray(vertexArray: any): void;
 
     createIndexBuffer(data: ArrayBufferView, dynamic: boolean): any;
-    deleteIndexBuffer(buffer: any, dynamic: boolean): void;
-    recordIndexBuffer(vertexArray: any, buffer: any, dynamic: boolean): void;
+    deleteIndexBuffer(buffer: any): void;
+    recordIndexBuffer(vertexArray: any, buffer: any): void;
     updateDynamicIndexBuffer(buffer: any, data: ArrayBufferView, startingIndex: number): void;
 
     createVertexBuffer(data: ArrayBufferView, dynamic: boolean): any;
-    deleteVertexBuffer(buffer: any, dynamic: boolean): void;
-    recordVertexBuffer(vertexArray: any, buffer: any, dynamic: boolean, location: number, byteOffset: number, byteStride: number, numElements: number, type: number, normalized: boolean): void;
+    deleteVertexBuffer(buffer: any): void;
+    recordVertexBuffer(vertexArray: any, buffer: any, location: number, byteOffset: number, byteStride: number, numElements: number, type: number, normalized: boolean): void;
     updateDynamicVertexBuffer(buffer: any, data: ArrayBufferView, byteOffset: number, byteLength: number): void;
 
     createProgram(vertexShader: string, fragmentShader: string): any;
@@ -137,19 +137,9 @@ class NativeDataBuffer extends DataBuffer {
     public nativeIndexBuffer?: any;
 
     /**
-     * Is native index buffer dynamic?
-     */
-    public dynamicNativeIndexBuffer: boolean;
-
-    /**
      * Accessor value used to identify/retrieve a natively-stored vertex buffer.
      */
     public nativeVertexBuffer?: any;
-
-    /**
-     * Is native vertex buffer dynamic?
-     */
-    public dynamicNativeVertexBuffer: boolean;
 }
 
 // TODO: change this to match bgfx.
@@ -351,8 +341,7 @@ export class NativeEngine extends Engine {
         const buffer = new NativeDataBuffer();
         buffer.references = 1;
         buffer.is32Bits = (data.BYTES_PER_ELEMENT === 4);
-        buffer.dynamicNativeIndexBuffer = updateable ?? false;
-        buffer.nativeIndexBuffer = this._native.createIndexBuffer(data, buffer.dynamicNativeIndexBuffer);
+        buffer.nativeIndexBuffer = this._native.createIndexBuffer(data, updateable ?? false);
         if (buffer.nativeVertexBuffer === this.INVALID_HANDLE) {
             throw new Error("Could not create a native index buffer.");
         }
@@ -362,8 +351,7 @@ export class NativeEngine extends Engine {
     public createVertexBuffer(data: DataArray, updateable?: boolean): NativeDataBuffer {
         const buffer = new NativeDataBuffer();
         buffer.references = 1;
-        buffer.dynamicNativeVertexBuffer = updateable ?? false;
-        buffer.nativeVertexBuffer = this._native.createVertexBuffer(ArrayBuffer.isView(data) ? data : new Float32Array(data), buffer.dynamicNativeVertexBuffer);
+        buffer.nativeVertexBuffer = this._native.createVertexBuffer(ArrayBuffer.isView(data) ? data : new Float32Array(data), updateable ?? false);
         if (buffer.nativeVertexBuffer === this.INVALID_HANDLE) {
             throw new Error("Could not create a native vertex buffer.");
         }
@@ -374,7 +362,7 @@ export class NativeEngine extends Engine {
         const vertexArray = this._native.createVertexArray();
 
         if (indexBuffer) {
-            this._native.recordIndexBuffer(vertexArray, indexBuffer.nativeIndexBuffer, indexBuffer.dynamicNativeIndexBuffer);
+            this._native.recordIndexBuffer(vertexArray, indexBuffer.nativeIndexBuffer);
         }
 
         const attributes = effect.getAttributesNames();
@@ -389,7 +377,6 @@ export class NativeEngine extends Engine {
                         this._native.recordVertexBuffer(
                             vertexArray,
                             buffer.nativeVertexBuffer,
-                            buffer.dynamicNativeVertexBuffer,
                             location,
                             vertexBuffer.byteOffset,
                             vertexBuffer.byteStride,
@@ -1426,12 +1413,12 @@ export class NativeEngine extends Engine {
 
     protected _deleteBuffer(buffer: NativeDataBuffer): void {
         if (buffer.nativeIndexBuffer) {
-            this._native.deleteIndexBuffer(buffer.nativeIndexBuffer, buffer.dynamicNativeIndexBuffer);
+            this._native.deleteIndexBuffer(buffer.nativeIndexBuffer);
             delete buffer.nativeIndexBuffer;
         }
 
         if (buffer.nativeVertexBuffer) {
-            this._native.deleteVertexBuffer(buffer.nativeVertexBuffer, buffer.dynamicNativeVertexBuffer);
+            this._native.deleteVertexBuffer(buffer.nativeVertexBuffer);
             delete buffer.nativeVertexBuffer;
         }
     }
