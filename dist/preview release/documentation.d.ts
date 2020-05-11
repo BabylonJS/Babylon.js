@@ -819,6 +819,14 @@ declare module BABYLON {
         static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MODE: number;
         /** Equirectangular Fixed Mirrored coordinates mode */
         static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE: number;
+        /** Offline (baking) quality for texture filtering */
+        static readonly TEXTURE_FILTERING_QUALITY_OFFLINE: number;
+        /** High quality for texture filtering */
+        static readonly TEXTURE_FILTERING_QUALITY_HIGH: number;
+        /** Medium quality for texture filtering */
+        static readonly TEXTURE_FILTERING_QUALITY_MEDIUM: number;
+        /** Low quality for texture filtering */
+        static readonly TEXTURE_FILTERING_QUALITY_LOW: number;
         /** Defines that texture rescaling will use a floor to find the closer power of 2 size */
         static readonly SCALEMODE_FLOOR: number;
         /** Defines that texture rescaling will look for the nearest power of 2 size */
@@ -11749,7 +11757,7 @@ declare module BABYLON {
         /**
         * An event triggered when the system is disposed
         */
-        onDisposeObservable: Observable<ParticleSystem>;
+        onDisposeObservable: Observable<IParticleSystem>;
         private _onDisposeObserver;
         /**
          * Sets a callback that will be triggered when the system is disposed
@@ -11839,6 +11847,28 @@ declare module BABYLON {
          * @returns true if the system is currently stopping
          */
         isStopping(): boolean;
+        /**
+         * Gets the custom effect used to render the particles
+         * @param blendMode Blend mode for which the effect should be retrieved
+         * @returns The effect
+         */
+        getCustomEffect(blendMode?: number): Nullable<Effect>;
+        /**
+         * Sets the custom effect used to render the particles
+         * @param effect The effect to set
+         * @param blendMode Blend mode for which the effect should be set
+         */
+        setCustomEffect(effect: Nullable<Effect>, blendMode?: number): void;
+        /** @hidden */
+        private _onBeforeDrawParticlesObservable;
+        /**
+         * Observable that will be called just before the particles are drawn
+         */
+        get onBeforeDrawParticlesObservable(): Observable<Nullable<Effect>>;
+        /**
+         * Gets the name of the particle vertex shader
+         */
+        get vertexShaderName(): string;
         /**
          * Instantiates a particle system.
          * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
@@ -12082,6 +12112,19 @@ declare module BABYLON {
         static _GetAttributeNamesOrOptions(isAnimationSheetEnabled?: boolean, isBillboardBased?: boolean, useRampGradients?: boolean): string[];
         /** @hidden */
         static _GetEffectCreationOptions(isAnimationSheetEnabled?: boolean): string[];
+        /**
+         * Fill the defines array according to the current settings of the particle system
+         * @param defines Array to be updated
+         * @param blendMode blend mode to take into account when updating the array
+         */
+        fillDefines(defines: Array<string>, blendMode: number): void;
+        /**
+         * Fill the uniforms, attributes and samplers arrays according to the current settings of the particle system
+         * @param uniforms Uniforms array to fill
+         * @param attributes Attributes array to fill
+         * @param samplers Samplers array to fill
+         */
+        fillUniformsAttributesAndSamplerNames(uniforms: Array<string>, attributes: Array<string>, samplers: Array<string>): void;
         /** @hidden */
         private _getEffect;
         /**
@@ -13355,6 +13398,10 @@ declare module BABYLON {
          */
         dispose(disposeTexture?: boolean): void;
         /**
+        * An event triggered when the system is disposed
+        */
+        onDisposeObservable: Observable<IParticleSystem>;
+        /**
          * Clones the particle system.
          * @param name The name of the cloned object
          * @param newEmitter The new emitter to use
@@ -13401,6 +13448,39 @@ declare module BABYLON {
          * @returns a string containing the class name
          */
         getClassName(): string;
+        /**
+         * Gets the custom effect used to render the particles
+         * @param blendMode Blend mode for which the effect should be retrieved
+         * @returns The effect
+         */
+        getCustomEffect(blendMode: number): Nullable<Effect>;
+        /**
+         * Sets the custom effect used to render the particles
+         * @param effect The effect to set
+         * @param blendMode Blend mode for which the effect should be set
+         */
+        setCustomEffect(effect: Nullable<Effect>, blendMode: number): void;
+        /**
+         * Fill the defines array according to the current settings of the particle system
+         * @param defines Array to be updated
+         * @param blendMode blend mode to take into account when updating the array
+         */
+        fillDefines(defines: Array<string>, blendMode: number): void;
+        /**
+         * Fill the uniforms, attributes and samplers arrays according to the current settings of the particle system
+         * @param uniforms Uniforms array to fill
+         * @param attributes Attributes array to fill
+         * @param samplers Samplers array to fill
+         */
+        fillUniformsAttributesAndSamplerNames(uniforms: Array<string>, attributes: Array<string>, samplers: Array<string>): void;
+        /**
+         * Observable that will be called just before the particles are drawn
+         */
+        onBeforeDrawParticlesObservable: Observable<Nullable<Effect>>;
+        /**
+         * Gets the name of the particle vertex shader
+         */
+        vertexShaderName: string;
         /**
          * Adds a new color gradient
          * @param gradient defines the gradient to use (between 0 and 1)
@@ -30424,6 +30504,18 @@ declare module BABYLON {
          * @returns "BaseTexture"
          */
         getClassName(): string;
+        private _realTimeFiltering;
+        /**
+         * Enables realtime filtering on the texture.
+         */
+        get realTimeFiltering(): boolean;
+        set realTimeFiltering(b: boolean);
+        private _realTimeFilteringQuality;
+        /**
+         * Quality switch for realtime filtering
+         */
+        get realTimeFilteringQuality(): number;
+        set realTimeFilteringQuality(n: number);
         /**
          * Define the list of animation attached to the texture.
          */
@@ -37953,6 +38045,10 @@ declare module BABYLON {
          **/
         onended: () => any;
         /**
+         * Gets or sets an object used to store user defined information for the sound.
+         */
+        metadata: any;
+        /**
          * Observable event when the current playing sound finishes.
          */
         onEndedObservable: Observable<Sound>;
@@ -43415,6 +43511,10 @@ declare module BABYLON {
          * @returns the class name
          */
         getClassName(): string;
+        /**
+         * Overriding the _getViewMatrix function, as it is computed by WebXR
+         */
+        _getViewMatrix(): Matrix;
         private _updateFromXRSession;
         private _updateNumberOfRigCameras;
         private _updateReferenceSpace;
@@ -44811,7 +44911,6 @@ declare module BABYLON {
         /** The underlying input source for the controller  */
         inputSource: XRInputSource;
         private _options;
-        private _tmpQuaternion;
         private _tmpVector;
         private _uniqueId;
         /**
@@ -51348,8 +51447,12 @@ declare module BABYLON {
         refractionTexture: Nullable<BaseTexture>;
         private _indexOfRefraction;
         /**
-         * Defines the index of refraction used in the material.
+         * Index of refraction of the material base layer.
          * https://en.wikipedia.org/wiki/List_of_refractive_indices
+         *
+         * This does not only impact refraction but also the Base F0 of Dielectric Materials.
+         *
+         * From dielectric fresnel rules: F0 = square((iorT - iorI) / (iorT + iorI))
          */
         indexOfRefraction: number;
         private _invertRefractionY;
@@ -51551,6 +51654,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var importanceSampling: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var pbrHelperFunctions: {
         name: string;
         shader: string;
@@ -51580,6 +51690,13 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export var pbrBRDFFunctions: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var hdrFilteringFunctions: {
         name: string;
         shader: string;
     };
@@ -51766,6 +51883,8 @@ declare module BABYLON {
      */
     export class PBRMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines, IMaterialClearCoatDefines, IMaterialAnisotropicDefines, IMaterialBRDFDefines, IMaterialSheenDefines, IMaterialSubSurfaceDefines {
         PBR: boolean;
+        NUM_SAMPLES: string;
+        REALTIME_FILTERING: boolean;
         MAINUV1: boolean;
         MAINUV2: boolean;
         UV1: boolean;
@@ -51806,7 +51925,8 @@ declare module BABYLON {
         ROUGHNESSSTOREINMETALMAPGREEN: boolean;
         METALLNESSSTOREINMETALMAPBLUE: boolean;
         AOSTOREINMETALMAPRED: boolean;
-        METALLICF0FACTORFROMMETALLICMAP: boolean;
+        METALLIC_REFLECTANCE: boolean;
+        METALLIC_REFLECTANCEDIRECTUV: number;
         ENVIRONMENTBRDF: boolean;
         ENVIRONMENTBRDF_RGBD: boolean;
         NORMAL: boolean;
@@ -52053,18 +52173,30 @@ declare module BABYLON {
          */
         protected _roughness: Nullable<number>;
         /**
-         * Specifies the an F0 factor to help configuring the material F0.
-         * Instead of the default 4%, 8% * factor will be used. As the factor is defaulting
-         * to 0.5 the previously hard coded value stays the same.
-         * Can also be used to scale the F0 values of the metallic texture.
+         * In metallic workflow, specifies an F0 factor to help configuring the material F0.
+         * By default the indexOfrefraction is used to compute F0;
+         *
+         * This is used as a factor against the default reflectance at normal incidence to tweak it.
+         *
+         * F0 = defaultF0 * metallicF0Factor * metallicReflectanceColor;
+         * F90 = metallicReflectanceColor;
          */
         protected _metallicF0Factor: number;
         /**
-         * Specifies whether the F0 factor can be fetched from the mettalic texture.
-         * If set to true, please adapt the metallicF0Factor to ensure it fits with
-         * your expectation as it multiplies with the texture data.
+         * In metallic workflow, specifies an F90 color to help configuring the material F90.
+         * By default the F90 is always 1;
+         *
+         * Please note that this factor is also used as a factor against the default reflectance at normal incidence.
+         *
+         * F0 = defaultF0 * metallicF0Factor * metallicReflectanceColor
+         * F90 = metallicReflectanceColor;
          */
-        protected _useMetallicF0FactorFromMetallicTexture: boolean;
+        protected _metallicReflectanceColor: Color3;
+        /**
+         * Defines to store metallicReflectanceColor in RGB and metallicF0Factor in A
+         * This is multiply against the scalar values defined in the material.
+         */
+        protected _metallicReflectanceTexture: Nullable<BaseTexture>;
         /**
          * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
          * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
@@ -52522,18 +52654,30 @@ declare module BABYLON {
          */
         roughness: Nullable<number>;
         /**
-         * Specifies the an F0 factor to help configuring the material F0.
-         * Instead of the default 4%, 8% * factor will be used. As the factor is defaulting
-         * to 0.5 the previously hard coded value stays the same.
-         * Can also be used to scale the F0 values of the metallic texture.
+         * In metallic workflow, specifies an F0 factor to help configuring the material F0.
+         * By default the indexOfrefraction is used to compute F0;
+         *
+         * This is used as a factor against the default reflectance at normal incidence to tweak it.
+         *
+         * F0 = defaultF0 * metallicF0Factor * metallicReflectanceColor;
+         * F90 = metallicReflectanceColor;
          */
         metallicF0Factor: number;
         /**
-         * Specifies whether the F0 factor can be fetched from the mettalic texture.
-         * If set to true, please adapt the metallicF0Factor to ensure it fits with
-         * your expectation as it multiplies with the texture data.
+         * In metallic workflow, specifies an F90 color to help configuring the material F90.
+         * By default the F90 is always 1;
+         *
+         * Please note that this factor is also used as a factor against the default reflectance at normal incidence.
+         *
+         * F0 = defaultF0 * metallicF0Factor * metallicReflectanceColor
+         * F90 = metallicReflectanceColor;
          */
-        useMetallicF0FactorFromMetallicTexture: boolean;
+        metallicReflectanceColor: Color3;
+        /**
+         * Defines to store metallicReflectanceColor in RGB and metallicF0Factor in A
+         * This is multiply against the scalar values defined in the material.
+         */
+        metallicReflectanceTexture: Nullable<BaseTexture>;
         /**
          * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
          * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
@@ -52577,7 +52721,12 @@ declare module BABYLON {
          */
         microSurface: number;
         /**
-         * source material index of refraction (IOR)' / 'destination material IOR.
+         * Index of refraction of the material base layer.
+         * https://en.wikipedia.org/wiki/List_of_refractive_indices
+         *
+         * This does not only impact refraction but also the Base F0 of Dielectric Materials.
+         *
+         * From dielectric fresnel rules: F0 = square((iorT - iorI) / (iorT + iorI))
          */
         get indexOfRefraction(): number;
         set indexOfRefraction(value: number);
@@ -55568,6 +55717,215 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Effect Render Options
+     */
+    export interface IEffectRendererOptions {
+        /**
+         * Defines the vertices positions.
+         */
+        positions?: number[];
+        /**
+         * Defines the indices.
+         */
+        indices?: number[];
+    }
+    /**
+     * Helper class to render one or more effects.
+     * You can access the previous rendering in your shader by declaring a sampler named textureSampler
+     */
+    export class EffectRenderer {
+        private engine;
+        private static _DefaultOptions;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _fullscreenViewport;
+        /**
+         * Creates an effect renderer
+         * @param engine the engine to use for rendering
+         * @param options defines the options of the effect renderer
+         */
+        constructor(engine: ThinEngine, options?: IEffectRendererOptions);
+        /**
+         * Sets the current viewport in normalized coordinates 0-1
+         * @param viewport Defines the viewport to set (defaults to 0 0 1 1)
+         */
+        setViewport(viewport?: Viewport): void;
+        /**
+         * Binds the embedded attributes buffer to the effect.
+         * @param effect Defines the effect to bind the attributes for
+         */
+        bindBuffers(effect: Effect): void;
+        /**
+         * Sets the current effect wrapper to use during draw.
+         * The effect needs to be ready before calling this api.
+         * This also sets the default full screen position attribute.
+         * @param effectWrapper Defines the effect to draw with
+         */
+        applyEffectWrapper(effectWrapper: EffectWrapper): void;
+        /**
+         * Restores engine states
+         */
+        restoreStates(): void;
+        /**
+         * Draws a full screen quad.
+         */
+        draw(): void;
+        private isRenderTargetTexture;
+        /**
+         * renders one or more effects to a specified texture
+         * @param effectWrapper the effect to renderer
+         * @param outputTexture texture to draw to, if null it will render to the screen.
+         */
+        render(effectWrapper: EffectWrapper, outputTexture?: Nullable<InternalTexture | RenderTargetTexture>): void;
+        /**
+         * Disposes of the effect renderer
+         */
+        dispose(): void;
+    }
+    /**
+     * Options to create an EffectWrapper
+     */
+    interface EffectWrapperCreationOptions {
+        /**
+         * Engine to use to create the effect
+         */
+        engine: ThinEngine;
+        /**
+         * Fragment shader for the effect
+         */
+        fragmentShader: string;
+        /**
+         * Use the shader store instead of direct source code
+         */
+        useShaderStore?: boolean;
+        /**
+         * Vertex shader for the effect
+         */
+        vertexShader?: string;
+        /**
+         * Attributes to use in the shader
+         */
+        attributeNames?: Array<string>;
+        /**
+         * Uniforms to use in the shader
+         */
+        uniformNames?: Array<string>;
+        /**
+         * Texture sampler names to use in the shader
+         */
+        samplerNames?: Array<string>;
+        /**
+          * Defines to use in the shader
+          */
+        defines?: Array<string>;
+        /**
+          * Callback when effect is compiled
+          */
+        onCompiled?: Nullable<(effect: Effect) => void>;
+        /**
+         * The friendly name of the effect displayed in Spector.
+         */
+        name?: string;
+    }
+    /**
+     * Wraps an effect to be used for rendering
+     */
+    export class EffectWrapper {
+        /**
+         * Event that is fired right before the effect is drawn (should be used to update uniforms)
+         */
+        onApplyObservable: Observable<{}>;
+        /**
+         * The underlying effect
+         */
+        effect: Effect;
+        /**
+         * Creates an effect to be renderer
+         * @param creationOptions options to create the effect
+         */
+        constructor(creationOptions: EffectWrapperCreationOptions);
+        /**
+        * Disposes of the effect wrapper
+        */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export var hdrFilteringVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var hdrFilteringPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * Options for texture filtering
+     */
+    interface IHDRFilteringOptions {
+        /**
+         * Scales pixel intensity for the input HDR map.
+         */
+        hdrScale?: number;
+        /**
+         * Quality of the filter. Should be `Constants.TEXTURE_FILTERING_QUALITY_OFFLINE` for prefiltering
+         */
+        quality?: number;
+    }
+    /**
+     * Filters HDR maps to get correct renderings of PBR reflections
+     */
+    export class HDRFiltering {
+        private _engine;
+        private _effectRenderer;
+        private _effectWrapper;
+        private _lodGenerationOffset;
+        private _lodGenerationScale;
+        /**
+         * Quality switch for prefiltering. Should be set to `Constants.TEXTURE_FILTERING_QUALITY_OFFLINE` unless
+         * you care about baking speed.
+         */
+        quality: number;
+        /**
+         * Scales pixel intensity for the input HDR map.
+         */
+        hdrScale: number;
+        /**
+         * Instantiates HDR filter for reflection maps
+         *
+         * @param engine Thin engine
+         * @param options Options
+         */
+        constructor(engine: ThinEngine, options?: IHDRFilteringOptions);
+        private _createRenderTarget;
+        private _prefilterInternal;
+        private _createEffect;
+        /**
+         * Get a value indicating if the filter is ready to be used
+         * @param texture Texture to filter
+         * @returns true if the filter is ready
+         */
+        isReady(texture: BaseTexture): boolean;
+        /**
+          * Prefilters a cube texture to have mipmap levels representing roughness values.
+          * Prefiltering will be invoked at the end of next rendering pass.
+          * This has to be done once the map is loaded, and has not been prefiltered by a third party software.
+          * See http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf for more information
+          * @param texture Texture to filter
+          * @param onFinished Callback when filtering is done
+          * @return Promise called when prefiltering is done
+          */
+        prefilter(texture: BaseTexture, onFinished?: Nullable<() => void>): Promise<unknown>;
+    }
+}
+declare module BABYLON {
+    /**
      * This represents a texture coming from an HDR input.
      *
      * The only supported format is currently panorama picture stored in RGBE format.
@@ -55577,6 +55935,7 @@ declare module BABYLON {
         private static _facesMapping;
         private _generateHarmonics;
         private _noMipmap;
+        private _prefilterOnLoad;
         private _textureMatrix;
         private _size;
         private _onLoad;
@@ -55630,9 +55989,9 @@ declare module BABYLON {
          * @param noMipmap Forces to not generate the mipmap if true
          * @param generateHarmonics Specifies whether you want to extract the polynomial harmonics during the generation process
          * @param gammaSpace Specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space, but the standard material would require them in Gamma space)
-         * @param reserved Reserved flag for internal use.
+         * @param prefilterOnLoad Prefilters HDR texture to allow use of this texture as a PBR reflection texture.
          */
-        constructor(url: string, sceneOrEngine: Scene | ThinEngine, size: number, noMipmap?: boolean, generateHarmonics?: boolean, gammaSpace?: boolean, reserved?: boolean, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>);
+        constructor(url: string, sceneOrEngine: Scene | ThinEngine, size: number, noMipmap?: boolean, generateHarmonics?: boolean, gammaSpace?: boolean, prefilterOnLoad?: boolean, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>);
         /**
          * Get the current class name of the texture useful for serialization or dynamic coding.
          * @returns "HDRCubeTexture"
@@ -56860,6 +57219,67 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Defines the options related to the creation of an HtmlElementTexture
+     */
+    export interface IHtmlElementTextureOptions {
+        /**
+         * Defines wether mip maps should be created or not.
+         */
+        generateMipMaps?: boolean;
+        /**
+         * Defines the sampling mode of the texture.
+         */
+        samplingMode?: number;
+        /**
+         * Defines the engine instance to use the texture with. It is not mandatory if you define a scene.
+         */
+        engine: Nullable<ThinEngine>;
+        /**
+         * Defines the scene the texture belongs to. It is not mandatory if you define an engine.
+         */
+        scene: Nullable<Scene>;
+    }
+    /**
+     * This represents the smallest workload to use an already existing element (Canvas or Video) as a texture.
+     * To be as efficient as possible depending on your constraints nothing aside the first upload
+     * is automatically managed.
+     * It is a cheap VideoTexture or DynamicTexture if you prefer to keep full control of the elements
+     * in your application.
+     *
+     * As the update is not automatic, you need to call them manually.
+     */
+    export class HtmlElementTexture extends BaseTexture {
+        /**
+         * The texture URL.
+         */
+        element: HTMLVideoElement | HTMLCanvasElement;
+        private static readonly DefaultOptions;
+        private _textureMatrix;
+        private _isVideo;
+        private _generateMipMaps;
+        private _samplingMode;
+        /**
+         * Instantiates a HtmlElementTexture from the following parameters.
+         *
+         * @param name Defines the name of the texture
+         * @param element Defines the video or canvas the texture is filled with
+         * @param options Defines the other none mandatory texture creation options
+         */
+        constructor(name: string, element: HTMLVideoElement | HTMLCanvasElement, options: IHtmlElementTextureOptions);
+        private _createInternalTexture;
+        /**
+         * Returns the texture matrix used in most of the material.
+         */
+        getTextureMatrix(): Matrix;
+        /**
+         * Updates the content of the texture.
+         * @param invertY Defines wether the texture should be inverted on Y (false by default on video and true on canvas)
+         */
+        update(invertY?: Nullable<boolean>): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Based on jsTGALoader - Javascript loader for TGA file
      * By Vincent Thibault
      * @see http://blog.robrowser.com/javascript-tga-loader.html
@@ -57073,316 +57493,6 @@ declare module BABYLON {
          * @param callback defines the method to call once ready to upload
          */
         loadData(data: ArrayBufferView, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes called 'refMaps' or 'sampler' images.
-     * Custom Procedural textures are the easiest way to create your own procedural in your application.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_procedural_textures#creating-custom-procedural-textures
-     */
-    export class CustomProceduralTexture extends ProceduralTexture {
-        private _animate;
-        private _time;
-        private _config;
-        private _texturePath;
-        /**
-         * Instantiates a new Custom Procedural Texture.
-         * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes called 'refMaps' or 'sampler' images.
-         * Custom Procedural textures are the easiest way to create your own procedural in your application.
-         * @see http://doc.babylonjs.com/how_to/how_to_use_procedural_textures#creating-custom-procedural-textures
-         * @param name Define the name of the texture
-         * @param texturePath Define the folder path containing all the cutom texture related files (config, shaders...)
-         * @param size Define the size of the texture to create
-         * @param scene Define the scene the texture belongs to
-         * @param fallbackTexture Define a fallback texture in case there were issues to create the custom texture
-         * @param generateMipMaps Define if the texture should creates mip maps or not
-         */
-        constructor(name: string, texturePath: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
-        private _loadJson;
-        /**
-         * Is the texture ready to be used ? (rendered at least once)
-         * @returns true if ready, otherwise, false.
-         */
-        isReady(): boolean;
-        /**
-         * Render the texture to its associated render target.
-         * @param useCameraPostProcess Define if camera post process should be applied to the texture
-         */
-        render(useCameraPostProcess?: boolean): void;
-        /**
-         * Update the list of dependant textures samplers in the shader.
-         */
-        updateTextures(): void;
-        /**
-         * Update the uniform values of the procedural texture in the shader.
-         */
-        updateShaderUniforms(): void;
-        /**
-         * Define if the texture animates or not.
-         */
-        get animate(): boolean;
-        set animate(value: boolean);
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export var noisePixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /**
-     * Class used to generate noise procedural textures
-     */
-    export class NoiseProceduralTexture extends ProceduralTexture {
-        private _time;
-        /** Gets or sets a value between 0 and 1 indicating the overall brightness of the texture (default is 0.2) */
-        brightness: number;
-        /** Defines the number of octaves to process */
-        octaves: number;
-        /** Defines the level of persistence (0.8 by default) */
-        persistence: number;
-        /** Gets or sets animation speed factor (default is 1) */
-        animationSpeedFactor: number;
-        /**
-         * Creates a new NoiseProceduralTexture
-         * @param name defines the name fo the texture
-         * @param size defines the size of the texture (default is 256)
-         * @param scene defines the hosting scene
-         * @param fallbackTexture defines the texture to use if the NoiseProceduralTexture can't be created
-         * @param generateMipMaps defines if mipmaps must be generated (true by default)
-         */
-        constructor(name: string, size?: number, scene?: Nullable<Scene>, fallbackTexture?: Texture, generateMipMaps?: boolean);
-        private _updateShaderUniforms;
-        protected _getDefines(): string;
-        /** Generate the current state of the procedural texture */
-        render(useCameraPostProcess?: boolean): void;
-        /**
-         * Serializes this noise procedural texture
-         * @returns a serialized noise procedural texture object
-         */
-        serialize(): any;
-        /**
-         * Clone the texture.
-         * @returns the cloned texture
-         */
-        clone(): NoiseProceduralTexture;
-        /**
-         * Creates a NoiseProceduralTexture from parsed noise procedural texture data
-         * @param parsedTexture defines parsed texture data
-         * @param scene defines the current scene
-         * @param rootUrl defines the root URL containing noise procedural texture information
-         * @returns a parsed NoiseProceduralTexture
-         */
-        static Parse(parsedTexture: any, scene: Scene): NoiseProceduralTexture;
-    }
-}
-declare module BABYLON {
-    /**
-     * Raw cube texture where the raw buffers are passed in
-     */
-    export class RawCubeTexture extends CubeTexture {
-        /**
-         * Creates a cube texture where the raw buffers are passed in.
-         * @param scene defines the scene the texture is attached to
-         * @param data defines the array of data to use to create each face
-         * @param size defines the size of the textures
-         * @param format defines the format of the data
-         * @param type defines the type of the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
-         * @param generateMipMaps  defines if the engine should generate the mip levels
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
-         * @param compression defines the compression used (null by default)
-         */
-        constructor(scene: Scene, data: Nullable<ArrayBufferView[]>, size: number, format?: number, type?: number, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, compression?: Nullable<string>);
-        /**
-         * Updates the raw cube texture.
-         * @param data defines the data to store
-         * @param format defines the data format
-         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param compression defines the compression used (null by default)
-         * @param level defines which level of the texture to update
-         */
-        update(data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression?: Nullable<string>): void;
-        /**
-         * Updates a raw cube texture with RGBD encoded data.
-         * @param data defines the array of data [mipmap][face] to use to create each face
-         * @param sphericalPolynomial defines the spherical polynomial for irradiance
-         * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
-         * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
-         * @returns a promsie that resolves when the operation is complete
-         */
-        updateRGBDAsync(data: ArrayBufferView[][], sphericalPolynomial?: Nullable<SphericalPolynomial>, lodScale?: number, lodOffset?: number): Promise<void>;
-        /**
-         * Clones the raw cube texture.
-         * @return a new cube texture
-         */
-        clone(): CubeTexture;
-        /** @hidden */
-        static _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void>;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class used to store 3D textures containing user data
-     */
-    export class RawTexture3D extends Texture {
-        /** Gets or sets the texture format to use */
-        format: number;
-        /**
-         * Create a new RawTexture3D
-         * @param data defines the data of the texture
-         * @param width defines the width of the texture
-         * @param height defines the height of the texture
-         * @param depth defines the depth of the texture
-         * @param format defines the texture format to use
-         * @param scene defines the hosting scene
-         * @param generateMipMaps defines a boolean indicating if mip levels should be generated (true by default)
-         * @param invertY defines if texture must be stored with Y axis inverted
-         * @param samplingMode defines the sampling mode to use (Texture.TRILINEAR_SAMPLINGMODE by default)
-         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
-         */
-        constructor(data: ArrayBufferView, width: number, height: number, depth: number, 
-        /** Gets or sets the texture format to use */
-        format: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, textureType?: number);
-        /**
-         * Update the texture with new data
-         * @param data defines the data to store in the texture
-         */
-        update(data: ArrayBufferView): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class used to store 2D array textures containing user data
-     */
-    export class RawTexture2DArray extends Texture {
-        /** Gets or sets the texture format to use */
-        format: number;
-        /**
-         * Create a new RawTexture2DArray
-         * @param data defines the data of the texture
-         * @param width defines the width of the texture
-         * @param height defines the height of the texture
-         * @param depth defines the number of layers of the texture
-         * @param format defines the texture format to use
-         * @param scene defines the hosting scene
-         * @param generateMipMaps defines a boolean indicating if mip levels should be generated (true by default)
-         * @param invertY defines if texture must be stored with Y axis inverted
-         * @param samplingMode defines the sampling mode to use (Texture.TRILINEAR_SAMPLINGMODE by default)
-         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
-         */
-        constructor(data: ArrayBufferView, width: number, height: number, depth: number, 
-        /** Gets or sets the texture format to use */
-        format: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, textureType?: number);
-        /**
-         * Update the texture with new data
-         * @param data defines the data to store in the texture
-         */
-        update(data: ArrayBufferView): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Creates a refraction texture used by refraction channel of the standard material.
-     * It is like a mirror but to see through a material.
-     * @see https://doc.babylonjs.com/how_to/reflect#refraction
-     */
-    export class RefractionTexture extends RenderTargetTexture {
-        /**
-         * Define the reflection plane we want to use. The refractionPlane is usually set to the constructed refractor.
-         * It is possible to directly set the refractionPlane by directly using a Plane(a, b, c, d) where a, b and c give the plane normal vector (a, b, c) and d is a scalar displacement from the refractionPlane to the origin. However in all but the very simplest of situations it is more straight forward to set it to the refractor as stated in the doc.
-         * @see https://doc.babylonjs.com/how_to/reflect#refraction
-         */
-        refractionPlane: Plane;
-        /**
-         * Define how deep under the surface we should see.
-         */
-        depth: number;
-        /**
-         * Creates a refraction texture used by refraction channel of the standard material.
-         * It is like a mirror but to see through a material.
-         * @see https://doc.babylonjs.com/how_to/reflect#refraction
-         * @param name Define the texture name
-         * @param size Define the size of the underlying texture
-         * @param scene Define the scene the refraction belongs to
-         * @param generateMipMaps Define if we need to generate mips level for the refraction
-         */
-        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
-        /**
-         * Clone the refraction texture.
-         * @returns the cloned texture
-         */
-        clone(): RefractionTexture;
-        /**
-         * Serialize the texture to a JSON representation you could use in Parse later on
-         * @returns the serialized JSON representation
-         */
-        serialize(): any;
-    }
-}
-declare module BABYLON {
-    /**
-     * Defines the options related to the creation of an HtmlElementTexture
-     */
-    export interface IHtmlElementTextureOptions {
-        /**
-         * Defines wether mip maps should be created or not.
-         */
-        generateMipMaps?: boolean;
-        /**
-         * Defines the sampling mode of the texture.
-         */
-        samplingMode?: number;
-        /**
-         * Defines the engine instance to use the texture with. It is not mandatory if you define a scene.
-         */
-        engine: Nullable<ThinEngine>;
-        /**
-         * Defines the scene the texture belongs to. It is not mandatory if you define an engine.
-         */
-        scene: Nullable<Scene>;
-    }
-    /**
-     * This represents the smallest workload to use an already existing element (Canvas or Video) as a texture.
-     * To be as efficient as possible depending on your constraints nothing aside the first upload
-     * is automatically managed.
-     * It is a cheap VideoTexture or DynamicTexture if you prefer to keep full control of the elements
-     * in your application.
-     *
-     * As the update is not automatic, you need to call them manually.
-     */
-    export class HtmlElementTexture extends BaseTexture {
-        /**
-         * The texture URL.
-         */
-        element: HTMLVideoElement | HTMLCanvasElement;
-        private static readonly DefaultOptions;
-        private _textureMatrix;
-        private _isVideo;
-        private _generateMipMaps;
-        private _samplingMode;
-        /**
-         * Instantiates a HtmlElementTexture from the following parameters.
-         *
-         * @param name Defines the name of the texture
-         * @param element Defines the video or canvas the texture is filled with
-         * @param options Defines the other none mandatory texture creation options
-         */
-        constructor(name: string, element: HTMLVideoElement | HTMLCanvasElement, options: IHtmlElementTextureOptions);
-        private _createInternalTexture;
-        /**
-         * Returns the texture matrix used in most of the material.
-         */
-        getTextureMatrix(): Matrix;
-        /**
-         * Updates the content of the texture.
-         * @param invertY Defines wether the texture should be inverted on Y (false by default on video and true on canvas)
-         */
-        update(invertY?: Nullable<boolean>): void;
     }
 }
 declare module BABYLON {
@@ -57621,6 +57731,255 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes called 'refMaps' or 'sampler' images.
+     * Custom Procedural textures are the easiest way to create your own procedural in your application.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_procedural_textures#creating-custom-procedural-textures
+     */
+    export class CustomProceduralTexture extends ProceduralTexture {
+        private _animate;
+        private _time;
+        private _config;
+        private _texturePath;
+        /**
+         * Instantiates a new Custom Procedural Texture.
+         * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes called 'refMaps' or 'sampler' images.
+         * Custom Procedural textures are the easiest way to create your own procedural in your application.
+         * @see http://doc.babylonjs.com/how_to/how_to_use_procedural_textures#creating-custom-procedural-textures
+         * @param name Define the name of the texture
+         * @param texturePath Define the folder path containing all the cutom texture related files (config, shaders...)
+         * @param size Define the size of the texture to create
+         * @param scene Define the scene the texture belongs to
+         * @param fallbackTexture Define a fallback texture in case there were issues to create the custom texture
+         * @param generateMipMaps Define if the texture should creates mip maps or not
+         */
+        constructor(name: string, texturePath: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
+        private _loadJson;
+        /**
+         * Is the texture ready to be used ? (rendered at least once)
+         * @returns true if ready, otherwise, false.
+         */
+        isReady(): boolean;
+        /**
+         * Render the texture to its associated render target.
+         * @param useCameraPostProcess Define if camera post process should be applied to the texture
+         */
+        render(useCameraPostProcess?: boolean): void;
+        /**
+         * Update the list of dependant textures samplers in the shader.
+         */
+        updateTextures(): void;
+        /**
+         * Update the uniform values of the procedural texture in the shader.
+         */
+        updateShaderUniforms(): void;
+        /**
+         * Define if the texture animates or not.
+         */
+        get animate(): boolean;
+        set animate(value: boolean);
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export var noisePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * Class used to generate noise procedural textures
+     */
+    export class NoiseProceduralTexture extends ProceduralTexture {
+        private _time;
+        /** Gets or sets a value between 0 and 1 indicating the overall brightness of the texture (default is 0.2) */
+        brightness: number;
+        /** Defines the number of octaves to process */
+        octaves: number;
+        /** Defines the level of persistence (0.8 by default) */
+        persistence: number;
+        /** Gets or sets animation speed factor (default is 1) */
+        animationSpeedFactor: number;
+        /**
+         * Creates a new NoiseProceduralTexture
+         * @param name defines the name fo the texture
+         * @param size defines the size of the texture (default is 256)
+         * @param scene defines the hosting scene
+         * @param fallbackTexture defines the texture to use if the NoiseProceduralTexture can't be created
+         * @param generateMipMaps defines if mipmaps must be generated (true by default)
+         */
+        constructor(name: string, size?: number, scene?: Nullable<Scene>, fallbackTexture?: Texture, generateMipMaps?: boolean);
+        private _updateShaderUniforms;
+        protected _getDefines(): string;
+        /** Generate the current state of the procedural texture */
+        render(useCameraPostProcess?: boolean): void;
+        /**
+         * Serializes this noise procedural texture
+         * @returns a serialized noise procedural texture object
+         */
+        serialize(): any;
+        /**
+         * Clone the texture.
+         * @returns the cloned texture
+         */
+        clone(): NoiseProceduralTexture;
+        /**
+         * Creates a NoiseProceduralTexture from parsed noise procedural texture data
+         * @param parsedTexture defines parsed texture data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing noise procedural texture information
+         * @returns a parsed NoiseProceduralTexture
+         */
+        static Parse(parsedTexture: any, scene: Scene): NoiseProceduralTexture;
+    }
+}
+declare module BABYLON {
+    /**
+     * Raw cube texture where the raw buffers are passed in
+     */
+    export class RawCubeTexture extends CubeTexture {
+        /**
+         * Creates a cube texture where the raw buffers are passed in.
+         * @param scene defines the scene the texture is attached to
+         * @param data defines the array of data to use to create each face
+         * @param size defines the size of the textures
+         * @param format defines the format of the data
+         * @param type defines the type of the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
+         * @param generateMipMaps  defines if the engine should generate the mip levels
+         * @param invertY defines if data must be stored with Y axis inverted
+         * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
+         * @param compression defines the compression used (null by default)
+         */
+        constructor(scene: Scene, data: Nullable<ArrayBufferView[]>, size: number, format?: number, type?: number, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, compression?: Nullable<string>);
+        /**
+         * Updates the raw cube texture.
+         * @param data defines the data to store
+         * @param format defines the data format
+         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+         * @param invertY defines if data must be stored with Y axis inverted
+         * @param compression defines the compression used (null by default)
+         * @param level defines which level of the texture to update
+         */
+        update(data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression?: Nullable<string>): void;
+        /**
+         * Updates a raw cube texture with RGBD encoded data.
+         * @param data defines the array of data [mipmap][face] to use to create each face
+         * @param sphericalPolynomial defines the spherical polynomial for irradiance
+         * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
+         * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
+         * @returns a promsie that resolves when the operation is complete
+         */
+        updateRGBDAsync(data: ArrayBufferView[][], sphericalPolynomial?: Nullable<SphericalPolynomial>, lodScale?: number, lodOffset?: number): Promise<void>;
+        /**
+         * Clones the raw cube texture.
+         * @return a new cube texture
+         */
+        clone(): CubeTexture;
+        /** @hidden */
+        static _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void>;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to store 2D array textures containing user data
+     */
+    export class RawTexture2DArray extends Texture {
+        /** Gets or sets the texture format to use */
+        format: number;
+        /**
+         * Create a new RawTexture2DArray
+         * @param data defines the data of the texture
+         * @param width defines the width of the texture
+         * @param height defines the height of the texture
+         * @param depth defines the number of layers of the texture
+         * @param format defines the texture format to use
+         * @param scene defines the hosting scene
+         * @param generateMipMaps defines a boolean indicating if mip levels should be generated (true by default)
+         * @param invertY defines if texture must be stored with Y axis inverted
+         * @param samplingMode defines the sampling mode to use (Texture.TRILINEAR_SAMPLINGMODE by default)
+         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
+         */
+        constructor(data: ArrayBufferView, width: number, height: number, depth: number, 
+        /** Gets or sets the texture format to use */
+        format: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, textureType?: number);
+        /**
+         * Update the texture with new data
+         * @param data defines the data to store in the texture
+         */
+        update(data: ArrayBufferView): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to store 3D textures containing user data
+     */
+    export class RawTexture3D extends Texture {
+        /** Gets or sets the texture format to use */
+        format: number;
+        /**
+         * Create a new RawTexture3D
+         * @param data defines the data of the texture
+         * @param width defines the width of the texture
+         * @param height defines the height of the texture
+         * @param depth defines the depth of the texture
+         * @param format defines the texture format to use
+         * @param scene defines the hosting scene
+         * @param generateMipMaps defines a boolean indicating if mip levels should be generated (true by default)
+         * @param invertY defines if texture must be stored with Y axis inverted
+         * @param samplingMode defines the sampling mode to use (Texture.TRILINEAR_SAMPLINGMODE by default)
+         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
+         */
+        constructor(data: ArrayBufferView, width: number, height: number, depth: number, 
+        /** Gets or sets the texture format to use */
+        format: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, textureType?: number);
+        /**
+         * Update the texture with new data
+         * @param data defines the data to store in the texture
+         */
+        update(data: ArrayBufferView): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Creates a refraction texture used by refraction channel of the standard material.
+     * It is like a mirror but to see through a material.
+     * @see https://doc.babylonjs.com/how_to/reflect#refraction
+     */
+    export class RefractionTexture extends RenderTargetTexture {
+        /**
+         * Define the reflection plane we want to use. The refractionPlane is usually set to the constructed refractor.
+         * It is possible to directly set the refractionPlane by directly using a Plane(a, b, c, d) where a, b and c give the plane normal vector (a, b, c) and d is a scalar displacement from the refractionPlane to the origin. However in all but the very simplest of situations it is more straight forward to set it to the refractor as stated in the doc.
+         * @see https://doc.babylonjs.com/how_to/reflect#refraction
+         */
+        refractionPlane: Plane;
+        /**
+         * Define how deep under the surface we should see.
+         */
+        depth: number;
+        /**
+         * Creates a refraction texture used by refraction channel of the standard material.
+         * It is like a mirror but to see through a material.
+         * @see https://doc.babylonjs.com/how_to/reflect#refraction
+         * @param name Define the texture name
+         * @param size Define the size of the underlying texture
+         * @param scene Define the scene the refraction belongs to
+         * @param generateMipMaps Define if we need to generate mips level for the refraction
+         */
+        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
+        /**
+         * Clone the refraction texture.
+         * @returns the cloned texture
+         */
+        clone(): RefractionTexture;
+        /**
+         * Serialize the texture to a JSON representation you could use in Parse later on
+         * @returns the serialized JSON representation
+         */
+        serialize(): any;
+    }
+}
+declare module BABYLON {
+    /**
      * Enum used to define the target of a block
      */
     export enum NodeMaterialBlockTargets {
@@ -57711,7 +58070,9 @@ declare module BABYLON {
         /** Regular material */
         Material = 0,
         /** For post process */
-        PostProcess = 1
+        PostProcess = 1,
+        /** For particle system */
+        Particle = 2
     }
 }
 declare module BABYLON {
@@ -58203,6 +58564,149 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Base block used for the particle texture
+     */
+    export class ParticleTextureBlock extends NodeMaterialBlock {
+        private _samplerName;
+        private _linearDefineName;
+        private _gammaDefineName;
+        private _tempTextureRead;
+        /**
+         * Gets or sets the texture associated with the node
+         */
+        texture: Nullable<BaseTexture>;
+        /**
+         * Gets or sets a boolean indicating if content needs to be converted to gamma space
+         */
+        convertToGammaSpace: boolean;
+        /**
+         * Gets or sets a boolean indicating if content needs to be converted to linear space
+         */
+        convertToLinearSpace: boolean;
+        /**
+         * Create a new ParticleTextureBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the uv input component
+         */
+        get uv(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgba output component
+         */
+        get rgba(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb output component
+         */
+        get rgb(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the r output component
+         */
+        get r(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the g output component
+         */
+        get g(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the b output component
+         */
+        get b(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the a output component
+         */
+        get a(): NodeMaterialConnectionPoint;
+        /**
+         * Initialize the block and prepare the context for build
+         * @param state defines the state that will be used for the build
+         */
+        initialize(state: NodeMaterialBuildState): void;
+        autoConfigure(material: NodeMaterial): void;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        isReady(): boolean;
+        private _writeOutput;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used for the particle ramp gradient section
+     */
+    export class ParticleRampGradientBlock extends NodeMaterialBlock {
+        /**
+         * Create a new ParticleRampGradientBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the color input component
+         */
+        get color(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the rampColor output component
+         */
+        get rampColor(): NodeMaterialConnectionPoint;
+        /**
+         * Initialize the block and prepare the context for build
+         * @param state defines the state that will be used for the build
+         */
+        initialize(state: NodeMaterialBuildState): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+    }
+}
+declare module BABYLON {
+    /**
+      * Block used for the particle blend multiply section
+      */
+    export class ParticleBlendMultiplyBlock extends NodeMaterialBlock {
+        /**
+         * Create a new ParticleBlendMultiplyBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the color input component
+         */
+        get color(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the alphaTexture input component
+         */
+        get alphaTexture(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the alphaColor input component
+         */
+        get alphaColor(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the blendColor output component
+         */
+        get blendColor(): NodeMaterialConnectionPoint;
+        /**
+         * Initialize the block and prepare the context for build
+         * @param state defines the state that will be used for the build
+         */
+        initialize(state: NodeMaterialBuildState): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+    }
+}
+declare module BABYLON {
+    /**
      * Block used to create a Vector2/3/4 out of individual inputs (one for each component)
      */
     export class VectorMergerBlock extends NodeMaterialBlock {
@@ -58346,6 +58850,54 @@ declare module BABYLON {
          */
         get output(): NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to expand a Color3/4 into 4 outputs (one for each component)
+     */
+    export class ColorSplitterBlock extends NodeMaterialBlock {
+        /**
+         * Create a new ColorSplitterBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the rgba component (input)
+         */
+        get rgba(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb component (input)
+         */
+        get rgbIn(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb component (output)
+         */
+        get rgbOut(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the r component (output)
+         */
+        get r(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the g component (output)
+         */
+        get g(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the b component (output)
+         */
+        get b(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the a component (output)
+         */
+        get a(): NodeMaterialConnectionPoint;
+        protected _inputRename(name: string): string;
+        protected _outputRename(name: string): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
     }
 }
 declare module BABYLON {
@@ -58594,6 +59146,14 @@ declare module BABYLON {
          * @returns the post process created
          */
         createPostProcess(camera: Nullable<Camera>, options?: number | PostProcessOptions, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, textureFormat?: number): PostProcess;
+        private _createEffectForParticles;
+        /**
+         * Create the effect to be used as the custom effect for a particle system
+         * @param particleSystem Particle system to create the effect for
+         * @param onCompiled defines a function to call when the effect creation is successful
+         * @param onError defines a function to call when the effect creation has failed
+         */
+        createEffectForParticles(particleSystem: IParticleSystem, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): void;
         private _processDefines;
         /**
           * Get if the submesh is ready to be used and all its information available.
@@ -58629,7 +59189,7 @@ declare module BABYLON {
          * Gets the list of texture blocks
          * @returns an array of texture blocks
          */
-        getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock)[];
+        getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock | ParticleTextureBlock)[];
         /**
          * Specifies if the material uses a texture
          * @param texture defines the texture to check against the material
@@ -58663,6 +59223,10 @@ declare module BABYLON {
          * Clear the current material and set it to a default state for post process
          */
         setToDefaultPostProcess(): void;
+        /**
+         * Clear the current material and set it to a default state for particle
+         */
+        setToDefaultParticle(): void;
         /**
          * Loads the current Node Material from a url pointing to a file save by the Node Material Editor
          * @param url defines the url to load from
@@ -58741,6 +59305,7 @@ declare module BABYLON {
         private _textureInfoName;
         private _mainUVName;
         private _mainUVDefineName;
+        private _fragmentOnly;
         /**
          * Gets or sets the texture associated with the node
          */
@@ -58757,7 +59322,7 @@ declare module BABYLON {
          * Create a new TextureBlock
          * @param name defines the block name
          */
-        constructor(name: string);
+        constructor(name: string, fragmentOnly?: boolean);
         /**
          * Gets the current class name
          * @returns the class name
@@ -58831,7 +59396,7 @@ declare module BABYLON {
         /**
          * Input blocks
          */
-        textureBlocks: (ReflectionTextureBaseBlock | TextureBlock | RefractionBlock | CurrentScreenBlock)[];
+        textureBlocks: (ReflectionTextureBaseBlock | TextureBlock | RefractionBlock | CurrentScreenBlock | ParticleTextureBlock)[];
         /**
          * Bindable blocks (Blocks that need to set data to the effect)
          */
@@ -58895,6 +59460,10 @@ declare module BABYLON {
             emitFragment: boolean;
             notConnectedNonOptionalInputs: NodeMaterialConnectionPoint[];
         };
+        /**
+         * Is vertex program allowed to be empty?
+         */
+        allowEmptyVertexProgram: boolean;
         /** Creates a new shared data */
         constructor();
         /**
@@ -59401,6 +59970,8 @@ declare module BABYLON {
          */
         setDefaultValue(): void;
         private _emitConstant;
+        /** @hidden */
+        get _noContextSwitch(): boolean;
         private _emit;
         /** @hidden */
         _transmitWorld(effect: Effect, world: Matrix, worldView: Matrix, worldViewProjection: Matrix): void;
@@ -60429,54 +61000,6 @@ declare module BABYLON {
          */
         get rgb(): NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to expand a Color3/4 into 4 outputs (one for each component)
-     */
-    export class ColorSplitterBlock extends NodeMaterialBlock {
-        /**
-         * Create a new ColorSplitterBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the rgba component (input)
-         */
-        get rgba(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the rgb component (input)
-         */
-        get rgbIn(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the rgb component (output)
-         */
-        get rgbOut(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the r component (output)
-         */
-        get r(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the g component (output)
-         */
-        get g(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the b component (output)
-         */
-        get b(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the a component (output)
-         */
-        get a(): NodeMaterialConnectionPoint;
-        protected _inputRename(name: string): string;
-        protected _outputRename(name: string): string;
-        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
     }
 }
 declare module BABYLON {
@@ -61720,10 +62243,6 @@ declare module BABYLON {
          */
         useRoughnessFromMetallicTextureGreen: boolean;
         /**
-         * Specifies whether the F0 factor can be fetched from the mettalic texture.
-         */
-        useMetallicF0FactorFromMetallicTexture: boolean;
-        /**
          * Create a new ReflectivityBlock
          * @param name defines the block name
          */
@@ -62245,125 +62764,6 @@ declare module BABYLON {
         protected _dumpPropertiesCode(): string;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Effect Render Options
-     */
-    export interface IEffectRendererOptions {
-        /**
-         * Defines the vertices positions.
-         */
-        positions?: number[];
-        /**
-         * Defines the indices.
-         */
-        indices?: number[];
-    }
-    /**
-     * Helper class to render one or more effects.
-     * You can access the previous rendering in your shader by declaring a sampler named textureSampler
-     */
-    export class EffectRenderer {
-        private engine;
-        private static _DefaultOptions;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _fullscreenViewport;
-        /**
-         * Creates an effect renderer
-         * @param engine the engine to use for rendering
-         * @param options defines the options of the effect renderer
-         */
-        constructor(engine: ThinEngine, options?: IEffectRendererOptions);
-        /**
-         * Sets the current viewport in normalized coordinates 0-1
-         * @param viewport Defines the viewport to set (defaults to 0 0 1 1)
-         */
-        setViewport(viewport?: Viewport): void;
-        /**
-         * Binds the embedded attributes buffer to the effect.
-         * @param effect Defines the effect to bind the attributes for
-         */
-        bindBuffers(effect: Effect): void;
-        /**
-         * Sets the current effect wrapper to use during draw.
-         * The effect needs to be ready before calling this api.
-         * This also sets the default full screen position attribute.
-         * @param effectWrapper Defines the effect to draw with
-         */
-        applyEffectWrapper(effectWrapper: EffectWrapper): void;
-        /**
-         * Draws a full screen quad.
-         */
-        draw(): void;
-        private isRenderTargetTexture;
-        /**
-         * renders one or more effects to a specified texture
-         * @param effectWrapper the effect to renderer
-         * @param outputTexture texture to draw to, if null it will render to the screen.
-         */
-        render(effectWrapper: EffectWrapper, outputTexture?: Nullable<InternalTexture | RenderTargetTexture>): void;
-        /**
-         * Disposes of the effect renderer
-         */
-        dispose(): void;
-    }
-    /**
-     * Options to create an EffectWrapper
-     */
-    interface EffectWrapperCreationOptions {
-        /**
-         * Engine to use to create the effect
-         */
-        engine: ThinEngine;
-        /**
-         * Fragment shader for the effect
-         */
-        fragmentShader: string;
-        /**
-         * Vertex shader for the effect
-         */
-        vertexShader?: string;
-        /**
-         * Attributes to use in the shader
-         */
-        attributeNames?: Array<string>;
-        /**
-         * Uniforms to use in the shader
-         */
-        uniformNames?: Array<string>;
-        /**
-         * Texture sampler names to use in the shader
-         */
-        samplerNames?: Array<string>;
-        /**
-         * The friendly name of the effect displayed in Spector.
-         */
-        name?: string;
-    }
-    /**
-     * Wraps an effect to be used for rendering
-     */
-    export class EffectWrapper {
-        /**
-         * Event that is fired right before the effect is drawn (should be used to update uniforms)
-         */
-        onApplyObservable: Observable<{}>;
-        /**
-         * The underlying effect
-         */
-        effect: Effect;
-        /**
-         * Creates an effect to be renderer
-         * @param creationOptions options to create the effect
-         */
-        constructor(creationOptions: EffectWrapperCreationOptions);
-        /**
-        * Disposes of the effect wrapper
-        */
-        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -64738,6 +65138,7 @@ declare module BABYLON {
         private _updateEffectOptions;
         private _randomTextureSize;
         private _actualFrame;
+        private _customEffect;
         private readonly _rawTextureWidth;
         /**
          * Gets a boolean indicating if the GPU particles can be rendered on current browser
@@ -64746,7 +65147,7 @@ declare module BABYLON {
         /**
         * An event triggered when the system is disposed.
         */
-        onDisposeObservable: Observable<GPUParticleSystem>;
+        onDisposeObservable: Observable<IParticleSystem>;
         /**
          * Gets the maximum number of particles active at the same time.
          * @returns The max number of active particles.
@@ -64810,6 +65211,28 @@ declare module BABYLON {
          * @returns a string containing the class name
          */
         getClassName(): string;
+        /**
+         * Gets the custom effect used to render the particles
+         * @param blendMode Blend mode for which the effect should be retrieved
+         * @returns The effect
+         */
+        getCustomEffect(blendMode?: number): Nullable<Effect>;
+        /**
+         * Sets the custom effect used to render the particles
+         * @param effect The effect to set
+         * @param blendMode Blend mode for which the effect should be set
+         */
+        setCustomEffect(effect: Nullable<Effect>, blendMode?: number): void;
+        /** @hidden */
+        protected _onBeforeDrawParticlesObservable: Nullable<Observable<Nullable<Effect>>>;
+        /**
+         * Observable that will be called just before the particles are drawn
+         */
+        get onBeforeDrawParticlesObservable(): Observable<Nullable<Effect>>;
+        /**
+         * Gets the name of the particle vertex shader
+         */
+        get vertexShaderName(): string;
         private _colorGradientsTexture;
         protected _removeGradientAndTexture(gradient: number, gradients: Nullable<IValueGradient[]>, texture: RawTexture): BaseParticleSystem;
         /**
@@ -65003,19 +65426,34 @@ declare module BABYLON {
          * @param options The options used to create the system
          * @param scene The scene the particle system belongs to
          * @param isAnimationSheetEnabled Must be true if using a spritesheet to animate the particles texture
+         * @param customEffect a custom effect used to change the way particles are rendered by default
          */
         constructor(name: string, options: Partial<{
             capacity: number;
             randomTextureSize: number;
-        }>, scene: Scene, isAnimationSheetEnabled?: boolean);
+        }>, scene: Scene, isAnimationSheetEnabled?: boolean, customEffect?: Nullable<Effect>);
         protected _reset(): void;
         private _createUpdateVAO;
         private _createRenderVAO;
         private _initialize;
         /** @hidden */
         _recreateUpdateEffect(): void;
+        private _getEffect;
+        /**
+         * Fill the defines array according to the current settings of the particle system
+         * @param defines Array to be updated
+         * @param blendMode blend mode to take into account when updating the array
+         */
+        fillDefines(defines: Array<string>, blendMode?: number): void;
+        /**
+         * Fill the uniforms, attributes and samplers arrays according to the current settings of the particle system
+         * @param uniforms Uniforms array to fill
+         * @param attributes Attributes array to fill
+         * @param samplers Samplers array to fill
+         */
+        fillUniformsAttributesAndSamplerNames(uniforms: Array<string>, attributes: Array<string>, samplers: Array<string>): void;
         /** @hidden */
-        _recreateRenderEffect(): void;
+        _recreateRenderEffect(): Effect;
         /**
          * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
          * @param preWarm defines if we are in the pre-warmimg phase
@@ -65184,7 +65622,8 @@ declare module BABYLON {
         interface Engine {
             /**
              * Create an effect to use with particle systems.
-             * Please note that some parameters like animation sheets or not being billboard are not supported in this configuration
+             * Please note that some parameters like animation sheets or not being billboard are not supported in this configuration, except if you pass
+             * the particle system for which you want to create a custom effect in the last parameter
              * @param fragmentName defines the base name of the effect (The name of file without .fragment.fx)
              * @param uniformsNames defines a list of attribute names
              * @param samplers defines an array of string used to represent textures
@@ -65192,9 +65631,10 @@ declare module BABYLON {
              * @param fallbacks defines the list of potential fallbacks to use if shader conmpilation fails
              * @param onCompiled defines a function to call when the effect creation is successful
              * @param onError defines a function to call when the effect creation has failed
+             * @param particleSystem the particle system you want to create the effect for
              * @returns the new Effect
              */
-            createEffectForParticles(fragmentName: string, uniformsNames: string[], samplers: string[], defines: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect;
+            createEffectForParticles(fragmentName: string, uniformsNames: string[], samplers: string[], defines: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, particleSystem?: IParticleSystem): Effect;
         }
         interface Mesh {
             /**
@@ -78676,8 +79116,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
-     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1677)
-     * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#4)
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1719)
      * !!! Experimental Extension Subject to Changes !!!
      */
     export class KHR_materials_specular implements IGLTFLoaderExtension {
@@ -78701,6 +79140,38 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
         private _loadSpecularPropertiesAsync;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1718)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_materials_ior implements IGLTFLoaderExtension {
+        /**
+         * Default ior Value from the spec.
+         */
+        private static readonly _DEFAULT_IOR;
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        private _loadIorPropertiesAsync;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
