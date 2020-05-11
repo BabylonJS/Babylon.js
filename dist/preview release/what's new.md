@@ -7,7 +7,7 @@
 - Added the `ShadowDepthWrapper` class to support accurate shadow generation for custom as well as node material shaders. [Doc](https://doc.babylonjs.com/babylon101/shadows#custom-shadow-map-shaders) ([Popov72](https://github.com/Popov72))
 - Added Babylon.js Texture [tools](https://www.babylonjs.com/tools/ibl) to prefilter HDR files ([Sebavan](https://github.com/sebavan/))
 - Added editing of PBR materials, Post processes and Particle fragment shaders in the node material editor ([Popov72](https://github.com/Popov72))
-- Added Curve editor to view selected entity's animations in the Inspector ([pixelspace](https://github.com/devpixelspace))
+- Added Curve editor to create and view selected entity's animations in the Inspector ([pixelspace](https://github.com/devpixelspace))
 - Added support in `ShadowGenerator` for fast fake soft transparent shadows ([Popov72](https://github.com/Popov72))
 
 ## Updates
