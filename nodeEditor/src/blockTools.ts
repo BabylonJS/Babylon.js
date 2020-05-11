@@ -16,6 +16,7 @@ import { VertexOutputBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/vertex
 import { FragmentOutputBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragmentOutputBlock';
 import { NormalizeBlock } from 'babylonjs/Materials/Node/Blocks/normalizeBlock';
 import { AddBlock } from 'babylonjs/Materials/Node/Blocks/addBlock';
+import { ModBlock } from 'babylonjs/Materials/Node/Blocks/modBlock';
 import { ScaleBlock } from 'babylonjs/Materials/Node/Blocks/scaleBlock';
 import { TrigonometryBlock, TrigonometryBlockOperations } from 'babylonjs/Materials/Node/Blocks/trigonometryBlock';
 import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
@@ -158,6 +159,8 @@ export class BlockTools {
                 return new DivideBlock("Divide");
             case "SubtractBlock":
                 return new SubtractBlock("Subtract");
+            case "ModBlock":
+                return new ModBlock("Mod");
             case "StepBlock":
                 return new StepBlock("Step");
             case "SmoothStepBlock":
