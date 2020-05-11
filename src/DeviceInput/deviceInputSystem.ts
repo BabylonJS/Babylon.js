@@ -91,7 +91,7 @@ export class DeviceInputSystem implements IDisposable {
     }
 
     /**
-     * Dispose of all the eventlisteners and clears the observables
+     * Dispose of all the eventlisteners
      */
     public dispose() {
         // Keyboard Events
