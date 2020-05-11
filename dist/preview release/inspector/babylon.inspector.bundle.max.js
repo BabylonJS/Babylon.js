@@ -65139,6 +65139,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_color4LineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/color4LineComponent */ "./components/actionTabs/lines/color4LineComponent.tsx");
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
+/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+
 
 
 
@@ -65161,6 +65163,16 @@ var SpritePropertyGridComponent = /** @class */ (function (_super) {
         var sprite = this.props.sprite;
         this.props.onSelectionChangedObservable.notifyObservers(sprite.manager);
     };
+    SpritePropertyGridComponent.prototype.switchPlayStopState = function () {
+        var sprite = this.props.sprite;
+        if (sprite.animationStarted) {
+            sprite.stopAnimation();
+        }
+        else {
+            sprite.playAnimation(sprite.fromIndex, sprite.toIndex, sprite.loopAnimation, sprite.delay, function () { });
+        }
+        this.forceUpdate();
+    };
     SpritePropertyGridComponent.prototype.render = function () {
         var _this = this;
         var sprite = this.props.sprite;
@@ -65177,7 +65189,8 @@ var SpritePropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Name", target: sprite, propertyName: "name", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Unique ID", value: sprite.uniqueId.toString() }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Link to manager", value: manager.name, onLink: function () { return _this.onManagerLink(); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Link to manager", value: manager.name, onLink: function () { return _this.onManagerLink(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Visible", target: sprite, propertyName: "isVisible", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "PROPERTIES" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector3LineComponent"], { label: "Position", target: sprite, propertyName: "position", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Pickable", target: sprite, propertyName: "isPickable", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -65194,7 +65207,8 @@ var SpritePropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_9__["SliderLineComponent"], { label: "Start cell", decimalCount: 0, target: sprite, propertyName: "fromIndex", minimum: 0, maximum: maxCellCount, step: 1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_9__["SliderLineComponent"], { label: "End cell", decimalCount: 0, target: sprite, propertyName: "toIndex", minimum: 0, maximum: maxCellCount, step: 1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Loop", target: sprite, propertyName: "loopAnimation", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { label: "Delay", target: sprite, propertyName: "delay", digits: 0, min: 0, isInteger: true, onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { label: "Delay", target: sprite, propertyName: "delay", digits: 0, min: 0, isInteger: true, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: sprite.animationStarted ? "Stop" : "Start", onClick: function () { return _this.switchPlayStopState(); } }))));
     };
     return SpritePropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));

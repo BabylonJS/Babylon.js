@@ -10214,6 +10214,10 @@ declare module BABYLON {
         get size(): number;
         set size(value: number);
         /**
+         * Returns a boolean indicating if the animation is started
+         */
+        get animationStarted(): boolean;
+        /**
          * Gets or sets the unique id of the sprite
          */
         uniqueId: number;
@@ -62768,6 +62772,36 @@ declare module BABYLON {
         protected _dumpPropertiesCode(): string;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to compute value of one parameter modulo another
+     */
+    export class ModBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new ModBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the left operand input component
+         */
+        get left(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the right operand input component
+         */
+        get right(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        get output(): NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
 declare module BABYLON {
