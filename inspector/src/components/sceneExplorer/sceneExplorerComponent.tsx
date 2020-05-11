@@ -24,6 +24,7 @@ import { GPUParticleSystem } from 'babylonjs/Particles/gpuParticleSystem';
 import { SSAO2RenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline';
 import { StandardMaterial } from 'babylonjs/Materials/standardMaterial';
 import { PBRMaterial } from 'babylonjs/Materials/PBR/pbrMaterial';
+import { SpriteManager } from 'babylonjs/Sprites/spriteManager';
 
 require("./sceneExplorer.scss");
 
@@ -355,6 +356,16 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             materials.push(...scene.multiMaterials);
         }
 
+        // Sprite Managers
+        let spriteManagersContextMenus: { label: string, action: () => void }[] = [];
+        spriteManagersContextMenus.push({
+            label: "Add new sprite manager",
+            action: () => {
+                let newSpriteManager = new SpriteManager("Default sprite manager", "//playground.babylonjs.com/textures/player.png", 2, 64, scene);
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(newSpriteManager);
+            }
+        });            
+
         // Particle systems
         let particleSystemsContextMenus: { label: string, action: () => void }[] = [];
         particleSystemsContextMenus.push({
@@ -405,6 +416,10 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 <TreeItemComponent globalState={this.props.globalState} 
                     contextMenuItems={particleSystemsContextMenus} 
                     extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.particleSystems} label="Particle systems" offset={1} filter={this.state.filter} />
+                <TreeItemComponent globalState={this.props.globalState} 
+                    contextMenuItems={spriteManagersContextMenus} 
+                    forceSubitems={true}
+                    extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.spriteManagers} label="Sprite managers" offset={1} filter={this.state.filter} />
                 {
                     guiElements && guiElements.length > 0 &&
                     <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={guiElements} label="GUI" offset={1} filter={this.state.filter} />
