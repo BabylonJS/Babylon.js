@@ -75,6 +75,17 @@
     uniform sampler2D microSurfaceSampler;
 #endif
 
+#ifdef METALLIC_REFLECTANCE
+    #if METALLIC_REFLECTANCEDIRECTUV == 1
+        #define vMetallicReflectanceUV vMainUV1
+    #elif METALLIC_REFLECTANCEDIRECTUV == 2
+        #define vMetallicReflectanceUV vMainUV2
+    #else
+        varying vec2 vMetallicReflectanceUV;
+    #endif
+    uniform sampler2D metallicReflectanceSampler;
+#endif
+
 #ifdef CLEARCOAT
     #ifdef CLEARCOAT_TEXTURE
         #if CLEARCOAT_TEXTUREDIRECTUV == 1
@@ -144,7 +155,11 @@
         uniform samplerCube reflectionSampler;
         
         #ifdef LODBASEDMICROSFURACE
-            #define sampleReflectionLod(s, c, l) textureCubeLodEXT(s, c, l)
+            #if defined(WEBGL2) && defined(REALTIME_FILTERING)
+                #define sampleReflectionLod(s, c, l) vec4(radiance(s, c), 1.0)
+            #else
+                #define sampleReflectionLod(s, c, l) textureCubeLodEXT(s, c, l)
+            #endif
         #else
             uniform samplerCube reflectionSamplerLow;
             uniform samplerCube reflectionSamplerHigh;

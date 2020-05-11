@@ -115,7 +115,7 @@
         },
         {
             "title": "Camera rig",
-            "playgroundId": "#ATL1CS#11",
+            "playgroundId": "#ATL1CS#12",
             "referenceImage": "cameraRig.png"
         },
         {
@@ -144,7 +144,7 @@
         },
         {
             "title": "Simulate pointer",
-            "playgroundId": "#8MGKWK#196",
+            "playgroundId": "#8MGKWK#269",
             "referenceImage": "simulatePointer.png"
         },
         {
@@ -677,12 +677,12 @@
         },
         {
             "title": "PBR",
-            "playgroundId": "#LCA0Q4#0",
+            "playgroundId": "#LCA0Q4#27",
             "referenceImage": "pbr.png"
         },
         {
             "title": "PBR refraction",
-            "playgroundId": "#LCA0Q4#25",
+            "playgroundId": "#LCA0Q4#26",
             "referenceImage": "pbr_refraction.png"
         },
         {
