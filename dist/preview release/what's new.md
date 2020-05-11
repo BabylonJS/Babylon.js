@@ -135,6 +135,7 @@
 ### Playground
 
 - Added support for code templates in the playground ([sailro](http://www.github.com/sailro))
+- If createEngine fails, a default engine will be created ([#8084](https://github.com/BabylonJS/Babylon.js/issues/8084)) ([RaananW](https://github.com/RaananW))
 
 ## Bugs
 
