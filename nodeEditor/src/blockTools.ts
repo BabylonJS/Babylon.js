@@ -72,6 +72,10 @@ import { ClearCoatBlock } from 'babylonjs/Materials/Node/Blocks/PBR/clearCoatBlo
 import { RefractionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/refractionBlock';
 import { SubSurfaceBlock } from 'babylonjs/Materials/Node/Blocks/PBR/subSurfaceBlock';
 import { CurrentScreenBlock } from 'babylonjs/Materials/Node/Blocks/Dual/currentScreenBlock';
+import { ParticleTextureBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleTextureBlock';
+import { ParticleRampGradientBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleRampGradientBlock';
+import { ParticleBlendMultiplyBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleBlendMultiplyBlock';
+import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
@@ -111,7 +115,7 @@ export class BlockTools {
             case "VectorSplitterBlock":
                 return new VectorSplitterBlock("VectorSplitter");
             case "TextureBlock":
-                return new TextureBlock("Texture");
+                return new TextureBlock("Texture", nodeMaterial.mode === NodeMaterialModes.Particle);
             case "ReflectionTextureBlock":
                 return new ReflectionTextureBlock("Reflection texture");
             case "LightBlock":
@@ -467,6 +471,27 @@ export class BlockTools {
                 return new SubSurfaceBlock("SubSurface");
             case "CurrentScreenBlock":
                 return new CurrentScreenBlock("CurrentScreen");
+            case "ParticleUVBlock": {
+                let uv = new InputBlock("uv");
+                uv.setAsAttribute("particle_uv");
+                return uv;
+            }
+            case "ParticleTextureBlock":
+                return new ParticleTextureBlock("ParticleTexture");
+            case "ParticleColorBlock": {
+                let color = new InputBlock("Color");
+                color.setAsAttribute("particle_color");
+                return color;
+            }
+            case "ParticleTextureMaskBlock": {
+                let u = new InputBlock("TextureMask");
+                u.setAsAttribute("particle_texturemask");
+                return u;
+            }
+            case "ParticleRampGradientBlock":
+                return new ParticleRampGradientBlock("ParticleRampGradient");
+            case "ParticleBlendMultiplyBlock":
+                return new ParticleBlendMultiplyBlock("ParticleBlendMultiply");
         }
 
         return null;
