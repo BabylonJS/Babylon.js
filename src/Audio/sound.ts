@@ -140,6 +140,10 @@ export class Sound {
      * Back Compat
      **/
     public onended: () => any;
+    /**
+     * Gets or sets an object used to store user defined information for the sound.
+     */
+    public metadata: any = null;
 
     /**
      * Observable event when the current playing sound finishes.
@@ -937,17 +941,18 @@ export class Sound {
     }
 
     private _onRegisterAfterWorldMatrixUpdate(node: TransformNode): void {
-        if (!(<any>node).getBoundingInfo) {
-            return;
-        }
-        let mesh = node as AbstractMesh;
         if (this._positionInEmitterSpace) {
-            mesh.worldMatrixFromCache.invertToRef(TmpVectors.Matrix[0]);
+            node.worldMatrixFromCache.invertToRef(TmpVectors.Matrix[0]);
             this.setPosition(TmpVectors.Matrix[0].getTranslation());
         }
         else {
-            let boundingInfo = mesh.getBoundingInfo();
-            this.setPosition(boundingInfo.boundingSphere.centerWorld);
+            if (!(<any>node).getBoundingInfo) {
+                this.setPosition(node.absolutePosition);
+            } else {
+                let mesh = node as AbstractMesh;
+                let boundingInfo = mesh.getBoundingInfo();
+                this.setPosition(boundingInfo.boundingSphere.centerWorld);
+            }
         }
         if (Engine.audioEngine.canUseWebAudio && this._isDirectional && this.isPlaying) {
             this._updateDirection();
@@ -1036,7 +1041,8 @@ export class Sound {
             distanceModel: this.distanceModel,
             playbackRate: this._playbackRate,
             panningModel: this._panningModel,
-            soundTrackId: this.soundTrackId
+            soundTrackId: this.soundTrackId,
+            metadata: this.metadata
         };
 
         if (this.spatialSound) {
@@ -1124,6 +1130,10 @@ export class Sound {
             if (connectedMesh) {
                 newSound.attachToMesh(connectedMesh);
             }
+        }
+
+        if (parsedSound.metadata) {
+            newSound.metadata = parsedSound.metadata;
         }
 
         return newSound;

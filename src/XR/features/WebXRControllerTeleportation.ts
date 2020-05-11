@@ -467,7 +467,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                                     this._tmpVector.addInPlace(this._options.xrInput.xrCamera.position);
                                     this._options.xrInput.xrCamera.position.subtractToRef(this._tmpVector, this._tmpVector);
                                     this._tmpRay.origin.copyFrom(this._tmpVector);
-                                    this._tmpRay.direction.set(0, -1, 0);
+                                    this._tmpRay.direction.set(0, this._xrSessionManager.scene.useRightHandedSystem ? 1 : -1, 0);
                                     let pick = this._xrSessionManager.scene.pickWithRay(this._tmpRay, (o) => {
                                         return this._floorMeshes.indexOf(o) !== -1;
                                     });
@@ -489,7 +489,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                                     if (!controllerData.teleportationState.rotating && Math.abs(axesData.x) > 0.7) {
                                         // rotate in the right direction positive is right
                                         controllerData.teleportationState.rotating = true;
-                                        const rotation = this.rotationAngle * (axesData.x > 0 ? 1 : -1);
+                                        const rotation = this.rotationAngle * (axesData.x > 0 ? 1 : -1) * (this._xrSessionManager.scene.useRightHandedSystem ? -1 : 1);
                                         this._options.xrInput.xrCamera.rotationQuaternion.multiplyInPlace(Quaternion.FromEulerAngles(0, rotation, 0));
                                     }
                                 } else {
@@ -497,7 +497,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                                         // set the rotation of the forward movement
                                         if (this.rotationEnabled) {
                                             setTimeout(() => {
-                                                controllerData.teleportationState.currentRotation = Math.atan2(axesData.x, -axesData.y);
+                                                controllerData.teleportationState.currentRotation = Math.atan2(axesData.x, axesData.y * (this._xrSessionManager.scene.useRightHandedSystem ? 1 : -1));
                                             });
                                         } else {
                                             controllerData.teleportationState.currentRotation = 0;
@@ -734,7 +734,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             const height = this._options.xrInput.xrCamera.realWorldHeight;
             this._options.xrInput.xrCamera.position.copyFrom(this._options.teleportationTargetMesh.position);
             this._options.xrInput.xrCamera.position.y += height;
-            this._options.xrInput.xrCamera.rotationQuaternion.multiplyInPlace(Quaternion.FromEulerAngles(0, controllerData.teleportationState.currentRotation, 0));
+            this._options.xrInput.xrCamera.rotationQuaternion.multiplyInPlace(Quaternion.FromEulerAngles(0, controllerData.teleportationState.currentRotation - (this._xrSessionManager.scene.useRightHandedSystem ? Math.PI : 0), 0));
         }
     }
 }

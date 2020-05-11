@@ -10,7 +10,7 @@ import { _TypeStore } from '../../Misc/typeStore';
 import { Tools } from '../../Misc/tools';
 import { ToGammaSpace } from '../../Maths/math.constants';
 import { ThinEngine } from '../../Engines/thinEngine';
-
+import { HDRFiltering } from "../../Materials/Textures/Filtering/hdrFiltering";
 import "../../Engines/Extensions/engine.rawTexture";
 import "../../Materials/Textures/baseTexture.polynomial";
 
@@ -33,6 +33,7 @@ export class HDRCubeTexture extends BaseTexture {
 
     private _generateHarmonics = true;
     private _noMipmap: boolean;
+    private _prefilterOnLoad: boolean;
     private _textureMatrix: Matrix;
     private _size: number;
     private _onLoad: Nullable<() => void> = null;
@@ -114,9 +115,9 @@ export class HDRCubeTexture extends BaseTexture {
      * @param noMipmap Forces to not generate the mipmap if true
      * @param generateHarmonics Specifies whether you want to extract the polynomial harmonics during the generation process
      * @param gammaSpace Specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space, but the standard material would require them in Gamma space)
-     * @param reserved Reserved flag for internal use.
+     * @param prefilterOnLoad Prefilters HDR texture to allow use of this texture as a PBR reflection texture.
      */
-    constructor(url: string, sceneOrEngine: Scene | ThinEngine, size: number, noMipmap = false, generateHarmonics = true, gammaSpace = false, reserved = false, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null) {
+    constructor(url: string, sceneOrEngine: Scene | ThinEngine, size: number, noMipmap = false, generateHarmonics = true, gammaSpace = false, prefilterOnLoad = false, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null) {
         super(sceneOrEngine);
 
         if (!url) {
@@ -128,6 +129,7 @@ export class HDRCubeTexture extends BaseTexture {
         this.hasAlpha = false;
         this.isCube = true;
         this._textureMatrix = Matrix.Identity();
+        this._prefilterOnLoad = prefilterOnLoad;
         this._onLoad = onLoad;
         this._onError = onError;
         this.gammaSpace = gammaSpace;
@@ -235,8 +237,17 @@ export class HDRCubeTexture extends BaseTexture {
                     results.push(dataFace);
                 }
             }
+
             return results;
         };
+
+        if (this._getEngine()!.webGLVersion >= 2 && this._prefilterOnLoad) {
+            const previousOnLoad = this._onLoad;
+            const hdrFiltering = new HDRFiltering(engine);
+            this._onLoad = () => {
+                hdrFiltering.prefilter(this, previousOnLoad);
+            };
+        }
 
         this._texture = engine.createRawCubeTextureFromUrl(this.url, this.getScene(), this._size,
             Constants.TEXTUREFORMAT_RGB,

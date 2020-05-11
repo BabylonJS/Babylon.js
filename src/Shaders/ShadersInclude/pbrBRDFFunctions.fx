@@ -29,6 +29,16 @@
         return brdfLookup.rgb;
     }
 
+    vec3 getReflectanceFromBRDFLookup(const vec3 specularEnvironmentR0, const vec3 specularEnvironmentR90, const vec3 environmentBrdf) {
+        #ifdef BRDF_V_HEIGHT_CORRELATED
+            vec3 reflectance = (specularEnvironmentR90 - specularEnvironmentR0) * environmentBrdf.x + specularEnvironmentR0 * environmentBrdf.y;
+            // Simplification if F90 = 1 vec3 reflectance = (specularEnvironmentR90 - specularEnvironmentR0) * environmentBrdf.xxx + specularEnvironmentR0 * environmentBrdf.yyy;
+        #else
+            vec3 reflectance = specularEnvironmentR0 * environmentBrdf.x + specularEnvironmentR90 * environmentBrdf.y;
+        #endif
+        return reflectance;
+    }
+
     vec3 getReflectanceFromBRDFLookup(const vec3 specularEnvironmentR0, const vec3 environmentBrdf) {
         #ifdef BRDF_V_HEIGHT_CORRELATED
             vec3 reflectance = mix(environmentBrdf.xxx, environmentBrdf.yyy, specularEnvironmentR0);
@@ -76,18 +86,21 @@ float getBRDFLookupCharlieSheen(float NdotV, float perceptualRoughness)
 //                              Schlick/Fresnel
 // ______________________________________________________________________
 
+// iorI incident iorT transmitted
+
 // Schlick's approximation for R0 (Fresnel Reflectance Values)
 // Keep for references
-// vec3 getR0fromAirToSurfaceIOR(vec3 ior1) {
-//     return getR0fromIOR(ior1, vec3(1.0));
-// }
 
-// vec3 getR0fromIOR(vec3 ior1, vec3 ior2) {
-//     vec3 t = (ior1 - ior2) / (ior1 + ior2);
+// vec3 getR0fromIORs(vec3 iorT, vec3 iorI) { 
+//     vec3 t = (iorT - iorI) / (iorT + iorI);
 //     return t * t;
 // }
 
-// vec3 getIORfromAirToSurfaceR0(vec3 f0) {
+// vec3 getR0fromAirToSurfaceIORT(vec3 iorT) {
+//     return getR0fromIOR(iorT, vec3(1.0));
+// }
+
+// vec3 getIORTfromAirToSurfaceR0(vec3 f0) {
 //     vec3 s = sqrt(f0);
 //     return (1.0 + s) / (1.0 - s);
 // }

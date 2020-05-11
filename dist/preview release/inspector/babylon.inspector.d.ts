@@ -552,7 +552,10 @@ declare module INSPECTOR {
         private _isCurrentPointControl;
         private _currentPointIndex;
         private _draggableArea;
+        private _panStart;
+        private _panStop;
         constructor(props: ISvgDraggableAreaProps);
+        componentDidMount(): void;
         dragStart(e: React.TouchEvent<SVGSVGElement>): void;
         dragStart(e: React.MouseEvent<SVGSVGElement, MouseEvent>): void;
         drag(e: React.TouchEvent<SVGSVGElement>): void;
@@ -561,6 +564,11 @@ declare module INSPECTOR {
         dragEnd(e: React.MouseEvent<SVGSVGElement, MouseEvent>): void;
         getMousePosition(e: React.TouchEvent<SVGSVGElement>): BABYLON.Vector2 | undefined;
         getMousePosition(e: React.MouseEvent<SVGSVGElement, MouseEvent>): BABYLON.Vector2 | undefined;
+        panDirection(): void;
+        panTo(direction: string, value: number): void;
+        keyDown(e: KeyboardEvent): void;
+        keyUp(e: KeyboardEvent): void;
+        focus(e: React.MouseEvent<SVGSVGElement>): void;
         render(): JSX.Element;
     }
 }
@@ -588,6 +596,7 @@ declare module INSPECTOR {
 declare module INSPECTOR {
     interface IPlayheadProps {
         frame: number;
+        offset: number;
     }
     export class Playhead extends React.Component<IPlayheadProps> {
         constructor(props: IPlayheadProps);
@@ -604,6 +613,9 @@ declare module INSPECTOR {
         scene: BABYLON.Scene;
         entity: BABYLON.IAnimatable;
     }
+    interface ICanvasAxis {
+        value: number;
+    }
     export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, {
         animations: BABYLON.Animation[];
         animationName: string;
@@ -613,16 +625,21 @@ declare module INSPECTOR {
         currentPathData: string | undefined;
         svgKeyframes: IKeyframeSvgPoint[] | undefined;
         currentFrame: number;
+        frameAxisLength: ICanvasAxis[];
     }> {
         readonly _heightScale: number;
+        readonly _canvasLength: number;
+        private _playheadOffset;
         private _newAnimations;
         private _svgKeyframes;
         private _frames;
         private _isPlaying;
+        private _graphCanvas;
         constructor(props: IAnimationCurveEditorComponentProps);
+        componentDidMount(): void;
         handleNameChange(event: React.ChangeEvent<HTMLInputElement>): void;
         handlePropertyChange(event: React.ChangeEvent<HTMLInputElement>): void;
-        addAnimation(event: React.MouseEvent<HTMLDivElement>): void;
+        addAnimation(): void;
         addKeyFrame(event: React.MouseEvent<SVGSVGElement>): void;
         updateKeyframe(keyframe: BABYLON.Vector2, index: number): void;
         getAnimationProperties(animation: BABYLON.Animation): {
@@ -1339,6 +1356,7 @@ declare module INSPECTOR {
     }
     export class PostProcessPropertyGridComponent extends React.Component<IPostProcessPropertyGridComponentProps> {
         constructor(props: IPostProcessPropertyGridComponentProps);
+        edit(): void;
         render(): JSX.Element;
     }
 }
@@ -1816,6 +1834,7 @@ declare module INSPECTOR {
     export class SpritePropertyGridComponent extends React.Component<ISpritePropertyGridComponentProps> {
         constructor(props: ISpritePropertyGridComponentProps);
         onManagerLink(): void;
+        switchPlayStopState(): void;
         render(): JSX.Element;
     }
 }
