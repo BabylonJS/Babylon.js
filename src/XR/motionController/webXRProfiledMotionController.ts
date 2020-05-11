@@ -114,8 +114,9 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
         if (rootMesh) {
             rootMesh.setParent(this.rootMesh);
         }
-
-        this.rootMesh.rotate(Axis.Y, Math.PI, Space.WORLD);
+        if (!this.scene.useRightHandedSystem) {
+            this.rootMesh.rotate(Axis.Y, Math.PI, Space.WORLD);
+        }
     }
 
     protected _updateModel(_xrFrame: XRFrame): void {
