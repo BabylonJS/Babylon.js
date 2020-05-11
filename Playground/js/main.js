@@ -101,7 +101,13 @@ compileAndRun = function (parent, fpsLabel) {
 
                 parent.zipTool.ZipCode = zipVariables + defaultEngineZip + "var engine = createDefaultEngine();" + ";\r\nvar scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
             } else {
-                code += "\r\n\r\nengine = " + createEngineFunction + "();";
+                code += `
+var engine;
+try {
+    engine = ${createEngineFunction}();
+} catch(e) {
+    engine = createDefaultEngine();
+}`;
                 code += "\r\nif (!engine) throw 'engine should not be null.';";
 
                 if (parent.settingsPG.ScriptLanguage == "JS") {
