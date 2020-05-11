@@ -24,7 +24,7 @@ export class PostProcessPropertyGridComponent extends React.Component<IPostProce
 
     edit() {        
         const postProcess = this.props.postProcess;
-        postProcess.nodeMaterialSource.edit();
+        postProcess.nodeMaterialSource!.edit();
     }
 
     render() {
