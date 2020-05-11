@@ -3,6 +3,7 @@
 #include <arcana/threading/dispatcher.h>
 #include <arcana/threading/task.h>
 #include <napi/env.h>
+#include <condition_variable>
 
 namespace Babylon
 {

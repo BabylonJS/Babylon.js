@@ -18,10 +18,10 @@ namespace Babylon::Polyfills::Internal
                 if (value == ArrayBuffer)
                     return UrlLib::UrlResponseType::Buffer;
 
-                throw;
+                throw std::exception{};
             }
 
-            constexpr const char* EnumToString(UrlLib::UrlResponseType value)
+            const char* EnumToString(UrlLib::UrlResponseType value)
             {
                 switch (value)
                 {
@@ -31,7 +31,7 @@ namespace Babylon::Polyfills::Internal
                         return ArrayBuffer;
                 }
 
-                throw;
+                throw std::exception{};
             }
         }
 

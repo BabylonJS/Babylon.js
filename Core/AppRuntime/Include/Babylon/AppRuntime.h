@@ -35,6 +35,6 @@ namespace Babylon
         void RunEnvironmentTier();
         void Run(Napi::Env);
 
-        std::unique_ptr<WorkQueue> m_workQueue{};
+        std::unique_ptr<WorkQueue> m_workQueue;
     };
 }

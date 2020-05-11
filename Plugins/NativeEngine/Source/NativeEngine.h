@@ -155,7 +155,7 @@ namespace Babylon
 
         bgfx::FrameBufferHandle FrameBuffer{bgfx::kInvalidHandle};
         bgfx::ViewId ViewId{};
-        ViewClearState ViewClearState;
+        Babylon::ViewClearState ViewClearState;
         uint16_t Width{};
         uint16_t Height{};
     };

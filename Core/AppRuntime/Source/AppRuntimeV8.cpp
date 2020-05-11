@@ -1,7 +1,5 @@
 #include "AppRuntime.h"
 
-#include "Common.h"
-
 #include <v8.h>
 #include <libplatform/libplatform.h>
 
@@ -12,10 +10,10 @@ namespace Babylon
         class Module final
         {
         public:
-            Module(const char* executablePath)
+            Module()
             {
-                v8::V8::InitializeICUDefaultLocation(executablePath);
-                v8::V8::InitializeExternalStartupData(executablePath);
+                v8::V8::InitializeICUDefaultLocation(".");
+                v8::V8::InitializeExternalStartupData(".");
                 m_platform = v8::platform::NewDefaultPlatform();
                 v8::V8::InitializePlatform(m_platform.get());
                 v8::V8::Initialize();
@@ -27,11 +25,11 @@ namespace Babylon
                 v8::V8::ShutdownPlatform();
             }
 
-            static void Initialize(const char* executablePath)
+            static void Initialize()
             {
                 if (s_module == nullptr)
                 {
-                    s_module = std::make_unique<Module>(executablePath);
+                    s_module = std::make_unique<Module>();
                 }
             }
 
@@ -47,7 +45,7 @@ namespace Babylon
     void AppRuntime::RunEnvironmentTier()
     {
         // Create the isolate.
-        Module::Initialize(GetModulePath().u8string().data());
+        Module::Initialize();
         v8::Isolate::CreateParams create_params;
         create_params.array_buffer_allocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();
         v8::Isolate* isolate = v8::Isolate::New(create_params);
