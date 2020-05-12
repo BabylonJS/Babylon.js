@@ -9,6 +9,7 @@ import { ShaderDefineExpression } from './Expressions/shaderDefineExpression';
 import { ShaderDefineArithmeticOperator } from './Expressions/Operators/shaderDefineArithmeticOperator';
 import { ProcessingOptions } from './shaderProcessingOptions';
 import { _DevTools } from '../../Misc/devTools';
+import { ShaderCodeInliner } from './shaderCodeInliner';
 
 declare type WebRequest = import("../../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../../Misc/fileTools").LoadFileError;
@@ -23,7 +24,10 @@ export class ShaderProcessor {
     public static Process(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string) => void) {
         this._ProcessIncludes(sourceCode, options, (codeWithIncludes) => {
             let migratedCode = this._ProcessShaderConversion(codeWithIncludes, options);
-            callback(migratedCode);
+            let sci = new ShaderCodeInliner(migratedCode);
+            sci.debug = true;
+            sci.processCode();
+            callback(sci.code/*migratedCode*/);
         });
     }
 
