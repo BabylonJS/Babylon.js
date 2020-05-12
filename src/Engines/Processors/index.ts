@@ -6,3 +6,4 @@ export * from "./shaderCodeNode";
 export * from "./shaderCodeTestNode";
 export * from "./shaderProcessingOptions";
 export * from "./shaderProcessor";
+export * from "./shaderCodeInliner";
