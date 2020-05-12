@@ -289,9 +289,9 @@ be greyed and inaccessible. Instructions and tips on how to install the simulato
 ### **Building on Ubuntu, Targeting Linux**
 
 **Required Tools:** 
-[Clang](https://clang.llvm.org/)
+[Clang](https://clang.llvm.org/) or [GCC](https://gcc.gnu.org/)
 
-The minimal requirement target is an OpenGL 3.3 compatible GPU. Clang 8+ is required for building.
+The minimal requirement target is an OpenGL 3.3 compatible GPU. Clang 8+ or GCC 9+ are required for building.
 
 First step is to install packages mandatory for building. For example, with Clang-8 toolchain:
 
@@ -317,6 +317,23 @@ or
 ```
 make
 ```
+
+You can switch compiler between GCC and Clang by defining shell variables.
+And example for clang
+
+```
+export CC=/usr/bin/clang
+export CXX=/usr/bin/clang++
+```
+
+and GCC
+
+```
+export CC=/usr/bin/gcc
+export CXX=/usr/bin/g++
+```
+
+You will have to run CMake again to take changes into account.
 
 ## Development Notes
 
