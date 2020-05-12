@@ -537,7 +537,9 @@ export class WebGPUEngine extends Engine {
         dataBuffer.references = 1;
         dataBuffer.capacity = view.byteLength;
         if (arrBuffer) {
-            new Uint8Array(arrBuffer).set(new Uint8Array(view.buffer));
+            const outputView = new Uint8Array(arrBuffer);
+            const inputView = new Uint8Array(view.buffer, view.byteOffset, view.byteLength);
+            outputView.set(inputView);
             buffer.unmap();
         } else {
             this._setSubData(dataBuffer, 0, view);
