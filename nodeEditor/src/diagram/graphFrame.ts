@@ -139,7 +139,7 @@ export class GraphFrame {
 
                             if (!portAdded) {
                                 portAdded = true;
-                                localPort = FrameNodePort.CreateFrameNodePortElement(port.connectionPoint, link.nodeB!, this._outputPortContainer, null, this._ownerCanvas.globalState, false, GraphFrame._FramePortCounter++, this.id);
+                                localPort = FrameNodePort.CreateFrameNodePortElement(port.connectionPoint, link.nodeA!, this._outputPortContainer, null, this._ownerCanvas.globalState, false, GraphFrame._FramePortCounter++, this.id);
                                 this._frameOutPorts.push(localPort);
 
                                 link.isVisible = true;
