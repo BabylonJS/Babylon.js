@@ -46,18 +46,6 @@
     uniform sampler2D emissiveSampler;
 #endif
 
-#ifdef BUMP
-    #if BUMPDIRECTUV == 1
-        #define vBumpUV vMainUV1
-    #elif BUMPDIRECTUV == 2
-        #define vBumpUV vMainUV2
-    #else
-        varying vec2 vBumpUV;
-    #endif
-
-    uniform sampler2D bumpSampler;
-#endif
-
 #ifdef OPACITY
     #if OPACITYDIRECTUV == 1
         #define vOpacityUV vMainUV1

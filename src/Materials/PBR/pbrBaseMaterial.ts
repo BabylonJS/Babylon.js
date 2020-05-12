@@ -1892,9 +1892,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 ubo.updateFloat2("vDebugMode", this.debugLimit, this.debugFactor);
             }
 
-            // Visibility
-            ubo.updateFloat("visibility", mesh.visibility);
-
             // Textures
             if (scene.texturesEnabled) {
                 if (this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
