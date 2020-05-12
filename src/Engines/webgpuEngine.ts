@@ -359,9 +359,8 @@ export class WebGPUEngine extends Engine {
         };
 
         if (this._options.antialiasing) {
-            const mainTextureDescriptor = {
+            const mainTextureDescriptor: GPUTextureDescriptor = {
                 size: this._mainTextureExtends,
-                arrayLayerCount: 1,
                 mipLevelCount: 1,
                 sampleCount: this._mainPassSampleCount,
                 dimension: WebGPUConstants.GPUTextureDimension_2d,
@@ -387,9 +386,8 @@ export class WebGPUEngine extends Engine {
             }];
         }
 
-        const depthTextureDescriptor = {
+        const depthTextureDescriptor: GPUTextureDescriptor = {
             size: this._mainTextureExtends,
-            arrayLayerCount: 1,
             mipLevelCount: 1,
             sampleCount: this._mainPassSampleCount,
             dimension: WebGPUConstants.GPUTextureDimension_2d,
@@ -1214,7 +1212,6 @@ export class WebGPUEngine extends Engine {
             const textureDescriptor: GPUTextureDescriptor = {
                 dimension: WebGPUConstants.GPUTextureDimension_2d,
                 format: WebGPUConstants.GPUTextureFormat_rgba8unorm,
-                arrayLayerCount: 1,
                 mipLevelCount: noMipmap ? 1 : mipMaps + 1,
                 sampleCount: 1,
                 size: textureExtent,
@@ -1288,12 +1285,11 @@ export class WebGPUEngine extends Engine {
             const textureExtent = {
                 width,
                 height,
-                depth,
+                depth: depth * 6,
             };
             const textureDescriptor: GPUTextureDescriptor = {
                 dimension: WebGPUConstants.GPUTextureDimension_2d,
                 format: WebGPUConstants.GPUTextureFormat_rgba8unorm,
-                arrayLayerCount: 6,
                 mipLevelCount: noMipmap ? 1 : mipMaps + 1,
                 sampleCount: 1,
                 size: textureExtent,
@@ -1313,7 +1309,6 @@ export class WebGPUEngine extends Engine {
                 }
             }
             texture._webGPUTextureView = gpuTexture.createView({
-                arrayLayerCount: 6,
                 dimension: WebGPUConstants.GPUTextureViewDimension_cube,
                 format: WebGPUConstants.GPUTextureFormat_rgba8unorm,
                 mipLevelCount: noMipmap ? 1 : mipMaps + 1,

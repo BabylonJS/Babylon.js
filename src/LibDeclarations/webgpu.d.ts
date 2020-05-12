@@ -459,7 +459,6 @@ interface GPUSwapChainDescriptor extends GPUObjectDescriptorBase {
 
 interface GPUTextureDescriptor extends GPUObjectDescriptorBase {
   size: GPUExtent3D;
-  arrayLayerCount?: number;
   mipLevelCount?: number;
   sampleCount?: number;
   dimension?: GPUTextureDimension;
