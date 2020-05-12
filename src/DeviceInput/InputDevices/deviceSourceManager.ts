@@ -108,7 +108,7 @@ export class DeviceSourceManager implements IDisposable {
      * @param deviceSlot "Slot" or index that device is referenced in
      * @returns DeviceSource object
      */
-    public getDeviceSource<T extends DeviceType>(deviceType: DeviceType, deviceSlot?: number): Nullable<DeviceSource<T>> {
+    public getDeviceSource<T extends DeviceType>(deviceType: T, deviceSlot?: number): Nullable<DeviceSource<T>> {
         if (deviceSlot === undefined) {
             if (this._firstDevice[deviceType] === undefined) {
                 return null;
