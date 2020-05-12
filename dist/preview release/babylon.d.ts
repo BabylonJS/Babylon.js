@@ -51007,8 +51007,8 @@ declare module BABYLON {
          */
         getHostDocument(): Nullable<Document>;
         clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
-        createIndexBuffer(indices: IndicesArray): NativeDataBuffer;
-        createVertexBuffer(data: DataArray): NativeDataBuffer;
+        createIndexBuffer(indices: IndicesArray, updateable?: boolean): NativeDataBuffer;
+        createVertexBuffer(data: DataArray, updateable?: boolean): NativeDataBuffer;
         recordVertexArrayObject(vertexBuffers: {
             [key: string]: VertexBuffer;
         }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): WebGLVertexArrayObject;
