@@ -19,6 +19,7 @@
     #endif
     };
 
+    #define inline
     void sheenBlock(
         const in vec4 vSheenColor,
     #ifdef SHEEN_ROUGHNESS

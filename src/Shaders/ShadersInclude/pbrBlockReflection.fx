@@ -52,6 +52,7 @@
         #endif
     }
 
+    #define inline
     void sampleReflectionTexture(
         const in float alphaG,
         const in vec3 vReflectionMicrosurfaceInfos,
@@ -146,6 +147,7 @@
         environmentRadiance.rgb *= vReflectionColor.rgb;
     }
 
+    #define inline
     void reflectionBlock(
         const in vec3 vPositionW,
         const in vec3 normalW,
