@@ -283,11 +283,16 @@ export class Tools {
      * Gets the pointer prefix to use
      * @returns "pointer" if touch is enabled. Else returns "mouse"
      */
-    public static GetPointerPrefix(): string {
+    public static GetPointerPrefix(engine: Engine): string {
         var eventPrefix = "pointer";
 
         // Check if pointer events are supported
         if (DomManagement.IsWindowObjectExist() && !window.PointerEvent && DomManagement.IsNavigatorAvailable() && !navigator.pointerEnabled) {
+            eventPrefix = "mouse";
+        }
+
+        // Special Fallback...
+        if (engine._badDesktopOS) {
             eventPrefix = "mouse";
         }
 
