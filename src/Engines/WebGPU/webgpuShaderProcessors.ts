@@ -3,6 +3,7 @@ import { IShaderProcessor } from '../Processors/iShaderProcessor';
 import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
 import { WebGPUConstants } from './webgpuConstants';
+import { ShaderCodeInliner } from '../Processors/shaderCodeInliner';
 
 const _knownUBOs: { [key: string]: { setIndex: number, bindingIndex: number} } = {
     "Scene": { setIndex: 0, bindingIndex: 0 },
@@ -41,6 +42,13 @@ const _gpuTextureViewDimensionByWebGPUTextureType: { [key: string]: GPUTextureVi
 
 /** @hidden */
 export class WebGPUShaderProcessor implements IShaderProcessor {
+
+    public preProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>): string {
+        let sci = new ShaderCodeInliner(code);
+        // sci.debug = true;
+        sci.processCode();
+        return sci.code;
+    }
 
     public varyingProcessor(varying: string, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) {
         const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;

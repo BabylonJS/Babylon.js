@@ -43,6 +43,11 @@ gulp.task("webserver", function () {
                             req.url = "/Playground/" + req.url.replace(/localDev/ig, "");
                         }
                     }
+                    if (referer.indexOf('/localdevwebgpu/') !== -1 && referer.indexOf(req.originalUrl) === -1) {
+                        if (!fs.existsSync(rootRelativePath + req.originalUrl)) {
+                            req.url = "/Playground/" + req.url.replace(/localdevwebgpu/ig, "");
+                        }
+                    }
                 }
 
                 const pgMath = req.url.match(/\/Playground\/pg\/(.*)/);
