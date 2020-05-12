@@ -39,10 +39,12 @@ vec3 computeDiffuseLighting(preLightingInfo info, vec3 lightColor) {
     return diffuseTerm * info.attenuation * info.NdotL * lightColor;
 }
 
-vec2 computeProjectionTextureDiffuseLightingUV(mat4 textureProjectionMatrix){
-	vec4 strq = textureProjectionMatrix * vec4(vPositionW, 1.0);
-	strq /= strq.w;
-	return strq.xy;
+#define inline
+vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, mat4 textureProjectionMatrix){
+    vec4 strq = textureProjectionMatrix * vec4(vPositionW, 1.0);
+    strq /= strq.w;
+    vec3 textureColor = texture2D(projectionLightSampler, strq.xy).rgb;
+    return toLinearSpace(textureColor);
 }
 
 #ifdef SS_TRANSLUCENCY
