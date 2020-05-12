@@ -63947,7 +63947,7 @@ var GraphFrame = /** @class */ (function () {
                             var localPort = void 0;
                             if (!portAdded) {
                                 portAdded = true;
-                                localPort = _frameNodePort__WEBPACK_IMPORTED_MODULE_3__["FrameNodePort"].CreateFrameNodePortElement(port.connectionPoint, link.nodeB, this._outputPortContainer, null, this._ownerCanvas.globalState, false, GraphFrame._FramePortCounter++, this.id);
+                                localPort = _frameNodePort__WEBPACK_IMPORTED_MODULE_3__["FrameNodePort"].CreateFrameNodePortElement(port.connectionPoint, link.nodeA, this._outputPortContainer, null, this._ownerCanvas.globalState, false, GraphFrame._FramePortCounter++, this.id);
                                 this._frameOutPorts.push(localPort);
                                 link.isVisible = true;
                                 var onLinkDisposedObserver = link.onDisposedObservable.add(function (nodeLink) {
