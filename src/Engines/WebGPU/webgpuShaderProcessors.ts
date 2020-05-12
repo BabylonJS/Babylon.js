@@ -43,13 +43,6 @@ const _gpuTextureViewDimensionByWebGPUTextureType: { [key: string]: GPUTextureVi
 /** @hidden */
 export class WebGPUShaderProcessor implements IShaderProcessor {
 
-    public preProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>): string {
-        let sci = new ShaderCodeInliner(code);
-        // sci.debug = true;
-        sci.processCode();
-        return sci.code;
-    }
-
     public varyingProcessor(varying: string, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) {
         const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;
 
@@ -243,7 +236,10 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
             code += "gl_Position.y *= -1.; }";
         }
 
-        return code;
+        let sci = new ShaderCodeInliner(code);
+        // sci.debug = true;
+        sci.processCode();
+        return sci.code;
     }
 
     public finalizeShaders(vertexCode: string, fragmentCode: string, processingContext: Nullable<ShaderProcessingContext>): { vertexCode: string, fragmentCode: string } {
