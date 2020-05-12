@@ -46,6 +46,7 @@ import { Texture } from '../Textures/texture';
 import { IParticleSystem } from '../../Particles/IParticleSystem';
 import { BaseParticleSystem } from '../../Particles/baseParticleSystem';
 import { ColorSplitterBlock } from './Blocks/colorSplitterBlock';
+import { TimingTools } from '../../Misc/timingTools';
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -784,7 +785,9 @@ export class NodeMaterial extends PushMaterial {
             if (result) {
                 Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString);
 
-                postProcess.updateEffect(defines.toString(), this._fragmentCompilationState.uniforms, this._fragmentCompilationState.samplers, { maxSimultaneousLights: this.maxSimultaneousLights }, undefined, undefined, tempName, tempName);
+                TimingTools.SetImmediate(() =>
+                    postProcess!.updateEffect(defines.toString(), this._fragmentCompilationState.uniforms, this._fragmentCompilationState.samplers, { maxSimultaneousLights: this.maxSimultaneousLights }, undefined, undefined, tempName, tempName)
+                );
             }
 
             // Animated blocks
