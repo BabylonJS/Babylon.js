@@ -7,7 +7,7 @@
 - Added the `ShadowDepthWrapper` class to support accurate shadow generation for custom as well as node material shaders. [Doc](https://doc.babylonjs.com/babylon101/shadows#custom-shadow-map-shaders) ([Popov72](https://github.com/Popov72))
 - Added Babylon.js Texture [tools](https://www.babylonjs.com/tools/ibl) to prefilter HDR files ([Sebavan](https://github.com/sebavan/))
 - Added editing of PBR materials, Post processes and Particle fragment shaders in the node material editor ([Popov72](https://github.com/Popov72))
-- Added Curve editor to view selected entity's animations in the Inspector ([pixelspace](https://github.com/devpixelspace))
+- Added Curve editor to create and view selected entity's animations in the Inspector ([pixelspace](https://github.com/devpixelspace))
 - Added support in `ShadowGenerator` for fast fake soft transparent shadows ([Popov72](https://github.com/Popov72))
 
 ## Updates
@@ -22,7 +22,9 @@
 - Added support for `material.disableColorWrite` ([Deltakosh](https://github.com/deltakosh))
 - The Mesh Asset Task also accepts File as sceneInput ([RaananW](https://github.com/RaananW))
 - Added support preserving vert colors for CSG objects ([PirateJC](https://github.com/PirateJC))
+- Added support in `ShadowGenerator` for fast fake soft transparent shadows ([Popov72](https://github.com/Popov72))
 - Added `boundingBoxRenderer.onBeforeBoxRenderingObservable` and `boundingBoxRenderer.onAfterBoxRenderingObservable` ([Deltakosh](https://github.com/deltakosh))
+- Added initial code for user facing DeviceSourceManager ([PolygonalSun](https://github.com/PolygonalSun))
 
 ### Engine
 
@@ -37,6 +39,7 @@
 - Can now edit Node port names ([belfortk](https://github.com/belfortk))
 - Updated which node ports are shown on frames by default so that only node ports connected to outside nodes are by default exposed on the frame ([belfortk](https://github.com/belfortk))
 - Added a modulo block ([ageneau](https://github.com/ageneau))
+- Fix bug where frame port labels would be the names of incorrect nodes ([belfortk](https://github.com/belfortk))
 
 ### Inspector
 
@@ -191,6 +194,7 @@
 - Make sure bone matrices are up to date when calling `TransformNode.attachToBone` ([Popov72](https://github.com/Popov72))
 - Fix display problem with transparent objects and SSAO2 pipeline (bug in the `GeometryBufferRenderer`) ([Popov72](https://github.com/Popov72))
 - Fixed `Sound` not accepting a `TransformNode` as a source for spatial sound ([Poolminer](https://github.com/Poolminer))
+- Fix bug when using `ShadowOnlyMaterial` with Cascaded Shadow Map and `autoCalcDepthBounds` is `true` ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
