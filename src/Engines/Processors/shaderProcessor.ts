@@ -24,10 +24,7 @@ export class ShaderProcessor {
     public static Process(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string) => void) {
         this._ProcessIncludes(sourceCode, options, (codeWithIncludes) => {
             let migratedCode = this._ProcessShaderConversion(codeWithIncludes, options);
-            let sci = new ShaderCodeInliner(migratedCode);
-            sci.debug = true;
-            sci.processCode();
-            callback(sci.code/*migratedCode*/);
+            callback(migratedCode);
         });
     }
 
