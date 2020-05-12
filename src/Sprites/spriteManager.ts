@@ -173,14 +173,10 @@ export class SpriteManager implements ISpriteManager {
     }
 
     /**
-     * Gets or sets the capacity of the manager
+     * Gets the capacity of the manager
      */
     public get capacity() {
         return this._capacity;
-    }
-
-    public set capacity(value: number) {
-        this._capacity = value;
     }
 
     /**
