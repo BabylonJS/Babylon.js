@@ -10952,10 +10952,9 @@ declare module BABYLON {
          */
         get scene(): Scene;
         /**
-         * Gets or sets the capacity of the manager
+         * Gets the capacity of the manager
          */
         get capacity(): number;
-        set capacity(value: number);
         /**
          * Gets or sets the spritesheet texture
          */

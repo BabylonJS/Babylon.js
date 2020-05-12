@@ -65267,6 +65267,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Rendering_renderingManager__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! babylonjs/Rendering/renderingManager */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Rendering_renderingManager__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Rendering_renderingManager__WEBPACK_IMPORTED_MODULE_8__);
 /* harmony import */ var _lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/textureLinkLineComponent */ "./components/actionTabs/lines/textureLinkLineComponent.tsx");
+/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+
+
 
 
 
@@ -65282,14 +65285,38 @@ var SpriteManagerPropertyGridComponent = /** @class */ (function (_super) {
     function SpriteManagerPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
+    SpriteManagerPropertyGridComponent.prototype.addNewSprite = function () {
+        var _a;
+        var spriteManager = this.props.spriteManager;
+        var newSprite = new babylonjs_Rendering_renderingManager__WEBPACK_IMPORTED_MODULE_8__["Sprite"]("new sprite", spriteManager);
+        (_a = this.props.onSelectionChangedObservable) === null || _a === void 0 ? void 0 : _a.notifyObservers(newSprite);
+        this.props.globalState.onCodeChangedObservable.notifyObservers({
+            object: spriteManager,
+            code: "new BABYLON.Sprite(\"new sprite\", TARGET);"
+        });
+    };
+    SpriteManagerPropertyGridComponent.prototype.disposeManager = function () {
+        var _a;
+        var spriteManager = this.props.spriteManager;
+        spriteManager.dispose();
+        this.props.globalState.onCodeChangedObservable.notifyObservers({
+            object: spriteManager,
+            code: "TARGET.dispose();"
+        });
+        (_a = this.props.onSelectionChangedObservable) === null || _a === void 0 ? void 0 : _a.notifyObservers(null);
+    };
     SpriteManagerPropertyGridComponent.prototype.render = function () {
+        var _this = this;
         var spriteManager = this.props.spriteManager;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Name", target: spriteManager, propertyName: "name", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Unique ID", value: spriteManager.uniqueId.toString() }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { label: "Capacity", isInteger: true, target: spriteManager, propertyName: "capacity" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_9__["TextureLinkLineComponent"], { label: "Texture", texture: spriteManager.texture, onSelectionChangedObservable: this.props.onSelectionChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Capacity", value: spriteManager.capacity.toString() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_9__["TextureLinkLineComponent"], { label: "Texture", texture: spriteManager.texture, onSelectionChangedObservable: this.props.onSelectionChangedObservable }),
+                spriteManager.sprites.length < spriteManager.capacity &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Add new sprite", onClick: function () { return _this.addNewSprite(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Dispose", onClick: function () { return _this.disposeManager(); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "PROPERTIES" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Pickable", target: spriteManager, propertyName: "isPickable", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Fog enabled", target: spriteManager, propertyName: "fogEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -65361,6 +65388,16 @@ var SpritePropertyGridComponent = /** @class */ (function (_super) {
         }
         this.forceUpdate();
     };
+    SpritePropertyGridComponent.prototype.disposeSprite = function () {
+        var _a;
+        var sprite = this.props.sprite;
+        sprite.dispose();
+        this.props.globalState.onCodeChangedObservable.notifyObservers({
+            object: sprite,
+            code: "TARGET.dispose();"
+        });
+        (_a = this.props.onSelectionChangedObservable) === null || _a === void 0 ? void 0 : _a.notifyObservers(null);
+    };
     SpritePropertyGridComponent.prototype.render = function () {
         var _this = this;
         var sprite = this.props.sprite;
@@ -65378,7 +65415,8 @@ var SpritePropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Name", target: sprite, propertyName: "name", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Unique ID", value: sprite.uniqueId.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Link to manager", value: manager.name, onLink: function () { return _this.onManagerLink(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Visible", target: sprite, propertyName: "isVisible", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Visible", target: sprite, propertyName: "isVisible", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Dispose", onClick: function () { return _this.disposeSprite(); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "PROPERTIES" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector3LineComponent"], { label: "Position", target: sprite, propertyName: "position", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Pickable", target: sprite, propertyName: "isPickable", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -68097,7 +68135,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         spriteManagersContextMenus.push({
             label: "Add new sprite manager",
             action: function () {
-                var newSpriteManager = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["SpriteManager"]("Default sprite manager", "//playground.babylonjs.com/textures/player.png", 2, 64, scene);
+                var newSpriteManager = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["SpriteManager"]("Default sprite manager", "//playground.babylonjs.com/textures/player.png", 500, 64, scene);
                 _this.props.globalState.onSelectionChangedObservable.notifyObservers(newSpriteManager);
             }
         });
