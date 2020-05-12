@@ -25,6 +25,7 @@ struct subSurfaceOutParams
 };
 
 #ifdef SUBSURFACE
+    #define inline
     void subSurfaceBlock(
         const in vec3 vSubSurfaceIntensity,
         const in vec2 vThicknessParam,
