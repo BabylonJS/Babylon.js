@@ -134,7 +134,7 @@ export class GraphFrame {
                     let portAdded = false;
 
                     for (var link of node.links) {
-                        if (link.portA === port && this.nodes.indexOf(link.nodeB!) === -1 || (link.portA! === port && port.exposedOnFrame)) {
+                        if (link.portA === port && this.nodes.indexOf(link.nodeB!) === -1 || (link.portA === port && port.exposedOnFrame)) {
                             let localPort: FrameNodePort;
 
                             if (!portAdded) {
