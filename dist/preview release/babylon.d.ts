@@ -49843,7 +49843,7 @@ declare module BABYLON {
          * @param deviceSlot "Slot" or index that device is referenced in
          * @returns DeviceSource object
          */
-        getDeviceSource<T extends DeviceType>(deviceType: DeviceType, deviceSlot?: number): Nullable<DeviceSource<T>>;
+        getDeviceSource<T extends DeviceType>(deviceType: T, deviceSlot?: number): Nullable<DeviceSource<T>>;
         /**
          * Gets an array of DeviceSource objects for a given device type
          * @param deviceType Enum specifying device type
