@@ -361,7 +361,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         spriteManagersContextMenus.push({
             label: "Add new sprite manager",
             action: () => {
-                let newSpriteManager = new SpriteManager("Default sprite manager", "//playground.babylonjs.com/textures/player.png", 2, 64, scene);
+                let newSpriteManager = new SpriteManager("Default sprite manager", "//playground.babylonjs.com/textures/player.png", 500, 64, scene);
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newSpriteManager);
             }
         });            
