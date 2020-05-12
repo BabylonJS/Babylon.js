@@ -1,18 +1,17 @@
-import { Observer, Observable } from "../Misc/observable";
-import { Nullable } from "../types";
+import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import { PointerInfo } from "../Events/pointerEvents";
+import { Color3 } from "../Maths/math.color";
 import { Vector3 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
-import { LinesMesh } from "../Meshes/linesMesh";
 import { BoxBuilder } from "../Meshes/Builders/boxBuilder";
 import { CylinderBuilder } from "../Meshes/Builders/cylinderBuilder";
-import { StandardMaterial } from "../Materials/standardMaterial";
-import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import { Gizmo } from "./gizmo";
+import { Mesh } from "../Meshes/mesh";
+import { Observable, Observer } from "../Misc/observable";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
+import { Nullable } from "../types";
+import { Gizmo } from "./gizmo";
+import { GizmoMaterialSwitcher } from "./gizmoMaterialSwitcher";
 import { ScaleGizmo } from "./scaleGizmo";
-import { Color3 } from '../Maths/math.color';
 
 /**
  * Single axis scale gizmo
@@ -45,8 +44,7 @@ export class AxisScaleGizmo extends Gizmo {
     private _parent: Nullable<ScaleGizmo> = null;
 
     private _arrow: AbstractMesh;
-    private _coloredMaterial: StandardMaterial;
-    private _hoverMaterial: StandardMaterial;
+    private _materialSwitcher: GizmoMaterialSwitcher;
 
     /**
      * Creates an AxisScaleGizmo
@@ -57,25 +55,16 @@ export class AxisScaleGizmo extends Gizmo {
     constructor(dragAxis: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, parent: Nullable<ScaleGizmo> = null) {
         super(gizmoLayer);
         this._parent = parent;
-        // Create Material
-        this._coloredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        this._coloredMaterial.diffuseColor = color;
-        this._coloredMaterial.specularColor = color.subtract(new Color3(0.1, 0.1, 0.1));
-
-        this._hoverMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        this._hoverMaterial.diffuseColor = color.add(new Color3(0.3, 0.3, 0.3));
 
         // Build mesh on root node
         this._arrow = new AbstractMesh("", gizmoLayer.utilityLayerScene);
         var arrowMesh = BoxBuilder.CreateBox("yPosMesh", { size: 0.4 }, gizmoLayer.utilityLayerScene);
         var arrowTail = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0.005, height: 0.275, diameterBottom: 0.005, tessellation: 96 }, gizmoLayer.utilityLayerScene);
-        arrowTail.material = this._coloredMaterial;
         this._arrow.addChild(arrowMesh);
         this._arrow.addChild(arrowTail);
 
         // Position arrow pointing in its drag axis
         arrowMesh.scaling.scaleInPlace(0.1);
-        arrowMesh.material = this._coloredMaterial;
         arrowMesh.rotation.x = Math.PI / 2;
         arrowMesh.position.z += 0.3;
         arrowTail.position.z += 0.275 / 2;
@@ -88,6 +77,17 @@ export class AxisScaleGizmo extends Gizmo {
         this.dragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
         this.dragBehavior.moveAttached = false;
         this._rootMesh.addBehavior(this.dragBehavior);
+
+        // Create Material Switcher
+        this._materialSwitcher = new GizmoMaterialSwitcher(
+            color,
+            this.dragBehavior,
+            gizmoLayer._getSharedGizmoLight(),
+            gizmoLayer.utilityLayerScene
+        );
+        this._materialSwitcher.registerMeshes(
+            this._rootMesh.getChildMeshes(false)
+        );
 
         var currentSnapDragDistance = 0;
         var tmpVector = new Vector3();
@@ -133,23 +133,6 @@ export class AxisScaleGizmo extends Gizmo {
                 }
             }
         });
-
-        this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
-            if (this._customMeshSet) {
-                return;
-            }
-            var isHovered = pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1);
-            var material = isHovered ? this._hoverMaterial : this._coloredMaterial;
-            this._rootMesh.getChildMeshes().forEach((m) => {
-                m.material = material;
-                if ((<LinesMesh>m).color) {
-                    (<LinesMesh>m).color = material.diffuseColor;
-                }
-            });
-        });
-
-        var light = gizmoLayer._getSharedGizmoLight();
-        light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes());
     }
 
     protected _attachedMeshChanged(value: Nullable<AbstractMesh>) {
@@ -176,6 +159,10 @@ export class AxisScaleGizmo extends Gizmo {
         return this._isEnabled;
     }
 
+    public get materialSwitcher() {
+        return this._materialSwitcher;
+    }
+
     /**
      * Disposes of the gizmo
      */
@@ -183,32 +170,26 @@ export class AxisScaleGizmo extends Gizmo {
         this.onSnapObservable.clear();
         this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
         this.dragBehavior.detach();
-        if (this._arrow) {
-            this._arrow.dispose();
-        }
-        [this._coloredMaterial, this._hoverMaterial].forEach((matl) => {
-            if (matl) {
-                matl.dispose();
-            }
-        });
+        this._materialSwitcher.dispose();
         super.dispose();
     }
 
     /**
      * Disposes and replaces the current meshes in the gizmo with the specified mesh
      * @param mesh The mesh to replace the default mesh of the gizmo
-     * @param useGizmoMaterial If the gizmo's default material should be used (default: false)
+     * @param useGizmoMaterials If the gizmo's default materials should be used (default: false)
      */
-    public setCustomMesh(mesh: Mesh, useGizmoMaterial: boolean = false) {
+    public setCustomMesh(mesh: Mesh, useGizmoMaterials: boolean = false) {
+        this._materialSwitcher.unregisterMeshes(
+            this._rootMesh.getChildMeshes()
+        );
+
         super.setCustomMesh(mesh);
-        if (useGizmoMaterial) {
-            this._rootMesh.getChildMeshes().forEach((m) => {
-                m.material = this._coloredMaterial;
-                if ((<LinesMesh>m).color) {
-                    (<LinesMesh>m).color = this._coloredMaterial.diffuseColor;
-                }
-            });
-            this._customMeshSet = false;
+
+        if (useGizmoMaterials) {
+            this._materialSwitcher.registerMeshes(
+                this._rootMesh.getChildMeshes()
+            );
         }
     }
 }

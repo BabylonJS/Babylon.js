@@ -2,17 +2,16 @@ import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { PointerInfo } from "../Events/pointerEvents";
 import { Quaternion, Matrix, Vector3 } from "../Maths/math.vector";
-import { Color3 } from '../Maths/math.color';
+import { Color3 } from "../Maths/math.color";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { LinesMesh } from "../Meshes/linesMesh";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import { StandardMaterial } from "../Materials/standardMaterial";
 
 import "../Meshes/Builders/linesBuilder";
 import { RotationGizmo } from "./rotationGizmo";
+import { GizmoMaterialSwitcher } from "./gizmoMaterialSwitcher";
 
 /**
  * Single plane rotation gizmo
@@ -34,6 +33,8 @@ export class PlaneRotationGizmo extends Gizmo {
      */
     public onSnapObservable = new Observable<{ snapDistance: number }>();
 
+    private _materialSwitcher: GizmoMaterialSwitcher;
+
     private _isEnabled: boolean = true;
     private _parent: Nullable<RotationGizmo> = null;
 
@@ -48,13 +49,6 @@ export class PlaneRotationGizmo extends Gizmo {
     constructor(planeNormal: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32, parent: Nullable<RotationGizmo> = null, useEulerRotation = false) {
         super(gizmoLayer);
         this._parent = parent;
-        // Create Material
-        var coloredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        coloredMaterial.diffuseColor = color;
-        coloredMaterial.specularColor = color.subtract(new Color3(0.1, 0.1, 0.1));
-
-        var hoverMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        hoverMaterial.diffuseColor = color.add(new Color3(0.3, 0.3, 0.3));
 
         // Build mesh on root node
         var parentMesh = new AbstractMesh("", gizmoLayer.utilityLayerScene);
@@ -62,7 +56,6 @@ export class PlaneRotationGizmo extends Gizmo {
         let drag = Mesh.CreateTorus("", 0.6, 0.03, tessellation, gizmoLayer.utilityLayerScene);
         drag.visibility = 0;
         let rotationMesh = Mesh.CreateTorus("", 0.6, 0.005, tessellation, gizmoLayer.utilityLayerScene);
-        rotationMesh.material = coloredMaterial;
 
         // Position arrow pointing in its drag axis
         rotationMesh.rotation.x = Math.PI / 2;
@@ -73,6 +66,7 @@ export class PlaneRotationGizmo extends Gizmo {
 
         this._rootMesh.addChild(parentMesh);
         parentMesh.scaling.scaleInPlace(1 / 3);
+
         // Add drag behavior to handle events when the gizmo is dragged
         this.dragBehavior = new PointerDragBehavior({ dragPlaneNormal: planeNormal });
         this.dragBehavior.moveAttached = false;
@@ -87,6 +81,17 @@ export class PlaneRotationGizmo extends Gizmo {
                 lastDragPosition.copyFrom(e.dragPlanePoint);
             }
         });
+
+        // Create Material Switcher
+        this._materialSwitcher = new GizmoMaterialSwitcher(
+            color,
+            this.dragBehavior,
+            gizmoLayer._getSharedGizmoLight(),
+            gizmoLayer.utilityLayerScene
+        );
+        this._materialSwitcher.registerMeshes(
+            this._rootMesh.getChildMeshes(false)
+        );
 
         var rotationMatrix = new Matrix();
         var planeNormalTowardsCamera = new Vector3();
@@ -193,23 +198,6 @@ export class PlaneRotationGizmo extends Gizmo {
                 }
             }
         });
-
-        this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
-            if (this._customMeshSet) {
-                return;
-            }
-            var isHovered = pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1);
-            var material = isHovered ? hoverMaterial : coloredMaterial;
-            this._rootMesh.getChildMeshes().forEach((m) => {
-                m.material = material;
-                if ((<LinesMesh>m).color) {
-                    (<LinesMesh>m).color = material.diffuseColor;
-                }
-            });
-        });
-
-        var light = gizmoLayer._getSharedGizmoLight();
-        light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes(false));
     }
 
     protected _attachedMeshChanged(value: Nullable<AbstractMesh>) {
@@ -217,6 +205,7 @@ export class PlaneRotationGizmo extends Gizmo {
             this.dragBehavior.enabled = value ? true : false;
         }
     }
+
     /**
          * If the gizmo is enabled
          */
@@ -234,6 +223,11 @@ export class PlaneRotationGizmo extends Gizmo {
     public get isEnabled(): boolean {
         return this._isEnabled;
     }
+
+    public get materialSwitcher() {
+        return this._materialSwitcher;
+    }
+
     /**
      * Disposes of the gizmo
      */
@@ -241,6 +235,26 @@ export class PlaneRotationGizmo extends Gizmo {
         this.onSnapObservable.clear();
         this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
         this.dragBehavior.detach();
+        this._materialSwitcher.dispose();
         super.dispose();
+    }
+
+    /**
+     * Disposes and replaces the current meshes in the gizmo with the specified mesh
+     * @param mesh The mesh to replace the default mesh of the gizmo
+     * @param useGizmoMaterials If the gizmo's default materials should be used (default: false)
+     */
+    public setCustomMesh(mesh: Mesh, useGizmoMaterials: boolean = false) {
+        this._materialSwitcher.unregisterMeshes(
+            this._rootMesh.getChildMeshes()
+        );
+
+        super.setCustomMesh(mesh);
+
+        if (useGizmoMaterials) {
+            this._materialSwitcher.registerMeshes(
+                this._rootMesh.getChildMeshes()
+            );
+        }
     }
 }
