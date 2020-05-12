@@ -51,6 +51,18 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
         this.forceUpdate();
     }
 
+    disposeSprite() {
+        const sprite = this.props.sprite;
+        sprite.dispose();
+
+        this.props.globalState.onCodeChangedObservable.notifyObservers({
+            object: sprite,
+            code: `TARGET.dispose();`
+        });
+
+        this.props.onSelectionChangedObservable?.notifyObservers(null);
+    }
+
     render() {
         const sprite = this.props.sprite;
         const manager = sprite.manager;
@@ -70,6 +82,7 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
                     <TextLineComponent label="Unique ID" value={sprite.uniqueId.toString()} />
                     <TextLineComponent label="Link to manager" value={manager.name} onLink={() => this.onManagerLink()} />
                     <CheckBoxLineComponent label="Visible" target={sprite} propertyName="isVisible" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <ButtonLineComponent label="Dispose" onClick={() => this.disposeSprite()} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="PROPERTIES">
                     <Vector3LineComponent label="Position" target={sprite} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
