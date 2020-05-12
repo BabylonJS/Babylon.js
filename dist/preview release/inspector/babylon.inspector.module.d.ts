@@ -2352,6 +2352,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/spr
     }
     export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteManagerPropertyGridComponentProps> {
         constructor(props: ISpriteManagerPropertyGridComponentProps);
+        addNewSprite(): void;
+        disposeManager(): void;
         render(): JSX.Element;
     }
 }
@@ -2373,6 +2375,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/spr
         constructor(props: ISpritePropertyGridComponentProps);
         onManagerLink(): void;
         switchPlayStopState(): void;
+        disposeSprite(): void;
         render(): JSX.Element;
     }
 }
@@ -4932,6 +4935,8 @@ declare module INSPECTOR {
     }
     export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteManagerPropertyGridComponentProps> {
         constructor(props: ISpriteManagerPropertyGridComponentProps);
+        addNewSprite(): void;
+        disposeManager(): void;
         render(): JSX.Element;
     }
 }
@@ -4947,6 +4952,7 @@ declare module INSPECTOR {
         constructor(props: ISpritePropertyGridComponentProps);
         onManagerLink(): void;
         switchPlayStopState(): void;
+        disposeSprite(): void;
         render(): JSX.Element;
     }
 }
