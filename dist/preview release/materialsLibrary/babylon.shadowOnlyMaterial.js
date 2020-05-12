@@ -7,7 +7,7 @@
 		exports["babylonjs-materials"] = factory(require("babylonjs"));
 	else
 		root["MATERIALS"] = factory(root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Materials_effect__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_decorators__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -412,7 +412,7 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "shadowOnlyPixelShader", function() { return shadowOnlyPixelShader; });
-/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Materials/effect");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/decorators");
 /* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__);
 
 
@@ -444,7 +444,7 @@ var shadowOnlyPixelShader = { name: name, shader: shader };
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "shadowOnlyVertexShader", function() { return shadowOnlyVertexShader; });
-/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Materials/effect");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/decorators");
 /* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__);
 
 
@@ -478,7 +478,7 @@ var shadowOnlyVertexShader = { name: name, shader: shader };
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ShadowOnlyMaterial", function() { return ShadowOnlyMaterial; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/decorators */ "babylonjs/Materials/effect");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/decorators */ "babylonjs/Misc/decorators");
 /* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _shadowOnly_fragment__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./shadowOnly.fragment */ "./shadowOnly/shadowOnly.fragment.ts");
 /* harmony import */ var _shadowOnly_vertex__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./shadowOnly.vertex */ "./shadowOnly/shadowOnly.vertex.ts");
@@ -519,11 +519,12 @@ var ShadowOnlyMaterial = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ShadowOnlyMaterial, _super);
     function ShadowOnlyMaterial(name, scene) {
         var _this = _super.call(this, name, scene) || this;
+        _this._needAlphaBlending = true;
         _this.shadowColor = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"].Black();
         return _this;
     }
     ShadowOnlyMaterial.prototype.needAlphaBlending = function () {
-        return true;
+        return this._needAlphaBlending;
     };
     ShadowOnlyMaterial.prototype.needAlphaTesting = function () {
         return false;
@@ -541,8 +542,18 @@ var ShadowOnlyMaterial = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    ShadowOnlyMaterial.prototype._getFirstShadowLightForMesh = function (mesh) {
+        for (var _i = 0, _a = mesh.lightSources; _i < _a.length; _i++) {
+            var light = _a[_i];
+            if (light.shadowEnabled) {
+                return light;
+            }
+        }
+        return null;
+    };
     // Methods
     ShadowOnlyMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
+        var _a;
         if (this.isFrozen) {
             if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
@@ -559,8 +570,8 @@ var ShadowOnlyMaterial = /** @class */ (function (_super) {
         var engine = scene.getEngine();
         // Ensure that active light is the first shadow light
         if (this._activeLight) {
-            for (var _i = 0, _a = mesh.lightSources; _i < _a.length; _i++) {
-                var light = _a[_i];
+            for (var _i = 0, _b = mesh.lightSources; _i < _b.length; _i++) {
+                var light = _b[_i];
                 if (light.shadowEnabled) {
                     if (this._activeLight === light) {
                         break; // We are good
@@ -577,6 +588,12 @@ var ShadowOnlyMaterial = /** @class */ (function (_super) {
         babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
         babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
         defines._needNormals = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].PrepareDefinesForLights(scene, mesh, defines, false, 1);
+        var shadowGenerator = (_a = this._getFirstShadowLightForMesh(mesh)) === null || _a === void 0 ? void 0 : _a.getShadowGenerator();
+        this._needAlphaBlending = true;
+        if (shadowGenerator && shadowGenerator.getClassName && shadowGenerator.getClassName() === 'CascadedShadowGenerator') {
+            var csg = shadowGenerator;
+            this._needAlphaBlending = !csg.autoCalcDepthBounds;
+        }
         // Attribs
         babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].PrepareDefinesForAttributes(mesh, defines, false, true);
         // Get correct effect
@@ -664,9 +681,18 @@ var ShadowOnlyMaterial = /** @class */ (function (_super) {
         // Lights
         if (scene.lightsEnabled) {
             babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialHelper"].BindLights(scene, mesh, this._activeEffect, defines, 1);
+            var light = this._getFirstShadowLightForMesh(mesh);
+            if (light) {
+                // Make sure the uniforms for this light will be rebound for other materials using this light when rendering the current frame.
+                // Indeed, there is an optimization in Light that binds the light uniforms only once per frame for a given light (if using ubo).
+                // Doing this way assumes that all uses of this light are the same, meaning all parameters passed to Light._bindLlight
+                // are the same, notably useSpecular. However, isReadyForSubMesh (see above) is passing false for this parameter, which may not be
+                // the value the other materials may pass.
+                light._renderId = -1;
+            }
         }
         // View
-        if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Scene"].FOGMODE_NONE) {
+        if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Scene"].FOGMODE_NONE || defines["SHADOWCSM0"]) {
             this._activeEffect.setMatrix("view", scene.getViewMatrix());
         }
         // Fog
@@ -697,14 +723,14 @@ babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredT
 
 /***/ }),
 
-/***/ "babylonjs/Materials/effect":
+/***/ "babylonjs/Misc/decorators":
 /*!****************************************************************************************************!*\
   !*** external {"root":"BABYLON","commonjs":"babylonjs","commonjs2":"babylonjs","amd":"babylonjs"} ***!
   \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Materials_effect__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_decorators__;
 
 /***/ })
 

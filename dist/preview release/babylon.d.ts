@@ -10952,10 +10952,9 @@ declare module BABYLON {
          */
         get scene(): Scene;
         /**
-         * Gets or sets the capacity of the manager
+         * Gets the capacity of the manager
          */
         get capacity(): number;
-        set capacity(value: number);
         /**
          * Gets or sets the spritesheet texture
          */
@@ -49476,24 +49475,209 @@ declare module BABYLON.Debug {
 }
 declare module BABYLON {
     /**
+     * Enum for Device Types
+     */
+    export enum DeviceType {
+        /** Generic */
+        Generic = 0,
+        /** Keyboard */
+        Keyboard = 1,
+        /** Mouse */
+        Mouse = 2,
+        /** Touch Pointers */
+        Touch = 3,
+        /** PS4 Dual Shock */
+        DualShock = 4,
+        /** Xbox */
+        Xbox = 5,
+        /** Switch Controller */
+        Switch = 6
+    }
+    /**
+     * Enum for All Pointers (Touch/Mouse)
+     */
+    export enum PointerInput {
+        /** Horizontal Axis */
+        Horizontal = 0,
+        /** Vertical Axis */
+        Vertical = 1,
+        /** Left Click or Touch */
+        LeftClick = 2,
+        /** Middle Click */
+        MiddleClick = 3,
+        /** Right Click */
+        RightClick = 4,
+        /** Browser Back */
+        BrowserBack = 5,
+        /** Browser Forward */
+        BrowserForward = 6
+    }
+    /**
+     * Enum for Dual Shock Gamepad
+     */
+    export enum DualShockInput {
+        /** Cross */
+        Cross = 0,
+        /** Circle */
+        Circle = 1,
+        /** Square */
+        Square = 2,
+        /** Triangle */
+        Triangle = 3,
+        /** L1 */
+        L1 = 4,
+        /** R1 */
+        R1 = 5,
+        /** L2 */
+        L2 = 6,
+        /** R2 */
+        R2 = 7,
+        /** Share */
+        Share = 8,
+        /** Options */
+        Options = 9,
+        /** L3 */
+        L3 = 10,
+        /** R3 */
+        R3 = 11,
+        /** DPadUp */
+        DPadUp = 12,
+        /** DPadDown */
+        DPadDown = 13,
+        /** DPadLeft */
+        DPadLeft = 14,
+        /** DRight */
+        DPadRight = 15,
+        /** Home */
+        Home = 16,
+        /** TouchPad */
+        TouchPad = 17,
+        /** LStickXAxis */
+        LStickXAxis = 18,
+        /** LStickYAxis */
+        LStickYAxis = 19,
+        /** RStickXAxis */
+        RStickXAxis = 20,
+        /** RStickYAxis */
+        RStickYAxis = 21
+    }
+    /**
+     * Enum for Xbox Gamepad
+     */
+    export enum XboxInput {
+        /** A */
+        A = 0,
+        /** B */
+        B = 1,
+        /** X */
+        X = 2,
+        /** Y */
+        Y = 3,
+        /** LB */
+        LB = 4,
+        /** RB */
+        RB = 5,
+        /** LT */
+        LT = 6,
+        /** RT */
+        RT = 7,
+        /** Back */
+        Back = 8,
+        /** Start */
+        Start = 9,
+        /** LS */
+        LS = 10,
+        /** RS */
+        RS = 11,
+        /** DPadUp */
+        DPadUp = 12,
+        /** DPadDown */
+        DPadDown = 13,
+        /** DPadLeft */
+        DPadLeft = 14,
+        /** DRight */
+        DPadRight = 15,
+        /** Home */
+        Home = 16,
+        /** LStickXAxis */
+        LStickXAxis = 17,
+        /** LStickYAxis */
+        LStickYAxis = 18,
+        /** RStickXAxis */
+        RStickXAxis = 19,
+        /** RStickYAxis */
+        RStickYAxis = 20
+    }
+    /**
+     * Enum for Switch (Pro/JoyCon L+R) Gamepad
+     */
+    export enum SwitchInput {
+        /** B */
+        B = 0,
+        /** A */
+        A = 1,
+        /** Y */
+        Y = 2,
+        /** X */
+        X = 3,
+        /** L */
+        L = 4,
+        /** R */
+        R = 5,
+        /** ZL */
+        ZL = 6,
+        /** ZR */
+        ZR = 7,
+        /** Minus */
+        Minus = 8,
+        /** Plus */
+        Plus = 9,
+        /** LS */
+        LS = 10,
+        /** RS */
+        RS = 11,
+        /** DPadUp */
+        DPadUp = 12,
+        /** DPadDown */
+        DPadDown = 13,
+        /** DPadLeft */
+        DPadLeft = 14,
+        /** DRight */
+        DPadRight = 15,
+        /** Home */
+        Home = 16,
+        /** Capture */
+        Capture = 17,
+        /** LStickXAxis */
+        LStickXAxis = 18,
+        /** LStickYAxis */
+        LStickYAxis = 19,
+        /** RStickXAxis */
+        RStickXAxis = 20,
+        /** RStickYAxis */
+        RStickYAxis = 21
+    }
+}
+declare module BABYLON {
+    /**
      * This class will take all inputs from Keyboard, Pointer, and
      * any Gamepads and provide a polling system that all devices
      * will use.  This class assumes that there will only be one
      * pointer device and one keyboard.
      */
     export class DeviceInputSystem implements IDisposable {
-        /** POINTER_DEVICE */
-        static readonly POINTER_DEVICE: string;
-        /** KEYBOARD_DEVICE */
-        static readonly KEYBOARD_DEVICE: string;
         /**
-         * Observable to be triggered when a device is connected
+         * Callback to be triggered when a device is connected
          */
-        onDeviceConnectedObservable: Observable<string>;
+        onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
         /**
-         * Observable to be triggered when a device is disconnected
+         * Callback to be triggered when a device is disconnected
          */
-        onDeviceDisconnectedObservable: Observable<string>;
+        onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
+        /**
+         * Callback to be triggered when event driven input is updated
+         */
+        onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>) => void;
         private _inputs;
         private _gamepads;
         private _keyboardActive;
@@ -49519,20 +49703,29 @@ declare module BABYLON {
          * @param inputIndex Index of device input
          * @returns Current value of input
          */
-        pollInput(deviceName: string, inputIndex: number): Nullable<number>;
         /**
-         * Dispose of all the eventlisteners and clears the observables
+         * Checks for current device input value, given an id and input index
+         * @param deviceType Enum specifiying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
+         * @returns Current value of input
+         */
+        pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): Nullable<number>;
+        /**
+         * Dispose of all the eventlisteners
          */
         dispose(): void;
         /**
-         * Add device and inputs to device map
-         * @param deviceName Assigned name of device (may be SN)
+         * Add device and inputs to device array
+         * @param deviceType Enum specifiying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
          * @param numberOfInputs Number of input entries to create for given device
          */
         private _registerDevice;
         /**
          * Given a specific device name, remove that device from the device map
-         * @param deviceName Name of device to be removed
+         * @param deviceType Enum specifiying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
          */
         private _unregisterDevice;
         /**
@@ -49549,8 +49742,135 @@ declare module BABYLON {
         private _handleGamepadActions;
         /**
          * Update all non-event based devices with each frame
+         * @param deviceType Enum specifiying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @param inputIndex Id of input to be checked
          */
         private _updateDevice;
+        /**
+         * Gets DeviceType from the device name
+         * @param deviceName Name of Device from DeviceInputSystem
+         * @returns DeviceType enum value
+         */
+        private _getGamepadDeviceType;
+    }
+}
+declare module BABYLON {
+    /**
+     * Type to handle enforcement of inputs
+     */
+    export type DeviceInput<T extends DeviceType> = T extends DeviceType.Keyboard | DeviceType.Generic ? number : T extends DeviceType.Mouse | DeviceType.Touch ? PointerInput : T extends DeviceType.DualShock ? DualShockInput : T extends DeviceType.Xbox ? XboxInput : T extends DeviceType.Switch ? SwitchInput : never;
+}
+declare module BABYLON {
+    /**
+     * Class that handles all input for a specific device
+     */
+    export class DeviceSource<T extends DeviceType> {
+        /** Type of device */
+        readonly deviceType: DeviceType;
+        /** "Slot" or index that device is referenced in */
+        readonly deviceSlot: number;
+        /**
+         * Observable to handle device input changes per device
+         */
+        readonly onInputChangedObservable: Observable<{
+            inputIndex: DeviceInput<T>;
+            previousState: Nullable<number>;
+            currentState: Nullable<number>;
+        }>;
+        private readonly _deviceInputSystem;
+        /**
+         * Default Constructor
+         * @param deviceInputSystem Reference to DeviceInputSystem
+         * @param deviceType Type of device
+         * @param deviceSlot "Slot" or index that device is referenced in
+         */
+        constructor(deviceInputSystem: DeviceInputSystem, 
+        /** Type of device */
+        deviceType: DeviceType, 
+        /** "Slot" or index that device is referenced in */
+        deviceSlot?: number);
+        /**
+         * Get input for specific input
+         * @param inputIndex index of specific input on device
+         * @returns Input value from DeviceInputSystem
+         */
+        getInput(inputIndex: DeviceInput<T>): Nullable<number>;
+    }
+    /**
+     * Class to keep track of devices
+     */
+    export class DeviceSourceManager implements IDisposable {
+        /**
+         * Observable to be triggered when before a device is connected
+         */
+        readonly onBeforeDeviceConnectedObservable: Observable<{
+            deviceType: DeviceType;
+            deviceSlot: number;
+        }>;
+        /**
+         * Observable to be triggered when before a device is disconnected
+         */
+        readonly onBeforeDeviceDisconnectedObservable: Observable<{
+            deviceType: DeviceType;
+            deviceSlot: number;
+        }>;
+        /**
+         * Observable to be triggered when after a device is connected
+         */
+        readonly onAfterDeviceConnectedObservable: Observable<{
+            deviceType: DeviceType;
+            deviceSlot: number;
+        }>;
+        /**
+         * Observable to be triggered when after a device is disconnected
+         */
+        readonly onAfterDeviceDisconnectedObservable: Observable<{
+            deviceType: DeviceType;
+            deviceSlot: number;
+        }>;
+        private readonly _devices;
+        private readonly _firstDevice;
+        private readonly _deviceInputSystem;
+        /**
+         * Default Constructor
+         * @param engine engine to pull input element from
+         */
+        constructor(engine: Engine);
+        /**
+         * Gets a DeviceSource, given a type and slot
+         * @param deviceType Enum specifying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         * @returns DeviceSource object
+         */
+        getDeviceSource<T extends DeviceType>(deviceType: T, deviceSlot?: number): Nullable<DeviceSource<T>>;
+        /**
+         * Gets an array of DeviceSource objects for a given device type
+         * @param deviceType Enum specifying device type
+         * @returns Array of DeviceSource objects
+         */
+        getDeviceSources<T extends DeviceType>(deviceType: T): ReadonlyArray<DeviceSource<T>>;
+        /**
+         * Dispose of DeviceInputSystem and other parts
+         */
+        dispose(): void;
+        /**
+         * Function to add device name to device list
+         * @param deviceType Enum specifying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         */
+        private _addDevice;
+        /**
+         * Function to remove device name to device list
+         * @param deviceType Enum specifying device type
+         * @param deviceSlot "Slot" or index that device is referenced in
+         */
+        private _removeDevice;
+        /**
+         * Updates array storing first connected device of each type
+         * @param type Type of Device
+         */
+        private _updateFirstDevices;
     }
 }
 declare module BABYLON {
@@ -50686,8 +51006,8 @@ declare module BABYLON {
          */
         getHostDocument(): Nullable<Document>;
         clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
-        createIndexBuffer(indices: IndicesArray): NativeDataBuffer;
-        createVertexBuffer(data: DataArray): NativeDataBuffer;
+        createIndexBuffer(indices: IndicesArray, updateable?: boolean): NativeDataBuffer;
+        createVertexBuffer(data: DataArray, updateable?: boolean): NativeDataBuffer;
         recordVertexArrayObject(vertexBuffers: {
             [key: string]: VertexBuffer;
         }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): WebGLVertexArrayObject;
@@ -62772,6 +63092,36 @@ declare module BABYLON {
         protected _dumpPropertiesCode(): string;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to compute value of one parameter modulo another
+     */
+    export class ModBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new ModBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the left operand input component
+         */
+        get left(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the right operand input component
+         */
+        get right(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        get output(): NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
 declare module BABYLON {

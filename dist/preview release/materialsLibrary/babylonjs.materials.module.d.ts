@@ -879,6 +879,7 @@ declare module "babylonjs-materials/shadowOnly/shadowOnlyMaterial" {
     import "babylonjs-materials/shadowOnly/shadowOnly.vertex";
     export class ShadowOnlyMaterial extends PushMaterial {
         private _activeLight;
+        private _needAlphaBlending;
         constructor(name: string, scene: Scene);
         shadowColor: Color3;
         needAlphaBlending(): boolean;
@@ -886,6 +887,7 @@ declare module "babylonjs-materials/shadowOnly/shadowOnlyMaterial" {
         getAlphaTestTexture(): Nullable<BaseTexture>;
         get activeLight(): IShadowLight;
         set activeLight(light: IShadowLight);
+        private _getFirstShadowLightForMesh;
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         clone(name: string): ShadowOnlyMaterial;
@@ -2126,6 +2128,7 @@ declare module BABYLON {
 declare module BABYLON {
     export class ShadowOnlyMaterial extends BABYLON.PushMaterial {
         private _activeLight;
+        private _needAlphaBlending;
         constructor(name: string, scene: BABYLON.Scene);
         shadowColor: BABYLON.Color3;
         needAlphaBlending(): boolean;
@@ -2133,6 +2136,7 @@ declare module BABYLON {
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
         get activeLight(): BABYLON.IShadowLight;
         set activeLight(light: BABYLON.IShadowLight);
+        private _getFirstShadowLightForMesh;
         isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
         clone(name: string): ShadowOnlyMaterial;
