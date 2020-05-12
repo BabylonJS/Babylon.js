@@ -29,6 +29,7 @@ struct clearcoatOutParams
 };
 
 #ifdef CLEARCOAT
+    #define inline
     void clearcoatBlock(
         const in vec3 vPositionW,
         const in vec3 geometricNormalW,

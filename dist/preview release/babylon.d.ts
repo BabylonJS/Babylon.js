@@ -72776,6 +72776,29 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export class ShaderCodeInliner {
+        static readonly InlineToken: string;
+        static readonly RegexpFindFunctionNameAndType: RegExp;
+        private _sourceCode;
+        private _functionDescr;
+        private _numMaxIterations;
+        debug: boolean;
+        get code(): string;
+        constructor(sourceCode: string, numMaxIterations?: number);
+        processCode(): void;
+        private _collectFunctions;
+        private _processInlining;
+        private _extractBetweenMarkers;
+        private _skipWhitespaces;
+        private _removeComments;
+        private _replaceFunctionCallsByCode;
+        private _findBackward;
+        private _escapeRegExp;
+        private _replaceNames;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
     export var blurPixelShader: {
         name: string;
         shader: string;

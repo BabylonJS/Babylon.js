@@ -49843,7 +49843,7 @@ declare module BABYLON {
          * @param deviceSlot "Slot" or index that device is referenced in
          * @returns DeviceSource object
          */
-        getDeviceSource<T extends DeviceType>(deviceType: DeviceType, deviceSlot?: number): Nullable<DeviceSource<T>>;
+        getDeviceSource<T extends DeviceType>(deviceType: T, deviceSlot?: number): Nullable<DeviceSource<T>>;
         /**
          * Gets an array of DeviceSource objects for a given device type
          * @param deviceType Enum specifying device type
@@ -72772,6 +72772,29 @@ declare module BABYLON {
          * @returns This path cursor
          */
         onchange(f: (cursor: PathCursor) => void): PathCursor;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class ShaderCodeInliner {
+        static readonly InlineToken: string;
+        static readonly RegexpFindFunctionNameAndType: RegExp;
+        private _sourceCode;
+        private _functionDescr;
+        private _numMaxIterations;
+        debug: boolean;
+        get code(): string;
+        constructor(sourceCode: string, numMaxIterations?: number);
+        processCode(): void;
+        private _collectFunctions;
+        private _processInlining;
+        private _extractBetweenMarkers;
+        private _skipWhitespaces;
+        private _removeComments;
+        private _replaceFunctionCallsByCode;
+        private _findBackward;
+        private _escapeRegExp;
+        private _replaceNames;
     }
 }
 declare module BABYLON {
