@@ -165,8 +165,11 @@ if (BABYLON.Engine.isSupported()) {
                 framingBehavior.elevationReturnTime = -1;
 
                 if (currentScene.meshes.length) {
-                    var worldExtends = currentScene.getWorldExtends();
                     currentScene.activeCamera.lowerRadiusLimit = null;
+
+                    var worldExtends = currentScene.getWorldExtends(function (mesh) {
+                        return mesh.isVisible && mesh.isEnabled();
+                    });
                     framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
                 }
             }

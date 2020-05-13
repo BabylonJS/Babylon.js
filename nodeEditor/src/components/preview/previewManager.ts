@@ -425,7 +425,7 @@ export class PreviewManager {
 
                     const currentScreen = tempMaterial.getBlockByPredicate((block) => block instanceof CurrentScreenBlock);
                     if (currentScreen) {
-                        this._postprocess!.onApplyObservable.add((effect) => {
+                        this._postprocess.onApplyObservable.add((effect) => {
                             effect.setTexture("textureSampler", (currentScreen as CurrentScreenBlock).texture);
                         });
                     }
@@ -449,6 +449,11 @@ export class PreviewManager {
                         }
                     });
                     tempMaterial.createEffectForParticles(this._particleSystem!);
+
+                    if (this._material) {
+                        this._material.dispose();
+                    }
+                    this._material = tempMaterial;
                     break;
                 }
 
