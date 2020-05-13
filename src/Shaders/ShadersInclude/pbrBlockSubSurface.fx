@@ -25,6 +25,7 @@ struct subSurfaceOutParams
 };
 
 #ifdef SUBSURFACE
+    #define inline
     void subSurfaceBlock(
         const in vec3 vSubSurfaceIntensity,
         const in vec2 vThicknessParam,
@@ -202,7 +203,15 @@ struct subSurfaceOutParams
                 float requestedRefractionLOD = refractionLOD;
             #endif
 
-            environmentRefraction = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);
+            #ifdef REALTIME_FILTERING
+                #ifdef SS_LINEARSPECULARREFRACTION
+                    environmentRefraction = vec4(radiance(roughness, refractionSampler, refractionCoords, vRefractionFilteringInfo), 1.0);
+                #else
+                    environmentRefraction = vec4(radiance(alphaG, refractionSampler, refractionCoords, vRefractionFilteringInfo), 1.0);
+                #endif
+            #else
+                environmentRefraction = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);
+            #endif
         #else
             float lodRefractionNormalized = saturate(refractionLOD / log2(vRefractionMicrosurfaceInfos.x));
             float lodRefractionNormalizedDoubled = lodRefractionNormalized * 2.0;
@@ -300,12 +309,19 @@ struct subSurfaceOutParams
             #ifdef REFLECTIONMAP_OPPOSITEZ
                 irradianceVector.z *= -1.0;
             #endif
+            #ifdef INVERTCUBICMAP
+                irradianceVector.y *= -1.0;
+            #endif
         #else
             vec3 irradianceVector = irradianceVector_;
         #endif
 
         #if defined(USESPHERICALFROMREFLECTIONMAP)
-            vec3 refractionIrradiance = computeEnvironmentIrradiance(-irradianceVector);
+            #if defined(REALTIME_FILTERING)
+                vec3 refractionIrradiance = irradiance(reflectionSampler, -irradianceVector, vReflectionFilteringInfo);
+            #else
+                vec3 refractionIrradiance = computeEnvironmentIrradiance(-irradianceVector);
+            #endif
         #elif defined(USEIRRADIANCEMAP)
             #ifdef REFLECTIONMAP_3D
                 vec3 irradianceCoords = irradianceVector;

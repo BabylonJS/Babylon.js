@@ -10,6 +10,7 @@ import { MaterialFlags } from "../materialFlags";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { MaterialHelper } from "../../Materials/materialHelper";
 import { EffectFallbacks } from '../effectFallbacks';
+import { Scalar } from "../../Maths/math.scalar";
 
 declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;
@@ -290,10 +291,11 @@ export class PBRSubSurfaceConfiguration {
      * @param uniformBuffer defines the Uniform buffer to fill in.
      * @param scene defines the scene the material belongs to.
      * @param engine defines the engine the material belongs to.
-     * @param isFrozen defines wether the material is frozen or not.
-     * @param lodBasedMicrosurface defines wether the material relies on lod based microsurface or not.
+     * @param isFrozen defines whether the material is frozen or not.
+     * @param lodBasedMicrosurface defines whether the material relies on lod based microsurface or not.
+     * @param realTimeFiltering defines whether the textures should be filtered on the fly.
      */
-    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, isFrozen: boolean, lodBasedMicrosurface: boolean): void {
+    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, isFrozen: boolean, lodBasedMicrosurface: boolean, realTimeFiltering: boolean): void {
         var refractionTexture = this._getRefractionTexture(scene);
 
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
@@ -313,11 +315,18 @@ export class PBRSubSurfaceConfiguration {
                         depth = (<any>refractionTexture).depth;
                     }
                 }
+
+                var width = refractionTexture.getSize().width;
+
                 uniformBuffer.updateFloat4("vRefractionInfos", refractionTexture.level, 1 / this._indexOfRefraction, depth, this._invertRefractionY ? -1 : 1);
                 uniformBuffer.updateFloat3("vRefractionMicrosurfaceInfos",
-                    refractionTexture.getSize().width,
+                    width,
                     refractionTexture.lodGenerationScale,
                     refractionTexture.lodGenerationOffset);
+
+                if (realTimeFiltering) {
+                    uniformBuffer.updateFloat2("vRefractionFilteringInfo", width, Scalar.Log2(width));
+                }
             }
 
             uniformBuffer.updateColor3("vDiffusionDistance", this.diffusionDistance);
@@ -503,7 +512,7 @@ export class PBRSubSurfaceConfiguration {
     public static AddUniforms(uniforms: string[]): void {
         uniforms.push(
             "vDiffusionDistance", "vTintColor", "vSubSurfaceIntensity",
-            "vRefractionMicrosurfaceInfos",
+            "vRefractionMicrosurfaceInfos", "vRefractionFilteringInfo",
             "vRefractionInfos", "vThicknessInfos", "vThicknessParam",
             "refractionMatrix", "thicknessMatrix");
     }
@@ -523,6 +532,7 @@ export class PBRSubSurfaceConfiguration {
      */
     public static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void {
         uniformBuffer.addUniform("vRefractionMicrosurfaceInfos", 3);
+        uniformBuffer.addUniform("vRefractionFilteringInfo", 2);
         uniformBuffer.addUniform("vRefractionInfos", 4);
         uniformBuffer.addUniform("refractionMatrix", 16);
         uniformBuffer.addUniform("vThicknessInfos", 2);
