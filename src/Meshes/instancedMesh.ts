@@ -160,6 +160,16 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     /**
+     * Creates a new InstancedMesh object from the mesh model.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_instances
+     * @param name defines the name of the new instance
+     * @returns a new InstancedMesh
+     */
+    public createInstance(name: string): InstancedMesh {
+        return this._sourceMesh.createInstance(name);
+    }
+
+    /**
      * Is this node ready to be used/rendered
      * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
      * @return {boolean} is it ready

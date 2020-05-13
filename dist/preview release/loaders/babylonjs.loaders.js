@@ -4250,60 +4250,60 @@ var EXT_mesh_gpu_instancing = /** @class */ (function () {
     EXT_mesh_gpu_instancing.prototype.loadNodeAsync = function (context, node, assign) {
         var _this = this;
         return _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].LoadExtensionAsync(context, node, this.name, function (extensionContext, extension) {
-            return _this._loader.loadNodeAsync("#/nodes/" + node.index, node, function (babylonTransformNode) {
-                var promises = new Array();
-                var instanceCount = null;
-                var loadAttribute = function (attribute, assignBufferFunc) {
-                    if (extension.attributes[attribute] == undefined) {
-                        return;
-                    }
-                    var accessor = _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["ArrayItem"].Get(extensionContext + "/attributes/" + attribute, _this._loader.gltf.accessors, extension.attributes[attribute]);
-                    if (instanceCount === null) {
-                        instanceCount = accessor.count;
-                    }
-                    else if (instanceCount !== accessor.count) {
-                        throw new Error(extensionContext + "/attributes: Instance buffer accessors do not have the same count.");
-                    }
-                    promises.push(_this._loader._loadFloatAccessorAsync("/accessors/" + accessor.bufferView, accessor).then(function (data) {
-                        assignBufferFunc(data);
-                    }));
-                };
-                var translationBuffer = null;
-                var rotationBuffer = null;
-                var scaleBuffer = null;
-                loadAttribute("TRANSLATION", function (data) { translationBuffer = data; });
-                loadAttribute("ROTATION", function (data) { rotationBuffer = data; });
-                loadAttribute("SCALE", function (data) { scaleBuffer = data; });
-                return Promise.all(promises).then(function () {
-                    if (instanceCount) {
-                        var instanceName = "";
-                        var instance = null;
-                        var digitLength = instanceCount.toString().length;
+            var promise = _this._loader.loadNodeAsync("#/nodes/" + node.index, node, assign);
+            if (!node._primitiveBabylonMeshes) {
+                return promise;
+            }
+            // Hide the source meshes.
+            for (var _i = 0, _a = node._primitiveBabylonMeshes; _i < _a.length; _i++) {
+                var babylonMesh = _a[_i];
+                babylonMesh.isVisible = false;
+            }
+            var promises = new Array();
+            var instanceCount = 0;
+            var loadAttribute = function (attribute) {
+                if (extension.attributes[attribute] == undefined) {
+                    promises.push(Promise.resolve(null));
+                    return;
+                }
+                var accessor = _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["ArrayItem"].Get(extensionContext + "/attributes/" + attribute, _this._loader.gltf.accessors, extension.attributes[attribute]);
+                promises.push(_this._loader._loadFloatAccessorAsync("/accessors/" + accessor.bufferView, accessor));
+                if (instanceCount === 0) {
+                    instanceCount = accessor.count;
+                }
+                else if (instanceCount !== accessor.count) {
+                    throw new Error(extensionContext + "/attributes: Instance buffer accessors do not have the same count.");
+                }
+            };
+            loadAttribute("TRANSLATION");
+            loadAttribute("ROTATION");
+            loadAttribute("SCALE");
+            if (instanceCount == 0) {
+                return promise;
+            }
+            var digitLength = instanceCount.toString().length;
+            for (var i = 0; i < instanceCount; ++i) {
+                for (var _b = 0, _c = node._primitiveBabylonMeshes; _b < _c.length; _b++) {
+                    var babylonMesh = _c[_b];
+                    var instanceName = (babylonMesh.name || babylonMesh.id) + "_" + babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["StringTools"].PadNumber(i, digitLength);
+                    var babylonInstancedMesh = babylonMesh.createInstance(instanceName);
+                    babylonInstancedMesh.setParent(babylonMesh);
+                }
+            }
+            return promise.then(function (babylonTransformNode) {
+                return Promise.all(promises).then(function (_a) {
+                    var translationBuffer = _a[0], rotationBuffer = _a[1], scaleBuffer = _a[2];
+                    for (var _i = 0, _b = node._primitiveBabylonMeshes; _i < _b.length; _i++) {
+                        var babylonMesh = _b[_i];
+                        var babylonInstancedMeshes = babylonMesh.getChildMeshes(true, function (node) { return node.isAnInstance; });
                         for (var i = 0; i < instanceCount; ++i) {
-                            if (node._primitiveBabylonMeshes) {
-                                for (var j = 0; j < node._primitiveBabylonMeshes.length; ++j) {
-                                    var babylonMeshPrimitive = node._primitiveBabylonMeshes[j];
-                                    instanceName = (babylonMeshPrimitive.name || babylonMeshPrimitive.id) + "_" + babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["StringTools"].PadNumber(i, digitLength);
-                                    if (babylonMeshPrimitive.isAnInstance) {
-                                        instance = babylonMeshPrimitive.sourceMesh.createInstance(instanceName);
-                                    }
-                                    else if (babylonMeshPrimitive.createInstance) {
-                                        instance = babylonMeshPrimitive.createInstance(instanceName);
-                                    }
-                                    if (instance) {
-                                        instance.setParent(babylonMeshPrimitive);
-                                        translationBuffer ? babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArrayToRef(translationBuffer, i * 3, instance.position)
-                                            : instance.position.set(0, 0, 0);
-                                        rotationBuffer ? babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Quaternion"].FromArrayToRef(rotationBuffer, i * 4, instance.rotationQuaternion)
-                                            : instance.rotationQuaternion.set(0, 0, 0, 1);
-                                        scaleBuffer ? babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArrayToRef(scaleBuffer, i * 3, instance.scaling)
-                                            : instance.scaling.set(1, 1, 1);
-                                    }
-                                }
-                            }
+                            var babylonInstancedMesh = babylonInstancedMeshes[i];
+                            translationBuffer && babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArrayToRef(translationBuffer, i * 3, babylonInstancedMesh.position);
+                            rotationBuffer && babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Quaternion"].FromArrayToRef(rotationBuffer, i * 4, babylonInstancedMesh.rotationQuaternion);
+                            scaleBuffer && babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArrayToRef(scaleBuffer, i * 3, babylonInstancedMesh.scaling);
+                            babylonInstancedMesh.refreshBoundingInfo();
                         }
                     }
-                    assign(babylonTransformNode);
                     return babylonTransformNode;
                 });
             });
