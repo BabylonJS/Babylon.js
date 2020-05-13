@@ -838,7 +838,7 @@ export class SpriteManager implements ISpriteManager {
                     if (request.status == 200) {
                         var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
                         let serializationObject = JSON.parse(snippet.spriteManager);
-                        let output = SpriteManager.Parse(serializationObject, scene, rootUrl);
+                        let output = SpriteManager.Parse(serializationObject, scene || Engine.LastCreatedScene, rootUrl);
 
                         output.snippetId = snippetId;
 
