@@ -1,5 +1,10 @@
-#if defined(WEBGL2) && defined(NUM_SAMPLES)
-	#if NUM_SAMPLES > 0u
+#ifdef NUM_SAMPLES
+	#ifdef WEBGL2
+		#define ZERO 0u
+	#else
+		#define ZERO 0
+	#endif
+	#if NUM_SAMPLES > ZERO
 		const float NUM_SAMPLES_FLOAT = float(NUM_SAMPLES);
 		const float NUM_SAMPLES_FLOAT_INVERSED = 1. / NUM_SAMPLES_FLOAT;
 
@@ -133,7 +138,11 @@
 		    float dim0 = filteringInfo.x;
 		    float omegaP = (4. * PI) / (6. * dim0 * dim0);
 
+		    #ifdef WEBGL2
 		    for(uint i = 0u; i < NUM_SAMPLES; ++i)
+		    #else
+		    for(int i = 0; i < NUM_SAMPLES; ++i)
+		    #endif
 		    {
 		        vec2 Xi = hammersley(i, NUM_SAMPLES);
 		        vec3 Ls = hemisphereCosSample(Xi);
@@ -186,7 +195,11 @@
 			float omegaP = (4. * PI) / (6. * dim0 * dim0);
 
 			float weight = 0.;
+			#ifdef WEBGL2
 			for(uint i = 0u; i < NUM_SAMPLES; ++i)
+			#else
+			for(int i = 0; i < NUM_SAMPLES; ++i)
+			#endif
 			{
 			    vec2 Xi = hammersley(i, NUM_SAMPLES);
 			    vec3 H = hemisphereImportanceSampleDggx(Xi, alphaG);

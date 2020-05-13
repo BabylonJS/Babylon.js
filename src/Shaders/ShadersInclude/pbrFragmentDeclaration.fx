@@ -53,7 +53,7 @@ uniform mat4 view;
 #ifdef REFLECTION
     uniform vec2 vReflectionInfos;
     #ifdef REALTIME_FILTERING
-        uniform vec2 vReflectionFilteringInfo
+        uniform vec2 vReflectionFilteringInfo;
     #endif
     uniform mat4 reflectionMatrix;
     uniform vec3 vReflectionMicrosurfaceInfos;

@@ -1327,7 +1327,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     defines.LINEARSPECULARREFLECTION = reflectionTexture.linearSpecularLOD;
 
                     if (this.realTimeFiltering && this.realTimeFilteringQuality > 0) {
-                        defines.NUM_SAMPLES = this.realTimeFilteringQuality + "u";
+                        defines.NUM_SAMPLES = "" + this.realTimeFilteringQuality;
+                        if (engine.webGLVersion > 1) {
+                            defines.NUM_SAMPLES = defines.NUM_SAMPLES + "u";
+                        }
+
                         defines.REALTIME_FILTERING = true;
                     } else {
                         defines.REALTIME_FILTERING = false;
