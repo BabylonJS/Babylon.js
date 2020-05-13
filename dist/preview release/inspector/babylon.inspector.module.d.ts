@@ -2351,9 +2351,14 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/spr
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteManagerPropertyGridComponentProps> {
+        private _snippetUrl;
         constructor(props: ISpriteManagerPropertyGridComponentProps);
         addNewSprite(): void;
         disposeManager(): void;
+        saveToFile(): void;
+        loadFromFile(file: File): void;
+        loadFromSnippet(): void;
+        saveToSnippet(): void;
         render(): JSX.Element;
     }
 }
@@ -4934,9 +4939,14 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteManagerPropertyGridComponentProps> {
+        private _snippetUrl;
         constructor(props: ISpriteManagerPropertyGridComponentProps);
         addNewSprite(): void;
         disposeManager(): void;
+        saveToFile(): void;
+        loadFromFile(file: File): void;
+        loadFromSnippet(): void;
+        saveToSnippet(): void;
         render(): JSX.Element;
     }
 }
