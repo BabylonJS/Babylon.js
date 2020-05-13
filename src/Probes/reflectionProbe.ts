@@ -103,8 +103,6 @@ export class ReflectionProbe {
         }
         this._renderTargetTexture = new RenderTargetTexture(name, size, scene, generateMipMaps, true, textureType, true);
 
-        this._renderTargetTexture.realTimeFiltering = true;
-
         this._renderTargetTexture.onBeforeRenderObservable.add((faceIndex: number) => {
             switch (faceIndex) {
                 case 0:

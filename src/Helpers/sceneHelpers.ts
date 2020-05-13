@@ -115,7 +115,7 @@ Scene.prototype.createDefaultCamera = function(createArcRotateCamera = false, re
 
     // Camera
     if (!this.activeCamera) {
-        var worldExtends = this.getWorldExtends();
+        var worldExtends = this.getWorldExtends((mesh) => mesh.isVisible && mesh.isEnabled());
         var worldSize = worldExtends.max.subtract(worldExtends.min);
         var worldCenter = worldExtends.min.add(worldSize.scale(0.5));
 

@@ -19,6 +19,7 @@ import "../Shaders/sprites.fragment";
 import "../Shaders/sprites.vertex";
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { Engine } from '../Engines/engine';
+import { WebRequest } from '../Misc/webRequest';
 declare type Ray = import("../Culling/ray").Ray;
 
 /**
@@ -98,6 +99,12 @@ export interface ISpriteManager extends IDisposable {
  * @see http://doc.babylonjs.com/babylon101/sprites
  */
 export class SpriteManager implements ISpriteManager {
+    /** Define the Url to load snippets */
+    public static SnippetUrl = "https://snippet.babylonjs.com";
+
+    /** Snippet ID if the manager was created from the snippet server */
+    public snippetId: string;
+
     /** Gets the list of sprites */
     public sprites = new Array<Sprite>();
     /** Gets or sets the rendering group id (0 by default) */
@@ -188,6 +195,8 @@ export class SpriteManager implements ISpriteManager {
 
     public set texture(value: Texture) {
         this._spriteTexture = value;
+        this._spriteTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
+        this._spriteTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
         this._textureContent = null;
     }
 
@@ -229,9 +238,12 @@ export class SpriteManager implements ISpriteManager {
         }
         this._capacity = capacity;
         this._fromPacked = fromPacked;
-        this._spriteTexture = new Texture(imgUrl, scene, true, false, samplingMode);
-        this._spriteTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
-        this._spriteTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
+
+        if (imgUrl) {
+            this._spriteTexture = new Texture(imgUrl, scene, true, false, samplingMode);
+            this._spriteTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
+            this._spriteTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
+        }
 
         if (cellSize.width && cellSize.height) {
             this.cellWidth = cellSize.width;
@@ -752,5 +764,93 @@ export class SpriteManager implements ISpriteManager {
         // Callback
         this.onDisposeObservable.notifyObservers(this);
         this.onDisposeObservable.clear();
+    }
+
+    /**
+     * Serializes the sprite manager to a JSON object
+     * @param serializeTexture defines if the texture must be serialized as well
+     * @returns the JSON object
+     */
+    public serialize(serializeTexture = false): any {
+        var serializationObject: any = {};
+
+        serializationObject.name = this.name;
+        serializationObject.capacity = this.capacity;
+        serializationObject.cellWidth = this.cellWidth;
+        serializationObject.cellHeight = this.cellHeight;
+
+        if (this.texture) {
+            if (serializeTexture) {
+                serializationObject.texture = this.texture.serialize();
+            } else {
+                serializationObject.textureUrl = this.texture.name;
+                serializationObject.invertY = this.texture._invertY;
+            }
+        }
+
+        serializationObject.sprites = [];
+
+        for (var sprite of this.sprites) {
+            serializationObject.sprites.push(sprite.serialize());
+        }
+
+        return serializationObject;
+    }
+
+    /**
+     * Parses a JSON object to create a new sprite manager.
+     * @param parsedManager The JSON object to parse
+     * @param scene The scene to create the sprite managerin
+     * @param rootUrl The root url to use to load external dependencies like texture
+     * @returns the new sprite manager
+     */
+    public static Parse(parsedManager: any, scene: Scene, rootUrl: string): SpriteManager {
+        var manager = new SpriteManager(parsedManager.name, "", parsedManager.capacity, {
+            width: parsedManager.cellWidth,
+            height: parsedManager.cellHeight,
+        }, scene);
+
+        if (parsedManager.texture) {
+            manager.texture = Texture.Parse(parsedManager.texture, scene, rootUrl) as Texture;
+        } else if (parsedManager.textureName) {
+            manager.texture = new Texture(rootUrl + parsedManager.textureUrl, scene, false, parsedManager.invertY !== undefined ? parsedManager.invertY : true);
+        }
+
+        for (var parsedSprite of parsedManager.sprites) {
+            Sprite.Parse(parsedSprite, manager);
+        }
+
+        return manager;
+    }
+
+    /**
+     * Creates a sprite manager from a snippet saved by the sprite editor
+     * @param snippetId defines the snippet to load
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a promise that will resolve to the new sprite manager
+     */
+    public static CreateFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = ""): Promise<SpriteManager> {
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
+                        let serializationObject = JSON.parse(snippet.spriteManager);
+                        let output = SpriteManager.Parse(serializationObject, scene, rootUrl);
+
+                        output.snippetId = snippetId;
+
+                        resolve(output);
+                    } else {
+                        reject("Unable to load the snippet " + snippetId);
+                    }
+                }
+            });
+
+            request.open("GET", this.SnippetUrl + "/" + snippetId.replace(/#/g, "/"));
+            request.send();
+        });
     }
 }
