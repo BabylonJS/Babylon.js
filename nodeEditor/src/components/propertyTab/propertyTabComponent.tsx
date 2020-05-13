@@ -33,6 +33,7 @@ import { NodePort } from '../../diagram/nodePort';
 import { isFramePortData } from '../../diagram/graphCanvas';
 import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
+import { PreviewType } from '../preview/previewType';
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
@@ -263,18 +264,28 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             this._modeSelect.current?.setValue(value);
         }
 
-        this.props.globalState.mode = value as NodeMaterialModes;
-
         if (loadDefault) {
             switch (value) {
                 case NodeMaterialModes.Material:
+                    this.props.globalState.previewType = PreviewType.Sphere;
                     this.props.globalState.nodeMaterial!.setToDefault();
                     break;
                 case NodeMaterialModes.PostProcess:
                     this.props.globalState.nodeMaterial!.setToDefaultPostProcess();
                     break;
+                case NodeMaterialModes.Particle:
+                    this.props.globalState.previewType = PreviewType.Bubbles;
+                    this.props.globalState.nodeMaterial!.setToDefaultParticle();
+                    break;
             }
+
+            this.props.globalState.listOfCustomPreviewFiles = [];
+            (this.props.globalState.previewFile as any) = undefined;
+
+            DataStorage.WriteNumber("PreviewType", this.props.globalState.previewType);
         }
+
+        this.props.globalState.mode = value as NodeMaterialModes;
 
         this.props.globalState.onResetRequiredObservable.notifyObservers();
     }
@@ -314,6 +325,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
         let gridSize = DataStorage.ReadNumber("GridSize", 20);
 
+        const modeList = [
+            { label: "Material", value: NodeMaterialModes.Material },
+            { label: "Post Process", value: NodeMaterialModes.PostProcess },
+            { label: "Particle", value: NodeMaterialModes.Particle },
+        ];
+
         return (
             <div id="propertyTab">
                 <div id="header">
@@ -324,7 +341,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 </div>
                 <div>
                     <LineContainerComponent title="GENERAL">
-                        <OptionsLineComponent ref={this._modeSelect} label="Mode" target={this} getSelection={(target) => this.props.globalState.mode} options={[{ label: "Material", value: NodeMaterialModes.Material }, { label: "Post Process", value: NodeMaterialModes.PostProcess }]} onSelect={(value) => this.changeMode(value)} />
+                        <OptionsLineComponent ref={this._modeSelect} label="Mode" target={this} getSelection={(target) => this.props.globalState.mode} options={modeList} onSelect={(value) => this.changeMode(value)} />
                         <TextLineComponent label="Version" value={Engine.Version}/>
                         <TextLineComponent label="Help" value="doc.babylonjs.com" underline={true} onLink={() => window.open('https://doc.babylonjs.com/how_to/node_material', '_blank')}/>
                         <ButtonLineComponent label="Reset to default" onClick={() => {

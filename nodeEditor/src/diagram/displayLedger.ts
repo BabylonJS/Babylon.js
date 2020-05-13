@@ -23,4 +23,5 @@ DisplayLedger.RegisteredControls["ReflectionTextureBlock"] = TextureDisplayManag
 DisplayLedger.RegisteredControls["ReflectionBlock"] = TextureDisplayManager;
 DisplayLedger.RegisteredControls["RefractionBlock"] = TextureDisplayManager;
 DisplayLedger.RegisteredControls["CurrentScreenBlock"] = TextureDisplayManager;
+DisplayLedger.RegisteredControls["ParticleTextureBlock"] = TextureDisplayManager;
 DisplayLedger.RegisteredControls["DiscardBlock"] = DiscardDisplayManager;
