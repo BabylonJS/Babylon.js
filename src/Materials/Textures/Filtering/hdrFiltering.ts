@@ -10,6 +10,7 @@ import { Nullable } from '../../../types';
 
 import "../../../Shaders/hdrFiltering.vertex";
 import "../../../Shaders/hdrFiltering.fragment";
+import { Logger } from '../../../Misc/logger';
 
 /**
  * Options for texture filtering
@@ -192,6 +193,11 @@ export class HDRFiltering {
       * @return Promise called when prefiltering is done
       */
     public prefilter(texture: BaseTexture, onFinished: Nullable<() => void> = null) {
+        if (this._engine.webGLVersion === 1) {
+            Logger.Warn("HDR prefiltering is not available in WebGL 1., you can use real time filtering instead.");
+            return;
+        }
+
         return new Promise((resolve) => {
             this._effectRenderer = new EffectRenderer(this._engine);
             this._effectWrapper = this._createEffect(texture);
