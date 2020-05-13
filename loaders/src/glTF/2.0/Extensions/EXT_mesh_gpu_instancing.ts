@@ -97,13 +97,14 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
 
             return promise.then((babylonTransformNode) => {
                 return Promise.all(promises).then(([translationBuffer, rotationBuffer, scaleBuffer]) => {
-                    for (let i = 0; i < instanceCount; ++i) {
-                        for (const babylonMesh of node._primitiveBabylonMeshes!) {
-                            const babylonInstancedMeshes = babylonMesh.getChildMeshes(true, (node) => (node as AbstractMesh).isAnInstance);
-                            translationBuffer && Vector3.FromArrayToRef(translationBuffer, i * 3, babylonInstancedMeshes[i].position);
-                            rotationBuffer && Quaternion.FromArrayToRef(rotationBuffer, i * 4, babylonInstancedMeshes[i].rotationQuaternion!);
-                            scaleBuffer && Vector3.FromArrayToRef(scaleBuffer, i * 3, babylonInstancedMeshes[i].scaling);
-                            babylonInstancedMeshes[i].refreshBoundingInfo();
+                    for (const babylonMesh of node._primitiveBabylonMeshes!) {
+                        const babylonInstancedMeshes = babylonMesh.getChildMeshes(true, (node) => (node as AbstractMesh).isAnInstance);
+                        for (let i = 0; i < instanceCount; ++i) {
+                            const babylonInstancedMesh = babylonInstancedMeshes[i];
+                            translationBuffer && Vector3.FromArrayToRef(translationBuffer, i * 3, babylonInstancedMesh.position);
+                            rotationBuffer && Quaternion.FromArrayToRef(rotationBuffer, i * 4, babylonInstancedMesh.rotationQuaternion!);
+                            scaleBuffer && Vector3.FromArrayToRef(scaleBuffer, i * 3, babylonInstancedMesh.scaling);
+                            babylonInstancedMesh.refreshBoundingInfo();
                         }
                     }
 
