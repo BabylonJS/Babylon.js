@@ -46,6 +46,7 @@ import { Texture } from '../Textures/texture';
 import { IParticleSystem } from '../../Particles/IParticleSystem';
 import { BaseParticleSystem } from '../../Particles/baseParticleSystem';
 import { ColorSplitterBlock } from './Blocks/colorSplitterBlock';
+import { TimingTools } from '../../Misc/timingTools';
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -747,7 +748,20 @@ export class NodeMaterial extends PushMaterial {
     public createPostProcess(
         camera: Nullable<Camera>, options: number | PostProcessOptions = 1, samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean,
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, textureFormat = Constants.TEXTUREFORMAT_RGBA): PostProcess {
+            return this._createEffectOrPostProcess(null, camera, options, samplingMode, engine, reusable, textureType, textureFormat);
+    }
 
+    /**
+     * Create the post process effect from the material
+     * @param postProcess The post process to create the effect for
+     */
+    public createEffectForPostProcess(postProcess: PostProcess) {
+        this._createEffectOrPostProcess(postProcess);
+    }
+
+    private _createEffectOrPostProcess(postProcess: Nullable<PostProcess>,
+        camera?: Nullable<Camera>, options: number | PostProcessOptions = 1, samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, textureFormat = Constants.TEXTUREFORMAT_RGBA): PostProcess {
         let tempName = this.name + this._buildId;
 
         const defines = new NodeMaterialDefines();
@@ -760,10 +774,14 @@ export class NodeMaterial extends PushMaterial {
 
         Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString);
 
-        const postProcess = new PostProcess(
-            this.name + "PostProcess", tempName, this._fragmentCompilationState.uniforms, this._fragmentCompilationState.samplers,
-            options, camera, samplingMode, engine, reusable, defines.toString(), textureType, tempName, { maxSimultaneousLights: this.maxSimultaneousLights }, false, textureFormat
-        );
+        if (!postProcess) {
+            postProcess = new PostProcess(
+                this.name + "PostProcess", tempName, this._fragmentCompilationState.uniforms, this._fragmentCompilationState.samplers,
+                options, camera!, samplingMode, engine, reusable, defines.toString(), textureType, tempName, { maxSimultaneousLights: this.maxSimultaneousLights }, false, textureFormat
+            );
+        } else {
+            postProcess.updateEffect(defines.toString(), this._fragmentCompilationState.uniforms, this._fragmentCompilationState.samplers, { maxSimultaneousLights: this.maxSimultaneousLights }, undefined, undefined, tempName, tempName);
+        }
 
         postProcess.nodeMaterialSource = this;
 
@@ -784,7 +802,9 @@ export class NodeMaterial extends PushMaterial {
             if (result) {
                 Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString);
 
-                postProcess.updateEffect(defines.toString(), this._fragmentCompilationState.uniforms, this._fragmentCompilationState.samplers, { maxSimultaneousLights: this.maxSimultaneousLights }, undefined, undefined, tempName, tempName);
+                TimingTools.SetImmediate(() =>
+                    postProcess!.updateEffect(defines.toString(), this._fragmentCompilationState.uniforms, this._fragmentCompilationState.samplers, { maxSimultaneousLights: this.maxSimultaneousLights }, undefined, undefined, tempName, tempName)
+                );
             }
 
             // Animated blocks
