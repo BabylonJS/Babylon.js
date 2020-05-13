@@ -639,6 +639,30 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     protected _forceIrradianceInFragment = false;
 
+    private _realTimeFiltering: boolean = false;
+    /**
+     * Enables realtime filtering on the texture.
+     */
+    public get realTimeFiltering() {
+        return this._realTimeFiltering;
+    }
+    public set realTimeFiltering(b: boolean) {
+        this._realTimeFiltering = b;
+        this.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
+    private _realTimeFilteringQuality: number = Constants.TEXTURE_FILTERING_QUALITY_LOW;
+    /**
+     * Quality switch for realtime filtering
+     */
+    public get realTimeFilteringQuality() : number {
+        return this._realTimeFilteringQuality;
+    }
+    public set realTimeFilteringQuality(n: number) {
+        this._realTimeFilteringQuality = n;
+        this.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
     /**
      * Force normal to face away from face.
      */
@@ -1183,7 +1207,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         var uniforms = ["world", "view", "viewProjection", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vMetallicReflectanceFactors", "vEmissiveColor", "visibility", "vReflectionColor",
             "vFogInfos", "vFogColor", "pointSize",
-            "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vReflectionPosition", "vReflectionSize", "vEmissiveInfos", "vReflectivityInfos", "vMetallicReflectanceInfos",
+            "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vReflectionPosition", "vReflectionSize", "vEmissiveInfos", "vReflectivityInfos", "vReflectionFilteringInfo", "vMetallicReflectanceInfos",
             "vMicroSurfaceSamplerInfos", "vBumpInfos", "vLightmapInfos",
             "mBones",
             "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "albedoMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "reflectivityMatrix", "normalMatrix", "microSurfaceSamplerMatrix", "bumpMatrix", "lightmapMatrix", "metallicReflectanceMatrix",
@@ -1197,8 +1221,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "vSphericalL2_2", "vSphericalL2_1", "vSphericalL20", "vSphericalL21", "vSphericalL22",
             "vReflectionMicrosurfaceInfos",
             "vTangentSpaceParams", "boneTextureWidth",
-            "vDebugMode",
-            "vFilteringInfo", "linearRoughness"
+            "vDebugMode"
         ];
 
         var samplers = ["albedoSampler", "reflectivitySampler", "ambientSampler", "emissiveSampler",
@@ -1301,8 +1324,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
                     defines.LINEARSPECULARREFLECTION = reflectionTexture.linearSpecularLOD;
 
-                    if (reflectionTexture.realTimeFiltering && reflectionTexture.realTimeFilteringQuality > 0) {
-                        defines.NUM_SAMPLES = reflectionTexture.realTimeFilteringQuality + "u";
+                    if (this.realTimeFiltering && this.realTimeFilteringQuality > 0) {
+                        defines.NUM_SAMPLES = "" + this.realTimeFilteringQuality;
+                        if (engine.webGLVersion > 1) {
+                            defines.NUM_SAMPLES = defines.NUM_SAMPLES + "u";
+                        }
+
                         defines.REALTIME_FILTERING = true;
                     } else {
                         defines.REALTIME_FILTERING = false;
@@ -1366,7 +1393,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                         else if (reflectionTexture.isCube) {
                             defines.USESPHERICALFROMREFLECTIONMAP = true;
                             defines.USEIRRADIANCEMAP = false;
-                            if (this._forceIrradianceInFragment || reflectionTexture.realTimeFiltering || scene.getEngine().getCaps().maxVaryingVectors <= 8) {
+                            if (this._forceIrradianceInFragment || this.realTimeFiltering || scene.getEngine().getCaps().maxVaryingVectors <= 8) {
                                 defines.USESPHERICALINVERTEX = false;
                             }
                             else {
@@ -1586,6 +1613,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         ubo.addUniform("vReflectivityInfos", 3);
         ubo.addUniform("vMicroSurfaceSamplerInfos", 2);
         ubo.addUniform("vReflectionInfos", 2);
+        ubo.addUniform("vReflectionFilteringInfo", 2);
         ubo.addUniform("vReflectionPosition", 3);
         ubo.addUniform("vReflectionSize", 3);
         ubo.addUniform("vBumpInfos", 3);
@@ -1748,12 +1776,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                             ubo.updateVector3("vReflectionSize", cubeTexture.boundingBoxSize);
                         }
 
-                        if (reflectionTexture.realTimeFiltering) {
+                        if (this.realTimeFiltering) {
                             const width = reflectionTexture.getSize().width;
-                            const alpha = this._roughness! * this._roughness!;
-
-                            this._activeEffect.setFloat2("vFilteringInfo", width, Scalar.Log2(width));
-                            this._activeEffect.setFloat("linearRoughness", alpha);
+                            ubo.updateFloat2("vReflectionFilteringInfo", width, Scalar.Log2(width));
                         }
 
                         if (!defines.USEIRRADIANCEMAP) {
@@ -1955,7 +1980,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 }
             }
 
-            this.subSurface.bindForSubMesh(ubo, scene, engine, this.isFrozen, defines.LODBASEDMICROSFURACE);
+            this.subSurface.bindForSubMesh(ubo, scene, engine, this.isFrozen, defines.LODBASEDMICROSFURACE, this.realTimeFiltering);
             this.clearCoat.bindForSubMesh(ubo, scene, engine, this._disableBumpMap, this.isFrozen, this._invertNormalMapX, this._invertNormalMapY);
             this.anisotropy.bindForSubMesh(ubo, scene, this.isFrozen);
             this.sheen.bindForSubMesh(ubo, scene, this.isFrozen);

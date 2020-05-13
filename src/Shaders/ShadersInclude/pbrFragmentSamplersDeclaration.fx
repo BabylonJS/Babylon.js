@@ -159,11 +159,7 @@
         uniform samplerCube reflectionSampler;
         
         #ifdef LODBASEDMICROSFURACE
-            #if defined(WEBGL2) && defined(REALTIME_FILTERING)
-                #define sampleReflectionLod(s, c, l) vec4(radiance(s, c), 1.0)
-            #else
-                #define sampleReflectionLod(s, c, l) textureCubeLodEXT(s, c, l)
-            #endif
+            #define sampleReflectionLod(s, c, l) textureCubeLodEXT(s, c, l)
         #else
             uniform samplerCube reflectionSamplerLow;
             uniform samplerCube reflectionSamplerHigh;

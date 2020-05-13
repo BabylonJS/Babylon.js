@@ -41,6 +41,7 @@ uniform Material {
     vec3 vReflectivityInfos;
     vec2 vMicroSurfaceSamplerInfos;
     vec2 vReflectionInfos;
+    vec2 vReflectionFilteringInfo;
     vec3 vReflectionPosition;
     vec3 vReflectionSize;
     vec3 vBumpInfos;
@@ -92,6 +93,7 @@ uniform Material {
 
     vec3 vRefractionMicrosurfaceInfos;
     vec4 vRefractionInfos;
+    vec2 vRefractionFilteringInfo;
     mat4 refractionMatrix;
     vec2 vThicknessInfos;
     mat4 thicknessMatrix;
