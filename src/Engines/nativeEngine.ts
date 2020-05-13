@@ -23,6 +23,7 @@ import { Constants } from './constants';
 import { ThinEngine, ISceneLike } from './thinEngine';
 import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 import { EngineStore } from './engineStore';
+import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
 
 interface INativeEngine {
     dispose(): void;
@@ -481,10 +482,19 @@ export class NativeEngine extends Engine {
 
     public createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): any {
         this.onBeforeShaderCompilationObservable.notifyObservers(this);
-        const program = this._native.createProgram(
-            ThinEngine._ConcatenateShader(vertexCode, defines),
-            ThinEngine._ConcatenateShader(fragmentCode, defines)
-        );
+
+        vertexCode = ThinEngine._ConcatenateShader(vertexCode, defines);
+        fragmentCode = ThinEngine._ConcatenateShader(fragmentCode, defines);
+
+        const vertexInliner = new ShaderCodeInliner(vertexCode);
+        vertexInliner.processCode();
+        vertexCode = vertexInliner.code;
+
+        const fragmentInliner = new ShaderCodeInliner(fragmentCode);
+        fragmentInliner.processCode();
+        fragmentCode = fragmentInliner.code;
+
+        const program = this._native.createProgram(vertexCode, fragmentCode);
         this.onAfterShaderCompilationObservable.notifyObservers(this);
         return program;
     }
