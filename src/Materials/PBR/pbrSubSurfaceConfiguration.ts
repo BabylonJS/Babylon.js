@@ -325,7 +325,7 @@ export class PBRSubSurfaceConfiguration {
                     refractionTexture.lodGenerationOffset);
 
                 if (realTimeFiltering) {
-                    uniformBuffer.updateFloat2("vRefractionFilteringInfo", width, Scalar.Log2(width))
+                    uniformBuffer.updateFloat2("vRefractionFilteringInfo", width, Scalar.Log2(width));
                 }
             }
 
