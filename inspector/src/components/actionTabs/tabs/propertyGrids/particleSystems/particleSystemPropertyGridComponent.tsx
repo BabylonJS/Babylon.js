@@ -316,7 +316,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     }} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="FILE">
-                <FileButtonLineComponent label="Load" onClick={(file) => this.loadFromFile(file)} accept=".json" />
+                    <FileButtonLineComponent label="Load" onClick={(file) => this.loadFromFile(file)} accept=".json" />
                     <ButtonLineComponent label="Save" onClick={() => this.saveToFile()} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="SNIPPET">
