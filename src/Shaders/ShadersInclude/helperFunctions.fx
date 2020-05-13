@@ -91,30 +91,30 @@ float square(float value)
         return vec2(float(i)/float(N), radicalInverse_VdC(i));
     }
 #else
-    // float vanDerCorpus(uint n, uint base)
-    // {
-    //     float invBase = 1.0 / float(base);
-    //     float denom   = 1.0;
-    //     float result  = 0.0;
+    float vanDerCorpus(int n, int base)
+    {
+        float invBase = 1.0 / float(base);
+        float denom   = 1.0;
+        float result  = 0.0;
 
-    //     for(uint i = 0u; i < 32u; ++i)
-    //     {
-    //         if(n > 0u)
-    //         {
-    //             denom   = mod(float(n), 2.0);
-    //             result += denom * invBase;
-    //             invBase = invBase / 2.0;
-    //             n       = uint(float(n) / 2.0);
-    //         }
-    //     }
+        for(int i = 0; i < 32; ++i)
+        {
+            if(n > 0)
+            {
+                denom   = mod(float(n), 2.0);
+                result += denom * invBase;
+                invBase = invBase / 2.0;
+                n       = int(float(n) / 2.0);
+            }
+        }
 
-    //     return result;
-    // }
+        return result;
+    }
 
-    // vec2 hammersley(uint i, uint N)
-    // {
-    //     return vec2(float(i)/float(N), vanDerCorpus(i, 2u));
-    // }
+    vec2 hammersley(int i, int N)
+    {
+        return vec2(float(i)/float(N), vanDerCorpus(i, 2));
+    }
 #endif
 
 float log4(float x) {
