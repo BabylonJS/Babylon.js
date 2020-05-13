@@ -9,16 +9,30 @@ import { Color3 } from 'babylonjs/Maths/math.color';
 import { BlockTools } from '../../blockTools';
 import { StringTools } from '../../stringTools';
 
+const inputNameToAttributeValue: { [name: string] : string } = {
+    "position2d" : "position",
+    "particle_uv" : "uv",
+    "particle_color" : "color",
+    "particle_texturemask": "textureMask",
+};
+
+const inputNameToAttributeName: { [name: string] : string } = {
+    "position2d" : "postprocess",
+    "particle_uv" : "particle",
+    "particle_color" : "particle",
+    "particle_texturemask": "particle",
+};
+
 export class InputDisplayManager implements IDisplayManager {
     public getHeaderClass(block: NodeMaterialBlock) {
         let inputBlock = block as InputBlock;
 
         if (inputBlock.isConstant) {
-            return "constant"
+            return "constant";
         }
 
         if (inputBlock.visibleInInspector) {
-            return "inspector"
+            return "inspector";
         }
 
         return "";
@@ -40,10 +54,10 @@ export class InputDisplayManager implements IDisplayManager {
     }
 
     public getBackgroundColor(block: NodeMaterialBlock): string {
-        let color = "";        
+        let color = "";
         let inputBlock = block as InputBlock;
 
-        switch (inputBlock.type) {                    
+        switch (inputBlock.type) {
             case NodeMaterialBlockConnectionPointTypes.Color3:
             case NodeMaterialBlockConnectionPointTypes.Color4: {
                 if (inputBlock.value) {
@@ -64,8 +78,8 @@ export class InputDisplayManager implements IDisplayManager {
         let inputBlock = block as InputBlock;
 
         if (inputBlock.isAttribute) {
-            const attrVal = inputBlock.name === 'position2d' ? 'position' : inputBlock.name;
-            const attrName = inputBlock.name === 'position2d' ? 'postprocess' : 'mesh';
+            const attrVal = inputNameToAttributeValue[inputBlock.name] ?? inputBlock.name;
+            const attrName = inputNameToAttributeName[inputBlock.name] ?? 'mesh';
             value = attrName + "." + attrVal;
         } else if (inputBlock.isSystemValue) {
             switch (inputBlock.systemValue) {
@@ -107,17 +121,17 @@ export class InputDisplayManager implements IDisplayManager {
                     }
                     break;
                 case NodeMaterialBlockConnectionPointTypes.Vector2:
-                    let vec2Value = inputBlock.value as Vector2
+                    let vec2Value = inputBlock.value as Vector2;
                     value = `(${vec2Value.x.toFixed(2)}, ${vec2Value.y.toFixed(2)})`;
                     break;
                 case NodeMaterialBlockConnectionPointTypes.Vector3:
-                    let vec3Value = inputBlock.value as Vector3
+                    let vec3Value = inputBlock.value as Vector3;
                     value = `(${vec3Value.x.toFixed(2)}, ${vec3Value.y.toFixed(2)}, ${vec3Value.z.toFixed(2)})`;
                     break;
                 case NodeMaterialBlockConnectionPointTypes.Vector4:
-                    let vec4Value = inputBlock.value as Vector4
+                    let vec4Value = inputBlock.value as Vector4;
                     value = `(${vec4Value.x.toFixed(2)}, ${vec4Value.y.toFixed(2)}, ${vec4Value.z.toFixed(2)}, ${vec4Value.w.toFixed(2)})`;
-                    break;                        
+                    break;
             }
         }
 

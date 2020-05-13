@@ -14,6 +14,7 @@ import { Vector3LineComponent } from '../../../lines/vector3LineComponent';
 import { Color4LineComponent } from '../../../lines/color4LineComponent';
 import { FloatLineComponent } from '../../../lines/floatLineComponent';
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
+import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 
 interface ISpritePropertyGridComponentProps {
     globalState: GlobalState;
@@ -38,6 +39,30 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
         this.props.onSelectionChangedObservable.notifyObservers(sprite.manager);
     }
 
+    switchPlayStopState() {        
+        const sprite = this.props.sprite;
+
+        if (sprite.animationStarted) {
+            sprite.stopAnimation();
+        } else {
+            sprite.playAnimation(sprite.fromIndex, sprite.toIndex, sprite.loopAnimation, sprite.delay, () => {});
+        }
+
+        this.forceUpdate();
+    }
+
+    disposeSprite() {
+        const sprite = this.props.sprite;
+        sprite.dispose();
+
+        this.props.globalState.onCodeChangedObservable.notifyObservers({
+            object: sprite,
+            code: `TARGET.dispose();`
+        });
+
+        this.props.onSelectionChangedObservable?.notifyObservers(null);
+    }
+
     render() {
         const sprite = this.props.sprite;
         const manager = sprite.manager;
@@ -56,6 +81,8 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={sprite} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <TextLineComponent label="Unique ID" value={sprite.uniqueId.toString()} />
                     <TextLineComponent label="Link to manager" value={manager.name} onLink={() => this.onManagerLink()} />
+                    <CheckBoxLineComponent label="Visible" target={sprite} propertyName="isVisible" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <ButtonLineComponent label="Dispose" onClick={() => this.disposeSprite()} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="PROPERTIES">
                     <Vector3LineComponent label="Position" target={sprite} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -77,6 +104,7 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
                     <SliderLineComponent label="End cell" decimalCount={0} target={sprite} propertyName="toIndex" minimum={0} maximum={maxCellCount} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Loop" target={sprite} propertyName="loopAnimation" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent label="Delay" target={sprite} propertyName="delay" digits={0} min={0} isInteger={true} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
+                    <ButtonLineComponent label={sprite.animationStarted ? "Stop" : "Start"} onClick={() => this.switchPlayStopState()} />
                 </LineContainerComponent>
             </div>
         );
