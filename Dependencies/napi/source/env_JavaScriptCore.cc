@@ -6,12 +6,9 @@
 namespace Napi
 {
     template<>
-    Napi::Env Attach<JSContextRef>(JSContextRef context)
+    Napi::Env Attach(JSGlobalContextRef context)
     {
-        napi_env env_ptr{new napi_env__};
-        env_ptr->context = context;
-        env_ptr->last_exception = nullptr;
-        env_ptr->last_error = { nullptr, nullptr, 0, napi_ok };
+        napi_env env_ptr{new napi_env__{context}};
         return {env_ptr};
     }
 
@@ -21,7 +18,7 @@ namespace Napi
         delete env_ptr;
     }
 
-    template<> JSContextRef GetContext(Napi::Env env)
+    template<> JSGlobalContextRef GetContext(Napi::Env env)
     {
         napi_env env_ptr{env};
         return env_ptr->context;

@@ -3,11 +3,27 @@
 #include <napi/js_native_api.h>
 #include <napi/js_native_api_types.h>
 #include <JavaScriptCore/JavaScript.h>
+#include <unordered_set>
+#include <list>
 
 struct napi_env__ {
-  JSContextRef context;
-  JSValueRef last_exception;
-  napi_extended_error_info last_error;
+  JSGlobalContextRef context{};
+  JSValueRef last_exception{};
+  napi_extended_error_info last_error{nullptr, nullptr, 0, napi_ok};
+  std::unordered_set<napi_value> active_ref_values{};
+  std::list<napi_ref> strong_refs{};
+  
+  napi_env__(JSGlobalContextRef context) : context{context} {
+    JSGlobalContextRetain(context);
+  }
+  
+  ~napi_env__() {
+    deinit_refs();
+    JSGlobalContextRelease(context);
+  }
+  
+ private:
+  void deinit_refs();
 };
 
 #define RETURN_STATUS_IF_FALSE(env, condition, status)                  \
