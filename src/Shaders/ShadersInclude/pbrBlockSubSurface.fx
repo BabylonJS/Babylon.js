@@ -317,7 +317,7 @@ struct subSurfaceOutParams
         #endif
 
         #if defined(USESPHERICALFROMREFLECTIONMAP)
-            #if defined(WEBGL2) && defined(REALTIME_FILTERING)
+            #if defined(REALTIME_FILTERING)
                 vec3 refractionIrradiance = irradiance(reflectionSampler, -irradianceVector, vReflectionFilteringInfo);
             #else
                 vec3 refractionIrradiance = computeEnvironmentIrradiance(-irradianceVector);

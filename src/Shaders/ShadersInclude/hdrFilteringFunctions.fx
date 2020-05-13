@@ -1,10 +1,5 @@
 #ifdef NUM_SAMPLES
-	#ifdef WEBGL2
-		#define ZERO 0u
-	#else
-		#define ZERO 0
-	#endif
-	#if NUM_SAMPLES > ZERO
+	#if NUM_SAMPLES > 0
 		const float NUM_SAMPLES_FLOAT = float(NUM_SAMPLES);
 		const float NUM_SAMPLES_FLOAT_INVERSED = 1. / NUM_SAMPLES_FLOAT;
 
