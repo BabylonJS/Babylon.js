@@ -143,7 +143,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
 
         var dataToSend = {
             payload : JSON.stringify({
-                particleSystem: content
+                spriteManager: content
             }),
             name: "",
             description: "",

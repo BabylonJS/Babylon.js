@@ -65381,7 +65381,7 @@ var SpriteManagerPropertyGridComponent = /** @class */ (function (_super) {
         xmlHttp.setRequestHeader("Content-Type", "application/json");
         var dataToSend = {
             payload: JSON.stringify({
-                particleSystem: content
+                spriteManager: content
             }),
             name: "",
             description: "",

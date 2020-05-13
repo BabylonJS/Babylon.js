@@ -283,7 +283,8 @@ export class NativeEngine extends Engine {
      * @hidden
      */
     protected _queueNewFrame(bindedRenderFunction: any, requester?: any): number {
-        if (requester.requestAnimationFrame) {
+        // Use the provided requestAnimationFrame, unless the requester is the window. In that case, we will default to the Babylon Native version of requestAnimationFrame.
+        if (requester.requestAnimationFrame && requester !== window) {
             requester.requestAnimationFrame(bindedRenderFunction);
         } else {
             this._native.requestAnimationFrame(bindedRenderFunction);
