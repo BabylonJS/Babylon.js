@@ -664,7 +664,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
-
     /**
      * Force normal to face away from face.
      */
