@@ -794,7 +794,7 @@ export class InputManager {
         });
 
         // Pointer events
-        var eventPrefix = Tools.GetPointerPrefix();
+        var eventPrefix = Tools.GetPointerPrefix(engine);
 
         if (attachMove) {
             elementToAttachTo.addEventListener(eventPrefix + "move", <any>this._onPointerMove, false);
@@ -823,9 +823,9 @@ export class InputManager {
      * Detaches all event handlers
      */
     public detachControl() {
-        const eventPrefix = Tools.GetPointerPrefix();
         const canvas = this._scene.getEngine().getInputElement();
         const engine = this._scene.getEngine();
+        const eventPrefix = Tools.GetPointerPrefix(engine);
 
         if (!canvas) {
             return;
