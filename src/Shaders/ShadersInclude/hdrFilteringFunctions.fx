@@ -1,8 +1,5 @@
-#if defined(WEBGL2) && defined(NUM_SAMPLES)
-	#if NUM_SAMPLES > 0u
-		uniform vec2 vFilteringInfo;
-		uniform float linearRoughness;
-
+#ifdef NUM_SAMPLES
+	#if NUM_SAMPLES > 0
 		const float NUM_SAMPLES_FLOAT = float(NUM_SAMPLES);
 		const float NUM_SAMPLES_FLOAT_INVERSED = 1. / NUM_SAMPLES_FLOAT;
 
@@ -124,18 +121,23 @@
 		//
 		//
 
-		vec3 irradiance(samplerCube inputTexture, vec3 n) {
+		vec3 irradiance(samplerCube inputTexture, vec3 N, vec2 filteringInfo) {
+			vec3 n = normalize(N);
 		    vec3 result = vec3(0.0);
 			vec3 tangent = abs(n.z) < 0.999 ? vec3(0., 0., 1.) : vec3(1., 0., 0.);
 			tangent = normalize(cross(tangent, n));
 			vec3 bitangent = cross(n, tangent);
 			mat3 tbn = mat3(tangent, bitangent, n);
 
-		    float maxLevel = vFilteringInfo.y;
-		    float dim0 = vFilteringInfo.x;
+		    float maxLevel = filteringInfo.y;
+		    float dim0 = filteringInfo.x;
 		    float omegaP = (4. * PI) / (6. * dim0 * dim0);
 
+		    #ifdef WEBGL2
 		    for(uint i = 0u; i < NUM_SAMPLES; ++i)
+		    #else
+		    for(int i = 0; i < NUM_SAMPLES; ++i)
+		    #endif
 		    {
 		        vec2 Xi = hammersley(i, NUM_SAMPLES);
 		        vec3 Ls = hemisphereCosSample(Xi);
@@ -166,8 +168,10 @@
 		    return result;
 		}
 
-		vec3 radiance(samplerCube inputTexture, vec3 n) {
-			if (linearRoughness == 0.) {
+		vec3 radiance(float alphaG, samplerCube inputTexture, vec3 N, vec2 filteringInfo) {
+			vec3 n = normalize(N);
+
+			if (alphaG == 0.) {
 				vec3 c = textureCube(inputTexture, n).rgb;
 				#ifdef GAMMA_INPUT
 				    c = toLinearSpace(c);
@@ -181,15 +185,19 @@
 			vec3 bitangent = cross(n, tangent);
 			mat3 tbn = mat3(tangent, bitangent, n);
 
-			float maxLevel = vFilteringInfo.y;
-			float dim0 = vFilteringInfo.x;
+			float maxLevel = filteringInfo.y;
+			float dim0 = filteringInfo.x;
 			float omegaP = (4. * PI) / (6. * dim0 * dim0);
 
 			float weight = 0.;
+			#ifdef WEBGL2
 			for(uint i = 0u; i < NUM_SAMPLES; ++i)
+			#else
+			for(int i = 0; i < NUM_SAMPLES; ++i)
+			#endif
 			{
 			    vec2 Xi = hammersley(i, NUM_SAMPLES);
-			    vec3 H = hemisphereImportanceSampleDggx(Xi, linearRoughness);
+			    vec3 H = hemisphereImportanceSampleDggx(Xi, alphaG);
 
 			    float NoV = 1.;
 			    float NoH = H.z;
@@ -199,7 +207,7 @@
 			    L = normalize(L);
 
 			    if (NoL > 0.) {
-			        float pdf_inversed = 4. / normalDistributionFunction_TrowbridgeReitzGGX(NoH, linearRoughness);
+			        float pdf_inversed = 4. / normalDistributionFunction_TrowbridgeReitzGGX(NoH, alphaG);
 
 			        float omegaS = NUM_SAMPLES_FLOAT_INVERSED * pdf_inversed;
 			        float l = log4(omegaS) - log4(omegaP) + log4(K);
