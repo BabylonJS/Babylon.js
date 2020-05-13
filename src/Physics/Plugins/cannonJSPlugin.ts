@@ -22,6 +22,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
     private _cannonRaycastResult: any;
     private _raycastResult: PhysicsRaycastResult;
     private _physicsBodysToRemoveAfterStep = new Array<any>();
+    private _firstFrame = true;
     //See https://github.com/schteppe/CANNON.js/blob/gh-pages/demos/collisionFilter.html
     public BJSCANNON: any;
 
@@ -53,7 +54,14 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         return this._fixedTimeStep;
     }
 
-    public executeStep(delta: number): void {
+    public executeStep(delta: number, impostors: Array<PhysicsImpostor>): void {
+        // due to cannon's architecture, the first frame's before-step is skipped.
+        if (this._firstFrame) {
+            this._firstFrame = false;
+            for (const impostor of impostors) {
+                impostor.beforeStep();
+            }
+        }
         this.world.step(this._useDeltaForWorldStep ? delta : this._fixedTimeStep);
         this._removeMarkedPhysicsBodiesFromWorld();
     }
