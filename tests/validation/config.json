@@ -827,6 +827,12 @@
             "title": "Visibility",
             "playgroundId": "#PXC9CF#2",
             "referenceImage": "visibility.png"
+        },
+        {
+            "title": "GLTF Extension EXT_mesh_gpu_instancing",
+            "playgroundId": "#QFIGLW#9",
+            "renderCount": 50,
+            "referenceImage": "gltfExtensionExtMeshGpuInstancingTest.png"
         }
     ]
 }
