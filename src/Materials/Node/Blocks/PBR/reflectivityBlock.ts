@@ -113,13 +113,14 @@ export class ReflectivityBlock extends NodeMaterialBlock {
 
         // note: metallic F0 factor = 0.04
         let code = `vec3 baseColor = surfaceAlbedo;
+            vec4 metallicReflectanceFactors = vec4(1.);
             reflectivityOutParams reflectivityOut;
 
             reflectivityBlock(
                 vec4(${this.metallic.associatedVariableName}, ${this.roughness.associatedVariableName}, 0., 0.),
             #ifdef METALLICWORKFLOW
                 surfaceAlbedo,
-                vec4(1.),
+                metallicReflectanceFactors,
             #endif
             #ifdef REFLECTIVITY
                 vec3(0., 0., ${aoIntensityVarName}),
