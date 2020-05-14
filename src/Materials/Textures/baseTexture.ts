@@ -329,6 +329,9 @@ export class BaseTexture implements IAnimatable {
         return this._uid;
     }
 
+    /** @hidden */
+    public _prefiltered: boolean = false;
+
     /**
      * Return a string representation of the texture.
      * @returns the texture as a string

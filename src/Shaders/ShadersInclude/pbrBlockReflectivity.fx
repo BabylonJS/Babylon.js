@@ -25,7 +25,7 @@ void reflectivityBlock(
     const in vec4 metallicReflectanceFactors,
 #endif
 #ifdef REFLECTIVITY
-    const in vec3 vReflectivityInfos,
+    const in vec3 reflectivityInfos,
     const in vec4 surfaceMetallicOrReflectivityColorMap,
 #endif
 #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY)  && defined(AOSTOREINMETALMAPRED)
@@ -119,7 +119,7 @@ void reflectivityBlock(
 
             #ifdef MICROSURFACEFROMREFLECTIVITYMAP
                 microSurface *= surfaceMetallicOrReflectivityColorMap.a;
-                microSurface *= vReflectivityInfos.z;
+                microSurface *= reflectivityInfos.z;
             #else
                 #ifdef MICROSURFACEAUTOMATIC
                     microSurface *= computeDefaultMicroSurface(microSurface, surfaceReflectivityColor);

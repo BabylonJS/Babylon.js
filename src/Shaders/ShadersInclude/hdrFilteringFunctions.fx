@@ -121,8 +121,10 @@
 		//
 		//
 
-		vec3 irradiance(samplerCube inputTexture, vec3 N, vec2 filteringInfo) {
-			vec3 n = normalize(N);
+		#define inline
+		vec3 irradiance(samplerCube inputTexture, vec3 inputN, vec2 filteringInfo)
+		{
+			vec3 n = normalize(inputN);
 		    vec3 result = vec3(0.0);
 			vec3 tangent = abs(n.z) < 0.999 ? vec3(0., 0., 1.) : vec3(1., 0., 0.);
 			tangent = normalize(cross(tangent, n));
@@ -168,8 +170,10 @@
 		    return result;
 		}
 
-		vec3 radiance(float alphaG, samplerCube inputTexture, vec3 N, vec2 filteringInfo) {
-			vec3 n = normalize(N);
+		#define inline
+		vec3 radiance(float alphaG, samplerCube inputTexture, vec3 inputN, vec2 filteringInfo)
+		{
+			vec3 n = normalize(inputN);
 
 			if (alphaG == 0.) {
 				vec3 c = textureCube(inputTexture, n).rgb;
