@@ -60768,6 +60768,10 @@ var PreviewManager = /** @class */ (function () {
                         }
                     });
                     tempMaterial_1.createEffectForParticles(this._particleSystem);
+                    if (this._material) {
+                        this._material.dispose();
+                    }
+                    this._material = tempMaterial_1;
                     break;
                 }
                 default: {
@@ -61526,7 +61530,9 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["Tools"].ReadFile(file, function (data) {
             var decoder = new TextDecoder("utf-8");
             _serializationTools__WEBPACK_IMPORTED_MODULE_7__["SerializationTools"].Deserialize(JSON.parse(decoder.decode(data)), _this.props.globalState);
-            _this.changeMode(_this.props.globalState.nodeMaterial.mode, true, false);
+            if (!_this.changeMode(_this.props.globalState.nodeMaterial.mode, true, false)) {
+                _this.props.globalState.onResetRequiredObservable.notifyObservers();
+            }
             _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         }, undefined, true);
     };
@@ -61598,8 +61604,9 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterial"].ParseFromSnippetAsync(snippedID, scene, "", material).then(function () {
             material.build();
-            _this.changeMode(_this.props.globalState.nodeMaterial.mode, true, false);
-            _this.props.globalState.onResetRequiredObservable.notifyObservers();
+            if (!_this.changeMode(_this.props.globalState.nodeMaterial.mode, true, false)) {
+                _this.props.globalState.onResetRequiredObservable.notifyObservers();
+            }
         }).catch(function (err) {
             alert("Unable to load your node material: " + err);
         });
@@ -61609,11 +61616,11 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         if (loadDefault === void 0) { loadDefault = true; }
         var _a, _b;
         if (this.props.globalState.mode === value) {
-            return;
+            return false;
         }
         if (!force && !confirm('Are your sure? You will lose your current changes (if any) if they are not saved!')) {
             (_a = this._modeSelect.current) === null || _a === void 0 ? void 0 : _a.setValue(this.props.globalState.mode);
-            return;
+            return false;
         }
         if (force) {
             (_b = this._modeSelect.current) === null || _b === void 0 ? void 0 : _b.setValue(value);
@@ -61621,23 +61628,30 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         if (loadDefault) {
             switch (value) {
                 case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].Material:
-                    this.props.globalState.previewType = _preview_previewType__WEBPACK_IMPORTED_MODULE_25__["PreviewType"].Sphere;
                     this.props.globalState.nodeMaterial.setToDefault();
                     break;
                 case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].PostProcess:
                     this.props.globalState.nodeMaterial.setToDefaultPostProcess();
                     break;
                 case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].Particle:
-                    this.props.globalState.previewType = _preview_previewType__WEBPACK_IMPORTED_MODULE_25__["PreviewType"].Bubbles;
                     this.props.globalState.nodeMaterial.setToDefaultParticle();
                     break;
             }
-            this.props.globalState.listOfCustomPreviewFiles = [];
-            this.props.globalState.previewFile = undefined;
-            babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].WriteNumber("PreviewType", this.props.globalState.previewType);
         }
+        switch (value) {
+            case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].Material:
+                this.props.globalState.previewType = _preview_previewType__WEBPACK_IMPORTED_MODULE_25__["PreviewType"].Sphere;
+                break;
+            case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].Particle:
+                this.props.globalState.previewType = _preview_previewType__WEBPACK_IMPORTED_MODULE_25__["PreviewType"].Bubbles;
+                break;
+        }
+        this.props.globalState.listOfCustomPreviewFiles = [];
+        this.props.globalState.previewFile = undefined;
+        babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].WriteNumber("PreviewType", this.props.globalState.previewType);
         this.props.globalState.mode = value;
         this.props.globalState.onResetRequiredObservable.notifyObservers();
+        return true;
     };
     PropertyTabComponent.prototype.render = function () {
         var _this = this;
@@ -67430,6 +67444,7 @@ var NodeEditor = /** @class */ (function () {
         if (options.customLoadObservable) {
             options.customLoadObservable.add(function (data) {
                 _serializationTools__WEBPACK_IMPORTED_MODULE_5__["SerializationTools"].Deserialize(data, globalState);
+                globalState.onResetRequiredObservable.notifyObservers();
                 globalState.onBuiltObservable.notifyObservers();
             });
         }
@@ -67539,8 +67554,6 @@ var SerializationTools = /** @class */ (function () {
     SerializationTools.Deserialize = function (serializationObject, globalState) {
         globalState.onIsLoadingChanged.notifyObservers(true);
         globalState.nodeMaterial.loadFromSerialization(serializationObject, "");
-        globalState.mode = globalState.nodeMaterial.mode;
-        globalState.onResetRequiredObservable.notifyObservers();
     };
     return SerializationTools;
 }());

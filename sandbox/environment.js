@@ -23,6 +23,13 @@ var readLocaStorageValue = function(key, defautlValue) {
 
 var defaultSkyboxIndex = readLocaStorageValue("defaultSkyboxId", 0);
 
+function loadSkyboxPathTexture(path, scene) {
+    if (path.indexOf(".hdr") === (path.length - 4)) {
+        return new BABYLON.HDRCubeTexture(path, scene, 256, false, true, false, true);
+    }
+    return BABYLON.CubeTexture.CreateFromPrefilteredData(path, scene);
+}
+
 function displayDropdownContentEnv(display) {
     if (display) {
         dropdownContentEnv.classList.remove("hidden");
@@ -57,7 +64,7 @@ addEnvironmentLoader = function(index) {
         }
         else {
             var currentScene = BABYLON.Engine.LastCreatedScene;
-            currentScene.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(skyboxPath, currentScene);
+            currentScene.environmentTexture = loadSkyboxPathTexture(skyboxPath, currentScene);
             for (var i = 0; i < currentScene.materials.length; i++) {
                 var material = currentScene.materials[i];
                 if (material.name === "skyBox") {

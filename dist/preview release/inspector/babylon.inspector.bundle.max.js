@@ -65269,6 +65269,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/textureLinkLineComponent */ "./components/actionTabs/lines/textureLinkLineComponent.tsx");
 /* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
 /* harmony import */ var _lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../lines/fileButtonLineComponent */ "./components/actionTabs/lines/fileButtonLineComponent.tsx");
+/* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
+
+
 
 
 
@@ -65392,6 +65395,15 @@ var SpriteManagerPropertyGridComponent = /** @class */ (function (_super) {
     SpriteManagerPropertyGridComponent.prototype.render = function () {
         var _this = this;
         var spriteManager = this.props.spriteManager;
+        var alphaModeOptions = [
+            { label: "Combine", value: babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["Constants"].ALPHA_COMBINE },
+            { label: "One one", value: babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["Constants"].ALPHA_ONEONE },
+            { label: "Add", value: babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["Constants"].ALPHA_ADD },
+            { label: "Subtract", value: babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["Constants"].ALPHA_SUBTRACT },
+            { label: "Multiply", value: babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["Constants"].ALPHA_MULTIPLY },
+            { label: "Maximized", value: babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["Constants"].ALPHA_MAXIMIZED },
+            { label: "Pre-multiplied", value: babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["Constants"].ALPHA_PREMULTIPLIED },
+        ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Name", target: spriteManager, propertyName: "name", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -65413,7 +65425,8 @@ var SpriteManagerPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Pickable", target: spriteManager, propertyName: "isPickable", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Fog enabled", target: spriteManager, propertyName: "fogEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "No depth write", target: spriteManager, propertyName: "disableDepthWrite", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_8__["SliderLineComponent"], { label: "Rendering group ID", decimalCount: 0, target: spriteManager, propertyName: "renderingGroupId", minimum: babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["RenderingManager"].MIN_RENDERINGGROUPS, maximum: babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["RenderingManager"].MAX_RENDERINGGROUPS - 1, step: 1, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_8__["SliderLineComponent"], { label: "Rendering group ID", decimalCount: 0, target: spriteManager, propertyName: "renderingGroupId", minimum: babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["RenderingManager"].MIN_RENDERINGGROUPS, maximum: babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["RenderingManager"].MAX_RENDERINGGROUPS - 1, step: 1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_12__["OptionsLineComponent"], { label: "Alpha mode", options: alphaModeOptions, target: spriteManager, propertyName: "blendMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ blendMode: value }); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "DEFAULT SIZE" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { label: "Cell width", isInteger: true, target: spriteManager, propertyName: "cellWidth", min: 0, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { label: "Cell height", isInteger: true, target: spriteManager, propertyName: "cellHeight", min: 0, onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
@@ -66176,7 +66189,7 @@ var ToolsTabComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Export to GLB", onClick: function () { return _this.exportGLTF(); } }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Export to Babylon", onClick: function () { return _this.exportBabylon(); } }),
-                        !scene.getEngine().premultipliedAlpha && scene.environmentTexture && scene.environmentTexture.isPrefiltered && scene.activeCamera &&
+                        !scene.getEngine().premultipliedAlpha && scene.environmentTexture && scene.environmentTexture._prefiltered && scene.activeCamera &&
                             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Generate .env texture", onClick: function () { return _this.createEnvTexture(); } }))),
             BABYLON.GLTFFileLoader &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tools_gltfComponent__WEBPACK_IMPORTED_MODULE_6__["GLTFComponent"], { scene: scene, globalState: this.props.globalState })));

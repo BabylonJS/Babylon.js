@@ -1341,7 +1341,7 @@ declare module NODEEDITOR {
         customSave(): void;
         saveToSnippetServer(): void;
         loadFromSnippet(): void;
-        changeMode(value: any, force?: boolean, loadDefault?: boolean): void;
+        changeMode(value: any, force?: boolean, loadDefault?: boolean): boolean;
         render(): JSX.Element;
     }
 }

@@ -7753,8 +7753,6 @@ declare module BABYLON {
         private _textureMatrix;
         private _format;
         private _createPolynomials;
-        /** @hidden */
-        _prefiltered: boolean;
         /**
          * Creates a cube texture from an array of image urls
          * @param files defines an array of image urls
@@ -7791,10 +7789,6 @@ declare module BABYLON {
          * @return the cube texture
          */
         constructor(rootUrl: string, sceneOrEngine: Scene | ThinEngine, extensions?: Nullable<string[]>, noMipmap?: boolean, files?: Nullable<string[]>, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, prefiltered?: boolean, forcedExtension?: any, createPolynomials?: boolean, lodScale?: number, lodOffset?: number);
-        /**
-         * Gets a boolean indicating if the cube texture contains prefiltered mips (used to simulate roughness with PBR)
-         */
-        get isPrefiltered(): boolean;
         /**
          * Get the current class name of the texture useful for serialization or dynamic coding.
          * @returns "CubeTexture"
@@ -22178,6 +22172,12 @@ declare module BABYLON {
          * @returns the post process created
          */
         createPostProcess(camera: Nullable<Camera>, options?: number | PostProcessOptions, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, textureFormat?: number): PostProcess;
+        /**
+         * Create the post process effect from the material
+         * @param postProcess The post process to create the effect for
+         */
+        createEffectForPostProcess(postProcess: PostProcess): void;
+        private _createEffectOrPostProcess;
         private _createEffectForParticles;
         /**
          * Create the effect to be used as the custom effect for a particle system
@@ -32791,6 +32791,8 @@ declare module BABYLON {
          * Define the unique id of the texture in the scene.
          */
         get uid(): string;
+        /** @hidden */
+        _prefiltered: boolean;
         /**
          * Return a string representation of the texture.
          * @returns the texture as a string
@@ -50995,6 +50997,29 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    export class ShaderCodeInliner {
+        static readonly InlineToken: string;
+        static readonly RegexpFindFunctionNameAndType: RegExp;
+        private _sourceCode;
+        private _functionDescr;
+        private _numMaxIterations;
+        debug: boolean;
+        get code(): string;
+        constructor(sourceCode: string, numMaxIterations?: number);
+        processCode(): void;
+        private _collectFunctions;
+        private _processInlining;
+        private _extractBetweenMarkers;
+        private _skipWhitespaces;
+        private _removeComments;
+        private _replaceFunctionCallsByCode;
+        private _findBackward;
+        private _escapeRegExp;
+        private _replaceNames;
+    }
+}
+declare module BABYLON {
     /**
      * Container for accessors for natively-stored mesh data buffers.
      */
@@ -58718,12 +58743,13 @@ declare module BABYLON {
         private _cannonRaycastResult;
         private _raycastResult;
         private _physicsBodysToRemoveAfterStep;
+        private _firstFrame;
         BJSCANNON: any;
         constructor(_useDeltaForWorldStep?: boolean, iterations?: number, cannonInjection?: any);
         setGravity(gravity: Vector3): void;
         setTimeStep(timeStep: number): void;
         getTimeStep(): number;
-        executeStep(delta: number): void;
+        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
         private _removeMarkedPhysicsBodiesFromWorld;
         applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
         applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
@@ -72819,29 +72845,6 @@ declare module BABYLON {
          * @returns This path cursor
          */
         onchange(f: (cursor: PathCursor) => void): PathCursor;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export class ShaderCodeInliner {
-        static readonly InlineToken: string;
-        static readonly RegexpFindFunctionNameAndType: RegExp;
-        private _sourceCode;
-        private _functionDescr;
-        private _numMaxIterations;
-        debug: boolean;
-        get code(): string;
-        constructor(sourceCode: string, numMaxIterations?: number);
-        processCode(): void;
-        private _collectFunctions;
-        private _processInlining;
-        private _extractBetweenMarkers;
-        private _skipWhitespaces;
-        private _removeComments;
-        private _replaceFunctionCallsByCode;
-        private _findBackward;
-        private _escapeRegExp;
-        private _replaceNames;
     }
 }
 declare module BABYLON {
