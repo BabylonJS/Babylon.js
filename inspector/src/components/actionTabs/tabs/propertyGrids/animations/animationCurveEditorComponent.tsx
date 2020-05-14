@@ -28,13 +28,13 @@ interface IAnimationCurveEditorComponentProps {
 
 interface ICanvasAxis {
     value: number;
+    label: number;
 }
 
-export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, { animations: Animation[], animationName: string, animationType: string, animationTargetProperty: string, isOpen: boolean, selected: Animation, currentPathData: string | undefined, svgKeyframes: IKeyframeSvgPoint[] | undefined, currentFrame: number, currentValue: number, frameAxisLength: ICanvasAxis[], flatTangent: boolean }> {
+export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, { animations: Animation[], animationName: string, animationType: string, animationTargetProperty: string, isOpen: boolean, selected: Animation, currentPathData: string | undefined, svgKeyframes: IKeyframeSvgPoint[] | undefined, currentFrame: number, currentValue: number, frameAxisLength: ICanvasAxis[], valueAxisLength: ICanvasAxis[], flatTangent: boolean, scale: number, playheadOffset: number }> {
 
-    readonly _heightScale: number = 100;
+    private _heightScale: number = 100;
     readonly _canvasLength: number = 20;
-    private _playheadOffset: number = 0;
     private _newAnimations: Animation[] = [];
     private _svgKeyframes: IKeyframeSvgPoint[] = [];
     private _frames: Vector2[] = [];
@@ -43,6 +43,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     constructor(props: IAnimationCurveEditorComponentProps) {
         super(props);
         this._graphCanvas = React.createRef();
+        let valueInd = [5,4,3,2,1,0,-1,-2,-3,-4]; // will update this until we have a top scroll/zoom feature
         this.state = {
             animations: this._newAnimations,
             selected: this.props.animations[0],
@@ -55,14 +56,50 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             currentFrame: 0,
             currentValue: 1,
             flatTangent: false,
-            frameAxisLength: (new Array(this._canvasLength)).fill(0).map((s, i) => { return { value: i * 10 } })
+            playheadOffset: this._graphCanvas.current ? (this._graphCanvas.current.children[1].clientWidth) / (this._canvasLength * 10) : 0,
+            frameAxisLength: (new Array(this._canvasLength)).fill(0).map((s, i) => { return { value: i * 10, label: i * 10 } }),
+            valueAxisLength: (new Array(10)).fill(0).map((s, i) => { return { value: i * 10, label:  valueInd[i]} }),
+            scale: 1
         }
     }
 
-    componentDidMount() {
-        if (this._graphCanvas.current) {
-            this._playheadOffset = (this._graphCanvas.current.children[1].clientWidth) / (this._canvasLength * 10)
+    componentDidMount(){
+       setTimeout(() => this.resetPlayheadOffset(), 500);
+    }
+
+    resetPlayheadOffset() {
+        if (this._graphCanvas && this._graphCanvas.current) {
+            this.setState({ playheadOffset: (this._graphCanvas.current.children[1].clientWidth) / (this._canvasLength * 10 * this.state.scale)});
         }
+    }
+
+    setAxesLength() {
+        
+        let length = Math.round(this._canvasLength * this.state.scale);
+
+        if (length < (this.state.selected.getHighestFrame() * 2) /10){
+            length = (this.state.selected.getHighestFrame() * 2) /10
+        }
+
+        let valueLines = Math.round((this.state.scale * this._heightScale)/ 10);
+        let newFrameLength = (new Array(length)).fill(0).map((s, i) => { return { value: i * 10, label: i * 10 } });
+        let newValueLength = (new Array(valueLines)).fill(0).map((s, i) => { return { value: i * 10, label: this.getValueLabel(i*10) } });
+        this.setState({frameAxisLength: newFrameLength, valueAxisLength: newValueLength});
+        this.resetPlayheadOffset();
+
+    }
+
+    getValueLabel(i: number){
+        // Need to update this when Y axis grows
+        let label = 0;
+        if (i === 50){
+            label = 0
+        } else if (i > 50){
+            label = 5 - (i/10)
+        } else if (i < 50){
+            label = 5 - (i/10);
+        }
+        return label;
     }
 
     handleNameChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -604,6 +641,20 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         ;
     }
 
+    zoom(e: React.WheelEvent<HTMLDivElement>){
+        e.nativeEvent.stopImmediatePropagation();
+        console.log(e.deltaY);
+        let scaleX = 1;
+        if (Math.sign(e.deltaY) === -1){
+            scaleX = (this.state.scale - 0.01);
+        } else {
+            scaleX = (this.state.scale + 0.01);
+        }
+       
+        this.setState({scale: scaleX}, this.setAxesLength);
+
+    }
+
     render() {
         return (
             <div id="animation-curve-editor">
@@ -654,42 +705,28 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                                 </ul>
                             </div>
                         </div>
-                        <div ref={this._graphCanvas} className="graph-chart">
+                        <div ref={this._graphCanvas} className="graph-chart" onWheel={(e) => this.zoom(e)} >
 
-                            <Playhead frame={this.state.currentFrame} offset={this._playheadOffset} />
+                            <Playhead frame={this.state.currentFrame} offset={this.state.playheadOffset} />
 
-                            {this.state.svgKeyframes && <SvgDraggableArea keyframeSvgPoints={this.state.svgKeyframes} updatePosition={(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number) => this.renderPoints(updatedSvgKeyFrame, index)}>
+                            {this.state.svgKeyframes && <SvgDraggableArea viewBoxScale={this.state.frameAxisLength.length} scale={this.state.scale} keyframeSvgPoints={this.state.svgKeyframes} updatePosition={(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number) => this.renderPoints(updatedSvgKeyFrame, index)}>
 
                                 {/* Frame Labels  */}
                                 { /* Vertical Grid  */}
                                 {this.state.frameAxisLength.map((f, i) =>
                                     <svg key={i}>
-                                        <text x={f.value} y="0" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>{f.value}</text>
-                                        <line x1={f.value} y1="0" x2={f.value} y2="100"></line>
+                                        <text x={f.value} y="-2" dx="-1em" style={{ font: 'italic 0.2em sans-serif', fontSize: `${0.2 * this.state.scale}em` }}>{f.value}</text>
+                                        <line x1={f.value} y1="0" x2={f.value} y2="100%"></line>
                                     </svg>
                                 )}
 
-                                { /* Value Labels  */}
-                                <text x="0" y="10" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>1.8</text>
-                                <text x="0" y="20" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>1.6</text>
-                                <text x="0" y="30" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>1.4</text>
-                                <text x="0" y="40" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>1.2</text>
-                                <text x="0" y="50" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>1</text>
-                                <text x="0" y="60" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>0.8</text>
-                                <text x="0" y="70" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>0.6</text>
-                                <text x="0" y="80" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>0.4</text>
-                                <text x="0" y="90" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>0.2</text>
+                                {this.state.valueAxisLength.map((f, i) => {  
+                                    return <svg key={i}>
+                                        <text x="-3" y={ f.value } dx="-1em" style={{ font: 'italic 0.2em sans-serif', fontSize: `${0.2 * this.state.scale}em` }}>{f.label}</text>
+                                        <line x1="0" y1={f.value} x2="100%" y2={f.value}></line>
+                                    </svg>
 
-                                { /* Horizontal Grid  */}
-                                <line x1="0" y1="10" x2="1000" y2="10"></line>
-                                <line x1="0" y1="20" x2="1000" y2="20"></line>
-                                <line x1="0" y1="30" x2="1000" y2="30"></line>
-                                <line x1="0" y1="40" x2="1000" y2="40"></line>
-                                <line x1="0" y1="50" x2="1000" y2="50"></line>
-                                <line x1="0" y1="60" x2="1000" y2="60"></line>
-                                <line x1="0" y1="70" x2="1000" y2="70"></line>
-                                <line x1="0" y1="80" x2="1000" y2="80"></line>
-                                <line x1="0" y1="90" x2="1000" y2="90"></line>
+                                })}
 
                                 { /* Single Curve -Modify this for multiple selection and view  */}
                                 <path id="curve" d={this.state.currentPathData} style={{ stroke: 'red', fill: 'none', strokeWidth: '0.5' }}></path>
