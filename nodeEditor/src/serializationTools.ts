@@ -41,8 +41,5 @@ export class SerializationTools {
     public static Deserialize(serializationObject: any, globalState: GlobalState) {
         globalState.onIsLoadingChanged.notifyObservers(true);
         globalState.nodeMaterial!.loadFromSerialization(serializationObject, "");
-        globalState.mode = globalState.nodeMaterial!.mode;
-
-        globalState.onResetRequiredObservable.notifyObservers();
     }
 }
