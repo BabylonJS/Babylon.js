@@ -947,10 +947,26 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/textureHelper" {
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
+    export enum TextureChannelToDisplay {
+        R = 0,
+        G = 1,
+        B = 2,
+        A = 3,
+        All = 4
+    }
+    export class TextureHelper {
+        private static _ProcessAsync;
+        static GetTextureDataAsync(texture: BaseTexture, width: number, height: number, face: number, channel: TextureChannelToDisplay, globalState?: GlobalState): Promise<Uint8Array>;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/lines/textureLineComponent" {
     import * as React from "react";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { TextureChannelToDisplay } from "babylonjs-inspector/textureHelper";
     interface ITextureLineComponentProps {
         texture: BaseTexture;
         width: number;
@@ -958,21 +974,14 @@ declare module "babylonjs-inspector/components/actionTabs/lines/textureLineCompo
         globalState?: GlobalState;
         hideChannelSelect?: boolean;
     }
-    enum ChannelToDisplay {
-        R = 0,
-        G = 1,
-        B = 2,
-        A = 3,
-        All = 4
-    }
     export class TextureLineComponent extends React.Component<ITextureLineComponentProps, {
-        channel: ChannelToDisplay;
+        channel: TextureChannelToDisplay;
         face: number;
     }> {
         private canvasRef;
         constructor(props: ITextureLineComponentProps);
         shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: {
-            channel: ChannelToDisplay;
+            channel: TextureChannelToDisplay;
             face: number;
         }): boolean;
         componentDidMount(): void;
@@ -2351,9 +2360,14 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/spr
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteManagerPropertyGridComponentProps> {
+        private _snippetUrl;
         constructor(props: ISpriteManagerPropertyGridComponentProps);
         addNewSprite(): void;
         disposeManager(): void;
+        saveToFile(): void;
+        loadFromFile(file: File): void;
+        loadFromSnippet(): void;
+        saveToSnippet(): void;
         render(): JSX.Element;
     }
 }
@@ -2372,10 +2386,16 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/spr
         onSelectionChangedObservable?: Observable<any>;
     }
     export class SpritePropertyGridComponent extends React.Component<ISpritePropertyGridComponentProps> {
+        private canvasRef;
+        private imageData;
+        private cachedCellIndex;
         constructor(props: ISpritePropertyGridComponentProps);
         onManagerLink(): void;
         switchPlayStopState(): void;
         disposeSprite(): void;
+        componentDidMount(): void;
+        componentDidUpdate(): void;
+        updatePreview(): void;
         render(): JSX.Element;
     }
 }
@@ -3910,6 +3930,19 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export enum TextureChannelToDisplay {
+        R = 0,
+        G = 1,
+        B = 2,
+        A = 3,
+        All = 4
+    }
+    export class TextureHelper {
+        private static _ProcessAsync;
+        static GetTextureDataAsync(texture: BABYLON.BaseTexture, width: number, height: number, face: number, channel: TextureChannelToDisplay, globalState?: GlobalState): Promise<Uint8Array>;
+    }
+}
+declare module INSPECTOR {
     interface ITextureLineComponentProps {
         texture: BABYLON.BaseTexture;
         width: number;
@@ -3917,21 +3950,14 @@ declare module INSPECTOR {
         globalState?: GlobalState;
         hideChannelSelect?: boolean;
     }
-    enum ChannelToDisplay {
-        R = 0,
-        G = 1,
-        B = 2,
-        A = 3,
-        All = 4
-    }
     export class TextureLineComponent extends React.Component<ITextureLineComponentProps, {
-        channel: ChannelToDisplay;
+        channel: TextureChannelToDisplay;
         face: number;
     }> {
         private canvasRef;
         constructor(props: ITextureLineComponentProps);
         shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: {
-            channel: ChannelToDisplay;
+            channel: TextureChannelToDisplay;
             face: number;
         }): boolean;
         componentDidMount(): void;
@@ -4934,9 +4960,14 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteManagerPropertyGridComponentProps> {
+        private _snippetUrl;
         constructor(props: ISpriteManagerPropertyGridComponentProps);
         addNewSprite(): void;
         disposeManager(): void;
+        saveToFile(): void;
+        loadFromFile(file: File): void;
+        loadFromSnippet(): void;
+        saveToSnippet(): void;
         render(): JSX.Element;
     }
 }
@@ -4949,10 +4980,16 @@ declare module INSPECTOR {
         onSelectionChangedObservable?: BABYLON.Observable<any>;
     }
     export class SpritePropertyGridComponent extends React.Component<ISpritePropertyGridComponentProps> {
+        private canvasRef;
+        private imageData;
+        private cachedCellIndex;
         constructor(props: ISpritePropertyGridComponentProps);
         onManagerLink(): void;
         switchPlayStopState(): void;
         disposeSprite(): void;
+        componentDidMount(): void;
+        componentDidUpdate(): void;
+        updatePreview(): void;
         render(): JSX.Element;
     }
 }
