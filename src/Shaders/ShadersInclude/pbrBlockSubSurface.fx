@@ -25,6 +25,7 @@ struct subSurfaceOutParams
 };
 
 #ifdef SUBSURFACE
+    #define pbr_inline
     #define inline
     void subSurfaceBlock(
         const in vec3 vSubSurfaceIntensity,
