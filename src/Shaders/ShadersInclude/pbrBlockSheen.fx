@@ -19,6 +19,7 @@
     #endif
     };
 
+    #define pbr_inline
     #define inline
     void sheenBlock(
         const in vec4 vSheenColor,
