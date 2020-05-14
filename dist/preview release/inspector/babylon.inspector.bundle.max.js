@@ -6152,7 +6152,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../../../../node_mod
 
 
 // module
-exports.push([module.i, "#animation-curve-editor .header {\n  display: flex;\n  padding: 9px;\n  background: black;\n  color: white;\n  height: 1.3em;\n  justify-content: space-between;\n  align-items: center;\n  padding-left: 12px;\n  padding-right: 12px; }\n  #animation-curve-editor .header .title {\n    text-transform: uppercase; }\n  #animation-curve-editor .header .close {\n    grid-column: 2;\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n\n#animation-curve-editor .actions-wrapper {\n  display: flex;\n  flex-direction: row;\n  justify-content: flex-end;\n  align-items: flex-end;\n  padding: 6px; }\n  #animation-curve-editor .actions-wrapper .action-input {\n    display: flex;\n    justify-content: center;\n    flex-direction: row;\n    align-items: center; }\n    #animation-curve-editor .actions-wrapper .action-input label {\n      margin-right: 0.5em; }\n    #animation-curve-editor .actions-wrapper .action-input input {\n      width: 4em;\n      height: 2em; }\n\n#animation-curve-editor .content {\n  display: flex;\n  align-items: flex-start;\n  justify-content: flex-start;\n  flex-direction: column; }\n  #animation-curve-editor .content .row {\n    display: flex;\n    align-items: stretch;\n    justify-content: flex-start;\n    flex-direction: row;\n    width: 100vw;\n    height: 78.5vh; }\n    #animation-curve-editor .content .row .timeline {\n      width: 100vw;\n      background: gray;\n      display: flex;\n      align-items: center;\n      justify-content: stretch;\n      height: 2.5rem; }\n      #animation-curve-editor .content .row .timeline .display-line {\n        width: 80vw;\n        height: 2em;\n        overflow: hidden;\n        overflow-x: scroll;\n        scrollbar-color: cornflowerblue slategrey;\n        scrollbar-width: thin;\n        margin-right: 1.3em;\n        padding-left: 1em;\n        padding-right: 1em; }\n        #animation-curve-editor .content .row .timeline .display-line::-webkit-scrollbar {\n          height: 0.4em; }\n        #animation-curve-editor .content .row .timeline .display-line::-webkit-scrollbar-track {\n          box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3); }\n        #animation-curve-editor .content .row .timeline .display-line::-webkit-scrollbar-thumb {\n          background-color: cornflowerblue;\n          outline: 1px solid slategrey; }\n      #animation-curve-editor .content .row .timeline .controls {\n        display: flex;\n        justify-content: center;\n        align-items: center;\n        width: 8em; }\n        #animation-curve-editor .content .row .timeline .controls .input-frame input {\n          width: 3em; }\n        #animation-curve-editor .content .row .timeline .controls .button {\n          margin-left: 0.5em;\n          margin-right: 0.5em; }\n  #animation-curve-editor .content .animation-list {\n    padding: 1.5rem;\n    background: #575656;\n    color: white; }\n    #animation-curve-editor .content .animation-list ul {\n      list-style: none;\n      padding-left: 0px; }\n      #animation-curve-editor .content .animation-list ul li {\n        cursor: pointer; }\n        #animation-curve-editor .content .animation-list ul li:before {\n          content: '';\n          display: inline-block;\n          height: 1em;\n          width: 1em;\n          background-size: contain;\n          background-repeat: no-repeat;\n          margin-right: 0.5em;\n          background-image: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"true\" focusable=\"false\" data-prefix=\"far\" data-icon=\"circle\" class=\"svg-inline--fa fa-circle fa-w-16\" role=\"img\" viewBox=\"0 0 512 512\"><path fill=\"currentColor\" d=\"M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200z\"/></svg>'); }\n    #animation-curve-editor .content .animation-list li.active {\n      cursor: pointer; }\n      #animation-curve-editor .content .animation-list li.active:before {\n        background-image: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"true\" focusable=\"false\" data-prefix=\"fas\" data-icon=\"check-circle\" class=\"svg-inline--fa fa-check-circle fa-w-16\" role=\"img\" viewBox=\"0 0 512 512\"><path fill=\"currentColor\" d=\"M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zM227.314 387.314l184-184c6.248-6.248 6.248-16.379 0-22.627l-22.627-22.627c-6.248-6.249-16.379-6.249-22.628 0L216 308.118l-70.059-70.059c-6.248-6.248-16.379-6.248-22.628 0l-22.627 22.627c-6.248 6.248-6.248 16.379 0 22.627l104 104c6.249 6.249 16.379 6.249 22.628.001z\"/></svg>'); }\n    #animation-curve-editor .content .animation-list .object-tree {\n      background-color: rgba(0, 0, 0, 0.3);\n      padding: 10px;\n      margin-top: 19px;\n      height: 15em; }\n    #animation-curve-editor .content .animation-list .label-input {\n      display: grid;\n      height: 54px;\n      place-items: center stretch;\n      color: white; }\n  #animation-curve-editor .content .sample-chart .linear .draggable {\n    cursor: move; }\n  #animation-curve-editor .content .graph-chart {\n    flex: 1 1 0%;\n    overflow-x: scroll;\n    padding-left: 32px;\n    overflow-y: scroll;\n    scroll-behavior: smooth;\n    background-color: #444444; }\n    #animation-curve-editor .content .graph-chart .linear {\n      height: 360px;\n      overflow: visible;\n      border: 0px solid lightgrey; }\n      #animation-curve-editor .content .graph-chart .linear svg {\n        overflow: visible; }\n      #animation-curve-editor .content .graph-chart .linear:focus {\n        outline-color: transparent; }\n      #animation-curve-editor .content .graph-chart .linear line {\n        stroke: #cecece;\n        stroke-width: 0.2; }\n      #animation-curve-editor .content .graph-chart .linear text {\n        fill: #cecece; }\n    #animation-curve-editor .content .graph-chart .playhead-wrapper {\n      position: relative;\n      left: -13px; }\n    #animation-curve-editor .content .graph-chart .playhead {\n      width: fit-content;\n      background-color: #ffc60e;\n      color: black;\n      text-align: center;\n      min-width: 2em;\n      justify-content: center;\n      display: flex;\n      padding: 0.1em;\n      font-size: 0.75em; }\n    #animation-curve-editor .content .graph-chart .playhead-triangle {\n      background-color: transparent;\n      width: 0px;\n      height: 0px;\n      border-left: 13.5px solid transparent;\n      border-right: 13.5px solid transparent;\n      border-top: 12px solid #ffc60e; }\n    #animation-curve-editor .content .graph-chart .playhead-line {\n      width: 2px;\n      height: calc(90vh - 100px);\n      background-color: #ffc60e;\n      position: absolute;\n      margin-left: 12.5px; }\n\n#animation-curve-editor .buttonLine {\n  height: 30px;\n  display: grid;\n  align-items: center;\n  justify-items: stretch; }\n  #animation-curve-editor .buttonLine input[type=\"file\"] {\n    display: none; }\n  #animation-curve-editor .buttonLine .file-upload {\n    background: #222222;\n    border: 1px solid #337ab7;\n    margin: 5px 10px 5px 10px;\n    color: white;\n    padding: 4px 5px;\n    opacity: 0.9;\n    cursor: pointer;\n    text-align: center; }\n  #animation-curve-editor .buttonLine .file-upload:hover {\n    opacity: 1.0; }\n  #animation-curve-editor .buttonLine .file-upload:active {\n    transform: scale(0.98);\n    transform-origin: 0.5 0.5; }\n  #animation-curve-editor .buttonLine button {\n    background: #222222;\n    border: 1px solid #337ab7;\n    margin: 5px 10px 5px 10px;\n    color: white;\n    padding: 4px 5px;\n    opacity: 0.9;\n    cursor: pointer; }\n  #animation-curve-editor .buttonLine button:hover {\n    opacity: 1.0; }\n  #animation-curve-editor .buttonLine button:active {\n    background: #282828; }\n  #animation-curve-editor .buttonLine button:focus {\n    border: 1px solid #337ab7;\n    outline: 0px; }\n", ""]);
+exports.push([module.i, "#animation-curve-editor .header {\n  display: flex;\n  padding: 9px;\n  background: black;\n  color: white;\n  height: 1.3em;\n  justify-content: space-between;\n  align-items: center;\n  padding-left: 12px;\n  padding-right: 12px; }\n  #animation-curve-editor .header .title {\n    text-transform: uppercase; }\n  #animation-curve-editor .header .close {\n    grid-column: 2;\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n\n#animation-curve-editor .actions-wrapper {\n  display: flex;\n  flex-direction: row;\n  justify-content: flex-end;\n  align-items: flex-end;\n  padding: 6px; }\n  #animation-curve-editor .actions-wrapper .action-input {\n    display: flex;\n    justify-content: center;\n    flex-direction: row;\n    align-items: center; }\n    #animation-curve-editor .actions-wrapper .action-input label {\n      margin-right: 0.5em; }\n    #animation-curve-editor .actions-wrapper .action-input input {\n      width: 4em;\n      height: 2em; }\n\n#animation-curve-editor .content {\n  display: flex;\n  align-items: flex-start;\n  justify-content: flex-start;\n  flex-direction: column; }\n  #animation-curve-editor .content .row {\n    display: flex;\n    align-items: stretch;\n    justify-content: flex-start;\n    flex-direction: row;\n    width: 100vw;\n    height: 78.5vh; }\n    #animation-curve-editor .content .row .timeline {\n      width: 100vw;\n      background: gray;\n      display: flex;\n      align-items: center;\n      justify-content: stretch;\n      height: 2.5rem; }\n      #animation-curve-editor .content .row .timeline .display-line {\n        width: 80vw;\n        height: 2em;\n        overflow: hidden;\n        overflow-x: scroll;\n        scrollbar-color: cornflowerblue slategrey;\n        scrollbar-width: thin;\n        margin-right: 1.3em;\n        padding-left: 1em;\n        padding-right: 1em; }\n        #animation-curve-editor .content .row .timeline .display-line::-webkit-scrollbar {\n          height: 0.4em; }\n        #animation-curve-editor .content .row .timeline .display-line::-webkit-scrollbar-track {\n          box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3); }\n        #animation-curve-editor .content .row .timeline .display-line::-webkit-scrollbar-thumb {\n          background-color: cornflowerblue;\n          outline: 1px solid slategrey; }\n      #animation-curve-editor .content .row .timeline .controls {\n        display: flex;\n        justify-content: center;\n        align-items: center;\n        width: 8em; }\n        #animation-curve-editor .content .row .timeline .controls .input-frame input {\n          width: 3em; }\n        #animation-curve-editor .content .row .timeline .controls .button {\n          margin-left: 0.5em;\n          margin-right: 0.5em; }\n  #animation-curve-editor .content .animation-list {\n    padding: 1.5rem;\n    background: #575656;\n    color: white; }\n    #animation-curve-editor .content .animation-list ul {\n      list-style: none;\n      padding-left: 0px; }\n      #animation-curve-editor .content .animation-list ul li {\n        cursor: pointer; }\n        #animation-curve-editor .content .animation-list ul li:before {\n          content: '';\n          display: inline-block;\n          height: 1em;\n          width: 1em;\n          background-size: contain;\n          background-repeat: no-repeat;\n          margin-right: 0.5em;\n          background-image: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"true\" focusable=\"false\" data-prefix=\"far\" data-icon=\"circle\" class=\"svg-inline--fa fa-circle fa-w-16\" role=\"img\" viewBox=\"0 0 512 512\"><path fill=\"currentColor\" d=\"M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200z\"/></svg>'); }\n    #animation-curve-editor .content .animation-list li.active {\n      cursor: pointer; }\n      #animation-curve-editor .content .animation-list li.active:before {\n        background-image: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"true\" focusable=\"false\" data-prefix=\"fas\" data-icon=\"check-circle\" class=\"svg-inline--fa fa-check-circle fa-w-16\" role=\"img\" viewBox=\"0 0 512 512\"><path fill=\"currentColor\" d=\"M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zM227.314 387.314l184-184c6.248-6.248 6.248-16.379 0-22.627l-22.627-22.627c-6.248-6.249-16.379-6.249-22.628 0L216 308.118l-70.059-70.059c-6.248-6.248-16.379-6.248-22.628 0l-22.627 22.627c-6.248 6.248-6.248 16.379 0 22.627l104 104c6.249 6.249 16.379 6.249 22.628.001z\"/></svg>'); }\n    #animation-curve-editor .content .animation-list .object-tree {\n      background-color: rgba(0, 0, 0, 0.3);\n      padding: 10px;\n      margin-top: 19px;\n      height: 15em; }\n    #animation-curve-editor .content .animation-list .label-input {\n      display: grid;\n      height: 54px;\n      place-items: center stretch;\n      color: white; }\n  #animation-curve-editor .content .sample-chart .linear .draggable {\n    cursor: move; }\n  #animation-curve-editor .content .graph-chart {\n    flex: 1 1 0%;\n    overflow-x: scroll;\n    padding-left: 32px;\n    overflow-y: scroll;\n    scroll-behavior: smooth;\n    background-color: #444444;\n    height: 100%; }\n    #animation-curve-editor .content .graph-chart .linear {\n      overflow: visible;\n      border: 1px solid lightgrey;\n      height: 100%; }\n      #animation-curve-editor .content .graph-chart .linear svg {\n        overflow: visible; }\n      #animation-curve-editor .content .graph-chart .linear:focus {\n        outline-color: transparent; }\n      #animation-curve-editor .content .graph-chart .linear line {\n        stroke: #cecece;\n        stroke-width: 0.2; }\n      #animation-curve-editor .content .graph-chart .linear text {\n        fill: #cecece; }\n    #animation-curve-editor .content .graph-chart .playhead-wrapper {\n      position: relative;\n      left: -13px; }\n    #animation-curve-editor .content .graph-chart .playhead {\n      width: fit-content;\n      background-color: #ffc60e;\n      color: black;\n      text-align: center;\n      min-width: 2em;\n      justify-content: center;\n      display: flex;\n      padding: 0.1em;\n      font-size: 0.75em; }\n    #animation-curve-editor .content .graph-chart .playhead-triangle {\n      background-color: transparent;\n      width: 0px;\n      height: 0px;\n      border-left: 13.5px solid transparent;\n      border-right: 13.5px solid transparent;\n      border-top: 12px solid #ffc60e; }\n    #animation-curve-editor .content .graph-chart .playhead-line {\n      width: 2px;\n      height: calc(90vh - 100px);\n      background-color: #ffc60e;\n      position: absolute;\n      margin-left: 12.5px; }\n\n#animation-curve-editor .buttonLine {\n  height: 30px;\n  display: grid;\n  align-items: center;\n  justify-items: stretch; }\n  #animation-curve-editor .buttonLine input[type=\"file\"] {\n    display: none; }\n  #animation-curve-editor .buttonLine .file-upload {\n    background: #222222;\n    border: 1px solid #337ab7;\n    margin: 5px 10px 5px 10px;\n    color: white;\n    padding: 4px 5px;\n    opacity: 0.9;\n    cursor: pointer;\n    text-align: center; }\n  #animation-curve-editor .buttonLine .file-upload:hover {\n    opacity: 1.0; }\n  #animation-curve-editor .buttonLine .file-upload:active {\n    transform: scale(0.98);\n    transform-origin: 0.5 0.5; }\n  #animation-curve-editor .buttonLine button {\n    background: #222222;\n    border: 1px solid #337ab7;\n    margin: 5px 10px 5px 10px;\n    color: white;\n    padding: 4px 5px;\n    opacity: 0.9;\n    cursor: pointer; }\n  #animation-curve-editor .buttonLine button:hover {\n    opacity: 1.0; }\n  #animation-curve-editor .buttonLine button:active {\n    background: #282828; }\n  #animation-curve-editor .buttonLine button:focus {\n    border: 1px solid #337ab7;\n    outline: 0px; }\n", ""]);
 
 // exports
 
@@ -58535,12 +58535,12 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this._heightScale = 100;
         _this._canvasLength = 20;
-        _this._playheadOffset = 0;
         _this._newAnimations = [];
         _this._svgKeyframes = [];
         _this._frames = [];
         _this._isPlaying = false;
         _this._graphCanvas = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        var valueInd = [5, 4, 3, 2, 1, 0, -1, -2, -3, -4]; // will update this until we have a top scroll/zoom feature
         _this.state = {
             animations: _this._newAnimations,
             selected: _this.props.animations[0],
@@ -58553,14 +58553,47 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
             currentFrame: 0,
             currentValue: 1,
             flatTangent: false,
-            frameAxisLength: (new Array(_this._canvasLength)).fill(0).map(function (s, i) { return { value: i * 10 }; })
+            playheadOffset: _this._graphCanvas.current ? (_this._graphCanvas.current.children[1].clientWidth) / (_this._canvasLength * 10) : 0,
+            frameAxisLength: (new Array(_this._canvasLength)).fill(0).map(function (s, i) { return { value: i * 10, label: i * 10 }; }),
+            valueAxisLength: (new Array(10)).fill(0).map(function (s, i) { return { value: i * 10, label: valueInd[i] }; }),
+            scale: 1
         };
         return _this;
     }
     AnimationCurveEditorComponent.prototype.componentDidMount = function () {
-        if (this._graphCanvas.current) {
-            this._playheadOffset = (this._graphCanvas.current.children[1].clientWidth) / (this._canvasLength * 10);
+        var _this = this;
+        setTimeout(function () { return _this.resetPlayheadOffset(); }, 500);
+    };
+    AnimationCurveEditorComponent.prototype.resetPlayheadOffset = function () {
+        if (this._graphCanvas && this._graphCanvas.current) {
+            this.setState({ playheadOffset: (this._graphCanvas.current.children[1].clientWidth) / (this._canvasLength * 10 * this.state.scale) });
         }
+    };
+    AnimationCurveEditorComponent.prototype.setAxesLength = function () {
+        var _this = this;
+        var length = Math.round(this._canvasLength * this.state.scale);
+        if (length < (this.state.selected.getHighestFrame() * 2) / 10) {
+            length = (this.state.selected.getHighestFrame() * 2) / 10;
+        }
+        var valueLines = Math.round((this.state.scale * this._heightScale) / 10);
+        var newFrameLength = (new Array(length)).fill(0).map(function (s, i) { return { value: i * 10, label: i * 10 }; });
+        var newValueLength = (new Array(valueLines)).fill(0).map(function (s, i) { return { value: i * 10, label: _this.getValueLabel(i * 10) }; });
+        this.setState({ frameAxisLength: newFrameLength, valueAxisLength: newValueLength });
+        this.resetPlayheadOffset();
+    };
+    AnimationCurveEditorComponent.prototype.getValueLabel = function (i) {
+        // Need to update this when Y axis grows
+        var label = 0;
+        if (i === 50) {
+            label = 0;
+        }
+        else if (i > 50) {
+            label = 5 - (i / 10);
+        }
+        else if (i < 50) {
+            label = 5 - (i / 10);
+        }
+        return label;
     };
     AnimationCurveEditorComponent.prototype.handleNameChange = function (event) {
         event.preventDefault();
@@ -58965,6 +58998,18 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         this.setState({ flatTangent: !this.state.flatTangent }, function () { return _this.selectAnimation(_this.state.selected); });
         ;
     };
+    AnimationCurveEditorComponent.prototype.zoom = function (e) {
+        e.nativeEvent.stopImmediatePropagation();
+        console.log(e.deltaY);
+        var scaleX = 1;
+        if (Math.sign(e.deltaY) === -1) {
+            scaleX = (this.state.scale - 0.01);
+        }
+        else {
+            scaleX = (this.state.scale + 0.01);
+        }
+        this.setState({ scale: scaleX }, this.setAxesLength);
+    };
     AnimationCurveEditorComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "animation-curve-editor" },
@@ -58996,32 +59041,19 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
                                     " ",
                                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, animation.targetProperty));
                             })))),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { ref: this._graphCanvas, className: "graph-chart" },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_playhead__WEBPACK_IMPORTED_MODULE_7__["Playhead"], { frame: this.state.currentFrame, offset: this._playheadOffset }),
-                        this.state.svgKeyframes && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_svgDraggableArea__WEBPACK_IMPORTED_MODULE_5__["SvgDraggableArea"], { keyframeSvgPoints: this.state.svgKeyframes, updatePosition: function (updatedSvgKeyFrame, index) { return _this.renderPoints(updatedSvgKeyFrame, index); } },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { ref: this._graphCanvas, className: "graph-chart", onWheel: function (e) { return _this.zoom(e); } },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_playhead__WEBPACK_IMPORTED_MODULE_7__["Playhead"], { frame: this.state.currentFrame, offset: this.state.playheadOffset }),
+                        this.state.svgKeyframes && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_svgDraggableArea__WEBPACK_IMPORTED_MODULE_5__["SvgDraggableArea"], { viewBoxScale: this.state.frameAxisLength.length, scale: this.state.scale, keyframeSvgPoints: this.state.svgKeyframes, updatePosition: function (updatedSvgKeyFrame, index) { return _this.renderPoints(updatedSvgKeyFrame, index); } },
                             this.state.frameAxisLength.map(function (f, i) {
                                 return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { key: i },
-                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { x: f.value, y: "0", dx: "-1em", style: { font: 'italic 0.2em sans-serif' } }, f.value),
-                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: f.value, y1: "0", x2: f.value, y2: "100" }));
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { x: f.value, y: "-2", dx: "-1em", style: { font: 'italic 0.2em sans-serif', fontSize: 0.2 * _this.state.scale + "em" } }, f.value),
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: f.value, y1: "0", x2: f.value, y2: "100%" }));
                             }),
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { x: "0", y: "10", dx: "-1em", style: { font: 'italic 0.2em sans-serif' } }, "1.8"),
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { x: "0", y: "20", dx: "-1em", style: { font: 'italic 0.2em sans-serif' } }, "1.6"),
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { x: "0", y: "30", dx: "-1em", style: { font: 'italic 0.2em sans-serif' } }, "1.4"),
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { x: "0", y: "40", dx: "-1em", style: { font: 'italic 0.2em sans-serif' } }, "1.2"),
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { x: "0", y: "50", dx: "-1em", style: { font: 'italic 0.2em sans-serif' } }, "1"),
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { x: "0", y: "60", dx: "-1em", style: { font: 'italic 0.2em sans-serif' } }, "0.8"),
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { x: "0", y: "70", dx: "-1em", style: { font: 'italic 0.2em sans-serif' } }, "0.6"),
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { x: "0", y: "80", dx: "-1em", style: { font: 'italic 0.2em sans-serif' } }, "0.4"),
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { x: "0", y: "90", dx: "-1em", style: { font: 'italic 0.2em sans-serif' } }, "0.2"),
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: "0", y1: "10", x2: "1000", y2: "10" }),
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: "0", y1: "20", x2: "1000", y2: "20" }),
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: "0", y1: "30", x2: "1000", y2: "30" }),
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: "0", y1: "40", x2: "1000", y2: "40" }),
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: "0", y1: "50", x2: "1000", y2: "50" }),
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: "0", y1: "60", x2: "1000", y2: "60" }),
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: "0", y1: "70", x2: "1000", y2: "70" }),
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: "0", y1: "80", x2: "1000", y2: "80" }),
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: "0", y1: "90", x2: "1000", y2: "90" }),
+                            this.state.valueAxisLength.map(function (f, i) {
+                                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { key: i },
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { x: "-3", y: f.value, dx: "-1em", style: { font: 'italic 0.2em sans-serif', fontSize: 0.2 * _this.state.scale + "em" } }, f.label),
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: "0", y1: f.value, x2: "100%", y2: f.value }));
+                            }),
                             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("path", { id: "curve", d: this.state.currentPathData, style: { stroke: 'red', fill: 'none', strokeWidth: '0.5' } }),
                             this._frames && this._frames.map(function (frame) {
                                 return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { x: frame.x, y: frame.y, style: { overflow: 'visible' } },
@@ -59605,9 +59637,15 @@ var SvgDraggableArea = /** @class */ (function (_super) {
         return _this;
     }
     SvgDraggableArea.prototype.componentDidMount = function () {
+        var _this = this;
         var _a, _b;
         (_a = this._draggableArea.current) === null || _a === void 0 ? void 0 : _a.addEventListener("keydown", this.keyDown.bind(this));
         (_b = this._draggableArea.current) === null || _b === void 0 ? void 0 : _b.addEventListener("keyup", this.keyUp.bind(this));
+        setTimeout(function () {
+            var _a, _b;
+            _this._width = ((_a = _this._draggableArea.current) === null || _a === void 0 ? void 0 : _a.clientWidth) !== undefined ? (_b = _this._draggableArea.current) === null || _b === void 0 ? void 0 : _b.clientWidth : 0;
+            console.log(_this._width);
+        }, 500);
     };
     SvgDraggableArea.prototype.dragStart = function (e) {
         e.preventDefault();
@@ -59734,7 +59772,7 @@ var SvgDraggableArea = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { className: "linear pannable", ref: this._draggableArea, tabIndex: 0, onMouseMove: function (e) { return _this.drag(e); }, onTouchMove: function (e) { return _this.drag(e); }, onTouchStart: function (e) { return _this.dragStart(e); }, onTouchEnd: function (e) { return _this.dragEnd(e); }, onMouseDown: function (e) { return _this.dragStart(e); }, onMouseUp: function (e) { return _this.dragEnd(e); }, onMouseLeave: function (e) { return _this.dragEnd(e); }, 
                 // Add way to add new keyframe
-                onClick: function (e) { return _this.focus(e); }, viewBox: "0 0 200 100" },
+                onClick: function (e) { return _this.focus(e); }, viewBox: "0 0 " + Math.round(this.props.scale * 200) + " " + Math.round(this.props.scale * 100) },
                 this.props.children,
                 this.props.keyframeSvgPoints.map(function (keyframe, i) {
                     return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_keyframeSvgPoint__WEBPACK_IMPORTED_MODULE_3__["KeyframeSvgPoint"], { key: i, id: i.toString(), keyframePoint: keyframe.keyframePoint, leftControlPoint: keyframe.leftControlPoint, rightControlPoint: keyframe.rightControlPoint });

@@ -622,6 +622,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     interface ISvgDraggableAreaProps {
         keyframeSvgPoints: IKeyframeSvgPoint[];
         updatePosition: (updatedKeyframe: IKeyframeSvgPoint, index: number) => void;
+        scale: number;
+        viewBoxScale: number;
     }
     export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps> {
         private _active;
@@ -630,6 +632,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _draggableArea;
         private _panStart;
         private _panStop;
+        private _width;
         constructor(props: ISvgDraggableAreaProps);
         componentDidMount(): void;
         dragStart(e: React.TouchEvent<SVGSVGElement>): void;
@@ -715,6 +718,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     }
     interface ICanvasAxis {
         value: number;
+        label: number;
     }
     export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, {
         animations: Animation[];
@@ -728,11 +732,13 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         currentFrame: number;
         currentValue: number;
         frameAxisLength: ICanvasAxis[];
+        valueAxisLength: ICanvasAxis[];
         flatTangent: boolean;
+        scale: number;
+        playheadOffset: number;
     }> {
-        readonly _heightScale: number;
+        private _heightScale;
         readonly _canvasLength: number;
-        private _playheadOffset;
         private _newAnimations;
         private _svgKeyframes;
         private _frames;
@@ -740,6 +746,9 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _graphCanvas;
         constructor(props: IAnimationCurveEditorComponentProps);
         componentDidMount(): void;
+        resetPlayheadOffset(): void;
+        setAxesLength(): void;
+        getValueLabel(i: number): number;
         handleNameChange(event: React.ChangeEvent<HTMLInputElement>): void;
         handleValueChange(event: React.ChangeEvent<HTMLInputElement>): void;
         handleTypeChange(event: React.ChangeEvent<HTMLSelectElement>): void;
@@ -778,6 +787,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         interpolateControlPoints(p0: Vector2, p1: Vector2, u: number, p2: Vector2, v: number, p3: Vector2): Vector2[] | undefined;
         changeCurrentFrame(frame: number): void;
         setFlatTangent(): void;
+        zoom(e: React.WheelEvent<HTMLDivElement>): void;
         render(): JSX.Element;
     }
 }
@@ -3648,6 +3658,8 @@ declare module INSPECTOR {
     interface ISvgDraggableAreaProps {
         keyframeSvgPoints: IKeyframeSvgPoint[];
         updatePosition: (updatedKeyframe: IKeyframeSvgPoint, index: number) => void;
+        scale: number;
+        viewBoxScale: number;
     }
     export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps> {
         private _active;
@@ -3656,6 +3668,7 @@ declare module INSPECTOR {
         private _draggableArea;
         private _panStart;
         private _panStop;
+        private _width;
         constructor(props: ISvgDraggableAreaProps);
         componentDidMount(): void;
         dragStart(e: React.TouchEvent<SVGSVGElement>): void;
@@ -3729,6 +3742,7 @@ declare module INSPECTOR {
     }
     interface ICanvasAxis {
         value: number;
+        label: number;
     }
     export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, {
         animations: BABYLON.Animation[];
@@ -3742,11 +3756,13 @@ declare module INSPECTOR {
         currentFrame: number;
         currentValue: number;
         frameAxisLength: ICanvasAxis[];
+        valueAxisLength: ICanvasAxis[];
         flatTangent: boolean;
+        scale: number;
+        playheadOffset: number;
     }> {
-        readonly _heightScale: number;
+        private _heightScale;
         readonly _canvasLength: number;
-        private _playheadOffset;
         private _newAnimations;
         private _svgKeyframes;
         private _frames;
@@ -3754,6 +3770,9 @@ declare module INSPECTOR {
         private _graphCanvas;
         constructor(props: IAnimationCurveEditorComponentProps);
         componentDidMount(): void;
+        resetPlayheadOffset(): void;
+        setAxesLength(): void;
+        getValueLabel(i: number): number;
         handleNameChange(event: React.ChangeEvent<HTMLInputElement>): void;
         handleValueChange(event: React.ChangeEvent<HTMLInputElement>): void;
         handleTypeChange(event: React.ChangeEvent<HTMLSelectElement>): void;
@@ -3792,6 +3811,7 @@ declare module INSPECTOR {
         interpolateControlPoints(p0: BABYLON.Vector2, p1: BABYLON.Vector2, u: number, p2: BABYLON.Vector2, v: number, p3: BABYLON.Vector2): BABYLON.Vector2[] | undefined;
         changeCurrentFrame(frame: number): void;
         setFlatTangent(): void;
+        zoom(e: React.WheelEvent<HTMLDivElement>): void;
         render(): JSX.Element;
     }
 }
