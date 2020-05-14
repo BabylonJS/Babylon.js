@@ -6,28 +6,43 @@ interface IInlineFunctionDescr {
     callIndex: number;
 }
 
-/** @hidden */
+/**
+ * Class used to inline functions in shader code
+*/
 export class ShaderCodeInliner {
 
-    static readonly InlineToken = "#define inline";
     static readonly RegexpFindFunctionNameAndType = /((\s+?)(\w+)\s+(\w+)\s*?)$/;
 
     private _sourceCode: string;
     private _functionDescr: IInlineFunctionDescr[];
     private _numMaxIterations: number;
 
+    /** Gets or sets the token used to mark the functions to inline */
+    public inlineToken: string;
+
+    /** Gets or sets the debug mode */
     public debug: boolean = false;
 
+    /** Gets the code after the inlining process */
     public get code(): string {
         return this._sourceCode;
     }
 
+    /**
+     * Initializes the inliner
+     * @param sourceCode shader code source to inline
+     * @param numMaxIterations maximum number of iterations (used to detect recursive calls)
+     */
     constructor(sourceCode: string, numMaxIterations = 20) {
         this._sourceCode = sourceCode;
         this._numMaxIterations = numMaxIterations;
         this._functionDescr = [];
+        this.inlineToken = "#define inline";
     }
 
+    /**
+     * Start the processing of the shader code
+     */
     public processCode() {
         if (this.debug) {
             console.log(`Start inlining process (code size=${this._sourceCode.length})...`);
@@ -44,26 +59,26 @@ export class ShaderCodeInliner {
 
         while (startIndex < this._sourceCode.length) {
             // locate the function to inline and extract its name
-            const inlineTokenIndex = this._sourceCode.indexOf(ShaderCodeInliner.InlineToken, startIndex);
+            const inlineTokenIndex = this._sourceCode.indexOf(this.inlineToken, startIndex);
             if (inlineTokenIndex < 0) {
                 break;
             }
 
-            const funcParamsStartIndex = this._sourceCode.indexOf("(", inlineTokenIndex + ShaderCodeInliner.InlineToken.length);
+            const funcParamsStartIndex = this._sourceCode.indexOf("(", inlineTokenIndex + this.inlineToken.length);
             if (funcParamsStartIndex < 0) {
                 if (this.debug) {
                     console.warn(`Could not find the opening parenthesis after the token. startIndex=${startIndex}`);
                 }
-                startIndex = inlineTokenIndex + ShaderCodeInliner.InlineToken.length;
+                startIndex = inlineTokenIndex + this.inlineToken.length;
                 continue;
             }
 
-            const funcNameMatch = ShaderCodeInliner.RegexpFindFunctionNameAndType.exec(this._sourceCode.substring(inlineTokenIndex + ShaderCodeInliner.InlineToken.length, funcParamsStartIndex));
+            const funcNameMatch = ShaderCodeInliner.RegexpFindFunctionNameAndType.exec(this._sourceCode.substring(inlineTokenIndex + this.inlineToken.length, funcParamsStartIndex));
             if (!funcNameMatch) {
                 if (this.debug) {
-                    console.warn(`Could not extract the name/type of the function from: ${this._sourceCode.substring(inlineTokenIndex + ShaderCodeInliner.InlineToken.length, funcParamsStartIndex)}`);
+                    console.warn(`Could not extract the name/type of the function from: ${this._sourceCode.substring(inlineTokenIndex + this.inlineToken.length, funcParamsStartIndex)}`);
                 }
-                startIndex = inlineTokenIndex + ShaderCodeInliner.InlineToken.length;
+                startIndex = inlineTokenIndex + this.inlineToken.length;
                 continue;
             }
             const [funcType, funcName] = [funcNameMatch[3], funcNameMatch[4]];
@@ -74,7 +89,7 @@ export class ShaderCodeInliner {
                 if (this.debug) {
                     console.warn(`Could not extract the parameters the function '${funcName}' (type=${funcType}). funcParamsStartIndex=${funcParamsStartIndex}`);
                 }
-                startIndex = inlineTokenIndex + ShaderCodeInliner.InlineToken.length;
+                startIndex = inlineTokenIndex + this.inlineToken.length;
                 continue;
             }
             const funcParams = this._sourceCode.substring(funcParamsStartIndex + 1, funcParamsEndIndex);
@@ -85,7 +100,7 @@ export class ShaderCodeInliner {
                 if (this.debug) {
                     console.warn(`Could not extract the body of the function '${funcName}' (type=${funcType}). funcParamsEndIndex=${funcParamsEndIndex}`);
                 }
-                startIndex = inlineTokenIndex + ShaderCodeInliner.InlineToken.length;
+                startIndex = inlineTokenIndex + this.inlineToken.length;
                 continue;
             }
 
@@ -94,7 +109,7 @@ export class ShaderCodeInliner {
                 if (this.debug) {
                     console.warn(`Could not extract the body of the function '${funcName}' (type=${funcType}). funcBodyStartIndex=${funcBodyStartIndex}`);
                 }
-                startIndex = inlineTokenIndex + ShaderCodeInliner.InlineToken.length;
+                startIndex = inlineTokenIndex + this.inlineToken.length;
                 continue;
             }
             const funcBody = this._sourceCode.substring(funcBodyStartIndex, funcBodyEndIndex + 1);
