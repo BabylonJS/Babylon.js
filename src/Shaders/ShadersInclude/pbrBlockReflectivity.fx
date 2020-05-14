@@ -17,6 +17,7 @@ struct reflectivityOutParams
 #endif
 };
 
+#define pbr_inline
 void reflectivityBlock(
     const in vec4 vReflectivityColor,
 #ifdef METALLICWORKFLOW
@@ -28,7 +29,7 @@ void reflectivityBlock(
     const in vec4 surfaceMetallicOrReflectivityColorMap,
 #endif
 #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY)  && defined(AOSTOREINMETALMAPRED)
-    const in vec3 ambientOcclusionColor,
+    const in vec3 ambientOcclusionColorIn,
 #endif
 #ifdef MICROSURFACEMAP
     const in vec4 microSurfaceTexel,
@@ -49,7 +50,7 @@ void reflectivityBlock(
 
             #ifdef AOSTOREINMETALMAPRED
                 vec3 aoStoreInMetalMap = vec3(surfaceMetallicOrReflectivityColorMap.r, surfaceMetallicOrReflectivityColorMap.r, surfaceMetallicOrReflectivityColorMap.r);
-                outParams.ambientOcclusionColor = mix(ambientOcclusionColor, aoStoreInMetalMap, reflectivityInfos.z);
+                outParams.ambientOcclusionColor = mix(ambientOcclusionColorIn, aoStoreInMetalMap, vReflectivityInfos.z);
             #endif
 
             #ifdef METALLNESSSTOREINMETALMAPBLUE
