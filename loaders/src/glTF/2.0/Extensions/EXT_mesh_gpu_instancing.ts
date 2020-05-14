@@ -104,7 +104,6 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
                             translationBuffer && Vector3.FromArrayToRef(translationBuffer, i * 3, babylonInstancedMesh.position);
                             rotationBuffer && Quaternion.FromArrayToRef(rotationBuffer, i * 4, babylonInstancedMesh.rotationQuaternion!);
                             scaleBuffer && Vector3.FromArrayToRef(scaleBuffer, i * 3, babylonInstancedMesh.scaling);
-                            babylonInstancedMesh.refreshBoundingInfo();
                         }
                     }
 
