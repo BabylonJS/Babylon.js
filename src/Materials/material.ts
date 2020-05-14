@@ -43,6 +43,16 @@ export interface IMaterialCompilationOptions {
 }
 
 /**
+ * Options passed when calling customShaderNameResolve
+ */
+export interface ICustomShaderNameResolveOptions {
+    /**
+     * If provided, will be called two times with the vertex and fragment code so that this code can be updated before it is compiled by the GPU
+     */
+    processFinalCode?: Nullable<(shaderType: string, code: string) => string>;
+}
+
+/**
  * Base class for the main features of a material in Babylon.js
  */
 export class Material implements IAnimatable {
@@ -147,7 +157,7 @@ export class Material implements IAnimatable {
     /**
      * Custom callback helping to override the default shader used in the material.
      */
-    public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[]) => string;
+    public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[], options?: ICustomShaderNameResolveOptions) => string;
 
     /**
      * Custom shadow depth material to use for shadow rendering instead of the in-built one

@@ -65,6 +65,10 @@ export interface IEffectCreationOptions {
      * See https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/transformFeedbackVaryings
      */
     transformFeedbackVaryings?: Nullable<string[]>;
+    /**
+     * If provided, will be called two times with the vertex and fragment code so that this code can be updated before it is compiled by the GPU
+     */
+    processFinalCode?: Nullable<(shaderType: string, code: string) => string>;
 }
 
 /**
@@ -189,6 +193,8 @@ export class Effect implements IDisposable {
         fallbacks: Nullable<IEffectFallbacks> = null, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, indexParameters?: any) {
         this.name = baseName;
 
+        let processFinalCode: Nullable<(shaderType: string, code: string) => string> = null;
+
         if ((<IEffectCreationOptions>attributesNamesOrOptions).attributes) {
             var options = <IEffectCreationOptions>attributesNamesOrOptions;
             this._engine = <Engine>uniformsNamesOrEngine;
@@ -209,6 +215,8 @@ export class Effect implements IDisposable {
                     this._uniformBuffersNames[options.uniformBuffersNames[i]] = i;
                 }
             }
+
+            processFinalCode = options.processFinalCode ?? null;
         } else {
             this._engine = <Engine>engine;
             this.defines = (defines == null ? "" : defines);
@@ -273,8 +281,14 @@ export class Effect implements IDisposable {
         this._loadShader(vertexSource, "Vertex", "", (vertexCode) => {
             this._loadShader(fragmentSource, "Fragment", "Pixel", (fragmentCode) => {
                 ShaderProcessor.Process(vertexCode, processorOptions, (migratedVertexCode) => {
+                    if (processFinalCode) {
+                        migratedVertexCode = processFinalCode("vertex", migratedVertexCode);
+                    }
                     processorOptions.isFragment = true;
                     ShaderProcessor.Process(fragmentCode, processorOptions, (migratedFragmentCode) => {
+                        if (processFinalCode) {
+                            migratedFragmentCode = processFinalCode("fragment", migratedFragmentCode);
+                        }
                         this._useFinalCode(migratedVertexCode, migratedFragmentCode, baseName);
                     });
                 });

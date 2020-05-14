@@ -202,7 +202,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} 
                         onSelect={(value) => this.setState({ blendMode: value })} />                                       
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="DEFAULT SIZE">
+                <LineContainerComponent globalState={this.props.globalState} title="CELLS">
                     <FloatLineComponent label="Cell width" isInteger={true} target={spriteManager} propertyName="cellWidth" min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <FloatLineComponent label="Cell height" isInteger={true} target={spriteManager} propertyName="cellHeight" min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 </LineContainerComponent>
