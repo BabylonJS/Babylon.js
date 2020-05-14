@@ -14,6 +14,7 @@ namespace Babylon::Plugins
                 {
                     InstanceAccessor("onDeviceConnected", &DeviceInputSystem::GetOnDeviceConnected, &DeviceInputSystem::SetOnDeviceConnected),
                     InstanceAccessor("onDeviceDisconnected", &DeviceInputSystem::GetOnDeviceDisconnected, &DeviceInputSystem::SetOnDeviceDisconnected),
+                    InstanceAccessor("onInputChanged", &DeviceInputSystem::GetOnInputChanged, &DeviceInputSystem::SetOnInputChanged),
                     InstanceMethod("pollInput", &DeviceInputSystem::PollInput),
                 })
         };
@@ -26,18 +27,34 @@ namespace Babylon::Plugins
     NativeInput::Impl::DeviceInputSystem::DeviceInputSystem(const Napi::CallbackInfo& info)
         : Napi::ObjectWrap<DeviceInputSystem>{info}
         , m_nativeInput{*NativeInput::GetFromJavaScript(info.Env()).m_impl}
-        , m_deviceConnectedTicket{m_nativeInput.AddDeviceConnectedCallback([this](const std::string& deviceId) {
+        , m_deviceConnectedTicket{m_nativeInput.AddDeviceConnectedCallback([this](DeviceType deviceType, int32_t deviceSlot) {
             if (!m_onDeviceConnected.IsEmpty())
             {
-                Napi::Value napiDeviceId = Napi::String::New(Env(), deviceId);
-                m_onDeviceConnected({napiDeviceId});
+                m_onDeviceConnected({
+                    Napi::Value::From(Env(), static_cast<uint32_t>(deviceType)),
+                    Napi::Value::From(Env(), deviceSlot)
+                });
             }
         })}
-        , m_deviceDisconnectedTicket{m_nativeInput.AddDeviceDisconnectedCallback([this](const std::string& deviceId) {
+        , m_deviceDisconnectedTicket{m_nativeInput.AddDeviceDisconnectedCallback([this](DeviceType deviceType, int32_t deviceSlot) {
             if (!m_onDeviceDisconnected.IsEmpty())
             {
-                Napi::Value napiDeviceId = Napi::String::New(Env(), deviceId);
-                m_onDeviceDisconnected({napiDeviceId});
+                m_onDeviceDisconnected({
+                    Napi::Value::From(Env(), static_cast<uint32_t>(deviceType)),
+                    Napi::Value::From(Env(), deviceSlot)
+                });
+            }
+        })}
+        , m_InputChangedTicket{m_nativeInput.AddInputChangedCallback([this](DeviceType deviceType, int32_t deviceSlot, uint32_t inputIndex, std::optional<int32_t> previousState, std::optional<int32_t> currentState) {
+            if (!m_onInputChanged.IsEmpty())
+            {
+                m_onInputChanged({
+                    Napi::Value::From(Env(), static_cast<uint32_t>(deviceType)),
+                    Napi::Value::From(Env(), deviceSlot),
+                    Napi::Value::From(Env(), inputIndex),
+                    previousState ? Napi::Value::From(Env(), *previousState) : Env().Null(),
+                    currentState ? Napi::Value::From(Env(), *currentState) : Env().Null()
+                });
             }
         })}
     {
@@ -63,20 +80,29 @@ namespace Babylon::Plugins
         m_onDeviceDisconnected = Napi::Persistent(value.As<Napi::Function>());
     }
 
+    Napi::Value NativeInput::Impl::DeviceInputSystem::GetOnInputChanged(const Napi::CallbackInfo&)
+    {
+        return m_onInputChanged.Value();
+    }
+
+    void NativeInput::Impl::DeviceInputSystem::SetOnInputChanged(const Napi::CallbackInfo&, const Napi::Value& value)
+    {
+        m_onInputChanged = Napi::Persistent(value.As<Napi::Function>());
+    }
+
     Napi::Value NativeInput::Impl::DeviceInputSystem::PollInput(const Napi::CallbackInfo& info)
     {
-        std::string deviceName = info[0].As<Napi::String>().Utf8Value();
-        uint32_t inputIndex = info[1].As<Napi::Number>().Uint32Value();
+        uint32_t deviceType = info[0].As<Napi::Number>().Uint32Value();
+        uint32_t deviceSlot = info[1].As<Napi::Number>().Uint32Value();
+        uint32_t inputIndex = info[2].As<Napi::Number>().Uint32Value();
         try
         {
-            std::optional<int32_t> inputValue = m_nativeInput.PollInput(deviceName, inputIndex);
+            std::optional<int32_t> inputValue = m_nativeInput.PollInput(static_cast<DeviceType>(deviceType), deviceSlot, inputIndex);
             return inputValue ? Napi::Value::From(Env(), *inputValue) : Env().Null();
         }
         catch (const std::runtime_error& exception)
         {
-            return Napi::Value::From(Env(), -1);
-            // TODO: Re-enable this when exceptions are supported in Napi JSC
-            //throw Napi::Error::New(Env(), exception.what());
+            throw Napi::Error::New(Env(), exception.what());
         }
     }
 }
