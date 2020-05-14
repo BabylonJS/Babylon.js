@@ -4,7 +4,7 @@ import { PassPostProcess, PassCubePostProcess } from 'babylonjs/PostProcesses/pa
 import { Constants } from 'babylonjs/Engines/constants';
 import { GlobalState } from './components/globalState';
 import { RenderTargetTexture } from 'babylonjs/Materials/Textures/renderTargetTexture';
-import { BaseTexture } from 'babylonjs/Materials/Textures/index';
+import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { Nullable } from 'babylonjs/types';
 
 export enum TextureChannelToDisplay {
