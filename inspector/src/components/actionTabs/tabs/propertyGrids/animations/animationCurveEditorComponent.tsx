@@ -720,41 +720,13 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                                     </svg>
                                 )}
 
-
-                                {this.state.valueAxisLength.map((f, i) => {
-
-                                    
+                                {this.state.valueAxisLength.map((f, i) => {  
                                     return <svg key={i}>
                                         <text x="-3" y={ f.value } dx="-1em" style={{ font: 'italic 0.2em sans-serif', fontSize: `${0.2 * this.state.scale}em` }}>{f.label}</text>
                                         <line x1="0" y1={f.value} x2="100%" y2={f.value}></line>
                                     </svg>
 
                                 })}
-
-                               
-
-                                {/* { /* Value Labels  */}
-                                {/* <text x="0" y="10" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>1.8</text>
-                                <text x="0" y="20" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>1.6</text>
-                                <text x="0" y="30" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>1.4</text>
-                                <text x="0" y="40" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>1.2</text>
-                                <text x="0" y="50" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>1</text>
-                                <text x="0" y="60" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>0.8</text>
-                                <text x="0" y="70" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>0.6</text>
-                                <text x="0" y="80" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>0.4</text>
-                                <text x="0" y="90" dx="-1em" style={{ font: 'italic 0.2em sans-serif' }}>0.2</text> */}
-
-                                { /* Horizontal Grid  */}
-                                {/* <line x1="0" y1="10" x2="100%" y2="10"></line>
-                                <line x1="0" y1="20" x2="100%" y2="20"></line>
-                                <line x1="0" y1="30" x2="100%" y2="30"></line>
-                                <line x1="0" y1="40" x2="100%" y2="40"></line>
-                                <line x1="0" y1="50" x2="100%" y2="50"></line>
-                                <line x1="0" y1="60" x2="100%" y2="60"></line>
-                                <line x1="0" y1="70" x2="100%" y2="70"></line>
-                                <line x1="0" y1="80" x2="100%" y2="80"></line>
-                                <line x1="0" y1="90" x2="100%" y2="90"></line> */} 
-                                
 
                                 { /* Single Curve -Modify this for multiple selection and view  */}
                                 <path id="curve" d={this.state.currentPathData} style={{ stroke: 'red', fill: 'none', strokeWidth: '0.5' }}></path>
