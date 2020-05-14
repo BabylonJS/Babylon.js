@@ -3,8 +3,6 @@ import { GlobalState } from './globalState';
 import { Texture } from 'babylonjs/Materials/Textures/texture';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
-import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
-import { PreviewType } from './components/preview/previewType';
 
 export class SerializationTools {
 
