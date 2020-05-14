@@ -133,7 +133,7 @@ export class NativeShaderProcessor extends WebGL2ShaderProcessor {
         return code;
     }
 
-   public postProcessor(code: string, defines: string[], isFragment: boolean): string {
+    public postProcessor(code: string, defines: string[], isFragment: boolean): string {
         code = super.postProcessor(code, defines, isFragment);
         code = code.replace("<UNIFORM>", `layout(binding=0) uniform Frame {\n${this._uniforms.join("\n")}\n};`);
         code = code.replace("out vec4 glFragColor", "layout(location=0) out vec4 glFragColor");
