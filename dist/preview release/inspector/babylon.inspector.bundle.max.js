@@ -57379,30 +57379,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Engines/constants */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _buttonLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _textureHelper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../textureHelper */ "./textureHelper.ts");
 
 
 
 
-
-
-
-var ChannelToDisplay;
-(function (ChannelToDisplay) {
-    ChannelToDisplay[ChannelToDisplay["R"] = 0] = "R";
-    ChannelToDisplay[ChannelToDisplay["G"] = 1] = "G";
-    ChannelToDisplay[ChannelToDisplay["B"] = 2] = "B";
-    ChannelToDisplay[ChannelToDisplay["A"] = 3] = "A";
-    ChannelToDisplay[ChannelToDisplay["All"] = 4] = "All";
-})(ChannelToDisplay || (ChannelToDisplay = {}));
 var TextureLineComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextureLineComponent, _super);
     function TextureLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = {
-            channel: ChannelToDisplay.All,
+            channel: _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureChannelToDisplay"].All,
             face: 0
         };
         _this.canvasRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
@@ -57420,90 +57408,12 @@ var TextureLineComponent = /** @class */ (function (_super) {
     TextureLineComponent.prototype.updatePreview = function () {
         var _this = this;
         var texture = this.props.texture;
-        if (!texture.isReady() && texture._texture) {
-            texture._texture.onLoadedObservable.addOnce(function () {
-                _this.updatePreview();
-            });
-        }
-        var scene = texture.getScene();
-        var engine = scene.getEngine();
         var size = texture.getSize();
         var ratio = size.width / size.height;
         var width = this.props.width;
         var height = (width / ratio) | 1;
-        var passPostProcess;
-        if (!texture.isCube) {
-            passPostProcess = new babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["PassPostProcess"]("pass", 1, null, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Texture"].NEAREST_SAMPLINGMODE, engine, false, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_INT);
-        }
-        else {
-            var passCubePostProcess = new babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["PassCubePostProcess"]("pass", 1, null, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Texture"].NEAREST_SAMPLINGMODE, engine, false, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_INT);
-            passCubePostProcess.face = this.state.face;
-            passPostProcess = passCubePostProcess;
-        }
-        if (!passPostProcess.getEffect().isReady()) {
-            // Try again later
-            passPostProcess.dispose();
-            setTimeout(function () { return _this.updatePreview(); }, 250);
-            return;
-        }
-        var previewCanvas = this.canvasRef.current;
-        if (this.props.globalState) {
-            this.props.globalState.blockMutationUpdates = true;
-        }
-        var rtt = new babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["RenderTargetTexture"]("temp", { width: width, height: height }, scene, false);
-        passPostProcess.onApply = function (effect) {
-            effect.setTexture("textureSampler", texture);
-        };
-        var internalTexture = rtt.getInternalTexture();
-        if (internalTexture) {
-            scene.postProcessManager.directRender([passPostProcess], internalTexture);
-            // Read the contents of the framebuffer
-            var numberOfChannelsByLine = width * 4;
-            var halfHeight = height / 2;
-            //Reading datas from WebGL
-            var data = engine.readPixels(0, 0, width, height);
-            if (!texture.isCube) {
-                if (this.state.channel != ChannelToDisplay.All) {
-                    for (var i = 0; i < width * height * 4; i += 4) {
-                        switch (this.state.channel) {
-                            case ChannelToDisplay.R:
-                                data[i + 1] = data[i];
-                                data[i + 2] = data[i];
-                                data[i + 3] = 255;
-                                break;
-                            case ChannelToDisplay.G:
-                                data[i] = data[i + 1];
-                                data[i + 2] = data[i];
-                                data[i + 3] = 255;
-                                break;
-                            case ChannelToDisplay.B:
-                                data[i] = data[i + 2];
-                                data[i + 1] = data[i + 2];
-                                data[i + 3] = 255;
-                                break;
-                            case ChannelToDisplay.A:
-                                data[i] = data[i + 3];
-                                data[i + 1] = data[i + 3];
-                                data[i + 2] = data[i + 3];
-                                data[i + 3] = 255;
-                                break;
-                        }
-                    }
-                }
-            }
-            //To flip image on Y axis.
-            if (texture.invertY || texture.isCube) {
-                for (var i = 0; i < halfHeight; i++) {
-                    for (var j = 0; j < numberOfChannelsByLine; j++) {
-                        var currentCell = j + i * numberOfChannelsByLine;
-                        var targetLine = height - i - 1;
-                        var targetCell = j + targetLine * numberOfChannelsByLine;
-                        var temp = data[currentCell];
-                        data[currentCell] = data[targetCell];
-                        data[targetCell] = temp;
-                    }
-                }
-            }
+        _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureHelper"].GetTextureDataAsync(texture, width, height, this.state.face, this.state.channel, this.props.globalState).then(function (data) {
+            var previewCanvas = _this.canvasRef.current;
             previewCanvas.width = width;
             previewCanvas.height = height;
             var context = previewCanvas.getContext('2d');
@@ -57514,15 +57424,8 @@ var TextureLineComponent = /** @class */ (function (_super) {
                 castData.set(data);
                 context.putImageData(imageData, 0, 0);
             }
-            // Unbind
-            engine.unBindFramebuffer(internalTexture);
-        }
-        rtt.dispose();
-        passPostProcess.dispose();
-        previewCanvas.style.height = height + "px";
-        if (this.props.globalState) {
-            this.props.globalState.blockMutationUpdates = false;
-        }
+            previewCanvas.style.height = height + "px";
+        });
     };
     TextureLineComponent.prototype.render = function () {
         var _this = this;
@@ -57539,14 +57442,14 @@ var TextureLineComponent = /** @class */ (function (_super) {
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 5 ? "nz command selected" : "nz command", onClick: function () { return _this.setState({ face: 5 }); } }, "-Z")),
                 !this.props.hideChannelSelect && !texture.isCube &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "control" },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === ChannelToDisplay.R ? "red command selected" : "red command", onClick: function () { return _this.setState({ channel: ChannelToDisplay.R }); } }, "R"),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === ChannelToDisplay.G ? "green command selected" : "green command", onClick: function () { return _this.setState({ channel: ChannelToDisplay.G }); } }, "G"),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === ChannelToDisplay.B ? "blue command selected" : "blue command", onClick: function () { return _this.setState({ channel: ChannelToDisplay.B }); } }, "B"),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === ChannelToDisplay.A ? "alpha command selected" : "alpha command", onClick: function () { return _this.setState({ channel: ChannelToDisplay.A }); } }, "A"),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === ChannelToDisplay.All ? "all command selected" : "all command", onClick: function () { return _this.setState({ channel: ChannelToDisplay.All }); } }, "ALL")),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureChannelToDisplay"].R ? "red command selected" : "red command", onClick: function () { return _this.setState({ channel: _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureChannelToDisplay"].R }); } }, "R"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureChannelToDisplay"].G ? "green command selected" : "green command", onClick: function () { return _this.setState({ channel: _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureChannelToDisplay"].G }); } }, "G"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureChannelToDisplay"].B ? "blue command selected" : "blue command", onClick: function () { return _this.setState({ channel: _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureChannelToDisplay"].B }); } }, "B"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureChannelToDisplay"].A ? "alpha command selected" : "alpha command", onClick: function () { return _this.setState({ channel: _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureChannelToDisplay"].A }); } }, "A"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureChannelToDisplay"].All ? "all command selected" : "all command", onClick: function () { return _this.setState({ channel: _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureChannelToDisplay"].All }); } }, "ALL")),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { ref: this.canvasRef, className: "preview" })),
             texture.isRenderTarget &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_buttonLineComponent__WEBPACK_IMPORTED_MODULE_3__["ButtonLineComponent"], { label: "Refresh", onClick: function () {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Refresh", onClick: function () {
                         _this.updatePreview();
                     } })));
     };
@@ -65427,7 +65330,7 @@ var SpriteManagerPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "No depth write", target: spriteManager, propertyName: "disableDepthWrite", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_8__["SliderLineComponent"], { label: "Rendering group ID", decimalCount: 0, target: spriteManager, propertyName: "renderingGroupId", minimum: babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["RenderingManager"].MIN_RENDERINGGROUPS, maximum: babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["RenderingManager"].MAX_RENDERINGGROUPS - 1, step: 1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_12__["OptionsLineComponent"], { label: "Alpha mode", options: alphaModeOptions, target: spriteManager, propertyName: "blendMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ blendMode: value }); } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "DEFAULT SIZE" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "CELLS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { label: "Cell width", isInteger: true, target: spriteManager, propertyName: "cellWidth", min: 0, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { label: "Cell height", isInteger: true, target: spriteManager, propertyName: "cellHeight", min: 0, onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
@@ -65460,6 +65363,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
 /* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _textureHelper__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../../../textureHelper */ "./textureHelper.ts");
+
 
 
 
@@ -65474,7 +65379,10 @@ __webpack_require__.r(__webpack_exports__);
 var SpritePropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SpritePropertyGridComponent, _super);
     function SpritePropertyGridComponent(props) {
-        return _super.call(this, props) || this;
+        var _this = _super.call(this, props) || this;
+        _this.cachedCellIndex = -1;
+        _this.canvasRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        return _this;
     }
     SpritePropertyGridComponent.prototype.onManagerLink = function () {
         if (!this.props.onSelectionChangedObservable) {
@@ -65503,6 +65411,54 @@ var SpritePropertyGridComponent = /** @class */ (function (_super) {
         });
         (_a = this.props.onSelectionChangedObservable) === null || _a === void 0 ? void 0 : _a.notifyObservers(null);
     };
+    SpritePropertyGridComponent.prototype.componentDidMount = function () {
+        this.updatePreview();
+    };
+    SpritePropertyGridComponent.prototype.componentDidUpdate = function () {
+        this.updatePreview();
+    };
+    SpritePropertyGridComponent.prototype.updatePreview = function () {
+        var _this = this;
+        var sprite = this.props.sprite;
+        var manager = sprite.manager;
+        var texture = manager.texture;
+        var size = texture.getSize();
+        if (!this.imageData) {
+            _textureHelper__WEBPACK_IMPORTED_MODULE_11__["TextureHelper"].GetTextureDataAsync(texture, size.width, size.height, 0, _textureHelper__WEBPACK_IMPORTED_MODULE_11__["TextureChannelToDisplay"].All, this.props.globalState).then(function (data) {
+                _this.imageData = data;
+                _this.forceUpdate();
+            });
+            return;
+        }
+        if (this.cachedCellIndex === sprite.cellIndex) {
+            return;
+        }
+        this.cachedCellIndex = sprite.cellIndex;
+        var previewCanvas = this.canvasRef.current;
+        previewCanvas.width = manager.cellWidth;
+        previewCanvas.height = manager.cellHeight;
+        var context = previewCanvas.getContext('2d');
+        if (context) {
+            // Copy the pixels to the preview canvas
+            var imageData = context.createImageData(manager.cellWidth, manager.cellHeight);
+            var castData = imageData.data;
+            var rowLength = size.width / manager.cellWidth | 0;
+            var offsetY = sprite.cellIndex / rowLength | 0;
+            var offsetX = sprite.cellIndex - offsetY * rowLength;
+            var offset = (offsetX + offsetY * size.width) * 4 * manager.cellWidth;
+            for (var x = 0; x < manager.cellWidth; x++) {
+                for (var y = 0; y < manager.cellHeight; y++) {
+                    var targetCoord = (x + y * manager.cellWidth) * 4;
+                    var sourceCoord = (x + y * size.width) * 4;
+                    castData[targetCoord] = this.imageData[offset + sourceCoord];
+                    castData[targetCoord + 1] = this.imageData[offset + sourceCoord + 1];
+                    castData[targetCoord + 2] = this.imageData[offset + sourceCoord + 2];
+                    castData[targetCoord + 3] = this.imageData[offset + sourceCoord + 3];
+                }
+            }
+            context.putImageData(imageData, 0, 0);
+        }
+    };
     SpritePropertyGridComponent.prototype.render = function () {
         var _this = this;
         var sprite = this.props.sprite;
@@ -65529,6 +65485,14 @@ var SpritePropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color4LineComponent__WEBPACK_IMPORTED_MODULE_7__["Color4LineComponent"], { label: "Color", target: sprite, propertyName: "color", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_9__["SliderLineComponent"], { useEuler: this.props.globalState.onlyUseEulers, label: "Angle", target: sprite, propertyName: "angle", minimum: 0, maximum: 2 * Math.PI, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "CELL" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { ref: this.canvasRef, className: "preview", style: {
+                        margin: "auto",
+                        marginTop: "4px",
+                        marginBottom: "4px",
+                        display: "grid",
+                        height: "108px"
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_9__["SliderLineComponent"], { label: "Cell index", decimalCount: 0, target: sprite, propertyName: "cellIndex", minimum: 0, maximum: maxCellCount, step: 1, onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function () { return _this.forceUpdate(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Invert U axis", target: sprite, propertyName: "invertU", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Invert V axis", target: sprite, propertyName: "invertV", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "SCALE" },
@@ -69264,6 +69228,144 @@ if (typeof globalObject !== "undefined") {
 
 
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../node_modules/webpack/buildin/global.js */ "../../node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
+/***/ "./textureHelper.ts":
+/*!**************************!*\
+  !*** ./textureHelper.ts ***!
+  \**************************/
+/*! exports provided: TextureChannelToDisplay, TextureHelper */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TextureChannelToDisplay", function() { return TextureChannelToDisplay; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TextureHelper", function() { return TextureHelper; });
+/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Textures/texture */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__);
+
+
+
+
+var TextureChannelToDisplay;
+(function (TextureChannelToDisplay) {
+    TextureChannelToDisplay[TextureChannelToDisplay["R"] = 0] = "R";
+    TextureChannelToDisplay[TextureChannelToDisplay["G"] = 1] = "G";
+    TextureChannelToDisplay[TextureChannelToDisplay["B"] = 2] = "B";
+    TextureChannelToDisplay[TextureChannelToDisplay["A"] = 3] = "A";
+    TextureChannelToDisplay[TextureChannelToDisplay["All"] = 4] = "All";
+})(TextureChannelToDisplay || (TextureChannelToDisplay = {}));
+var TextureHelper = /** @class */ (function () {
+    function TextureHelper() {
+    }
+    TextureHelper._ProcessAsync = function (texture, width, height, face, channel, globalState, resolve, reject) {
+        var _this = this;
+        var scene = texture.getScene();
+        var engine = scene.getEngine();
+        var passPostProcess;
+        if (!texture.isCube) {
+            passPostProcess = new babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["PassPostProcess"]("pass", 1, null, babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].NEAREST_SAMPLINGMODE, engine, false, babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Constants"].TEXTURETYPE_UNSIGNED_INT);
+        }
+        else {
+            var passCubePostProcess = new babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["PassCubePostProcess"]("pass", 1, null, babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].NEAREST_SAMPLINGMODE, engine, false, babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Constants"].TEXTURETYPE_UNSIGNED_INT);
+            passCubePostProcess.face = face;
+            passPostProcess = passCubePostProcess;
+        }
+        if (!passPostProcess.getEffect().isReady()) {
+            // Try again later
+            passPostProcess.dispose();
+            setTimeout(function () {
+                _this._ProcessAsync(texture, width, height, face, channel, globalState, resolve, reject);
+            }, 250);
+            return;
+        }
+        if (globalState) {
+            globalState.blockMutationUpdates = true;
+        }
+        var rtt = new babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["RenderTargetTexture"]("temp", { width: width, height: height }, scene, false);
+        passPostProcess.onApply = function (effect) {
+            effect.setTexture("textureSampler", texture);
+        };
+        var internalTexture = rtt.getInternalTexture();
+        if (internalTexture) {
+            scene.postProcessManager.directRender([passPostProcess], internalTexture);
+            // Read the contents of the framebuffer
+            var numberOfChannelsByLine = width * 4;
+            var halfHeight = height / 2;
+            //Reading datas from WebGL
+            var data = engine.readPixels(0, 0, width, height);
+            if (!texture.isCube) {
+                if (channel != TextureChannelToDisplay.All) {
+                    for (var i = 0; i < width * height * 4; i += 4) {
+                        switch (channel) {
+                            case TextureChannelToDisplay.R:
+                                data[i + 1] = data[i];
+                                data[i + 2] = data[i];
+                                data[i + 3] = 255;
+                                break;
+                            case TextureChannelToDisplay.G:
+                                data[i] = data[i + 1];
+                                data[i + 2] = data[i];
+                                data[i + 3] = 255;
+                                break;
+                            case TextureChannelToDisplay.B:
+                                data[i] = data[i + 2];
+                                data[i + 1] = data[i + 2];
+                                data[i + 3] = 255;
+                                break;
+                            case TextureChannelToDisplay.A:
+                                data[i] = data[i + 3];
+                                data[i + 1] = data[i + 3];
+                                data[i + 2] = data[i + 3];
+                                data[i + 3] = 255;
+                                break;
+                        }
+                    }
+                }
+            }
+            //To flip image on Y axis.
+            if (texture.invertY || texture.isCube) {
+                for (var i = 0; i < halfHeight; i++) {
+                    for (var j = 0; j < numberOfChannelsByLine; j++) {
+                        var currentCell = j + i * numberOfChannelsByLine;
+                        var targetLine = height - i - 1;
+                        var targetCell = j + targetLine * numberOfChannelsByLine;
+                        var temp = data[currentCell];
+                        data[currentCell] = data[targetCell];
+                        data[targetCell] = temp;
+                    }
+                }
+            }
+            resolve(data);
+            // Unbind
+            engine.unBindFramebuffer(internalTexture);
+        }
+        else {
+            reject();
+        }
+        rtt.dispose();
+        passPostProcess.dispose();
+        if (globalState) {
+            globalState.blockMutationUpdates = false;
+        }
+    };
+    TextureHelper.GetTextureDataAsync = function (texture, width, height, face, channel, globalState) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            if (!texture.isReady() && texture._texture) {
+                texture._texture.onLoadedObservable.addOnce(function () {
+                    _this._ProcessAsync(texture, width, height, face, channel, globalState || null, resolve, reject);
+                });
+                return;
+            }
+            _this._ProcessAsync(texture, width, height, face, channel, globalState || null, resolve, reject);
+        });
+    };
+    return TextureHelper;
+}());
+
+
 
 /***/ }),
 

@@ -23623,6 +23623,15 @@ declare module BABYLON {
         useInstances: boolean;
     }
     /**
+     * Options passed when calling customShaderNameResolve
+     */
+    export interface ICustomShaderNameResolveOptions {
+        /**
+         * If provided, will be called two times with the vertex and fragment code so that this code can be updated before it is compiled by the GPU
+         */
+        processFinalCode?: Nullable<(shaderType: string, code: string) => string>;
+    }
+    /**
      * Base class for the main features of a material in Babylon.js
      */
     export class Material implements IAnimatable {
@@ -23714,7 +23723,7 @@ declare module BABYLON {
         /**
          * Custom callback helping to override the default shader used in the material.
          */
-        customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[]) => string;
+        customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[], options?: ICustomShaderNameResolveOptions) => string;
         /**
          * Custom shadow depth material to use for shadow rendering instead of the in-built one
          */
@@ -33029,6 +33038,10 @@ declare module BABYLON {
          * See https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/transformFeedbackVaryings
          */
         transformFeedbackVaryings?: Nullable<string[]>;
+        /**
+         * If provided, will be called two times with the vertex and fragment code so that this code can be updated before it is compiled by the GPU
+         */
+        processFinalCode?: Nullable<(shaderType: string, code: string) => string>;
     }
     /**
      * Effect containing vertex and fragment shader that can be executed on an object.
@@ -50997,16 +51010,29 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    /** @hidden */
+    /**
+     * Class used to inline functions in shader code
+    */
     export class ShaderCodeInliner {
-        static readonly InlineToken: string;
-        static readonly RegexpFindFunctionNameAndType: RegExp;
+        private static readonly _RegexpFindFunctionNameAndType;
         private _sourceCode;
         private _functionDescr;
         private _numMaxIterations;
+        /** Gets or sets the token used to mark the functions to inline */
+        inlineToken: string;
+        /** Gets or sets the debug mode */
         debug: boolean;
+        /** Gets the code after the inlining process */
         get code(): string;
+        /**
+         * Initializes the inliner
+         * @param sourceCode shader code source to inline
+         * @param numMaxIterations maximum number of iterations (used to detect recursive calls)
+         */
         constructor(sourceCode: string, numMaxIterations?: number);
+        /**
+         * Start the processing of the shader code
+         */
         processCode(): void;
         private _collectFunctions;
         private _processInlining;
