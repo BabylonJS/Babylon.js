@@ -7753,8 +7753,6 @@ declare module BABYLON {
         private _textureMatrix;
         private _format;
         private _createPolynomials;
-        /** @hidden */
-        _prefiltered: boolean;
         /**
          * Creates a cube texture from an array of image urls
          * @param files defines an array of image urls
@@ -7791,10 +7789,6 @@ declare module BABYLON {
          * @return the cube texture
          */
         constructor(rootUrl: string, sceneOrEngine: Scene | ThinEngine, extensions?: Nullable<string[]>, noMipmap?: boolean, files?: Nullable<string[]>, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, prefiltered?: boolean, forcedExtension?: any, createPolynomials?: boolean, lodScale?: number, lodOffset?: number);
-        /**
-         * Gets a boolean indicating if the cube texture contains prefiltered mips (used to simulate roughness with PBR)
-         */
-        get isPrefiltered(): boolean;
         /**
          * Get the current class name of the texture useful for serialization or dynamic coding.
          * @returns "CubeTexture"
@@ -10258,13 +10252,25 @@ declare module BABYLON {
          * @param delay defines the start delay (in ms)
          * @param onAnimationEnd defines a callback to call when animation ends
          */
-        playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: () => void): void;
+        playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd?: Nullable<() => void>): void;
         /** Stops current animation (if any) */
         stopAnimation(): void;
         /** @hidden */
         _animate(deltaTime: number): void;
         /** Release associated resources */
         dispose(): void;
+        /**
+         * Serializes the sprite to a JSON object
+         * @returns the JSON object
+         */
+        serialize(): any;
+        /**
+         * Parses a JSON object to create a new sprite
+         * @param parsedSprite The JSON object to parse
+         * @param manager defines the hosting manager
+         * @returns the new sprite
+         */
+        static Parse(parsedSprite: any, manager: SpriteManager): Sprite;
     }
 }
 declare module BABYLON {
@@ -10898,6 +10904,10 @@ declare module BABYLON {
     export class SpriteManager implements ISpriteManager {
         /** defines the manager's name */
         name: string;
+        /** Define the Url to load snippets */
+        static SnippetUrl: string;
+        /** Snippet ID if the manager was created from the snippet server */
+        snippetId: string;
         /** Gets the list of sprites */
         sprites: Sprite[];
         /** Gets or sets the rendering group id (0 by default) */
@@ -11021,6 +11031,28 @@ declare module BABYLON {
          * Release associated resources
          */
         dispose(): void;
+        /**
+         * Serializes the sprite manager to a JSON object
+         * @param serializeTexture defines if the texture must be serialized as well
+         * @returns the JSON object
+         */
+        serialize(serializeTexture?: boolean): any;
+        /**
+         * Parses a JSON object to create a new sprite manager.
+         * @param parsedManager The JSON object to parse
+         * @param scene The scene to create the sprite managerin
+         * @param rootUrl The root url to use to load external dependencies like texture
+         * @returns the new sprite manager
+         */
+        static Parse(parsedManager: any, scene: Scene, rootUrl: string): SpriteManager;
+        /**
+         * Creates a sprite manager from a snippet saved by the sprite editor
+         * @param snippetId defines the snippet to load
+         * @param scene defines the hosting scene
+         * @param rootUrl defines the root URL to use to load textures and relative dependencies
+         * @returns a promise that will resolve to the new sprite manager
+         */
+        static CreateFromSnippetAsync(snippetId: string, scene: Scene, rootUrl?: string): Promise<SpriteManager>;
     }
 }
 declare module BABYLON {
@@ -16124,6 +16156,13 @@ declare module BABYLON {
          * The source mesh of the instance
          */
         get sourceMesh(): Mesh;
+        /**
+         * Creates a new InstancedMesh object from the mesh model.
+         * @see http://doc.babylonjs.com/how_to/how_to_use_instances
+         * @param name defines the name of the new instance
+         * @returns a new InstancedMesh
+         */
+        createInstance(name: string): InstancedMesh;
         /**
          * Is this node ready to be used/rendered
          * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
@@ -22133,6 +22172,12 @@ declare module BABYLON {
          * @returns the post process created
          */
         createPostProcess(camera: Nullable<Camera>, options?: number | PostProcessOptions, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, textureFormat?: number): PostProcess;
+        /**
+         * Create the post process effect from the material
+         * @param postProcess The post process to create the effect for
+         */
+        createEffectForPostProcess(postProcess: PostProcess): void;
+        private _createEffectOrPostProcess;
         private _createEffectForParticles;
         /**
          * Create the effect to be used as the custom effect for a particle system
@@ -32746,6 +32791,8 @@ declare module BABYLON {
          * Define the unique id of the texture in the scene.
          */
         get uid(): string;
+        /** @hidden */
+        _prefiltered: boolean;
         /**
          * Return a string representation of the texture.
          * @returns the texture as a string
@@ -32756,18 +32803,6 @@ declare module BABYLON {
          * @returns "BaseTexture"
          */
         getClassName(): string;
-        private _realTimeFiltering;
-        /**
-         * Enables realtime filtering on the texture.
-         */
-        get realTimeFiltering(): boolean;
-        set realTimeFiltering(b: boolean);
-        private _realTimeFilteringQuality;
-        /**
-         * Quality switch for realtime filtering
-         */
-        get realTimeFilteringQuality(): number;
-        set realTimeFilteringQuality(n: number);
         /**
          * Define the list of animation attached to the texture.
          */
@@ -37078,9 +37113,10 @@ declare module BABYLON {
         static MakeArray(obj: any, allowsNullUndefined?: boolean): Nullable<Array<any>>;
         /**
          * Gets the pointer prefix to use
+         * @param engine defines the engine we are finding the prefix for
          * @returns "pointer" if touch is enabled. Else returns "mouse"
          */
-        static GetPointerPrefix(): string;
+        static GetPointerPrefix(engine: Engine): string;
         /**
          * Sets the cors behavior on a dom element. This will add the required Tools.CorsBehavior to the element.
          * @param url define the url we are trying
@@ -50961,6 +50997,29 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    export class ShaderCodeInliner {
+        static readonly InlineToken: string;
+        static readonly RegexpFindFunctionNameAndType: RegExp;
+        private _sourceCode;
+        private _functionDescr;
+        private _numMaxIterations;
+        debug: boolean;
+        get code(): string;
+        constructor(sourceCode: string, numMaxIterations?: number);
+        processCode(): void;
+        private _collectFunctions;
+        private _processInlining;
+        private _extractBetweenMarkers;
+        private _skipWhitespaces;
+        private _removeComments;
+        private _replaceFunctionCallsByCode;
+        private _findBackward;
+        private _escapeRegExp;
+        private _replaceNames;
+    }
+}
+declare module BABYLON {
     /**
      * Container for accessors for natively-stored mesh data buffers.
      */
@@ -54031,10 +54090,11 @@ declare module BABYLON {
          * @param uniformBuffer defines the Uniform buffer to fill in.
          * @param scene defines the scene the material belongs to.
          * @param engine defines the engine the material belongs to.
-         * @param isFrozen defines wether the material is frozen or not.
-         * @param lodBasedMicrosurface defines wether the material relies on lod based microsurface or not.
+         * @param isFrozen defines whether the material is frozen or not.
+         * @param lodBasedMicrosurface defines whether the material relies on lod based microsurface or not.
+         * @param realTimeFiltering defines whether the textures should be filtered on the fly.
          */
-        bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, isFrozen: boolean, lodBasedMicrosurface: boolean): void;
+        bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, isFrozen: boolean, lodBasedMicrosurface: boolean, realTimeFiltering: boolean): void;
         /**
          * Unbinds the material from the mesh.
          * @param activeEffect defines the effect that should be unbound from.
@@ -54866,6 +54926,18 @@ declare module BABYLON {
          * Force the shader to compute irradiance in the fragment shader in order to take bump in account.
          */
         protected _forceIrradianceInFragment: boolean;
+        private _realTimeFiltering;
+        /**
+         * Enables realtime filtering on the texture.
+         */
+        get realTimeFiltering(): boolean;
+        set realTimeFiltering(b: boolean);
+        private _realTimeFilteringQuality;
+        /**
+         * Quality switch for realtime filtering
+         */
+        get realTimeFilteringQuality(): number;
+        set realTimeFilteringQuality(n: number);
         /**
          * Force normal to face away from face.
          */
@@ -58427,7 +58499,7 @@ declare module BABYLON {
           * @param onFinished Callback when filtering is done
           * @return Promise called when prefiltering is done
           */
-        prefilter(texture: BaseTexture, onFinished?: Nullable<() => void>): Promise<unknown>;
+        prefilter(texture: BaseTexture, onFinished?: Nullable<() => void>): Promise<unknown> | undefined;
     }
 }
 declare module BABYLON {
@@ -58671,12 +58743,13 @@ declare module BABYLON {
         private _cannonRaycastResult;
         private _raycastResult;
         private _physicsBodysToRemoveAfterStep;
+        private _firstFrame;
         BJSCANNON: any;
         constructor(_useDeltaForWorldStep?: boolean, iterations?: number, cannonInjection?: any);
         setGravity(gravity: Vector3): void;
         setTimeStep(timeStep: number): void;
         getTimeStep(): number;
-        executeStep(delta: number): void;
+        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
         private _removeMarkedPhysicsBodiesFromWorld;
         applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
         applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
@@ -72772,29 +72845,6 @@ declare module BABYLON {
          * @returns This path cursor
          */
         onchange(f: (cursor: PathCursor) => void): PathCursor;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export class ShaderCodeInliner {
-        static readonly InlineToken: string;
-        static readonly RegexpFindFunctionNameAndType: RegExp;
-        private _sourceCode;
-        private _functionDescr;
-        private _numMaxIterations;
-        debug: boolean;
-        get code(): string;
-        constructor(sourceCode: string, numMaxIterations?: number);
-        processCode(): void;
-        private _collectFunctions;
-        private _processInlining;
-        private _extractBetweenMarkers;
-        private _skipWhitespaces;
-        private _removeComments;
-        private _replaceFunctionCallsByCode;
-        private _findBackward;
-        private _escapeRegExp;
-        private _replaceNames;
     }
 }
 declare module BABYLON {

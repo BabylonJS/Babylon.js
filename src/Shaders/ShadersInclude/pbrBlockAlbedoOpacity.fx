@@ -9,7 +9,7 @@ void albedoOpacityBlock(
     const in vec4 vAlbedoColor,
 #ifdef ALBEDO
     const in vec4 albedoTexture,
-    const in vec2 vAlbedoInfos,
+    const in vec2 albedoInfos,
 #endif
 #ifdef OPACITY
     const in vec4 opacityMap,
@@ -33,7 +33,7 @@ void albedoOpacityBlock(
             surfaceAlbedo *= albedoTexture.rgb;
         #endif
 
-        surfaceAlbedo *= vAlbedoInfos.y;
+        surfaceAlbedo *= albedoInfos.y;
     #endif
 
     #ifdef VERTEXCOLOR
