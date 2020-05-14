@@ -4,6 +4,7 @@ struct albedoOpacityOutParams
     float alpha;
 };
 
+#define pbr_inline
 void albedoOpacityBlock(
     const in vec4 vAlbedoColor,
 #ifdef ALBEDO
