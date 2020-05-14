@@ -18,6 +18,8 @@ import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 import { Sprite } from 'babylonjs/Sprites/sprite';
 import { Tools } from 'babylonjs/Misc/tools';
 import { FileButtonLineComponent } from '../../../lines/fileButtonLineComponent';
+import { Constants } from 'babylonjs/Engines/constants';
+import { OptionsLineComponent } from '../../../lines/optionsLineComponent';
 
 interface ISpriteManagerPropertyGridComponentProps {
     globalState: GlobalState;
@@ -156,6 +158,16 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
     render() {
         const spriteManager = this.props.spriteManager;
 
+        var alphaModeOptions = [
+            { label: "Combine", value: Constants.ALPHA_COMBINE },
+            { label: "One one", value: Constants.ALPHA_ONEONE },
+            { label: "Add", value: Constants.ALPHA_ADD },
+            { label: "Subtract", value: Constants.ALPHA_SUBTRACT },
+            { label: "Multiply", value: Constants.ALPHA_MULTIPLY },
+            { label: "Maximized", value: Constants.ALPHA_MAXIMIZED },
+            { label: "Pre-multiplied", value: Constants.ALPHA_PREMULTIPLIED },
+        ];        
+
         return (
             <div className="pane">
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
@@ -186,6 +198,9 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
                     <CheckBoxLineComponent label="Fog enabled" target={spriteManager} propertyName="fogEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="No depth write" target={spriteManager} propertyName="disableDepthWrite" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Rendering group ID" decimalCount={0} target={spriteManager} propertyName="renderingGroupId" minimum={RenderingManager.MIN_RENDERINGGROUPS} maximum={RenderingManager.MAX_RENDERINGGROUPS - 1} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <OptionsLineComponent label="Alpha mode" options={alphaModeOptions} target={spriteManager} propertyName="blendMode" 
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} 
+                        onSelect={(value) => this.setState({ blendMode: value })} />                                       
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="DEFAULT SIZE">
                     <FloatLineComponent label="Cell width" isInteger={true} target={spriteManager} propertyName="cellWidth" min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
