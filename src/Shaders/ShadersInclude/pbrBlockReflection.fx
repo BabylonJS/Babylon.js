@@ -17,6 +17,7 @@
     #endif
     };
 
+    #define pbr_inline
     void createReflectionCoords(
         const in vec3 vPositionW,
         const in vec3 normalW,
@@ -52,6 +53,7 @@
         #endif
     }
 
+    #define pbr_inline
     #define inline
     void sampleReflectionTexture(
         const in float alphaG,
@@ -113,11 +115,7 @@
                 float requestedReflectionLOD = reflectionLOD;
             #endif
             #ifdef REALTIME_FILTERING
-                #ifdef LINEARSPECULARREFLECTION
-                    environmentRadiance = vec4(radiance(roughness, reflectionSampler, reflectionCoords, vReflectionFilteringInfo), 1.0);
-                #else
-                    environmentRadiance = vec4(radiance(alphaG, reflectionSampler, reflectionCoords, vReflectionFilteringInfo), 1.0);
-                #endif
+                environmentRadiance = vec4(radiance(alphaG, reflectionSampler, reflectionCoords, vReflectionFilteringInfo), 1.0);
             #else
                 environmentRadiance = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD);
             #endif
@@ -154,6 +152,7 @@
         environmentRadiance.rgb *= vReflectionColor.rgb;
     }
 
+    #define pbr_inline
     #define inline
     void reflectionBlock(
         const in vec3 vPositionW,
