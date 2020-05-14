@@ -484,9 +484,6 @@ export class NativeEngine extends Engine {
     public createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): any {
         this.onBeforeShaderCompilationObservable.notifyObservers(this);
 
-        vertexCode = ThinEngine._ConcatenateShader(vertexCode, defines);
-        fragmentCode = ThinEngine._ConcatenateShader(fragmentCode, defines);
-
         const vertexInliner = new ShaderCodeInliner(vertexCode);
         vertexInliner.processCode();
         vertexCode = vertexInliner.code;
@@ -494,6 +491,9 @@ export class NativeEngine extends Engine {
         const fragmentInliner = new ShaderCodeInliner(fragmentCode);
         fragmentInliner.processCode();
         fragmentCode = fragmentInliner.code;
+
+        vertexCode = ThinEngine._ConcatenateShader(vertexCode, defines);
+        fragmentCode = ThinEngine._ConcatenateShader(fragmentCode, defines);
 
         const program = this._native.createProgram(vertexCode, fragmentCode);
         this.onAfterShaderCompilationObservable.notifyObservers(this);
