@@ -186,7 +186,7 @@ if (BABYLON.Engine.isSupported()) {
         // Lighting
         if (currentPluginName === "gltf") {
             if (!currentScene.environmentTexture) {
-                currentScene.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(skyboxPath, currentScene);
+                currentScene.environmentTexture = loadSkyboxPathTexture(skyboxPath, currentScene);
             }
 
             currentSkybox = currentScene.createDefaultSkybox(currentScene.environmentTexture, true, (currentScene.activeCamera.maxZ - currentScene.activeCamera.minZ) / 2, 0.3, false);
@@ -202,7 +202,7 @@ if (BABYLON.Engine.isSupported()) {
 
             if (pbrPresent) {
                 if (!currentScene.environmentTexture) {
-                    currentScene.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(skyboxPath, currentScene);
+                    currentScene.environmentTexture = loadSkyboxPathTexture(skyboxPath, currentScene);
                 }
             }
             else {
@@ -286,7 +286,9 @@ if (BABYLON.Engine.isSupported()) {
         filesInput = new BABYLON.FilesInput(engine, null, sceneLoaded, null, null, null, startProcessingFiles, null, sceneError);
         filesInput.onProcessFileCallback = (function(file, name, extension) {
             if (filesInput._filesToLoad && filesInput._filesToLoad.length === 1 && extension) {
-                if (extension.toLowerCase() === "dds" || extension.toLowerCase() === "env") {
+                if (extension.toLowerCase() === "dds" ||
+                    extension.toLowerCase() === "env" ||
+                    extension.toLowerCase() === "hdr") {
                     BABYLON.FilesInput.FilesToLoad[name] = file;
                     skyboxPath = "file:" + file.correctName;
                     return false;
