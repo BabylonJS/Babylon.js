@@ -168,11 +168,12 @@
             overflow-y: scroll;
             scroll-behavior: smooth;
             background-color: #444444;
+            height: 100%;
 
             .linear{
-                height: 360px;
                 overflow: visible;
-                border: 0px solid lightgrey;
+                border: 1px solid lightgrey;
+                height: 100%;
 
                 svg {
                     overflow: visible;
