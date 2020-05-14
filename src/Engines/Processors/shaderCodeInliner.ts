@@ -11,7 +11,7 @@ interface IInlineFunctionDescr {
 */
 export class ShaderCodeInliner {
 
-    static readonly RegexpFindFunctionNameAndType = /((\s+?)(\w+)\s+(\w+)\s*?)$/;
+    private static readonly _RegexpFindFunctionNameAndType = /((\s+?)(\w+)\s+(\w+)\s*?)$/;
 
     private _sourceCode: string;
     private _functionDescr: IInlineFunctionDescr[];
@@ -73,7 +73,7 @@ export class ShaderCodeInliner {
                 continue;
             }
 
-            const funcNameMatch = ShaderCodeInliner.RegexpFindFunctionNameAndType.exec(this._sourceCode.substring(inlineTokenIndex + this.inlineToken.length, funcParamsStartIndex));
+            const funcNameMatch = ShaderCodeInliner._RegexpFindFunctionNameAndType.exec(this._sourceCode.substring(inlineTokenIndex + this.inlineToken.length, funcParamsStartIndex));
             if (!funcNameMatch) {
                 if (this.debug) {
                     console.warn(`Could not extract the name/type of the function from: ${this._sourceCode.substring(inlineTokenIndex + this.inlineToken.length, funcParamsStartIndex)}`);
