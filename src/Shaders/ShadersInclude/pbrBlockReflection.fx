@@ -113,11 +113,7 @@
                 float requestedReflectionLOD = reflectionLOD;
             #endif
             #ifdef REALTIME_FILTERING
-                #ifdef LINEARSPECULARREFLECTION
-                    environmentRadiance = vec4(radiance(roughness, reflectionSampler, reflectionCoords, vReflectionFilteringInfo), 1.0);
-                #else
-                    environmentRadiance = vec4(radiance(alphaG, reflectionSampler, reflectionCoords, vReflectionFilteringInfo), 1.0);
-                #endif
+                environmentRadiance = vec4(radiance(alphaG, reflectionSampler, reflectionCoords, vReflectionFilteringInfo), 1.0);
             #else
                 environmentRadiance = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD);
             #endif

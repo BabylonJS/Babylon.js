@@ -10,7 +10,7 @@ interface IInlineFunctionDescr {
 export class ShaderCodeInliner {
 
     static readonly InlineToken = "#define inline";
-    static readonly RegexpFindFunctionNameAndType = /(?<=\s+?(\w+)\s+(\w+)\s*?)$/;
+    static readonly RegexpFindFunctionNameAndType = /((\s+?)(\w+)\s+(\w+)\s*?)$/;
 
     private _sourceCode: string;
     private _functionDescr: IInlineFunctionDescr[];
@@ -66,7 +66,7 @@ export class ShaderCodeInliner {
                 startIndex = inlineTokenIndex + ShaderCodeInliner.InlineToken.length;
                 continue;
             }
-            const [funcType, funcName] = [funcNameMatch[1], funcNameMatch[2]];
+            const [funcType, funcName] = [funcNameMatch[3], funcNameMatch[4]];
 
             // extract the parameters of the function as a whole string (without the leading / trailing parenthesis)
             const funcParamsEndIndex = this._extractBetweenMarkers('(', ')', this._sourceCode, funcParamsStartIndex);
