@@ -21,7 +21,7 @@ import { Scalar } from "../../Maths/math.scalar";
 
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
 import { Effect, IEffectCreationOptions } from "../../Materials/effect";
-import { Material, IMaterialCompilationOptions } from "../../Materials/material";
+import { Material, IMaterialCompilationOptions, ICustomShaderNameResolveOptions } from "../../Materials/material";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
 import { MaterialHelper } from "../../Materials/materialHelper";
@@ -1257,8 +1257,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             maxSimultaneousLights: this._maxSimultaneousLights
         });
 
+        const csnrOptions: ICustomShaderNameResolveOptions = {};
+
         if (this.customShaderNameResolve) {
-            shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines, attribs);
+            shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines, attribs, csnrOptions);
         }
 
         var join = defines.toString();
@@ -1271,7 +1273,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             fallbacks: fallbacks,
             onCompiled: onCompiled,
             onError: onError,
-            indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS }
+            indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS },
+            processFinalCode: csnrOptions.processFinalCode,
         }, engine);
     }
 

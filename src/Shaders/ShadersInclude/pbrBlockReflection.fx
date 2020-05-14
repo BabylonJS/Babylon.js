@@ -17,6 +17,7 @@
     #endif
     };
 
+    #define pbr_inline
     void createReflectionCoords(
         const in vec3 vPositionW,
         const in vec3 normalW,
@@ -52,6 +53,7 @@
         #endif
     }
 
+    #define pbr_inline
     #define inline
     void sampleReflectionTexture(
         const in float alphaG,
@@ -150,6 +152,7 @@
         environmentRadiance.rgb *= vReflectionColor.rgb;
     }
 
+    #define pbr_inline
     #define inline
     void reflectionBlock(
         const in vec3 vPositionW,
