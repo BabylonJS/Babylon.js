@@ -20,7 +20,6 @@ export class Notification extends React.Component<IPlayheadProps>{
                     {this.props.message}
                 </div>
             </div>
-
         )
     }
 } 

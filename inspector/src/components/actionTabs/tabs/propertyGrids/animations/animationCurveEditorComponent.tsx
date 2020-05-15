@@ -157,7 +157,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                     default: console.log("not recognized");
                         break;
                 }
-
             }
 
             if (matchTypeTargetProperty.length > 1) {
@@ -192,7 +191,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         } else {
             this.setState({ notification: "You need to provide a name and target property." });
         }
-
     }
 
     clearNotification() {
@@ -293,7 +291,8 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
         anim.setKeys(keys);
 
-        this.setState({ svgKeyframes: svgKeyframes })
+        this.setState({ svgKeyframes: svgKeyframes });
+
     }
 
     getAnimationProperties(animation: Animation) {
@@ -635,6 +634,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                 dataType = Animation.ANIMATIONTYPE_COLOR4;
                 break;
         }
+
         return dataType;
 
     }
@@ -686,7 +686,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
     setFlatTangent() {
         this.setState({ flatTangent: !this.state.flatTangent }, () => this.selectAnimation(this.state.selected));
-        ;
     }
 
     zoom(e: React.WheelEvent<HTMLDivElement>) {
