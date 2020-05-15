@@ -1,6 +1,34 @@
 
 #animation-curve-editor {
 
+    .notification-area{
+        position: absolute;
+        width: auto;
+        left: 0.53em;
+        bottom: 60px;
+        background-color: rgb(199, 50, 40);
+        padding: 16px;
+        border-radius: 5px;
+        color: white;
+        right: 2em;
+        z-index: 10;
+
+        button{
+            position: absolute;
+            top: 3px;
+            right: 10px;
+            padding: 0;
+            cursor: pointer;
+            background: transparent;
+            border: 0;
+            -webkit-appearance: none;
+            color: #000;
+            text-shadow: 0 1px 0 #fff;
+            opacity: .4;
+            font-size: 1.8em;
+        }
+    }
+
     .header{
         display: flex;
         padding: 9px;
