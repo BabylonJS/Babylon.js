@@ -1280,7 +1280,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/cam
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-inspector/components/actionTabs/lines/indentedtextLineComponent" {
+declare module "babylonjs-inspector/components/actionTabs/lines/indentedTextLineComponent" {
     import * as React from "react";
     interface IIndentedTextLineComponentProps {
         value?: string;
