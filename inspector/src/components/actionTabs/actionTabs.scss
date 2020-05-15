@@ -299,6 +299,31 @@ $line-padding-left: 2px;
                     display: grid;
                     grid-template-columns: 1fr auto;
 
+                    &.indented {
+                        grid-template-columns: 100%;
+
+                        .link-value {
+                            grid-column: 1;                            
+                            text-align: start;
+                            margin-left: 20px;
+                            opacity: 0.6;
+                            max-width: unset;
+                        }
+
+                        .value {
+                            grid-column: 1;                            
+                            text-align: start;
+                            margin-left: 20px;
+                            opacity: 0.6;
+                            max-width: unset;
+                        }
+                    }         
+                    
+                    &.reduced-opacity {
+                        opacity: 0.6;
+                        padding-left: 25px;
+                    }
+
                     .label {
                         grid-column: 1;
                         display: flex;
@@ -313,7 +338,7 @@ $line-padding-left: 2px;
                         text-align: end;
                         opacity: 0.8;
                         margin:5px;
-                        margin-top: 6px;
+                        margin-top: 7px;
                         max-width: 140px;
                         text-decoration: underline;
                         cursor: pointer;
@@ -327,7 +352,7 @@ $line-padding-left: 2px;
                         text-align: end;
                         opacity: 0.8;
                         margin:5px;
-                        margin-top: 6px;
+                        margin-top: 7px;
                         max-width: 200px;
                         -webkit-user-select: text; 
                         -moz-user-select: text;   
