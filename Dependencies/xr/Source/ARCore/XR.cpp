@@ -204,6 +204,14 @@ namespace xr
                 glBlendFunc(blendFuncSFactor, blendFuncTFactor);
                 return gsl::finally([blendFuncSFactor, previousBlendFuncTFactor]() { glBlendFunc(blendFuncSFactor, static_cast<GLenum>(previousBlendFuncTFactor)); });
             }
+
+            auto ClearColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)
+            {
+                GLfloat previousClearColor[4];
+                glGetFloatv(GL_COLOR_CLEAR_VALUE, previousClearColor);
+                glClearColor(red, green, blue, alpha);
+                return gsl::finally([red = previousClearColor[0], green = previousClearColor[1], blue = previousClearColor[2], alpha = previousClearColor[3]]() { glClearColor(red, green, blue, alpha); });
+            }
         }
     }
 
@@ -246,6 +254,9 @@ namespace xr
                 }
             }
 
+            // Create a frame buffer used for clearing the color texture
+            glGenFramebuffers(1, &clearFrameBufferId);
+
             // Create the ARCore ArFrame (this gets reused each time we query for the latest frame)
             ArFrame_create(session, &frame);
 
@@ -285,6 +296,7 @@ namespace xr
 
             glDeleteTextures(1, &cameraTextureId);
             glDeleteProgram(shaderProgramId);
+            glDeleteFramebuffers(1, &clearFrameBufferId);
 
             DestroyDisplayResources();
         }
@@ -362,6 +374,19 @@ namespace xr
                     ActiveFrameViews[0].DepthTextureFormat = TextureFormat::D24S8;
                     ActiveFrameViews[0].DepthTextureSize = {width, height};
                 }
+
+                // Bind the color and depth texture to the clear color frame buffer
+                auto bindFrameBufferTransaction = GLTransactions::BindFrameBuffer(clearFrameBufferId);
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, static_cast<GLuint>(reinterpret_cast<uintptr_t>(ActiveFrameViews[0].ColorTexturePointer)), 0);
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, static_cast<GLuint>(reinterpret_cast<uintptr_t>(ActiveFrameViews[0].DepthTexturePointer)), 0);
+            }
+            else
+            {
+                // Clear the color and depth texture
+                // Whether or not to clear is an implementation detail - OpenXR (for example) provides a color texture that is already filled with the camera texture, so the common XR layer should not assume a clear is required
+                auto bindFrameBufferTransaction = GLTransactions::BindFrameBuffer(clearFrameBufferId);
+                auto clearColorTransaction = GLTransactions::ClearColor(0, 0, 0, 0);
+                glClear(GL_COLOR_BUFFER_BIT);
             }
 
             int32_t geometryChanged{0};
@@ -456,6 +481,12 @@ namespace xr
 
                 // Draw the quad
                 glDrawArrays(GL_TRIANGLE_STRIP, 0, VERTEX_COUNT);
+
+                // Present to the screen
+                // NOTE: For a yet to be determined reason, bgfx is also doing an eglSwapBuffers when running in the regular Android Babylon Native Playground playground app.
+                //       The "double" eglSwapBuffers causes rendering issues, so until we figure out this issue, comment out this line while testing in the regular playground app.
+                eglSwapBuffers(eglGetCurrentDisplay(), eglGetCurrentSurface(EGL_DRAW));
+
                 glUseProgram(0);
             }
         }
@@ -552,6 +583,7 @@ namespace xr
 
         GLuint shaderProgramId{};
         GLuint cameraTextureId{};
+        GLuint clearFrameBufferId{};
 
         ArSession* session{};
         ArFrame* frame{};
