@@ -16951,7 +16951,7 @@ declare module BABYLON {
         private _renderAlphaTest;
         private _renderTransparent;
         /** @hidden */
-        _edgesRenderers: SmartArray<IEdgesRenderer>;
+        _edgesRenderers: SmartArrayNoDuplicate<IEdgesRenderer>;
         onBeforeTransparentRendering: () => void;
         /**
          * Set the opaque sort comparison function.
