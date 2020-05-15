@@ -42,6 +42,7 @@
 - Updated which node ports are shown on frames by default so that only node ports connected to outside nodes are by default exposed on the frame ([belfortk](https://github.com/belfortk))
 - Added a modulo block ([ageneau](https://github.com/ageneau))
 - Fix bug where frame port labels would be the names of incorrect nodes ([belfortk](https://github.com/belfortk))
+- Fix bug where long comments on collapsed frames broke port alignment ([belfortk](https://github.com/belfortk))
 
 ### Inspector
 
