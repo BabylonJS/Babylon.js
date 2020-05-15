@@ -140,7 +140,7 @@ export class ParticleHelper {
                         } else {
                             output = ParticleSystem.Parse(serializationObject, scene, rootUrl);
                         }
-                        
+
                         if (name) {
                             output.name = name;
                         }

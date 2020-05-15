@@ -840,11 +840,11 @@ export class SpriteManager implements ISpriteManager {
                     if (request.status == 200) {
                         let serializationObject = JSON.parse(request.responseText);
                         let output = SpriteManager.Parse(serializationObject, scene || Engine.LastCreatedScene, rootUrl);
-                        
+
                         if (name) {
                             output.name = name;
                         }
-                        
+
                         resolve(output);
                     } else {
                         reject("Unable to load the sprite manager");
@@ -855,7 +855,7 @@ export class SpriteManager implements ISpriteManager {
             request.open("GET", url);
             request.send();
         });
-    }    
+    }
 
     /**
      * Creates a sprite manager from a snippet saved by the sprite editor
