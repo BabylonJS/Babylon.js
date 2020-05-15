@@ -15,6 +15,7 @@ import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
 import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
+import { CommonPropertyGridComponent } from '../commonPropertyGridComponent';
 
 interface ITransformNodePropertyGridComponentProps {
     globalState: GlobalState;
@@ -50,7 +51,8 @@ export class TransformNodePropertyGridComponent extends React.Component<ITransfo
                         transformNode.dispose();
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     }} />              
-                </LineContainerComponent>
+                </LineContainerComponent>                
+                <CommonPropertyGridComponent host={transformNode} lockObject={this.props.lockObject} globalState={this.props.globalState} />
                 <LineContainerComponent globalState={this.props.globalState} title="TRANSFORMATIONS">
                     <Vector3LineComponent label="Position" target={transformNode} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {

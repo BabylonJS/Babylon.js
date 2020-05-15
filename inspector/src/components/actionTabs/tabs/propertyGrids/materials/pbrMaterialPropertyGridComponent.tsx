@@ -2,6 +2,7 @@ import * as React from "react";
 
 import { Observable } from "babylonjs/Misc/observable";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
+import { Constants } from "babylonjs/Engines/constants";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
@@ -127,6 +128,12 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
             { label: "Sheen Reflectance", value: 85 },
             { label: "Luminance Over Alpha", value: 86 },
             { label: "Alpha", value: 87 },
+        ];
+
+        var realTimeFilteringQualityOptions = [
+            { label: "Low", value: Constants.TEXTURE_FILTERING_QUALITY_LOW },
+            { label: "Medium", value: Constants.TEXTURE_FILTERING_QUALITY_MEDIUM },
+            { label: "High", value: Constants.TEXTURE_FILTERING_QUALITY_HIGH }
         ];
 
         (material.sheen as any)._useRoughness = (material.sheen as any)._useRoughness ?? material.sheen.roughness !== null;
@@ -312,6 +319,8 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     <CheckBoxLineComponent label="Micro-surface from ref. map alpha" target={material} propertyName="useMicroSurfaceFromReflectivityMapAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Specular over alpha" target={material} propertyName="useSpecularOverAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Specular anti-aliasing" target={material} propertyName="enableSpecularAntiAliasing" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <CheckBoxLineComponent label="Realtime Filtering" target={material} propertyName="realTimeFiltering" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <OptionsLineComponent allowNullValue={true} label="Realtime Filtering quality" options={realTimeFilteringQualityOptions} target={material} propertyName="realTimeFilteringQuality" onPropertyChangedObservable={this.props.onPropertyChangedObservable}  />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="NORMAL MAP" closed={true}>
                     <CheckBoxLineComponent label="Invert X axis" target={material} propertyName="invertNormalMapX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
