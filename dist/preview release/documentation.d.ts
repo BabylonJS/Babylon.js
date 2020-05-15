@@ -11046,6 +11046,15 @@ declare module BABYLON {
          */
         static Parse(parsedManager: any, scene: Scene, rootUrl: string): SpriteManager;
         /**
+         * Creates a sprite manager from a snippet saved in a remote file
+         * @param name defines the name of the sprite manager to create (can be null or empty to use the one from the json data)
+         * @param url defines the url to load from
+         * @param scene defines the hosting scene
+         * @param rootUrl defines the root URL to use to load textures and relative dependencies
+         * @returns a promise that will resolve to the new sprite manager
+         */
+        static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl?: string): Promise<SpriteManager>;
+        /**
          * Creates a sprite manager from a snippet saved by the sprite editor
          * @param snippetId defines the snippet to load
          * @param scene defines the hosting scene
@@ -16942,7 +16951,7 @@ declare module BABYLON {
         private _renderAlphaTest;
         private _renderTransparent;
         /** @hidden */
-        _edgesRenderers: SmartArray<IEdgesRenderer>;
+        _edgesRenderers: SmartArrayNoDuplicate<IEdgesRenderer>;
         onBeforeTransparentRendering: () => void;
         /**
          * Set the opaque sort comparison function.
@@ -66056,14 +66065,14 @@ declare module BABYLON {
         static ExportSet(systems: IParticleSystem[]): ParticleSystemSet;
         /**
          * Creates a particle system from a snippet saved in a remote file
-         * @param name defines the name of the  particle system to create
+         * @param name defines the name of the particle system to create (can be null or empty to use the one from the json data)
          * @param url defines the url to load from
          * @param scene defines the hosting scene
          * @param gpu If the system will use gpu
          * @param rootUrl defines the root URL to use to load textures and relative dependencies
-         * @returns a promise that will resolve to the new  particle system
+         * @returns a promise that will resolve to the new particle system
          */
-        static ParseFromFileAsync(name: string, url: string, scene: Scene, gpu?: boolean, rootUrl?: string): Promise<IParticleSystem>;
+        static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, gpu?: boolean, rootUrl?: string): Promise<IParticleSystem>;
         /**
          * Creates a particle system from a snippet saved by the particle system editor
          * @param snippetId defines the snippet to load
@@ -79689,6 +79698,35 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         dispose(): void;
         /** @hidden */
         loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1553)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_xmp implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /**
+         * Called after the loader state changes to LOADING.
+         */
+        onLoading(): void;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
