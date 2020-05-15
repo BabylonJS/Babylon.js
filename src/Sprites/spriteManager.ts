@@ -824,6 +824,40 @@ export class SpriteManager implements ISpriteManager {
     }
 
     /**
+     * Creates a sprite manager from a snippet saved in a remote file
+     * @param name defines the name of the sprite manager to create (can be null or empty to use the one from the json data)
+     * @param url defines the url to load from
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a promise that will resolve to the new sprite manager
+     */
+    public static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl: string = ""): Promise<SpriteManager> {
+
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        let serializationObject = JSON.parse(request.responseText);
+                        let output = SpriteManager.Parse(serializationObject, scene || Engine.LastCreatedScene, rootUrl);
+                        
+                        if (name) {
+                            output.name = name;
+                        }
+                        
+                        resolve(output);
+                    } else {
+                        reject("Unable to load the sprite manager");
+                    }
+                }
+            });
+
+            request.open("GET", url);
+            request.send();
+        });
+    }    
+
+    /**
      * Creates a sprite manager from a snippet saved by the sprite editor
      * @param snippetId defines the snippet to load
      * @param scene defines the hosting scene
