@@ -117,7 +117,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabsComponent" {
 declare module "babylonjs-inspector/components/actionTabs/lines/textLineComponent" {
     import * as React from "react";
     interface ITextLineComponentProps {
-        label: string;
+        label?: string;
         value?: string;
         color?: string;
         underline?: boolean;
@@ -1278,6 +1278,43 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/cam
     export class ArcRotateCameraPropertyGridComponent extends React.Component<IArcRotateCameraPropertyGridComponentProps> {
         constructor(props: IArcRotateCameraPropertyGridComponentProps);
         render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/lines/indentedtextLineComponent" {
+    import * as React from "react";
+    interface IIndentedTextLineComponentProps {
+        value?: string;
+        color?: string;
+        underline?: boolean;
+        onLink?: () => void;
+        url?: string;
+        additionalClass?: string;
+    }
+    export class IndentedTextLineComponent extends React.Component<IIndentedTextLineComponentProps> {
+        constructor(props: IIndentedTextLineComponentProps);
+        onLink(): void;
+        renderContent(): JSX.Element;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/commonPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    interface ICommonPropertyGridComponentProps {
+        globalState: GlobalState;
+        host: {
+            metadata: any;
+        };
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class CommonPropertyGridComponent extends React.Component<ICommonPropertyGridComponentProps> {
+        constructor(props: ICommonPropertyGridComponentProps);
+        renderLevel(jsonObject: any): JSX.Element[];
+        render(): JSX.Element | null;
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent" {
@@ -3208,7 +3245,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface ITextLineComponentProps {
-        label: string;
+        label?: string;
         value?: string;
         color?: string;
         underline?: boolean;
@@ -4190,6 +4227,37 @@ declare module INSPECTOR {
     export class ArcRotateCameraPropertyGridComponent extends React.Component<IArcRotateCameraPropertyGridComponentProps> {
         constructor(props: IArcRotateCameraPropertyGridComponentProps);
         render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IIndentedTextLineComponentProps {
+        value?: string;
+        color?: string;
+        underline?: boolean;
+        onLink?: () => void;
+        url?: string;
+        additionalClass?: string;
+    }
+    export class IndentedTextLineComponent extends React.Component<IIndentedTextLineComponentProps> {
+        constructor(props: IIndentedTextLineComponentProps);
+        onLink(): void;
+        renderContent(): JSX.Element;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface ICommonPropertyGridComponentProps {
+        globalState: GlobalState;
+        host: {
+            metadata: any;
+        };
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class CommonPropertyGridComponent extends React.Component<ICommonPropertyGridComponentProps> {
+        constructor(props: ICommonPropertyGridComponentProps);
+        renderLevel(jsonObject: any): JSX.Element[];
+        render(): JSX.Element | null;
     }
 }
 declare module INSPECTOR {

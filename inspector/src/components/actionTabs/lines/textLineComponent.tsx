@@ -1,7 +1,7 @@
 import * as React from "react";
 
 interface ITextLineComponentProps {
-    label: string;
+    label?: string;
     value?: string;
     color?: string;
     underline?: boolean;
@@ -51,7 +51,7 @@ export class TextLineComponent extends React.Component<ITextLineComponentProps> 
         return (
             <div className={this.props.underline ? "textLine underline" : "textLine" + (this.props.additionalClass ? " " + this.props.additionalClass : "")}>
                 <div className="label">
-                    {this.props.label}
+                    {this.props.label ?? ""}
                 </div>
                 {this.renderContent()}
             </div>
