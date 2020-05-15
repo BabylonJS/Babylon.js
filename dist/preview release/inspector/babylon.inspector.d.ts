@@ -607,6 +607,17 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IPlayheadProps {
+        message: string;
+        open: boolean;
+        close: () => void;
+    }
+    export class Notification extends React.Component<IPlayheadProps> {
+        constructor(props: IPlayheadProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface IGraphActionsBarProps {
         addKeyframe: () => void;
         handleValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -648,6 +659,7 @@ declare module INSPECTOR {
         flatTangent: boolean;
         scale: number;
         playheadOffset: number;
+        notification: string;
     }> {
         private _heightScale;
         readonly _canvasLength: number;
@@ -666,6 +678,7 @@ declare module INSPECTOR {
         handleTypeChange(event: React.ChangeEvent<HTMLSelectElement>): void;
         handlePropertyChange(event: React.ChangeEvent<HTMLInputElement>): void;
         addAnimation(): void;
+        clearNotification(): void;
         addKeyframeClick(): void;
         addKeyFrame(event: React.MouseEvent<SVGSVGElement>): void;
         updateKeyframe(keyframe: BABYLON.Vector2, index: number): void;
