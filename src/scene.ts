@@ -1757,9 +1757,7 @@ export class Scene extends AbstractScene implements IAnimatable {
                 return false;
             }
 
-            let hardwareInstancedRendering = (
-                    (mesh.getClassName() === "InstancedMesh" || mesh.getClassName() === "InstancedLinesMesh") && (<Mesh>mesh).instances.length > 0 || mesh.hasThinInstances
-                ) && engine.getCaps().instancedArrays;
+            let hardwareInstancedRendering = mesh.hasThinInstances || mesh.getClassName() === "InstancedMesh" || mesh.getClassName() === "InstancedLinesMesh" || engine.getCaps().instancedArrays && (<Mesh>mesh).instances.length > 0;
             // Is Ready For Mesh
             for (let step of this._isReadyForMeshStage) {
                 if (!step.action(mesh, hardwareInstancedRendering)) {
