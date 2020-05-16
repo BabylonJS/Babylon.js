@@ -117,8 +117,9 @@ export class MaterialHelper {
      * @param defines specifies the list of active defines
      * @param useInstances defines if instances have to be turned on
      * @param useClipPlane defines if clip plane have to be turned on
+     * @param useInstances defines if thin instances have to be turned on
      */
-    public static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: any, useInstances: boolean, useClipPlane: Nullable<boolean> = null): void {
+    public static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: any, useInstances: boolean, useClipPlane: Nullable<boolean> = null, useThinInstances: boolean): void {
         var changed = false;
         let useClipPlane1 = false;
         let useClipPlane2 = false;
@@ -171,6 +172,11 @@ export class MaterialHelper {
 
         if (defines["INSTANCES"] !== useInstances) {
             defines["INSTANCES"] = useInstances;
+            changed = true;
+        }
+
+        if (defines["THIN_INSTANCES"] !== useThinInstances) {
+            defines["THIN_INSTANCES"] = useThinInstances;
             changed = true;
         }
 
@@ -664,7 +670,7 @@ export class MaterialHelper {
      * @param defines The current MaterialDefines of the effect
      */
     public static PrepareAttributesForInstances(attribs: string[], defines: MaterialDefines): void {
-        if (defines["INSTANCES"]) {
+        if (defines["INSTANCES"] || defines["THIN_INSTANCES"]) {
             this.PushAttributesForInstances(attribs);
         }
     }
