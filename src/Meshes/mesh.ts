@@ -276,7 +276,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     public get hasThinInstances(): boolean {
-        return (this._thinInstancedBuffersStorage?.instancesCount ?? 0) > 0;
+        return (this._thinInstanceStorage?.instancesCount ?? 0) > 0;
     }
 
     // Members
@@ -1082,6 +1082,22 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return this;
     }
 
+    protected _afterComputeWorldMatrix(): void {
+        super._afterComputeWorldMatrix();
+
+        if (!this.hasThinInstances) {
+            return;
+        }
+
+        /*if (!this.ignoreNonUniformScaling && this._thinInstanceStorage!.nonUniformScaling && !this.nonUniformScaling) {
+            this._updateNonUniformScalingState(true);
+        }*/
+
+        if (!this.doNotSyncBoundingInfo) {
+            this.thinInstanceRefreshBoundingInfo();
+        }
+    }
+
     /**
      * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
      * This means the mesh underlying bounding box and sphere are recomputed.
@@ -1616,7 +1632,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /** @hidden */
     public _renderWithThinInstances(subMesh: SubMesh, fillMode: number, effect: Effect, engine: Engine) {
         // Stats
-        const instancesCount = this._thinInstancedBuffersStorage?.instancesCount ?? 0;
+        const instancesCount = this._thinInstanceStorage?.instancesCount ?? 0;
 
         this.getScene()._activeIndices.addCount(subMesh.indexCount * instancesCount, false);
 
