@@ -275,6 +275,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return this.instances.length > 0;
     }
 
+    public get hasThinInstances(): boolean {
+        return (this._thinInstancedBuffersStorage?.instancesCount ?? 0) > 0;
+    }
+
     // Members
 
     /**
@@ -955,7 +959,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         let engine = this.getEngine();
         let scene = this.getScene();
-        let hardwareInstancedRendering = forceInstanceSupport || engine.getCaps().instancedArrays && this.instances.length > 0;
+        let hardwareInstancedRendering = forceInstanceSupport || engine.getCaps().instancedArrays && (this.instances.length > 0 || this.hasThinInstances);
 
         this.computeWorldMatrix();
 
@@ -1610,6 +1614,20 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /** @hidden */
+    public _renderWithThinInstances(subMesh: SubMesh, fillMode: number, effect: Effect, engine: Engine) {
+        // Stats
+        const instancesCount = this._thinInstancedBuffersStorage?.instancesCount ?? 0;
+
+        this.getScene()._activeIndices.addCount(subMesh.indexCount * instancesCount, false);
+
+        // Draw
+        this._bind(subMesh, effect, fillMode);
+        this._draw(subMesh, fillMode, instancesCount);
+
+        engine.unbindInstanceAttributes();
+    }
+
+    /** @hidden */
     public _processInstancedBuffers(visibleInstances: InstancedMesh[], renderSelf: boolean) {
         // Do nothing
     }
@@ -1619,6 +1637,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material): Mesh {
         var scene = this.getScene();
         var engine = scene.getEngine();
+
+        if (hardwareInstancedRendering && subMesh.getRenderingMesh().hasThinInstances) {
+            this._renderWithThinInstances(subMesh, fillMode, effect, engine);
+            return this;
+        }
 
         if (hardwareInstancedRendering) {
             this._renderWithInstances(subMesh, fillMode, batch, effect, engine);
@@ -1728,7 +1751,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         var engine = scene.getEngine();
-        var hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id];
+        var hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id] || subMesh.getRenderingMesh().hasThinInstances;
         let instanceDataStorage = this._instanceDataStorage;
 
         let material = subMesh.getMaterial();
@@ -2269,11 +2292,19 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Instances
         this._disposeInstanceSpecificData();
 
+        // Thin instances
+        this._disposeThinInstanceSpecificData();
+
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
 
     /** @hidden */
     public _disposeInstanceSpecificData() {
+        // Do nothing
+    }
+
+    /** @hidden */
+    public _disposeThinInstanceSpecificData() {
         // Do nothing
     }
 

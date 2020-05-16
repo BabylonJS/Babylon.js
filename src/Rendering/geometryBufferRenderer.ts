@@ -300,6 +300,9 @@ export class GeometryBufferRenderer {
         if (useInstances) {
             defines.push("#define INSTANCES");
             MaterialHelper.PushAttributesForInstances(attribs);
+            if (subMesh.getRenderingMesh().hasInstances) {
+                defines.push("#define THIN_INSTANCES");
+            }
         }
 
         // Setup textures count
@@ -427,7 +430,7 @@ export class GeometryBufferRenderer {
                 return;
             }
 
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
+            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null || renderingMesh.hasThinInstances);
             var world = effectiveMesh.getWorldMatrix();
 
             if (this.isReady(subMesh, hardwareInstancedRendering)) {
