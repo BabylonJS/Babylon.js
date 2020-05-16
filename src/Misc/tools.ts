@@ -293,7 +293,7 @@ export class Tools {
         }
 
         // Special Fallback...
-        if (engine._badDesktopOS) {
+        if (engine._badDesktopOS && !engine._badOS) {
             eventPrefix = "mouse";
         }
 
