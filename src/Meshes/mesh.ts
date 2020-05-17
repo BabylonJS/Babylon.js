@@ -91,6 +91,18 @@ export class _InstancesBatch {
 /**
  * @hidden
  **/
+class _ThinInstanceDataStorage {
+    public instancesCount: number = 0;
+    public nonUniformScaling: boolean = false;
+    public matrixBuffer: Nullable<Buffer> = null;
+    public matrixBufferSize = 32 * 16; // let's start with a maximum of 32 thin instances
+    public matrixData: Nullable<Float32Array>;
+    public boundingVectors: Array<Vector3> = [];
+}
+
+/**
+ * @hidden
+ **/
 class _InternalMeshDataInfo {
     // Events
     public _onBeforeRenderObservable: Nullable<Observable<Mesh>>;
@@ -276,7 +288,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     public get hasThinInstances(): boolean {
-        return (this._thinInstanceStorage?.instancesCount ?? 0) > 0;
+        return (this._thinInstanceDataStorage?.instancesCount ?? 0) > 0;
     }
 
     // Members
@@ -338,6 +350,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** @hidden */
     public _instanceDataStorage = new _InstanceDataStorage();
+
+    /** @hidden */
+    public _thinInstanceDataStorage = new _ThinInstanceDataStorage();
 
     private _effectiveMaterial: Nullable<Material> = null;
 
@@ -1632,7 +1647,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /** @hidden */
     public _renderWithThinInstances(subMesh: SubMesh, fillMode: number, effect: Effect, engine: Engine) {
         // Stats
-        const instancesCount = this._thinInstanceStorage?.instancesCount ?? 0;
+        const instancesCount = this._thinInstanceDataStorage?.instancesCount ?? 0;
 
         this.getScene()._activeIndices.addCount(subMesh.indexCount * instancesCount, false);
 
