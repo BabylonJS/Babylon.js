@@ -1,21 +1,16 @@
 import { Nullable, DeepImmutableObject } from "../types";
 import { Mesh, _InstancesBatch } from "../Meshes/mesh";
 import { VertexBuffer, Buffer } from './buffer';
-import { Matrix, Vector3 } from '../Maths/math.vector';
-
-const tmpMatrix = Matrix.Identity();
-const tmpV1 = new Vector3();
-const tmpV2 = new Vector3();
-const tmpV3 = new Vector3();
+import { Matrix, Vector3, TmpVectors } from '../Maths/math.vector';
 
 const isNonUniform = (buffer: DeepImmutableObject<Float32Array>, i: number) => {
-    tmpV2.copyFromFloats(buffer[i * 16 + 0], buffer[i * 16 + 1], buffer[i * 16 + 2]);
-    tmpV1.x = tmpV2.lengthSquared(); // scale x squared
-    tmpV2.copyFromFloats(buffer[i * 16 + 4], buffer[i * 16 + 5], buffer[i * 16 + 6]);
-    tmpV1.y = tmpV2.lengthSquared(); // scale y squared
-    tmpV2.copyFromFloats(buffer[i * 16 + 8], buffer[i * 16 + 9], buffer[i * 16 + 10]);
-    tmpV1.z = tmpV2.lengthSquared(); // scale z squared
-    return tmpV1.isNonUniformWithinEpsilon(0.0001);
+    TmpVectors.Vector3[1].copyFromFloats(buffer[i * 16 + 0], buffer[i * 16 + 1], buffer[i * 16 + 2]);
+    TmpVectors.Vector3[0].x = TmpVectors.Vector3[1].lengthSquared(); // scale x squared
+    TmpVectors.Vector3[1].copyFromFloats(buffer[i * 16 + 4], buffer[i * 16 + 5], buffer[i * 16 + 6]);
+    TmpVectors.Vector3[0].y = TmpVectors.Vector3[1].lengthSquared(); // scale y squared
+    TmpVectors.Vector3[1].copyFromFloats(buffer[i * 16 + 8], buffer[i * 16 + 9], buffer[i * 16 + 10]);
+    TmpVectors.Vector3[0].z = TmpVectors.Vector3[1].lengthSquared(); // scale z squared
+    return TmpVectors.Vector3[0].isNonUniformWithinEpsilon(0.0001);
 };
 
 declare module "./mesh" {
@@ -268,20 +263,20 @@ Mesh.prototype.thinInstanceRefreshBoundingInfo = function(forceRefreshParentInfo
         }
     }
 
-    tmpV1.setAll(Number.MAX_VALUE); // min
-    tmpV2.setAll(Number.MIN_VALUE); // max
+    TmpVectors.Vector3[0].setAll(Number.MAX_VALUE); // min
+    TmpVectors.Vector3[1].setAll(Number.MIN_VALUE); // max
 
     for (let i = 0; i < this._thinInstanceDataStorage.instancesCount; ++i) {
-        Matrix.FromArrayToRef(matrixData, i * 16, tmpMatrix);
+        Matrix.FromArrayToRef(matrixData, i * 16, TmpVectors.Matrix[0]);
 
         for (let v = 0; v < vectors.length; ++v) {
-            Vector3.TransformCoordinatesToRef(vectors[v], tmpMatrix, tmpV3);
-            tmpV1.minimizeInPlace(tmpV3);
-            tmpV2.maximizeInPlace(tmpV3);
+            Vector3.TransformCoordinatesToRef(vectors[v], TmpVectors.Matrix[0], TmpVectors.Vector3[2]);
+            TmpVectors.Vector3[0].minimizeInPlace(TmpVectors.Vector3[2]);
+            TmpVectors.Vector3[1].maximizeInPlace(TmpVectors.Vector3[2]);
         }
     }
 
-    boundingInfo.reConstruct(tmpV1, tmpV2);
+    boundingInfo.reConstruct(TmpVectors.Vector3[0], TmpVectors.Vector3[1]);
 };
 
 Mesh.prototype._thinInstanceUpdateBufferSize = function(kind: string, numInstances: number = 1) {
