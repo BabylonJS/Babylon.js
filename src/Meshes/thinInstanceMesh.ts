@@ -75,8 +75,9 @@ declare module "./mesh" {
 
         /**
          * Refreshes the bounding info, taking into account all the thin instances defined
+         * @param forceRefreshParentInfo true to force recomputing the mesh bounding info and use it to compute the aggregated bounding info
          */
-        thinInstanceRefreshBoundingInfo(): void;
+        thinInstanceRefreshBoundingInfo(forceRefreshParentInfo: boolean): void;
 
         /** @hidden */
         _thinInstanceInitializeUserStorage(): void;
@@ -148,7 +149,7 @@ Mesh.prototype.thinInstanceSetMatrixAt = function(index: number, matrix: DeepImm
         this.thinInstanceBufferUpdated("matrix");
 
         if (!this.doNotSyncBoundingInfo) {
-            this.thinInstanceRefreshBoundingInfo();
+            this.thinInstanceRefreshBoundingInfo(false);
         }
     }
 
@@ -192,7 +193,7 @@ Mesh.prototype.thinInstanceSetBuffer = function(kind: string, buffer: Nullable<F
             this.setVerticesBuffer(matrixBuffer.createVertexBuffer("world2", 8, 4));
             this.setVerticesBuffer(matrixBuffer.createVertexBuffer("world3", 12, 4));
 
-            this._thinInstanceDataStorage.nonUniformScaling = false;
+            /*this._thinInstanceDataStorage.nonUniformScaling = false;
 
             if (!this.ignoreNonUniformScaling) {
                 for (let i = 0; i < this._thinInstanceDataStorage.instancesCount && !this._thinInstanceDataStorage.nonUniformScaling; ++i) {
@@ -202,10 +203,10 @@ Mesh.prototype.thinInstanceSetBuffer = function(kind: string, buffer: Nullable<F
                 if (this._thinInstanceDataStorage.nonUniformScaling && !this.nonUniformScaling) {
                     this._updateNonUniformScalingState(true);
                 }
-            }
+            }*/
 
             if (!this.doNotSyncBoundingInfo) {
-                this.thinInstanceRefreshBoundingInfo();
+                this.thinInstanceRefreshBoundingInfo(false);
             }
         } else {
             this._thinInstanceDataStorage.instancesCount = 0;
@@ -246,15 +247,20 @@ Mesh.prototype.thinInstanceBufferUpdated = function(kind: string): void {
     }
 };
 
-Mesh.prototype.thinInstanceRefreshBoundingInfo = function() {
+Mesh.prototype.thinInstanceRefreshBoundingInfo = function(forceRefreshParentInfo: boolean = false) {
     if (!this._thinInstanceDataStorage.matrixData || !this._thinInstanceDataStorage.matrixBuffer) {
         return;
     }
 
+    const vectors = this._thinInstanceDataStorage.boundingVectors;
+
+    if (forceRefreshParentInfo) {
+        vectors.length = 0;
+        this.refreshBoundingInfo(true);
+    }
+
     const boundingInfo = this.getBoundingInfo();
     const matrixData = this._thinInstanceDataStorage.matrixData;
-
-    const vectors = this._thinInstanceDataStorage.boundingVectors;
 
     if (vectors.length === 0) {
         for (let v = 0; v < boundingInfo.boundingBox.vectors.length; ++v) {
