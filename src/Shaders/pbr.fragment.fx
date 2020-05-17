@@ -14,6 +14,11 @@
 
 precision highp float;
 
+#ifdef HIGH_DEFINITION_PIPELINE
+#extension GL_EXT_draw_buffers : require
+#include<mrtFragmentDeclaration>[5]
+#endif
+
 // Forces linear space for image processing
 #ifndef FROMLINEARSPACE
     #define FROMLINEARSPACE
@@ -482,14 +487,21 @@ void main(void) {
 
     #include<pbrBlockFinalColorComposition>
 
-    #include<logDepthFragment>
+        #include<logDepthFragment>
     #include<fogFragment>(color, finalColor)
 
     #include<pbrBlockImageProcessing>
 
-    #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 
+#ifdef HIGH_DEFINITION_PIPELINE
+    gl_FragData[0] = vec4(1.0, 0.0, 0.0, 1.0);
+    gl_FragData[1] = vec4(1.0, 0.0, 0.0, 1.0);
+    gl_FragData[2] = vec4(1.0, 0.0, 0.0, 1.0);
+    gl_FragData[3] = vec4(1.0, 0.0, 0.0, 1.0);
+    gl_FragData[4] = vec4(1.0, 0.0, 0.0, 1.0);
+#else
+    // #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
     gl_FragColor = finalColor;
-
+#endif
     #include<pbrDebug>
 }

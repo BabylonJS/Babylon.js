@@ -153,6 +153,8 @@ export class PBRMaterialDefines extends MaterialDefines
     public HORIZONOCCLUSION = false;
 
     public INSTANCES = false;
+    
+    public HIGH_DEFINITION_PIPELINE = false;
 
     public NUM_BONE_INFLUENCERS = 0;
     public BonesPerMesh = 0;
@@ -1544,6 +1546,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
             this._imageProcessingConfiguration.prepareDefines(defines);
+        }
+
+        if (scene.highDefinitionPipeline) {
+            defines.HIGH_DEFINITION_PIPELINE = true;            
+        } else {
+            defines.HIGH_DEFINITION_PIPELINE = false;            
         }
 
         defines.FORCENORMALFORWARD = this._forceNormalForward;
