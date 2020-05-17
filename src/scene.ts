@@ -21,6 +21,8 @@ import { AbstractScene } from "./abstractScene";
 import { BaseTexture } from "./Materials/Textures/baseTexture";
 import { Texture } from "./Materials/Textures/texture";
 import { RenderTargetTexture } from "./Materials/Textures/renderTargetTexture";
+import { MultiRenderTarget } from "./Materials/Textures/multiRenderTarget";
+import { SceneCompositorPostProcess } from "./PostProcesses/sceneCompositorPostProcess";
 import { Material } from "./Materials/material";
 import { ImageProcessingConfiguration } from "./Materials/imageProcessingConfiguration";
 import { Effect } from "./Materials/effect";
@@ -245,6 +247,15 @@ export class Scene extends AbstractScene implements IAnimatable {
     public get imageProcessingConfiguration(): ImageProcessingConfiguration {
         return this._imageProcessingConfiguration;
     }
+
+    private _highDefinitionPipeline: boolean = true;
+
+    public get highDefinitionPipeline () {
+        return this._highDefinitionPipeline;
+    }
+
+    public highDefinitionMRT: MultiRenderTarget;
+    public sceneCompositorPostProcess: SceneCompositorPostProcess;
 
     private _forceWireframe = false;
     /**
@@ -1427,6 +1438,13 @@ export class Scene extends AbstractScene implements IAnimatable {
         if (!options || !options.virtual) {
             this._engine.onNewSceneAddedObservable.notifyObservers(this);
         }
+
+        // TODO : TEMPORARY
+        this.highDefinitionMRT = new MultiRenderTarget("sceneHighDefinitionMRT", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, 5, this,
+            { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT });
+
+        this.sceneCompositorPostProcess = new SceneCompositorPostProcess("sceneCompositor", 1, null, undefined, this._engine);
+        this.sceneCompositorPostProcess.inputTexture = this.highDefinitionMRT.getInternalTexture()!;
     }
 
     /**
@@ -3622,6 +3640,15 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     private _bindFrameBuffer() {
+        if (this.highDefinitionPipeline) {
+            var internalTexture = this.highDefinitionMRT.getInternalTexture();
+            if (internalTexture) {
+                this.getEngine().bindFramebuffer(internalTexture);
+            } else {
+                Logger.Error("High Definition pipeline error.");
+            }
+            return;
+        }
         if (this.activeCamera && this.activeCamera._multiviewTexture) {
             this.activeCamera._multiviewTexture._bindFrameBuffer();
         } else if (this.activeCamera && this.activeCamera.outputRenderTarget) {
@@ -3699,9 +3726,9 @@ export class Scene extends AbstractScene implements IAnimatable {
             step.action(this._renderTargets);
         }
 
+        let needRebind = false;
         if (this.renderTargetsEnabled) {
             this._intermediateRendering = true;
-            let needRebind = false;
 
             if (this._renderTargets.length > 0) {
                 Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
@@ -3729,12 +3756,11 @@ export class Scene extends AbstractScene implements IAnimatable {
             if (this.activeCamera && this.activeCamera.outputRenderTarget) {
                 needRebind = true;
             }
+        }
 
-            // Restore framebuffer after rendering to targets
-            if (needRebind) {
-                this._bindFrameBuffer();
-            }
-
+        // Restore framebuffer after rendering to targets
+        if (needRebind || this.highDefinitionPipeline) {
+            this._bindFrameBuffer();
         }
 
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
@@ -3757,6 +3783,11 @@ export class Scene extends AbstractScene implements IAnimatable {
         // After Camera Draw
         for (let step of this._afterCameraDrawStage) {
             step.action(this.activeCamera);
+        }
+
+        if (this.highDefinitionPipeline) {
+            // this.sceneCompositorPostProcess.activate(this.activeCamera);
+            this.postProcessManager.directRender([this.sceneCompositorPostProcess]);
         }
 
         // Finalize frame
