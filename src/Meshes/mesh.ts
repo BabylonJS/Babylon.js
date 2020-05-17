@@ -288,7 +288,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     public get hasThinInstances(): boolean {
-        return (this._thinInstanceDataStorage?.instancesCount ?? 0) > 0;
+        return (this._thinInstanceDataStorage.instancesCount ?? 0) > 0;
     }
 
     // Members
@@ -1109,7 +1109,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }*/
 
         if (!this.doNotSyncBoundingInfo) {
-            this.thinInstanceRefreshBoundingInfo();
+            this.thinInstanceRefreshBoundingInfo(false);
         }
     }
 
