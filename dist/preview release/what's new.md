@@ -10,6 +10,7 @@
 - Added editing of PBR materials, Post processes and Particle fragment shaders in the node material editor ([Popov72](https://github.com/Popov72))
 - Added Curve editor to create and view selected entity's animations in the Inspector ([pixelspace](https://github.com/devpixelspace))
 - Added support in `ShadowGenerator` for fast fake soft transparent shadows ([Popov72](https://github.com/Popov72))
+- Added support for **thin instances** for faster mesh instances. [Doc](https://doc.babylonjs.com/how_to/how_to_use_thininstances) ([Popov72](https://github.com/Popov72))
 
 ## Updates
 
