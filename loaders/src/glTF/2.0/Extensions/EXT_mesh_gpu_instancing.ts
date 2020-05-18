@@ -69,8 +69,8 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
                     useThinInstancesForAllMeshes = false;
                 } else {
                     canUseThinInstances = true;
-                    (babylonMesh as Mesh).thinInstanceCount = 1;    // make sure mesh.hasThinInstances returns true from now on (else async loading of the thin instance data will lead to problems
-                                                                    // as the mesh won't be considered as having thin instances until thinInstanceSetBuffer is called)
+                    (babylonMesh as Mesh)._thinInstanceDataStorage.instancesCount = 1;  // make sure mesh.hasThinInstances returns true from now on (else async loading of the thin instance data will lead to problems
+                                                                                        // as the mesh won't be considered as having thin instances until thinInstanceSetBuffer is called)
                 }
             }
 
@@ -100,7 +100,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
             if (instanceCount == 0) {
                 for (const babylonMesh of node._primitiveBabylonMeshes) {
                     if ((babylonMesh as any).thinInstanceSetBuffer) {
-                        (babylonMesh as Mesh).thinInstanceCount = 0;
+                        (babylonMesh as Mesh)._thinInstanceDataStorage.instancesCount = 0;
                     }
                 }
                 return promise;
