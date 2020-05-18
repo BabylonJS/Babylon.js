@@ -38,11 +38,11 @@ export class NodeEditor {
         }
 
         let hostElement = options.hostElement;
-        
+
         if (!hostElement) {
             hostElement = Popup.CreatePopup("BABYLON.JS NODE EDITOR", "node-editor", 1000, 800)!;
         }
-        
+
         let globalState = new GlobalState();
         globalState.nodeMaterial = options.nodeMaterial;
         globalState.mode = options.nodeMaterial.mode;

@@ -151,10 +151,13 @@ export class NodeMaterial extends PushMaterial {
     /** Gets or sets a boolean indicating that node materials should not deserialize textures from json / snippet content */
     public static IgnoreTexturesAtLoadTime = false;
 
-    private BJSNODEMATERIALEDITOR = this._getGlobalNodeMaterialEditor();
+    private BJSNODEMATERIALEDITOR = NodeMaterial._getGlobalNodeMaterialEditor();
 
-    /** Get the inspector from bundle or global */
-    private _getGlobalNodeMaterialEditor(): any {
+    /**
+     * @hidden
+     * Get the inspector from bundle or global
+     */
+    public static _getGlobalNodeMaterialEditor(): any {
         // UMD Global name detection from Webpack Bundle UMD Name.
         if (typeof NODEEDITOR !== 'undefined') {
             return NODEEDITOR;
@@ -1249,7 +1252,7 @@ export class NodeMaterial extends PushMaterial {
 
     /** Creates the node editor window. */
     private _createNodeEditor() {
-        this.BJSNODEMATERIALEDITOR = this.BJSNODEMATERIALEDITOR || this._getGlobalNodeMaterialEditor();
+        this.BJSNODEMATERIALEDITOR = this.BJSNODEMATERIALEDITOR || NodeMaterial._getGlobalNodeMaterialEditor();
 
         this.BJSNODEMATERIALEDITOR.NodeEditor.Show({
             nodeMaterial: this

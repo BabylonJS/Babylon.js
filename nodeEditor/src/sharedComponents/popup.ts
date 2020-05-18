@@ -1,5 +1,5 @@
 export class Popup {
-    public static CreatePopup(title: string, windowVariableName: string, width = 300, height = 800) {
+    public static CreatePopup(title: string, windowVariableName: string, width = 300, height = 800, inheritStyles = true) {
         const windowCreationOptionsList = {
             width: width,
             height: height,
@@ -21,11 +21,13 @@ export class Popup {
         const parentDocument = popupWindow.document;
 
         // Font
-        const newLinkEl = parentDocument.createElement('link');
+        if (inheritStyles) {
+            const newLinkEl = parentDocument.createElement('link');
 
-        newLinkEl.rel = 'stylesheet';
-        newLinkEl.href = "https://use.typekit.net/cta4xsb.css";
-        parentDocument.head!.appendChild(newLinkEl);
+            newLinkEl.rel = 'stylesheet';
+            newLinkEl.href = "https://use.typekit.net/cta4xsb.css";
+            parentDocument.head!.appendChild(newLinkEl);
+        }
 
 
         parentDocument.title = title;
@@ -41,10 +43,12 @@ export class Popup {
         parentControl.style.padding = "0";
 
         popupWindow.document.body.appendChild(parentControl);
-        this._CopyStyles(window.document, parentDocument);
-        setTimeout(() => { // need this for late bindings
+        if (inheritStyles) {
             this._CopyStyles(window.document, parentDocument);
-        }, 0);
+            setTimeout(() => { // need this for late bindings
+                this._CopyStyles(window.document, parentDocument);
+            }, 0);
+        }
 
         (this as any)[windowVariableName] = popupWindow;
 

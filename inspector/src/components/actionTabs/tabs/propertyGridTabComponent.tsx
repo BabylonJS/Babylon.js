@@ -87,6 +87,8 @@ import { LensRenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pi
 import { LensRenderingPipelinePropertyGridComponent } from './propertyGrids/postProcesses/lensRenderingPipelinePropertyGridComponent';
 import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
 import { NodeMaterialPropertyGridComponent } from './propertyGrids/materials/nodeMaterialPropertyGridComponent';
+import { ShaderMaterial } from 'babylonjs/Materials/shaderMaterial';
+import { ShaderMaterialPropertyGridComponent } from './propertyGrids/materials/shaderMaterialPropertyGridComponent';
 import { MultiMaterial } from 'babylonjs/Materials/multiMaterial';
 import { MultiMaterialPropertyGridComponent } from './propertyGrids/materials/multiMaterialPropertyGridComponent';
 import { ParticleSystemPropertyGridComponent } from './propertyGrids/particleSystems/particleSystemPropertyGridComponent';
@@ -263,6 +265,16 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className === "NodeMaterial") {
                 const material = entity as NodeMaterial;
                 return (<NodeMaterialPropertyGridComponent
+                    globalState={this.props.globalState}
+                    material={material}
+                    lockObject={this._lockObject}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className === "ShaderMaterial") {
+                const material = entity as ShaderMaterial;
+                return (<ShaderMaterialPropertyGridComponent
                     globalState={this.props.globalState}
                     material={material}
                     lockObject={this._lockObject}
