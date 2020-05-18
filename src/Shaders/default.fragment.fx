@@ -258,7 +258,7 @@ void main(void) {
     #ifdef RGBDLIGHTMAP
         lightmapColor.rgb = fromRGBD(lightmapColor);
     #endif
-	lightmapColor.rgb *= vLightmapInfos.y
+	lightmapColor.rgb *= vLightmapInfos.y;
 #endif
 
 #include<lightFragment>[0..maxSimultaneousLights]

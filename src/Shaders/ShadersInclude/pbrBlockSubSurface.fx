@@ -25,6 +25,7 @@ struct subSurfaceOutParams
 };
 
 #ifdef SUBSURFACE
+    #define pbr_inline
     #define inline
     void subSurfaceBlock(
         const in vec3 vSubSurfaceIntensity,
@@ -204,11 +205,7 @@ struct subSurfaceOutParams
             #endif
 
             #ifdef REALTIME_FILTERING
-                #ifdef SS_LINEARSPECULARREFRACTION
-                    environmentRefraction = vec4(radiance(roughness, refractionSampler, refractionCoords, vRefractionFilteringInfo), 1.0);
-                #else
-                    environmentRefraction = vec4(radiance(alphaG, refractionSampler, refractionCoords, vRefractionFilteringInfo), 1.0);
-                #endif
+                environmentRefraction = vec4(radiance(alphaG, refractionSampler, refractionCoords, vRefractionFilteringInfo), 1.0);
             #else
                 environmentRefraction = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);
             #endif

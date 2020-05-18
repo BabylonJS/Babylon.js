@@ -1,18 +1,16 @@
 import * as React from "react";
 
-interface ITextLineComponentProps {
-    label?: string;
+interface IIndentedTextLineComponentProps {
     value?: string;
     color?: string;
     underline?: boolean;
     onLink?: () => void;
     url?: string;
-    ignoreValue?: boolean;
     additionalClass?: string;
 }
 
-export class TextLineComponent extends React.Component<ITextLineComponentProps> {
-    constructor(props: ITextLineComponentProps) {
+export class IndentedTextLineComponent extends React.Component<IIndentedTextLineComponentProps> {
+    constructor(props: IIndentedTextLineComponentProps) {
         super(props);
     }
 
@@ -29,10 +27,6 @@ export class TextLineComponent extends React.Component<ITextLineComponentProps> 
     }
 
     renderContent() {
-        if (this.props.ignoreValue) {
-            return null;
-        }
-
         if (this.props.onLink || this.props.url) {
             return (
                 <div className="link-value" title={this.props.value} onClick={() => this.onLink()}>
@@ -49,10 +43,7 @@ export class TextLineComponent extends React.Component<ITextLineComponentProps> 
 
     render() {
         return (
-            <div className={this.props.underline ? "textLine underline" : "textLine" + (this.props.additionalClass ? " " + this.props.additionalClass : "")}>
-                <div className="label">
-                    {this.props.label ?? ""}
-                </div>
+            <div className={"indented " + (this.props.underline ? "textLine underline" : "textLine" + (this.props.additionalClass ? " " + this.props.additionalClass : ""))}>
                 {this.renderContent()}
             </div>
         );

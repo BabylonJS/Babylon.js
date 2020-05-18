@@ -832,6 +832,11 @@
             "title": "GLTF Extension EXT_mesh_gpu_instancing",
             "playgroundId": "#QFIGLW#9",
             "referenceImage": "gltfExtensionExtMeshGpuInstancingTest.png"
+        },
+        {
+            "title": "Realtime Filtering",
+            "playgroundId": "#FEEK7G#118",
+            "referenceImage": "realtimeFiltering.png"
         }
     ]
 }
