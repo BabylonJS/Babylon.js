@@ -702,7 +702,11 @@ export class GLTFLoader implements IGLTFLoader {
 
         return Promise.all(promises).then(() => {
             this._forEachPrimitive(node, (babylonMesh) => {
-                babylonMesh.refreshBoundingInfo(true);
+                if ((babylonMesh as Mesh).hasThinInstances) {
+                    // refresh already done
+                } else {
+                    babylonMesh.refreshBoundingInfo(true);
+                }
             });
 
             return node._babylonTransformNode!;
@@ -777,7 +781,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         this.logOpen(`${context}`);
 
-        const shouldInstance = this._parent.createInstances && (node.skin == undefined && !mesh.primitives[0].targets);
+        const shouldInstance = this._parent.createInstances && (node.skin == undefined && !mesh.primitives[0].targets) && (!primitive._instanceData || !primitive._instanceData.babylonSourceMesh.hasThinInstances);
 
         let babylonAbstractMesh: AbstractMesh;
         let promise: Promise<any>;
