@@ -49,8 +49,9 @@ declare module "./mesh" {
          * @param kind name of the attribute. Use "matrix" to setup the buffer of matrices
          * @param buffer buffer to set
          * @param stride size in floats of each value of the buffer
+         * @param staticBuffer indicates that the buffer is static, so that you won't change it after it is set (better performances - false by default)
          */
-        thinInstanceSetBuffer(kind: string, buffer: Nullable<Float32Array>,  stride: number): void;
+        thinInstanceSetBuffer(kind: string, buffer: Nullable<Float32Array>,  stride: number, staticBuffer: boolean): void;
 
         /**
          * Synchronize the gpu buffers with a thin instance buffer. Call this method if you update later on the buffers passed to thinInstanceSetBuffer
@@ -150,7 +151,7 @@ Mesh.prototype.thinInstanceSetAttributeAt = function(kind: string, index: number
     return true;
 };
 
-Mesh.prototype.thinInstanceSetBuffer = function(kind: string, buffer: Nullable<Float32Array>, stride: number = 0): void {
+Mesh.prototype.thinInstanceSetBuffer = function(kind: string, buffer: Nullable<Float32Array>, stride: number = 0, staticBuffer: boolean = false): void {
     stride = stride || 16;
 
     if (kind === "matrix") {
@@ -162,7 +163,7 @@ Mesh.prototype.thinInstanceSetBuffer = function(kind: string, buffer: Nullable<F
         if (buffer !== null) {
             this._thinInstanceDataStorage.instancesCount = buffer.length / stride;
 
-            const matrixBuffer = new Buffer(this.getEngine(), buffer, true, stride, false, true);
+            const matrixBuffer = new Buffer(this.getEngine(), buffer, !staticBuffer, stride, false, true);
 
             this._thinInstanceDataStorage.matrixBuffer = matrixBuffer;
 
@@ -196,7 +197,7 @@ Mesh.prototype.thinInstanceSetBuffer = function(kind: string, buffer: Nullable<F
             this._userThinInstanceBuffersStorage.data[kind] = buffer;
             this._userThinInstanceBuffersStorage.strides[kind] = stride;
             this._userThinInstanceBuffersStorage.sizes[kind] = buffer.length;
-            this._userThinInstanceBuffersStorage.vertexBuffers[kind] = new VertexBuffer(this.getEngine(), buffer, kind, true, false, stride, true);
+            this._userThinInstanceBuffersStorage.vertexBuffers[kind] = new VertexBuffer(this.getEngine(), buffer, kind, !staticBuffer, false, stride, true);
 
             this.setVerticesBuffer(this._userThinInstanceBuffersStorage.vertexBuffers[kind]!);
         }
