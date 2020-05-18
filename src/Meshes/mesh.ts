@@ -93,7 +93,6 @@ export class _InstancesBatch {
  **/
 class _ThinInstanceDataStorage {
     public instancesCount: number = 0;
-    public nonUniformScaling: boolean = false;
     public matrixBuffer: Nullable<Buffer> = null;
     public matrixBufferSize = 32 * 16; // let's start with a maximum of 32 thin instances
     public matrixData: Nullable<Float32Array>;
