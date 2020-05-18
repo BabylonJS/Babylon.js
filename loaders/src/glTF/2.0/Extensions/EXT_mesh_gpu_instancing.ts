@@ -146,7 +146,6 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
                                 babylonInstancedMesh.refreshBoundingInfo();
                             }
                         } else {
-                            (babylonMesh as Mesh).refreshBoundingInfo();
                             (babylonMesh as Mesh).thinInstanceSetBuffer("matrix", matrices, 16, true);
                         }
                     }
