@@ -940,7 +940,7 @@ export class NodeMaterial extends PushMaterial {
         this._createEffectForParticles(particleSystem, BaseParticleSystem.BLENDMODE_MULTIPLY, onCompiled, onError);
     }
 
-    private _processDefines(mesh: AbstractMesh, defines: NodeMaterialDefines, useInstances = false): Nullable<{
+    private _processDefines(mesh: AbstractMesh, defines: NodeMaterialDefines, useInstances = false, subMesh?: SubMesh): Nullable<{
         lightDisposed: boolean,
         uniformBuffers: string[],
         mergedUniforms: string[],
@@ -955,7 +955,7 @@ export class NodeMaterial extends PushMaterial {
         });
 
         this._sharedData.blocksWithDefines.forEach((b) => {
-            b.prepareDefines(mesh, this, defines, useInstances);
+            b.prepareDefines(mesh, this, defines, useInstances, subMesh);
         });
 
         // Need to recompile?
@@ -1066,7 +1066,7 @@ export class NodeMaterial extends PushMaterial {
             return false;
         }
 
-        const result = this._processDefines(mesh, defines, useInstances);
+        const result = this._processDefines(mesh, defines, useInstances, subMesh);
 
         if (result) {
             let previousEffect = subMesh.effect;

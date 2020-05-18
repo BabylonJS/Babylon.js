@@ -761,6 +761,11 @@
             "referenceImage": "instancedBones.png"
         },
         {
+            "title": "Thin Instances",
+            "playgroundId": "#V1JE4Z#1",
+            "referenceImage": "thinInstances.png"
+        },
+        {
             "title": "Light Projection Texture",
             "playgroundId": "#CQNGRK#0",
             "referenceImage": "LightProjectionTexture.png"
