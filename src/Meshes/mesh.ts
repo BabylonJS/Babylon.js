@@ -1103,10 +1103,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return;
         }
 
-        /*if (!this.ignoreNonUniformScaling && this._thinInstanceStorage!.nonUniformScaling && !this.nonUniformScaling) {
-            this._updateNonUniformScalingState(true);
-        }*/
-
         if (!this.doNotSyncBoundingInfo) {
             this.thinInstanceRefreshBoundingInfo(false);
         }
