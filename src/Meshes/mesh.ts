@@ -1560,7 +1560,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         let renderSelf = batch.renderSelf[subMesh._id];
 
-        if (!this._instanceDataStorage.manualUpdate) {
+        const needUpdateBuffer =  !instancesBuffer || currentInstancesBufferSize !== instanceStorage.instancesBufferSize;
+
+        if (!this._instanceDataStorage.manualUpdate && (!instanceStorage.isFrozen || needUpdateBuffer)) {
             var world = this._effectiveMesh.getWorldMatrix();
             if (renderSelf) {
                 world.copyToArray(instanceStorage.instancesData, offset);
@@ -1580,7 +1582,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             instancesCount = (renderSelf ? 1 : 0) + visibleInstances.length;
         }
 
-        if (!instancesBuffer || currentInstancesBufferSize != instanceStorage.instancesBufferSize) {
+        if (needUpdateBuffer) {
             if (instancesBuffer) {
                 instancesBuffer.dispose();
             }
@@ -1593,7 +1595,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world2", 8, 4));
             this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world3", 12, 4));
         } else {
-            instancesBuffer!.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
+            if (!this._instanceDataStorage.isFrozen) {
+                instancesBuffer!.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
+            }
         }
 
         this._processInstancedBuffers(visibleInstances, renderSelf);

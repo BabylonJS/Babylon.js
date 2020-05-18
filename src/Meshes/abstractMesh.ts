@@ -845,16 +845,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /** @hidden */
     public _markSubMeshesAsMiscDirty() {
-        if (!this.subMeshes) {
-            return;
-        }
-
-        for (var subMesh of this.subMeshes) {
-            var material = subMesh.getMaterial();
-            if (material) {
-                material.markAsDirty(Constants.MATERIAL_MiscDirtyFlag);
-            }
-        }
+        this._markSubMeshesAsDirty((defines) => defines.markAsMiscDirty());
     }
 
     /**
