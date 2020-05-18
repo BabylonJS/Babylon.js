@@ -8,6 +8,7 @@ import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { INode } from "../glTFLoaderInterfaces";
 import { AbstractMesh } from 'babylonjs/Meshes/abstractMesh';
+import { TmpVectors } from 'babylonjs/Maths/math.vector';
 
 const NAME = "EXT_mesh_gpu_instancing";
 
@@ -15,11 +16,6 @@ interface IEXTMeshGpuInstancing {
     mesh?: number;
     attributes: { [name: string]: number };
 }
-
-const T = new Vector3(0, 0, 0);
-const R = new Quaternion(0, 0, 0, 1);
-const S = new Vector3(1, 1, 1);
-const M = new Matrix();
 
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1691)
@@ -124,18 +120,18 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
                     const matrices = canUseThinInstances ? new Float32Array(instanceCount * 16) : null;
 
                     if (matrices) {
-                        T.copyFromFloats(0, 0, 0);
-                        R.copyFromFloats(0, 0, 0, 1);
-                        S.copyFromFloats(1, 1, 1);
+                        TmpVectors.Vector3[0].copyFromFloats(0, 0, 0); // translation
+                        TmpVectors.Quaternion[0].copyFromFloats(0, 0, 0, 1); // rotation
+                        TmpVectors.Vector3[1].copyFromFloats(1, 1, 1); // scale
 
                         for (let i = 0; i < instanceCount; ++i) {
-                            translationBuffer && Vector3.FromArrayToRef(translationBuffer, i * 3, T);
-                            rotationBuffer && Quaternion.FromArrayToRef(rotationBuffer, i * 4, R);
-                            scaleBuffer && Vector3.FromArrayToRef(scaleBuffer, i * 3, S);
+                            translationBuffer && Vector3.FromArrayToRef(translationBuffer, i * 3, TmpVectors.Vector3[0]);
+                            rotationBuffer && Quaternion.FromArrayToRef(rotationBuffer, i * 4, TmpVectors.Quaternion[0]);
+                            scaleBuffer && Vector3.FromArrayToRef(scaleBuffer, i * 3, TmpVectors.Vector3[1]);
 
-                            Matrix.ComposeToRef(S, R, T, M);
+                            Matrix.ComposeToRef(TmpVectors.Vector3[1], TmpVectors.Quaternion[0], TmpVectors.Vector3[0], TmpVectors.Matrix[0]);
 
-                            M.copyToArray(matrices, i * 16);
+                            TmpVectors.Matrix[0].copyToArray(matrices, i * 16);
                         }
                     }
 
