@@ -45,6 +45,11 @@ declare module "./mesh" {
         thinInstanceSetAttributeAt(kind: string, index: number, value: Array<number>, refresh: boolean): void;
 
         /**
+         * Gets / sets the number of thin instances to display. Note that you can't set a number higher than what the underlying buffer can handle.
+         */
+        thinInstanceCount: number;
+
+        /**
          * Sets a buffer to be used with thin instances. This method is a faster way to setup multiple instances than calling thinInstanceAdd repeatedly
          * @param kind name of the attribute. Use "matrix" to setup the buffer of matrices
          * @param buffer buffer to set
@@ -150,6 +155,21 @@ Mesh.prototype.thinInstanceSetAttributeAt = function(kind: string, index: number
 
     return true;
 };
+
+Object.defineProperty(Mesh.prototype, "thinInstanceCount", {
+    get: function(this: Mesh) {
+        return this._thinInstanceDataStorage.instancesCount;
+    },
+    set: function(this: Mesh, value: number) {
+        const numMaxInstances = (this._thinInstanceDataStorage.matrixData?.length ?? 0) / 16;
+
+        if (value <= numMaxInstances) {
+            this._thinInstanceDataStorage.instancesCount = value;
+        }
+    },
+    enumerable: true,
+    configurable: true
+});
 
 Mesh.prototype.thinInstanceSetBuffer = function(kind: string, buffer: Nullable<Float32Array>, stride: number = 0, staticBuffer: boolean = false): void {
     stride = stride || 16;
