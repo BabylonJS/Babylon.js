@@ -99,7 +99,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
 
             if (instanceCount == 0) {
                 for (const babylonMesh of node._primitiveBabylonMeshes) {
-                    if ((babylonMesh as Mesh).thinInstanceSetBuffer) {
+                    if ((babylonMesh as any).thinInstanceSetBuffer) {
                         (babylonMesh as Mesh).thinInstanceCount = 0;
                     }
                 }
