@@ -701,22 +701,8 @@ export class GLTFLoader implements IGLTFLoader {
         this.logClose();
 
         return Promise.all(promises).then(() => {
-            //const min = new Vector3(0, 0, 0), max = new Vector3(0, 0, 0);
             this._forEachPrimitive(node, (babylonMesh) => {
                 babylonMesh.refreshBoundingInfo(true);
-                /*min.x = (babylonMesh as any).__min[0];
-                min.y = (babylonMesh as any).__min[1];
-                min.z = (babylonMesh as any).__min[2];
-                max.x = (babylonMesh as any).__max[0];
-                max.y = (babylonMesh as any).__max[1];
-                max.z = (babylonMesh as any).__max[2];
-                babylonMesh._boundingInfo!.reConstruct(min, max);
-                if (babylonMesh.subMeshes) {
-                    for (var index = 0; index < babylonMesh.subMeshes.length; index++) {
-                        babylonMesh.subMeshes[index].getBoundingInfo().reConstruct(min, max);
-                    }
-                }
-                babylonMesh._updateBoundingInfo();*/
             });
 
             return node._babylonTransformNode!;
@@ -895,10 +881,6 @@ export class GLTFLoader implements IGLTFLoader {
                 babylonGeometry.setVerticesBuffer(babylonVertexBuffer, accessor.count);
             }));
 
-            /*if (attribute === "POSITION") {
-                (babylonMesh as any).__min = accessor.min;
-                (babylonMesh as any).__max = accessor.max;
-            }*/
             if (kind == VertexBuffer.MatricesIndicesExtraKind) {
                 babylonMesh.numBoneInfluencers = 8;
             }
