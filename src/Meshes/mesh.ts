@@ -3114,7 +3114,30 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             serializationInstance.ranges = instance.serializeAnimationRanges();
         }
 
-        //
+        // Thin instances
+        if (this._thinInstanceDataStorage.instancesCount && this._thinInstanceDataStorage.matrixData) {
+            serializationObject.thinInstances = {
+                instancesCount: this._thinInstanceDataStorage.instancesCount,
+                matrixData: Array.from(this._thinInstanceDataStorage.matrixData),
+                matrixBufferSize: this._thinInstanceDataStorage.matrixBufferSize,
+            };
+
+            if (this._userThinInstanceBuffersStorage) {
+                const userThinInstance: any = {
+                    data: {},
+                    sizes: {},
+                    strides: {},
+                };
+
+                for (const kind in this._userThinInstanceBuffersStorage.data) {
+                    userThinInstance.data[kind] = Array.from(this._userThinInstanceBuffersStorage.data[kind]);
+                    userThinInstance.sizes[kind] = this._userThinInstanceBuffersStorage.sizes[kind];
+                    userThinInstance.strides[kind] = this._userThinInstanceBuffersStorage.strides[kind];
+                }
+
+                serializationObject.thinInstances.userThinInstance = userThinInstance;
+            }
+        }
 
         // Animations
         SerializationHelper.AppendSerializedAnimations(this, serializationObject);
@@ -3507,6 +3530,29 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     if (parsedInstance.autoAnimate) {
                         scene.beginAnimation(instance, parsedInstance.autoAnimateFrom, parsedInstance.autoAnimateTo, parsedInstance.autoAnimateLoop, parsedInstance.autoAnimateSpeed || 1.0);
                     }
+                }
+            }
+        }
+
+        // Thin instances
+        if (parsedMesh.thinInstances) {
+            const thinInstances = parsedMesh.thinInstances;
+
+            if (thinInstances.matrixData) {
+                mesh.thinInstanceSetBuffer("matrix", new Float32Array(thinInstances.matrixData), 16);
+
+                mesh._thinInstanceDataStorage.matrixBufferSize = thinInstances.matrixBufferSize;
+                mesh._thinInstanceDataStorage.instancesCount = thinInstances.instancesCount;
+            } else {
+                mesh._thinInstanceDataStorage.matrixBufferSize = thinInstances.matrixBufferSize;
+            }
+
+            if (parsedMesh.thinInstances.userThinInstance) {
+                const userThinInstance = parsedMesh.thinInstances.userThinInstance;
+
+                for (const kind in userThinInstance.data) {
+                    mesh.thinInstanceSetBuffer(kind, new Float32Array(userThinInstance.data[kind]), userThinInstance.strides[kind]);
+                    mesh._userThinInstanceBuffersStorage.sizes[kind] = userThinInstance.sizes[kind];
                 }
             }
         }
