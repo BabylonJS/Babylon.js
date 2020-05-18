@@ -91,6 +91,17 @@ export class _InstancesBatch {
 /**
  * @hidden
  **/
+class _ThinInstanceDataStorage {
+    public instancesCount: number = 0;
+    public matrixBuffer: Nullable<Buffer> = null;
+    public matrixBufferSize = 32 * 16; // let's start with a maximum of 32 thin instances
+    public matrixData: Nullable<Float32Array>;
+    public boundingVectors: Array<Vector3> = [];
+}
+
+/**
+ * @hidden
+ **/
 class _InternalMeshDataInfo {
     // Events
     public _onBeforeRenderObservable: Nullable<Observable<Mesh>>;
@@ -275,6 +286,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return this.instances.length > 0;
     }
 
+    public get hasThinInstances(): boolean {
+        return (this._thinInstanceDataStorage.instancesCount ?? 0) > 0;
+    }
+
     // Members
 
     /**
@@ -334,6 +349,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** @hidden */
     public _instanceDataStorage = new _InstanceDataStorage();
+
+    /** @hidden */
+    public _thinInstanceDataStorage = new _ThinInstanceDataStorage();
 
     private _effectiveMaterial: Nullable<Material> = null;
 
@@ -955,7 +973,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         let engine = this.getEngine();
         let scene = this.getScene();
-        let hardwareInstancedRendering = forceInstanceSupport || engine.getCaps().instancedArrays && this.instances.length > 0;
+        let hardwareInstancedRendering = forceInstanceSupport || engine.getCaps().instancedArrays && (this.instances.length > 0 || this.hasThinInstances);
 
         this.computeWorldMatrix();
 
@@ -1076,6 +1094,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         this._instanceDataStorage.visibleInstances[renderId].push(instance);
         return this;
+    }
+
+    protected _afterComputeWorldMatrix(): void {
+        super._afterComputeWorldMatrix();
+
+        if (!this.hasThinInstances) {
+            return;
+        }
+
+        if (!this.doNotSyncBoundingInfo) {
+            this.thinInstanceRefreshBoundingInfo(false);
+        }
     }
 
     /**
@@ -1614,6 +1644,20 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /** @hidden */
+    public _renderWithThinInstances(subMesh: SubMesh, fillMode: number, effect: Effect, engine: Engine) {
+        // Stats
+        const instancesCount = this._thinInstanceDataStorage?.instancesCount ?? 0;
+
+        this.getScene()._activeIndices.addCount(subMesh.indexCount * instancesCount, false);
+
+        // Draw
+        this._bind(subMesh, effect, fillMode);
+        this._draw(subMesh, fillMode, instancesCount);
+
+        engine.unbindInstanceAttributes();
+    }
+
+    /** @hidden */
     public _processInstancedBuffers(visibleInstances: InstancedMesh[], renderSelf: boolean) {
         // Do nothing
     }
@@ -1623,6 +1667,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material): Mesh {
         var scene = this.getScene();
         var engine = scene.getEngine();
+
+        if (hardwareInstancedRendering && subMesh.getRenderingMesh().hasThinInstances) {
+            this._renderWithThinInstances(subMesh, fillMode, effect, engine);
+            return this;
+        }
 
         if (hardwareInstancedRendering) {
             this._renderWithInstances(subMesh, fillMode, batch, effect, engine);
@@ -1732,7 +1781,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         var engine = scene.getEngine();
-        var hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id];
+        var hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id] || subMesh.getRenderingMesh().hasThinInstances;
         let instanceDataStorage = this._instanceDataStorage;
 
         let material = subMesh.getMaterial();
@@ -2273,11 +2322,19 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Instances
         this._disposeInstanceSpecificData();
 
+        // Thin instances
+        this._disposeThinInstanceSpecificData();
+
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
 
     /** @hidden */
     public _disposeInstanceSpecificData() {
+        // Do nothing
+    }
+
+    /** @hidden */
+    public _disposeThinInstanceSpecificData() {
         // Do nothing
     }
 
@@ -3057,7 +3114,30 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             serializationInstance.ranges = instance.serializeAnimationRanges();
         }
 
-        //
+        // Thin instances
+        if (this._thinInstanceDataStorage.instancesCount && this._thinInstanceDataStorage.matrixData) {
+            serializationObject.thinInstances = {
+                instancesCount: this._thinInstanceDataStorage.instancesCount,
+                matrixData: Array.from(this._thinInstanceDataStorage.matrixData),
+                matrixBufferSize: this._thinInstanceDataStorage.matrixBufferSize,
+            };
+
+            if (this._userThinInstanceBuffersStorage) {
+                const userThinInstance: any = {
+                    data: {},
+                    sizes: {},
+                    strides: {},
+                };
+
+                for (const kind in this._userThinInstanceBuffersStorage.data) {
+                    userThinInstance.data[kind] = Array.from(this._userThinInstanceBuffersStorage.data[kind]);
+                    userThinInstance.sizes[kind] = this._userThinInstanceBuffersStorage.sizes[kind];
+                    userThinInstance.strides[kind] = this._userThinInstanceBuffersStorage.strides[kind];
+                }
+
+                serializationObject.thinInstances.userThinInstance = userThinInstance;
+            }
+        }
 
         // Animations
         SerializationHelper.AppendSerializedAnimations(this, serializationObject);
@@ -3450,6 +3530,29 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     if (parsedInstance.autoAnimate) {
                         scene.beginAnimation(instance, parsedInstance.autoAnimateFrom, parsedInstance.autoAnimateTo, parsedInstance.autoAnimateLoop, parsedInstance.autoAnimateSpeed || 1.0);
                     }
+                }
+            }
+        }
+
+        // Thin instances
+        if (parsedMesh.thinInstances) {
+            const thinInstances = parsedMesh.thinInstances;
+
+            if (thinInstances.matrixData) {
+                mesh.thinInstanceSetBuffer("matrix", new Float32Array(thinInstances.matrixData), 16, false);
+
+                mesh._thinInstanceDataStorage.matrixBufferSize = thinInstances.matrixBufferSize;
+                mesh._thinInstanceDataStorage.instancesCount = thinInstances.instancesCount;
+            } else {
+                mesh._thinInstanceDataStorage.matrixBufferSize = thinInstances.matrixBufferSize;
+            }
+
+            if (parsedMesh.thinInstances.userThinInstance) {
+                const userThinInstance = parsedMesh.thinInstances.userThinInstance;
+
+                for (const kind in userThinInstance.data) {
+                    mesh.thinInstanceSetBuffer(kind, new Float32Array(userThinInstance.data[kind]), userThinInstance.strides[kind], false);
+                    mesh._userThinInstanceBuffersStorage.sizes[kind] = userThinInstance.sizes[kind];
                 }
             }
         }

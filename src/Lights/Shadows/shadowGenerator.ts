@@ -1042,6 +1042,8 @@ export class ShadowGenerator implements IShadowGenerator {
 
         const world = mesh.getWorldMatrix();
 
+        effect.setMatrix(matriceNames?.world ?? "world", world);
+
         world.multiplyToRef(this.getTransformMatrix(), tmpMatrix);
 
         effect.setMatrix(matriceNames?.worldViewProjection ?? "worldViewProjection", tmpMatrix);
@@ -1075,7 +1077,7 @@ export class ShadowGenerator implements IShadowGenerator {
             return;
         }
 
-        var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
+        var hardwareInstancedRendering = engine.getCaps().instancedArrays && (batch.visibleInstances[subMesh._id] !== null && batch.visibleInstances[subMesh._id] !== undefined || renderingMesh.hasThinInstances);
         if (this.isReady(subMesh, hardwareInstancedRendering, isTransparent)) {
             const shadowDepthWrapper = renderingMesh.material?.shadowDepthWrapper;
 
@@ -1402,6 +1404,9 @@ export class ShadowGenerator implements IShadowGenerator {
             if (useInstances) {
                 defines.push("#define INSTANCES");
                 MaterialHelper.PushAttributesForInstances(attribs);
+                if (subMesh.getRenderingMesh().hasThinInstances) {
+                    defines.push("#define THIN_INSTANCES");
+                }
             }
 
             if (this.customShaderOptions) {

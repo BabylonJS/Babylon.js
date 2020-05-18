@@ -127,11 +127,16 @@ void main(void) {
 #ifdef NORMAL
 	mat3 normalWorld = mat3(finalWorld);
 
-	#ifdef NONUNIFORMSCALING
-		normalWorld = transposeMat3(inverseMat3(normalWorld));
-	#endif
+    #if defined(INSTANCES) && defined(THIN_INSTANCES)
+        vNormalW = normalUpdated / vec3(dot(normalWorld[0], normalWorld[0]), dot(normalWorld[1], normalWorld[1]), dot(normalWorld[2], normalWorld[2]));
+        vNormalW = normalize(normalWorld * vNormalW);
+    #else
+        #ifdef NONUNIFORMSCALING
+            normalWorld = transposeMat3(inverseMat3(normalWorld));
+        #endif
 
-	vNormalW = normalize(normalWorld * normalUpdated);
+        vNormalW = normalize(normalWorld * normalUpdated);
+    #endif
 #endif
 
 #define CUSTOM_VERTEX_UPDATE_WORLDPOS

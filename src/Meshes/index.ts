@@ -19,3 +19,4 @@ export * from "./transformNode";
 export * from "./Builders/index";
 export * from "./dataBuffer";
 export * from "./WebGL/webGLDataBuffer";
+export * from "./thinInstanceMesh";
