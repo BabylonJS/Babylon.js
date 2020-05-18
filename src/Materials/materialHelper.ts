@@ -120,7 +120,7 @@ export class MaterialHelper {
      * @param useInstances defines if instances have to be turned on
      * @param useThinInstances defines if thin instances have to be turned on
      */
-    public static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: any, useInstances: boolean, useClipPlane: Nullable<boolean> = null, useThinInstances: boolean): void {
+    public static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: any, useInstances: boolean, useClipPlane: Nullable<boolean> = null, useThinInstances: boolean = false): void {
         var changed = false;
         let useClipPlane1 = false;
         let useClipPlane2 = false;
