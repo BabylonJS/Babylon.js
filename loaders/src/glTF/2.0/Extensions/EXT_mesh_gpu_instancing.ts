@@ -1,4 +1,4 @@
-import { Vector3, Quaternion } from 'babylonjs/Maths/math.vector';
+import { Vector3, Quaternion, Matrix } from 'babylonjs/Maths/math.vector';
 import { InstancedMesh } from 'babylonjs/Meshes/instancedMesh';
 import { Mesh } from 'babylonjs/Meshes/mesh';
 import { TransformNode } from "babylonjs/Meshes/transformNode";
@@ -15,6 +15,11 @@ interface IEXTMeshGpuInstancing {
     mesh?: number;
     attributes: { [name: string]: number };
 }
+
+const T = new Vector3(0, 0, 0);
+const R = new Quaternion(0, 0, 0, 1);
+const S = new Vector3(1, 1, 1);
+const M = new Matrix();
 
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1691)
@@ -54,9 +59,19 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
                 return promise;
             }
 
+            let useThinInstancesForAllMeshes = true;
+            let canUseThinInstances = false;
+
             // Hide the source meshes.
             for (const babylonMesh of node._primitiveBabylonMeshes) {
-                babylonMesh.isVisible = false;
+                if (!(babylonMesh as Mesh).thinInstanceSetBuffer) {
+                    babylonMesh.isVisible = false;
+                    useThinInstancesForAllMeshes = false;
+                } else {
+                    canUseThinInstances = true;
+                    (babylonMesh as Mesh).thinInstanceCount = 1;    // make sure mesh.hasThinInstances returns true from now on (else async loading of the thin instance data will lead to problems
+                                                                    // as the mesh won't be considered as having thin instances until thinInstanceSetBuffer is called)
+                }
             }
 
             const promises = new Array<Promise<Nullable<Float32Array>>>();
@@ -83,28 +98,60 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
             loadAttribute("SCALE");
 
             if (instanceCount == 0) {
+                for (const babylonMesh of node._primitiveBabylonMeshes) {
+                    if ((babylonMesh as Mesh).thinInstanceSetBuffer) {
+                        (babylonMesh as Mesh).thinInstanceCount = 0;
+                    }
+                }
                 return promise;
             }
 
-            const digitLength = instanceCount.toString().length;
-            for (let i = 0; i < instanceCount; ++i) {
-                for (const babylonMesh of node._primitiveBabylonMeshes!) {
-                    const instanceName = `${babylonMesh.name || babylonMesh.id}_${StringTools.PadNumber(i, digitLength)}`;
-                    const babylonInstancedMesh = (babylonMesh as (InstancedMesh | Mesh)).createInstance(instanceName);
-                    babylonInstancedMesh.setParent(babylonMesh);
+            if (!useThinInstancesForAllMeshes) {
+                const digitLength = instanceCount.toString().length;
+                for (let i = 0; i < instanceCount; ++i) {
+                    for (const babylonMesh of node._primitiveBabylonMeshes!) {
+                        if (!(babylonMesh as Mesh).thinInstanceSetBuffer) {
+                            const instanceName = `${babylonMesh.name || babylonMesh.id}_${StringTools.PadNumber(i, digitLength)}`;
+                            const babylonInstancedMesh = (babylonMesh as (InstancedMesh | Mesh)).createInstance(instanceName);
+                            babylonInstancedMesh.setParent(babylonMesh);
+                        }
+                    }
                 }
             }
 
             return promise.then((babylonTransformNode) => {
                 return Promise.all(promises).then(([translationBuffer, rotationBuffer, scaleBuffer]) => {
-                    for (const babylonMesh of node._primitiveBabylonMeshes!) {
-                        const babylonInstancedMeshes = babylonMesh.getChildMeshes(true, (node) => (node as AbstractMesh).isAnInstance);
+                    const matrices = canUseThinInstances ? new Float32Array(instanceCount * 16) : null;
+
+                    if (matrices) {
+                        T.copyFromFloats(0, 0, 0);
+                        R.copyFromFloats(0, 0, 0, 1);
+                        S.copyFromFloats(1, 1, 1);
+
                         for (let i = 0; i < instanceCount; ++i) {
-                            const babylonInstancedMesh = babylonInstancedMeshes[i];
-                            translationBuffer && Vector3.FromArrayToRef(translationBuffer, i * 3, babylonInstancedMesh.position);
-                            rotationBuffer && Quaternion.FromArrayToRef(rotationBuffer, i * 4, babylonInstancedMesh.rotationQuaternion!);
-                            scaleBuffer && Vector3.FromArrayToRef(scaleBuffer, i * 3, babylonInstancedMesh.scaling);
-                            babylonInstancedMesh.refreshBoundingInfo();
+                            translationBuffer && Vector3.FromArrayToRef(translationBuffer, i * 3, T);
+                            rotationBuffer && Quaternion.FromArrayToRef(rotationBuffer, i * 4, R);
+                            scaleBuffer && Vector3.FromArrayToRef(scaleBuffer, i * 3, S);
+
+                            Matrix.ComposeToRef(S, R, T, M);
+
+                            M.copyToArray(matrices, i * 16);
+                        }
+                    }
+
+                    for (const babylonMesh of node._primitiveBabylonMeshes!) {
+                        if (!(babylonMesh as Mesh).thinInstanceSetBuffer) {
+                            const babylonInstancedMeshes = babylonMesh.getChildMeshes(true, (node) => (node as AbstractMesh).isAnInstance);
+                            for (let i = 0; i < instanceCount; ++i) {
+                                const babylonInstancedMesh = babylonInstancedMeshes[i];
+                                translationBuffer && Vector3.FromArrayToRef(translationBuffer, i * 3, babylonInstancedMesh.position);
+                                rotationBuffer && Quaternion.FromArrayToRef(rotationBuffer, i * 4, babylonInstancedMesh.rotationQuaternion!);
+                                scaleBuffer && Vector3.FromArrayToRef(scaleBuffer, i * 3, babylonInstancedMesh.scaling);
+                                babylonInstancedMesh.refreshBoundingInfo();
+                            }
+                        } else {
+                            (babylonMesh as Mesh).refreshBoundingInfo();
+                            (babylonMesh as Mesh).thinInstanceSetBuffer("matrix", matrices, 16, true);
                         }
                     }
 
