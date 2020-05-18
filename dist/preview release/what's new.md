@@ -33,6 +33,7 @@
 - Add back support for selecting textures based on engine capabilities ([bghgary](https://github.com/bghgary))
 - Fix Draco decoder when running on IE11 ([bghgary](https://github.com/bghgary))
 - Change default camera calculations to only include visible and enabled meshes ([bghgary](https://github.com/bghgary))
+- Optimized frozen instances ([Deltakosh](https://github.com/deltakosh))
 
 ### NME
 
