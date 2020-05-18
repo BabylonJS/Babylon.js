@@ -117,7 +117,8 @@ export class MaterialHelper {
      * @param defines specifies the list of active defines
      * @param useInstances defines if instances have to be turned on
      * @param useClipPlane defines if clip plane have to be turned on
-     * @param useInstances defines if thin instances have to be turned on
+     * @param useInstances defines if instances have to be turned on
+     * @param useThinInstances defines if thin instances have to be turned on
      */
     public static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: any, useInstances: boolean, useClipPlane: Nullable<boolean> = null, useThinInstances: boolean): void {
         var changed = false;
