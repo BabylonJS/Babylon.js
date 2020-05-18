@@ -20006,8 +20006,10 @@ declare module BABYLON {
          * @param defines specifies the list of active defines
          * @param useInstances defines if instances have to be turned on
          * @param useClipPlane defines if clip plane have to be turned on
+         * @param useInstances defines if instances have to be turned on
+         * @param useThinInstances defines if thin instances have to be turned on
          */
-        static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: any, useInstances: boolean, useClipPlane?: Nullable<boolean>): void;
+        static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: any, useInstances: boolean, useClipPlane?: Nullable<boolean>, useThinInstances?: boolean): void;
         /**
          * Prepares the defines for bones
          * @param mesh The mesh containing the geometry data we will draw
@@ -21464,8 +21466,9 @@ declare module BABYLON {
          * @param nodeMaterial defines the node material requesting the update
          * @param defines defines the material defines to update
          * @param useInstances specifies that instances should be used
+         * @param subMesh defines which submesh to render
          */
-        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean, subMesh?: SubMesh): void;
         /**
          * Lets the block try to connect some inputs automatically
          * @param material defines the hosting NodeMaterial
@@ -27162,6 +27165,16 @@ declare module BABYLON {
         hardwareInstancedRendering: boolean[];
     }
     /**
+     * @hidden
+     **/
+    class _ThinInstanceDataStorage {
+        instancesCount: number;
+        matrixBuffer: Nullable<Buffer>;
+        matrixBufferSize: number;
+        matrixData: Nullable<Float32Array>;
+        boundingVectors: Array<Vector3>;
+    }
+    /**
      * Class used to represent renderable models
      */
     export class Mesh extends AbstractMesh implements IGetSetVerticesData {
@@ -27275,6 +27288,7 @@ declare module BABYLON {
          */
         set onBeforeDraw(callback: () => void);
         get hasInstances(): boolean;
+        get hasThinInstances(): boolean;
         /**
          * Gets the delay loading state of the mesh (when delay loading is turned on)
          * @see http://doc.babylonjs.com/how_to/using_the_incremental_loading_system
@@ -27314,6 +27328,8 @@ declare module BABYLON {
         _delayLoadingFunction: (any: any, mesh: Mesh) => void;
         /** @hidden */
         _instanceDataStorage: _InstanceDataStorage;
+        /** @hidden */
+        _thinInstanceDataStorage: _ThinInstanceDataStorage;
         private _effectiveMaterial;
         /** @hidden */
         _shouldGenerateFlatShading: boolean;
@@ -27555,6 +27571,7 @@ declare module BABYLON {
         _preActivateForIntermediateRendering(renderId: number): Mesh;
         /** @hidden */
         _registerInstanceForRenderId(instance: InstancedMesh, renderId: number): Mesh;
+        protected _afterComputeWorldMatrix(): void;
         /**
          * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
          * This means the mesh underlying bounding box and sphere are recomputed.
@@ -27719,6 +27736,8 @@ declare module BABYLON {
         /** @hidden */
         _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: Engine): Mesh;
         /** @hidden */
+        _renderWithThinInstances(subMesh: SubMesh, fillMode: number, effect: Effect, engine: Engine): void;
+        /** @hidden */
         _processInstancedBuffers(visibleInstances: InstancedMesh[], renderSelf: boolean): void;
         /** @hidden */
         _processRendering(renderingMesh: AbstractMesh, subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material): Mesh;
@@ -27822,6 +27841,8 @@ declare module BABYLON {
         dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
         /** @hidden */
         _disposeInstanceSpecificData(): void;
+        /** @hidden */
+        _disposeThinInstanceSpecificData(): void;
         /**
          * Modifies the mesh geometry according to a displacement map.
          * A displacement map is a colored image. Each pixel color value (actually a gradient computed from red, green, blue values) will give the displacement to apply to each mesh vertex.
@@ -29314,6 +29335,7 @@ declare module BABYLON {
         BonesPerMesh: number;
         BONETEXTURE: boolean;
         INSTANCES: boolean;
+        THIN_INSTANCES: boolean;
         GLOSSINESS: boolean;
         ROUGHNESS: boolean;
         EMISSIVEASILLUMINATION: boolean;
@@ -31319,6 +31341,10 @@ declare module BABYLON {
          * Gets a boolean indicating if this mesh has instances
          */
         get hasInstances(): boolean;
+        /**
+         * Gets a boolean indicating if this mesh has thin instances
+         */
+        get hasThinInstances(): boolean;
         /**
          * Perform relative position change from the point of view of behind the front of the mesh.
          * This is performed taking into account the meshes current rotation, so you do not have to care.
@@ -54568,6 +54594,7 @@ declare module BABYLON {
         RADIANCEOCCLUSION: boolean;
         HORIZONOCCLUSION: boolean;
         INSTANCES: boolean;
+        THIN_INSTANCES: boolean;
         NUM_BONE_INFLUENCERS: number;
         BonesPerMesh: number;
         BONETEXTURE: boolean;
@@ -60688,7 +60715,7 @@ declare module BABYLON {
          */
         get instanceID(): NodeMaterialConnectionPoint;
         autoConfigure(material: NodeMaterial): void;
-        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean, subMesh?: SubMesh): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -64893,6 +64920,85 @@ declare module BABYLON {
         dispose(): void;
         private _beforeCameraUpdate;
     }
+}
+declare module BABYLON {
+        interface Mesh {
+            /**
+             * Creates a new thin instance
+             * @param matrix the matrix or array of matrices (position, rotation, scale) of the thin instance(s) to create
+             * @param refresh true to refresh the underlying gpu buffer (default: true). If you do multiple calls to this method in a row, set refresh to true only for the last call to save performance
+             * @returns the thin instance index number. If you pass an array of matrices, other instance indexes are index+1, index+2, etc
+             */
+            thinInstanceAdd(matrix: DeepImmutableObject<Matrix> | Array<DeepImmutableObject<Matrix>>, refresh: boolean): number;
+            /**
+             * Adds the transformation (matrix) of the current mesh as a thin instance
+             * @param refresh true to refresh the underlying gpu buffer (default: true). If you do multiple calls to this method in a row, set refresh to true only for the last call to save performance
+             * @returns the thin instance index number
+             */
+            thinInstanceAddSelf(refresh: boolean): number;
+            /**
+             * Registers a custom attribute to be used with thin instances
+             * @param kind name of the attribute
+             * @param stride size in floats of the attribute
+             */
+            thinInstanceRegisterAttribute(kind: string, stride: number): void;
+            /**
+             * Sets the matrix of a thin instance
+             * @param index index of the thin instance
+             * @param matrix matrix to set
+             * @param refresh true to refresh the underlying gpu buffer (default: true). If you do multiple calls to this method in a row, set refresh to true only for the last call to save performance
+             */
+            thinInstanceSetMatrixAt(index: number, matrix: DeepImmutableObject<Matrix>, refresh: boolean): void;
+            /**
+             * Sets the value of a custom attribute for a thin instance
+             * @param kind name of the attribute
+             * @param index index of the thin instance
+             * @param value value to set
+             * @param refresh true to refresh the underlying gpu buffer (default: true). If you do multiple calls to this method in a row, set refresh to true only for the last call to save performance
+             */
+            thinInstanceSetAttributeAt(kind: string, index: number, value: Array<number>, refresh: boolean): void;
+            /**
+             * Gets / sets the number of thin instances to display. Note that you can't set a number higher than what the underlying buffer can handle.
+             */
+            thinInstanceCount: number;
+            /**
+             * Sets a buffer to be used with thin instances. This method is a faster way to setup multiple instances than calling thinInstanceAdd repeatedly
+             * @param kind name of the attribute. Use "matrix" to setup the buffer of matrices
+             * @param buffer buffer to set
+             * @param stride size in floats of each value of the buffer
+             * @param staticBuffer indicates that the buffer is static, so that you won't change it after it is set (better performances - false by default)
+             */
+            thinInstanceSetBuffer(kind: string, buffer: Nullable<Float32Array>, stride: number, staticBuffer: boolean): void;
+            /**
+             * Synchronize the gpu buffers with a thin instance buffer. Call this method if you update later on the buffers passed to thinInstanceSetBuffer
+             * @param kind name of the attribute to update. Use "matrix" to update the buffer of matrices
+             */
+            thinInstanceBufferUpdated(kind: string): void;
+            /**
+             * Refreshes the bounding info, taking into account all the thin instances defined
+             * @param forceRefreshParentInfo true to force recomputing the mesh bounding info and use it to compute the aggregated bounding info
+             */
+            thinInstanceRefreshBoundingInfo(forceRefreshParentInfo: boolean): void;
+            /** @hidden */
+            _thinInstanceInitializeUserStorage(): void;
+            /** @hidden */
+            _thinInstanceUpdateBufferSize(kind: string, numInstances: number): void;
+            /** @hidden */
+            _userThinInstanceBuffersStorage: {
+                data: {
+                    [key: string]: Float32Array;
+                };
+                sizes: {
+                    [key: string]: number;
+                };
+                vertexBuffers: {
+                    [key: string]: Nullable<VertexBuffer>;
+                };
+                strides: {
+                    [key: string]: number;
+                };
+            };
+        }
 }
 declare module BABYLON {
     /**

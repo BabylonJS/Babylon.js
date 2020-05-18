@@ -444,6 +444,7 @@ var GridMaterialDefines = /** @class */ (function (_super) {
         _this.UV1 = false;
         _this.UV2 = false;
         _this.INSTANCES = false;
+        _this.THIN_INSTANCES = false;
         _this.rebuild();
         return _this;
     }
@@ -584,7 +585,7 @@ var GridMaterial = /** @class */ (function (_super) {
         }
         this._activeEffect = effect;
         // Matrices
-        if (!defines.INSTANCES) {
+        if (!defines.INSTANCES || defines.THIN_INSTANCE) {
             this.bindOnlyWorldMatrix(world);
         }
         this._activeEffect.setMatrix("view", scene.getViewMatrix());
