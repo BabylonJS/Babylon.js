@@ -3535,7 +3535,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             const thinInstances = parsedMesh.thinInstances;
 
             if (thinInstances.matrixData) {
-                mesh.thinInstanceSetBuffer("matrix", new Float32Array(thinInstances.matrixData), 16);
+                mesh.thinInstanceSetBuffer("matrix", new Float32Array(thinInstances.matrixData), 16, false);
 
                 mesh._thinInstanceDataStorage.matrixBufferSize = thinInstances.matrixBufferSize;
                 mesh._thinInstanceDataStorage.instancesCount = thinInstances.instancesCount;
@@ -3547,7 +3547,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 const userThinInstance = parsedMesh.thinInstances.userThinInstance;
 
                 for (const kind in userThinInstance.data) {
-                    mesh.thinInstanceSetBuffer(kind, new Float32Array(userThinInstance.data[kind]), userThinInstance.strides[kind]);
+                    mesh.thinInstanceSetBuffer(kind, new Float32Array(userThinInstance.data[kind]), userThinInstance.strides[kind], false);
                     mesh._userThinInstanceBuffersStorage.sizes[kind] = userThinInstance.sizes[kind];
                 }
             }
