@@ -702,11 +702,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         return Promise.all(promises).then(() => {
             this._forEachPrimitive(node, (babylonMesh) => {
-                if ((babylonMesh as Mesh).hasThinInstances) {
-                    // refresh already done
-                } else {
-                    babylonMesh.refreshBoundingInfo(true);
-                }
+                babylonMesh.refreshBoundingInfo(true);
             });
 
             return node._babylonTransformNode!;
