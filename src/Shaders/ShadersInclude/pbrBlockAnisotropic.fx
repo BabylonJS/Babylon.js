@@ -10,6 +10,7 @@
     #endif
     };
 
+    #define pbr_inline
     void anisotropicBlock(
         const in vec3 vAnisotropy,
     #ifdef ANISOTROPIC_TEXTURE

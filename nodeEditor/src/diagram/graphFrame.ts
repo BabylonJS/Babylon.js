@@ -383,7 +383,7 @@ export class GraphFrame {
         }
 
         if (comments === "" || (comments && comments.length >= 0)) {
-            this._commentsElement.innerText = comments;
+            (this._commentsElement.children[0] as HTMLSpanElement).innerText = comments;
         }
         this.height = this._borderElement.offsetHeight;
         this._comments = comments;
@@ -548,6 +548,9 @@ export class GraphFrame {
         this._commentsElement.className = 'frame-comments';
         this._commentsElement.style.color = 'white';
         this._commentsElement.style.fontSize = '16px';
+        let commentSpan = document.createElement('span');
+        commentSpan.className = "frame-comment-span"
+        this._commentsElement.appendChild(commentSpan)
 
         this.element.appendChild(this._commentsElement);
 

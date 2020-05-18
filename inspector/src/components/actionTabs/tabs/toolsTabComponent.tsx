@@ -345,7 +345,7 @@ export class ToolsTabComponent extends PaneComponent {
                             <ButtonLineComponent label="Export to GLB" onClick={() => this.exportGLTF()} />
                             <ButtonLineComponent label="Export to Babylon" onClick={() => this.exportBabylon()} />
                             {
-                                !scene.getEngine().premultipliedAlpha && scene.environmentTexture && (scene.environmentTexture as CubeTexture).isPrefiltered && scene.activeCamera &&
+                                !scene.getEngine().premultipliedAlpha && scene.environmentTexture && scene.environmentTexture._prefiltered && scene.activeCamera &&
                                 <ButtonLineComponent label="Generate .env texture" onClick={() => this.createEnvTexture()} />
                             }
                         </>

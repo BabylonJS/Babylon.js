@@ -7753,8 +7753,6 @@ declare module BABYLON {
         private _textureMatrix;
         private _format;
         private _createPolynomials;
-        /** @hidden */
-        _prefiltered: boolean;
         /**
          * Creates a cube texture from an array of image urls
          * @param files defines an array of image urls
@@ -7791,10 +7789,6 @@ declare module BABYLON {
          * @return the cube texture
          */
         constructor(rootUrl: string, sceneOrEngine: Scene | ThinEngine, extensions?: Nullable<string[]>, noMipmap?: boolean, files?: Nullable<string[]>, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, prefiltered?: boolean, forcedExtension?: any, createPolynomials?: boolean, lodScale?: number, lodOffset?: number);
-        /**
-         * Gets a boolean indicating if the cube texture contains prefiltered mips (used to simulate roughness with PBR)
-         */
-        get isPrefiltered(): boolean;
         /**
          * Get the current class name of the texture useful for serialization or dynamic coding.
          * @returns "CubeTexture"
@@ -11051,6 +11045,15 @@ declare module BABYLON {
          * @returns the new sprite manager
          */
         static Parse(parsedManager: any, scene: Scene, rootUrl: string): SpriteManager;
+        /**
+         * Creates a sprite manager from a snippet saved in a remote file
+         * @param name defines the name of the sprite manager to create (can be null or empty to use the one from the json data)
+         * @param url defines the url to load from
+         * @param scene defines the hosting scene
+         * @param rootUrl defines the root URL to use to load textures and relative dependencies
+         * @returns a promise that will resolve to the new sprite manager
+         */
+        static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl?: string): Promise<SpriteManager>;
         /**
          * Creates a sprite manager from a snippet saved by the sprite editor
          * @param snippetId defines the snippet to load
@@ -16948,7 +16951,7 @@ declare module BABYLON {
         private _renderAlphaTest;
         private _renderTransparent;
         /** @hidden */
-        _edgesRenderers: SmartArray<IEdgesRenderer>;
+        _edgesRenderers: SmartArrayNoDuplicate<IEdgesRenderer>;
         onBeforeTransparentRendering: () => void;
         /**
          * Set the opaque sort comparison function.
@@ -22178,6 +22181,12 @@ declare module BABYLON {
          * @returns the post process created
          */
         createPostProcess(camera: Nullable<Camera>, options?: number | PostProcessOptions, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, textureFormat?: number): PostProcess;
+        /**
+         * Create the post process effect from the material
+         * @param postProcess The post process to create the effect for
+         */
+        createEffectForPostProcess(postProcess: PostProcess): void;
+        private _createEffectOrPostProcess;
         private _createEffectForParticles;
         /**
          * Create the effect to be used as the custom effect for a particle system
@@ -23623,6 +23632,15 @@ declare module BABYLON {
         useInstances: boolean;
     }
     /**
+     * Options passed when calling customShaderNameResolve
+     */
+    export interface ICustomShaderNameResolveOptions {
+        /**
+         * If provided, will be called two times with the vertex and fragment code so that this code can be updated before it is compiled by the GPU
+         */
+        processFinalCode?: Nullable<(shaderType: string, code: string) => string>;
+    }
+    /**
      * Base class for the main features of a material in Babylon.js
      */
     export class Material implements IAnimatable {
@@ -23714,7 +23732,7 @@ declare module BABYLON {
         /**
          * Custom callback helping to override the default shader used in the material.
          */
-        customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[]) => string;
+        customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[], options?: ICustomShaderNameResolveOptions) => string;
         /**
          * Custom shadow depth material to use for shadow rendering instead of the in-built one
          */
@@ -32791,6 +32809,8 @@ declare module BABYLON {
          * Define the unique id of the texture in the scene.
          */
         get uid(): string;
+        /** @hidden */
+        _prefiltered: boolean;
         /**
          * Return a string representation of the texture.
          * @returns the texture as a string
@@ -33027,6 +33047,10 @@ declare module BABYLON {
          * See https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/transformFeedbackVaryings
          */
         transformFeedbackVaryings?: Nullable<string[]>;
+        /**
+         * If provided, will be called two times with the vertex and fragment code so that this code can be updated before it is compiled by the GPU
+         */
+        processFinalCode?: Nullable<(shaderType: string, code: string) => string>;
     }
     /**
      * Effect containing vertex and fragment shader that can be executed on an object.
@@ -50996,6 +51020,42 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Class used to inline functions in shader code
+    */
+    export class ShaderCodeInliner {
+        private static readonly _RegexpFindFunctionNameAndType;
+        private _sourceCode;
+        private _functionDescr;
+        private _numMaxIterations;
+        /** Gets or sets the token used to mark the functions to inline */
+        inlineToken: string;
+        /** Gets or sets the debug mode */
+        debug: boolean;
+        /** Gets the code after the inlining process */
+        get code(): string;
+        /**
+         * Initializes the inliner
+         * @param sourceCode shader code source to inline
+         * @param numMaxIterations maximum number of iterations (used to detect recursive calls)
+         */
+        constructor(sourceCode: string, numMaxIterations?: number);
+        /**
+         * Start the processing of the shader code
+         */
+        processCode(): void;
+        private _collectFunctions;
+        private _processInlining;
+        private _extractBetweenMarkers;
+        private _skipWhitespaces;
+        private _removeComments;
+        private _replaceFunctionCallsByCode;
+        private _findBackward;
+        private _escapeRegExp;
+        private _replaceNames;
+    }
+}
+declare module BABYLON {
+    /**
      * Container for accessors for natively-stored mesh data buffers.
      */
     class NativeDataBuffer extends DataBuffer {
@@ -58718,12 +58778,13 @@ declare module BABYLON {
         private _cannonRaycastResult;
         private _raycastResult;
         private _physicsBodysToRemoveAfterStep;
+        private _firstFrame;
         BJSCANNON: any;
         constructor(_useDeltaForWorldStep?: boolean, iterations?: number, cannonInjection?: any);
         setGravity(gravity: Vector3): void;
         setTimeStep(timeStep: number): void;
         getTimeStep(): number;
-        executeStep(delta: number): void;
+        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
         private _removeMarkedPhysicsBodiesFromWorld;
         applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
         applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
@@ -66004,14 +66065,14 @@ declare module BABYLON {
         static ExportSet(systems: IParticleSystem[]): ParticleSystemSet;
         /**
          * Creates a particle system from a snippet saved in a remote file
-         * @param name defines the name of the  particle system to create
+         * @param name defines the name of the particle system to create (can be null or empty to use the one from the json data)
          * @param url defines the url to load from
          * @param scene defines the hosting scene
          * @param gpu If the system will use gpu
          * @param rootUrl defines the root URL to use to load textures and relative dependencies
-         * @returns a promise that will resolve to the new  particle system
+         * @returns a promise that will resolve to the new particle system
          */
-        static ParseFromFileAsync(name: string, url: string, scene: Scene, gpu?: boolean, rootUrl?: string): Promise<IParticleSystem>;
+        static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, gpu?: boolean, rootUrl?: string): Promise<IParticleSystem>;
         /**
          * Creates a particle system from a snippet saved by the particle system editor
          * @param snippetId defines the snippet to load
@@ -72819,29 +72880,6 @@ declare module BABYLON {
          * @returns This path cursor
          */
         onchange(f: (cursor: PathCursor) => void): PathCursor;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export class ShaderCodeInliner {
-        static readonly InlineToken: string;
-        static readonly RegexpFindFunctionNameAndType: RegExp;
-        private _sourceCode;
-        private _functionDescr;
-        private _numMaxIterations;
-        debug: boolean;
-        get code(): string;
-        constructor(sourceCode: string, numMaxIterations?: number);
-        processCode(): void;
-        private _collectFunctions;
-        private _processInlining;
-        private _extractBetweenMarkers;
-        private _skipWhitespaces;
-        private _removeComments;
-        private _replaceFunctionCallsByCode;
-        private _findBackward;
-        private _escapeRegExp;
-        private _replaceNames;
     }
 }
 declare module BABYLON {

@@ -104,9 +104,6 @@ export class CubeTexture extends BaseTexture {
     private _format: number;
     private _createPolynomials: boolean;
 
-    /** @hidden */
-    public _prefiltered: boolean = false;
-
     /**
      * Creates a cube texture from an array of image urls
      * @param files defines an array of image urls
@@ -248,13 +245,6 @@ export class CubeTexture extends BaseTexture {
                 this._texture.onLoadedObservable.add(() => onLoadProcessing());
             }
         }
-    }
-
-    /**
-     * Gets a boolean indicating if the cube texture contains prefiltered mips (used to simulate roughness with PBR)
-     */
-    public get isPrefiltered(): boolean {
-        return this._prefiltered;
     }
 
     /**
