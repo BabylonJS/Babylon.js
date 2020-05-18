@@ -3,16 +3,6 @@ import { Mesh, _InstancesBatch } from "../Meshes/mesh";
 import { VertexBuffer, Buffer } from './buffer';
 import { Matrix, Vector3, TmpVectors } from '../Maths/math.vector';
 
-const isNonUniform = (buffer: DeepImmutableObject<Float32Array>, i: number) => {
-    TmpVectors.Vector3[1].copyFromFloats(buffer[i * 16 + 0], buffer[i * 16 + 1], buffer[i * 16 + 2]);
-    TmpVectors.Vector3[0].x = TmpVectors.Vector3[1].lengthSquared(); // scale x squared
-    TmpVectors.Vector3[1].copyFromFloats(buffer[i * 16 + 4], buffer[i * 16 + 5], buffer[i * 16 + 6]);
-    TmpVectors.Vector3[0].y = TmpVectors.Vector3[1].lengthSquared(); // scale y squared
-    TmpVectors.Vector3[1].copyFromFloats(buffer[i * 16 + 8], buffer[i * 16 + 9], buffer[i * 16 + 10]);
-    TmpVectors.Vector3[0].z = TmpVectors.Vector3[1].lengthSquared(); // scale z squared
-    return TmpVectors.Vector3[0].isNonUniformWithinEpsilon(0.0001);
-};
-
 declare module "./mesh" {
     export interface Mesh {
         /**
@@ -133,13 +123,6 @@ Mesh.prototype.thinInstanceSetMatrixAt = function(index: number, matrix: DeepImm
 
     matrix.copyToArray(matrixData, index * 16);
 
-    if (!this.nonUniformScaling) {
-        this._thinInstanceDataStorage.nonUniformScaling = isNonUniform(matrix.m, 0);
-        if (this._thinInstanceDataStorage.nonUniformScaling) {
-            this._updateNonUniformScalingState(true);
-        }
-    }
-
     if (refresh) {
         this.thinInstanceBufferUpdated("matrix");
 
@@ -187,18 +170,6 @@ Mesh.prototype.thinInstanceSetBuffer = function(kind: string, buffer: Nullable<F
             this.setVerticesBuffer(matrixBuffer.createVertexBuffer("world1", 4, 4));
             this.setVerticesBuffer(matrixBuffer.createVertexBuffer("world2", 8, 4));
             this.setVerticesBuffer(matrixBuffer.createVertexBuffer("world3", 12, 4));
-
-            /*this._thinInstanceDataStorage.nonUniformScaling = false;
-
-            if (!this.ignoreNonUniformScaling) {
-                for (let i = 0; i < this._thinInstanceDataStorage.instancesCount && !this._thinInstanceDataStorage.nonUniformScaling; ++i) {
-                    this._thinInstanceDataStorage.nonUniformScaling = isNonUniform(buffer, i);
-                }
-
-                if (this._thinInstanceDataStorage.nonUniformScaling && !this.nonUniformScaling) {
-                    this._updateNonUniformScalingState(true);
-                }
-            }*/
 
             if (!this.doNotSyncBoundingInfo) {
                 this.thinInstanceRefreshBoundingInfo(false);
