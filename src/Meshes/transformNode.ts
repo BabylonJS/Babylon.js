@@ -1142,7 +1142,7 @@ export class TransformNode extends Node {
 
         // Normal matrix
         if (!this.ignoreNonUniformScaling) {
-            if (this._scaling.isNonUniform) {
+            if (this._scaling.isNonUniformWithinEpsilon(0.000001)) {
                 this._updateNonUniformScalingState(true);
             } else if (parent && (<TransformNode>parent)._nonUniformScaling) {
                 this._updateNonUniformScalingState((<TransformNode>parent)._nonUniformScaling);
