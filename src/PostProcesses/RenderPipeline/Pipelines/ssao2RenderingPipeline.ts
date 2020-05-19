@@ -155,7 +155,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         if (!engine) {
             return false;
         }
-        return engine.getCaps().drawBuffersExtension;
+        return engine.webGLVersion >= 2;
     }
 
     private _scene: Scene;
