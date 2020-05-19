@@ -218,6 +218,14 @@
                 text {
                     fill: #cecece;
                 }
+
+                .control-point {
+                    display: none;
+                }
+
+                .control-point.active {
+                    display: inline;
+                }
             }
 
             .playhead-wrapper {

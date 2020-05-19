@@ -138,7 +138,22 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
     handleValueChange(event: React.ChangeEvent<HTMLInputElement>) {
         event.preventDefault();
-        this.setState({ currentValue: parseFloat(event.target.value) });
+        this.setState({ currentValue: parseFloat(event.target.value) }, () => {
+            let animation = this.state.selected;
+            let keys = animation.getKeys();
+            
+            let isKeyframe = keys.find(k => k.frame === this.state.currentFrame);
+            if (isKeyframe){
+                let updatedKeys = keys.map(k => {
+                    if (k.frame === this.state.currentFrame){
+                        k.value = this.state.currentValue;
+                    }
+                    return k;
+                });
+                this.state.selected.setKeys(updatedKeys);
+                this.selectAnimation(animation);
+            }
+        });        
     }
 
     handleFrameChange(event: React.ChangeEvent<HTMLInputElement>) {
