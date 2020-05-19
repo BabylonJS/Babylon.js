@@ -3,6 +3,8 @@ import { IDisposable } from '../scene';
 import { Nullable } from '../types';
 import { DeviceType } from './InputDevices/deviceEnums';
 
+declare const _native: any;
+
 /**
  * This class will take all inputs from Keyboard, Pointer, and
  * any Gamepads and provide a polling system that all devices
@@ -49,7 +51,7 @@ export class DeviceInputSystem implements IDisposable {
      * Default Constructor
      * @param engine - engine to pull input element from
      */
-    constructor(engine: Engine) {
+    private constructor(engine: Engine) {
         const inputElement = engine.getInputElement();
         if (inputElement) {
             this._elementToAttachTo = inputElement;
@@ -57,6 +59,15 @@ export class DeviceInputSystem implements IDisposable {
             this._handlePointerActions();
             this._handleGamepadActions();
         }
+    }
+
+    public static Create(engine: Engine): DeviceInputSystem {
+        // If running in Babylon Native, then defer to the native input system, which has the same 
+        if (typeof _native.DeviceInputSystem !== 'undefined') {
+            return new _native.DeviceInputSystem(engine);
+        }
+
+        return new DeviceInputSystem(engine);
     }
 
     // Public functions
