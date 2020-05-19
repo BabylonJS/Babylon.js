@@ -874,7 +874,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                                                     </li>
                                                 break;
                                             case Animation.ANIMATIONTYPE_VECTOR2:
-                                                element = <li className="property" key={i}><p>{this.state.animationTargetProperty}</p>
+                                                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
                                                             <ul>
                                                                 <li key={`${i}_x`}>Property <strong>X</strong></li>
                                                                 <li key={`${i}_y`}>Property <strong>Y</strong></li>
@@ -882,7 +882,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                                                         </li>
                                                 break;
                                             case Animation.ANIMATIONTYPE_VECTOR3:
-                                                element = <li className="property" key={i}><p>{this.state.animationTargetProperty}</p>
+                                                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
                                                             <ul>
                                                                 <li key={`${i}_x`}>Property <strong>X</strong></li>
                                                                 <li key={`${i}_y`}>Property <strong>Y</strong></li>
@@ -891,7 +891,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                                                         </li>
                                                 break;
                                             case Animation.ANIMATIONTYPE_QUATERNION:
-                                                element = <li className="property" key={i}><p>{this.state.animationTargetProperty}</p>
+                                                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
                                                 <ul>
                                                     <li key={`${i}_x`}>Property <strong>X</strong></li>
                                                     <li key={`${i}_y`}>Property <strong>Y</strong></li>
@@ -901,7 +901,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                                                 </li>
                                                 break;
                                             case Animation.ANIMATIONTYPE_COLOR3:
-                                                element = <li className="property" key={i}><p>{this.state.animationTargetProperty}</p>
+                                                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
                                                             <ul>
                                                                 <li key={`${i}_r`}>Property <strong>R</strong></li>
                                                                 <li key={`${i}_g`}>Property <strong>G</strong></li>
@@ -910,7 +910,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                                                         </li>
                                                 break;
                                             case Animation.ANIMATIONTYPE_COLOR4:
-                                                element = <li className="property" key={i}><p>{this.state.animationTargetProperty}</p>
+                                                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
                                                 <ul>
                                                     <li key={`${i}_r`}>Property <strong>R</strong></li>
                                                     <li key={`${i}_g`}>Property <strong>G</strong></li>
@@ -920,7 +920,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                                                 </li>
                                                 break;
                                             case Animation.ANIMATIONTYPE_SIZE:
-                                                element =  <li className="property" key={i}><p>{this.state.animationTargetProperty}</p>
+                                                element =  <li className="property" key={i}><p>{animation.targetProperty}</p>
                                                             <ul>
                                                                 <li key={`${i}_width`}>Property <strong>Width</strong></li>
                                                                 <li key={`${i}_height`}>Property <strong>Height</strong></li>
