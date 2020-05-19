@@ -11,7 +11,8 @@ target_include_directories(NativeXr
 target_link_to_dependencies(NativeXr
     PUBLIC JsRuntime
     PRIVATE NativeEngineInternal
-    PRIVATE xr)
+    PRIVATE xr
+    PRIVATE arcana)
 
 set_property(TARGET NativeXr PROPERTY FOLDER Plugins)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})

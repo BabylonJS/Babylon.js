@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <arcana/threading/task.h>
 
 namespace xr
 {
@@ -11,6 +12,14 @@ namespace xr
         RGBA8_SRGB,
         BGRA8_SRGB,
         D24S8
+    };
+
+    enum class SessionType
+    {
+        IMMERSIVE_VR,
+        IMMERSIVE_AR,
+        INLINE,
+        INVALID
     };
 
     struct Size
@@ -131,11 +140,12 @@ namespace xr
                 std::unique_ptr<Impl> m_impl{};
             };
 
-            Session(System& system, void* graphicsDevice);
+            static arcana::task<std::shared_ptr<Session>, std::exception_ptr> CreateAsync(System& system, void* graphicsDevice);
             ~Session();
 
-            Session(Session&) = delete;
-            Session& operator=(Session&&) = delete;
+            // Do not use, call CreateAsync instead. Kept public to keep compatibility with make_shared.
+            // Move to private when changing to unique_ptr.
+            Session(System& system, void* graphicsDevice);
 
             std::unique_ptr<Frame> GetNextFrame(bool& shouldEndSession, bool& shouldRestartSession);
             void RequestEndSession();
@@ -149,11 +159,9 @@ namespace xr
         System(const char* = "OpenXR Experience");
         ~System();
 
-        System(System&) = delete;
-        System& operator=(System&&) = delete;
-
         bool IsInitialized() const;
         bool TryInitialize();
+        static arcana::task<bool, std::exception_ptr> IsSessionSupportedAsync(SessionType);
 
     private:
         class Impl;

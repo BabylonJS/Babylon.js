@@ -12,6 +12,8 @@ namespace android::global
 
     android::content::Context GetAppContext();
 
+    android::app::Activity GetCurrentActivity();
+    void SetCurrentActivity(jobject currentActivity);
     using AppStateChangedCallback = std::function<void()>;
     using AppStateChangedCallbackTicket = arcana::ticketed_collection<AppStateChangedCallback>::ticket;
 

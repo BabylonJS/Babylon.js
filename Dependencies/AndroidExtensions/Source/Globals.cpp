@@ -7,6 +7,7 @@ namespace android::global
     {
         JavaVM* g_javaVM{};
         jobject g_appContext{};
+        jobject g_currentActivity{};
 
         thread_local struct Env final
         {
@@ -29,13 +30,13 @@ namespace android::global
             using Ticket = typename arcana::ticketed_collection<Handler>::ticket;
             Ticket AddHandler(Handler&& handler)
             {
-                std::lock_guard<std::mutex> guard{m_mutex};
+                std::lock_guard<std::recursive_mutex> guard{m_mutex};
                 return m_handlers.insert(handler, m_mutex);
             }
 
             void Fire(Args ... args)
             {
-                std::lock_guard<std::mutex> guard{m_mutex};
+                std::lock_guard<std::recursive_mutex> guard{m_mutex};
                 for (auto& handler : m_handlers)
                 {
                     handler(args ...);
@@ -43,8 +44,8 @@ namespace android::global
             }
 
         private:
-            std::mutex m_mutex{};
-            arcana::ticketed_collection<Handler> m_handlers{};
+            std::recursive_mutex m_mutex{};
+            arcana::ticketed_collection<Handler, std::recursive_mutex> m_handlers{};
         };
 
         using AppStateChangedEvent = Event<>;
@@ -80,6 +81,21 @@ namespace android::global
     android::content::Context GetAppContext()
     {
         return {g_appContext};
+    }
+
+    android::app::Activity GetCurrentActivity()
+    {
+        return {g_currentActivity};
+    }
+
+    void SetCurrentActivity(jobject currentActivity)
+    {
+        if (g_currentActivity)
+        {
+            GetEnvForCurrentThread()->DeleteGlobalRef(g_currentActivity);
+        }
+
+        g_currentActivity = GetEnvForCurrentThread()->NewGlobalRef(currentActivity);
     }
 
     void Pause()

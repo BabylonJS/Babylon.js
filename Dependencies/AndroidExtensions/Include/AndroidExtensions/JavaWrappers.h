@@ -30,6 +30,16 @@ namespace java::net
     class URLConnection;
 }
 
+namespace android
+{
+    class ManifestPermission;
+}
+
+namespace android::app
+{
+    class Activity;
+}
+
 namespace android::content
 {
     class Context;
@@ -155,6 +165,29 @@ namespace java::net
     };
 }
 
+namespace android
+{
+    class ManifestPermission
+    {
+    public:
+        static jstring CAMERA();
+
+    private:
+        static jstring getPermissionName(const char* permissionName);
+    };
+}
+
+namespace android::app
+{
+    class Activity : public java::lang::Object
+    {
+    public:
+        Activity(jobject object);
+
+        void requestPermissions(jstring systemPermissionName, int permissionRequestID);
+    };
+}
+
 namespace android::content
 {
     class Context : public java::lang::Object
@@ -173,6 +206,8 @@ namespace android::content
         };
 
         jobject getSystemService(const char* serviceName);
+
+        bool checkSelfPermission(jstring systemPermissionName);
     };
 }
 

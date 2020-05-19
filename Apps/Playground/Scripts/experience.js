@@ -3,7 +3,8 @@ var turntable = false;
 var logfps = true;
 var ibl = false;
 var rtt = false;
-var xr = false;
+var vr = false;
+var ar = false;
 var xrHitTest = false;
 
 function CreateBoxAsync() {
@@ -130,7 +131,7 @@ CreateBoxAsync().then(function () {
         scene.render();
     });
 
-    if (xr) {
+    if (vr || ar) {
         setTimeout(function () {
             scene.createDefaultXRExperienceAsync({ disableDefaultUI: true, disableTeleportation: true }).then((xr) => {
                 if (xrHitTest) {
@@ -154,7 +155,7 @@ CreateBoxAsync().then(function () {
                     }, 5000);
                 }
 
-                xr.baseExperience.enterXRAsync("immersive-vr", "unbounded", xr.renderTarget);
+                xr.baseExperience.enterXRAsync(vr ? "immersive-vr" : "immersive-ar", "unbounded", xr.renderTarget);
             });
         }, 5000);
     }

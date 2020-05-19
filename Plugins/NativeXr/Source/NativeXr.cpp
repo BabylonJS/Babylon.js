@@ -1,6 +1,7 @@
 #include "NativeXr.h"
 
 #include "NativeEngine.h"
+#include <Babylon/JsRuntimeScheduler.h>
 
 #include <XR.h>
 
@@ -8,6 +9,7 @@
 
 #include <set>
 #include <napi/napi.h>
+#include <arcana/threading/task.h>
 
 namespace
 {
@@ -147,8 +149,9 @@ namespace Babylon
         NativeXr();
         ~NativeXr();
 
-        void BeginSession(Napi::Env env); // TODO: Make this asynchronous.
-        void EndSession();                // TODO: Make this asynchronous.
+        arcana::cancellation_source& GetCancellationSource();
+        arcana::task<void, std::exception_ptr> BeginSession(Napi::Env env);
+        void EndSession(); // TODO: Make this asynchronous.
 
         auto ActiveFrameBuffers() const
         {
@@ -199,10 +202,11 @@ namespace Babylon
     private:
         std::map<uintptr_t, std::unique_ptr<FrameBufferData>> m_texturesToFrameBuffers{};
         xr::System m_system{};
-        std::unique_ptr<xr::System::Session> m_session{};
+        std::shared_ptr<xr::System::Session> m_session{};
         std::unique_ptr<xr::System::Session::Frame> m_frame{};
         std::vector<FrameBufferData*> m_activeFrameBuffers{};
         NativeEngine* m_engineImpl{};
+        arcana::cancellation_source m_cancellationSource{};
 
         void BeginFrame();
         void EndFrame();
@@ -214,6 +218,8 @@ namespace Babylon
 
     NativeXr::~NativeXr()
     {
+        m_cancellationSource.cancel();
+
         if (m_session != nullptr)
         {
             if (m_frame != nullptr)
@@ -225,8 +231,7 @@ namespace Babylon
         }
     }
 
-    // TODO: Make this asynchronous.
-    void NativeXr::BeginSession(Napi::Env env)
+    arcana::task<void, std::exception_ptr> NativeXr::BeginSession(Napi::Env env)
     {
         assert(m_session == nullptr);
         assert(m_frame == nullptr);
@@ -239,7 +244,9 @@ namespace Babylon
             }
         }
 
-        m_session = std::make_unique<xr::System::Session>(m_system, bgfx::getInternalData()->context);
+        return xr::System::Session::CreateAsync(m_system, bgfx::getInternalData()->context).then(arcana::inline_scheduler, m_cancellationSource, [this](std::shared_ptr<xr::System::Session> session) {
+            m_session = std::move(session);
+        });
     }
 
     // TODO: Make this asynchronous.
@@ -334,6 +341,11 @@ namespace Babylon
 
         m_frame.reset();
     }
+
+    arcana::cancellation_source& NativeXr::GetCancellationSource()
+    {
+        return m_cancellationSource;
+    }
 }
 
 namespace Babylon
@@ -344,7 +356,7 @@ namespace Babylon
         {
             static constexpr auto IMMERSIVE_VR{"immersive-vr"};
             static constexpr auto IMMERSIVE_AR{"immersive-ar"};
-            static constexpr auto IMMERSIVE_INLINE{"inline"};
+            static constexpr auto INLINE{"inline"};
         };
 
         struct XRReferenceSpaceType
@@ -1188,13 +1200,30 @@ namespace Babylon
 
             static Napi::Promise CreateAsync(const Napi::CallbackInfo& info)
             {
-                auto jsSession = info.Env().Global().Get(JS_CLASS_NAME).As<Napi::Function>().New({info[0]});
-                auto& session = *XRSession::Unwrap(jsSession);
-
-                session.m_xr.BeginSession(info.Env());
+                auto jsSession = Napi::Persistent(info.Env().Global().Get(JS_CLASS_NAME).As<Napi::Function>().New({info[0]}));
+                auto& session = *XRSession::Unwrap(jsSession.Value());
 
                 auto deferred = Napi::Promise::Deferred::New(info.Env());
-                deferred.Resolve(jsSession);
+                session.m_xr.BeginSession(info.Env())
+                    .then(session.m_runtimeScheduler, session.m_xr.GetCancellationSource(),
+                        [deferred, jsSession = std::move(jsSession), env = info.Env()](const arcana::expected<void, std::exception_ptr>& result) {
+                            if (result.has_error())
+                            {
+                                try
+                                {
+                                    std::rethrow_exception(result.error());
+                                }
+                                catch (const std::exception& e)
+                                {
+                                    deferred.Reject(Napi::Error::New(env, e.what()).Value());
+                                }
+                            }
+                            else
+                            {
+                                deferred.Resolve(jsSession.Value());
+                            }
+                        });
+
                 return deferred.Promise();
             }
 
@@ -1203,9 +1232,11 @@ namespace Babylon
                 , m_jsXRFrame{Napi::Persistent(XRFrame::New(info))}
                 , m_xrFrame{*XRFrame::Unwrap(m_jsXRFrame.Value())}
                 , m_jsInputSources{Napi::Persistent(Napi::Array::New(info.Env()))}
+                , m_runtimeScheduler{JsRuntime::GetFromJavaScript(info.Env())}
             {
-                // Support both immersive VR and immersive AR is supported.
-                assert(info[0].As<Napi::String>().Utf8Value() == XRSessionType::IMMERSIVE_VR || info[0].As<Napi::String>().Utf8Value() == XRSessionType::IMMERSIVE_AR);
+                // Currently only immersive VR and immersive AR are supported.
+                assert(info[0].As<Napi::String>().Utf8Value() == XRSessionType::IMMERSIVE_VR ||
+                    info[0].As<Napi::String>().Utf8Value() == XRSessionType::IMMERSIVE_AR);
             }
 
             void SetEngine(Napi::Object jsEngine)
@@ -1254,6 +1285,7 @@ namespace Babylon
             NativeXr m_xr{};
             Napi::ObjectReference m_jsXRFrame{};
             XRFrame& m_xrFrame;
+            JsRuntimeScheduler m_runtimeScheduler;
 
             std::vector<std::pair<const std::string, Napi::FunctionReference>> m_eventNamesAndCallbacks{};
 
@@ -1561,23 +1593,42 @@ namespace Babylon
 
             XR(const Napi::CallbackInfo& info)
                 : Napi::ObjectWrap<XR>{info}
+                , m_runtimeScheduler{JsRuntime::GetFromJavaScript(info.Env())}
             {
             }
 
         private:
+            JsRuntimeScheduler m_runtimeScheduler;
+
             Napi::Value IsSessionSupported(const Napi::CallbackInfo& info)
             {
-                auto sessionType = info[0].As<Napi::String>().Utf8Value();
+                std::string sessionTypeString = info[0].As<Napi::String>().Utf8Value();
+                xr::SessionType sessionType{xr::SessionType::INVALID};
                 bool isSupported = false;
 
-                if (sessionType == XRSessionType::IMMERSIVE_VR ||
-                    sessionType == XRSessionType::IMMERSIVE_AR)
+                if (sessionTypeString == XRSessionType::IMMERSIVE_VR)
                 {
-                    isSupported = true;
+                    sessionType = xr::SessionType::IMMERSIVE_VR;
+                }
+                else if (sessionTypeString == XRSessionType::IMMERSIVE_AR)
+                {
+                    sessionType = xr::SessionType::IMMERSIVE_AR;
+                }
+                else if (sessionTypeString == XRSessionType::INLINE)
+                {
+                    sessionType = xr::SessionType::INLINE;
                 }
 
                 auto deferred = Napi::Promise::Deferred::New(info.Env());
-                deferred.Resolve(Napi::Boolean::New(info.Env(), isSupported));
+
+                // Fire off the IsSessionSupported task.
+                xr::System::IsSessionSupportedAsync(sessionType)
+                    .then(m_runtimeScheduler,
+                        arcana::cancellation::none(),
+                        [deferred, env = info.Env()](bool result) {
+                            deferred.Resolve(Napi::Boolean::New(env, result));
+                        });
+
                 return deferred.Promise();
             }
 

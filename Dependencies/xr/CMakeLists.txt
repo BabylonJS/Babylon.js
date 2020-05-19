@@ -46,6 +46,9 @@ else()
     target_link_libraries(xr PRIVATE openxr_loader)
 endif()
 
+target_link_libraries(xr
+    PUBLIC arcana)
+
 target_include_directories(xr PUBLIC "Include")
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})

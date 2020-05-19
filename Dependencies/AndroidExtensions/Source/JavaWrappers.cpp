@@ -164,6 +164,40 @@ namespace java::net
     }
 }
 
+namespace android
+{
+    jstring ManifestPermission::CAMERA()
+    {
+        return getPermissionName("CAMERA");
+    }
+
+    jstring ManifestPermission::getPermissionName(const char* permissionName)
+    {
+        JNIEnv* env{GetEnvForCurrentThread()};
+        jclass cls{env->FindClass("android/Manifest$permission")};
+        jfieldID permId{env->GetStaticFieldID(cls, permissionName, "Ljava/lang/String;")};
+        return (jstring)env->GetStaticObjectField(cls, permId);
+    }
+}
+
+namespace android::app
+{
+    Activity::Activity(jobject object)
+        : Object{"android/app/Activity", object}
+    {
+    }
+
+    void Activity::requestPermissions(jstring systemPermissionName, int permissionRequestID)
+    {
+        jobjectArray permissionArray{m_env->NewObjectArray(
+            1,
+            m_env->FindClass("java/lang/String"),
+            systemPermissionName)};
+        m_env->CallVoidMethod(m_object, m_env->GetMethodID(m_class, "requestPermissions", "([Ljava/lang/String;I)V"), permissionArray, permissionRequestID);
+        m_env->DeleteLocalRef(permissionArray);
+    }
+}
+
 namespace android::content
 {
     Context::Context(jobject object)
@@ -184,6 +218,18 @@ namespace android::content
     jobject Context::getSystemService(const char* serviceName)
     {
         return m_env->CallObjectMethod(m_object, m_env->GetMethodID(m_class, "getSystemService", "(Ljava/lang/String;)Ljava/lang/Object;"), m_env->NewStringUTF(serviceName));
+    }
+
+    bool Context::checkSelfPermission(jstring systemPermissionName)
+    {
+        // Get the package manager, and get the value that represents a successful permission grant.
+        jclass packageManager{m_env->FindClass("android/content/pm/PackageManager")};
+        jfieldID permissionGrantedId{m_env->GetStaticFieldID(packageManager, "PERMISSION_GRANTED", "I")};
+        jint permissionGrantedValue{m_env->GetStaticIntField(packageManager, permissionGrantedId)};
+
+        // Perform the actual permission check by checking against the android context object.
+        jint permissionCheckResult{m_env->CallIntMethod(m_object, m_env->GetMethodID(m_class, "checkSelfPermission", "(Ljava/lang/String;)I"), systemPermissionName)};
+        return permissionGrantedValue == permissionCheckResult;
     }
 }
 
