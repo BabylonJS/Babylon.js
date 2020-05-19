@@ -525,6 +525,9 @@ export class ShaderMaterial extends Material {
         if (useInstances) {
             defines.push("#define INSTANCES");
             MaterialHelper.PushAttributesForInstances(attribs);
+            if (mesh?.hasThinInstances) {
+                defines.push("#define THIN_INSTANCES");
+            }
         }
 
         // Bones

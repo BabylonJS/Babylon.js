@@ -144,7 +144,7 @@ export class WebXRDefaultExperience {
                 };
                 if (options.optionalFeatures) {
                     if (typeof options.optionalFeatures === 'boolean') {
-                        uiOptions.optionalFeatures = ['hit-test', 'anchors'/*, 'hand-tracking'*/];
+                        uiOptions.optionalFeatures = ['hit-test', 'anchors', 'planes', 'hand-tracking'];
                     } else {
                         uiOptions.optionalFeatures = options.optionalFeatures;
                     }
