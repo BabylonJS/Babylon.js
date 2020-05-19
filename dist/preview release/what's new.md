@@ -154,6 +154,10 @@
 - Added support for code templates in the playground ([sailro](http://www.github.com/sailro))
 - If createEngine fails, a default engine will be created ([#8084](https://github.com/BabylonJS/Babylon.js/issues/8084)) ([RaananW](https://github.com/RaananW))
 
+### GUI
+
+- Added support for custom word splitting function for `TextBlock` ([Popov72](https://github.com/Popov72))
+
 ## Bugs
 
 - Fix infinite loop in `GlowLayer.unReferenceMeshFromUsingItsOwnMaterial` ([Popov72](https://github.com/Popov72))
