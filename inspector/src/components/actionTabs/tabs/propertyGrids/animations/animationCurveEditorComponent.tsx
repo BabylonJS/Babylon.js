@@ -32,7 +32,26 @@ interface ICanvasAxis {
     label: number;
 }
 
-export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, { animations: Animation[], animationName: string, animationType: string, animationTargetProperty: string, isOpen: boolean, selected: Animation, currentPathData: string | undefined, svgKeyframes: IKeyframeSvgPoint[] | undefined, currentFrame: number, currentValue: number, frameAxisLength: ICanvasAxis[], valueAxisLength: ICanvasAxis[], flatTangent: boolean, scale: number, playheadOffset: number, notification: string }> {
+export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, {
+    animations: Animation[],
+    animationName: string,
+    animationType: string,
+    animationTargetProperty: string,
+    isOpen: boolean, selected: Animation,
+    currentPathData: string | undefined,
+    svgKeyframes: IKeyframeSvgPoint[] | undefined,
+    currentFrame: number,
+    currentValue: number,
+    frameAxisLength: ICanvasAxis[],
+    valueAxisLength: ICanvasAxis[],
+    flatTangent: boolean,
+    scale: number,
+    playheadOffset: number,
+    notification: string,
+    currentPoint: SVGPoint | undefined,
+    lastFrame: number,
+    playheadPos: number
+}> {
 
     private _heightScale: number = 100;
     readonly _canvasLength: number = 20;
@@ -41,9 +60,13 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     private _frames: Vector2[] = [];
     private _isPlaying: boolean = false;
     private _graphCanvas: React.RefObject<HTMLDivElement>;
+    private _selectedCurve: React.RefObject<SVGPathElement>;
+    private _svgCanvas: React.RefObject<SvgDraggableArea>;
     constructor(props: IAnimationCurveEditorComponentProps) {
         super(props);
         this._graphCanvas = React.createRef();
+        this._selectedCurve = React.createRef();
+        this._svgCanvas = React.createRef();
         let valueInd = [2, 1.8, 1.6, 1.4, 1.2, 1, 0.8, 0.6, 0.4, 0.2, 0]; // will update this until we have a top scroll/zoom feature
         this.state = {
             animations: this._newAnimations,
@@ -61,7 +84,10 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             frameAxisLength: (new Array(this._canvasLength)).fill(0).map((s, i) => { return { value: i * 10, label: i * 10 } }),
             valueAxisLength: (new Array(10)).fill(0).map((s, i) => { return { value: i * 10, label: valueInd[i] } }),
             notification: "",
-            scale: 1
+            lastFrame: 0,
+            currentPoint: undefined,
+            scale: 1,
+            playheadPos: 0,
         }
     }
 
@@ -203,19 +229,28 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
         if (currentAnimation.dataType === Animation.ANIMATIONTYPE_FLOAT) {
             let keys = currentAnimation.getKeys();
-
-            let x = this.state.currentFrame
+            let x = this.state.currentFrame;
             let y = this.state.currentValue;
 
-            let previousFrame = keys.find(kf => kf.frame <= x);
-
-            console.log(previousFrame);
-
             keys.push({ frame: x, value: y });
-
             keys.sort((a, b) => a.frame - b.frame);
 
             currentAnimation.setKeys(keys);
+
+            this.selectAnimation(currentAnimation);
+        }
+    }
+
+    removeKeyframeClick() {
+
+        let currentAnimation = this.state.selected;
+
+        if (currentAnimation.dataType === Animation.ANIMATIONTYPE_FLOAT) {
+            let keys = currentAnimation.getKeys();
+            let x = this.state.currentFrame;
+            let filteredKeys = keys.filter(kf => kf.frame !== x);
+
+            currentAnimation.setKeys(filteredKeys);
 
             this.selectAnimation(currentAnimation);
         }
@@ -581,11 +616,14 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         this._svgKeyframes = [];
 
         const pathData = this.getPathData(animation);
+
+        let lastFrame = animation.getHighestFrame();
+
         if (pathData === "") {
             console.log("no keyframes in this animation");
         }
 
-        this.setState({ selected: animation, currentPathData: pathData, svgKeyframes: this._svgKeyframes });
+        this.setState({ selected: animation, currentPathData: pathData, svgKeyframes: this._svgKeyframes, lastFrame: lastFrame });
 
     }
 
@@ -681,7 +719,25 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     }
 
     changeCurrentFrame(frame: number) {
-        this.setState({ currentFrame: frame });
+
+        let currentValue;
+        let selectedCurve = this._selectedCurve.current;
+        if (selectedCurve) {
+
+            var curveLength = selectedCurve.getTotalLength();
+
+            let frameValue = (frame * curveLength) / 100;
+            let currentP = selectedCurve.getPointAtLength(frameValue);
+            let middle = this._heightScale / 2;
+
+            let offset = (((currentP?.y * this._heightScale) - (this._heightScale ** 2) / 2) / middle) / this._heightScale;
+
+            let unit = Math.sign(offset);
+            currentValue = unit === -1 ? Math.abs(offset + unit) : unit - offset;
+
+            this.setState({ currentFrame: frame, currentValue: currentValue, currentPoint: currentP });
+
+        }
     }
 
     setFlatTangent() {
@@ -712,7 +768,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                         <FontAwesomeIcon icon={faTimes} />
                     </div>
                 </div>
-                <GraphActionsBar currentValue={this.state.currentValue} handleValueChange={(e) => this.handleValueChange(e)} addKeyframe={() => this.addKeyframeClick()} flatTangent={() => this.setFlatTangent()} />
+                <GraphActionsBar currentValue={this.state.currentValue} handleValueChange={(e) => this.handleValueChange(e)} addKeyframe={() => this.addKeyframeClick()} removeKeyframe={() => this.removeKeyframeClick()} flatTangent={() => this.setFlatTangent()} />
                 <div className="content">
 
                     <div className="row">
@@ -756,7 +812,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
                             <Playhead frame={this.state.currentFrame} offset={this.state.playheadOffset} />
 
-                            {this.state.svgKeyframes && <SvgDraggableArea viewBoxScale={this.state.frameAxisLength.length} scale={this.state.scale} keyframeSvgPoints={this.state.svgKeyframes} updatePosition={(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number) => this.renderPoints(updatedSvgKeyFrame, index)}>
+                            {this.state.svgKeyframes && <SvgDraggableArea ref={this._svgCanvas} viewBoxScale={this.state.frameAxisLength.length} scale={this.state.scale} keyframeSvgPoints={this.state.svgKeyframes} updatePosition={(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number) => this.renderPoints(updatedSvgKeyFrame, index)}>
 
                                 {/* Frame Labels  */}
                                 { /* Vertical Grid  */}
@@ -776,7 +832,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                                 })}
 
                                 { /* Single Curve -Modify this for multiple selection and view  */}
-                                <path id="curve" d={this.state.currentPathData} style={{ stroke: 'red', fill: 'none', strokeWidth: '0.5' }}></path>
+                                <path ref={this._selectedCurve} pathLength={this.state.lastFrame} id="curve" d={this.state.currentPathData} style={{ stroke: 'red', fill: 'none', strokeWidth: '0.5' }}></path>
 
                                 {this._frames && this._frames.map(frame =>
                                     <svg x={frame.x} y={frame.y} style={{ overflow: 'visible' }}>
