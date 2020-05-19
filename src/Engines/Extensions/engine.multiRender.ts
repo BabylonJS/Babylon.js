@@ -10,11 +10,12 @@ declare module "../../Engines/thinEngine" {
         /**
          * Unbind a list of render target textures from the webGL context
          * This is used only when drawBuffer extension or webGL2 are active
+         * @param count number of color textures
          * @param textures defines the render target textures to unbind
          * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
          * @param onBeforeUnbind defines a function which will be called before the effective unbind
          */
-        unBindMultiColorAttachmentFramebuffer(textures: InternalTexture[], disableGenerateMipMaps: boolean, onBeforeUnbind?: () => void): void;
+        unBindMultiColorAttachmentFramebuffer(count: number, textures: InternalTexture[], disableGenerateMipMaps: boolean, onBeforeUnbind?: () => void): void;
 
         /**
          * Create a multi render target texture
@@ -28,15 +29,16 @@ declare module "../../Engines/thinEngine" {
         /**
          * Update the sample count for a given multiple render target texture
          * @see http://doc.babylonjs.com/features/webgl2#multisample-render-targets
+         * @param count number of color textures
          * @param textures defines the textures to update
          * @param samples defines the sample count to set
          * @returns the effective sample count (could be 0 if multisample render targets are not supported)
          */
-        updateMultipleRenderTargetTextureSampleCount(textures: Nullable<InternalTexture[]>, samples: number): number;
+        updateMultipleRenderTargetTextureSampleCount(count: number, textures: Nullable<InternalTexture[]>, samples: number): number;
     }
 }
 
-ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: InternalTexture[], disableGenerateMipMaps: boolean = false, onBeforeUnbind?: () => void): void {
+ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(count: number, textures: InternalTexture[], disableGenerateMipMaps: boolean = false, onBeforeUnbind?: () => void): void {
     this._currentRenderTarget = null;
 
     // If MSAA, we need to bitblt back to main texture
@@ -48,11 +50,11 @@ ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: 
 
         var attachments = textures[0]._attachments;
         if (!attachments) {
-            attachments = new Array(textures.length);
+            attachments = new Array(count);
             textures[0]._attachments = attachments;
         }
 
-        for (var i = 0; i < textures.length; i++) {
+        for (var i = 0; i < count; i++) {
             var texture = textures[i];
 
             for (var j = 0; j < attachments.length; j++) {
@@ -73,7 +75,7 @@ ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: 
         gl.drawBuffers(attachments);
     }
 
-    for (var i = 0; i < textures.length; i++) {
+    for (var i = 0; i < count; i++) {
         var texture = textures[i];
         if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
             this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
@@ -250,8 +252,8 @@ ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: I
     return textures;
 };
 
-ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function(textures: Nullable<InternalTexture[]>, samples: number): number {
-    if (this.webGLVersion < 2 || !textures || textures.length == 0) {
+ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function(count: number, textures: Nullable<InternalTexture[]>, samples: number): number {
+    if (this.webGLVersion < 2 || !textures || count == 0) {
         return 1;
     }
 
@@ -274,7 +276,7 @@ ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function(tex
         textures[0]._MSAAFramebuffer = null;
     }
 
-    for (var i = 0; i < textures.length; i++) {
+    for (var i = 0; i < count; i++) {
         if (textures[i]._MSAARenderBuffer) {
             gl.deleteRenderbuffer(textures[i]._MSAARenderBuffer);
             textures[i]._MSAARenderBuffer = null;
@@ -294,7 +296,7 @@ ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function(tex
 
         var attachments = [];
 
-        for (var i = 0; i < textures.length; i++) {
+        for (var i = 0; i < count; i++) {
             var texture = textures[i];
             var attachment = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
 

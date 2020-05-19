@@ -1549,9 +1549,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         if (scene.highDefinitionPipeline) {
-            defines.HIGH_DEFINITION_PIPELINE = true;            
+            defines.HIGH_DEFINITION_PIPELINE = true;
         } else {
-            defines.HIGH_DEFINITION_PIPELINE = false;            
+            defines.HIGH_DEFINITION_PIPELINE = false;
         }
 
         defines.FORCENORMALFORWARD = this._forceNormalForward;
