@@ -206,6 +206,9 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
         if (useInstances) {
             defines.push("#define INSTANCES");
             MaterialHelper.PushAttributesForInstances(attribs);
+            if (subMesh.getRenderingMesh().hasInstances) {
+                defines.push("#define THIN_INSTANCES");
+            }
         }
 
         // Get correct effect
@@ -320,7 +323,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
                 return;
             }
 
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
+            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null || renderingMesh.hasThinInstances);
 
             if (this._isReady(subMesh, hardwareInstancedRendering)) {
                 var effect: Effect = this._volumetricLightScatteringPass;
