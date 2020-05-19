@@ -835,7 +835,8 @@
         },
         {
             "title": "GLTF Extension EXT_mesh_gpu_instancing",
-            "playgroundId": "#QFIGLW#9",
+            "playgroundId": "#QFIGLW#9",            
+            "renderCount": 10,
             "referenceImage": "gltfExtensionExtMeshGpuInstancingTest.png"
         },
         {

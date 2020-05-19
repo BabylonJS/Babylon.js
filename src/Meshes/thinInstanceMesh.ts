@@ -250,8 +250,10 @@ Mesh.prototype.thinInstanceRefreshBoundingInfo = function(forceRefreshParentInfo
     const matrixData = this._thinInstanceDataStorage.matrixData;
 
     if (vectors.length === 0) {
+        const worldMatrix = this.getWorldMatrix();
         for (let v = 0; v < boundingInfo.boundingBox.vectors.length; ++v) {
             vectors.push(boundingInfo.boundingBox.vectors[v].clone());
+            Vector3.TransformCoordinatesToRef(vectors[v], worldMatrix, vectors[v]);
         }
     }
 
@@ -341,3 +343,8 @@ Mesh.prototype._disposeThinInstanceSpecificData = function() {
         this._thinInstanceDataStorage.matrixBuffer = null;
     }
 };
+
+/**
+ * @hidden
+ */
+export var _IDoNeedToBeInTheBuild2 = 42;

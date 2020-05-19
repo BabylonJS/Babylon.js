@@ -196,6 +196,24 @@ export class SubMesh extends BaseSubMesh implements ICullable {
     }
 
     /**
+     * Returns the replacement mesh of the submesh
+     * @returns the replacement mesh (could be different from parent mesh)
+     */
+    public getReplacementMesh(): Nullable<AbstractMesh> {
+        return this._mesh._internalAbstractMeshDataInfo._actAsRegularMesh ? this._mesh : null;
+    }
+
+    /**
+     * Returns the effective mesh of the submesh
+     * @returns the effective mesh (could be different from parent mesh)
+     */
+    public getEffectiveMesh(): AbstractMesh {
+        const replacementMesh = this._mesh._internalAbstractMeshDataInfo._actAsRegularMesh ? this._mesh : null;
+
+        return replacementMesh ? replacementMesh : this._renderingMesh;
+    }
+
+    /**
      * Returns the submesh material
      * @returns null or the current material
      */

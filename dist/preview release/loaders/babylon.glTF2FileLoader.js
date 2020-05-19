@@ -290,14 +290,11 @@ var EXT_mesh_gpu_instancing = /** @class */ (function () {
     EXT_mesh_gpu_instancing.prototype.loadNodeAsync = function (context, node, assign) {
         var _this = this;
         return _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].LoadExtensionAsync(context, node, this.name, function (extensionContext, extension) {
+            _this._loader._disableInstancedMesh++;
             var promise = _this._loader.loadNodeAsync("#/nodes/" + node.index, node, assign);
+            _this._loader._disableInstancedMesh--;
             if (!node._primitiveBabylonMeshes) {
                 return promise;
-            }
-            // Hide the source meshes.
-            for (var _i = 0, _a = node._primitiveBabylonMeshes; _i < _a.length; _i++) {
-                var babylonMesh = _a[_i];
-                babylonMesh.isVisible = false;
             }
             var promises = new Array();
             var instanceCount = 0;
@@ -318,31 +315,23 @@ var EXT_mesh_gpu_instancing = /** @class */ (function () {
             loadAttribute("TRANSLATION");
             loadAttribute("ROTATION");
             loadAttribute("SCALE");
-            if (instanceCount == 0) {
-                return promise;
-            }
-            var digitLength = instanceCount.toString().length;
-            for (var i = 0; i < instanceCount; ++i) {
-                for (var _b = 0, _c = node._primitiveBabylonMeshes; _b < _c.length; _b++) {
-                    var babylonMesh = _c[_b];
-                    var instanceName = (babylonMesh.name || babylonMesh.id) + "_" + babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["StringTools"].PadNumber(i, digitLength);
-                    var babylonInstancedMesh = babylonMesh.createInstance(instanceName);
-                    babylonInstancedMesh.setParent(babylonMesh);
-                }
-            }
             return promise.then(function (babylonTransformNode) {
                 return Promise.all(promises).then(function (_a) {
                     var translationBuffer = _a[0], rotationBuffer = _a[1], scaleBuffer = _a[2];
+                    var matrices = new Float32Array(instanceCount * 16);
+                    babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["TmpVectors"].Vector3[0].copyFromFloats(0, 0, 0); // translation
+                    babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["TmpVectors"].Quaternion[0].copyFromFloats(0, 0, 0, 1); // rotation
+                    babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["TmpVectors"].Vector3[1].copyFromFloats(1, 1, 1); // scale
+                    for (var i = 0; i < instanceCount; ++i) {
+                        translationBuffer && babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArrayToRef(translationBuffer, i * 3, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["TmpVectors"].Vector3[0]);
+                        rotationBuffer && babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Quaternion"].FromArrayToRef(rotationBuffer, i * 4, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["TmpVectors"].Quaternion[0]);
+                        scaleBuffer && babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArrayToRef(scaleBuffer, i * 3, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["TmpVectors"].Vector3[1]);
+                        babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Matrix"].ComposeToRef(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["TmpVectors"].Vector3[1], babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["TmpVectors"].Quaternion[0], babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["TmpVectors"].Vector3[0], babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["TmpVectors"].Matrix[0]);
+                        babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["TmpVectors"].Matrix[0].copyToArray(matrices, i * 16);
+                    }
                     for (var _i = 0, _b = node._primitiveBabylonMeshes; _i < _b.length; _i++) {
                         var babylonMesh = _b[_i];
-                        var babylonInstancedMeshes = babylonMesh.getChildMeshes(true, function (node) { return node.isAnInstance; });
-                        for (var i = 0; i < instanceCount; ++i) {
-                            var babylonInstancedMesh = babylonInstancedMeshes[i];
-                            translationBuffer && babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArrayToRef(translationBuffer, i * 3, babylonInstancedMesh.position);
-                            rotationBuffer && babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Quaternion"].FromArrayToRef(rotationBuffer, i * 4, babylonInstancedMesh.rotationQuaternion);
-                            scaleBuffer && babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArrayToRef(scaleBuffer, i * 3, babylonInstancedMesh.scaling);
-                            babylonInstancedMesh.refreshBoundingInfo();
-                        }
+                        babylonMesh.thinInstanceSetBuffer("matrix", matrices, 16, true);
                     }
                     return babylonTransformNode;
                 });
@@ -2196,6 +2185,8 @@ var GLTFLoader = /** @class */ (function () {
         this._forAssetContainer = false;
         /** Storage */
         this._babylonLights = [];
+        /** @hidden */
+        this._disableInstancedMesh = 0;
         this._disposed = false;
         this._state = null;
         this._extensions = new Array();
@@ -2788,7 +2779,7 @@ var GLTFLoader = /** @class */ (function () {
             return extensionPromise;
         }
         this.logOpen("" + context);
-        var shouldInstance = this._parent.createInstances && (node.skin == undefined && !mesh.primitives[0].targets);
+        var shouldInstance = (this._disableInstancedMesh === 0) && this._parent.createInstances && (node.skin == undefined && !mesh.primitives[0].targets);
         var babylonAbstractMesh;
         var promise;
         if (shouldInstance && primitive._instanceData) {
