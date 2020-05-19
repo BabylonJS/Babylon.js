@@ -46,9 +46,21 @@ export interface IWebXRAnchor {
     attachedNode?: TransformNode;
 }
 
+/**
+ * An internal interface for a future (promise based) anchor
+ */
 interface IWebXRFutureAnchor {
+    /**
+     * A resolve function
+     */
     resolve: (xrAnchor: XRAnchor) => void;
+    /**
+     * A reject function
+     */
     reject: (msg?: string) => void;
+    /**
+     * The XR Transformation of the future anchor
+     */
     xrTransformation: XRRigidTransform;
 }
 
