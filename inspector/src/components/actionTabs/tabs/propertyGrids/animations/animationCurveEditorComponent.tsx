@@ -229,16 +229,10 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
         if (currentAnimation.dataType === Animation.ANIMATIONTYPE_FLOAT) {
             let keys = currentAnimation.getKeys();
-
-            let x = this.state.currentFrame
+            let x = this.state.currentFrame;
             let y = this.state.currentValue;
 
-            let previousFrame = keys.find(kf => kf.frame <= x);
-
-            console.log(previousFrame);
-
             keys.push({ frame: x, value: y });
-
             keys.sort((a, b) => a.frame - b.frame);
 
             currentAnimation.setKeys(keys);
@@ -253,9 +247,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
         if (currentAnimation.dataType === Animation.ANIMATIONTYPE_FLOAT) {
             let keys = currentAnimation.getKeys();
-
-            let x = this.state.currentFrame
-
+            let x = this.state.currentFrame;
             let filteredKeys = keys.filter(kf => kf.frame !== x);
 
             currentAnimation.setKeys(filteredKeys);
@@ -732,9 +724,9 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         let selectedCurve = this._selectedCurve.current;
         if (selectedCurve) {
 
-            var theLength = selectedCurve.getTotalLength();
+            var curveLength = selectedCurve.getTotalLength();
 
-            let frameValue = (frame * theLength) / 100;
+            let frameValue = (frame * curveLength) / 100;
             let currentP = selectedCurve.getPointAtLength(frameValue);
             let middle = this._heightScale / 2;
 
