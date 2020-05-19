@@ -73,7 +73,7 @@ interface XRSessionInit {
     requiredFeatures?: string[];
 }
 
-interface XRSession extends XRAnchorCreator {
+interface XRSession {
     addEventListener: Function;
     removeEventListener: Function;
     requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace>;
@@ -114,6 +114,7 @@ interface XRFrame {
     getHitTestResultsForTransientInput(hitTestSource: XRTransientInputHitTestSource): Array<XRTransientInputHitTestResult>;
     // Anchors
     trackedAnchors?: XRAnchorSet;
+    createAnchor(pose: XRRigidTransform, space: XRSpace): Promise<XRAnchor>;
     // Planes
     worldInformation: {
         detectedPlanes?: XRPlaneSet;
@@ -198,6 +199,8 @@ interface XRTransientInputHitTestResult {
 
 interface XRHitTestResult {
     getPose(baseSpace: XRSpace): XRPose | undefined;
+    // When anchor system is enabled
+    createAnchor?(pose: XRRigidTransform): Promise<XRAnchor>;
 }
 
 interface XRHitTestSource {
@@ -221,21 +224,13 @@ interface XRTransientInputHitTestOptionsInit {
 }
 
 interface XRAnchor {
-    // remove?
-    id?: string;
     anchorSpace: XRSpace;
-    lastChangedTime: number;
-    detach(): void;
+    delete(): void;
 }
 
-interface XRPlane extends XRAnchorCreator {
+interface XRPlane {
     orientation: "Horizontal" | "Vertical";
     planeSpace: XRSpace;
     polygon: Array<DOMPointReadOnly>;
     lastChangedTime: number;
-}
-
-interface XRAnchorCreator {
-    // AR Anchors
-    createAnchor(pose: XRPose | XRRigidTransform, referenceSpace: XRReferenceSpace): Promise<XRAnchor>;
 }

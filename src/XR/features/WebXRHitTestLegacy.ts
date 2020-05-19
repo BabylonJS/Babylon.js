@@ -1,4 +1,4 @@
-import { WebXRFeaturesManager, WebXRFeatureName } from '../webXRFeaturesManager';
+import { WebXRFeaturesManager, WebXRFeatureName, IWebXRFeature } from '../webXRFeaturesManager';
 import { WebXRSessionManager } from '../webXRSessionManager';
 import { Observable } from '../../Misc/observable';
 import { Vector3, Matrix } from '../../Maths/math.vector';
@@ -6,6 +6,16 @@ import { TransformNode } from '../../Meshes/transformNode';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
 
 // the plugin is registered at the end of the file
+
+/**
+ * An interface for all Hit test features
+ */
+export interface IWebXRHitTestFeature<T extends IWebXRLegacyHitResult> extends IWebXRFeature {
+    /**
+     * Triggered when new babylon (transformed) hit test results are available
+     */
+    onHitTestResultObservable: Observable<T[]>;
+}
 
 /**
  * Options used for hit testing
@@ -40,7 +50,7 @@ export interface IWebXRLegacyHitResult {
  * Hit test (or Ray-casting) is used to interact with the real world.
  * For further information read here - https://github.com/immersive-web/hit-test
  */
-export class WebXRHitTestLegacy extends WebXRAbstractFeature {
+export class WebXRHitTestLegacy extends WebXRAbstractFeature  implements IWebXRHitTestFeature<IWebXRLegacyHitResult> {
     // in XR space z-forward is negative
     private _direction = new Vector3(0, 0, -1);
     private _mat = new Matrix();
