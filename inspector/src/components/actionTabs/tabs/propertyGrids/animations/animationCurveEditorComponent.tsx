@@ -2,7 +2,9 @@ import * as React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { Animation } from 'babylonjs/Animations/animation';
-import { Vector2 } from 'babylonjs/Maths/math.vector';
+import { Vector2, Vector3, Quaternion } from 'babylonjs/Maths/math.vector';
+import { Size } from 'babylonjs/Maths/math.size';
+import { Color3, Color4 } from 'babylonjs/Maths/math.color';
 import { EasingFunction } from 'babylonjs/Animations/easing';
 import { IAnimationKey } from 'babylonjs/Animations/animationKey';
 import { IKeyframeSvgPoint } from './keyframeSvgPoint';
@@ -181,6 +183,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             if (matchTypeTargetProperty.length === 1) {
                 let match = (this.props.entity as any)[matchTypeTargetProperty[0]];
 
+                if (match){
                 switch (match.constructor.name) {
                     case "Vector2":
                         animationDataType === Animation.ANIMATIONTYPE_VECTOR2 ? matched = true : matched = false;
@@ -202,10 +205,11 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                         break;
                     default: console.log("not recognized");
                         break;
+                    }
+                } else {
+                    this.setState({ notification: `The selected entity doesn't have a ${matchTypeTargetProperty[0]} property` });
                 }
-            }
-
-            if (matchTypeTargetProperty.length > 1) {
+            } else if (matchTypeTargetProperty.length > 1) {
                 let match = (this.props.entity as any)[matchTypeTargetProperty[0]][matchTypeTargetProperty[1]];
                 if (typeof match === "number") {
                     animationDataType === Animation.ANIMATIONTYPE_FLOAT ? matched = true : matched = false;
@@ -213,25 +217,62 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             }
 
             if (matched) {
+
+                let startValue;
+                let endValue;
+
+                switch (animationDataType) {
+                    case Animation.ANIMATIONTYPE_FLOAT:
+                        startValue = 1;
+                        endValue = 1;
+                        break;
+                    case Animation.ANIMATIONTYPE_VECTOR2:
+                        startValue = new Vector2(1,1);
+                        endValue = new Vector2(1,1);
+                        break;
+                    case Animation.ANIMATIONTYPE_VECTOR3:
+                        startValue = new Vector3(1,1,1);
+                        endValue = new Vector3(1,1,1);
+                        break;
+                    case Animation.ANIMATIONTYPE_QUATERNION:
+                        startValue = new Quaternion(1,1,1,1);
+                        endValue = new Quaternion(1,1,1,1);
+                        break;
+                    case Animation.ANIMATIONTYPE_COLOR3:
+                        startValue = new Color3(1,1,1);
+                        endValue = new Color3(1,1,1);
+                        break;
+                    case Animation.ANIMATIONTYPE_COLOR4:
+                        startValue = new Color4(1,1,1,1);
+                        endValue = new Color4(1,1,1,1);
+                        break;
+                    case Animation.ANIMATIONTYPE_SIZE:
+                        startValue = new Size(1,1);
+                        endValue = new Size(1,1);
+                        break;
+                    default: console.log("not recognized");
+                        break;
+                }
+
                 let animation = new Animation(this.state.animationName, this.state.animationTargetProperty, 30, animationDataType);
 
                 // Start with two keyframes
                 var keys = [];
                 keys.push({
                     frame: 0,
-                    value: 1
+                    value: startValue
                 });
 
                 keys.push({
                     frame: 100,
-                    value: 1
+                    value: endValue
                 });
 
                 animation.setKeys(keys);
                 (this.props.entity as IAnimatable).animations?.push(animation);
 
             } else {
-                this.setState({ notification: `The property "${this.state.animationTargetProperty}" if not a "${this.state.animationType}" type` })
+                this.setState({ notification: `The property "${this.state.animationTargetProperty}" is not a "${this.state.animationType}" type` });
             }
 
         } else {
@@ -822,7 +863,77 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                                 <h2>{this.props.entityName}</h2>
                                 <ul>
                                     {this.props.animations && this.props.animations.map((animation, i) => {
-                                        return <li className={this.state.selected.name === animation.name ? 'active' : ''} key={i} onClick={() => this.selectAnimation(animation)}>{animation.name} <strong>{animation.targetProperty}</strong></li>
+
+                                        let element;
+
+                                        switch(animation.dataType){
+                                            case Animation.ANIMATIONTYPE_FLOAT:
+                                                element = <li className={this.state.selected.name === animation.name ? 'active' : ''} key={i} onClick={() => this.selectAnimation(animation)}>
+                                                    {animation.name} 
+                                                    <strong>{animation.targetProperty}</strong>
+                                                    </li>
+                                                break;
+                                            case Animation.ANIMATIONTYPE_VECTOR2:
+                                                element = <li className="property" key={i}><p>{this.state.animationTargetProperty}</p>
+                                                            <ul>
+                                                                <li key={`${i}_x`}>Property <strong>X</strong></li>
+                                                                <li key={`${i}_y`}>Property <strong>Y</strong></li>
+                                                             </ul>
+                                                        </li>
+                                                break;
+                                            case Animation.ANIMATIONTYPE_VECTOR3:
+                                                element = <li className="property" key={i}><p>{this.state.animationTargetProperty}</p>
+                                                            <ul>
+                                                                <li key={`${i}_x`}>Property <strong>X</strong></li>
+                                                                <li key={`${i}_y`}>Property <strong>Y</strong></li>
+                                                                <li key={`${i}_z`}>Property <strong>Z</strong></li>
+                                                             </ul>
+                                                        </li>
+                                                break;
+                                            case Animation.ANIMATIONTYPE_QUATERNION:
+                                                element = <li className="property" key={i}><p>{this.state.animationTargetProperty}</p>
+                                                <ul>
+                                                    <li key={`${i}_x`}>Property <strong>X</strong></li>
+                                                    <li key={`${i}_y`}>Property <strong>Y</strong></li>
+                                                    <li key={`${i}_z`}>Property <strong>Z</strong></li>
+                                                    <li key={`${i}_w`}>Property <strong>W</strong></li>
+                                                 </ul>
+                                                </li>
+                                                break;
+                                            case Animation.ANIMATIONTYPE_COLOR3:
+                                                element = <li className="property" key={i}><p>{this.state.animationTargetProperty}</p>
+                                                            <ul>
+                                                                <li key={`${i}_r`}>Property <strong>R</strong></li>
+                                                                <li key={`${i}_g`}>Property <strong>G</strong></li>
+                                                                <li key={`${i}_b`}>Property <strong>B</strong></li>
+                                                             </ul>
+                                                        </li>
+                                                break;
+                                            case Animation.ANIMATIONTYPE_COLOR4:
+                                                element = <li className="property" key={i}><p>{this.state.animationTargetProperty}</p>
+                                                <ul>
+                                                    <li key={`${i}_r`}>Property <strong>R</strong></li>
+                                                    <li key={`${i}_g`}>Property <strong>G</strong></li>
+                                                    <li key={`${i}_b`}>Property <strong>B</strong></li>
+                                                    <li key={`${i}_a`}>Property <strong>A</strong></li>
+                                                 </ul>
+                                                </li>
+                                                break;
+                                            case Animation.ANIMATIONTYPE_SIZE:
+                                                element =  <li className="property" key={i}><p>{this.state.animationTargetProperty}</p>
+                                                            <ul>
+                                                                <li key={`${i}_width`}>Property <strong>Width</strong></li>
+                                                                <li key={`${i}_height`}>Property <strong>Height</strong></li>
+                                                             </ul>
+                                                        </li>
+                                                break;
+                                            default: console.log("not recognized");
+                                                element =  null;
+                                                break;
+                                        }
+
+                                        return element;
+                                        
                                     })}
 
                                 </ul>

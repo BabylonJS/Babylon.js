@@ -142,7 +142,17 @@
             ul {
                 list-style:none;
                 padding-left: 0px;
+                li.property {
+                    &:before {
+                        content: '';
+                        background: none;
+                    }
+                }
                 li {
+                    p {
+                        font-weight: bolder;
+                        font-variant: all-small-caps;
+                    }
                     cursor: pointer;
                     &:before {
                         content: '';
@@ -170,7 +180,9 @@
                 background-color: rgba(0, 0, 0, 0.3);
                 padding: 10px;
                 margin-top: 19px;
-                height: 15em;
+                height: 11em;
+                overflow: scroll;
+                overflow-x: hidden;
             }
 
             .label-input{
