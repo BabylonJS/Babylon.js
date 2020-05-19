@@ -343,3 +343,8 @@ Mesh.prototype._disposeThinInstanceSpecificData = function() {
         this._thinInstanceDataStorage.matrixBuffer = null;
     }
 };
+
+/**
+ * @hidden
+ */
+export var _IDoNeedToBeInTheBuild2 = 42;
