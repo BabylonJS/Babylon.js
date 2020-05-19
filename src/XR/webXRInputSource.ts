@@ -5,6 +5,7 @@ import { Ray } from '../Culling/ray';
 import { Scene } from '../scene';
 import { WebXRAbstractMotionController } from './motionController/webXRAbstractMotionController';
 import { WebXRMotionControllerManager } from './motionController/webXRMotionControllerManager';
+import { Tools } from '../Misc/tools';
 
 let idCount = 0;
 
@@ -115,6 +116,8 @@ export class WebXRInputSource {
                         }
                     });
                 }
+            }, () => {
+                Tools.Warn(`Could not find a matching motion controller for the registered input source`);
             });
         }
     }
