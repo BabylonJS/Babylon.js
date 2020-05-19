@@ -7,6 +7,9 @@ import { WebXRAbstractFeature } from './WebXRAbstractFeature';
 
 // the plugin is registered at the end of the file
 
+/**
+ * An interface for all Hit test features
+ */
 export interface IWebXRHitTestFeature<T extends IWebXRLegacyHitResult> extends IWebXRFeature {
     /**
      * Triggered when new babylon (transformed) hit test results are available
