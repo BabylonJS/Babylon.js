@@ -522,6 +522,9 @@ export abstract class EffectLayer {
         if (useInstances) {
             defines.push("#define INSTANCES");
             MaterialHelper.PushAttributesForInstances(attribs);
+            if (subMesh.getRenderingMesh().hasThinInstances) {
+                defines.push("#define THIN_INSTANCES");
+            }
         }
 
         this._addCustomEffectDefines(defines);
@@ -685,7 +688,7 @@ export abstract class EffectLayer {
             return;
         }
 
-        var hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id];
+        var hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id] || renderingMesh.hasThinInstances;
 
         this._setEmissiveTextureAndColor(renderingMesh, subMesh, material);
 

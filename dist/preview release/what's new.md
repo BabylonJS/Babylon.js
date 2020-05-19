@@ -10,6 +10,7 @@
 - Added editing of PBR materials, Post processes and Particle fragment shaders in the node material editor ([Popov72](https://github.com/Popov72))
 - Added Curve editor to create and view selected entity's animations in the Inspector ([pixelspace](https://github.com/devpixelspace))
 - Added support in `ShadowGenerator` for fast fake soft transparent shadows ([Popov72](https://github.com/Popov72))
+- Added support for **thin instances** for faster mesh instances. [Doc](https://doc.babylonjs.com/how_to/how_to_use_thininstances) ([Popov72](https://github.com/Popov72))
 
 ## Updates
 
@@ -33,6 +34,7 @@
 - Add back support for selecting textures based on engine capabilities ([bghgary](https://github.com/bghgary))
 - Fix Draco decoder when running on IE11 ([bghgary](https://github.com/bghgary))
 - Change default camera calculations to only include visible and enabled meshes ([bghgary](https://github.com/bghgary))
+- Optimized frozen instances ([Deltakosh](https://github.com/deltakosh))
 
 ### NME
 
@@ -42,6 +44,7 @@
 - Updated which node ports are shown on frames by default so that only node ports connected to outside nodes are by default exposed on the frame ([belfortk](https://github.com/belfortk))
 - Added a modulo block ([ageneau](https://github.com/ageneau))
 - Fix bug where frame port labels would be the names of incorrect nodes ([belfortk](https://github.com/belfortk))
+- Fix bug where long comments on collapsed frames broke port alignment ([belfortk](https://github.com/belfortk))
 
 ### Inspector
 
@@ -79,6 +82,7 @@
 - Renamed KHR_mesh_instancing extension to EXT_mesh_gpu_instancing ([#7945](https://github.com/BabylonJS/Babylon.js/issues/7945)) ([drigax](https://github.com/Drigax))
 - Added support for KHR_materials_ior for glTF loader. ([Sebavan](https://github.com/sebavan/))
 - Added support for KHR_materials_specular for glTF loader. ([Sebavan](https://github.com/sebavan/))
+- Added support for KHR_xmp for glTF loader. ([Sebavan](https://github.com/sebavan/))
 
 ### Navigation
 
@@ -113,6 +117,7 @@
 - Added support for (experimental) haptic actuators ([#8068](https://github.com/BabylonJS/Babylon.js/issues/8068)) ([RaananW](https://github.com/RaananW))
 - It is now possible to enable experimental (AR) features using the options of the default xr helper ([RaananW](https://github.com/RaananW))
 - Full support for right handed systems ([#8132](https://github.com/BabylonJS/Babylon.js/issues/8132)) ([RaananW](https://github.com/RaananW))
+- WebXR anchors feature ([#7917](https://github.com/BabylonJS/Babylon.js/issues/7917)) ([RaananW](https://github.com/RaananW))
 
 ### Collisions
 

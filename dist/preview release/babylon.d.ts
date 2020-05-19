@@ -11046,6 +11046,15 @@ declare module BABYLON {
          */
         static Parse(parsedManager: any, scene: Scene, rootUrl: string): SpriteManager;
         /**
+         * Creates a sprite manager from a snippet saved in a remote file
+         * @param name defines the name of the sprite manager to create (can be null or empty to use the one from the json data)
+         * @param url defines the url to load from
+         * @param scene defines the hosting scene
+         * @param rootUrl defines the root URL to use to load textures and relative dependencies
+         * @returns a promise that will resolve to the new sprite manager
+         */
+        static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl?: string): Promise<SpriteManager>;
+        /**
          * Creates a sprite manager from a snippet saved by the sprite editor
          * @param snippetId defines the snippet to load
          * @param scene defines the hosting scene
@@ -16942,7 +16951,7 @@ declare module BABYLON {
         private _renderAlphaTest;
         private _renderTransparent;
         /** @hidden */
-        _edgesRenderers: SmartArray<IEdgesRenderer>;
+        _edgesRenderers: SmartArrayNoDuplicate<IEdgesRenderer>;
         onBeforeTransparentRendering: () => void;
         /**
          * Set the opaque sort comparison function.
@@ -19997,8 +20006,10 @@ declare module BABYLON {
          * @param defines specifies the list of active defines
          * @param useInstances defines if instances have to be turned on
          * @param useClipPlane defines if clip plane have to be turned on
+         * @param useInstances defines if instances have to be turned on
+         * @param useThinInstances defines if thin instances have to be turned on
          */
-        static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: any, useInstances: boolean, useClipPlane?: Nullable<boolean>): void;
+        static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: any, useInstances: boolean, useClipPlane?: Nullable<boolean>, useThinInstances?: boolean): void;
         /**
          * Prepares the defines for bones
          * @param mesh The mesh containing the geometry data we will draw
@@ -21455,8 +21466,9 @@ declare module BABYLON {
          * @param nodeMaterial defines the node material requesting the update
          * @param defines defines the material defines to update
          * @param useInstances specifies that instances should be used
+         * @param subMesh defines which submesh to render
          */
-        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean, subMesh?: SubMesh): void;
         /**
          * Lets the block try to connect some inputs automatically
          * @param material defines the hosting NodeMaterial
@@ -27153,6 +27165,16 @@ declare module BABYLON {
         hardwareInstancedRendering: boolean[];
     }
     /**
+     * @hidden
+     **/
+    class _ThinInstanceDataStorage {
+        instancesCount: number;
+        matrixBuffer: Nullable<Buffer>;
+        matrixBufferSize: number;
+        matrixData: Nullable<Float32Array>;
+        boundingVectors: Array<Vector3>;
+    }
+    /**
      * Class used to represent renderable models
      */
     export class Mesh extends AbstractMesh implements IGetSetVerticesData {
@@ -27266,6 +27288,7 @@ declare module BABYLON {
          */
         set onBeforeDraw(callback: () => void);
         get hasInstances(): boolean;
+        get hasThinInstances(): boolean;
         /**
          * Gets the delay loading state of the mesh (when delay loading is turned on)
          * @see http://doc.babylonjs.com/how_to/using_the_incremental_loading_system
@@ -27305,6 +27328,8 @@ declare module BABYLON {
         _delayLoadingFunction: (any: any, mesh: Mesh) => void;
         /** @hidden */
         _instanceDataStorage: _InstanceDataStorage;
+        /** @hidden */
+        _thinInstanceDataStorage: _ThinInstanceDataStorage;
         private _effectiveMaterial;
         /** @hidden */
         _shouldGenerateFlatShading: boolean;
@@ -27546,6 +27571,7 @@ declare module BABYLON {
         _preActivateForIntermediateRendering(renderId: number): Mesh;
         /** @hidden */
         _registerInstanceForRenderId(instance: InstancedMesh, renderId: number): Mesh;
+        protected _afterComputeWorldMatrix(): void;
         /**
          * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
          * This means the mesh underlying bounding box and sphere are recomputed.
@@ -27710,6 +27736,8 @@ declare module BABYLON {
         /** @hidden */
         _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: Engine): Mesh;
         /** @hidden */
+        _renderWithThinInstances(subMesh: SubMesh, fillMode: number, effect: Effect, engine: Engine): void;
+        /** @hidden */
         _processInstancedBuffers(visibleInstances: InstancedMesh[], renderSelf: boolean): void;
         /** @hidden */
         _processRendering(renderingMesh: AbstractMesh, subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material): Mesh;
@@ -27813,6 +27841,8 @@ declare module BABYLON {
         dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
         /** @hidden */
         _disposeInstanceSpecificData(): void;
+        /** @hidden */
+        _disposeThinInstanceSpecificData(): void;
         /**
          * Modifies the mesh geometry according to a displacement map.
          * A displacement map is a colored image. Each pixel color value (actually a gradient computed from red, green, blue values) will give the displacement to apply to each mesh vertex.
@@ -29305,6 +29335,7 @@ declare module BABYLON {
         BonesPerMesh: number;
         BONETEXTURE: boolean;
         INSTANCES: boolean;
+        THIN_INSTANCES: boolean;
         GLOSSINESS: boolean;
         ROUGHNESS: boolean;
         EMISSIVEASILLUMINATION: boolean;
@@ -31310,6 +31341,10 @@ declare module BABYLON {
          * Gets a boolean indicating if this mesh has instances
          */
         get hasInstances(): boolean;
+        /**
+         * Gets a boolean indicating if this mesh has thin instances
+         */
+        get hasThinInstances(): boolean;
         /**
          * Perform relative position change from the point of view of behind the front of the mesh.
          * This is performed taking into account the meshes current rotation, so you do not have to care.
@@ -54559,6 +54594,7 @@ declare module BABYLON {
         RADIANCEOCCLUSION: boolean;
         HORIZONOCCLUSION: boolean;
         INSTANCES: boolean;
+        THIN_INSTANCES: boolean;
         NUM_BONE_INFLUENCERS: number;
         BonesPerMesh: number;
         BONETEXTURE: boolean;
@@ -60679,7 +60715,7 @@ declare module BABYLON {
          */
         get instanceID(): NodeMaterialConnectionPoint;
         autoConfigure(material: NodeMaterial): void;
-        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean, subMesh?: SubMesh): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -64886,6 +64922,89 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+        interface Mesh {
+            /**
+             * Creates a new thin instance
+             * @param matrix the matrix or array of matrices (position, rotation, scale) of the thin instance(s) to create
+             * @param refresh true to refresh the underlying gpu buffer (default: true). If you do multiple calls to this method in a row, set refresh to true only for the last call to save performance
+             * @returns the thin instance index number. If you pass an array of matrices, other instance indexes are index+1, index+2, etc
+             */
+            thinInstanceAdd(matrix: DeepImmutableObject<Matrix> | Array<DeepImmutableObject<Matrix>>, refresh: boolean): number;
+            /**
+             * Adds the transformation (matrix) of the current mesh as a thin instance
+             * @param refresh true to refresh the underlying gpu buffer (default: true). If you do multiple calls to this method in a row, set refresh to true only for the last call to save performance
+             * @returns the thin instance index number
+             */
+            thinInstanceAddSelf(refresh: boolean): number;
+            /**
+             * Registers a custom attribute to be used with thin instances
+             * @param kind name of the attribute
+             * @param stride size in floats of the attribute
+             */
+            thinInstanceRegisterAttribute(kind: string, stride: number): void;
+            /**
+             * Sets the matrix of a thin instance
+             * @param index index of the thin instance
+             * @param matrix matrix to set
+             * @param refresh true to refresh the underlying gpu buffer (default: true). If you do multiple calls to this method in a row, set refresh to true only for the last call to save performance
+             */
+            thinInstanceSetMatrixAt(index: number, matrix: DeepImmutableObject<Matrix>, refresh: boolean): void;
+            /**
+             * Sets the value of a custom attribute for a thin instance
+             * @param kind name of the attribute
+             * @param index index of the thin instance
+             * @param value value to set
+             * @param refresh true to refresh the underlying gpu buffer (default: true). If you do multiple calls to this method in a row, set refresh to true only for the last call to save performance
+             */
+            thinInstanceSetAttributeAt(kind: string, index: number, value: Array<number>, refresh: boolean): void;
+            /**
+             * Gets / sets the number of thin instances to display. Note that you can't set a number higher than what the underlying buffer can handle.
+             */
+            thinInstanceCount: number;
+            /**
+             * Sets a buffer to be used with thin instances. This method is a faster way to setup multiple instances than calling thinInstanceAdd repeatedly
+             * @param kind name of the attribute. Use "matrix" to setup the buffer of matrices
+             * @param buffer buffer to set
+             * @param stride size in floats of each value of the buffer
+             * @param staticBuffer indicates that the buffer is static, so that you won't change it after it is set (better performances - false by default)
+             */
+            thinInstanceSetBuffer(kind: string, buffer: Nullable<Float32Array>, stride: number, staticBuffer: boolean): void;
+            /**
+             * Synchronize the gpu buffers with a thin instance buffer. Call this method if you update later on the buffers passed to thinInstanceSetBuffer
+             * @param kind name of the attribute to update. Use "matrix" to update the buffer of matrices
+             */
+            thinInstanceBufferUpdated(kind: string): void;
+            /**
+             * Refreshes the bounding info, taking into account all the thin instances defined
+             * @param forceRefreshParentInfo true to force recomputing the mesh bounding info and use it to compute the aggregated bounding info
+             */
+            thinInstanceRefreshBoundingInfo(forceRefreshParentInfo: boolean): void;
+            /** @hidden */
+            _thinInstanceInitializeUserStorage(): void;
+            /** @hidden */
+            _thinInstanceUpdateBufferSize(kind: string, numInstances: number): void;
+            /** @hidden */
+            _userThinInstanceBuffersStorage: {
+                data: {
+                    [key: string]: Float32Array;
+                };
+                sizes: {
+                    [key: string]: number;
+                };
+                vertexBuffers: {
+                    [key: string]: Nullable<VertexBuffer>;
+                };
+                strides: {
+                    [key: string]: number;
+                };
+            };
+        }
+    /**
+     * @hidden
+     */
+    export var _IDoNeedToBeInTheBuild2: number;
+}
+declare module BABYLON {
     /**
      * Navigation plugin interface to add navigation constrained by a navigation mesh
      */
@@ -66056,14 +66175,14 @@ declare module BABYLON {
         static ExportSet(systems: IParticleSystem[]): ParticleSystemSet;
         /**
          * Creates a particle system from a snippet saved in a remote file
-         * @param name defines the name of the  particle system to create
+         * @param name defines the name of the particle system to create (can be null or empty to use the one from the json data)
          * @param url defines the url to load from
          * @param scene defines the hosting scene
          * @param gpu If the system will use gpu
          * @param rootUrl defines the root URL to use to load textures and relative dependencies
-         * @returns a promise that will resolve to the new  particle system
+         * @returns a promise that will resolve to the new particle system
          */
-        static ParseFromFileAsync(name: string, url: string, scene: Scene, gpu?: boolean, rootUrl?: string): Promise<IParticleSystem>;
+        static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, gpu?: boolean, rootUrl?: string): Promise<IParticleSystem>;
         /**
          * Creates a particle system from a snippet saved by the particle system editor
          * @param snippetId defines the snippet to load
@@ -71973,6 +72092,15 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * An interface for all Hit test features
+     */
+    export interface IWebXRHitTestFeature<T extends IWebXRLegacyHitResult> extends IWebXRFeature {
+        /**
+         * Triggered when new babylon (transformed) hit test results are available
+         */
+        onHitTestResultObservable: Observable<T[]>;
+    }
+    /**
      * Options used for hit testing
      */
     export interface IWebXRLegacyHitTestOptions {
@@ -72003,7 +72131,7 @@ declare module BABYLON {
      * Hit test (or Ray-casting) is used to interact with the real world.
      * For further information read here - https://github.com/immersive-web/hit-test
      */
-    export class WebXRHitTestLegacy extends WebXRAbstractFeature {
+    export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRHitTestFeature<IWebXRLegacyHitResult> {
         /**
          * options to use when constructing this feature
          */
@@ -72082,6 +72210,260 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Options used for hit testing (version 2)
+     */
+    export interface IWebXRHitTestOptions extends IWebXRLegacyHitTestOptions {
+        /**
+         * Do not create a permanent hit test. Will usually be used when only
+         * transient inputs are needed.
+         */
+        disablePermanentHitTest?: boolean;
+        /**
+         * Enable transient (for example touch-based) hit test inspections
+         */
+        enableTransientHitTest?: boolean;
+        /**
+         * Offset ray for the permanent hit test
+         */
+        offsetRay?: Vector3;
+        /**
+         * Offset ray for the transient hit test
+         */
+        transientOffsetRay?: Vector3;
+        /**
+         * Instead of using viewer space for hit tests, use the reference space defined in the session manager
+         */
+        useReferenceSpace?: boolean;
+    }
+    /**
+     * Interface defining the babylon result of hit-test
+     */
+    export interface IWebXRHitResult extends IWebXRLegacyHitResult {
+        /**
+         * The input source that generated this hit test (if transient)
+         */
+        inputSource?: XRInputSource;
+        /**
+         * Is this a transient hit test
+         */
+        isTransient?: boolean;
+        /**
+         * Position of the hit test result
+         */
+        position: Vector3;
+        /**
+         * Rotation of the hit test result
+         */
+        rotationQuaternion: Quaternion;
+        /**
+         * The native hit test result
+         */
+        xrHitResult: XRHitTestResult;
+    }
+    /**
+     * The currently-working hit-test module.
+     * Hit test (or Ray-casting) is used to interact with the real world.
+     * For further information read here - https://github.com/immersive-web/hit-test
+     *
+     * Tested on chrome (mobile) 80.
+     */
+    export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestFeature<IWebXRHitResult> {
+        /**
+         * options to use when constructing this feature
+         */
+        readonly options: IWebXRHitTestOptions;
+        private _tmpMat;
+        private _tmpPos;
+        private _tmpQuat;
+        private _transientXrHitTestSource;
+        private _xrHitTestSource;
+        private initHitTestSource;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the WebXR specs version
+         */
+        static readonly Version: number;
+        /**
+         * When set to true, each hit test will have its own position/rotation objects
+         * When set to false, position and rotation objects will be reused for each hit test. It is expected that
+         * the developers will clone them or copy them as they see fit.
+         */
+        autoCloneTransformation: boolean;
+        /**
+         * Triggered when new babylon (transformed) hit test results are available
+         */
+        onHitTestResultObservable: Observable<IWebXRHitResult[]>;
+        /**
+         * Use this to temporarily pause hit test checks.
+         */
+        paused: boolean;
+        /**
+         * Creates a new instance of the hit test feature
+         * @param _xrSessionManager an instance of WebXRSessionManager
+         * @param options options to use when constructing this feature
+         */
+        constructor(_xrSessionManager: WebXRSessionManager, 
+        /**
+         * options to use when constructing this feature
+         */
+        options?: IWebXRHitTestOptions);
+        /**
+         * attach this feature
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        attach(): boolean;
+        /**
+         * detach this feature.
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+        /**
+         * Dispose this feature and all of the resources attached
+         */
+        dispose(): void;
+        protected _onXRFrame(frame: XRFrame): void;
+        private _processWebXRHitTestResult;
+    }
+}
+declare module BABYLON {
+    /**
+     * Configuration options of the anchor system
+     */
+    export interface IWebXRAnchorSystemOptions {
+        /**
+         * a node that will be used to convert local to world coordinates
+         */
+        worldParentNode?: TransformNode;
+        /**
+         * If set to true a reference of the created anchors will be kept until the next session starts
+         * If not defined, anchors will be removed from the array when the feature is detached or the session ended.
+         */
+        doNotRemoveAnchorsOnSessionEnded?: boolean;
+    }
+    /**
+     * A babylon container for an XR Anchor
+     */
+    export interface IWebXRAnchor {
+        /**
+         * A babylon-assigned ID for this anchor
+         */
+        id: number;
+        /**
+         * Transformation matrix to apply to an object attached to this anchor
+         */
+        transformationMatrix: Matrix;
+        /**
+         * The native anchor object
+         */
+        xrAnchor: XRAnchor;
+        /**
+         * if defined, this object will be constantly updated by the anchor's position and rotation
+         */
+        attachedNode?: TransformNode;
+    }
+    /**
+     * An implementation of the anchor system for WebXR.
+     * For further information see https://github.com/immersive-web/anchors/
+     */
+    export class WebXRAnchorSystem extends WebXRAbstractFeature {
+        private _options;
+        private _lastFrameDetected;
+        private _trackedAnchors;
+        private _referenceSpaceForFrameAnchors;
+        private _futureAnchors;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the WebXR specs version
+         */
+        static readonly Version: number;
+        /**
+         * Observers registered here will be executed when a new anchor was added to the session
+         */
+        onAnchorAddedObservable: Observable<IWebXRAnchor>;
+        /**
+         * Observers registered here will be executed when an anchor was removed from the session
+         */
+        onAnchorRemovedObservable: Observable<IWebXRAnchor>;
+        /**
+         * Observers registered here will be executed when an existing anchor updates
+         * This can execute N times every frame
+         */
+        onAnchorUpdatedObservable: Observable<IWebXRAnchor>;
+        /**
+         * Set the reference space to use for anchor creation, when not using a hit test.
+         * Will default to the session's reference space if not defined
+         */
+        set referenceSpaceForFrameAnchors(referenceSpace: XRReferenceSpace);
+        /**
+         * constructs a new anchor system
+         * @param _xrSessionManager an instance of WebXRSessionManager
+         * @param _options configuration object for this feature
+         */
+        constructor(_xrSessionManager: WebXRSessionManager, _options?: IWebXRAnchorSystemOptions);
+        private _tmpVector;
+        private _tmpQuaternion;
+        private _populateTmpTransformation;
+        /**
+         * Create a new anchor point using a hit test result at a specific point in the scene
+         * An anchor is tracked only after it is added to the trackerAnchors in xrFrame. The promise returned here does not yet guaranty that.
+         * Use onAnchorAddedObservable to get newly added anchors if you require tracking guaranty.
+         *
+         * @param hitTestResult The hit test result to use for this anchor creation
+         * @param position an optional position offset for this anchor
+         * @param rotationQuaternion an optional rotation offset for this anchor
+         * @returns A promise that fulfills when the XR anchor was registered in the system (but not necessarily added to the tracked anchors)
+         */
+        addAnchorPointUsingHitTestResultAsync(hitTestResult: IWebXRHitResult, position?: Vector3, rotationQuaternion?: Quaternion): Promise<XRAnchor>;
+        /**
+         * Add a new anchor at a specific position and rotation
+         * This function will add a new anchor per default in the next available frame. Unless forced, the createAnchor function
+         * will be called in the next xrFrame loop to make sure that the anchor can be created correctly.
+         * An anchor is tracked only after it is added to the trackerAnchors in xrFrame. The promise returned here does not yet guaranty that.
+         * Use onAnchorAddedObservable to get newly added anchors if you require tracking guaranty.
+         *
+         * @param position the position in which to add an anchor
+         * @param rotationQuaternion an optional rotation for the anchor transformation
+         * @param forceCreateInCurrentFrame force the creation of this anchor in the current frame. Must be called inside xrFrame loop!
+         * @returns A promise that fulfills when the XR anchor was registered in the system (but not necessarily added to the tracked anchors)
+         */
+        addAnchorAtPositionAndRotationAsync(position: Vector3, rotationQuaternion?: Quaternion, forceCreateInCurrentFrame?: boolean): Promise<XRAnchor>;
+        /**
+         * detach this feature.
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+        /**
+         * Dispose this feature and all of the resources attached
+         */
+        dispose(): void;
+        protected _onXRFrame(frame: XRFrame): void;
+        /**
+         * avoiding using Array.find for global support.
+         * @param xrAnchor the plane to find in the array
+         */
+        private _findIndexInAnchorArray;
+        private _updateAnchorWithXRFrame;
+        private _createAnchorAtTransformation;
+    }
+}
+declare module BABYLON {
+    /**
      * Options used in the plane detector module
      */
     export interface IWebXRPlaneDetectorOptions {
@@ -72089,6 +72471,11 @@ declare module BABYLON {
          * The node to use to transform the local results to world coordinates
          */
         worldParentNode?: TransformNode;
+        /**
+         * If set to true a reference of the created planes will be kept until the next session starts
+         * If not defined, planes will be removed from the array when the feature is detached or the session ended.
+         */
+        doNotRemovePlanesOnSessionEnded?: boolean;
     }
     /**
      * A babylon interface for a WebXR plane.
@@ -72154,6 +72541,13 @@ declare module BABYLON {
          */
         constructor(_xrSessionManager: WebXRSessionManager, _options?: IWebXRPlaneDetectorOptions);
         /**
+         * detach this feature.
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+        /**
          * Dispose this feature and all of the resources attached
          */
         dispose(): void;
@@ -72165,131 +72559,6 @@ declare module BABYLON {
          * @param xrPlane the plane to find in the array
          */
         private findIndexInPlaneArray;
-    }
-}
-declare module BABYLON {
-    /**
-     * Configuration options of the anchor system
-     */
-    export interface IWebXRAnchorSystemOptions {
-        /**
-         * Should a new anchor be added every time a select event is triggered
-         */
-        addAnchorOnSelect?: boolean;
-        /**
-         * should the anchor system use plane detection.
-         * If set to true, the plane-detection feature should be set using setPlaneDetector
-         */
-        usePlaneDetection?: boolean;
-        /**
-         * a node that will be used to convert local to world coordinates
-         */
-        worldParentNode?: TransformNode;
-    }
-    /**
-     * A babylon container for an XR Anchor
-     */
-    export interface IWebXRAnchor {
-        /**
-         * A babylon-assigned ID for this anchor
-         */
-        id: number;
-        /**
-         * Transformation matrix to apply to an object attached to this anchor
-         */
-        transformationMatrix: Matrix;
-        /**
-         * The native anchor object
-         */
-        xrAnchor: XRAnchor;
-    }
-    /**
-     * An implementation of the anchor system of WebXR.
-     * Note that the current documented implementation is not available in any browser. Future implementations
-     * will use the frame to create an anchor and not the session or a detected plane
-     * For further information see https://github.com/immersive-web/anchors/
-     */
-    export class WebXRAnchorSystem extends WebXRAbstractFeature {
-        private _options;
-        private _enabled;
-        private _hitTestModule;
-        private _lastFrameDetected;
-        private _onSelect;
-        private _planeDetector;
-        private _trackedAnchors;
-        /**
-         * The module's name
-         */
-        static readonly Name: string;
-        /**
-         * The (Babylon) version of this module.
-         * This is an integer representing the implementation version.
-         * This number does not correspond to the WebXR specs version
-         */
-        static readonly Version: number;
-        /**
-         * Observers registered here will be executed when a new anchor was added to the session
-         */
-        onAnchorAddedObservable: Observable<IWebXRAnchor>;
-        /**
-         * Observers registered here will be executed when an anchor was removed from the session
-         */
-        onAnchorRemovedObservable: Observable<IWebXRAnchor>;
-        /**
-         * Observers registered here will be executed when an existing anchor updates
-         * This can execute N times every frame
-         */
-        onAnchorUpdatedObservable: Observable<IWebXRAnchor>;
-        /**
-         * constructs a new anchor system
-         * @param _xrSessionManager an instance of WebXRSessionManager
-         * @param _options configuration object for this feature
-         */
-        constructor(_xrSessionManager: WebXRSessionManager, _options?: IWebXRAnchorSystemOptions);
-        /**
-         * Add anchor at a specific XR point.
-         *
-         * @param xrRigidTransformation xr-coordinates where a new anchor should be added
-         * @param anchorCreator the object o use to create an anchor with. either a session or a plane
-         * @returns a promise the fulfills when the anchor was created
-         */
-        addAnchorAtRigidTransformation(xrRigidTransformation: XRRigidTransform, anchorCreator?: XRAnchorCreator): Promise<XRAnchor>;
-        /**
-         * attach this feature
-         * Will usually be called by the features manager
-         *
-         * @returns true if successful.
-         */
-        attach(): boolean;
-        /**
-         * detach this feature.
-         * Will usually be called by the features manager
-         *
-         * @returns true if successful.
-         */
-        detach(): boolean;
-        /**
-         * Dispose this feature and all of the resources attached
-         */
-        dispose(): void;
-        /**
-         * If set, it will improve performance by using the current hit-test results instead of executing a new hit-test
-         * @param hitTestModule the hit-test module to use.
-         */
-        setHitTestModule(hitTestModule: WebXRHitTestLegacy): void;
-        /**
-         * set the plane detector to use in order to create anchors from frames
-         * @param planeDetector the plane-detector module to use
-         * @param enable enable plane-anchors. default is true
-         */
-        setPlaneDetector(planeDetector: WebXRPlaneDetector, enable?: boolean): void;
-        protected _onXRFrame(frame: XRFrame): void;
-        /**
-         * avoiding using Array.find for global support.
-         * @param xrAnchor the plane to find in the array
-         */
-        private _findIndexInAnchorArray;
-        private _updateAnchorWithXRFrame;
     }
 }
 declare module BABYLON {
@@ -72526,132 +72795,6 @@ declare module BABYLON {
         }): void;
         protected _onXRFrame(_xrFrame: any): void;
         private _detachController;
-    }
-}
-declare module BABYLON {
-    /**
-     * Options used for hit testing (version 2)
-     */
-    export interface IWebXRHitTestOptions extends IWebXRLegacyHitTestOptions {
-        /**
-         * Do not create a permanent hit test. Will usually be used when only
-         * transient inputs are needed.
-         */
-        disablePermanentHitTest?: boolean;
-        /**
-         * Enable transient (for example touch-based) hit test inspections
-         */
-        enableTransientHitTest?: boolean;
-        /**
-         * Offset ray for the permanent hit test
-         */
-        offsetRay?: Vector3;
-        /**
-         * Offset ray for the transient hit test
-         */
-        transientOffsetRay?: Vector3;
-        /**
-         * Instead of using viewer space for hit tests, use the reference space defined in the session manager
-         */
-        useReferenceSpace?: boolean;
-    }
-    /**
-     * Interface defining the babylon result of hit-test
-     */
-    export interface IWebXRHitResult extends IWebXRLegacyHitResult {
-        /**
-         * The input source that generated this hit test (if transient)
-         */
-        inputSource?: XRInputSource;
-        /**
-         * Is this a transient hit test
-         */
-        isTransient?: boolean;
-        /**
-         * Position of the hit test result
-         */
-        position: Vector3;
-        /**
-         * Rotation of the hit test result
-         */
-        rotationQuaternion: Quaternion;
-    }
-    /**
-     * The currently-working hit-test module.
-     * Hit test (or Ray-casting) is used to interact with the real world.
-     * For further information read here - https://github.com/immersive-web/hit-test
-     *
-     * Tested on chrome (mobile) 80.
-     */
-    export class WebXRHitTest extends WebXRAbstractFeature {
-        /**
-         * options to use when constructing this feature
-         */
-        readonly options: IWebXRHitTestOptions;
-        private _tmpMat;
-        private _tmpPos;
-        private _tmpQuat;
-        private _transientXrHitTestSource;
-        private _xrHitTestSource;
-        private initHitTestSource;
-        /**
-         * The module's name
-         */
-        static readonly Name: string;
-        /**
-         * The (Babylon) version of this module.
-         * This is an integer representing the implementation version.
-         * This number does not correspond to the WebXR specs version
-         */
-        static readonly Version: number;
-        /**
-         * When set to true, each hit test will have its own position/rotation objects
-         * When set to false, position and rotation objects will be reused for each hit test. It is expected that
-         * the developers will clone them or copy them as they see fit.
-         */
-        autoCloneTransformation: boolean;
-        /**
-         * Populated with the last native XR Hit Results
-         */
-        lastNativeXRHitResults: XRHitResult[];
-        /**
-         * Triggered when new babylon (transformed) hit test results are available
-         */
-        onHitTestResultObservable: Observable<IWebXRHitResult[]>;
-        /**
-         * Use this to temporarily pause hit test checks.
-         */
-        paused: boolean;
-        /**
-         * Creates a new instance of the hit test feature
-         * @param _xrSessionManager an instance of WebXRSessionManager
-         * @param options options to use when constructing this feature
-         */
-        constructor(_xrSessionManager: WebXRSessionManager, 
-        /**
-         * options to use when constructing this feature
-         */
-        options?: IWebXRHitTestOptions);
-        /**
-         * attach this feature
-         * Will usually be called by the features manager
-         *
-         * @returns true if successful.
-         */
-        attach(): boolean;
-        /**
-         * detach this feature.
-         * Will usually be called by the features manager
-         *
-         * @returns true if successful.
-         */
-        detach(): boolean;
-        /**
-         * Dispose this feature and all of the resources attached
-         */
-        dispose(): void;
-        protected _onXRFrame(frame: XRFrame): void;
-        private _processWebXRHitTestResult;
     }
 }
 declare module BABYLON {
@@ -73459,7 +73602,7 @@ interface XRSessionInit {
     requiredFeatures?: string[];
 }
 
-interface XRSession extends XRAnchorCreator {
+interface XRSession {
     addEventListener: Function;
     removeEventListener: Function;
     requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace>;
@@ -73500,6 +73643,7 @@ interface XRFrame {
     getHitTestResultsForTransientInput(hitTestSource: XRTransientInputHitTestSource): Array<XRTransientInputHitTestResult>;
     // Anchors
     trackedAnchors?: XRAnchorSet;
+    createAnchor(pose: XRRigidTransform, space: XRSpace): Promise<XRAnchor>;
     // Planes
     worldInformation: {
         detectedPlanes?: XRPlaneSet;
@@ -73584,6 +73728,8 @@ interface XRTransientInputHitTestResult {
 
 interface XRHitTestResult {
     getPose(baseSpace: XRSpace): XRPose | undefined;
+    // When anchor system is enabled
+    createAnchor?(pose: XRRigidTransform): Promise<XRAnchor>;
 }
 
 interface XRHitTestSource {
@@ -73607,21 +73753,13 @@ interface XRTransientInputHitTestOptionsInit {
 }
 
 interface XRAnchor {
-    // remove?
-    id?: string;
     anchorSpace: XRSpace;
-    lastChangedTime: number;
-    detach(): void;
+    delete(): void;
 }
 
-interface XRPlane extends XRAnchorCreator {
+interface XRPlane {
     orientation: "Horizontal" | "Vertical";
     planeSpace: XRSpace;
     polygon: Array<DOMPointReadOnly>;
     lastChangedTime: number;
-}
-
-interface XRAnchorCreator {
-    // AR Anchors
-    createAnchor(pose: XRPose | XRRigidTransform, referenceSpace: XRReferenceSpace): Promise<XRAnchor>;
 }

@@ -1328,6 +1328,8 @@ declare module BABYLON.GLTF2 {
         _forAssetContainer: boolean;
         /** Storage */
         _babylonLights: Light[];
+        /** @hidden */
+        _disableInstancedMesh: number;
         private _disposed;
         private _parent;
         private _state;
@@ -1966,6 +1968,35 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         dispose(): void;
         /** @hidden */
         loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1553)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_xmp implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /**
+         * Called after the loader state changes to LOADING.
+         */
+        onLoading(): void;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
