@@ -16,9 +16,10 @@ export class OBJExport {
      * @param materials defines if materials should be exported
      * @param matlibname defines the name of the associated mtl file
      * @param globalposition defines if the exported positions are globals or local to the exported mesh
+     * @param useRightHandedSystem defines if the babylon scene is right handed, in this case the exported obj vertices will be inverted 
      * @returns the OBJ content
      */
-    public static OBJ(mesh: Mesh[], materials?: boolean, matlibname?: string, globalposition?: boolean): string {
+    public static OBJ(mesh: Mesh[], materials?: boolean, matlibname?: string, globalposition?: boolean, useRightHandedSystem?: boolean): string {
         const output: string[] = [];
         let v = 1;
         if (materials) {
@@ -67,7 +68,13 @@ export class OBJExport {
             }
 
             for (var i = 0; i < trunkVerts.length; i += 3) {
-                output.push("v " + trunkVerts[i] + " " + trunkVerts[i + 1] + " " + trunkVerts[i + 2]);
+                // Babylon default is left handed, while OBJ default is right handed
+                // By default we serialize in OBJ inverting the X vertices
+                if(useRightHandedSystem) {
+                    output.push("v " + trunkVerts[i] + " " + trunkVerts[i + 1] + " " + trunkVerts[i + 2]);
+                } else {
+                    output.push("v " + -trunkVerts[i] + " " + trunkVerts[i + 1] + " " + trunkVerts[i + 2]);
+                }
                 curV++;
             }
 
