@@ -220,7 +220,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
                 let startValue;
                 let endValue;
-
+                // Default start and end values for new animations
                 switch (animationDataType) {
                     case Animation.ANIMATIONTYPE_FLOAT:
                         startValue = 1;
