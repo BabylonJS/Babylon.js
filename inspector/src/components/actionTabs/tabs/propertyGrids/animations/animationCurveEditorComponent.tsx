@@ -141,6 +141,11 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         this.setState({ currentValue: parseFloat(event.target.value) });
     }
 
+    handleFrameChange(event: React.ChangeEvent<HTMLInputElement>) {
+        event.preventDefault();
+        this.changeCurrentFrame(parseInt(event.target.value))
+    }
+
     handleTypeChange(event: React.ChangeEvent<HTMLSelectElement>) {
         event.preventDefault();
         this.setState({ animationType: event.target.value });
@@ -768,7 +773,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                         <FontAwesomeIcon icon={faTimes} />
                     </div>
                 </div>
-                <GraphActionsBar currentValue={this.state.currentValue} handleValueChange={(e) => this.handleValueChange(e)} addKeyframe={() => this.addKeyframeClick()} removeKeyframe={() => this.removeKeyframeClick()} flatTangent={() => this.setFlatTangent()} />
+                <GraphActionsBar currentValue={this.state.currentValue} currentFrame={this.state.currentFrame} handleFrameChange={(e) => this.handleFrameChange(e)} handleValueChange={(e) => this.handleValueChange(e)} addKeyframe={() => this.addKeyframeClick()} removeKeyframe={() => this.removeKeyframeClick()} flatTangent={() => this.setFlatTangent()} />
                 <div className="content">
 
                     <div className="row">
