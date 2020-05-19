@@ -107,7 +107,7 @@ export class GLTFLoader implements IGLTFLoader {
     public _babylonLights: Light[] = [];
 
     /** @hidden */
-    public _disableInstancedMesh = false;
+    public _disableInstancedMesh = 0;
 
     private _disposed = false;
     private _parent: GLTFFileLoader;
@@ -780,7 +780,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         this.logOpen(`${context}`);
 
-        const shouldInstance = !this._disableInstancedMesh && this._parent.createInstances && (node.skin == undefined && !mesh.primitives[0].targets);
+        const shouldInstance = (this._disableInstancedMesh === 0) && this._parent.createInstances && (node.skin == undefined && !mesh.primitives[0].targets);
 
         let babylonAbstractMesh: AbstractMesh;
         let promise: Promise<any>;

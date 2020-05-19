@@ -36,9 +36,6 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
-        if (this.enabled) {
-            loader._disableInstancedMesh = true;
-        }
     }
 
     /** @hidden */
@@ -49,7 +46,11 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
     /** @hidden */
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
         return GLTFLoader.LoadExtensionAsync<IEXTMeshGpuInstancing, TransformNode>(context, node, this.name, (extensionContext, extension) => {
+            this._loader._disableInstancedMesh++;
+
             const promise = this._loader.loadNodeAsync(`#/nodes/${node.index}`, node, assign);
+
+            this._loader._disableInstancedMesh--;
 
             if (!node._primitiveBabylonMeshes) {
                 return promise;
