@@ -22,11 +22,11 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps>{
            <div className="actions-wrapper">
                <div className="action-input">
                <label>Frame</label>
-               <input type="number" value={this.props.currentFrame} onChange={this.props.handleFrameChange}/>
+               <input type="number" value={this.props.currentFrame} onChange={this.props.handleFrameChange} step="1"/>
                </div>
                <div className="action-input">
                <label>Value</label>
-               <input type="number" value={this.props.currentValue.toFixed(3)} onChange={this.props.handleValueChange}/>
+               <input type="number" value={this.props.currentValue.toFixed(3)} onChange={this.props.handleValueChange} step="0.001"/>
                </div>
               <ButtonLineComponent label={"Add Keyframe"} onClick={this.props.addKeyframe} />
               <ButtonLineComponent label={"Remove Keyframe"} onClick={this.props.removeKeyframe} />
