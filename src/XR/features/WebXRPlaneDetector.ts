@@ -13,6 +13,12 @@ export interface IWebXRPlaneDetectorOptions {
      * The node to use to transform the local results to world coordinates
      */
     worldParentNode?: TransformNode;
+
+    /**
+     * If set to true a reference of the created planes will be kept until the next session starts
+     * If not defined, planes will be removed from the array when the feature is detached or the session ended.
+     */
+    doNotRemovePlanesOnSessionEnded?: boolean;
 }
 
 /**
@@ -94,6 +100,29 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
     }
 
     /**
+     * detach this feature.
+     * Will usually be called by the features manager
+     *
+     * @returns true if successful.
+     */
+    public detach(): boolean {
+        if (!super.detach()) {
+            return false;
+        }
+
+        if (!this._options.doNotRemovePlanesOnSessionEnded) {
+            while (this._detectedPlanes.length) {
+                const toRemove = this._detectedPlanes.pop();
+                if (toRemove) {
+                    this.onPlaneRemovedObservable.notifyObservers(toRemove);
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Dispose this feature and all of the resources attached
      */
     public dispose(): void {
@@ -108,11 +137,15 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
         // const timestamp = this.xrSessionManager.currentTimestamp;
 
         const detectedPlanes = frame.worldInformation.detectedPlanes;
-        if (detectedPlanes && detectedPlanes.size) {
-            this._detectedPlanes.filter((plane) => !detectedPlanes.has(plane.xrPlane)).map((plane) => {
-                const index = this._detectedPlanes.indexOf(plane);
-                this._detectedPlanes.splice(index, 1);
+        if (detectedPlanes) {
+            const toRemove = this._detectedPlanes.filter((plane) => !detectedPlanes.has(plane.xrPlane)).map((plane) => {
+                return this._detectedPlanes.indexOf(plane);
+            });
+            let idxTracker = 0;
+            toRemove.forEach((index) => {
+                const plane = this._detectedPlanes.splice(index - idxTracker, 1)[0];
                 this.onPlaneRemovedObservable.notifyObservers(plane);
+                idxTracker--;
             });
             // now check for new ones
             detectedPlanes.forEach((xrPlane) => {
