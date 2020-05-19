@@ -1030,6 +1030,10 @@ export class ShadowGenerator implements IShadowGenerator {
             for (index = 0; index < transparentSubMeshes.length; index++) {
                 this._renderSubMeshForShadowMap(transparentSubMeshes.data[index], true);
             }
+        } else {
+            for (index = 0; index < transparentSubMeshes.length; index++) {
+                transparentSubMeshes.data[index].getEffectiveMesh()._internalAbstractMeshDataInfo._isActiveIntermediate = false;
+            }
         }
     }
 
