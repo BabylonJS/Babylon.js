@@ -60,6 +60,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
     private _internalTextures: InternalTexture[];
     private _textures: Texture[];
     private _multiRenderTargetOptions: IMultiRenderTargetOptions;
+    private _count: number;
 
     /**
      * Get if draw buffers are currently supported by the used hardware and browser.
@@ -73,6 +74,13 @@ export class MultiRenderTarget extends RenderTargetTexture {
      */
     public get textures(): Texture[] {
         return this._textures;
+    }
+
+    /**
+     * Gets the number of textures in this MRT. This number can be different from `_textures.length` in case a depth texture is generated.
+     */
+    public get count(): number {
+        return this._count;
     }
 
     /**
@@ -161,6 +169,8 @@ export class MultiRenderTarget extends RenderTargetTexture {
             textureCount: count
         };
 
+        this._count = count;
+
         this._createInternalTextures();
         this._createTextures();
     }
@@ -207,7 +217,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
             return;
         }
 
-        this._samples = this._getEngine()!.updateMultipleRenderTargetTextureSampleCount(this._internalTextures, value);
+        this._samples = this._getEngine()!.updateMultipleRenderTargetTextureSampleCount(this.count, this._internalTextures, value);
     }
 
     /**
@@ -222,7 +232,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
     }
 
     protected unbindFrameBuffer(engine: Engine, faceIndex: number): void {
-        engine.unBindMultiColorAttachmentFramebuffer(this._internalTextures, this.isCube, () => {
+        engine.unBindMultiColorAttachmentFramebuffer(this.count, this._internalTextures, this.isCube, () => {
             this.onAfterRenderObservable.notifyObservers(faceIndex);
         });
     }

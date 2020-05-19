@@ -250,7 +250,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     private _highDefinitionPipeline: boolean = true;
 
-    public get highDefinitionPipeline () {
+    public get highDefinitionPipeline() {
         return this._highDefinitionPipeline;
     }
 
@@ -1442,7 +1442,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         // TODO : TEMPORARY
         this.highDefinitionMRT = new MultiRenderTarget("sceneHighDefinitionMRT", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, 5, this,
             { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT });
-
+        this.highDefinitionMRT.samples = 1;
         this.sceneCompositorPostProcess = new SceneCompositorPostProcess("sceneCompositor", 1, null, undefined, this._engine);
         this.sceneCompositorPostProcess.inputTexture = this.highDefinitionMRT.getInternalTexture()!;
     }
