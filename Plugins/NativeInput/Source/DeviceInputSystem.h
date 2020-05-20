@@ -6,8 +6,6 @@ namespace Babylon::Plugins
 {
     class NativeInput::Impl::DeviceInputSystem final : public Napi::ObjectWrap<DeviceInputSystem>
     {
-        static constexpr auto JS_CONSTRUCTOR_NAME = "DeviceInputSystem";
-
     public:
         static void Initialize(Napi::Env env);
 

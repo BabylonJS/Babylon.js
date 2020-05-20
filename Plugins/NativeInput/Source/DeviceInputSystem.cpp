@@ -6,6 +6,8 @@ namespace Babylon::Plugins
     {
         Napi::HandleScope scope{env};
 
+        static constexpr auto JS_CONSTRUCTOR_NAME = "DeviceInputSystem";
+
         Napi::Function func
         {
             DefineClass(
@@ -19,7 +21,7 @@ namespace Babylon::Plugins
                 })
         };
 
-        env.Global().Set(JS_CONSTRUCTOR_NAME, func);
+        env.Global().Get(JsRuntime::JS_NATIVE_NAME).As<Napi::Object>().Set(JS_CONSTRUCTOR_NAME, func);
     }
 
     // TODO: The JavaScript contract is such that the constructor takes an Engine, but really it should take some kind of view id, which should be passed through to NativeInput::GetFromJavaScript.
