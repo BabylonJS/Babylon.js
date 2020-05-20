@@ -20,9 +20,9 @@ declare type Ray = import("../Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("../Culling/ray").TrianglePickingPredicate;
 
 /**
- * Base class for submeshes
+ * Defines a subdivision inside a mesh
  */
-export class BaseSubMesh {
+export class SubMesh implements ICullable {
     /** @hidden */
     public _materialDefines: Nullable<MaterialDefines> = null;
     /** @hidden */
@@ -66,12 +66,7 @@ export class BaseSubMesh {
         this._materialDefines = defines;
         this._materialEffect = effect;
     }
-}
 
-/**
- * Defines a subdivision inside a mesh
- */
-export class SubMesh extends BaseSubMesh implements ICullable {
     /** @hidden */
     public _linesIndexCount: number = 0;
     private _mesh: AbstractMesh;
@@ -134,7 +129,6 @@ export class SubMesh extends BaseSubMesh implements ICullable {
         public indexStart: number,
         /** indices count */
         public indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true) {
-        super();
         this._mesh = mesh;
         this._renderingMesh = renderingMesh || <Mesh>mesh;
         mesh.subMeshes.push(this);
