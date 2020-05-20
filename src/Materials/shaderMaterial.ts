@@ -4,7 +4,7 @@ import { Scene } from "../scene";
 import { Matrix, Vector3, Vector2, Vector4 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { SubMesh, BaseSubMesh } from "../Meshes/subMesh";
+import { SubMesh } from "../Meshes/subMesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
@@ -463,7 +463,7 @@ export class ShaderMaterial extends Material {
      * @param useInstances specifies that instances should be used
      * @returns a boolean indicating that the submesh is ready or not
      */
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean {
+    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         return this.isReady(mesh, useInstances);
     }
 
@@ -525,6 +525,9 @@ export class ShaderMaterial extends Material {
         if (useInstances) {
             defines.push("#define INSTANCES");
             MaterialHelper.PushAttributesForInstances(attribs);
+            if (mesh?.hasThinInstances) {
+                defines.push("#define THIN_INSTANCES");
+            }
         }
 
         // Bones
