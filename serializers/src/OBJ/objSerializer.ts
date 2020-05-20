@@ -72,7 +72,7 @@ export class OBJExport {
                 if (mesh[0].getScene().useRightHandedSystem) {
                     output.push("v " + trunkVerts[i] + " " + trunkVerts[i + 1] + " " + trunkVerts[i + 2]);
                 } else {
-                    output.push("v " + -trunkVerts[i] + " " + trunkVerts[i + 1] + " " + trunkVerts[i + 2]);
+                    output.push("v " + trunkVerts[i] + " " + trunkVerts[i + 1] + " " + -trunkVerts[i + 2]);
                 }
                 curV++;
             }
