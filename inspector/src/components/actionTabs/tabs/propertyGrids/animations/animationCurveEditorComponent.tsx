@@ -293,7 +293,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             let x = this.state.currentFrame;
             let y = this.state.currentValue;
 
-            keys.push({ frame: x, value: y });
+            keys.push({ frame: x, value: y, inTangent: 0, outTangent: 0 });
             keys.sort((a, b) => a.frame - b.frame);
 
             currentAnimation.setKeys(keys);
@@ -504,32 +504,72 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
         keyframes.forEach((key, i) => {
 
-            var inTangent = key.inTangent;
-            var outTangent = key.outTangent;
-
             let svgKeyframe;
+            let outTangent;
+            let inTangent;
+            let defaultWeight = 5;
+
+            var inT = key.inTangent === undefined ? null : key.inTangent;
+            var outT = key.outTangent === undefined ? null : key.outTangent;
+            
+            let y = this._heightScale - (key.value * middle);
+
+            let nextKeyframe = keyframes[i + 1];
+            let prevKeyframe = keyframes[i - 1];
+            if (nextKeyframe !== undefined){
+                let distance = keyframes[i+1].frame - key.frame;
+                defaultWeight = distance * .33;
+            } 
+            
+            if (prevKeyframe !== undefined) {
+                let distance = key.frame - keyframes[i-1].frame;
+                defaultWeight = distance * .33;
+            }
+           
+
+            if (inT !== null){
+                let valueIn = (y * inT) + y;
+                inTangent = new Vector2(key.frame - defaultWeight, valueIn)
+            } else {
+                inTangent = null;
+            }
+            
+            if (outT !== null){
+            let valueOut = (y * outT) + y;
+                outTangent = new Vector2(key.frame + defaultWeight, valueOut);
+            } else {
+                outTangent = null;
+            }
+
+         
+
+            
 
             if (i === 0) {
 
-                svgKeyframe = { keyframePoint: new Vector2(key.frame, this._heightScale - (key.value * middle)), rightControlPoint: outTangent, leftControlPoint: null, id: i.toString() }
+ 
 
-                data += ` C${svgKeyframe.keyframePoint.x} ${svgKeyframe.keyframePoint.y} ${outTangent.x} ${outTangent.y}`
+                svgKeyframe = { keyframePoint: new Vector2(key.frame, this._heightScale - (key.value * middle)), rightControlPoint: outTangent, leftControlPoint: null, id: i.toString() }
+                if (outTangent !== null){
+                    data += ` C${outTangent.x} ${outTangent.y} `;
+                }
+               
 
             } else {
 
-                svgKeyframe = { keyframePoint: new Vector2(keyframes[i - 1].frame, this._heightScale - (keyframes[i - 1].value * middle)), rightControlPoint: outTangent, leftControlPoint: inTangent, id: i.toString() }
+                svgKeyframe = { keyframePoint: new Vector2(key.frame, this._heightScale - (key.value * middle)), rightControlPoint: outTangent, leftControlPoint: inTangent, id: i.toString() }
 
-                if (outTangent) {
-                    data += `${inTangent.x} ${inTangent.y} C${svgKeyframe.keyframePoint.x} ${svgKeyframe.keyframePoint.y} ${outTangent.x} ${outTangent.y} `
-                } else {
-                    data += `${inTangent.x} ${inTangent.y} C${svgKeyframe.keyframePoint.x} ${svgKeyframe.keyframePoint.y} `
+                if (outTangent !== null && inTangent !== null) {
+                    data += ` ${inTangent.x} ${inTangent.y} ${svgKeyframe.keyframePoint.x} ${svgKeyframe.keyframePoint.y} C${outTangent.x} ${outTangent.y} `
+                } else if (inTangent !== null) {
+                    data += ` ${inTangent.x} ${inTangent.y} ${svgKeyframe.keyframePoint.x} ${svgKeyframe.keyframePoint.y} `
                 }
 
             }
 
             this._svgKeyframes.push(svgKeyframe);
 
-        });
+        }, this);
 
         return data;
 
@@ -702,7 +742,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         // Should we use this for export?
         let serialized = animation.serialize();
 
-        let usesTangents = animation.getKeys().find(kf => kf.inTangent);
+        let usesTangents = animation.getKeys().find(kf => kf.hasOwnProperty('inTangent') || kf.hasOwnProperty('outTangent')) !== undefined ? true : false;
 
         return { loopMode, name, blendingSpeed, targetPropertyPath, targetProperty, framesPerSecond, highestFrame, serialized, usesTangents }
 
