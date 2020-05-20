@@ -3,6 +3,7 @@ import { IDisposable } from '../scene';
 import { Nullable } from '../types';
 import { DeviceType } from './InputDevices/deviceEnums';
 
+/** @hidden */
 declare const _native: any;
 
 /**
