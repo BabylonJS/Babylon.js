@@ -60,7 +60,8 @@ export class DeviceInputSystem implements IDisposable {
 
     /**
      * Creates a new DeviceInputSystem instance
-     * @param engine - engine to pull input element from
+     * @param engine Engine to pull input element from
+     * @returns The new instance
      */
     public static Create(engine: Engine): DeviceInputSystem {
         // If running in Babylon Native, then defer to the native input system, which has the same public contract
