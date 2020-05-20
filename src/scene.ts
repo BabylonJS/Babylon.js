@@ -3478,6 +3478,13 @@ export class Scene extends AbstractScene implements IAnimatable {
                 }
             }
 
+            if (this._activeParticleSystems) {
+                const psLength = this._activeParticleSystems.length;
+                for (let i = 0; i < psLength; i++) {
+                    this._activeParticleSystems.data[i].animate();
+                }
+            }
+
             return;
         }
 
