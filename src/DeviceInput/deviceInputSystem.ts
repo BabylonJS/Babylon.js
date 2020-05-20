@@ -47,10 +47,6 @@ export class DeviceInputSystem implements IDisposable {
     private static _MAX_KEYCODES: number = 255;
     private static _MAX_POINTER_INPUTS: number = 7;
 
-    /**
-     * Default Constructor
-     * @param engine - engine to pull input element from
-     */
     private constructor(engine: Engine) {
         const inputElement = engine.getInputElement();
         if (inputElement) {
@@ -61,6 +57,10 @@ export class DeviceInputSystem implements IDisposable {
         }
     }
 
+    /**
+     * Creates a new DeviceInputSystem instance
+     * @param engine - engine to pull input element from
+     */
     public static Create(engine: Engine): DeviceInputSystem {
         // If running in Babylon Native, then defer to the native input system, which has the same public contract
         if (typeof _native.DeviceInputSystem !== 'undefined') {
