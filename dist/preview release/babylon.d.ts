@@ -49781,11 +49781,13 @@ declare module BABYLON {
         private _gamepadDisconnectedEvent;
         private static _MAX_KEYCODES;
         private static _MAX_POINTER_INPUTS;
+        private constructor();
         /**
-         * Default Constructor
-         * @param engine - engine to pull input element from
+         * Creates a new DeviceInputSystem instance
+         * @param engine Engine to pull input element from
+         * @returns The new instance
          */
-        constructor(engine: Engine);
+        static Create(engine: Engine): DeviceInputSystem;
         /**
          * Checks for current device input value, given an id and input index
          * @param deviceName Id of connected device
