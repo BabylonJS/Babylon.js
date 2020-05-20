@@ -1328,6 +1328,8 @@ declare module BABYLON.GLTF2 {
         _forAssetContainer: boolean;
         /** Storage */
         _babylonLights: Light[];
+        /** @hidden */
+        _disableInstancedMesh: number;
         private _disposed;
         private _parent;
         private _state;

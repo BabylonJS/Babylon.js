@@ -522,6 +522,9 @@ export abstract class EffectLayer {
         if (useInstances) {
             defines.push("#define INSTANCES");
             MaterialHelper.PushAttributesForInstances(attribs);
+            if (subMesh.getRenderingMesh().hasThinInstances) {
+                defines.push("#define THIN_INSTANCES");
+            }
         }
 
         this._addCustomEffectDefines(defines);
@@ -654,9 +657,9 @@ export abstract class EffectLayer {
 
         var material = subMesh.getMaterial();
         var ownerMesh = subMesh.getMesh();
-        var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh : null;
+        var replacementMesh = subMesh.getReplacementMesh();
         var renderingMesh = subMesh.getRenderingMesh();
-        var effectiveMesh = replacementMesh ? replacementMesh : renderingMesh;
+        var effectiveMesh = subMesh.getEffectiveMesh();
         var scene = this._scene;
         var engine = scene.getEngine();
 
@@ -685,7 +688,7 @@ export abstract class EffectLayer {
             return;
         }
 
-        var hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id];
+        var hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id] || renderingMesh.hasThinInstances;
 
         this._setEmissiveTextureAndColor(renderingMesh, subMesh, material);
 
