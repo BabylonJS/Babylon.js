@@ -64,7 +64,7 @@ declare module "babylonjs-inspector/components/globalState" {
             [key: string]: any;
         };
         blockMutationUpdates: boolean;
-        selectedLineContainerTitle: string;
+        selectedLineContainerTitles: Array<string>;
         recorder: ReplayRecorder;
         private _onlyUseEulers;
         get onlyUseEulers(): boolean;
@@ -3147,6 +3147,7 @@ declare module "babylonjs-inspector/inspector" {
         static OnPropertyChangedObservable: Observable<PropertyChangedEvent>;
         private static _GlobalState;
         static MarkLineContainerTitleForHighlighting(title: string): void;
+        static MarkMultipleLineContainerTitlesForHighlighting(titles: string[]): void;
         private static _CopyStyles;
         private static _CreateSceneExplorer;
         private static _CreateActionTabs;
@@ -3225,7 +3226,7 @@ declare module INSPECTOR {
             [key: string]: any;
         };
         blockMutationUpdates: boolean;
-        selectedLineContainerTitle: string;
+        selectedLineContainerTitles: Array<string>;
         recorder: ReplayRecorder;
         private _onlyUseEulers;
         get onlyUseEulers(): boolean;
@@ -5708,6 +5709,7 @@ declare module INSPECTOR {
         static OnPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
         private static _GlobalState;
         static MarkLineContainerTitleForHighlighting(title: string): void;
+        static MarkMultipleLineContainerTitlesForHighlighting(titles: string[]): void;
         private static _CopyStyles;
         private static _CreateSceneExplorer;
         private static _CreateActionTabs;
