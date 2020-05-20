@@ -17,6 +17,7 @@ import { Ray } from '../../Culling/ray';
 import { PickingInfo } from '../../Collisions/pickingInfo';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
 import { UtilityLayerRenderer } from '../../Rendering/utilityLayerRenderer';
+import { WebXRAbstractMotionController } from '../motionController';
 
 /**
  * Options interface for the pointer selection module
@@ -398,7 +399,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             }
         });
         if (xrController.inputSource.gamepad) {
-            xrController.onMotionControllerInitObservable.add((motionController) => {
+            const init = (motionController: WebXRAbstractMotionController) => {
                 if (this._options.overrideButtonId) {
                     controllerData.selectionComponent = motionController.getComponent(this._options.overrideButtonId);
                 }
@@ -422,7 +423,12 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                         }
                     }
                 });
-            });
+            };
+            if (xrController.motionController) {
+                init(xrController.motionController);
+            } else {
+                xrController.onMotionControllerInitObservable.add(init);
+            }
         } else {
             // use the select and squeeze events
             const selectStartListener = (event: XRInputSourceEvent) => {
