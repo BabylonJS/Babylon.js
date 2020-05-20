@@ -589,6 +589,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         active: boolean;
         type: string;
         index: string;
+        selected: boolean;
     }
     export class AnchorSvgPoint extends React.Component<IAnchorSvgPointProps> {
         constructor(props: IAnchorSvgPointProps);
@@ -701,9 +702,12 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     import * as React from "react";
     interface IGraphActionsBarProps {
         addKeyframe: () => void;
+        removeKeyframe: () => void;
         handleValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+        handleFrameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
         flatTangent: () => void;
         currentValue: number;
+        currentFrame: number;
     }
     export class GraphActionsBar extends React.Component<IGraphActionsBarProps> {
         constructor(props: IGraphActionsBarProps);
@@ -749,6 +753,9 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         scale: number;
         playheadOffset: number;
         notification: string;
+        currentPoint: SVGPoint | undefined;
+        lastFrame: number;
+        playheadPos: number;
     }> {
         private _heightScale;
         readonly _canvasLength: number;
@@ -757,6 +764,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _frames;
         private _isPlaying;
         private _graphCanvas;
+        private _selectedCurve;
+        private _svgCanvas;
         constructor(props: IAnimationCurveEditorComponentProps);
         componentDidMount(): void;
         resetPlayheadOffset(): void;
@@ -764,11 +773,13 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         getValueLabel(i: number): number;
         handleNameChange(event: React.ChangeEvent<HTMLInputElement>): void;
         handleValueChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        handleFrameChange(event: React.ChangeEvent<HTMLInputElement>): void;
         handleTypeChange(event: React.ChangeEvent<HTMLSelectElement>): void;
         handlePropertyChange(event: React.ChangeEvent<HTMLInputElement>): void;
         addAnimation(): void;
         clearNotification(): void;
         addKeyframeClick(): void;
+        removeKeyframeClick(): void;
         addKeyFrame(event: React.MouseEvent<SVGSVGElement>): void;
         updateKeyframe(keyframe: Vector2, index: number): void;
         getAnimationProperties(animation: Animation): {
@@ -3681,6 +3692,7 @@ declare module INSPECTOR {
         active: boolean;
         type: string;
         index: string;
+        selected: boolean;
     }
     export class AnchorSvgPoint extends React.Component<IAnchorSvgPointProps> {
         constructor(props: IAnchorSvgPointProps);
@@ -3783,9 +3795,12 @@ declare module INSPECTOR {
 declare module INSPECTOR {
     interface IGraphActionsBarProps {
         addKeyframe: () => void;
+        removeKeyframe: () => void;
         handleValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+        handleFrameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
         flatTangent: () => void;
         currentValue: number;
+        currentFrame: number;
     }
     export class GraphActionsBar extends React.Component<IGraphActionsBarProps> {
         constructor(props: IGraphActionsBarProps);
@@ -3823,6 +3838,9 @@ declare module INSPECTOR {
         scale: number;
         playheadOffset: number;
         notification: string;
+        currentPoint: SVGPoint | undefined;
+        lastFrame: number;
+        playheadPos: number;
     }> {
         private _heightScale;
         readonly _canvasLength: number;
@@ -3831,6 +3849,8 @@ declare module INSPECTOR {
         private _frames;
         private _isPlaying;
         private _graphCanvas;
+        private _selectedCurve;
+        private _svgCanvas;
         constructor(props: IAnimationCurveEditorComponentProps);
         componentDidMount(): void;
         resetPlayheadOffset(): void;
@@ -3838,11 +3858,13 @@ declare module INSPECTOR {
         getValueLabel(i: number): number;
         handleNameChange(event: React.ChangeEvent<HTMLInputElement>): void;
         handleValueChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        handleFrameChange(event: React.ChangeEvent<HTMLInputElement>): void;
         handleTypeChange(event: React.ChangeEvent<HTMLSelectElement>): void;
         handlePropertyChange(event: React.ChangeEvent<HTMLInputElement>): void;
         addAnimation(): void;
         clearNotification(): void;
         addKeyframeClick(): void;
+        removeKeyframeClick(): void;
         addKeyFrame(event: React.MouseEvent<SVGSVGElement>): void;
         updateKeyframe(keyframe: BABYLON.Vector2, index: number): void;
         getAnimationProperties(animation: BABYLON.Animation): {

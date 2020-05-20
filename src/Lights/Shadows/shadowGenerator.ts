@@ -1030,6 +1030,10 @@ export class ShadowGenerator implements IShadowGenerator {
             for (index = 0; index < transparentSubMeshes.length; index++) {
                 this._renderSubMeshForShadowMap(transparentSubMeshes.data[index], true);
             }
+        } else {
+            for (index = 0; index < transparentSubMeshes.length; index++) {
+                transparentSubMeshes.data[index].getEffectiveMesh()._internalAbstractMeshDataInfo._isActiveIntermediate = false;
+            }
         }
     }
 
@@ -1054,10 +1058,8 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     protected _renderSubMeshForShadowMap(subMesh: SubMesh, isTransparent: boolean = false): void {
-        var ownerMesh = subMesh.getMesh();
-        var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh : null;
         var renderingMesh = subMesh.getRenderingMesh();
-        var effectiveMesh = replacementMesh ? replacementMesh : renderingMesh;
+        var effectiveMesh = subMesh.getEffectiveMesh();
         var scene = this._scene;
         var engine = scene.getEngine();
         let material = subMesh.getMaterial();
@@ -1072,7 +1074,7 @@ export class ShadowGenerator implements IShadowGenerator {
         engine.setState(material.backFaceCulling);
 
         // Managing instances
-        var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!replacementMesh);
+        var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
         if (batch.mustReturn) {
             return;
         }
