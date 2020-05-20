@@ -2,7 +2,10 @@
 #include <napi/js_native_api.h>
 #include <array>
 #include <cassert>
+#include <cmath>
 #include <vector>
+#include <string>
+#include <stdexcept>
 
 namespace {
 constexpr UINT CP_LATIN1 = 28591;
