@@ -1682,7 +1682,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         var result = new GPUParticleSystem(name, { capacity: this._capacity, randomTextureSize: this._randomTextureSize }, this._scene);
         result._customEffect = custom;
 
-        DeepCopier.DeepCopy(this, result, ["particles", "customShader", "noiseTexture", "particleTexture", "onDisposeObservable"]);
+        DeepCopier.DeepCopy(this, result, ["particles", "customShader", "noiseTexture", "particleTexture", "onDisposeObservable", "vertexShaderName"]);
 
         if (newEmitter === undefined) {
             newEmitter = this.emitter;
