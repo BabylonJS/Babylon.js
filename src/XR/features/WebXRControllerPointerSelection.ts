@@ -17,7 +17,7 @@ import { Ray } from '../../Culling/ray';
 import { PickingInfo } from '../../Collisions/pickingInfo';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
 import { UtilityLayerRenderer } from '../../Rendering/utilityLayerRenderer';
-import { WebXRAbstractMotionController } from '../motionController';
+import { WebXRAbstractMotionController } from '../motionController/webXRAbstractMotionController';
 
 /**
  * Options interface for the pointer selection module
