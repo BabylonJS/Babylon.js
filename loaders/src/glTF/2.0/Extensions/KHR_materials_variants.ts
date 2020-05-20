@@ -10,122 +10,128 @@ import { INode, IMeshPrimitive, IMesh } from '../glTFLoaderInterfaces';
 const NAME = "KHR_materials_variants";
 
 interface IKHRMaterialVariantsMapping {
-  tags: string[];
-  material: number;
+    tags: string[];
+    material: number;
 }
 
 interface IKHRMaterialVariants {
-  mapping: IKHRMaterialVariantsMapping[];
+    mapping: IKHRMaterialVariantsMapping[];
 }
 
 interface IKHRMaterialVariantsTop {
-  default?: string;
+    default?: string;
 }
 
 interface VariantMapping {
-  mesh: AbstractMesh;
-  materialPromise: Promise<Nullable<Material>>;
-  material?: Material;
+    mesh: AbstractMesh;
+    materialPromise: Promise<Nullable<Material>>;
+    material?: Material;
 }
 
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_variants)
  */
 export class KHR_materials_variants implements IGLTFLoaderExtension {
-  /**
-   * The name of this extension.
-   */
-  public readonly name = NAME;
+    /**
+     * The name of this extension.
+     */
+    public readonly name = NAME;
 
-  private _loader: GLTFLoader;
+    /**
+     * Defines whether this extension is enabled.
+     */
+    public enabled: boolean;
 
-  public defaultVariant: string | undefined;
-  public availableVariants: string[];
+    private _loader: GLTFLoader;
 
-  private _tagsToMap: Map<string, VariantMapping[]> = new Map();
-  
-  constructor(loader: GLTFLoader) {
-    this._loader = loader;
-  }
+    public defaultVariant: string | undefined;
+    public availableVariants: string[];
 
-  public getVariants(): string[] {
-    return Object.keys(this._tagsToMap);
-  }
+    private _tagsToMap: { [key: string]: VariantMapping[]; } = {};
 
-  public selectVariant(variantName: string | string[]) {
-    if (variantName instanceof Array) {
-      variantName.forEach((name) => this.selectVariantTag(name));
-    } else {
-      this.selectVariantTag(variantName);
+    constructor(loader: GLTFLoader) {
+        this._loader = loader;
+        this.enabled = this._loader.isExtensionUsed(NAME);
     }
-  }
 
-  public selectVariantTag(variantName: string) {
-    // If the name is valid, switch all meshes to use materials defined by the tags
-    const variantMappings = this._tagsToMap.get(variantName);
-    if (variantMappings === undefined) {
-      return;
+    /** @hidden */
+    public dispose() {
+        delete this._loader;
     }
-    variantMappings.forEach((mapping: VariantMapping) => {
-        if (mapping.material) {
-            mapping.mesh.material = mapping.material;
+
+    public getVariants(): string[] {
+        return Object.keys(this._tagsToMap);
+    }
+
+    public selectVariant(variantName: string | string[]) {
+        if (variantName instanceof Array) {
+            variantName.forEach((name) => this.selectVariantTag(name));
+        } else {
+            this.selectVariantTag(variantName);
+        }
+    }
+
+    public selectVariantTag(variantName: string) {
+        // If the name is valid, switch all meshes to use materials defined by the tags
+        const variantMappings = this._tagsToMap[variantName];
+        if (variantMappings === undefined) {
             return;
         }
-        mapping.materialPromise.then((material) => {
-            mapping.mesh.material = material;
-        });
-    });
-  }
-
-  /** @hidden */
-  public onLoading(): void {
-    const extensions = this._loader.gltf.extensions;
-    if (extensions && extensions[this.name]) {
-        const extension = extensions[this.name] as IKHRMaterialVariantsTop;
-        this.defaultVariant = extension.default;
-    }
-  }
-
-  public _loadMeshPrimitiveAsync(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Promise<AbstractMesh> {
-    const loadExtensions = GLTFLoader.LoadExtensionAsync<IKHRMaterialVariants, AbstractMesh>(context, primitive, this.name, (extensionContext, extension) => {
-      
-      const assignMesh = (babylonMesh: AbstractMesh) => {
-        assign(babylonMesh);
-        const babylonDrawMode = (GLTFLoader as any)._GetDrawMode(context, primitive.mode);
-        // For each mapping, look at the tags and make a new entry for them
-        extension.mapping.forEach((mapping: IKHRMaterialVariantsMapping) => {
-          mapping.tags.forEach((tag: string, index: number) => {
-            let tag_mapping = this._tagsToMap.get(tag);
-            if (tag_mapping === undefined) {
-                tag_mapping = [];
+        variantMappings.forEach((mapping: VariantMapping) => {
+            if (mapping.material) {
+                mapping.mesh.material = mapping.material;
+                return;
             }
-            const material = ArrayItem.Get(`#/materials/`, this._loader.gltf.materials, mapping.material);
-            let meshEntry: VariantMapping = {
-              mesh: babylonMesh,
-              materialPromise: Promise.resolve(null)
+            mapping.materialPromise.then((material) => {
+                mapping.mesh.material = material;
+            });
+        });
+    }
+
+    /** @hidden */
+    public onLoading(): void {
+        const extensions = this._loader.gltf.extensions;
+        if (extensions && extensions[this.name]) {
+            const extension = extensions[this.name] as IKHRMaterialVariantsTop;
+            this.defaultVariant = extension.default;
+        }
+    }
+
+    public _loadMeshPrimitiveAsync(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Nullable<Promise<AbstractMesh>> {
+        return GLTFLoader.LoadExtensionAsync<IKHRMaterialVariants, AbstractMesh>(context, primitive, this.name, (extensionContext, extension) => {
+
+            const assignMesh = (babylonMesh: AbstractMesh) => {
+                assign(babylonMesh);
+                const babylonDrawMode = (GLTFLoader as any)._GetDrawMode(context, primitive.mode);
+                // For each mapping, look at the tags and make a new entry for them
+                extension.mapping.forEach((mapping: IKHRMaterialVariantsMapping) => {
+                    mapping.tags.forEach((tag: string, index: number) => {
+                        let tagMapping = this._tagsToMap[tag];
+                        if (tagMapping === undefined) {
+                            tagMapping = [];
+                        }
+                        const material = ArrayItem.Get(`#/materials/`, this._loader.gltf.materials, mapping.material);
+                        let meshEntry: VariantMapping = {
+                            mesh: babylonMesh,
+                            materialPromise: Promise.resolve(null)
+                        };
+                        if (babylonMesh instanceof Mesh) {
+                            const matPromise = this._loader._loadMaterialAsync(`#/materials/${mapping.material}`, material, babylonMesh, babylonDrawMode, (material) => {
+                                meshEntry.material = material;
+                            });
+                            meshEntry.materialPromise = matPromise;
+                        }
+                        tagMapping.push(meshEntry);
+                        this._tagsToMap[tag] = tagMapping;
+                    });
+                });
             };
-            if (babylonMesh instanceof Mesh) {
-              const matPromise = this._loader._loadMaterialAsync(`#/materials/${mapping.material}`, material, babylonMesh, babylonDrawMode, (material) => {
-                meshEntry.material = material;
-              });
-              meshEntry.materialPromise = matPromise;
-            }
-            tag_mapping.push(meshEntry);
-            this._tagsToMap.set(tag, tag_mapping);
-          });
+            this._loader._disableInstancedMesh++;
+            const promise = this._loader._loadMeshPrimitiveAsync(context, name, node, mesh, primitive, assignMesh);
+            this._loader._disableInstancedMesh--;
+            return promise;
         });
-      };
-      return this._loader._loadMeshPrimitiveAsync(context, name, node, mesh, primitive, assignMesh);
-    });
-
-    if (loadExtensions) {
-        return loadExtensions;
     }
-    return this._loader._loadMeshPrimitiveAsync(context, name, node, mesh, primitive, assign);
-  }
-
-  enabled: boolean = true;
-  dispose = () => {};
 }
 
 GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_variants(loader));
