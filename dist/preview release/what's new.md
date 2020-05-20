@@ -209,6 +209,7 @@
 - Fixed an issue with transformation set after physics body was created using cannon.js ([#7928](https://github.com/BabylonJS/Babylon.js/issues/7928)) ([RaananW](https://github.com/RaananW))
 - Fix bug when using `ShadowOnlyMaterial` with Cascaded Shadow Map and `autoCalcDepthBounds` is `true` ([Popov72](https://github.com/Popov72))
 - Fix bug when using shadows + instances + transparent meshes + `transparencyShadow = false` ([Popov72](https://github.com/Popov72))
+- Incorrect initialization when reattaching XR pointer selection  ([#8227](https://github.com/BabylonJS/Babylon.js/issues/8227)) ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 
