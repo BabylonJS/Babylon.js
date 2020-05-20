@@ -3,7 +3,7 @@ import { PaneComponent, IPaneComponentProps } from "../paneComponent";
 
 import { ArcRotateCamera } from "babylonjs/Cameras/arcRotateCamera";
 import { FreeCamera } from "babylonjs/Cameras/freeCamera";
-import { AnimationGroup } from "babylonjs/Animations/animationGroup";
+import { AnimationGroup, TargetedAnimation } from "babylonjs/Animations/animationGroup";
 import { Material } from "babylonjs/Materials/material";
 import { BackgroundMaterial } from "babylonjs/Materials/Background/backgroundMaterial";
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
@@ -95,6 +95,7 @@ import { SpriteManagerPropertyGridComponent } from './propertyGrids/sprites/spri
 import { SpriteManager } from 'babylonjs/Sprites/spriteManager';
 import { SpritePropertyGridComponent } from './propertyGrids/sprites/spritePropertyGridComponent';
 import { Sprite } from 'babylonjs/Sprites/sprite';
+import { TargetedAnimationGridComponent } from './propertyGrids/animations/targetedAnimationPropertyGridComponent';
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
@@ -319,6 +320,16 @@ export class PropertyGridTabComponent extends PaneComponent {
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
+
+            if (className === "TargetedAnimation") {
+                const targetedAnimation = entity as TargetedAnimation;
+                return (<TargetedAnimationGridComponent
+                    globalState={this.props.globalState}
+                    targetedAnimation={targetedAnimation}
+                    scene={this.props.scene}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }            
 
             if (className.indexOf("Material") !== -1) {
                 const material = entity as Material;
