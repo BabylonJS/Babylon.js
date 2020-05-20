@@ -24498,6 +24498,16 @@ declare module BABYLON {
          */
         getRenderingMesh(): Mesh;
         /**
+         * Returns the replacement mesh of the submesh
+         * @returns the replacement mesh (could be different from parent mesh)
+         */
+        getReplacementMesh(): Nullable<AbstractMesh>;
+        /**
+         * Returns the effective mesh of the submesh
+         * @returns the effective mesh (could be different from parent mesh)
+         */
+        getEffectiveMesh(): AbstractMesh;
+        /**
          * Returns the submesh material
          * @returns null or the current material
          */
@@ -64999,10 +65009,6 @@ declare module BABYLON {
                 };
             };
         }
-    /**
-     * @hidden
-     */
-    export var _IDoNeedToBeInTheBuild2: number;
 }
 declare module BABYLON {
     /**
@@ -66224,10 +66230,6 @@ declare module BABYLON {
              */
             getHierarchyEmittedParticleSystems(): IParticleSystem[];
         }
-    /**
-     * @hidden
-     */
-    export var _IDoNeedToBeInTheBuild: number;
 }
 declare module BABYLON {
     /** Defines the 4 color options */
@@ -75201,6 +75203,10 @@ declare module BABYLON.GUI {
         * An event triggered after the text was broken up into lines
         */
         onLinesReadyObservable: BABYLON.Observable<TextBlock>;
+        /**
+         * Function used to split a string into words. By default, a string is split at each space character found
+         */
+        wordSplittingFunction: BABYLON.Nullable<(line: string) => string[]>;
         /**
          * Return the line list (you may need to use the onLinesReadyObservable to make sure the list is ready)
          */
