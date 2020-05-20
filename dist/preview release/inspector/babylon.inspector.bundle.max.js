@@ -55790,12 +55790,12 @@ var LineContainerComponent = /** @class */ (function (_super) {
     };
     LineContainerComponent.prototype.componentDidMount = function () {
         var _this = this;
-        if (this.props.globalState && !this.props.globalState.selectedLineContainerTitle) {
+        if (this.props.globalState && this.props.globalState.selectedLineContainerTitles.length === 0) {
             return;
         }
-        if (this.props.globalState && this.props.globalState.selectedLineContainerTitle === this.props.title) {
+        if (this.props.globalState && this.props.globalState.selectedLineContainerTitles.indexOf(this.props.title) > -1) {
             setTimeout(function () {
-                _this.props.globalState.selectedLineContainerTitle = "";
+                _this.props.globalState.selectedLineContainerTitles = [];
             });
             this.setState({ isExpanded: true, isHighlighted: true });
             window.setTimeout(function () {
@@ -66800,7 +66800,7 @@ var GlobalState = /** @class */ (function () {
         this.glTFLoaderExtensionDefaults = {};
         this.glTFLoaderDefaults = { "validate": true };
         this.blockMutationUpdates = false;
-        this.selectedLineContainerTitle = "";
+        this.selectedLineContainerTitles = [];
         this.recorder = new _replayRecorder__WEBPACK_IMPORTED_MODULE_1__["ReplayRecorder"]();
         this._onlyUseEulers = null;
         this._ignoreBackfacesForPicking = null;
@@ -69235,7 +69235,13 @@ var Inspector = /** @class */ (function () {
     function Inspector() {
     }
     Inspector.MarkLineContainerTitleForHighlighting = function (title) {
-        this._GlobalState.selectedLineContainerTitle = title;
+        this._GlobalState.selectedLineContainerTitles = [];
+        this._GlobalState.selectedLineContainerTitles.push(title);
+    };
+    Inspector.MarkMultipleLineContainerTitlesForHighlighting = function (titles) {
+        var _a;
+        this._GlobalState.selectedLineContainerTitles = [];
+        (_a = this._GlobalState.selectedLineContainerTitles).push.apply(_a, titles);
     };
     Inspector._CopyStyles = function (sourceDoc, targetDoc) {
         for (var index = 0; index < sourceDoc.styleSheets.length; index++) {
