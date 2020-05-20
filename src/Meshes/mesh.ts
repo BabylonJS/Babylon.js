@@ -430,7 +430,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 "hasInstances", "source", "worldMatrixInstancedBuffer", "hasLODLevels", "geometry", "isBlocked", "areNormalsFrozen",
                 "facetNb", "isFacetDataEnabled", "lightSources", "useBones", "isAnInstance", "collider", "edgesRenderer", "forward",
                 "up", "right", "absolutePosition", "absoluteScaling", "absoluteRotationQuaternion", "isWorldMatrixFrozen",
-                "nonUniformScaling", "behaviors", "worldMatrixFromCache"
+                "nonUniformScaling", "behaviors", "worldMatrixFromCache", "hasThinInstances"
             ], ["_poseMatrix"]);
 
             // Source mesh
