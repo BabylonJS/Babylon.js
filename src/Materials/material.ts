@@ -7,7 +7,7 @@ import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Matrix } from "../Maths/math.vector";
 import { EngineStore } from "../Engines/engineStore";
-import { BaseSubMesh, SubMesh } from "../Meshes/subMesh";
+import { SubMesh } from "../Meshes/subMesh";
 import { Geometry } from "../Meshes/geometry";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { UniformBuffer } from "./uniformBuffer";
@@ -709,7 +709,7 @@ export class Material implements IAnimatable {
      * @param useInstances specifies that instances should be used
      * @returns a boolean indicating that the submesh is ready or not
      */
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean {
+    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         return false;
     }
 
@@ -1044,16 +1044,11 @@ export class Material implements IAnimatable {
             ...options
         };
 
-        var subMesh = new BaseSubMesh();
         var scene = this.getScene();
 
         var checkReady = () => {
             if (!this._scene || !this._scene.getEngine()) {
                 return;
-            }
-
-            if (subMesh._materialDefines) {
-                subMesh._materialDefines._renderId = -1;
             }
 
             var clipPlaneState = scene.clipPlane;
@@ -1063,18 +1058,43 @@ export class Material implements IAnimatable {
             }
 
             if (this._storeEffectOnSubMeshes) {
-                if (this.isReadyForSubMesh(mesh, subMesh, localOptions.useInstances)) {
-                    if (onCompiled) {
-                        onCompiled(this);
+                var allDone = true, lastError = null;
+                if (mesh.subMeshes) {
+                    for (var subMesh of mesh.subMeshes) {
+                        let effectiveMaterial = subMesh.getMaterial();
+                        if (effectiveMaterial) {
+                            if (effectiveMaterial._storeEffectOnSubMeshes) {
+                                if (!effectiveMaterial.isReadyForSubMesh(mesh, subMesh, localOptions.useInstances)) {
+                                    if (subMesh.effect && subMesh.effect.getCompilationError() && subMesh.effect.allFallbacksProcessed()) {
+                                        lastError = subMesh.effect.getCompilationError();
+                                    } else {
+                                        allDone = false;
+                                        setTimeout(checkReady, 16);
+                                        break;
+                                    }
+                                }
+                            } else {
+                                if (!effectiveMaterial.isReady(mesh, localOptions.useInstances)) {
+                                    if (effectiveMaterial.getEffect() && effectiveMaterial.getEffect()!.getCompilationError() && effectiveMaterial.getEffect()!.allFallbacksProcessed()) {
+                                        lastError = effectiveMaterial.getEffect()!.getCompilationError();
+                                    } else {
+                                        allDone = false;
+                                        setTimeout(checkReady, 16);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
-                else {
-                    if (subMesh.effect && subMesh.effect.getCompilationError() && subMesh.effect.allFallbacksProcessed()) {
+                if (allDone) {
+                    if (lastError) {
                         if (onError) {
-                            onError(subMesh.effect.getCompilationError());
+                            onError(lastError);
                         }
-                    } else {
-                        setTimeout(checkReady, 16);
+                    }
+                    if (onCompiled) {
+                        onCompiled(this);
                     }
                 }
             } else {

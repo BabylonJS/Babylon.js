@@ -1,7 +1,7 @@
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { BaseSubMesh } from "../Meshes/subMesh";
+import { SubMesh } from "../Meshes/subMesh";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Material } from "../Materials/material";
 import { Tags } from "../Misc/tags";
@@ -117,7 +117,7 @@ export class MultiMaterial extends Material {
      * @param useInstances Define whether or not the material is used with instances
      * @returns true if ready, otherwise false
      */
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean {
+    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         for (var index = 0; index < this.subMaterials.length; index++) {
             var subMaterial = this.subMaterials[index];
             if (subMaterial) {
