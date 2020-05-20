@@ -397,6 +397,7 @@ namespace Babylon
                 InstanceMethod("getRenderHeight", &NativeEngine::GetRenderHeight),
                 InstanceMethod("setViewPort", &NativeEngine::SetViewPort),
                 InstanceMethod("getFramebufferData", &NativeEngine::GetFramebufferData),
+                InstanceMethod("getRenderAPI", &NativeEngine::GetRenderAPI),
             });
 
         env.Global().Get(JsRuntime::JS_NATIVE_NAME).As<Napi::Object>().Set(JS_ENGINE_CONSTRUCTOR_NAME, func);
@@ -1399,6 +1400,11 @@ namespace Babylon
         s_bgfxCallback.m_screenShotBitmap.clear();
 
         return Napi::External<ImageData>::New(info.Env(), imageData);
+    }
+
+    Napi::Value NativeEngine::GetRenderAPI(const Napi::CallbackInfo& info)
+    {
+        return Napi::Value::From(info.Env(), static_cast<int>(bgfx::getRendererType()));
     }
 
     void NativeEngine::EndFrame()
