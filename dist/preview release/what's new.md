@@ -117,6 +117,7 @@
 - Added support for (experimental) haptic actuators ([#8068](https://github.com/BabylonJS/Babylon.js/issues/8068)) ([RaananW](https://github.com/RaananW))
 - It is now possible to enable experimental (AR) features using the options of the default xr helper ([RaananW](https://github.com/RaananW))
 - Full support for right handed systems ([#8132](https://github.com/BabylonJS/Babylon.js/issues/8132)) ([RaananW](https://github.com/RaananW))
+- WebXR anchors feature ([#7917](https://github.com/BabylonJS/Babylon.js/issues/7917)) ([RaananW](https://github.com/RaananW))
 
 ### Collisions
 
@@ -152,6 +153,10 @@
 
 - Added support for code templates in the playground ([sailro](http://www.github.com/sailro))
 - If createEngine fails, a default engine will be created ([#8084](https://github.com/BabylonJS/Babylon.js/issues/8084)) ([RaananW](https://github.com/RaananW))
+
+### GUI
+
+- Added support for custom word splitting function for `TextBlock` ([Popov72](https://github.com/Popov72))
 
 ## Bugs
 
@@ -204,6 +209,7 @@
 - Fixed an issue with transformation set after physics body was created using cannon.js ([#7928](https://github.com/BabylonJS/Babylon.js/issues/7928)) ([RaananW](https://github.com/RaananW))
 - Fix bug when using `ShadowOnlyMaterial` with Cascaded Shadow Map and `autoCalcDepthBounds` is `true` ([Popov72](https://github.com/Popov72))
 - Fix OBJ serializer default scene scene handedness causing [OBJ Mirror export](https://forum.babylonjs.com/t/obj-export-mirrored/10835/10)
+- Fix bug when using shadows + instances + transparent meshes + `transparencyShadow = false` ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 

@@ -294,10 +294,8 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
 
         // Custom render function for submeshes
         var renderSubMesh = (subMesh: SubMesh): void => {
-            var ownerMesh = subMesh.getMesh();
-            var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh : null;
             var renderingMesh = subMesh.getRenderingMesh();
-            var effectiveMesh = replacementMesh ? replacementMesh : renderingMesh;
+            var effectiveMesh = subMesh.getEffectiveMesh();
             if (this._meshExcluded(renderingMesh)) {
                 return;
             }
@@ -317,7 +315,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
             engine.setState(material.backFaceCulling);
 
             // Managing instances
-            var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!replacementMesh);
+            var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
 
             if (batch.mustReturn) {
                 return;
