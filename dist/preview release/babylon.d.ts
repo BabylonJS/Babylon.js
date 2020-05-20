@@ -16583,7 +16583,7 @@ declare module BABYLON {
          * @param useInstances specifies that instances should be used
          * @returns a boolean indicating that the submesh is ready or not
          */
-        isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean;
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         /**
          * Checks if the material is ready to render the requested mesh
          * @param mesh Define the mesh to render
@@ -24057,7 +24057,7 @@ declare module BABYLON {
          * @param useInstances specifies that instances should be used
          * @returns a boolean indicating that the submesh is ready or not
          */
-        isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean;
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         /**
          * Returns the material effect
          * @returns the effect associated with the material
@@ -24342,7 +24342,7 @@ declare module BABYLON {
          * @param useInstances Define whether or not the material is used with instances
          * @returns true if ready, otherwise false
          */
-        isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean;
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         /**
          * Clones the current material and its related sub materials
          * @param name Define the name of the newly cloned material
@@ -24373,9 +24373,19 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Base class for submeshes
+     * Defines a subdivision inside a mesh
      */
-    export class BaseSubMesh {
+    export class SubMesh implements ICullable {
+        /** the material index to use */
+        materialIndex: number;
+        /** vertex index start */
+        verticesStart: number;
+        /** vertices count */
+        verticesCount: number;
+        /** index start */
+        indexStart: number;
+        /** indices count */
+        indexCount: number;
         /** @hidden */
         _materialDefines: Nullable<MaterialDefines>;
         /** @hidden */
@@ -24400,21 +24410,6 @@ declare module BABYLON {
          * @param defines defines the set of defines used to compile this effect
          */
         setEffect(effect: Nullable<Effect>, defines?: Nullable<MaterialDefines>): void;
-    }
-    /**
-     * Defines a subdivision inside a mesh
-     */
-    export class SubMesh extends BaseSubMesh implements ICullable {
-        /** the material index to use */
-        materialIndex: number;
-        /** vertex index start */
-        verticesStart: number;
-        /** vertices count */
-        verticesCount: number;
-        /** index start */
-        indexStart: number;
-        /** indices count */
-        indexCount: number;
         /** @hidden */
         _linesIndexCount: number;
         private _mesh;
@@ -24497,6 +24492,16 @@ declare module BABYLON {
          * @returns the rendering mesh (could be different from parent mesh)
          */
         getRenderingMesh(): Mesh;
+        /**
+         * Returns the replacement mesh of the submesh
+         * @returns the replacement mesh (could be different from parent mesh)
+         */
+        getReplacementMesh(): Nullable<AbstractMesh>;
+        /**
+         * Returns the effective mesh of the submesh
+         * @returns the effective mesh (could be different from parent mesh)
+         */
+        getEffectiveMesh(): AbstractMesh;
         /**
          * Returns the submesh material
          * @returns null or the current material
@@ -49776,11 +49781,13 @@ declare module BABYLON {
         private _gamepadDisconnectedEvent;
         private static _MAX_KEYCODES;
         private static _MAX_POINTER_INPUTS;
+        private constructor();
         /**
-         * Default Constructor
-         * @param engine - engine to pull input element from
+         * Creates a new DeviceInputSystem instance
+         * @param engine Engine to pull input element from
+         * @returns The new instance
          */
-        constructor(engine: Engine);
+        static Create(engine: Engine): DeviceInputSystem;
         /**
          * Checks for current device input value, given an id and input index
          * @param deviceName Id of connected device
@@ -64999,10 +65006,6 @@ declare module BABYLON {
                 };
             };
         }
-    /**
-     * @hidden
-     */
-    export var _IDoNeedToBeInTheBuild2: number;
 }
 declare module BABYLON {
     /**
@@ -66224,10 +66227,6 @@ declare module BABYLON {
              */
             getHierarchyEmittedParticleSystems(): IParticleSystem[];
         }
-    /**
-     * @hidden
-     */
-    export var _IDoNeedToBeInTheBuild: number;
 }
 declare module BABYLON {
     /** Defines the 4 color options */
