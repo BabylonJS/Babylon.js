@@ -10,6 +10,13 @@ import { Scene } from "../scene";
  * Tracks interactivity state of a Gizmo and switches materials of it's meshes
  */
 export class GizmoMaterialSwitcher {
+    /** @hidden */
+    /**
+     * Tracks Scenes that have an active Gizmo drag interaction.
+     * Assumes only one Gizmo can be dragged at a time per Scene
+     */
+    public static _ScenesWithActiveDrag: Scene[] = [];
+
     private _dragBehavior: PointerDragBehavior;
     private _sharedGizmoLight: HemisphericLight;
     private _scene: Scene;
@@ -91,14 +98,20 @@ export class GizmoMaterialSwitcher {
     private _onDragStart = () => {
         this._isDrag = true;
         this._updateMaterial();
+        GizmoMaterialSwitcher._ScenesWithActiveDrag = [...GizmoMaterialSwitcher._ScenesWithActiveDrag, this._scene];
     }
 
     private _onDragEnd = () => {
         this._isDrag = false;
         this._updateMaterial();
+        GizmoMaterialSwitcher._ScenesWithActiveDrag = GizmoMaterialSwitcher._ScenesWithActiveDrag.filter((scene) => scene !== this._scene);
     }
 
     private _onPointer = (pointerInfo: PointerInfo) => {
+        const isDragActive = GizmoMaterialSwitcher._ScenesWithActiveDrag.indexOf(this._scene) != -1;
+        if (isDragActive) {
+            return;
+        }
         this._isHover = pointerInfo.pickInfo
             ? this._meshes.indexOf(
                 <AbstractMesh>pointerInfo.pickInfo.pickedMesh
