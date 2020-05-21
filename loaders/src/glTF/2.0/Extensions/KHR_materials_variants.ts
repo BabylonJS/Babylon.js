@@ -101,7 +101,6 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     /** @hidden */
     public _loadMeshPrimitiveAsync(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Nullable<Promise<AbstractMesh>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialVariants, AbstractMesh>(context, primitive, this.name, (extensionContext, extension) => {
-
             const assignMesh = (babylonMesh: AbstractMesh) => {
                 assign(babylonMesh);
                 const babylonDrawMode = (GLTFLoader as any)._GetDrawMode(context, primitive.mode);
