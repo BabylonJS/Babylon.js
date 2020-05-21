@@ -1,4 +1,3 @@
-import { fastEditDistance } from "./editDistance";
 /* Credit: Some code adapted from:
  * https://github.com/patriciogonzalezvivo/glslEditor
  * MIT licensed.
@@ -39,8 +38,49 @@ class DiagnosticsManager {
  * Prevents mere indentation changes from affecting diff scores
  */
 function editDistanceNormalizeWhitespace(str: string): string {
-    return str.replace(/[ \t]+/, '').replace(/[\r\n]+/, '\n');
+    return str.replace(/[ \t]+/g, '').replace(/[\r\n]+/g, '\n');
 }
+function splitLines(txt: string) {
+    const linesRegex = /^.+$/gm;
+    let m;
+    const lines = [];
+    while (m = linesRegex.exec(txt)) {
+        lines.push(m[0]);
+    }
+    return lines;
+}
+function countOccurrences<T>(lines: T[]): Map<T, number> {
+    const m = new Map<T, number>();
+    for (const line of lines) {
+        const n = m.get(line)||0;
+        m.set(line, n + 1);
+    }
+    return m;
+}
+function fastEditDistance(sourceA: string, sourceB: string): number {
+    const linesA = countOccurrences(splitLines(sourceA));
+    const linesB = countOccurrences(splitLines(sourceB));
+    const linesConcat = [] as string[];
+    linesA.forEach((unused, line) => {
+        linesConcat.push(line);
+    });
+    linesB.forEach((unused, line) => {
+        linesConcat.push(line);
+    });
+    const linesNoDuplicates = new Set(linesConcat);
+    let added = 0;
+    let removed = 0;
+    linesNoDuplicates.forEach((line) => {
+        const nafter = linesA.get(line)||0;
+        const nbefore = linesB.get(line)||0;
+        if (nbefore < nafter) {
+            added++;
+        } else if (nbefore > nafter) {
+            removed++;
+        }
+    });
+    return Math.max(added, removed);
+} 
 
 interface HistoryRevision {
     id: number;
@@ -81,10 +121,8 @@ export class HistoryDataSource {
             }
         }
 
-        const value = (
-            fastEditDistance(revA.frag, revB.frag)
-            + fastEditDistance(revA.vert, revB.vert)
-        );
+        let value = fastEditDistance(afrag, bfrag) + fastEditDistance(avert, bvert);
+
         if (memoizeKey) {
             this.editDistanceScores.set(memoizeKey, value);
         }
