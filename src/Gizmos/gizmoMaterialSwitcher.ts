@@ -167,15 +167,30 @@ export class GizmoMaterialSwitcher {
         });
     }
 
+    /**
+     * Material applied in resting state
+     */
     public get defaultMaterial() {
         return this._defaultMaterial;
     }
+
+    /**
+     * Material applied in hover state
+     */
     public get hoverMaterial() {
         return this._hoverMaterial;
     }
+
+    /**
+     * Material applied in dragging state
+     */
     public get dragMaterial() {
         return this._dragMaterial;
     }
+
+    /**
+     * Currently applied material
+     */
     public get material() {
         return this._material;
     }

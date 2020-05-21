@@ -12,6 +12,9 @@ import { ScaleGizmo } from "./scaleGizmo";
  * Single axis scale gizmo
  */
 export class AxisScaleGizmo extends DraggableGizmo {
+    /**
+     * Scale proportionally
+     */
     public uniformScaling = false;
     /**
      * Custom sensitivity value for the drag strength

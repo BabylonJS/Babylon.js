@@ -84,6 +84,9 @@ export class DraggableGizmo extends Gizmo {
         return this._isEnabled;
     }
 
+    /**
+     * Instance of GizmoMaterialSwitcher
+     */
     public get materialSwitcher() {
         return this._materialSwitcher;
     }
