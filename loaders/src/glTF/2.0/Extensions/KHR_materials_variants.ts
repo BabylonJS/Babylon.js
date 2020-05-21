@@ -107,10 +107,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
                 // For each mapping, look at the tags and make a new entry for them
                 extension.mapping.forEach((mapping: IKHRMaterialVariantsMapping) => {
                     mapping.tags.forEach((tag: string, index: number) => {
-                        let tagMapping = this._tagsToMap[tag];
-                        if (tagMapping === undefined) {
-                            tagMapping = [];
-                        }
+                        const tagMapping = this._tagsToMap[tag] || [];
                         const material = ArrayItem.Get(`#/materials/`, this._loader.gltf.materials, mapping.material);
                         const meshEntry: VariantMapping = {
                             mesh: babylonMesh,
