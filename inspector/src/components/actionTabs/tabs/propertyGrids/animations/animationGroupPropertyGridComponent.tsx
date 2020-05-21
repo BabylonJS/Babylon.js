@@ -12,6 +12,7 @@ import { TextLineComponent } from "../../../lines/textLineComponent";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
+import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
 
 interface IAnimationGroupGridComponentProps {
     globalState: GlobalState;
@@ -129,7 +130,11 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
         const playButtonText = animationGroup.isPlaying ? "Pause" : "Play"
 
         return (
-            <div className="pane">
+            <div className="pane">                
+                <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
+                    <TextLineComponent label="Class" value={animationGroup.getClassName()} />
+                    <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={animationGroup} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
+                </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="CONTROLS">
                     <ButtonLineComponent label={playButtonText} onClick={() => this.playOrPause()} />
                     <SliderLineComponent label="Speed ratio" minimum={0} maximum={10} step={0.1} target={animationGroup} propertyName="speedRatio" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

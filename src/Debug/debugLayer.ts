@@ -220,14 +220,20 @@ export class DebugLayer {
     /**
      * Select a specific entity in the scene explorer and highlight a specific block in that entity property grid
      * @param entity defines the entity to select
-     * @param lineContainerTitle defines the specific block to highlight
+     * @param lineContainerTitles defines the specific blocks to highlight (could be a string or an array of strings)
      */
-    public select(entity: any, lineContainerTitle?: string) {
+    public select(entity: any, lineContainerTitles?: string | string[]) {
         if (this.BJSINSPECTOR) {
-            this.BJSINSPECTOR.Inspector.MarkLineContainerTitleForHighlighting(lineContainerTitle);
+
+            if (lineContainerTitles) {
+                if (Object.prototype.toString.call(lineContainerTitles) == '[object String]') {
+                    this.BJSINSPECTOR.Inspector.MarkLineContainerTitleForHighlighting(lineContainerTitles);
+                } else {
+                    this.BJSINSPECTOR.Inspector.MarkMultipleLineContainerTitlesForHighlighting(lineContainerTitles);
+                }
+            }
             this.BJSINSPECTOR.Inspector.OnSelectionChangeObservable.notifyObservers(entity);
         }
-
     }
 
     /** Get the inspector from bundle or global */
