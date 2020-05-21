@@ -153,9 +153,7 @@ export class NodeMaterial extends PushMaterial {
 
     private BJSNODEMATERIALEDITOR = NodeMaterial._getGlobalNodeMaterialEditor();
 
-    /**
-     * Get the inspector from bundle or global
-     */
+    /** Get the inspector from bundle or global */
     static _getGlobalNodeMaterialEditor(): any {
         // UMD Global name detection from Webpack Bundle UMD Name.
         if (typeof NODEEDITOR !== 'undefined') {

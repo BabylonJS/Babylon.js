@@ -195,7 +195,7 @@ export class HistoryDataSource {
                 if (!this.revisionIsValid(rev)) {
                     continue;
                 }
-                out.push(rev); // yield rev; // one day when IE is dead...
+                out.push(rev);
             } catch {
             }
         }
@@ -314,13 +314,16 @@ class ShaderSourceEditorRenderer {
         const $head = doc.head;
 
         const css = `
-html {
+html#sseRoot {
   background-color: #1e1e1e;
 }
-body {
+html#sseRoot body {
   margin: 0;
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  width: 100%;
+  height: 100%;
+  padding: 0;
 }
 #sseContainer {
   display: flex;
@@ -333,7 +336,6 @@ body {
   flex-direction: row;
   justify-content: center;
 }
-
 #sseEditors {
   flex: 1;
   display: flex;
@@ -357,7 +359,6 @@ body {
 #sseContainer.sseHideVertex #sseEditorContainerVertex, #sseContainer.sseHideVertex #sseEditorContainerVertexPreview {
   display: none;
 }
-
 
 #sseToolbar, .sseErrors, #sseHistoryBar {
   background: rgb(40, 40, 40);
@@ -404,7 +405,6 @@ body {
   color: white;
 }
 
-
 #sseHistoryBar {
 }
 .sseHistoryRevision {
@@ -431,8 +431,6 @@ body {
   color: hsl(0, 0%, 50%);
   user-select: none;
 }
-
-
 
 /* Code mirror */
 

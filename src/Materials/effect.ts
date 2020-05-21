@@ -543,7 +543,7 @@ export class Effect implements IDisposable {
     }
 
     /**
-     * @internal
+     * @hidden
      * Returns the vertex shader source code before processing.
      */
     public get originalVertexSourceCode() {
@@ -551,7 +551,7 @@ export class Effect implements IDisposable {
     }
 
     /**
-     * @internal
+     * @hidden
      * Returns the fragment shader source code before processing.
      */
     public get originalFragmentSourceCode() {
