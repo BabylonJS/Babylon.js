@@ -60,10 +60,16 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
         delete this._loader;
     }
 
+    /**
+     * Return a list of available variants for this asset.
+     */
     public getVariants(): string[] {
         return Object.keys(this._tagsToMap);
     }
 
+    /**
+     * Select a variant by providing a list of variant tag names.
+     */
     public selectVariant(variantName: string | string[]) {
         if (variantName instanceof Array) {
             variantName.forEach((name) => this.selectVariantTag(name));
@@ -72,6 +78,9 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
         }
     }
 
+    /**
+     * Select a variant by providing a single variant tag.
+     */
     public selectVariantTag(variantName: string) {
         // If the name is valid, switch all meshes to use materials defined by the tags
         const variantMappings = this._tagsToMap[variantName];
