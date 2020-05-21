@@ -37889,6 +37889,11 @@ declare module BABYLON {
          */
         target: any;
         /**
+         * Returns the string "TargetedAnimation"
+         * @returns "TargetedAnimation"
+         */
+        getClassName(): string;
+        /**
          * Serialize the object
          * @returns the JSON object representing the current entity
          */
@@ -37980,6 +37985,10 @@ declare module BABYLON {
          * returning the list of animatables controlled by this animation group.
          */
         get animatables(): Array<Animatable>;
+        /**
+         * Gets the list of target animations
+         */
+        get children(): TargetedAnimation[];
         /**
          * Instantiates a new Animation Group.
          * This helps managing several animations at once.
