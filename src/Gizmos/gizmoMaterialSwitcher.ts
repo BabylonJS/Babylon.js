@@ -53,7 +53,7 @@ export class GizmoMaterialSwitcher {
 
         this._dragMaterial = new StandardMaterial("_dragMaterial", scene);
         this._dragMaterial.diffuseColor = color.add(
-            new Color3(0.15, 0.15, 0.15)
+            new Color3(0.2, 0.2, 0.2)
         );
 
         // Add interactivity
