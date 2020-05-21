@@ -1,50 +1,24 @@
-import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import { PointerInfo } from "../Events/pointerEvents";
 import { Color3 } from "../Maths/math.color";
 import { Vector3 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { BoxBuilder } from "../Meshes/Builders/boxBuilder";
 import { CylinderBuilder } from "../Meshes/Builders/cylinderBuilder";
-import { Mesh } from "../Meshes/mesh";
-import { Observable, Observer } from "../Misc/observable";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { Nullable } from "../types";
-import { Gizmo } from "./gizmo";
-import { GizmoMaterialSwitcher } from "./gizmoMaterialSwitcher";
+import { DraggableGizmo } from "./draggableGizmo";
 import { ScaleGizmo } from "./scaleGizmo";
 
 /**
  * Single axis scale gizmo
  */
-export class AxisScaleGizmo extends Gizmo {
-    /**
-     * Drag behavior responsible for the gizmos dragging interactions
-     */
-    public dragBehavior: PointerDragBehavior;
-    private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
-    /**
-     * Scale distance in babylon units that the gizmo will snap to when dragged (Default: 0)
-     */
-    public snapDistance = 0;
-    /**
-     * Event that fires each time the gizmo snaps to a new location.
-     * * snapDistance is the the change in distance
-     */
-    public onSnapObservable = new Observable<{ snapDistance: number }>();
-    /**
-     * If the scaling operation should be done on all axis (default: false)
-     */
+export class AxisScaleGizmo extends DraggableGizmo {
     public uniformScaling = false;
     /**
      * Custom sensitivity value for the drag strength
      */
     public sensitivity = 1;
 
-    private _isEnabled: boolean = true;
-    private _parent: Nullable<ScaleGizmo> = null;
-
     private _arrow: AbstractMesh;
-    private _materialSwitcher: GizmoMaterialSwitcher;
 
     /**
      * Creates an AxisScaleGizmo
@@ -53,8 +27,7 @@ export class AxisScaleGizmo extends Gizmo {
      * @param color The color of the gizmo
      */
     constructor(dragAxis: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, parent: Nullable<ScaleGizmo> = null) {
-        super(gizmoLayer);
-        this._parent = parent;
+        super({ dragAxis }, color, gizmoLayer, parent);
 
         // Build mesh on root node
         this._arrow = new AbstractMesh("", gizmoLayer.utilityLayerScene);
@@ -73,18 +46,6 @@ export class AxisScaleGizmo extends Gizmo {
         this._rootMesh.addChild(this._arrow);
         this._arrow.scaling.scaleInPlace(1 / 3);
 
-        // Add drag behavior to handle events when the gizmo is dragged
-        this.dragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
-        this.dragBehavior.moveAttached = false;
-        this._rootMesh.addBehavior(this.dragBehavior);
-
-        // Create Material Switcher
-        this._materialSwitcher = new GizmoMaterialSwitcher(
-            color,
-            this.dragBehavior,
-            gizmoLayer._getSharedGizmoLight(),
-            gizmoLayer.utilityLayerScene
-        );
         this._materialSwitcher.registerMeshes(
             this._rootMesh.getChildMeshes(false)
         );
@@ -92,6 +53,7 @@ export class AxisScaleGizmo extends Gizmo {
         var currentSnapDragDistance = 0;
         var tmpVector = new Vector3();
         var tmpSnapEvent = { snapDistance: 0 };
+
         this.dragBehavior.onDragObservable.add((event) => {
             if (this.attachedMesh) {
                 // Drag strength is modified by the scale of the gizmo (eg. for small objects like boombox the strength will be increased to match the behavior of larger objects)
@@ -133,63 +95,5 @@ export class AxisScaleGizmo extends Gizmo {
                 }
             }
         });
-    }
-
-    protected _attachedMeshChanged(value: Nullable<AbstractMesh>) {
-        if (this.dragBehavior) {
-            this.dragBehavior.enabled = value ? true : false;
-        }
-    }
-
-    /**
- * If the gizmo is enabled
- */
-    public set isEnabled(value: boolean) {
-        this._isEnabled = value;
-        if (!value) {
-            this.attachedMesh = null;
-        }
-        else {
-            if (this._parent) {
-                this.attachedMesh = this._parent.attachedMesh;
-            }
-        }
-    }
-    public get isEnabled(): boolean {
-        return this._isEnabled;
-    }
-
-    public get materialSwitcher() {
-        return this._materialSwitcher;
-    }
-
-    /**
-     * Disposes of the gizmo
-     */
-    public dispose() {
-        this.onSnapObservable.clear();
-        this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
-        this.dragBehavior.detach();
-        this._materialSwitcher.dispose();
-        super.dispose();
-    }
-
-    /**
-     * Disposes and replaces the current meshes in the gizmo with the specified mesh
-     * @param mesh The mesh to replace the default mesh of the gizmo
-     * @param useGizmoMaterials If the gizmo's default materials should be used (default: false)
-     */
-    public setCustomMesh(mesh: Mesh, useGizmoMaterials: boolean = false) {
-        this._materialSwitcher.unregisterMeshes(
-            this._rootMesh.getChildMeshes()
-        );
-
-        super.setCustomMesh(mesh);
-
-        if (useGizmoMaterials) {
-            this._materialSwitcher.registerMeshes(
-                this._rootMesh.getChildMeshes()
-            );
-        }
     }
 }

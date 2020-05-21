@@ -1,42 +1,17 @@
-import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import { PointerInfo } from "../Events/pointerEvents";
 import { Color3 } from "../Maths/math.color";
 import { Matrix, Vector3 } from "../Maths/math.vector";
-import { AbstractMesh } from "../Meshes/abstractMesh";
 import { PlaneBuilder } from "../Meshes/Builders/planeBuilder";
-import { Mesh } from "../Meshes/mesh";
 import { TransformNode } from "../Meshes/transformNode";
-import { Observable, Observer } from "../Misc/observable";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { Scene } from "../scene";
 import { Nullable } from "../types";
-import { Gizmo } from "./gizmo";
-import { GizmoMaterialSwitcher } from "./gizmoMaterialSwitcher";
+import { DraggableGizmo } from "./draggableGizmo";
 import { PositionGizmo } from "./positionGizmo";
 /**
  * Single plane drag gizmo
  */
-export class PlaneDragGizmo extends Gizmo {
-    /**
-     * Drag behavior responsible for the gizmos dragging interactions
-     */
-    public dragBehavior: PointerDragBehavior;
-    private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
-    /**
-     * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
-     */
-    public snapDistance = 0;
-    /**
-     * Event that fires each time the gizmo snaps to a new location.
-     * * snapDistance is the the change in distance
-     */
-    public onSnapObservable = new Observable<{ snapDistance: number }>();
-
+export class PlaneDragGizmo extends DraggableGizmo {
     private _plane: TransformNode;
-    private _materialSwitcher: GizmoMaterialSwitcher;
-
-    private _isEnabled: boolean = false;
-    private _parent: Nullable<PositionGizmo> = null;
 
     /** @hidden */
     public static _CreatePlane(scene: Scene): TransformNode {
@@ -55,8 +30,8 @@ export class PlaneDragGizmo extends Gizmo {
      * @param color The color of the gizmo
      */
     constructor(dragPlaneNormal: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, parent: Nullable<PositionGizmo> = null) {
-        super(gizmoLayer);
-        this._parent = parent;
+        super({ dragPlaneNormal }, color, gizmoLayer, parent);
+        this.isEnabled = false;
 
         // Build plane mesh on root node
         this._plane = PlaneDragGizmo._CreatePlane(gizmoLayer.utilityLayerScene);
@@ -65,18 +40,6 @@ export class PlaneDragGizmo extends Gizmo {
         this._plane.scaling.scaleInPlace(1 / 3);
         this._plane.parent = this._rootMesh;
 
-        // Add dragPlaneNormal drag behavior to handle events when the gizmo is dragged
-        this.dragBehavior = new PointerDragBehavior({ dragPlaneNormal: dragPlaneNormal });
-        this.dragBehavior.moveAttached = false;
-        this._rootMesh.addBehavior(this.dragBehavior);
-
-        // Create Material Switcher
-        this._materialSwitcher = new GizmoMaterialSwitcher(
-            color,
-            this.dragBehavior,
-            gizmoLayer._getSharedGizmoLight(),
-            gizmoLayer.utilityLayerScene
-        );
         this._materialSwitcher.registerMeshes(
             this._rootMesh.getChildMeshes(false)
         );
@@ -114,63 +77,5 @@ export class PlaneDragGizmo extends Gizmo {
                 }
             }
         });
-    }
-
-    protected _attachedMeshChanged(value: Nullable<AbstractMesh>) {
-        if (this.dragBehavior) {
-            this.dragBehavior.enabled = value ? true : false;
-        }
-    }
-
-    /**
-     * If the gizmo is enabled
-     */
-    public set isEnabled(value: boolean) {
-        this._isEnabled = value;
-        if (!value) {
-            this.attachedMesh = null;
-        }
-        else {
-            if (this._parent) {
-                this.attachedMesh = this._parent.attachedMesh;
-            }
-        }
-    }
-    public get isEnabled(): boolean {
-        return this._isEnabled;
-    }
-
-    public get materialSwitcher() {
-        return this._materialSwitcher;
-    }
-
-    /**
-     * Disposes of the gizmo
-     */
-    public dispose() {
-        this.onSnapObservable.clear();
-        this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
-        this.dragBehavior.detach();
-        this._materialSwitcher.dispose();
-        super.dispose();
-    }
-
-    /**
-     * Disposes and replaces the current meshes in the gizmo with the specified mesh
-     * @param mesh The mesh to replace the default mesh of the gizmo
-     * @param useGizmoMaterials If the gizmo's default materials should be used (default: false)
-     */
-    public setCustomMesh(mesh: Mesh, useGizmoMaterials: boolean = false) {
-        this._materialSwitcher.unregisterMeshes(
-            this._rootMesh.getChildMeshes()
-        );
-
-        super.setCustomMesh(mesh);
-
-        if (useGizmoMaterials) {
-            this._materialSwitcher.registerMeshes(
-                this._rootMesh.getChildMeshes()
-            );
-        }
     }
 }

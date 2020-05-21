@@ -1,54 +1,27 @@
-import { Observer, Observable } from "../Misc/observable";
-import { Nullable } from "../types";
-import { PointerInfo } from "../Events/pointerEvents";
-import { Quaternion, Matrix, Vector3 } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
+import { Matrix, Quaternion, Vector3 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
-import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import { Gizmo } from "./gizmo";
-import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-
 import "../Meshes/Builders/linesBuilder";
+import { Mesh } from "../Meshes/mesh";
+import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
+import { Nullable } from "../types";
+import { DraggableGizmo } from "./draggableGizmo";
 import { RotationGizmo } from "./rotationGizmo";
-import { GizmoMaterialSwitcher } from "./gizmoMaterialSwitcher";
 
 /**
  * Single plane rotation gizmo
  */
-export class PlaneRotationGizmo extends Gizmo {
-    /**
-     * Drag behavior responsible for the gizmos dragging interactions
-     */
-    public dragBehavior: PointerDragBehavior;
-    private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
-
-    /**
-     * Rotation distance in radians that the gizmo will snap to (Default: 0)
-     */
-    public snapDistance = 0;
-    /**
-     * Event that fires each time the gizmo snaps to a new location.
-     * * snapDistance is the the change in distance
-     */
-    public onSnapObservable = new Observable<{ snapDistance: number }>();
-
-    private _materialSwitcher: GizmoMaterialSwitcher;
-
-    private _isEnabled: boolean = true;
-    private _parent: Nullable<RotationGizmo> = null;
-
+export class PlaneRotationGizmo extends DraggableGizmo {
     /**
      * Creates a PlaneRotationGizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
-     * @param planeNormal The normal of the plane which the gizmo will be able to rotate on
+     * @param dragPlaneNormal The normal of the plane which the gizmo will be able to rotate on
      * @param color The color of the gizmo
      * @param tessellation Amount of tessellation to be used when creating rotation circles
      * @param useEulerRotation Use and update Euler angle instead of quaternion
      */
-    constructor(planeNormal: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32, parent: Nullable<RotationGizmo> = null, useEulerRotation = false) {
-        super(gizmoLayer);
-        this._parent = parent;
+    constructor(dragPlaneNormal: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32, parent: Nullable<RotationGizmo> = null, useEulerRotation = false) {
+        super({ dragPlaneNormal }, color, gizmoLayer, parent);
 
         // Build mesh on root node
         var parentMesh = new AbstractMesh("", gizmoLayer.utilityLayerScene);
@@ -62,33 +35,21 @@ export class PlaneRotationGizmo extends Gizmo {
         drag.rotation.x = Math.PI / 2;
         parentMesh.addChild(rotationMesh);
         parentMesh.addChild(drag);
-        parentMesh.lookAt(this._rootMesh.position.add(planeNormal));
+        parentMesh.lookAt(this._rootMesh.position.add(dragPlaneNormal));
 
         this._rootMesh.addChild(parentMesh);
         parentMesh.scaling.scaleInPlace(1 / 3);
 
-        // Add drag behavior to handle events when the gizmo is dragged
-        this.dragBehavior = new PointerDragBehavior({ dragPlaneNormal: planeNormal });
-        this.dragBehavior.moveAttached = false;
-        this.dragBehavior.maxDragAngle = Math.PI * 9 / 20;
+        this.dragBehavior.maxDragAngle = (Math.PI * 9) / 20;
         this.dragBehavior._useAlternatePickedPointAboveMaxDragAngle = true;
-        this._rootMesh.addBehavior(this.dragBehavior);
 
         var lastDragPosition = new Vector3();
-
         this.dragBehavior.onDragStartObservable.add((e) => {
             if (this.attachedMesh) {
                 lastDragPosition.copyFrom(e.dragPlanePoint);
             }
         });
 
-        // Create Material Switcher
-        this._materialSwitcher = new GizmoMaterialSwitcher(
-            color,
-            this.dragBehavior,
-            gizmoLayer._getSharedGizmoLight(),
-            gizmoLayer.utilityLayerScene
-        );
         this._materialSwitcher.registerMeshes(
             this._rootMesh.getChildMeshes(false)
         );
@@ -102,6 +63,7 @@ export class PlaneRotationGizmo extends Gizmo {
         var tmpMatrix = new Matrix();
         var tmpVector = new Vector3();
         var amountToRotate = new Quaternion();
+
         this.dragBehavior.onDragObservable.add((event) => {
             if (this.attachedMesh) {
                 if (!this.attachedMesh.rotationQuaternion || useEulerRotation) {
@@ -120,8 +82,8 @@ export class PlaneRotationGizmo extends Gizmo {
                 var cross = Vector3.Cross(newVector, originalVector);
                 var dot = Vector3.Dot(newVector, originalVector);
                 var angle = Math.atan2(cross.length(), dot);
-                planeNormalTowardsCamera.copyFrom(planeNormal);
-                localPlaneNormalTowardsCamera.copyFrom(planeNormal);
+                planeNormalTowardsCamera.copyFrom(dragPlaneNormal);
+                localPlaneNormalTowardsCamera.copyFrom(dragPlaneNormal);
                 if (this.updateGizmoRotationToMatchAttachedMesh) {
                     this.attachedMesh.rotationQuaternion.toRotationMatrix(rotationMatrix);
                     localPlaneNormalTowardsCamera = Vector3.TransformCoordinates(planeNormalTowardsCamera, rotationMatrix);
@@ -198,63 +160,5 @@ export class PlaneRotationGizmo extends Gizmo {
                 }
             }
         });
-    }
-
-    protected _attachedMeshChanged(value: Nullable<AbstractMesh>) {
-        if (this.dragBehavior) {
-            this.dragBehavior.enabled = value ? true : false;
-        }
-    }
-
-    /**
-         * If the gizmo is enabled
-         */
-    public set isEnabled(value: boolean) {
-        this._isEnabled = value;
-        if (!value) {
-            this.attachedMesh = null;
-        }
-        else {
-            if (this._parent) {
-                this.attachedMesh = this._parent.attachedMesh;
-            }
-        }
-    }
-    public get isEnabled(): boolean {
-        return this._isEnabled;
-    }
-
-    public get materialSwitcher() {
-        return this._materialSwitcher;
-    }
-
-    /**
-     * Disposes of the gizmo
-     */
-    public dispose() {
-        this.onSnapObservable.clear();
-        this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
-        this.dragBehavior.detach();
-        this._materialSwitcher.dispose();
-        super.dispose();
-    }
-
-    /**
-     * Disposes and replaces the current meshes in the gizmo with the specified mesh
-     * @param mesh The mesh to replace the default mesh of the gizmo
-     * @param useGizmoMaterials If the gizmo's default materials should be used (default: false)
-     */
-    public setCustomMesh(mesh: Mesh, useGizmoMaterials: boolean = false) {
-        this._materialSwitcher.unregisterMeshes(
-            this._rootMesh.getChildMeshes()
-        );
-
-        super.setCustomMesh(mesh);
-
-        if (useGizmoMaterials) {
-            this._materialSwitcher.registerMeshes(
-                this._rootMesh.getChildMeshes()
-            );
-        }
     }
 }
