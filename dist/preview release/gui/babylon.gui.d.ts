@@ -1425,6 +1425,10 @@ declare module BABYLON.GUI {
         */
         onLinesReadyObservable: BABYLON.Observable<TextBlock>;
         /**
+         * Function used to split a string into words. By default, a string is split at each space character found
+         */
+        wordSplittingFunction: BABYLON.Nullable<(line: string) => string[]>;
+        /**
          * Return the line list (you may need to use the onLinesReadyObservable to make sure the list is ready)
          */
         get lines(): any[];

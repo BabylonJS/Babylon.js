@@ -414,7 +414,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
             return true;
         }
 
-        if (type === PointerEventTypes.POINTERUP) {
+        if (type === PointerEventTypes.POINTERUP || type === PointerEventTypes.POINTERDOUBLETAP) {
             if (this._host._lastControlDown[pointerId]) {
                 this._host._lastControlDown[pointerId]._onPointerUp(this, pickedPoint, pointerId, buttonIndex, true);
             }

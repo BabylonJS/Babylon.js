@@ -23,6 +23,14 @@ export class TargetedAnimation {
     public target: any;
 
     /**
+     * Returns the string "TargetedAnimation"
+     * @returns "TargetedAnimation"
+     */
+    public getClassName(): string {
+        return "TargetedAnimation";
+    }
+
+    /**
      * Serialize the object
      * @returns the JSON object representing the current entity
      */
@@ -189,6 +197,13 @@ export class AnimationGroup implements IDisposable {
      */
     public get animatables(): Array<Animatable> {
         return this._animatables;
+    }
+
+    /**
+     * Gets the list of target animations
+     */
+    public get children() {
+        return this._targetedAnimations;
     }
 
     /**
