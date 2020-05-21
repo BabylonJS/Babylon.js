@@ -498,8 +498,7 @@ body {
   background: red;
 }
 `;
-        // now that this works I should develop it in a separate html file
-        // also don't forget that codemirror needs to be bundled can't just use cdnjs
+
         const $style = doc.createElement('style');
         $style.appendChild(doc.createTextNode(css));
 
@@ -528,19 +527,18 @@ body {
         `;
         const $cmStyle = doc.createElement('link');
         $cmStyle.rel = 'stylesheet';
-        $cmStyle.href = 'http://cdnjs.cloudflare.com/ajax/libs/codemirror/5.50.2/codemirror.min.css';
-        $cmStyle.integrity = 'sha256-aUkU60JHknIp4cZ37K3nZ0qln+bxL5FIMzOUCjLJzfg=';
+        $cmStyle.href = 'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.54.0/codemirror.min.css';
+        $cmStyle.integrity = 'sha256-Ez4TnBJ24JkU8Z622YHGxDaYrslkqNZ62ewvn08Skco=';
         $cmStyle.crossOrigin = 'anonymous';
 
         const $cmScript = doc.createElement('script');
-        // TODO: replace these
-        $cmScript.src = 'http://cdnjs.cloudflare.com/ajax/libs/codemirror/5.50.2/codemirror.min.js';
-        $cmScript.integrity = 'sha256-rdi8oE6Z5spj3j8D8tG0qx8bNXgnKjw3zU2PrGBy3AE=';
+        $cmScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.54.0/codemirror.min.js';
+        $cmScript.integrity = 'sha256-zW3RviTWD2qcjPDA/ByugxSFO5EPHb8Yl0Z6o7X9Zqk=';
         $cmScript.crossOrigin = 'anonymous';
         $cmScript.onload = () => {
             const $cmClikeScript = doc.createElement('script');
-            $cmClikeScript.src = "http://cdnjs.cloudflare.com/ajax/libs/codemirror/5.50.2/mode/clike/clike.min.js";
-            $cmClikeScript.integrity = "sha256-jjVlgGmod55PK6pOgacs64VoWTqGHNtsN1JGfMiKPr0=";
+            $cmClikeScript.src = "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.54.0/mode/clike/clike.min.js";
+            $cmClikeScript.integrity = "sha256-ighs+pKTIY6PrbzjYe+5QW1d0stauTQw6O8OAJanjGM=";
             $cmClikeScript.crossOrigin = "anonymous";
 
             $cmClikeScript.onload = this.onload.bind(this);

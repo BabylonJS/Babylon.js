@@ -14,8 +14,6 @@ import { Material } from "./material";
 import { _TypeStore } from '../Misc/typeStore';
 import { Color3, Color4 } from '../Maths/math.color';
 import { EffectFallbacks } from './effectFallbacks';
-import { NodeMaterial, INodeMaterialEditorOptions } from './Node/nodeMaterial';
-import { Tools } from '../Misc/tools';
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -862,40 +860,6 @@ export class ShaderMaterial extends Material {
         }
 
         return false;
-    }
-
-    private BJSNODEMATERIALEDITOR = NodeMaterial._getGlobalNodeMaterialEditor();
-
-    /** Creates the node editor window. */
-    private _createNodeEditor() {
-        this.BJSNODEMATERIALEDITOR = this.BJSNODEMATERIALEDITOR || NodeMaterial._getGlobalNodeMaterialEditor();
-
-        this.BJSNODEMATERIALEDITOR.ShaderSourceEditor.Show({
-            shaderMaterial: this
-        });
-    }
-
-    /**
-     * Launch the shader source material editor
-     * @param config Define the configuration of the editor
-     * @return a promise fulfilled when the shader source editor is visible
-     */
-    public edit(config?: INodeMaterialEditorOptions): Promise<void> {
-        return new Promise((resolve, reject) => {
-            if (typeof this.BJSNODEMATERIALEDITOR == 'undefined') {
-                const editorUrl = config && config.editorURL ? config.editorURL : NodeMaterial.EditorURL;
-
-                // Load editor and add it to the DOM
-                Tools.LoadScript(editorUrl, () => {
-                    this._createNodeEditor();
-                    resolve();
-                });
-            } else {
-                // Otherwise creates the editor
-                this._createNodeEditor();
-                resolve();
-            }
-        });
     }
 
     /**

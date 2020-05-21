@@ -9,6 +9,7 @@ import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGri
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
 import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
+import { ShaderSourceEditor } from '../../../../sourceEditor/shaderSourceEditor';
 
 interface IShaderMaterialPropertyGridComponentProps {
     globalState: GlobalState;
@@ -24,8 +25,7 @@ export class ShaderMaterialPropertyGridComponent extends React.Component<IShader
     }
 
     edit() {
-        // XXX: DEVELOPMENT ONLY!!!
-        (this.props.material as any).edit({ editorURL: '/nodeEditor/babylon.nodeEditor.js' });
+        ShaderSourceEditor.Show({ shaderMaterial: this.props.material });
     }
 
     render() {

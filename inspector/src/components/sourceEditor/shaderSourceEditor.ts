@@ -1,7 +1,49 @@
 import { ShaderMaterial } from "babylonjs/Materials/shaderMaterial";
-import { Popup } from "../sharedComponents/popup";
 import { Observable } from 'babylonjs/Misc/observable';
 import { renderSSE, ShaderSourceRecompileCallback, HistoryDataSource } from './shaderSourceEditorUI';
+
+class Popup {
+    public static CreatePopup(title: string, windowVariableName: string, width = 300, height = 800, inheritStyles = true) {
+        const windowCreationOptionsList = {
+            width: width,
+            height: height,
+            top: (window.innerHeight - width) / 2 + window.screenY,
+            left: (window.innerWidth - height) / 2 + window.screenX
+        };
+
+        var windowCreationOptions = Object.keys(windowCreationOptionsList)
+            .map(
+                (key) => key + '=' + (windowCreationOptionsList as any)[key]
+            )
+            .join(',');
+
+        const popupWindow = window.open("", title, windowCreationOptions);
+        if (!popupWindow) {
+            return null;
+        }
+
+        const parentDocument = popupWindow.document;
+
+        parentDocument.title = title;
+        parentDocument.body.style.width = "100%";
+        parentDocument.body.style.height = "100%";
+        parentDocument.body.style.margin = "0";
+        parentDocument.body.style.padding = "0";
+
+        let parentControl = parentDocument.createElement("div");
+        parentControl.style.width = "100%";
+        parentControl.style.height = "100%";
+        parentControl.style.margin = "0";
+        parentControl.style.padding = "0";
+
+        popupWindow.document.body.appendChild(parentControl);
+
+        (this as any)[windowVariableName] = popupWindow;
+
+        return parentControl;
+    }
+}
+
 
 class SSEState {
     shaderMaterial: ShaderMaterial;
