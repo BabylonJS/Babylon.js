@@ -223,6 +223,7 @@ export class GeometryBufferRenderer {
 
             if (material.bumpTexture && StandardMaterial.BumpTextureEnabled) {
                 defines.push("#define BUMP");
+                defines.push("#define BUMPDIRECTUV 0");
                 needUv = true;
             }
 
