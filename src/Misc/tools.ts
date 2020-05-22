@@ -292,8 +292,10 @@ export class Tools {
             eventPrefix = "mouse";
         }
 
-        // Special Fallback...
-        if (engine._badDesktopOS && !engine._badOS) {
+        // Special Fallback MacOS Safari...
+        if (engine._badDesktopOS && !engine._badOS &&
+            // And not ipad pros who claim to be macs...
+            !(document && 'ontouchend' in document)) {
             eventPrefix = "mouse";
         }
 
