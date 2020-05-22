@@ -25,9 +25,9 @@ export class PlaneDragGizmo extends DraggableGizmo {
 
     /**
      * Creates a PlaneDragGizmo
-     * @param gizmoLayer The utility layer the gizmo will be added to
      * @param dragPlaneNormal The axis normal to which the gizmo will be able to drag on
      * @param color The color of the gizmo
+     * @param gizmoLayer The utility layer the gizmo will be added to
      */
     constructor(dragPlaneNormal: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, parent: Nullable<PositionGizmo> = null) {
         super({ dragPlaneNormal }, color, gizmoLayer, parent);

@@ -44,9 +44,9 @@ export class AxisDragGizmo extends DraggableGizmo {
 
     /**
      * Creates an AxisDragGizmo
-     * @param gizmoLayer The utility layer the gizmo will be added to
      * @param dragAxis The axis which the gizmo will be able to drag on
      * @param color The color of the gizmo
+     * @param gizmoLayer The utility layer the gizmo will be added to
      */
     constructor(dragAxis: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, parent: Nullable<PositionGizmo> = null) {
         super({ dragAxis }, color, gizmoLayer, parent);

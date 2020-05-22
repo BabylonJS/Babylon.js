@@ -14,9 +14,9 @@ import { RotationGizmo } from "./rotationGizmo";
 export class PlaneRotationGizmo extends DraggableGizmo {
     /**
      * Creates a PlaneRotationGizmo
-     * @param gizmoLayer The utility layer the gizmo will be added to
      * @param dragPlaneNormal The normal of the plane which the gizmo will be able to rotate on
      * @param color The color of the gizmo
+     * @param gizmoLayer The utility layer the gizmo will be added to
      * @param tessellation Amount of tessellation to be used when creating rotation circles
      * @param useEulerRotation Use and update Euler angle instead of quaternion
      */

@@ -34,9 +34,10 @@ export class DraggableGizmo extends Gizmo {
     protected _parent: Nullable<Gizmo> = null;
 
     /**
-     * Creates an InteractableGizmo
-     * @param gizmoLayer The utility layer the gizmo will be added to
+     * Creates an instance of a DraggableGizmo
+     * @param dragOptions  Input for PointerDragBehavior
      * @param color The color of the gizmo
+     * @param gizmoLayer The utility layer the gizmo will be added to
      */
     constructor(
         dragOptions: { dragAxis?: Vector3; dragPlaneNormal?: Vector3 },

@@ -115,8 +115,8 @@ export class BoundingBoxGizmo extends Gizmo {
     }
     /**
      * Creates an BoundingBoxGizmo
-     * @param gizmoLayer The utility layer the gizmo will be added to
      * @param color The color of the gizmo
+     * @param gizmoLayer The utility layer the gizmo will be added to
      */
     constructor(color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultKeepDepthUtilityLayer) {
         super(gizmoLayer);
