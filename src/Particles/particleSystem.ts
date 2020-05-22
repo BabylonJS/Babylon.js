@@ -1656,6 +1656,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                     defines.push("#define BILLBOARDSTRETCHED");
                     break;
                 case ParticleSystem.BILLBOARDMODE_ALL:
+                    defines.push("#define BILLBOARDMODE_ALL");
+                    break;
                 default:
                     break;
             }
@@ -1902,11 +1904,16 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             effect.setTexture("rampSampler", this._rampGradientsTexture);
         }
 
+        const defines = effect.defines;
+
         if (this._scene.clipPlane || this._scene.clipPlane2 || this._scene.clipPlane3 || this._scene.clipPlane4 || this._scene.clipPlane5 || this._scene.clipPlane6) {
+            MaterialHelper.BindClipPlane(effect, this._scene);
+        }
+
+        if (defines.indexOf("#define BILLBOARDMODE_ALL") >= 0) {
             var invView = viewMatrix.clone();
             invView.invert();
             effect.setMatrix("invView", invView);
-            MaterialHelper.BindClipPlane(effect, this._scene);
         }
 
         engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
