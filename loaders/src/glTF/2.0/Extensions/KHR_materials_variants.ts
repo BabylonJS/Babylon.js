@@ -122,9 +122,11 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
                             mesh: babylonMesh,
                             materialPromise: Promise.resolve(null)
                         };
-                        meshEntry.materialPromise = this._loader._loadMaterialAsync(`#/materials/${mapping.material}`, material, babylonMesh!, babylonDrawMode, (material) => {
-                            meshEntry.material = material;
-                        });
+                        if (babylonMesh instanceof Mesh) {
+                            meshEntry.materialPromise = this._loader._loadMaterialAsync(`#/materials/${mapping.material}`, material, babylonMesh!, babylonDrawMode, (material) => {
+                                meshEntry.material = material;
+                            });
+                        }
                         tagMapping.push(meshEntry);
                         this._tagsToMap[tag] = tagMapping;
                     });
