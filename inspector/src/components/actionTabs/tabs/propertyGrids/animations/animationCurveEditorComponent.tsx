@@ -46,7 +46,9 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     currentValue: number,
     frameAxisLength: ICanvasAxis[],
     valueAxisLength: ICanvasAxis[],
-    flatTangent: boolean,
+    isFlatTangentMode: boolean,
+    isTangentMode: boolean,
+    isBrokenMode: boolean,
     scale: number,
     playheadOffset: number,
     notification: string,
@@ -81,7 +83,9 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             animationType: "Float",
             currentFrame: 0,
             currentValue: 1,
-            flatTangent: false,
+            isFlatTangentMode: false,
+            isTangentMode: false,
+            isBrokenMode: false,
             playheadOffset: this._graphCanvas.current ? (this._graphCanvas.current.children[1].clientWidth) / (this._canvasLength * 10) : 0,
             frameAxisLength: (new Array(this._canvasLength)).fill(0).map((s, i) => { return { value: i * 10, label: i * 10 } }),
             valueAxisLength: (new Array(10)).fill(0).map((s, i) => { return { value: i * 10, label: valueInd[i] } }),
@@ -135,7 +139,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
     handleNameChange(event: React.ChangeEvent<HTMLInputElement>) {
         event.preventDefault();
-        this.setState({ animationName: event.target.value });
+        this.setState({ animationName: event.target.value.trim() });
     }
 
     handleValueChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -220,35 +224,51 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
                 let startValue;
                 let endValue;
+                let outTangent;
+                let inTangent;
                 // Default start and end values for new animations
                 switch (animationDataType) {
                     case Animation.ANIMATIONTYPE_FLOAT:
                         startValue = 1;
                         endValue = 1;
+                        outTangent = 0;
+                        inTangent = 0;
                         break;
                     case Animation.ANIMATIONTYPE_VECTOR2:
                         startValue = new Vector2(1,1);
                         endValue = new Vector2(1,1);
+                        outTangent = Vector2.Zero();
+                        inTangent = Vector2.Zero();
                         break;
                     case Animation.ANIMATIONTYPE_VECTOR3:
                         startValue = new Vector3(1,1,1);
                         endValue = new Vector3(1,1,1);
+                        outTangent = Vector3.Zero();
+                        inTangent = Vector3.Zero();
                         break;
                     case Animation.ANIMATIONTYPE_QUATERNION:
                         startValue = new Quaternion(1,1,1,1);
                         endValue = new Quaternion(1,1,1,1);
+                        outTangent = Quaternion.Zero();
+                        inTangent = Quaternion.Zero();
                         break;
                     case Animation.ANIMATIONTYPE_COLOR3:
                         startValue = new Color3(1,1,1);
                         endValue = new Color3(1,1,1);
+                        outTangent = new Color3(0,0,0);
+                        inTangent = new Color3(0,0,0);
                         break;
                     case Animation.ANIMATIONTYPE_COLOR4:
                         startValue = new Color4(1,1,1,1);
                         endValue = new Color4(1,1,1,1);
+                        outTangent = new Color4(0,0,0,0);
+                        inTangent = new Color4(0,0,0,0);
                         break;
                     case Animation.ANIMATIONTYPE_SIZE:
                         startValue = new Size(1,1);
                         endValue = new Size(1,1);
+                        outTangent = Size.Zero();
+                        inTangent = Size.Zero();
                         break;
                     default: console.log("not recognized");
                         break;
@@ -260,10 +280,12 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                 var keys = [];
                 keys.push({
                     frame: 0,
-                    value: startValue
+                    value: startValue,
+                    outTangent: outTangent
                 });
 
                 keys.push({
+                    inTangent: inTangent,
                     frame: 100,
                     value: endValue
                 });
@@ -282,6 +304,34 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
     clearNotification() {
         this.setState({ notification: "" });
+    }
+
+    selectKeyframe(id: string){
+        let updatedKeyframes = this.state.svgKeyframes?.map(kf => {
+           if (kf.id === id){
+               kf.selected = !kf.selected
+           } 
+           return kf;
+        });
+        this.setState({ svgKeyframes: updatedKeyframes });
+        
+    }
+
+    selectedControlPoint(type: string, id: string) {
+        let updatedKeyframes = this.state.svgKeyframes?.map(kf => {
+            if (kf.id === id){
+               if (type === "left"){
+                    kf.isLeftActive =  !kf.isLeftActive;
+                    kf.isRightActive = false;
+               }
+               if (type === "right"){
+                    kf.isRightActive =  !kf.isRightActive;
+                    kf.isLeftActive =  false;
+               }
+            } 
+            return kf;
+         });
+         this.setState({ svgKeyframes: updatedKeyframes });
     }
 
     addKeyframeClick() {
@@ -366,6 +416,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             if (i === index) {
                 k.keyframePoint.x = keyframe.x;
                 k.keyframePoint.y = keyframe.y;
+                //select here?
             }
 
             var height = 100;
@@ -406,6 +457,12 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
     getPathData(animation: Animation) {
 
+         // Check if Flat Tangent is active (tangents are set to zero)
+        // Check if Unweighted mode is active (Drag in circle max 90deg - Reflect in opposite point) (selected and opposite tangents move)
+        // Check if Unweighted mode is active and broken mode is active. (Only one tangent moves)
+        // Check if Bezier Mode is active and reflection in opposite point // This assumes somekind of weights... maybe for vNext
+        // Check if Bezier Mode is active and broken active (Full bezier) // This assumes somekind of weights... maybe for vNext
+
         const { easingMode, easingType } = this.getAnimationProperties(animation);
 
         const keyframes = animation.getKeys();
@@ -422,7 +479,8 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         // START OF LINE/CURVE
         let data: string | undefined = `M${startKey.frame}, ${this._heightScale - (startKey.value * middle)}`;
 
-        if (this.state && this.state.flatTangent) {
+        //Refactor this for flat tangents set to Zero
+        if (this.state && this.state.isFlatTangentMode) {
             data = this.curvePathFlat(keyframes, data, middle, animation.dataType);
         } else {
 
@@ -472,11 +530,25 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                 } else {
                     pointA.set(keyframes[i - 1].frame, this._heightScale - (keyframes[i - 1].value * middle));
 
-                    let tangentA = new Vector2(pointA.x + 10, pointA.y);
+                    let defaultWeight = 10;
+
+                    let nextKeyframe = keyframes[i + 1];
+                    let prevKeyframe = keyframes[i - 1];
+                    if (nextKeyframe !== undefined){
+                        let distance = keyframes[i+1].frame - key.frame;
+                        defaultWeight = distance * .33;
+                    } 
+                    
+                    if (prevKeyframe !== undefined) {
+                        let distance = key.frame - keyframes[i-1].frame;
+                        defaultWeight = distance * .33;
+                    }
+
+                    let tangentA = new Vector2(pointA.x + defaultWeight, pointA.y);
 
                     let pointB = new Vector2(key.frame, this._heightScale - (key.value * middle));
 
-                    let tangentB = new Vector2(pointB.x - 10, pointB.y);
+                    let tangentB = new Vector2(pointB.x - defaultWeight, pointB.y);
 
                     this.setKeyframePoint([pointA, tangentA, tangentB, pointB], i, keyframes.length);
 
@@ -549,15 +621,17 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
  
 
-                svgKeyframe = { keyframePoint: new Vector2(key.frame, this._heightScale - (key.value * middle)), rightControlPoint: outTangent, leftControlPoint: null, id: i.toString() }
+                svgKeyframe = { keyframePoint: new Vector2(key.frame, this._heightScale - (key.value * middle)), rightControlPoint: outTangent, leftControlPoint: null, id: i.toString(), selected: false, isLeftActive: false, isRightActive: false }
                 if (outTangent !== null){
                     data += ` C${outTangent.x} ${outTangent.y} `;
                 }
+
+       
                
 
             } else {
 
-                svgKeyframe = { keyframePoint: new Vector2(key.frame, this._heightScale - (key.value * middle)), rightControlPoint: outTangent, leftControlPoint: inTangent, id: i.toString() }
+                svgKeyframe = { keyframePoint: new Vector2(key.frame, this._heightScale - (key.value * middle)), rightControlPoint: outTangent, leftControlPoint: inTangent, id: i.toString(), selected: false, isLeftActive: false, isRightActive: false }
 
                 if (outTangent !== null && inTangent !== null) {
                     data += ` ${inTangent.x} ${inTangent.y} ${svgKeyframe.keyframePoint.x} ${svgKeyframe.keyframePoint.y} C${outTangent.x} ${outTangent.y} `
@@ -566,6 +640,22 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                 }
 
             }
+
+            if (this.state){
+                let prev = this.state.svgKeyframes?.find(kf => kf.id === i.toString());
+                if (prev){
+                svgKeyframe.isLeftActive = prev?.isLeftActive;
+                svgKeyframe.isRightActive = prev?.isRightActive;
+                svgKeyframe.selected = prev?.selected
+                }
+
+
+            }
+                
+
+           
+           
+            
 
             this._svgKeyframes.push(svgKeyframe);
 
@@ -661,9 +751,57 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         keys[index].frame = newFrame; // This value comes as percentage/frame/time
         keys[index].value = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2; // this value comes inverted svg from 0 = 100 to 100 = 0
 
+
+        if (!this.state.isBrokenMode){
+            if (updatedSvgKeyFrame.isLeftActive){
+
+                if (updatedSvgKeyFrame.leftControlPoint !== null) {
+                // Rotate 
+                let updatedValue = ((this._heightScale - updatedSvgKeyFrame.leftControlPoint.y) / this._heightScale) * 2;
+
+                let keyframeValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2;
+
+                keys[index].inTangent = keyframeValue - updatedValue;
+
+                    // Right control point if exists
+                    if (updatedSvgKeyFrame.rightControlPoint !== null)
+                    {
+                        // Sets opposite value
+                        keys[index].outTangent =  keys[index].inTangent * -1
+                    }
+
+                }
+                
+            }
+
+            if (updatedSvgKeyFrame.isRightActive){
+
+                if (updatedSvgKeyFrame.rightControlPoint !== null) {
+                // Rotate 
+                let updatedValue = ((this._heightScale - updatedSvgKeyFrame.rightControlPoint.y) / this._heightScale) * 2;
+
+                let keyframeValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2;
+
+                keys[index].outTangent = keyframeValue - updatedValue;
+
+                    if (updatedSvgKeyFrame.leftControlPoint !== null)
+                    {   // Sets opposite value
+                        keys[index].inTangent =  keys[index].outTangent * -1
+                    }
+
+                }
+                
+            }
+        }
+
+
         animation.setKeys(keys);
 
         this.selectAnimation(animation);
+
+    }
+
+    rotateTangent(direction: number, updatedKeyframe: IKeyframeSvgPoint){
 
     }
 
@@ -684,7 +822,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     }
 
     setKeyframePointLinear(point: Vector2, index: number) {
-        let svgKeyframe = { keyframePoint: point, rightControlPoint: null, leftControlPoint: null, id: index.toString() }
+        let svgKeyframe = { keyframePoint: point, rightControlPoint: null, leftControlPoint: null, id: index.toString(),selected: false, isLeftActive: false, isRightActive: false }
         this._svgKeyframes.push(svgKeyframe);
     }
 
@@ -692,10 +830,10 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
         let svgKeyframe;
         if (index === 0) {
-            svgKeyframe = { keyframePoint: controlPoints[0], rightControlPoint: null, leftControlPoint: null, id: index.toString() }
+            svgKeyframe = { keyframePoint: controlPoints[0], rightControlPoint: null, leftControlPoint: null, id: index.toString(),selected: false, isLeftActive: false, isRightActive: false }
         } else {
             this._svgKeyframes[index - 1].rightControlPoint = controlPoints[1];
-            svgKeyframe = { keyframePoint: controlPoints[3], rightControlPoint: null, leftControlPoint: controlPoints[2], id: index.toString() }
+            svgKeyframe = { keyframePoint: controlPoints[3], rightControlPoint: null, leftControlPoint: controlPoints[2], id: index.toString(),selected: false, isLeftActive: false, isRightActive: false }
         }
 
         this._svgKeyframes.push(svgKeyframe);
@@ -708,6 +846,19 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         } else {
             this._isPlaying = false;
         }
+    }
+
+    setFlatTangent() {
+        this.setState({ isFlatTangentMode: !this.state.isFlatTangentMode }, () => this.selectAnimation(this.state.selected));
+    }
+
+    // Use this for Bezier curve mode
+    setTangentMode(){
+        this.setState({ isTangentMode: !this.state.isTangentMode }, () => this.selectAnimation(this.state.selected));
+    }
+
+    setBrokenMode(){
+        this.setState({ isBrokenMode: !this.state.isBrokenMode }, () => this.selectAnimation(this.state.selected));
     }
 
     selectAnimation(animation: Animation) {
@@ -841,10 +992,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         }
     }
 
-    setFlatTangent() {
-        this.setState({ flatTangent: !this.state.flatTangent }, () => this.selectAnimation(this.state.selected));
-    }
-
     zoom(e: React.WheelEvent<HTMLDivElement>) {
         e.nativeEvent.stopImmediatePropagation();
         console.log(e.deltaY);
@@ -869,7 +1016,15 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                         <FontAwesomeIcon icon={faTimes} />
                     </div>
                 </div>
-                <GraphActionsBar currentValue={this.state.currentValue} currentFrame={this.state.currentFrame} handleFrameChange={(e) => this.handleFrameChange(e)} handleValueChange={(e) => this.handleValueChange(e)} addKeyframe={() => this.addKeyframeClick()} removeKeyframe={() => this.removeKeyframeClick()} flatTangent={() => this.setFlatTangent()} />
+                <GraphActionsBar currentValue={this.state.currentValue} 
+                currentFrame={this.state.currentFrame} 
+                handleFrameChange={(e) => this.handleFrameChange(e)} 
+                handleValueChange={(e) => this.handleValueChange(e)} 
+                addKeyframe={() => this.addKeyframeClick()} 
+                removeKeyframe={() => this.removeKeyframeClick()}
+                brokenMode={this.state.isBrokenMode}
+                brokeTangents={() => this.setBrokenMode()}
+                flatTangent={() => this.setFlatTangent()} />
                 <div className="content">
 
                     <div className="row">
@@ -909,8 +1064,8 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                                         switch(animation.dataType){
                                             case Animation.ANIMATIONTYPE_FLOAT:
                                                 element = <li className={this.state.selected.name === animation.name ? 'active' : ''} key={i} onClick={() => this.selectAnimation(animation)}>
-                                                    {animation.name} 
-                                                    <strong>{animation.targetProperty}</strong>
+                                                    <p>{animation.name}&nbsp;
+                                                    <span>{animation.targetProperty}</span></p>
                                                     </li>
                                                 break;
                                             case Animation.ANIMATIONTYPE_VECTOR2:
@@ -983,7 +1138,12 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
                             <Playhead frame={this.state.currentFrame} offset={this.state.playheadOffset} />
 
-                            {this.state.svgKeyframes && <SvgDraggableArea ref={this._svgCanvas} viewBoxScale={this.state.frameAxisLength.length} scale={this.state.scale} keyframeSvgPoints={this.state.svgKeyframes} updatePosition={(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number) => this.renderPoints(updatedSvgKeyFrame, index)}>
+                            {this.state.svgKeyframes && <SvgDraggableArea ref={this._svgCanvas} 
+                            selectKeyframe={(id: string) => this.selectKeyframe(id)} 
+                            viewBoxScale={this.state.frameAxisLength.length} scale={this.state.scale} 
+                            keyframeSvgPoints={this.state.svgKeyframes} 
+                            selectedControlPoint={(type: string, id: string) => this.selectedControlPoint(type, id)}
+                            updatePosition={(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number) => this.renderPoints(updatedSvgKeyFrame, index)}>
 
                                 {/* Frame Labels  */}
                                 { /* Vertical Grid  */}

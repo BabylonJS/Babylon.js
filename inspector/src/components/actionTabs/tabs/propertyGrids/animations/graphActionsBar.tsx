@@ -8,6 +8,8 @@ interface IGraphActionsBarProps {
    handleValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
    handleFrameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
    flatTangent: () => void;
+   brokeTangents: () => void;
+   brokenMode: boolean;
    currentValue: number;
    currentFrame: number;
 }
@@ -30,7 +32,8 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps>{
                </div>
               <ButtonLineComponent label={"Add Keyframe"} onClick={this.props.addKeyframe} />
               <ButtonLineComponent label={"Remove Keyframe"} onClick={this.props.removeKeyframe} />
-              <ButtonLineComponent label={"Flat Tangent"} onClick={this.props.flatTangent} />
+              <ButtonLineComponent label={"Flat Tangents"} onClick={this.props.flatTangent} />
+              <ButtonLineComponent label={this.props.brokenMode ? "Broken Mode On" : "Broken Mode Off" } onClick={this.props.brokeTangents} />
            </div>
         )
     }
