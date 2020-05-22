@@ -35,7 +35,7 @@ export class ShaderMaterialPropertyGridComponent extends React.Component<IShader
             <div className="pane">
                 <CommonMaterialPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent globalState={this.props.globalState} title="CONFIGURATION">
-                <ButtonLineComponent label="Edit Source" onClick={() => this.edit()} />
+                    <ButtonLineComponent label="Edit Source" onClick={() => this.edit()} />
                 </LineContainerComponent>
             </div>
         );

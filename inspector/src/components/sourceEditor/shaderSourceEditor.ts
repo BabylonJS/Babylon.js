@@ -1,5 +1,6 @@
 import { ShaderMaterial } from "babylonjs/Materials/shaderMaterial";
 import { renderSSE, ShaderSourceRecompileCallback, HistoryDataSource } from './shaderSourceEditorUI';
+import { Inspector } from '../../inspector';
 
 class Popup {
     public static CreatePopup(title: string, windowVariableName: string, width = 300, height = 800) {
@@ -60,20 +61,26 @@ export class ShaderSourceEditor {
             }
         }
 
-        let hostElement = Popup.CreatePopup(
+        const hostDiv = Inspector._CreatePopup(
             "Babylon.js Shader Source Editor",
             "shader-source-editor",
             1000,
             800
-        )!;
+        );
+        if (!hostDiv) {
+            return;
+        }
+        const hostDocument = hostDiv.ownerDocument!;
+        const hostBody = hostDocument.body;
+        hostBody.removeChild(hostDiv);
 
         const globalState = new SSEState();
         globalState.shaderMaterial = options.shaderMaterial;
-        globalState.hostElement = hostElement;
-        globalState.hostDocument = hostElement.ownerDocument!;
-        globalState.hostWindow =  hostElement.ownerDocument!.defaultView!;
+        globalState.hostElement = hostBody;
+        globalState.hostDocument = hostDocument;
+        globalState.hostWindow =  hostDocument.defaultView!;
 
-        this.render(hostElement, options);
+        this.render(hostBody, options);
 
         // Close the popup window when the page is refreshed or scene is disposed
         const popupWindow = (Popup as any)["shader-source-editor"];
