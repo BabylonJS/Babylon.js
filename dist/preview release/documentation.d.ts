@@ -61016,6 +61016,87 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Block used to make gl_FragCoord available
+     */
+    export class FragCoordBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new FragCoordBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the xy component
+         */
+        get xy(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyz component
+         */
+        get xyz(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyzw component
+         */
+        get xyzw(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the x component
+         */
+        get x(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the y component
+         */
+        get y(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the z component
+         */
+        get z(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the w component
+         */
+        get output(): NodeMaterialConnectionPoint;
+        protected writeOutputs(state: NodeMaterialBuildState): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to get the screen sizes
+     */
+    export class ScreenSizeBlock extends NodeMaterialBlock {
+        private _varName;
+        private _scene;
+        /**
+         * Creates a new ScreenSizeBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the xy component
+         */
+        get xy(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the x component
+         */
+        get x(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the y component
+         */
+        get y(): NodeMaterialConnectionPoint;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        protected writeOutputs(state: NodeMaterialBuildState, varName: string): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
      * Block used to add support for scene fog
      */
     export class FogBlock extends NodeMaterialBlock {
