@@ -8,8 +8,7 @@ import { Vector3 } from "../../Maths/math.vector";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Ray } from "../../Culling/ray";
 import { PivotTools } from '../../Misc/pivotTools';
-import { ArcRotateCamera } from '../../Cameras/ArcRotateCamera';
-
+import { ArcRotateCamera } from '../../Cameras/arcRotateCamera';
 import "../../Meshes/Builders/planeBuilder";
 
 /**
