@@ -1,5 +1,5 @@
 import { DeepCopier } from "../../Misc/deepCopier";
-import { Vector3, Matrix } from "../../Maths/math.vector";
+import { Vector3, Matrix, TmpVectors } from "../../Maths/math.vector";
 import { Scalar } from "../../Maths/math.scalar";
 import { Effect } from "../../Materials/effect";
 import { Particle } from "../../Particles/particle";
@@ -83,33 +83,20 @@ export class ConeParticleEmitter implements IParticleEmitterType {
      * @param isLocal defines if the direction should be set in local space
      */
     public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
-        if (Math.abs(Math.cos(this._angle)) === 1.0) {
-            if (isLocal) {
-                directionToUpdate.x = 0;
-                directionToUpdate.y = 1.0;
-                directionToUpdate.z = 0;
-                return;
-            }
-            Vector3.TransformNormalFromFloatsToRef(0, 1.0, 0, worldMatrix, directionToUpdate);
+        if (isLocal) {
+            TmpVectors.Vector3[0].copyFrom(particle._localPosition!).normalize();
         }
         else {
-            // measure the direction Vector from the emitter to the particle.
-            var direction = particle.position.subtract(worldMatrix.getTranslation()).normalize();
-            var randX = Scalar.RandomRange(0, this.directionRandomizer);
-            var randY = Scalar.RandomRange(0, this.directionRandomizer);
-            var randZ = Scalar.RandomRange(0, this.directionRandomizer);
-            direction.x += randX;
-            direction.y += randY;
-            direction.z += randZ;
-            direction.normalize();
-
-            if (isLocal) {
-                directionToUpdate.copyFrom(direction);
-                return;
-            }
-
-            Vector3.TransformNormalFromFloatsToRef(direction.x, direction.y, direction.z, worldMatrix, directionToUpdate);
+            particle.position.subtractToRef(worldMatrix.getTranslation(), TmpVectors.Vector3[0]).normalize();
         }
+
+        var randX = Scalar.RandomRange(0, this.directionRandomizer);
+        var randY = Scalar.RandomRange(0, this.directionRandomizer);
+        var randZ = Scalar.RandomRange(0, this.directionRandomizer);
+        directionToUpdate.x = TmpVectors.Vector3[0].x + randX;
+        directionToUpdate.y = TmpVectors.Vector3[0].y + randY;
+        directionToUpdate.z = TmpVectors.Vector3[0].z + randZ;
+        directionToUpdate.normalize();
     }
 
     /**

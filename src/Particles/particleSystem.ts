@@ -2072,7 +2072,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         result.customShader = program;
         result._customEffect = custom;
 
-        DeepCopier.DeepCopy(this, result, ["particles", "customShader", "noiseTexture", "particleTexture", "onDisposeObservable"]);
+        DeepCopier.DeepCopy(this, result, ["particles", "customShader", "noiseTexture", "particleTexture", "onDisposeObservable", "vertexShaderName"]);
 
         if (newEmitter === undefined) {
             newEmitter = this.emitter;
