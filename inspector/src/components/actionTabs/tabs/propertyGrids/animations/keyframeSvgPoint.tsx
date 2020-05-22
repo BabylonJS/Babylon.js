@@ -34,7 +34,6 @@ export class KeyframeSvgPoint extends React.Component<IKeyframeSvgPointProps>{
         this.props.selectKeyframe(this.props.id);
     }
 
-
     render() {
         return (
             <>
