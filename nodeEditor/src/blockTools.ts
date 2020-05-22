@@ -491,6 +491,11 @@ export class BlockTools {
                 u.setAsAttribute("particle_texturemask");
                 return u;
             }
+            case "ParticlePositionWorldBlock": {
+                let pos = new InputBlock("PositionWorld");
+                pos.setAsAttribute("particle_positionw");
+                return pos;
+            }
             case "ParticleRampGradientBlock":
                 return new ParticleRampGradientBlock("ParticleRampGradient");
             case "ParticleBlendMultiplyBlock":
