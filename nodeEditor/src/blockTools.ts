@@ -77,6 +77,8 @@ import { ParticleTextureBlock } from 'babylonjs/Materials/Node/Blocks/Particle/p
 import { ParticleRampGradientBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleRampGradientBlock';
 import { ParticleBlendMultiplyBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleBlendMultiplyBlock';
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
+import { FragCoordBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragCoordBlock';
+import { ScreenSizeBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/screenSizeBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
@@ -500,6 +502,10 @@ export class BlockTools {
                 return new ParticleRampGradientBlock("ParticleRampGradient");
             case "ParticleBlendMultiplyBlock":
                 return new ParticleBlendMultiplyBlock("ParticleBlendMultiply");
+            case "FragCoordBlock":
+                return new FragCoordBlock("FragCoord");
+            case "ScreenSizeBlock":
+                return new ScreenSizeBlock("ScreenSize");
         }
 
         return null;
