@@ -83,6 +83,7 @@
 - Added support for KHR_materials_ior for glTF loader. ([Sebavan](https://github.com/sebavan/))
 - Added support for KHR_materials_specular for glTF loader. ([Sebavan](https://github.com/sebavan/))
 - Added support for KHR_xmp for glTF loader. ([Sebavan](https://github.com/sebavan/))
+- Added support for KHR_materials_variants for glTF loader. ([MiiBond](https://github.com/MiiBond/))
 
 ### Navigation
 

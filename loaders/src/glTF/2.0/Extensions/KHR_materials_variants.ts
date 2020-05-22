@@ -45,11 +45,19 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
 
     private _loader: GLTFLoader;
 
+    /**
+     * The default variant name.
+     */
     public defaultVariant: string | undefined;
+
+    /**
+     * A list of the available variant names in this asset.
+     */
     public availableVariants: string[];
 
     private _tagsToMap: { [key: string]: VariantMapping[]; } = {};
 
+    /** @hidden */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
@@ -62,6 +70,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
 
     /**
      * Return a list of available variants for this asset.
+     * @returns {string[]}
      */
     public getVariants(): string[] {
         return Object.keys(this._tagsToMap);
