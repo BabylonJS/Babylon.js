@@ -16,7 +16,7 @@ export class AxisDragGizmo extends DraggableGizmo {
     private _arrow: TransformNode;
 
     /** @hidden */
-    public static _CreateArrow(scene: Scene, material?: StandardMaterial): TransformNode {
+    public static _CreateArrow(scene: Scene, material: Nullable<StandardMaterial> = null): TransformNode {
         var arrow = new TransformNode("arrow", scene);
         var cylinder = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0, height: 0.075, diameterBottom: 0.0375, tessellation: 96 }, scene);
         var line = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0.005, height: 0.275, diameterBottom: 0.005, tessellation: 96 }, scene);
@@ -24,7 +24,7 @@ export class AxisDragGizmo extends DraggableGizmo {
         line.parent = arrow;
 
         // Position arrow pointing in its drag axis
-        cylinder.material = material ?? null;
+        cylinder.material = material;
         cylinder.rotation.x = Math.PI / 2;
         cylinder.position.z += 0.3;
         line.position.z += 0.275 / 2;
