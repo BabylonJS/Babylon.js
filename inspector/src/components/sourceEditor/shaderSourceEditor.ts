@@ -2,32 +2,6 @@ import { ShaderMaterial } from "babylonjs/Materials/shaderMaterial";
 import { renderSSE, ShaderSourceRecompileCallback, HistoryDataSource } from './shaderSourceEditorUI';
 import { Inspector } from '../../inspector';
 
-class Popup {
-    public static CreatePopup(title: string, windowVariableName: string, width = 300, height = 800) {
-        const windowCreationOptionsList = {
-            width: width,
-            height: height,
-            top: (window.innerHeight - width) / 2 + window.screenY,
-            left: (window.innerWidth - height) / 2 + window.screenX
-        };
-
-        const windowCreationOptions = Object.keys(windowCreationOptionsList)
-            .map((key) => key + '=' + (windowCreationOptionsList as any)[key])
-            .join(',');
-
-        const popupWindow = window.open("", title, windowCreationOptions);
-        if (!popupWindow) {
-            return null;
-        }
-
-        (this as any)[windowVariableName] = popupWindow;
-
-        const doc = popupWindow.document;
-        doc.title = title;
-        return doc.body;
-    }
-}
-
 class SSEState {
     shaderMaterial: ShaderMaterial;
     hostElement: HTMLElement;
@@ -49,13 +23,15 @@ export interface IShaderSourceEditorOptions {
 export class ShaderSourceEditor {
     private static _CurrentState: SSEState;
 
+    static popupWindow: Window;
+
     /**
      * Show the shader editor
      * @param options defines the options to use to configure the shader editor
      */
     public static Show(options: IShaderSourceEditorOptions) {
         if (this._CurrentState) {
-            const popupWindow = (Popup as any)["shader-source-editor"];
+            const popupWindow = this.popupWindow;
             if (popupWindow) {
                 popupWindow.close();
             }
@@ -78,12 +54,12 @@ export class ShaderSourceEditor {
         globalState.shaderMaterial = options.shaderMaterial;
         globalState.hostElement = hostBody;
         globalState.hostDocument = hostDocument;
-        globalState.hostWindow =  hostDocument.defaultView!;
+        globalState.hostWindow = hostDocument.defaultView!;
 
         this.render(hostBody, options);
 
         // Close the popup window when the page is refreshed or scene is disposed
-        const popupWindow = (Popup as any)["shader-source-editor"];
+        const popupWindow = this.popupWindow;
         if (globalState.shaderMaterial && popupWindow) {
             globalState.shaderMaterial.getScene().onDisposeObservable.addOnce(() => {
                 if (popupWindow) {
@@ -91,7 +67,7 @@ export class ShaderSourceEditor {
                 }
             });
             window.onbeforeunload = () => {
-                var popupWindow = (Popup as any)["shader-source-editor"];
+                var popupWindow = this.popupWindow;
                 if (popupWindow) {
                     popupWindow.close();
                 }
