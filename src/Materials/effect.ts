@@ -219,15 +219,13 @@ export class Effect implements IDisposable {
             this._fallbacks = options.fallbacks;
             this._indexParameters = options.indexParameters;
             this._transformFeedbackVaryings = options.transformFeedbackVaryings || null;
+            isRebuildable = !!options.isRebuildable;
 
             if (options.uniformBuffersNames) {
                 this._uniformBuffersNamesList = options.uniformBuffersNames.slice();
                 for (var i = 0; i < options.uniformBuffersNames.length; i++) {
                     this._uniformBuffersNames[options.uniformBuffersNames[i]] = i;
                 }
-            }
-            if (options.isRebuildable) {
-                isRebuildable = true;
             }
         } else {
             this._engine = <Engine>engine;
@@ -309,7 +307,7 @@ export class Effect implements IDisposable {
     }
 
     private _preprocess(vertexCode: string, fragmentCode: string, baseName: any, preprocessorOptions: ProcessingOptions, callback: (vertex: string, fragment: string) => void) {
-        const options = {...preprocessorOptions};
+        const options = preprocessorOptions;
         options.isFragment = false;
         ShaderProcessor.Process(vertexCode, options, (migratedVertexCode) => {
             options.isFragment = true;
