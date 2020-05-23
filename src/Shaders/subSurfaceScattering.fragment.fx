@@ -1,9 +1,199 @@
 // Samplers
+#include<fibonacci>
+
 varying vec2 vUV;
+varying vec2 texelSize;
 uniform sampler2D textureSampler;
 uniform sampler2D irradianceSampler;
 
+const float LOG2_E = 1.4426950408889634;
+const float PI = 3.1415926535897932;
+const int SSS_PIXELS_PER_SAMPLE = 32;
+const int _SssSampleBudget = 32;
+#define rcp(x) 1. / x
+#define Sq(x) x * x
+
+vec3 EvalBurleyDiffusionProfile(float r, vec3 S)
+{
+    vec3 exp_13 = exp2(((LOG2_E * (-1.0/3.0)) * r) * S); // Exp[-S * r / 3]
+    vec3 expSum = exp_13 * (1. + exp_13 * exp_13);        // Exp[-S * r / 3] + Exp[-S * r]
+
+    return (S * rcp(8. * PI)) * expSum; // S / (8 * Pi) * (Exp[-S * r / 3] + Exp[-S * r])
+}
+
+// https://zero-radiance.github.io/post/sampling-diffusion/
+// Performs sampling of a Normalized Burley diffusion profile in polar coordinates.
+// 'u' is the random number (the value of the CDF): [0, 1).
+// rcp(s) = 1 / ShapeParam = ScatteringDistance.
+// 'r' is the sampled radial distance, s.t. (u = 0 -> r = 0) and (u = 1 -> r = Inf).
+// rcp(Pdf) is the reciprocal of the corresponding PDF value.
+vec2 SampleBurleyDiffusionProfile(float u, float rcpS, out float r, out float rcpPdf)
+{
+    u = 1. - u; // Convert CDF to CCDF
+
+    float g = 1. + (4. * u) * (2. * u + sqrt(1. + (4. * u) * u));
+    float n = exp2(log2(g) * (-1.0/3.0));                    // g^(-1/3)
+    float p = (g * n) * n;                                   // g^(+1/3)
+    float c = 1. + p + n;                                     // 1 + g^(+1/3) + g^(-1/3)
+    float d = (3. / LOG2_E * 2.) + (3. / LOG2_E) * log2(u);     // 3 * Log[4 * u]
+    float x = (3. / LOG2_E) * log2(c) - d;                    // 3 * Log[c / (4 * u)]
+
+    // x      = s * r
+    // exp_13 = Exp[-x/3] = Exp[-1/3 * 3 * Log[c / (4 * u)]]
+    // exp_13 = Exp[-Log[c / (4 * u)]] = (4 * u) / c
+    // exp_1  = Exp[-x] = exp_13 * exp_13 * exp_13
+    // expSum = exp_1 + exp_13 = exp_13 * (1 + exp_13 * exp_13)
+    // rcpExp = rcp(expSum) = c^3 / ((4 * u) * (c^2 + 16 * u^2))
+    float rcpExp = ((c * c) * c) * rcp((4. * u) * ((c * c) + (4. * u) * (4. * u)));
+
+    float r = x * rcpS;
+    float rcpPdf = (8. * PI * rcpS) * rcpExp; // (8 * Pi) / s / (Exp[-s * r / 3] + Exp[-s * r])
+
+    return vec2(r, rcpPdf);
+}
+
+
 void main(void) 
 {
-	gl_FragColor = mix(texture2D(textureSampler, vUV), texture2D(irradianceSampler, vUV), 0.5);
+	vec3 centerIrradiance  = texture2D(irradianceSampler, vUV).rgb;
+	float  centerDepth       = 0.;
+	bool   passedStencilTest = true; //TestLightingForSSS(centerIrradiance);
+
+	if (passedStencilTest)
+	{
+	    centerDepth = 0.; //texture2D(depthSampler, vUV).r; -> NDC !
+	}
+
+    if (!passedStencilTest) { return; }
+
+	int    profileIndex  = 0; //sssData.diffusionProfileIndex;
+	float  distScale     = 0.; //sssData.subsurfaceMask;
+	vec3 S             = vec3(1.); //_ShapeParamsAndMaxScatterDists[profileIndex].rgb; -> diffusion color
+	float  d             = 0.5; //_ShapeParamsAndMaxScatterDists[profileIndex].a; -> max scatter dist
+	float  metersPerUnit = 1.; //_WorldScalesAndFilterRadiiAndThicknessRemaps[profileIndex].x;
+	float  filterRadius  = 0.5; //_WorldScalesAndFilterRadiiAndThicknessRemaps[profileIndex].y; // In millimeters
+
+	// Reconstruct the view-space position corresponding to the central sample.
+	vec2 centerPosNDC = vUV;
+	vec2 cornerPosNDC = vUV + 0.5 * texelSize;
+	vec3 centerPosVS  = vec3(0.); // TODO -> ComputeViewSpacePosition(centerPosNDC, centerDepth, UNITY_MATRIX_I_P);
+	vec3 cornerPosVS  = vec3(0.); // TODO -> ComputeViewSpacePosition(cornerPosNDC, centerDepth, UNITY_MATRIX_I_P);
+
+	// Rescaling the filter is equivalent to inversely scaling the world.
+	float mmPerUnit  = 1000. * (metersPerUnit * rcp(distScale));
+	float unitsPerMm = rcp(mmPerUnit);
+
+	// Compute the view-space dimensions of the pixel as a quad projected onto geometry.
+	// Assuming square pixels, both X and Y are have the same dimensions.
+	float unitsPerPixel = 2 * abs(cornerPosVS.x - centerPosVS.x);
+	float pixelsPerMm   = rcp(unitsPerPixel) * unitsPerMm;
+
+	// Area of a disk.
+	float filterArea   = PI * Sq(filterRadius * pixelsPerMm);
+	int  sampleCount  = (int)(filterArea * rcp(SSS_PIXELS_PER_SAMPLE));
+	int  sampleBudget = _SssSampleBudget;
+
+	int   texturingMode = 0; // GetSubsurfaceScatteringTexturingMode(profileIndex);
+	vec3 albedo  = vec3(1.) // texture2D(albedoSampler, vUV); //ApplySubsurfaceScatteringTexturingMode(texturingMode, sssData.diffuseColor);
+
+	if (distScale == 0. || sampleCount < 1)
+	{
+	    gl_FragColor = vec4(albedo * centerIrradiance, 1.0);
+	}
+
+	// TODO : TANGENT PLANE
+	vec3 normalVS = vec3(0., 0., 0.);
+    vec3 tangentX = vec3(0., 0., 0.);
+    vec3 tangentY = vec3(0., 0., 0.);
+
+    // TODO : RANDOM ROTATION
+    float phase = 0.;
+
+    int n = min(sampleCount, sampleBudget);
+
+    // Accumulate filtered irradiance and bilateral weights (for renormalization).
+    vec3 centerWeight    = vec3(0.); // Defer (* albedo)
+    vec3 totalIrradiance = vec3(0.);
+    vec3 totalWeight     = vec3(0.);
+
+    for (int i = 0; i < n; i++)
+    {
+        // Integrate over the image or tangent plane in the view space.
+        EvaluateSample(i, n, S, d, centerPosVS, mmPerUnit, pixelsPerMm,
+                       phase, tangentX, tangentY, projMatrix,
+                       totalIrradiance, totalWeight);
+    }
+
+    // Total weight is 0 for color channels without scattering.
+    totalWeight = max(totalWeight, 1e-12);
+
+    gl_FragColor = vec4(albedo * (totalIrradiance / totalWeight), 1.);
+
+	// gl_FragColor = mix(texture2D(textureSampler, vUV), centerIrradiance, 0.5);
+}
+
+void EvaluateSample(uint i, uint n, vec3 S, float d, vec3 centerPosVS, float mmPerUnit, float pixelsPerMm,
+                    float phase, vec3 tangentX, vec3 tangentY, mat projMatrix,
+                    inout vec3 totalIrradiance, inout vec3 totalWeight)
+{
+    // The sample count is loop-invariant.
+    const float scale  = rcp(n);
+    const float offset = rcp(n) * 0.5;
+
+    // The phase angle is loop-invariant.
+    float sinPhase, cosPhase;
+    sinPhase = sin(phase);
+    cosPhase = cos(phase);
+
+    vec2 bdp = SampleBurleyDiffusionProfile(i * scale + offset, d, );
+    float r = bdp.x;
+    float rcpPdf = bdp.y;
+
+    float phi = SampleDiskGolden(i, n).y;
+    float sinPhi, cosPhi;
+    sinPhi = sin(phi);
+    cosPhi = cos(phi);
+
+    float sinPsi = cosPhase * sinPhi + sinPhase * cosPhi; // sin(phase + phi)
+    float cosPsi = cosPhase * cosPhi - sinPhase * sinPhi; // cos(phase + phi)
+
+    vec2 vec = r * vec2(cosPsi, sinPsi);
+
+    // Compute the screen-space position and the squared distance (in mm) in the image plane.
+    vec2 position; 
+    float xy2;
+
+    // TODO : TANGENT PLANE
+    // floor((vUV + 0.5) + vec * pixelsPerMm)
+    // position = vUV + floor(0.5 + vec * pixelsPerMm);
+    // position = vUV + round(vec * pixelsPerMm);
+    // Note that (int) truncates towards 0, while floor() truncates towards -Inf!
+
+    position = vUV + (int2)round((pixelsPerMm * r) * vec2(cosPsi, sinPsi)) / texelSize;
+    xy2      = r * r;
+
+    vec4 textureSample = sampler2D(irradianceSampler, position);
+    vec3 irradiance    = textureSample.rgb;
+
+    // Check the results of the stencil test.
+    if (true) //TestLightingForSSS(irradiance))
+    {
+        // Apply bilateral weighting.
+        // float  viewZ  = textureSample.a;
+        // float  relZ   = viewZ - centerPosVS.z;
+        vec3 weight = vec3(1.); //ComputeBilateralWeight(xy2, relZ, mmPerUnit, S, rcpPdf);
+
+        // Note: if the texture sample if off-screen, (z = 0) -> (viewZ = far) -> (weight ≈ 0).
+        totalIrradiance += weight * irradiance;
+        totalWeight     += weight;
+    }
+    else
+    {
+        // The irradiance is 0. This could happen for 2 reasons.
+        // Most likely, the surface fragment does not have an SSS material.
+        // Alternatively, our sample comes from a region without any geometry.
+        // Our blur is energy-preserving, so 'centerWeight' should be set to 0.
+        // We do not terminate the loop since we want to gather the contribution
+        // of the remaining samples (e.g. in case of hair covering skin).
+    }
 }
