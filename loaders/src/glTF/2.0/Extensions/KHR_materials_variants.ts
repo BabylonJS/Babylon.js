@@ -22,6 +22,9 @@ interface IKHRMaterialVariantsTop {
     default?: string;
 }
 
+/**
+ * Interface for the mapping from variant tag name to a mesh and material.
+ */
 interface VariantMapping {
     mesh: AbstractMesh;
     materialPromise: Promise<Nullable<Material>>;
@@ -50,11 +53,6 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
      */
     public defaultVariant: string | undefined;
 
-    /**
-     * A list of the available variant names in this asset.
-     */
-    public availableVariants: string[];
-
     private _tagsToMap: { [key: string]: VariantMapping[]; } = {};
 
     /** @hidden */
@@ -78,6 +76,8 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
 
     /**
      * Select a variant by providing a list of variant tag names.
+     *
+     * @param {(string | string[])} variantName
      */
     public selectVariant(variantName: string | string[]) {
         if (variantName instanceof Array) {
@@ -89,6 +89,8 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
 
     /**
      * Select a variant by providing a single variant tag.
+     *
+     * @param {string} variantName
      */
     public selectVariantTag(variantName: string) {
         // If the name is valid, switch all meshes to use materials defined by the tags
