@@ -23,6 +23,7 @@ import { Texture } from "./Materials/Textures/texture";
 import { RenderTargetTexture } from "./Materials/Textures/renderTargetTexture";
 import { MultiRenderTarget } from "./Materials/Textures/multiRenderTarget";
 import { SceneCompositorPostProcess } from "./PostProcesses/sceneCompositorPostProcess";
+import { SubSurfaceScatteringPostProcess } from "./PostProcesses/subSurfaceScatteringPostProcess";
 import { Material } from "./Materials/material";
 import { ImageProcessingConfiguration } from "./Materials/imageProcessingConfiguration";
 import { Effect } from "./Materials/effect";
@@ -256,6 +257,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     public highDefinitionMRT: MultiRenderTarget;
     public sceneCompositorPostProcess: SceneCompositorPostProcess;
+    public subSurfaceScatteringPostProcess: SubSurfaceScatteringPostProcess;
 
     private _forceWireframe = false;
     /**
@@ -1445,6 +1447,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         this.highDefinitionMRT.samples = 1;
         this.sceneCompositorPostProcess = new SceneCompositorPostProcess("sceneCompositor", 1, null, undefined, this._engine);
         this.sceneCompositorPostProcess.inputTexture = this.highDefinitionMRT.getInternalTexture()!;
+        this.subSurfaceScatteringPostProcess = new SubSurfaceScatteringPostProcess("subSurfaceScattering", this, 1, null, undefined, this._engine);
     }
 
     /**
@@ -3787,7 +3790,12 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         if (this.highDefinitionPipeline) {
             // this.sceneCompositorPostProcess.activate(this.activeCamera);
-            this.postProcessManager.directRender([this.sceneCompositorPostProcess]);
+            this.sceneCompositorPostProcess.autoClear = false;
+            this.sceneCompositorPostProcess.activate(this.activeCamera);
+            this.subSurfaceScatteringPostProcess.activate(this.activeCamera);
+            this.postProcessManager.directRender([this.sceneCompositorPostProcess], this.subSurfaceScatteringPostProcess.inputTexture);
+            // this.getEngine().restoreDefaultFramebuffer(); // Restore back buffer if needed
+            this.postProcessManager.directRender([this.subSurfaceScatteringPostProcess]);
         }
 
         // Finalize frame
