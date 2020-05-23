@@ -606,7 +606,8 @@ export class ShaderMaterial extends Material {
                 fallbacks: fallbacks,
                 onCompiled: this.onCompiled,
                 onError: this.onError,
-                indexParameters: { maxSimultaneousMorphTargets: numInfluencers }
+                indexParameters: { maxSimultaneousMorphTargets: numInfluencers },
+                isRebuildable: true,
             }, engine);
 
             if (this._onEffectCreatedObservable) {

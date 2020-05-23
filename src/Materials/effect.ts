@@ -10,6 +10,7 @@ import { ShaderProcessor } from '../Engines/Processors/shaderProcessor';
 import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from '../Maths/math.like';
 import { ThinEngine } from '../Engines/thinEngine';
 import { IEffectFallbacks } from './iEffectFallbacks';
+import { ProcessingOptions } from '../Engines/Processors';
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -65,6 +66,11 @@ export interface IEffectCreationOptions {
      * See https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/transformFeedbackVaryings
      */
     transformFeedbackVaryings?: Nullable<string[]>;
+    /**
+     * If `true` the effect provides a `rebuild` method to change its code after
+     * creation.
+     */
+    isRebuildable?: boolean;
 }
 
 /**
@@ -161,9 +167,17 @@ export class Effect implements IDisposable {
     private _fragmentSourceCode: string = "";
     private _vertexSourceCodeOverride: string = "";
     private _fragmentSourceCodeOverride: string = "";
+    private _transformFeedbackVaryings: Nullable<string[]> = null;
+
+    private _rebuildBaseName: any;
+    private _rebuildOptions: ProcessingOptions;
+    /** `true` if shader can be rebuilt with the `rebuild` method. */
+    get isRebuildable(): boolean {
+        return this._rebuildOptions != null;
+    }
     private _originalVertexSourceCode: string = "";
     private _originalFragmentSourceCode: string = "";
-    private _transformFeedbackVaryings: Nullable<string[]> = null;
+
     /**
      * Compiled shader to webGL program.
      * @hidden
@@ -191,6 +205,7 @@ export class Effect implements IDisposable {
         fallbacks: Nullable<IEffectFallbacks> = null, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, indexParameters?: any) {
         this.name = baseName;
 
+        let isRebuildable = false;
         if ((<IEffectCreationOptions>attributesNamesOrOptions).attributes) {
             var options = <IEffectCreationOptions>attributesNamesOrOptions;
             this._engine = <Engine>uniformsNamesOrEngine;
@@ -210,6 +225,9 @@ export class Effect implements IDisposable {
                 for (var i = 0; i < options.uniformBuffersNames.length; i++) {
                     this._uniformBuffersNames[options.uniformBuffersNames[i]] = i;
                 }
+            }
+            if (options.isRebuildable) {
+                isRebuildable = true;
             }
         } else {
             this._engine = <Engine>engine;
@@ -272,32 +290,47 @@ export class Effect implements IDisposable {
             platformName: this._engine.webGLVersion >= 2 ? "WEBGL2" : "WEBGL1"
         };
 
+        if (isRebuildable) {
+            this._rebuildBaseName = baseName;
+            this._rebuildOptions = processorOptions;
+        }
+
         this._loadShader(vertexSource, "Vertex", "", (vertexCode) => {
             this._loadShader(fragmentSource, "Fragment", "Pixel", (fragmentCode) => {
                 this._originalVertexSourceCode = vertexCode;
                 this._originalFragmentSourceCode = fragmentCode;
-                ShaderProcessor.Process(vertexCode, processorOptions, (migratedVertexCode) => {
-                    processorOptions.isFragment = true;
-                    ShaderProcessor.Process(fragmentCode, processorOptions, (migratedFragmentCode) => {
-                        this._useFinalCode(migratedVertexCode, migratedFragmentCode, baseName);
-                    });
+                this._preprocess(vertexCode, fragmentCode, baseName, processorOptions, (finalVertexCode, finalFragmentCode) => {
+                    this._vertexSourceCode = finalVertexCode;
+                    this._fragmentSourceCode = finalFragmentCode;
+                    this._prepareEffect();
                 });
             });
         });
     }
 
-    private _useFinalCode(migratedVertexCode: string, migratedFragmentCode: string, baseName: any) {
+    private _preprocess(vertexCode: string, fragmentCode: string, baseName: any, preprocessorOptions: ProcessingOptions, callback: (vertex: string, fragment: string) => void) {
+        const options = {...preprocessorOptions};
+        options.isFragment = false;
+        ShaderProcessor.Process(vertexCode, options, (migratedVertexCode) => {
+            options.isFragment = true;
+            ShaderProcessor.Process(fragmentCode, options, (migratedFragmentCode) => {
+                this._useFinalCode(migratedVertexCode, migratedFragmentCode, baseName, callback);
+            });
+        });
+    }
+
+    private _useFinalCode(migratedVertexCode: string, migratedFragmentCode: string, baseName: any, callback: (vertex: string, fragment: string) => void) {
         if (baseName) {
             var vertex = baseName.vertexElement || baseName.vertex || baseName.spectorName || baseName;
             var fragment = baseName.fragmentElement || baseName.fragment || baseName.spectorName || baseName;
 
-            this._vertexSourceCode = "#define SHADER_NAME vertex:" + vertex + "\n" + migratedVertexCode;
-            this._fragmentSourceCode = "#define SHADER_NAME fragment:" + fragment + "\n" + migratedFragmentCode;
+            callback(
+                "#define SHADER_NAME vertex:" + vertex + "\n" + migratedVertexCode,
+                "#define SHADER_NAME fragment:" + fragment + "\n" + migratedFragmentCode
+            );
         } else {
-            this._vertexSourceCode = migratedVertexCode;
-            this._fragmentSourceCode = migratedFragmentCode;
+            callback(migratedVertexCode, migratedFragmentCode);
         }
-        this._prepareEffect();
     }
 
     /**
@@ -559,7 +592,24 @@ export class Effect implements IDisposable {
     }
 
     /**
-     * Recompiles the webGL program
+     * Rebuilds the webGL program
+     * @param vertexSourceCode The source code for the vertex shader.
+     * @param fragmentSourceCode The source code for the fragment shader.
+     * @param onCompiled Callback called when completed.
+     * @param onError Callback called on error.
+     */
+    public rebuild(vertexCode: string, fragmentCode: string, onCompiled: (pipelineContext: IPipelineContext) => void, onError: (message: string) => void) {
+        if (!this.isRebuildable) {
+            throw new Error("Effect is not rebuildable. Try setting isRebuildable to true in Effect constructor.");
+        }
+        this._preprocess(vertexCode, fragmentCode, this._rebuildBaseName, this._rebuildOptions, (vertex: string, fragment: string) => {
+            this._rebuildProgram(vertexCode, fragmentCode, onCompiled, onError);
+        });
+    }
+
+    /**
+     * Recompiles the webGL program. Unlike `rebuild` this method expects already
+     * preprocessed inputs.
      * @param vertexSourceCode The source code for the vertex shader.
      * @param fragmentSourceCode The source code for the fragment shader.
      * @param onCompiled Callback called when completed.
