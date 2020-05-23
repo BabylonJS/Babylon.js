@@ -1,4 +1,4 @@
-﻿#if defined(BUMP) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC)
+#if defined(BUMP) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC)
 #extension GL_OES_standard_derivatives : enable
 #endif
 
@@ -487,16 +487,26 @@ void main(void) {
 
     #include<pbrBlockFinalColorComposition>
 
-        #include<logDepthFragment>
+        #include<logDepthFragment>yes 
     #include<fogFragment>(color, finalColor)
 
     #include<pbrBlockImageProcessing>
 
 
 #ifdef HIGH_DEFINITION_PIPELINE
+    vec3 irradiance = finalDiffuse;
+    #ifndef UNLIT
+        #ifdef REFLECTION
+            irradiance += finalIrradiance;
+        #endif
+    #endif
+    // finalDiffuse and finalIrradiance are already multiplied by surfaceAlbedo
+    // What about :
+    // Lightmaps ? (can we consider them as pure diffuse ?)
+    // AO and shadows, should they dim the diffuseLight ? (right now they are)
     gl_FragData[0] = finalColor;
-    gl_FragData[1] = vec4(1.0, 0.0, 0.0, 1.0);
-    gl_FragData[2] = vec4(1.0, 0.0, 0.0, 1.0);
+    gl_FragData[1] = vec4(irradiance, 1.0);
+    gl_FragData[2] = vec4(0.0, 1.0, 0.0, 1.0);
     gl_FragData[3] = vec4(1.0, 0.0, 0.0, 1.0);
     gl_FragData[4] = vec4(1.0, 0.0, 0.0, 1.0);
 #else
