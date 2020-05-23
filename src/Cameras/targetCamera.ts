@@ -312,11 +312,19 @@ export class TargetCamera extends Camera {
 
         // Rotate
         if (needToRotate) {
+            //rotate, if quaternion is set and rotation was used
+            if (this.rotationQuaternion) {
+                this.rotationQuaternion.toEulerAnglesToRef(this.rotation);
+            }
+
             this.rotation.x += this.cameraRotation.x * directionMultiplier;
             this.rotation.y += this.cameraRotation.y * directionMultiplier;
 
+            console.log(this.cameraRotation);
+
             //rotate, if quaternion is set and rotation was used
             if (this.rotationQuaternion) {
+                console.log("rotationQuaternion", this.rotation);
                 var len = this.rotation.lengthSquared();
                 if (len) {
                     Quaternion.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this.rotationQuaternion);
