@@ -66,9 +66,21 @@ void main(void)
 
     if (!passedStencilTest) { return; }
 
-	int    profileIndex  = 0; //sssData.diffusionProfileIndex;
-	float  distScale     = 0.; //sssData.subsurfaceMask;
-	vec3 S             = vec3(1.); //_ShapeParamsAndMaxScatterDists[profileIndex].rgb; -> diffusion color
+
+    // SKIN DIFFUSION PROFILE
+    // profile:
+    //   name: Skin
+    //   scatteringDistance: {r: 0.7568628, g: 0.32156864, b: 0.20000002, a: 1}
+    //   transmissionTint: {r: 0.7568628, g: 0.32156864, b: 0.20000002, a: 1}
+    //   texturingMode: 0
+    //   transmissionMode: 0
+    //   thicknessRemap: {x: 0, y: 8.152544}
+    //   worldScale: 1
+    //   ior: 1.4
+    //   hash: 1075477546
+
+	float  distScale     = 1.; //sssData.subsurfaceMask;
+	vec3 S             = vec3(0.7568628, 0.32156864, 0.20000002); //_ShapeParamsAndMaxScatterDists[profileIndex].rgb; -> diffusion color
 	float  d             = 0.5; //_ShapeParamsAndMaxScatterDists[profileIndex].a; -> max scatter dist
 	float  metersPerUnit = 1.; //_WorldScalesAndFilterRadiiAndThicknessRemaps[profileIndex].x;
 	float  filterRadius  = 0.5; //_WorldScalesAndFilterRadiiAndThicknessRemaps[profileIndex].y; // In millimeters
@@ -145,7 +157,7 @@ void EvaluateSample(uint i, uint n, vec3 S, float d, vec3 centerPosVS, float mmP
     sinPhase = sin(phase);
     cosPhase = cos(phase);
 
-    vec2 bdp = SampleBurleyDiffusionProfile(i * scale + offset, d, );
+    vec2 bdp = SampleBurleyDiffusionProfile(i * scale + offset, d);
     float r = bdp.x;
     float rcpPdf = bdp.y;
 
