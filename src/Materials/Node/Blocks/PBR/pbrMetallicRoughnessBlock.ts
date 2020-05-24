@@ -29,6 +29,7 @@ import { ClearCoatBlock } from './clearCoatBlock';
 import { SubSurfaceBlock } from './subSurfaceBlock';
 import { RefractionBlock } from './refractionBlock';
 import { PerturbNormalBlock } from '../Fragment/perturbNormalBlock';
+import { Constants } from '../../../../Engines/constants';
 
 const mapOutputToVariable: { [name: string] : [string, string] } = {
     "ambient":      ["finalAmbient", ""],
@@ -193,6 +194,22 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
      */
     @editableInPropertyPage("Specular anti-aliasing", PropertyTypeForEdition.Boolean, "RENDERING", { "notifiers": { "update": true }})
     public enableSpecularAntiAliasing: boolean = false;
+
+    /**
+     * Enables realtime filtering on the texture.
+     */
+    @editableInPropertyPage("Realtime filtering", PropertyTypeForEdition.Boolean, "RENDERING", { "notifiers": { "update": true }})
+    public realTimeFiltering: boolean = false;
+
+    /**
+     * Quality switch for realtime filtering
+     */
+    @editableInPropertyPage("Realtime filtering quality", PropertyTypeForEdition.List, "RENDERING", { "notifiers": { "update": true }, "options": [
+        { label: "Low", value: Constants.TEXTURE_FILTERING_QUALITY_LOW },
+        { label: "Medium", value: Constants.TEXTURE_FILTERING_QUALITY_MEDIUM },
+        { label: "High", value: Constants.TEXTURE_FILTERING_QUALITY_HIGH },
+    ]})
+    public realTimeFilteringQuality = Constants.TEXTURE_FILTERING_QUALITY_LOW;
 
     /**
      * Defines if the material uses energy conservation.
@@ -606,6 +623,12 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         defines.setValue("RADIANCEOVERALPHA", this.useRadianceOverAlpha, true);
         defines.setValue("SPECULAROVERALPHA", this.useSpecularOverAlpha, true);
         defines.setValue("SPECULARAA", this._scene.getEngine().getCaps().standardDerivatives && this.enableSpecularAntiAliasing, true);
+        defines.setValue("REALTIME_FILTERING", this.realTimeFiltering, true);
+        defines.setValue("NUM_SAMPLES", "" + this.realTimeFilteringQuality, true);
+
+        if (this._scene.getEngine().webGLVersion > 1) {
+            defines.setValue("NUM_SAMPLES", this.realTimeFilteringQuality + "u", true);
+        }
 
         // Advanced
         defines.setValue("BRDF_V_HEIGHT_CORRELATED", true);
@@ -834,6 +857,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         }
 
         state._emitFunctionFromInclude("helperFunctions", comments);
+        state._emitFunctionFromInclude("importanceSampling", comments);
         state._emitFunctionFromInclude("pbrHelperFunctions", comments);
         state._emitFunctionFromInclude("imageProcessingFunctions", comments);
 
@@ -851,6 +875,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         state._emitFunctionFromInclude("pbrDirectLightingFalloffFunctions", comments);
         state._emitFunctionFromInclude("pbrBRDFFunctions", comments);
+        state._emitFunctionFromInclude("hdrFilteringFunctions", comments);
 
         state._emitFunctionFromInclude("pbrDirectLightingFunctions", comments, {
             replaceStrings: [
@@ -958,6 +983,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 { search: /REFLECTIONMAP_SKYBOX/g, replace: reflectionBlock?._defineSkyboxName ?? "REFLECTIONMAP_SKYBOX" },
                 { search: /LODINREFLECTIONALPHA/g, replace: reflectionBlock?._defineLODReflectionAlpha ?? "LODINREFLECTIONALPHA" },
                 { search: /LINEARSPECULARREFLECTION/g, replace: reflectionBlock?._defineLinearSpecularReflection ?? "LINEARSPECULARREFLECTION" },
+                { search: /vReflectionFilteringInfo/g, replace: reflectionBlock?._vReflectionFilteringInfoName ?? "vReflectionFilteringInfo" },
             ]
         });
 
@@ -1130,6 +1156,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         codeString += `${this._codeVariableName}.useRadianceOverAlpha = ${this.useRadianceOverAlpha};\r\n`;
         codeString += `${this._codeVariableName}.useSpecularOverAlpha = ${this.useSpecularOverAlpha};\r\n`;
         codeString += `${this._codeVariableName}.enableSpecularAntiAliasing = ${this.enableSpecularAntiAliasing};\r\n`;
+        codeString += `${this._codeVariableName}.realTimeFiltering = ${this.realTimeFiltering};\r\n`;
+        codeString += `${this._codeVariableName}.realTimeFilteringQuality = ${this.realTimeFilteringQuality};\r\n`;
         codeString += `${this._codeVariableName}.useEnergyConservation = ${this.useEnergyConservation};\r\n`;
         codeString += `${this._codeVariableName}.useRadianceOcclusion = ${this.useRadianceOcclusion};\r\n`;
         codeString += `${this._codeVariableName}.useHorizonOcclusion = ${this.useHorizonOcclusion};\r\n`;
@@ -1158,6 +1186,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         serializationObject.useRadianceOverAlpha = this.useRadianceOverAlpha;
         serializationObject.useSpecularOverAlpha = this.useSpecularOverAlpha;
         serializationObject.enableSpecularAntiAliasing = this.enableSpecularAntiAliasing;
+        serializationObject.realTimeFiltering = this.realTimeFiltering;
+        serializationObject.realTimeFilteringQuality = this.realTimeFilteringQuality;
         serializationObject.useEnergyConservation = this.useEnergyConservation;
         serializationObject.useRadianceOcclusion = this.useRadianceOcclusion;
         serializationObject.useHorizonOcclusion = this.useHorizonOcclusion;
@@ -1186,6 +1216,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this.useRadianceOverAlpha = serializationObject.useRadianceOverAlpha;
         this.useSpecularOverAlpha = serializationObject.useSpecularOverAlpha;
         this.enableSpecularAntiAliasing = serializationObject.enableSpecularAntiAliasing;
+        this.realTimeFiltering = !!serializationObject.realTimeFiltering;
+        this.realTimeFilteringQuality = serializationObject.realTimeFilteringQuality ?? Constants.TEXTURE_FILTERING_QUALITY_LOW;
         this.useEnergyConservation = serializationObject.useEnergyConservation;
         this.useRadianceOcclusion = serializationObject.useRadianceOcclusion;
         this.useHorizonOcclusion = serializationObject.useHorizonOcclusion;
