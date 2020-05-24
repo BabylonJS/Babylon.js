@@ -6,10 +6,14 @@ varying vec2 texelSize;
 uniform sampler2D textureSampler;
 uniform sampler2D irradianceSampler;
 
+uniform float filterRadius;
+uniform vec2 viewportSize;
+
 const float LOG2_E = 1.4426950408889634;
 const float PI = 3.1415926535897932;
-const int SSS_PIXELS_PER_SAMPLE = 32;
+const int SSS_PIXELS_PER_SAMPLE = 1;
 const int _SssSampleBudget = 32;
+
 #define rcp(x) 1. / x
 #define Sq(x) x * x
 
@@ -27,7 +31,7 @@ vec3 EvalBurleyDiffusionProfile(float r, vec3 S)
 // rcp(s) = 1 / ShapeParam = ScatteringDistance.
 // 'r' is the sampled radial distance, s.t. (u = 0 -> r = 0) and (u = 1 -> r = Inf).
 // rcp(Pdf) is the reciprocal of the corresponding PDF value.
-vec2 SampleBurleyDiffusionProfile(float u, float rcpS, out float r, out float rcpPdf)
+vec2 SampleBurleyDiffusionProfile(float u, float rcpS)
 {
     u = 1. - u; // Convert CDF to CCDF
 
@@ -79,17 +83,17 @@ void main(void)
     //   ior: 1.4
     //   hash: 1075477546
 
+    // TODO : uniforms
 	float  distScale     = 1.; //sssData.subsurfaceMask;
 	vec3 S             = vec3(0.7568628, 0.32156864, 0.20000002); //_ShapeParamsAndMaxScatterDists[profileIndex].rgb; -> diffusion color
-	float  d             = 0.5; //_ShapeParamsAndMaxScatterDists[profileIndex].a; -> max scatter dist
-	float  metersPerUnit = 1.; //_WorldScalesAndFilterRadiiAndThicknessRemaps[profileIndex].x;
-	float  filterRadius  = 0.5; //_WorldScalesAndFilterRadiiAndThicknessRemaps[profileIndex].y; // In millimeters
+	float  d             = 0.7568628; //_ShapeParamsAndMaxScatterDists[profileIndex].a; -> max scatter dist
+	float  metersPerUnit = 0.01; //_WorldScalesAndFilterRadiiAndThicknessRemaps[profileIndex].x;
 
 	// Reconstruct the view-space position corresponding to the central sample.
 	vec2 centerPosNDC = vUV;
 	vec2 cornerPosNDC = vUV + 0.5 * texelSize;
-	vec3 centerPosVS  = vec3(0.); // TODO -> ComputeViewSpacePosition(centerPosNDC, centerDepth, UNITY_MATRIX_I_P);
-	vec3 cornerPosVS  = vec3(0.); // TODO -> ComputeViewSpacePosition(cornerPosNDC, centerDepth, UNITY_MATRIX_I_P);
+	vec3 centerPosVS  = vec3(centerPosNDC * viewportSize, 1.0) * centerDepth; // ComputeViewSpacePosition(centerPosNDC, centerDepth, UNITY_MATRIX_I_P);
+	vec3 cornerPosVS  = vec3(cornerPosNDC * viewportSize, 1.0) * centerDepth; // ComputeViewSpacePosition(cornerPosNDC, centerDepth, UNITY_MATRIX_I_P);
 
 	// Rescaling the filter is equivalent to inversely scaling the world.
 	float mmPerUnit  = 1000. * (metersPerUnit * rcp(distScale));
@@ -97,7 +101,7 @@ void main(void)
 
 	// Compute the view-space dimensions of the pixel as a quad projected onto geometry.
 	// Assuming square pixels, both X and Y are have the same dimensions.
-	float unitsPerPixel = 2 * abs(cornerPosVS.x - centerPosVS.x);
+	float unitsPerPixel = 2. * abs(cornerPosVS.x - centerPosVS.x);
 	float pixelsPerMm   = rcp(unitsPerPixel) * unitsPerMm;
 
 	// Area of a disk.
@@ -105,8 +109,8 @@ void main(void)
 	int  sampleCount  = (int)(filterArea * rcp(SSS_PIXELS_PER_SAMPLE));
 	int  sampleBudget = _SssSampleBudget;
 
-	int   texturingMode = 0; // GetSubsurfaceScatteringTexturingMode(profileIndex);
-	vec3 albedo  = vec3(1.) // texture2D(albedoSampler, vUV); //ApplySubsurfaceScatteringTexturingMode(texturingMode, sssData.diffuseColor);
+	int texturingMode = 0; // GetSubsurfaceScatteringTexturingMode(profileIndex);
+	vec3 albedo  = vec3(0.5) // texture2D(albedoSampler, vUV); //ApplySubsurfaceScatteringTexturingMode(texturingMode, sssData.diffuseColor);
 
 	if (distScale == 0. || sampleCount < 1)
 	{
@@ -132,7 +136,7 @@ void main(void)
     {
         // Integrate over the image or tangent plane in the view space.
         EvaluateSample(i, n, S, d, centerPosVS, mmPerUnit, pixelsPerMm,
-                       phase, tangentX, tangentY, projMatrix,
+                       phase, tangentX, tangentY,
                        totalIrradiance, totalWeight);
     }
 
@@ -144,9 +148,10 @@ void main(void)
 	// gl_FragColor = mix(texture2D(textureSampler, vUV), centerIrradiance, 0.5);
 }
 
+// TODO : inout vec3 totalIrradiance, inout vec3 totalWeight
 void EvaluateSample(uint i, uint n, vec3 S, float d, vec3 centerPosVS, float mmPerUnit, float pixelsPerMm,
-                    float phase, vec3 tangentX, vec3 tangentY, mat projMatrix,
-                    inout vec3 totalIrradiance, inout vec3 totalWeight)
+                    float phase, vec3 tangentX, vec3 tangentY,
+                    vec3 totalIrradiance, vec3 totalWeight)
 {
     // The sample count is loop-invariant.
     const float scale  = rcp(n);
@@ -181,7 +186,7 @@ void EvaluateSample(uint i, uint n, vec3 S, float d, vec3 centerPosVS, float mmP
     // position = vUV + round(vec * pixelsPerMm);
     // Note that (int) truncates towards 0, while floor() truncates towards -Inf!
 
-    position = vUV + (int2)round((pixelsPerMm * r) * vec2(cosPsi, sinPsi)) / texelSize;
+    position = vUV + round((pixelsPerMm * r) * vec2(cosPsi, sinPsi)) * texelSize;
     xy2      = r * r;
 
     vec4 textureSample = sampler2D(irradianceSampler, position);
