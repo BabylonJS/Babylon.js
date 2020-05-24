@@ -34,6 +34,10 @@ attribute vec4 color;
 // Uniforms
 #include<instancesDeclaration>
 
+#ifdef HIGH_DEFINITION_PIPELINE
+varying vec3 vViewPos;
+#endif
+
 #if defined(ALBEDO) && ALBEDODIRECTUV == 0
 varying vec2 vAlbedoUV;
 #endif
@@ -169,6 +173,7 @@ void main(void) {
 
     vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
     vPositionW = vec3(worldPos);
+    vViewPos = (view * worldPos).rgb;
 
 #ifdef NORMAL
     mat3 normalWorld = mat3(finalWorld);
