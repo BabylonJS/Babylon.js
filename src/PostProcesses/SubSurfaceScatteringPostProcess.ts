@@ -24,7 +24,7 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
     private _filterRadius: number;
 
     constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT) {
-        super(name, "subSurfaceScattering", ["texelSize", "filterRadius", "viewportSize"], ["irradianceSampler"], options, camera, samplingMode || Texture.BILINEAR_SAMPLINGMODE, engine, reusable, null, textureType, "postprocess", undefined, true);
+        super(name, "subSurfaceScattering", ["texelSize", "filterRadius", "viewportSize"], ["irradianceSampler", "depthSampler"], options, camera, samplingMode || Texture.BILINEAR_SAMPLINGMODE, engine, reusable, null, textureType, "postprocess", undefined, true);
 
         const defines = this._getDefines();
         this.updateEffect(defines);
@@ -32,7 +32,8 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
         this.onApplyObservable.add((effect: Effect) => {
             var texelSize = this.texelSize;
             effect.setFloat2("texelSize", texelSize.x, texelSize.y);
-            effect.setTexture("irradianceSampler", scene.highDefinitionMRT.textures[2]);
+            effect.setTexture("irradianceSampler", scene.highDefinitionMRT.textures[1]);
+            effect.setTexture("depthSampler", scene.highDefinitionMRT.textures[2]);
             effect.setFloat("filterRadius", this._filterRadius);
             effect.setFloat2("viewportSize", 
                 Math.tan(scene.activeCamera!.fov / 2) * scene.getEngine().getAspectRatio(scene.activeCamera!, true),

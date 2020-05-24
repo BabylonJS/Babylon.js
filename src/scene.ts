@@ -1442,8 +1442,16 @@ export class Scene extends AbstractScene implements IAnimatable {
         }
 
         // TODO : TEMPORARY
+        const types = [
+            Constants.TEXTURETYPE_UNSIGNED_INT, // Original color
+            Constants.TEXTURETYPE_UNSIGNED_INT, // Irradiance
+            Constants.TEXTURETYPE_FLOAT, // Depth (world units)
+            Constants.TEXTURETYPE_UNSIGNED_INT,
+            Constants.TEXTURETYPE_UNSIGNED_INT,
+        ];
+
         this.highDefinitionMRT = new MultiRenderTarget("sceneHighDefinitionMRT", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, 5, this,
-            { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT });
+            { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: types });
         this.highDefinitionMRT.samples = 1;
         this.sceneCompositorPostProcess = new SceneCompositorPostProcess("sceneCompositor", 1, null, undefined, this._engine);
         this.sceneCompositorPostProcess.inputTexture = this.highDefinitionMRT.getInternalTexture()!;

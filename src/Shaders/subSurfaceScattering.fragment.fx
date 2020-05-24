@@ -5,6 +5,7 @@ varying vec2 vUV;
 uniform vec2 texelSize;
 uniform sampler2D textureSampler;
 uniform sampler2D irradianceSampler;
+uniform sampler2D depthSampler;
 
 uniform float filterRadius;
 uniform vec2 viewportSize;
@@ -132,7 +133,7 @@ void main(void)
 
 	if (passedStencilTest)
 	{
-	    centerDepth = 0.; //texture2D(depthSampler, vUV).r NDC
+	    centerDepth = texture2D(depthSampler, vUV).r;
 	}
 
     if (!passedStencilTest) { return; }
@@ -173,8 +174,14 @@ void main(void)
 
 	// Area of a disk.
 	float filterArea   = PI * Sq(filterRadius * pixelsPerMm);
+
+
 	int  sampleCount  = int(filterArea * rcp(SSS_PIXELS_PER_SAMPLE));
 	int  sampleBudget = _SssSampleBudget;
+
+	// DEBUG
+	gl_FragColor = vec4(vec3(sampleCount) / 1000000., 1.0);
+	return;
 
 	int texturingMode = 0; // GetSubsurfaceScatteringTexturingMode(profileIndex);
 	vec3 albedo  = vec3(0.5); // texture2D(albedoSampler, vUV); //ApplySubsurfaceScatteringTexturingMode(texturingMode, sssData.diffuseColor);
