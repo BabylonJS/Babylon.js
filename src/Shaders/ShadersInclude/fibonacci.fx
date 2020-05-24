@@ -23,11 +23,11 @@ vec2 Golden2dSeq(int i, float n)
     return vec2(float(i) / n + (0.5 / n), fract(float(i) * rcp(GOLDEN_RATIO)));
 }
 
-int k_FibonacciSeq[] = {
+int k_FibonacciSeq[20] = int[20](
     0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181
-};
+);
 
-vec2 k_Fibonacci2dSeq21[] = {
+vec2 k_Fibonacci2dSeq21[21] = vec2[21](
     vec2(0.02380952, 0.00000000),
     vec2(0.07142857, 0.61904764),
     vec2(0.11904762, 0.23809528),
@@ -49,9 +49,9 @@ vec2 k_Fibonacci2dSeq21[] = {
     vec2(0.88095236, 0.14285755),
     vec2(0.92857140, 0.76190567),
     vec2(0.97619045, 0.38095284)
-};
+);
 
-vec2 k_Fibonacci2dSeq34[] = {
+vec2 k_Fibonacci2dSeq34[34] = vec2[34](
     vec2(0.01470588, 0.00000000),
     vec2(0.04411765, 0.61764705),
     vec2(0.07352941, 0.23529410),
@@ -86,9 +86,9 @@ vec2 k_Fibonacci2dSeq34[] = {
     vec2(0.92647058, 0.14705849),
     vec2(0.95588237, 0.76470566),
     vec2(0.98529410, 0.38235283)
-};
+);
 
-vec2 k_Fibonacci2dSeq55[] = {
+vec2 k_Fibonacci2dSeq55[55] = vec2[55](
     vec2(0.00909091, 0.00000000),
     vec2(0.02727273, 0.61818182),
     vec2(0.04545455, 0.23636365),
@@ -144,9 +144,9 @@ vec2 k_Fibonacci2dSeq55[] = {
     vec2(0.95454544, 0.14545441),
     vec2(0.97272730, 0.76363754),
     vec2(0.99090910, 0.38181686)
-};
+);
 
-vec2 k_Fibonacci2dSeq89[] = {
+vec2 k_Fibonacci2dSeq89[89] = vec2[89](
     vec2(0.00561798, 0.00000000),
     vec2(0.01685393, 0.61797750),
     vec2(0.02808989, 0.23595500),
@@ -236,7 +236,7 @@ vec2 k_Fibonacci2dSeq89[] = {
     vec2(0.97191012, 0.14606476),
     vec2(0.98314607, 0.76404190),
     vec2(0.99438202, 0.38201904)
-};
+);
 
 // Loads elements from one of the precomputed tables for sample counts of 21, 34, 55, and 89.
 // Computes sample positions at runtime otherwise.
@@ -263,14 +263,14 @@ vec2 Fibonacci2d(int i, int sampleCount)
                 }
             }
 
-            return Fibonacci2dSeq(fibN1, fibN2, i);
+            return Fibonacci2dSeq(float(fibN1), float(fibN2), i);
         }
     }
 }
 
 vec2 SampleDiskGolden(int i, int sampleCount)
 {
-    vec2 f = Golden2dSeq(i, sampleCount);
+    vec2 f = Golden2dSeq(i, float(sampleCount));
     return vec2(sqrt(f.x), TWO_PI * f.y);
 }
 
@@ -285,12 +285,12 @@ vec2 SampleDiskFibonacci(int i, int sampleCount)
 vec2 SampleHemisphereFibonacci(int i, int sampleCount)
 {
     vec2 f = Fibonacci2d(i, sampleCount);
-    return vec2(1 - f.x, TWO_PI * f.y);
+    return vec2(1. - f.x, TWO_PI * f.y);
 }
 
 // Returns the zenith as the X coordinate, and the azimuthal angle as the Y coordinate.
 vec2 SampleSphereFibonacci(int i, int sampleCount)
 {
     vec2 f = Fibonacci2d(i, sampleCount);
-    return vec2(1 - 2 * f.x, TWO_PI * f.y);
+    return vec2(1. - 2. * f.x, TWO_PI * f.y);
 }

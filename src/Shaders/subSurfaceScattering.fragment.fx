@@ -2,7 +2,7 @@
 #include<fibonacci>
 
 varying vec2 vUV;
-varying vec2 texelSize;
+uniform vec2 texelSize;
 uniform sampler2D textureSampler;
 uniform sampler2D irradianceSampler;
 
@@ -11,7 +11,7 @@ uniform vec2 viewportSize;
 
 const float LOG2_E = 1.4426950408889634;
 const float PI = 3.1415926535897932;
-const int SSS_PIXELS_PER_SAMPLE = 1;
+const float SSS_PIXELS_PER_SAMPLE = 1.;
 const int _SssSampleBudget = 32;
 
 #define rcp(x) 1. / x
@@ -57,6 +57,73 @@ vec2 SampleBurleyDiffusionProfile(float u, float rcpS)
 }
 
 
+// TODO : inout vec3 totalIrradiance, inout vec3 totalWeight
+void EvaluateSample(int i, int n, vec3 S, float d, vec3 centerPosVS, float mmPerUnit, float pixelsPerMm,
+                    float phase, vec3 tangentX, vec3 tangentY,
+                    vec3 totalIrradiance, vec3 totalWeight)
+{
+    // The sample count is loop-invariant.
+    float scale  = rcp(float(n));
+    float offset = rcp(float(n)) * 0.5;
+
+    // The phase angle is loop-invariant.
+    float sinPhase, cosPhase;
+    sinPhase = sin(phase);
+    cosPhase = cos(phase);
+
+    vec2 bdp = SampleBurleyDiffusionProfile(float(i) * scale + offset, d);
+    float r = bdp.x;
+    float rcpPdf = bdp.y;
+
+    float phi = SampleDiskGolden(i, n).y;
+    float sinPhi, cosPhi;
+    sinPhi = sin(phi);
+    cosPhi = cos(phi);
+
+    float sinPsi = cosPhase * sinPhi + sinPhase * cosPhi; // sin(phase + phi)
+    float cosPsi = cosPhase * cosPhi - sinPhase * sinPhi; // cos(phase + phi)
+
+    vec2 vec = r * vec2(cosPsi, sinPsi);
+
+    // Compute the screen-space position and the squared distance (in mm) in the image plane.
+    vec2 position; 
+    float xy2;
+
+    // TODO : TANGENT PLANE
+    // floor((vUV + 0.5) + vec * pixelsPerMm)
+    // position = vUV + floor(0.5 + vec * pixelsPerMm);
+    // position = vUV + round(vec * pixelsPerMm);
+    // Note that (int) truncates towards 0, while floor() truncates towards -Inf!
+
+    position = vUV + round((pixelsPerMm * r) * vec2(cosPsi, sinPsi)) * texelSize;
+    xy2      = r * r;
+
+    vec4 textureSample = texture2D(irradianceSampler, position);
+    vec3 irradiance    = textureSample.rgb;
+
+    // Check the results of the stencil test.
+    if (true) //TestLightingForSSS(irradiance))
+    {
+        // Apply bilateral weighting.
+        // float  viewZ  = textureSample.a;
+        // float  relZ   = viewZ - centerPosVS.z;
+        vec3 weight = vec3(1.); //ComputeBilateralWeight(xy2, relZ, mmPerUnit, S, rcpPdf);
+
+        // Note: if the texture sample if off-screen, (z = 0) -> (viewZ = far) -> (weight ≈ 0).
+        totalIrradiance += weight * irradiance;
+        totalWeight     += weight;
+    }
+    else
+    {
+        // The irradiance is 0. This could happen for 2 reasons.
+        // Most likely, the surface fragment does not have an SSS material.
+        // Alternatively, our sample comes from a region without any geometry.
+        // Our blur is energy-preserving, so 'centerWeight' should be set to 0.
+        // We do not terminate the loop since we want to gather the contribution
+        // of the remaining samples (e.g. in case of hair covering skin).
+    }
+}
+
 void main(void) 
 {
 	vec3 centerIrradiance  = texture2D(irradianceSampler, vUV).rgb;
@@ -65,7 +132,7 @@ void main(void)
 
 	if (passedStencilTest)
 	{
-	    centerDepth = 0.; //texture2D(depthSampler, vUV).r; -> NDC !
+	    centerDepth = 0.; //texture2D(depthSampler, vUV).r NDC
 	}
 
     if (!passedStencilTest) { return; }
@@ -85,8 +152,8 @@ void main(void)
 
     // TODO : uniforms
 	float  distScale     = 1.; //sssData.subsurfaceMask;
-	vec3 S             = vec3(0.7568628, 0.32156864, 0.20000002); //_ShapeParamsAndMaxScatterDists[profileIndex].rgb; -> diffusion color
-	float  d             = 0.7568628; //_ShapeParamsAndMaxScatterDists[profileIndex].a; -> max scatter dist
+	vec3 S             = vec3(0.7568628, 0.32156864, 0.20000002); //_ShapeParamsAndMaxScatterDists[profileIndex].rgb diffusion color
+	float  d             = 0.7568628; //_ShapeParamsAndMaxScatterDists[profileIndex].a max scatter dist
 	float  metersPerUnit = 0.01; //_WorldScalesAndFilterRadiiAndThicknessRemaps[profileIndex].x;
 
 	// Reconstruct the view-space position corresponding to the central sample.
@@ -106,11 +173,11 @@ void main(void)
 
 	// Area of a disk.
 	float filterArea   = PI * Sq(filterRadius * pixelsPerMm);
-	int  sampleCount  = (int)(filterArea * rcp(SSS_PIXELS_PER_SAMPLE));
+	int  sampleCount  = int(filterArea * rcp(SSS_PIXELS_PER_SAMPLE));
 	int  sampleBudget = _SssSampleBudget;
 
 	int texturingMode = 0; // GetSubsurfaceScatteringTexturingMode(profileIndex);
-	vec3 albedo  = vec3(0.5) // texture2D(albedoSampler, vUV); //ApplySubsurfaceScatteringTexturingMode(texturingMode, sssData.diffuseColor);
+	vec3 albedo  = vec3(0.5); // texture2D(albedoSampler, vUV); //ApplySubsurfaceScatteringTexturingMode(texturingMode, sssData.diffuseColor);
 
 	if (distScale == 0. || sampleCount < 1)
 	{
@@ -146,71 +213,4 @@ void main(void)
     gl_FragColor = vec4(albedo * (totalIrradiance / totalWeight), 1.);
 
 	// gl_FragColor = mix(texture2D(textureSampler, vUV), centerIrradiance, 0.5);
-}
-
-// TODO : inout vec3 totalIrradiance, inout vec3 totalWeight
-void EvaluateSample(uint i, uint n, vec3 S, float d, vec3 centerPosVS, float mmPerUnit, float pixelsPerMm,
-                    float phase, vec3 tangentX, vec3 tangentY,
-                    vec3 totalIrradiance, vec3 totalWeight)
-{
-    // The sample count is loop-invariant.
-    const float scale  = rcp(n);
-    const float offset = rcp(n) * 0.5;
-
-    // The phase angle is loop-invariant.
-    float sinPhase, cosPhase;
-    sinPhase = sin(phase);
-    cosPhase = cos(phase);
-
-    vec2 bdp = SampleBurleyDiffusionProfile(i * scale + offset, d);
-    float r = bdp.x;
-    float rcpPdf = bdp.y;
-
-    float phi = SampleDiskGolden(i, n).y;
-    float sinPhi, cosPhi;
-    sinPhi = sin(phi);
-    cosPhi = cos(phi);
-
-    float sinPsi = cosPhase * sinPhi + sinPhase * cosPhi; // sin(phase + phi)
-    float cosPsi = cosPhase * cosPhi - sinPhase * sinPhi; // cos(phase + phi)
-
-    vec2 vec = r * vec2(cosPsi, sinPsi);
-
-    // Compute the screen-space position and the squared distance (in mm) in the image plane.
-    vec2 position; 
-    float xy2;
-
-    // TODO : TANGENT PLANE
-    // floor((vUV + 0.5) + vec * pixelsPerMm)
-    // position = vUV + floor(0.5 + vec * pixelsPerMm);
-    // position = vUV + round(vec * pixelsPerMm);
-    // Note that (int) truncates towards 0, while floor() truncates towards -Inf!
-
-    position = vUV + round((pixelsPerMm * r) * vec2(cosPsi, sinPsi)) * texelSize;
-    xy2      = r * r;
-
-    vec4 textureSample = sampler2D(irradianceSampler, position);
-    vec3 irradiance    = textureSample.rgb;
-
-    // Check the results of the stencil test.
-    if (true) //TestLightingForSSS(irradiance))
-    {
-        // Apply bilateral weighting.
-        // float  viewZ  = textureSample.a;
-        // float  relZ   = viewZ - centerPosVS.z;
-        vec3 weight = vec3(1.); //ComputeBilateralWeight(xy2, relZ, mmPerUnit, S, rcpPdf);
-
-        // Note: if the texture sample if off-screen, (z = 0) -> (viewZ = far) -> (weight ≈ 0).
-        totalIrradiance += weight * irradiance;
-        totalWeight     += weight;
-    }
-    else
-    {
-        // The irradiance is 0. This could happen for 2 reasons.
-        // Most likely, the surface fragment does not have an SSS material.
-        // Alternatively, our sample comes from a region without any geometry.
-        // Our blur is energy-preserving, so 'centerWeight' should be set to 0.
-        // We do not terminate the loop since we want to gather the contribution
-        // of the remaining samples (e.g. in case of hair covering skin).
-    }
 }
