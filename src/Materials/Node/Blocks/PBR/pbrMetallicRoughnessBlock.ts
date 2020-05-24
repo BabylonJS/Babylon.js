@@ -913,9 +913,18 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             #else\r\n`;
 
         // _____________________________ Reflectivity _______________________________
+        const subsurfaceBlock = this.subsurface.isConnected ? this.subsurface.connectedPoint?.ownerBlock as SubSurfaceBlock : null;
+        const refractionBlock = this.subsurface.isConnected ? (this.subsurface.connectedPoint?.ownerBlock as SubSurfaceBlock).refraction.connectedPoint?.ownerBlock as RefractionBlock : null;
+
+        const reflectivityBlock = this.reflectivity.connectedPoint?.ownerBlock as Nullable<ReflectivityBlock> ?? null;
+
+        if (reflectivityBlock) {
+            reflectivityBlock.indexOfRefractionConnectionPoint = refractionBlock?.indexOfRefraction ?? null;
+        }
+
         const aoIntensity = aoBlock?.intensity.isConnected ? aoBlock.intensity.associatedVariableName : "1.";
 
-        state.compilationString += (this.reflectivity.connectedPoint?.ownerBlock as Nullable<ReflectivityBlock>)?.getCode(aoIntensity) ?? "";
+        state.compilationString += reflectivityBlock?.getCode(state, aoIntensity) ?? "";
 
         // _____________________________ Geometry info _________________________________
         state.compilationString += state._emitCodeFromInclude("pbrBlockGeometryInfo", comments, {
@@ -953,8 +962,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         });
 
         // ___________________ Compute Reflectance aka R0 F0 info _________________________
-        state.compilationString += state._emitCodeFromInclude("pbrBlockReflectance0", comments);
-
+        state.compilationString += state._emitCodeFromInclude("pbrBlockReflectance0", comments, {
+            replaceStrings: [
+                { search: /metallicReflectanceFactors/g, replace: reflectivityBlock?._vMetallicReflectanceFactorsName ?? "metallicReflectanceFactors" },
+            ]
+        });
         // ________________________________ Sheen ______________________________
         const sheenBlock = this.sheen.isConnected ? this.sheen.connectedPoint?.ownerBlock as SheenBlock : null;
 
@@ -1006,9 +1018,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         });
 
         // ___________________________________ SubSurface ______________________________________
-        const subsurfaceBlock = this.subsurface.isConnected ? this.subsurface.connectedPoint?.ownerBlock as SubSurfaceBlock : null;
-        const refractionBlock = this.subsurface.isConnected ? (this.subsurface.connectedPoint?.ownerBlock as SubSurfaceBlock).refraction.connectedPoint?.ownerBlock as RefractionBlock : null;
-
         state.compilationString += SubSurfaceBlock.GetCode(state, subsurfaceBlock, reflectionBlock, worldPosVarName);
 
         state._emitFunctionFromInclude("pbrBlockSubSurface", comments, {
