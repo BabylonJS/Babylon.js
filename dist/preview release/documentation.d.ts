@@ -16583,7 +16583,7 @@ declare module BABYLON {
          * @param useInstances specifies that instances should be used
          * @returns a boolean indicating that the submesh is ready or not
          */
-        isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean;
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         /**
          * Checks if the material is ready to render the requested mesh
          * @param mesh Define the mesh to render
@@ -21616,6 +21616,15 @@ declare module BABYLON {
          */
         get transform(): NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+        /**
+         * Update defines for shader compilation
+         * @param mesh defines the mesh to be rendered
+         * @param nodeMaterial defines the node material requesting the update
+         * @param defines defines the material defines to update
+         * @param useInstances specifies that instances should be used
+         * @param subMesh defines which submesh to render
+         */
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean, subMesh?: SubMesh): void;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
         protected _dumpPropertiesCode(): string;
@@ -24057,7 +24066,7 @@ declare module BABYLON {
          * @param useInstances specifies that instances should be used
          * @returns a boolean indicating that the submesh is ready or not
          */
-        isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean;
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         /**
          * Returns the material effect
          * @returns the effect associated with the material
@@ -24342,7 +24351,7 @@ declare module BABYLON {
          * @param useInstances Define whether or not the material is used with instances
          * @returns true if ready, otherwise false
          */
-        isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean;
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         /**
          * Clones the current material and its related sub materials
          * @param name Define the name of the newly cloned material
@@ -24373,9 +24382,19 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Base class for submeshes
+     * Defines a subdivision inside a mesh
      */
-    export class BaseSubMesh {
+    export class SubMesh implements ICullable {
+        /** the material index to use */
+        materialIndex: number;
+        /** vertex index start */
+        verticesStart: number;
+        /** vertices count */
+        verticesCount: number;
+        /** index start */
+        indexStart: number;
+        /** indices count */
+        indexCount: number;
         /** @hidden */
         _materialDefines: Nullable<MaterialDefines>;
         /** @hidden */
@@ -24400,21 +24419,6 @@ declare module BABYLON {
          * @param defines defines the set of defines used to compile this effect
          */
         setEffect(effect: Nullable<Effect>, defines?: Nullable<MaterialDefines>): void;
-    }
-    /**
-     * Defines a subdivision inside a mesh
-     */
-    export class SubMesh extends BaseSubMesh implements ICullable {
-        /** the material index to use */
-        materialIndex: number;
-        /** vertex index start */
-        verticesStart: number;
-        /** vertices count */
-        verticesCount: number;
-        /** index start */
-        indexStart: number;
-        /** indices count */
-        indexCount: number;
         /** @hidden */
         _linesIndexCount: number;
         private _mesh;
@@ -24497,6 +24501,16 @@ declare module BABYLON {
          * @returns the rendering mesh (could be different from parent mesh)
          */
         getRenderingMesh(): Mesh;
+        /**
+         * Returns the replacement mesh of the submesh
+         * @returns the replacement mesh (could be different from parent mesh)
+         */
+        getReplacementMesh(): Nullable<AbstractMesh>;
+        /**
+         * Returns the effective mesh of the submesh
+         * @returns the effective mesh (could be different from parent mesh)
+         */
+        getEffectiveMesh(): AbstractMesh;
         /**
          * Returns the submesh material
          * @returns null or the current material
@@ -37875,6 +37889,11 @@ declare module BABYLON {
          */
         target: any;
         /**
+         * Returns the string "TargetedAnimation"
+         * @returns "TargetedAnimation"
+         */
+        getClassName(): string;
+        /**
          * Serialize the object
          * @returns the JSON object representing the current entity
          */
@@ -37966,6 +37985,10 @@ declare module BABYLON {
          * returning the list of animatables controlled by this animation group.
          */
         get animatables(): Array<Animatable>;
+        /**
+         * Gets the list of target animations
+         */
+        get children(): TargetedAnimation[];
         /**
          * Instantiates a new Animation Group.
          * This helps managing several animations at once.
@@ -49323,9 +49346,9 @@ declare module BABYLON {
         /**
          * Select a specific entity in the scene explorer and highlight a specific block in that entity property grid
          * @param entity defines the entity to select
-         * @param lineContainerTitle defines the specific block to highlight
+         * @param lineContainerTitles defines the specific blocks to highlight (could be a string or an array of strings)
          */
-        select(entity: any, lineContainerTitle?: string): void;
+        select(entity: any, lineContainerTitles?: string | string[]): void;
         /** Get the inspector from bundle or global */
         private _getGlobalInspector;
         /**
@@ -49776,11 +49799,13 @@ declare module BABYLON {
         private _gamepadDisconnectedEvent;
         private static _MAX_KEYCODES;
         private static _MAX_POINTER_INPUTS;
+        private constructor();
         /**
-         * Default Constructor
-         * @param engine - engine to pull input element from
+         * Creates a new DeviceInputSystem instance
+         * @param engine Engine to pull input element from
+         * @returns The new instance
          */
-        constructor(engine: Engine);
+        static Create(engine: Engine): DeviceInputSystem;
         /**
          * Checks for current device input value, given an id and input index
          * @param deviceName Id of connected device
@@ -60991,6 +61016,87 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Block used to make gl_FragCoord available
+     */
+    export class FragCoordBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new FragCoordBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the xy component
+         */
+        get xy(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyz component
+         */
+        get xyz(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyzw component
+         */
+        get xyzw(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the x component
+         */
+        get x(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the y component
+         */
+        get y(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the z component
+         */
+        get z(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the w component
+         */
+        get output(): NodeMaterialConnectionPoint;
+        protected writeOutputs(state: NodeMaterialBuildState): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to get the screen sizes
+     */
+    export class ScreenSizeBlock extends NodeMaterialBlock {
+        private _varName;
+        private _scene;
+        /**
+         * Creates a new ScreenSizeBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the xy component
+         */
+        get xy(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the x component
+         */
+        get x(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the y component
+         */
+        get y(): NodeMaterialConnectionPoint;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        protected writeOutputs(state: NodeMaterialBuildState, varName: string): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
      * Block used to add support for scene fog
      */
     export class FogBlock extends NodeMaterialBlock {
@@ -64999,10 +65105,6 @@ declare module BABYLON {
                 };
             };
         }
-    /**
-     * @hidden
-     */
-    export var _IDoNeedToBeInTheBuild2: number;
 }
 declare module BABYLON {
     /**
@@ -66224,10 +66326,6 @@ declare module BABYLON {
              */
             getHierarchyEmittedParticleSystems(): IParticleSystem[];
         }
-    /**
-     * @hidden
-     */
-    export var _IDoNeedToBeInTheBuild: number;
 }
 declare module BABYLON {
     /** Defines the 4 color options */
@@ -75202,6 +75300,10 @@ declare module BABYLON.GUI {
         */
         onLinesReadyObservable: BABYLON.Observable<TextBlock>;
         /**
+         * Function used to split a string into words. By default, a string is split at each space character found
+         */
+        wordSplittingFunction: BABYLON.Nullable<(line: string) => string[]>;
+        /**
          * Return the line list (you may need to use the onLinesReadyObservable to make sure the list is ready)
          */
         get lines(): any[];
@@ -79074,7 +79176,7 @@ declare module BABYLON.GLTF2 {
          * @param assign A function called synchronously after parsing the glTF properties
          * @returns A promise that resolves with the loaded mesh when the load is complete or null if not handled
          */
-        _loadMeshPrimitiveAsync?(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Promise<AbstractMesh>;
+        _loadMeshPrimitiveAsync?(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Nullable<Promise<AbstractMesh>>;
         /**
          * @hidden
          * Define this method to modify the default behavior when loading materials. Load material creates the material and then loads material properties.
@@ -79769,6 +79871,53 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
         private _loadIorPropertiesAsync;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1681)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_materials_variants implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        private _loader;
+        /**
+         * The default variant name.
+         */
+        defaultVariant: string | undefined;
+        private _tagsToMap;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /**
+         * Return a list of available variants for this asset.
+         * @returns {string[]}
+         */
+        getVariants(): string[];
+        /**
+         * Select a variant by providing a list of variant tag names.
+         *
+         * @param {(string | string[])} variantName
+         */
+        selectVariant(variantName: string | string[]): void;
+        /**
+         * Select a variant by providing a single variant tag.
+         *
+         * @param {string} variantName
+         */
+        selectVariantTag(variantName: string): void;
+        /** @hidden */
+        onLoading(): void;
+        /** @hidden */
+        _loadMeshPrimitiveAsync(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Nullable<Promise<AbstractMesh>>;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
