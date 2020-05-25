@@ -312,6 +312,11 @@ export class TargetCamera extends Camera {
 
         // Rotate
         if (needToRotate) {
+            //rotate, if quaternion is set and rotation was used
+            if (this.rotationQuaternion) {
+                this.rotationQuaternion.toEulerAnglesToRef(this.rotation);
+            }
+
             this.rotation.x += this.cameraRotation.x * directionMultiplier;
             this.rotation.y += this.cameraRotation.y * directionMultiplier;
 

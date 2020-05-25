@@ -20,12 +20,14 @@ const remapAttributeName: { [name: string]: string }  = {
     "particle_uv": "vUV",
     "particle_color": "vColor",
     "particle_texturemask": "textureMask",
+    "particle_positionw": "vPositionW",
 };
 
 const attributeInFragmentOnly: { [name: string]: boolean }  = {
     "particle_uv": true,
     "particle_color": true,
     "particle_texturemask": true,
+    "particle_positionw": true,
 };
 
 const attributeAsUniform: { [name: string]: boolean }  = {
@@ -108,6 +110,7 @@ export class InputBlock extends NodeMaterialBlock {
                     case "position":
                     case "normal":
                     case "tangent":
+                    case "particle_positionw":
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector3;
                         return this._type;
                     case "uv":
