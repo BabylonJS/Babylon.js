@@ -207,10 +207,8 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                                         title="Animations Curve Editor" 
                                         scene={this.props.scene} 
                                         entity={animatableAsAny} 
-                                        entityName={animatableAsAny.id} 
                                         close={(event) => this.onCloseAnimationCurveEditor(event.view)} 
-                                        playOrPause={() => this.playOrPause()}
-                                        animations={animations} />
+                                        playOrPause={() => this.playOrPause()} />
                                 </PopupComponent>
                             }
                         </LineContainerComponent>
