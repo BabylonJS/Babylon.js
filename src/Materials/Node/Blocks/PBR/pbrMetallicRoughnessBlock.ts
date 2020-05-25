@@ -77,7 +77,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this.registerInput("perturbedNormal", NodeMaterialBlockConnectionPointTypes.Vector4, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("cameraPosition", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("baseColor", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("baseTexture", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("opacityTexture", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("ambientColor", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("reflectivity", NodeMaterialBlockConnectionPointTypes.Object, false, NodeMaterialBlockTargets.Fragment,
@@ -415,73 +414,66 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the base texture input component
-     */
-    public get baseTexture(): NodeMaterialConnectionPoint {
-        return this._inputs[5];
-    }
-
-    /**
      * Gets the opacity texture input component
      */
     public get opacityTexture(): NodeMaterialConnectionPoint {
-        return this._inputs[6];
+        return this._inputs[5];
     }
 
     /**
      * Gets the ambient color input component
      */
     public get ambientColor(): NodeMaterialConnectionPoint {
-        return this._inputs[7];
+        return this._inputs[6];
     }
 
     /**
      * Gets the reflectivity object parameters
      */
     public get reflectivity(): NodeMaterialConnectionPoint {
-        return this._inputs[8];
+        return this._inputs[7];
     }
 
     /**
      * Gets the ambient occlusion object parameters
      */
     public get ambientOcclusion(): NodeMaterialConnectionPoint {
-        return this._inputs[9];
+        return this._inputs[8];
     }
 
     /**
      * Gets the reflection object parameters
      */
     public get reflection(): NodeMaterialConnectionPoint {
-        return this._inputs[10];
+        return this._inputs[9];
     }
 
     /**
      * Gets the sheen object parameters
      */
     public get sheen(): NodeMaterialConnectionPoint {
-        return this._inputs[11];
+        return this._inputs[10];
     }
 
     /**
      * Gets the clear coat object parameters
      */
     public get clearcoat(): NodeMaterialConnectionPoint {
-        return this._inputs[12];
+        return this._inputs[11];
     }
 
     /**
      * Gets the sub surface object parameters
      */
     public get subsurface(): NodeMaterialConnectionPoint {
-        return this._inputs[13];
+        return this._inputs[12];
     }
 
     /**
      * Gets the anisotropy object parameters
      */
     public get anisotropy(): NodeMaterialConnectionPoint {
-        return this._inputs[14];
+        return this._inputs[13];
     }
 
     /**
@@ -597,7 +589,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         defines.setValue("LODBASEDMICROSFURACE", this._scene.getEngine().getCaps().textureLOD);
 
         // Albedo & Opacity
-        defines.setValue("ALBEDO", this.baseTexture.isConnected, true);
         defines.setValue("OPACITY", this.opacityTexture.isConnected, true);
 
         // Lighting & colors
@@ -779,13 +770,12 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         let code = `albedoOpacityOutParams albedoOpacityOut;\r\n`;
 
         const albedoColor = this.baseColor.isConnected ? this.baseColor.associatedVariableName : "vec4(1., 1., 1., 1.)";
-        const albedoTexture = this.baseTexture.isConnected ? this.baseTexture.associatedVariableName : "";
         const opacityTexture = this.opacityTexture.isConnected ? this.opacityTexture.associatedVariableName : "";
 
         code += `albedoOpacityBlock(
                 ${albedoColor},
             #ifdef ALBEDO
-                ${albedoTexture},
+                vec4(1.),
                 vec2(1., 1.),
             #endif
             #ifdef OPACITY
@@ -1115,7 +1105,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             replaceStrings: [
                 { search: /vNormalW/g, replace: this._vNormalWName },
                 { search: /vPositionW/g, replace: worldPosVarName },
-                { search: /albedoTexture\.rgb;/g, replace: this.baseTexture.associatedVariableName + ".rgb;\r\ngl_FragColor.rgb = toGammaSpace(gl_FragColor.rgb);\r\n" },
+                { search: /albedoTexture\.rgb;/g, replace: "vec3(1.);\r\ngl_FragColor.rgb = toGammaSpace(gl_FragColor.rgb);\r\n" },
                 { search: /opacityMap/g, replace: this.opacityTexture.associatedVariableName },
             ]
         });
