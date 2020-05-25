@@ -9,11 +9,30 @@ import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../nodeMaterialBlockConnectionPoint';
 import { Scene } from '../../../../scene';
+import { Nullable } from '../../../../types';
+import { Color3 } from '../../../../Maths/math.color';
+import { TmpColors } from '../../../../Maths/math.color';
+import { Mesh } from '../../../../Meshes/mesh';
+import { SubMesh } from '../../../../Meshes/subMesh';
+import { Effect } from '../../../effect';
 
 /**
  * Block used to implement the reflectivity module of the PBR material
  */
 export class ReflectivityBlock extends NodeMaterialBlock {
+
+    private _metallicReflectanceColor: Color3 = Color3.White();
+    private _metallicF0Factor = 1;
+
+    /** @hidden */
+    public _vMetallicReflectanceFactorsName: string;
+
+    /**
+     * The property below is set by the main PBR block prior to calling methods of this class.
+    */
+
+    /** @hidden */
+    public indexOfRefractionConnectionPoint: Nullable<NodeMaterialConnectionPoint>;
 
     /**
      * Specifies if the metallic texture contains the ambient occlusion information in its red channel.
@@ -103,24 +122,46 @@ export class ReflectivityBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
+    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh) {
+        super.bind(effect, nodeMaterial, mesh);
+
+        const outside_ior = 1; // consider air as clear coat and other layers would remap in the shader.
+        const ior = this.indexOfRefractionConnectionPoint?.connectInputBlock?.value ?? 1.5;
+
+        // We are here deriving our default reflectance from a common value for none metallic surface.
+        // Based of the schlick fresnel approximation model
+        // for dielectrics.
+        const f0 = Math.pow((ior - outside_ior) / (ior + outside_ior), 2);
+
+        // Tweak the default F0 and F90 based on our given setup
+        this._metallicReflectanceColor.scaleToRef(f0 * this._metallicF0Factor, TmpColors.Color3[0]);
+        const metallicF90 = this._metallicF0Factor;
+
+        effect.setColor4(this._vMetallicReflectanceFactorsName, TmpColors.Color3[0], metallicF90);
+    }
+
     /**
      * Gets the main code of the block (fragment side)
+     * @param state current state of the node material building
      * @param aoIntensityVarName name of the variable with the ambient occlusion intensity
      * @returns the shader code
      */
-    public getCode(aoIntensityVarName: string): string {
+    public getCode(state: NodeMaterialBuildState, aoIntensityVarName: string): string {
         const metalRoughTexture = this.texture.isConnected ? this.texture.connectedPoint?.associatedVariableName : null;
 
-        // note: metallic F0 factor = 0.04
+        this._vMetallicReflectanceFactorsName = state._getFreeVariableName("vMetallicReflectanceFactors");
+
+        state._emitUniformFromString(this._vMetallicReflectanceFactorsName, "vec4");
+
+        // note: metallic F0 factor = 1
         let code = `vec3 baseColor = surfaceAlbedo;
-            vec4 metallicReflectanceFactors = vec4(1.);
             reflectivityOutParams reflectivityOut;
 
             reflectivityBlock(
                 vec4(${this.metallic.associatedVariableName}, ${this.roughness.associatedVariableName}, 0., 0.),
             #ifdef METALLICWORKFLOW
                 surfaceAlbedo,
-                metallicReflectanceFactors,
+                ${this._vMetallicReflectanceFactorsName},
             #endif
             #ifdef REFLECTIVITY
                 vec3(0., 0., ${aoIntensityVarName}),
@@ -161,6 +202,7 @@ export class ReflectivityBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         if (state.target === NodeMaterialBlockTargets.Fragment) {
             state.sharedData.blocksWithDefines.push(this);
+            state.sharedData.bindableBlocks.push(this);
         }
 
         return this;
