@@ -59,7 +59,9 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         if (this._firstFrame) {
             this._firstFrame = false;
             for (const impostor of impostors) {
-                impostor.beforeStep();
+                if (!(impostor.type == PhysicsImpostor.HeightmapImpostor || impostor.type === PhysicsImpostor.PlaneImpostor)) {
+                    impostor.beforeStep();
+                }
             }
         }
         this.world.step(this._useDeltaForWorldStep ? delta : this._fixedTimeStep);
