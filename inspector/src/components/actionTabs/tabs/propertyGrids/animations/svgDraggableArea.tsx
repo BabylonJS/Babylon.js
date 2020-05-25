@@ -37,7 +37,6 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
             this._width = this._draggableArea.current?.clientWidth !== undefined ? this._draggableArea.current?.clientWidth : 0;
             console.log(this._width);
         }, 500);
-
     }
 
     dragStart(e: React.TouchEvent<SVGSVGElement>): void;
