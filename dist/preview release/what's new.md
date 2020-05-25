@@ -144,7 +144,6 @@
 
 - .HDR environment files will now give accurate PBR reflections ([CraigFeldpsar](https://github.com/craigfeldspar))
 
-
 ### Audio
 
 - Added support of `metadata` in `Sound` class. ([julien-moreau](https://github.com/julien-moreau))
