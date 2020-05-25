@@ -43,6 +43,11 @@ mat3 inverseMat3(mat3 inMatrix) {
               b21, (-a21 * a00 + a01 * a20), (a11 * a00 - a01 * a10)) / det;
 }
 
+float toLinearSpace(float color)
+{
+    return pow(color, LinearEncodePowerApprox);
+}
+
 vec3 toLinearSpace(vec3 color)
 {
     return pow(color, vec3(LinearEncodePowerApprox));
