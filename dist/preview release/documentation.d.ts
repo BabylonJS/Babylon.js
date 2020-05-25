@@ -34056,6 +34056,10 @@ declare module BABYLON {
          * Defines that engine should compile shaders with high precision floats (if supported). True by default
          */
         useHighPrecisionFloats?: boolean;
+        /**
+         * Make the canvas XR Compatible for XR sessions
+         */
+        xrCompatible?: boolean;
     }
     /**
      * The base engine class (root of all engines)
@@ -62772,10 +62776,6 @@ declare module BABYLON {
          */
         get roughness(): NodeMaterialConnectionPoint;
         /**
-         * Gets the texture input component
-         */
-        get texture(): NodeMaterialConnectionPoint;
-        /**
          * Gets the sheen object output component
          */
         get sheen(): NodeMaterialConnectionPoint;
@@ -62990,10 +62990,6 @@ declare module BABYLON {
          * Gets the tint thickness input component
          */
         get tintThickness(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the tint texture input component
-         */
-        get tintTexture(): NodeMaterialConnectionPoint;
         /**
          * Gets the world tangent input component
          */
@@ -63248,10 +63244,6 @@ declare module BABYLON {
          * Gets the base color input component
          */
         get baseColor(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the base texture input component
-         */
-        get baseTexture(): NodeMaterialConnectionPoint;
         /**
          * Gets the opacity texture input component
          */
