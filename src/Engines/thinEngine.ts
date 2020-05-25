@@ -106,6 +106,10 @@ export interface EngineOptions extends WebGLContextAttributes {
      * Defines that engine should compile shaders with high precision floats (if supported). True by default
      */
     useHighPrecisionFloats?: boolean;
+    /**
+     * Make the canvas XR Compatible for XR sessions
+     */
+    xrCompatible?: boolean;
 }
 
 /**
@@ -514,6 +518,10 @@ export class ThinEngine {
 
             if (options.premultipliedAlpha === false) {
                 this.premultipliedAlpha = false;
+            }
+
+            if (options.xrCompatible === undefined) {
+                options.xrCompatible = true;
             }
 
             this._doNotHandleContextLost = options.doNotHandleContextLost ? true : false;
