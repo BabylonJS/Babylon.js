@@ -62634,6 +62634,8 @@ declare module BABYLON {
         _vReflectionMicrosurfaceInfosName: string;
         /** @hidden */
         _vReflectionInfosName: string;
+        /** @hidden */
+        _vReflectionFilteringInfoName: string;
         private _scene;
         /**
          * The three properties below are set by the main PBR block prior to calling methods of this class.
@@ -62795,6 +62797,15 @@ declare module BABYLON {
      * Block used to implement the reflectivity module of the PBR material
      */
     export class ReflectivityBlock extends NodeMaterialBlock {
+        private _metallicReflectanceColor;
+        private _metallicF0Factor;
+        /** @hidden */
+        _vMetallicReflectanceFactorsName: string;
+        /**
+         * The property below is set by the main PBR block prior to calling methods of this class.
+        */
+        /** @hidden */
+        indexOfRefractionConnectionPoint: Nullable<NodeMaterialConnectionPoint>;
         /**
          * Specifies if the metallic texture contains the ambient occlusion information in its red channel.
          */
@@ -62842,12 +62853,14 @@ declare module BABYLON {
          * Gets the reflectivity object output component
          */
         get reflectivity(): NodeMaterialConnectionPoint;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh): void;
         /**
          * Gets the main code of the block (fragment side)
+         * @param state current state of the node material building
          * @param aoIntensityVarName name of the variable with the ambient occlusion intensity
          * @returns the shader code
          */
-        getCode(aoIntensityVarName: string): string;
+        getCode(state: NodeMaterialBuildState, aoIntensityVarName: string): string;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
         protected _dumpPropertiesCode(): string;
@@ -63158,6 +63171,14 @@ declare module BABYLON {
          * It also prefilter the roughness map based on the bump values.
          */
         enableSpecularAntiAliasing: boolean;
+        /**
+         * Enables realtime filtering on the texture.
+         */
+        realTimeFiltering: boolean;
+        /**
+         * Quality switch for realtime filtering
+         */
+        realTimeFilteringQuality: number;
         /**
          * Defines if the material uses energy conservation.
          */
