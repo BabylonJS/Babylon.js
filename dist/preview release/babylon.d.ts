@@ -61016,6 +61016,87 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Block used to make gl_FragCoord available
+     */
+    export class FragCoordBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new FragCoordBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the xy component
+         */
+        get xy(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyz component
+         */
+        get xyz(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyzw component
+         */
+        get xyzw(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the x component
+         */
+        get x(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the y component
+         */
+        get y(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the z component
+         */
+        get z(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the w component
+         */
+        get output(): NodeMaterialConnectionPoint;
+        protected writeOutputs(state: NodeMaterialBuildState): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to get the screen sizes
+     */
+    export class ScreenSizeBlock extends NodeMaterialBlock {
+        private _varName;
+        private _scene;
+        /**
+         * Creates a new ScreenSizeBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the xy component
+         */
+        get xy(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the x component
+         */
+        get x(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the y component
+         */
+        get y(): NodeMaterialConnectionPoint;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        protected writeOutputs(state: NodeMaterialBuildState, varName: string): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
      * Block used to add support for scene fog
      */
     export class FogBlock extends NodeMaterialBlock {
@@ -62553,6 +62634,8 @@ declare module BABYLON {
         _vReflectionMicrosurfaceInfosName: string;
         /** @hidden */
         _vReflectionInfosName: string;
+        /** @hidden */
+        _vReflectionFilteringInfoName: string;
         private _scene;
         /**
          * The three properties below are set by the main PBR block prior to calling methods of this class.
@@ -62714,6 +62797,15 @@ declare module BABYLON {
      * Block used to implement the reflectivity module of the PBR material
      */
     export class ReflectivityBlock extends NodeMaterialBlock {
+        private _metallicReflectanceColor;
+        private _metallicF0Factor;
+        /** @hidden */
+        _vMetallicReflectanceFactorsName: string;
+        /**
+         * The property below is set by the main PBR block prior to calling methods of this class.
+        */
+        /** @hidden */
+        indexOfRefractionConnectionPoint: Nullable<NodeMaterialConnectionPoint>;
         /**
          * Specifies if the metallic texture contains the ambient occlusion information in its red channel.
          */
@@ -62761,12 +62853,14 @@ declare module BABYLON {
          * Gets the reflectivity object output component
          */
         get reflectivity(): NodeMaterialConnectionPoint;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh): void;
         /**
          * Gets the main code of the block (fragment side)
+         * @param state current state of the node material building
          * @param aoIntensityVarName name of the variable with the ambient occlusion intensity
          * @returns the shader code
          */
-        getCode(aoIntensityVarName: string): string;
+        getCode(state: NodeMaterialBuildState, aoIntensityVarName: string): string;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
         protected _dumpPropertiesCode(): string;
@@ -63077,6 +63171,14 @@ declare module BABYLON {
          * It also prefilter the roughness map based on the bump values.
          */
         enableSpecularAntiAliasing: boolean;
+        /**
+         * Enables realtime filtering on the texture.
+         */
+        realTimeFiltering: boolean;
+        /**
+         * Quality switch for realtime filtering
+         */
+        realTimeFilteringQuality: number;
         /**
          * Defines if the material uses energy conservation.
          */

@@ -42,7 +42,6 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         this.registerInput("tintColor", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("tintAtDistance", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("tintThickness", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("tintTexture", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("worldTangent", NodeMaterialBlockConnectionPointTypes.Vector4, true);
 
         this.registerOutput("clearcoat", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment,
@@ -133,17 +132,10 @@ export class ClearCoatBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the tint texture input component
-     */
-    public get tintTexture(): NodeMaterialConnectionPoint {
-        return this._inputs[9];
-    }
-
-    /**
      * Gets the world tangent input component
      */
     public get worldTangent(): NodeMaterialConnectionPoint {
-        return this._inputs[10];
+        return this._inputs[9];
     }
 
     /**
@@ -166,8 +158,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
 
         defines.setValue("CLEARCOAT", true);
         defines.setValue("CLEARCOAT_TEXTURE", this.texture.isConnected, true);
-        defines.setValue("CLEARCOAT_TINT", this.tintColor.isConnected || this.tintThickness.isConnected || this.tintAtDistance.isConnected || this.tintTexture.isConnected, true);
-        defines.setValue("CLEARCOAT_TINT_TEXTURE", this.tintTexture.isConnected, true);
+        defines.setValue("CLEARCOAT_TINT", this.tintColor.isConnected || this.tintThickness.isConnected || this.tintAtDistance.isConnected, true);
         defines.setValue("CLEARCOAT_BUMP", this.bumpTexture.isConnected, true);
         defines.setValue("CLEARCOAT_DEFAULTIOR", this.ior.isConnected ? this.ior.connectInputBlock!.value === 1.5 : false, true);
     }
@@ -245,7 +236,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         const tintColor = ccBlock?.tintColor.isConnected ? ccBlock.tintColor.associatedVariableName : "vec3(1.)";
         const tintThickness = ccBlock?.tintThickness.isConnected ? ccBlock.tintThickness.associatedVariableName : "1.";
         const tintAtDistance = ccBlock?.tintAtDistance.isConnected ? ccBlock.tintAtDistance.associatedVariableName : "1.";
-        const tintTexture = ccBlock?.tintTexture.isConnected ? ccBlock.tintTexture.associatedVariableName : "vec4(0.)";
+        const tintTexture = "vec4(0.)";
 
         if (ccBlock) {
             state._emitUniformFromString("vClearCoatRefractionParams", "vec4");

@@ -170,6 +170,8 @@ export class WebXREnterExitUI implements IDisposable {
                             }
                         }
                     };
+                } else {
+                    Tools.Warn(`Session mode "${ui._buttons[i].sessionMode}" not supported in browser`);
                 }
             });
             return ui;

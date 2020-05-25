@@ -45,6 +45,8 @@
 - Added a modulo block ([ageneau](https://github.com/ageneau))
 - Fix bug where frame port labels would be the names of incorrect nodes ([belfortk](https://github.com/belfortk))
 - Fix bug where long comments on collapsed frames broke port alignment ([belfortk](https://github.com/belfortk))
+- Add the `FragCoord` and `ScreenSize` blocks ([Popov72](https://github.com/Popov72))
+- Particle systems: add the `ParticlePositionWorld` block ([Popov72](https://github.com/Popov72))
 
 ### Inspector
 
@@ -84,6 +86,7 @@
 - Added support for KHR_materials_ior for glTF loader. ([Sebavan](https://github.com/sebavan/))
 - Added support for KHR_materials_specular for glTF loader. ([Sebavan](https://github.com/sebavan/))
 - Added support for KHR_xmp for glTF loader. ([Sebavan](https://github.com/sebavan/))
+- Added support for KHR_materials_variants for glTF loader. ([MiiBond](https://github.com/MiiBond/))
 
 ### Navigation
 
@@ -140,7 +143,6 @@
 ### Textures
 
 - .HDR environment files will now give accurate PBR reflections ([CraigFeldpsar](https://github.com/craigfeldspar))
-
 
 ### Audio
 
@@ -207,7 +209,7 @@
 - Make sure bone matrices are up to date when calling `TransformNode.attachToBone` ([Popov72](https://github.com/Popov72))
 - Fix display problem with transparent objects and SSAO2 pipeline (bug in the `GeometryBufferRenderer`) ([Popov72](https://github.com/Popov72))
 - Fixed `Sound` not accepting a `TransformNode` as a source for spatial sound ([Poolminer](https://github.com/Poolminer))
-- Fixed an issue with transformation set after physics body was created using cannon.js ([#7928](https://github.com/BabylonJS/Babylon.js/issues/7928)) ([RaananW](https://github.com/RaananW))
+- Fixed an issue with transformation set after physics body was created using cannon.js (excluding height and plane) ([#7928](https://github.com/BabylonJS/Babylon.js/issues/7928)) ([RaananW](https://github.com/RaananW))
 - Fix bug when using `ShadowOnlyMaterial` with Cascaded Shadow Map and `autoCalcDepthBounds` is `true` ([Popov72](https://github.com/Popov72))
 - Fix OBJ serializer default scene scene handedness causing [OBJ Mirror export](https://forum.babylonjs.com/t/obj-export-mirrored/10835/10)
 - Fix bug when using shadows + instances + transparent meshes + `transparencyShadow = false` ([Popov72](https://github.com/Popov72))

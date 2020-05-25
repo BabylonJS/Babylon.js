@@ -61016,6 +61016,87 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Block used to make gl_FragCoord available
+     */
+    export class FragCoordBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new FragCoordBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the xy component
+         */
+        get xy(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyz component
+         */
+        get xyz(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyzw component
+         */
+        get xyzw(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the x component
+         */
+        get x(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the y component
+         */
+        get y(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the z component
+         */
+        get z(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the w component
+         */
+        get output(): NodeMaterialConnectionPoint;
+        protected writeOutputs(state: NodeMaterialBuildState): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to get the screen sizes
+     */
+    export class ScreenSizeBlock extends NodeMaterialBlock {
+        private _varName;
+        private _scene;
+        /**
+         * Creates a new ScreenSizeBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the xy component
+         */
+        get xy(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the x component
+         */
+        get x(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the y component
+         */
+        get y(): NodeMaterialConnectionPoint;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        protected writeOutputs(state: NodeMaterialBuildState, varName: string): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
      * Block used to add support for scene fog
      */
     export class FogBlock extends NodeMaterialBlock {
@@ -62553,6 +62634,8 @@ declare module BABYLON {
         _vReflectionMicrosurfaceInfosName: string;
         /** @hidden */
         _vReflectionInfosName: string;
+        /** @hidden */
+        _vReflectionFilteringInfoName: string;
         private _scene;
         /**
          * The three properties below are set by the main PBR block prior to calling methods of this class.
@@ -62714,6 +62797,15 @@ declare module BABYLON {
      * Block used to implement the reflectivity module of the PBR material
      */
     export class ReflectivityBlock extends NodeMaterialBlock {
+        private _metallicReflectanceColor;
+        private _metallicF0Factor;
+        /** @hidden */
+        _vMetallicReflectanceFactorsName: string;
+        /**
+         * The property below is set by the main PBR block prior to calling methods of this class.
+        */
+        /** @hidden */
+        indexOfRefractionConnectionPoint: Nullable<NodeMaterialConnectionPoint>;
         /**
          * Specifies if the metallic texture contains the ambient occlusion information in its red channel.
          */
@@ -62761,12 +62853,14 @@ declare module BABYLON {
          * Gets the reflectivity object output component
          */
         get reflectivity(): NodeMaterialConnectionPoint;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh): void;
         /**
          * Gets the main code of the block (fragment side)
+         * @param state current state of the node material building
          * @param aoIntensityVarName name of the variable with the ambient occlusion intensity
          * @returns the shader code
          */
-        getCode(aoIntensityVarName: string): string;
+        getCode(state: NodeMaterialBuildState, aoIntensityVarName: string): string;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
         protected _dumpPropertiesCode(): string;
@@ -63077,6 +63171,14 @@ declare module BABYLON {
          * It also prefilter the roughness map based on the bump values.
          */
         enableSpecularAntiAliasing: boolean;
+        /**
+         * Enables realtime filtering on the texture.
+         */
+        realTimeFiltering: boolean;
+        /**
+         * Quality switch for realtime filtering
+         */
+        realTimeFilteringQuality: number;
         /**
          * Defines if the material uses energy conservation.
          */
@@ -79095,7 +79197,7 @@ declare module BABYLON.GLTF2 {
          * @param assign A function called synchronously after parsing the glTF properties
          * @returns A promise that resolves with the loaded mesh when the load is complete or null if not handled
          */
-        _loadMeshPrimitiveAsync?(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Promise<AbstractMesh>;
+        _loadMeshPrimitiveAsync?(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Nullable<Promise<AbstractMesh>>;
         /**
          * @hidden
          * Define this method to modify the default behavior when loading materials. Load material creates the material and then loads material properties.
@@ -79790,6 +79892,53 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
         private _loadIorPropertiesAsync;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1681)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_materials_variants implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        private _loader;
+        /**
+         * The default variant name.
+         */
+        defaultVariant: string | undefined;
+        private _tagsToMap;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /**
+         * Return a list of available variants for this asset.
+         * @returns {string[]}
+         */
+        getVariants(): string[];
+        /**
+         * Select a variant by providing a list of variant tag names.
+         *
+         * @param {(string | string[])} variantName
+         */
+        selectVariant(variantName: string | string[]): void;
+        /**
+         * Select a variant by providing a single variant tag.
+         *
+         * @param {string} variantName
+         */
+        selectVariantTag(variantName: string): void;
+        /** @hidden */
+        onLoading(): void;
+        /** @hidden */
+        _loadMeshPrimitiveAsync(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Nullable<Promise<AbstractMesh>>;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
