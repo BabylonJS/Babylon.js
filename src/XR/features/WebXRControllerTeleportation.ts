@@ -25,7 +25,7 @@ import { Color3 } from '../../Maths/math.color';
 import { Scene } from '../../scene';
 import { UtilityLayerRenderer } from '../../Rendering/utilityLayerRenderer';
 import { PointerEventTypes } from '../../Events/pointerEvents';
-import { SetAndStartTimer } from '../../Misc/timer';
+import { setAndStartTimer } from '../../Misc/timer';
 
 /**
  * The options container for the teleportation module
@@ -430,7 +430,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                                     controllerData.teleportationState.baseRotation = this._options.xrInput.xrCamera.rotationQuaternion.toEulerAngles().y;
                                     controllerData.teleportationState.currentRotation = 0;
                                     const timeToSelect = this._options.timeToTeleport || 3000;
-                                    SetAndStartTimer({
+                                    setAndStartTimer({
                                         time: timeToSelect,
                                         countingObservable: this._xrSessionManager.onXRFrameObservable,
                                         breakCondition: () => !mainComponent.pressed,
@@ -521,7 +521,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                     controllerData.teleportationState.baseRotation = this._options.xrInput.xrCamera.rotationQuaternion.toEulerAngles().y;
                     controllerData.teleportationState.currentRotation = 0;
                     const timeToSelect = this._options.timeToTeleport || 3000;
-                    SetAndStartTimer({
+                    setAndStartTimer({
                         time: timeToSelect,
                         countingObservable: this._xrSessionManager.onXRFrameObservable,
                         onEnded: () => {
