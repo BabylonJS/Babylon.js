@@ -38,8 +38,10 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
     /** @hidden */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
-        (loader as any)._parent.transparencyAsCoverage = true;
         this.enabled = this._loader.isExtensionUsed(NAME);
+        if (this.enabled) {
+            (loader as any)._parent.transparencyAsCoverage = true;
+        }
     }
 
     /** @hidden */
