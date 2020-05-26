@@ -1,16 +1,10 @@
 import { Nullable } from "babylonjs/types";
-// import { Color3 } from "babylonjs/Maths/math";
-// import { Mesh } from "babylonjs/Meshes/mesh";
-// import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { Material } from "babylonjs/Materials/material";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-
-// import { IChildRootProperty } from "babylonjs-gltf2interface";
 import { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-// import { PBRBaseMaterial } from 'babylonjs/Materials/PBR/pbrBaseMaterial';
 
 const NAME = "KHR_materials_transmission";
 
