@@ -591,8 +591,8 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface ITimelineProps {
-        keyframes: BABYLON.IAnimationKey[];
-        selected: BABYLON.IAnimationKey;
+        keyframes: BABYLON.IAnimationKey[] | null;
+        selected: BABYLON.IAnimationKey | null;
         currentFrame: number;
         onCurrentFrameChange: (frame: number) => void;
     }
@@ -651,12 +651,10 @@ declare module INSPECTOR {
 declare module INSPECTOR {
     interface IAnimationCurveEditorComponentProps {
         close: (event: any) => void;
-        playOrPause: () => void;
+        playOrPause?: () => void;
         title: string;
-        animations: BABYLON.Animation[];
-        entityName: string;
         scene: BABYLON.Scene;
-        entity: BABYLON.IAnimatable;
+        entity: BABYLON.IAnimatable | BABYLON.TargetedAnimation;
     }
     interface ICanvasAxis {
         value: number;
@@ -668,7 +666,7 @@ declare module INSPECTOR {
         animationType: string;
         animationTargetProperty: string;
         isOpen: boolean;
-        selected: BABYLON.Animation;
+        selected: BABYLON.Animation | null;
         currentPathData: string | undefined;
         svgKeyframes: IKeyframeSvgPoint[] | undefined;
         currentFrame: number;
@@ -686,6 +684,7 @@ declare module INSPECTOR {
         playheadPos: number;
     }> {
         private _heightScale;
+        readonly _entityName: string;
         readonly _canvasLength: number;
         private _newAnimations;
         private _svgKeyframes;
@@ -694,6 +693,7 @@ declare module INSPECTOR {
         private _graphCanvas;
         private _selectedCurve;
         private _svgCanvas;
+        private _isTargetedAnimation;
         constructor(props: IAnimationCurveEditorComponentProps);
         componentDidMount(): void;
         /**
@@ -717,6 +717,7 @@ declare module INSPECTOR {
         handleNameChange(event: React.ChangeEvent<HTMLInputElement>): void;
         handleTypeChange(event: React.ChangeEvent<HTMLSelectElement>): void;
         handlePropertyChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        setListItem(animation: BABYLON.Animation, i: number): JSX.Element | null;
         getAnimationTypeofChange(selected: string): number;
         addAnimation(): void;
         /**
@@ -2019,8 +2020,13 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class TargetedAnimationGridComponent extends React.Component<ITargetedAnimationGridComponentProps> {
+        private _isCurveEditorOpen;
+        private _isPlaying;
+        private _animationGroup;
         constructor(props: ITargetedAnimationGridComponentProps);
         onOpenAnimationCurveEditor(): void;
+        onCloseAnimationCurveEditor(window: Window | null): void;
+        playOrPause(): void;
         render(): JSX.Element;
     }
 }

@@ -95,10 +95,10 @@ export class ShaderMaterial extends Material {
     private _cachedDefines: string;
 
     /** Define the Url to load snippets */
-    public static SnippetUrl = "https://snippet.babylonjs.com";    
+    public static SnippetUrl = "https://snippet.babylonjs.com";
 
     /** Snippet ID if the manager was created from the snippet server */
-    public snippetId: string;    
+    public snippetId: string;
 
     /**
      * Instantiate a new shader material.
