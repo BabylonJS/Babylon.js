@@ -17,7 +17,7 @@ import "../Shaders/line.fragment";
 import "../Shaders/line.vertex";
 import { DataBuffer } from '../Meshes/dataBuffer';
 
-declare module "../Scene" {
+declare module "../scene" {
     export interface Scene {
         /** @hidden */
         _edgeRenderLineShader: Nullable<ShaderMaterial>;
