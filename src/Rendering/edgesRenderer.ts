@@ -164,6 +164,9 @@ export class EdgesRenderer implements IEdgesRenderer {
     /** Gets or sets a boolean indicating if the edgesRenderer is active */
     public isEnabled = true;
 
+    /**
+     * List of instances to render in case the source mesh has instances
+     */
     public customInstances = new SmartArray<Matrix>(32);
 
     private static GetShader(scene: Scene): ShaderMaterial {
