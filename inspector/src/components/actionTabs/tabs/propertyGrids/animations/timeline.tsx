@@ -5,8 +5,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretRight, faCaretLeft, faStepBackward, faStepForward } from "@fortawesome/free-solid-svg-icons";
 
 interface ITimelineProps {
-    keyframes: IAnimationKey[];
-    selected: IAnimationKey;
+    keyframes: IAnimationKey[] | null;
+    selected: IAnimationKey | null;
     currentFrame: number;
     onCurrentFrameChange: (frame: number) => void;
 }
@@ -17,7 +17,9 @@ export class Timeline extends React.Component<ITimelineProps, { selected: IAnima
     private _scrollable: React.RefObject<HTMLDivElement>;
     constructor(props: ITimelineProps) {
         super(props);
+        if (this.props.selected !== null){
         this.state = { selected: this.props.selected };
+        }
         this._scrollable = React.createRef();
     }
 
@@ -42,6 +44,7 @@ export class Timeline extends React.Component<ITimelineProps, { selected: IAnima
 
     nextKeyframe(event: React.MouseEvent<HTMLDivElement>) {
         event.preventDefault();
+        if (this.props.keyframes !== null){
         let first = this.props.keyframes.find(kf => kf.frame > this.props.currentFrame);
         if (first) {
             this.props.onCurrentFrameChange(first.frame);
@@ -49,15 +52,18 @@ export class Timeline extends React.Component<ITimelineProps, { selected: IAnima
             (this._scrollable.current as HTMLDivElement).scrollLeft = first.frame * 5;
         }
     }
+    }
 
     previousKeyframe(event: React.MouseEvent<HTMLDivElement>) {
         event.preventDefault();
+        if (this.props.keyframes !== null){
         let first = this.props.keyframes.find(kf => kf.frame < this.props.currentFrame);
         if (first) {
             this.props.onCurrentFrameChange(first.frame);
             this.setState({ selected: first });
             (this._scrollable.current as HTMLDivElement).scrollLeft = -(first.frame * 5);
         }
+    }
     }
 
     render() {
@@ -70,7 +76,7 @@ export class Timeline extends React.Component<ITimelineProps, { selected: IAnima
                             <line x1={this.props.currentFrame * 10} y1="10" x2={this.props.currentFrame * 10} y2="20" style={{ stroke: '#12506b', strokeWidth: 6 }} />
 
                             {
-                                this.props.keyframes.map((kf, i) => {
+                                this.props.keyframes && this.props.keyframes.map((kf, i) => {
 
                                     return <svg key={`kf_${i}`}>
                                         <line x1={kf.frame * 10} y1="10" x2={kf.frame * 10} y2="20" style={{ stroke: 'red', strokeWidth: 6 }} />
