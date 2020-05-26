@@ -16301,6 +16301,10 @@ declare module BABYLON {
              * @param stride defines the stride in floats
              */
             registerInstancedBuffer(kind: string, stride: number): void;
+            /**
+             * true to use the edge renderer for all instances of this mesh
+             */
+            edgesShareWithInstances: boolean;
             /** @hidden */
             _userInstancedBuffersStorage: {
                 data: {
@@ -16395,6 +16399,10 @@ declare module BABYLON {
         private _renderId;
         private _multiview;
         private _cachedDefines;
+        /** Define the Url to load snippets */
+        static SnippetUrl: string;
+        /** Snippet ID if the manager was created from the snippet server */
+        snippetId: string;
         /**
          * Instantiate a new shader material.
          * The ShaderMaterial object has the necessary methods to pass data from your scene to the Vertex and Fragment Shaders and returns a material that can be applied to any mesh.
@@ -16649,6 +16657,23 @@ declare module BABYLON {
          * @returns a new material
          */
         static Parse(source: any, scene: Scene, rootUrl: string): ShaderMaterial;
+        /**
+         * Creates a new ShaderMaterial from a snippet saved in a remote file
+         * @param name defines the name of the ShaderMaterial to create (can be null or empty to use the one from the json data)
+         * @param url defines the url to load from
+         * @param scene defines the hosting scene
+         * @param rootUrl defines the root URL to use to load textures and relative dependencies
+         * @returns a promise that will resolve to the new ShaderMaterial
+         */
+        static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl?: string): Promise<ShaderMaterial>;
+        /**
+         * Creates a ShaderMaterial from a snippet saved by the Inspector
+         * @param snippetId defines the snippet to load
+         * @param scene defines the hosting scene
+         * @param rootUrl defines the root URL to use to load textures and relative dependencies
+         * @returns a promise that will resolve to the new ShaderMaterial
+         */
+        static CreateFromSnippetAsync(snippetId: string, scene: Scene, rootUrl?: string): Promise<ShaderMaterial>;
     }
 }
 declare module BABYLON {
@@ -16788,6 +16813,10 @@ declare module BABYLON {
     };
 }
 declare module BABYLON {
+        interface Scene {
+            /** @hidden */
+            _edgeRenderLineShader: Nullable<ShaderMaterial>;
+        }
         interface AbstractMesh {
             /**
              * Gets the edgesRenderer associated with the mesh
@@ -16833,6 +16862,10 @@ declare module BABYLON {
          * @return true if ready, otherwise false.
          */
         isReady(): boolean;
+        /**
+         * List of instances to render in case the source mesh has instances
+         */
+        customInstances: SmartArray<Matrix>;
     }
     /**
      * This class is used to generate edges of the mesh that could then easily be rendered in a scene.
@@ -16857,11 +16890,19 @@ declare module BABYLON {
         protected _buffers: {
             [key: string]: Nullable<VertexBuffer>;
         };
+        protected _buffersForInstances: {
+            [key: string]: Nullable<VertexBuffer>;
+        };
         protected _checkVerticesInsteadOfIndices: boolean;
         private _meshRebuildObserver;
         private _meshDisposeObserver;
         /** Gets or sets a boolean indicating if the edgesRenderer is active */
         isEnabled: boolean;
+        /**
+         * List of instances to render in case the source mesh has instances
+         */
+        customInstances: SmartArray<Matrix>;
+        private static GetShader;
         /**
          * Creates an instance of the EdgesRenderer. It is primarily use to display edges of a mesh.
          * Beware when you use this class with complex objects as the adjacencies computation can be really long
@@ -27586,6 +27627,8 @@ declare module BABYLON {
         /** @hidden */
         _registerInstanceForRenderId(instance: InstancedMesh, renderId: number): Mesh;
         protected _afterComputeWorldMatrix(): void;
+        /** @hidden */
+        _postActivate(): void;
         /**
          * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
          * This means the mesh underlying bounding box and sphere are recomputed.
