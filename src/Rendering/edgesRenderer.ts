@@ -17,6 +17,13 @@ import "../Shaders/line.fragment";
 import "../Shaders/line.vertex";
 import { DataBuffer } from '../Meshes/dataBuffer';
 
+declare module "../Scene" {
+    export interface Scene {
+        /** @hidden */
+        _edgeRenderLineShader: Nullable<ShaderMaterial>;
+    }
+}
+
 declare module "../Meshes/abstractMesh" {
     export interface AbstractMesh {
         /**
@@ -151,15 +158,8 @@ export class EdgesRenderer implements IEdgesRenderer {
     /** Gets or sets a boolean indicating if the edgesRenderer is active */
     public isEnabled = true;
 
-    private static _LineShaders: Array<ShaderMaterial> = [];
-    private static _LineShaderScenes: Array<Scene> = [];
-
     private static GetShader(scene: Scene): ShaderMaterial {
-        let idx = EdgesRenderer._LineShaderScenes.indexOf(scene);
-
-        if (idx < 0) {
-            EdgesRenderer._LineShaderScenes.push(scene);
-
+        if (!scene._edgeRenderLineShader) {
             const shader = new ShaderMaterial("lineShader", scene, "line",
                 {
                     attributes: ["position", "normal"],
@@ -169,12 +169,10 @@ export class EdgesRenderer implements IEdgesRenderer {
             shader.disableDepthWrite = true;
             shader.backFaceCulling = false;
 
-            EdgesRenderer._LineShaders.push(shader);
-
-            idx = EdgesRenderer._LineShaders.length - 1;
+            scene._edgeRenderLineShader = shader;
         }
 
-        return EdgesRenderer._LineShaders[idx];
+        return scene._edgeRenderLineShader;
     }
 
     /**
