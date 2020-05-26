@@ -340,7 +340,12 @@ export class InstancedMesh extends AbstractMesh {
 
     /** @hidden */
     public _postActivate(): void {
-        if (this._edgesRenderer && this._edgesRenderer.isEnabled && this._sourceMesh._renderingGroup) {
+        if (this._sourceMesh.edgesShareWithInstances && this._sourceMesh._edgesRenderer && this._sourceMesh._edgesRenderer.isEnabled && this._sourceMesh._renderingGroup) {
+            // we are using the edge renderer of the source mesh
+            this._sourceMesh._renderingGroup._edgesRenderers.pushNoDuplicate(this._sourceMesh._edgesRenderer);
+            this._sourceMesh._edgesRenderer.customInstances.push(this.getWorldMatrix());
+        } else if (this._edgesRenderer && this._edgesRenderer.isEnabled && this._sourceMesh._renderingGroup) {
+            // we are using the edge renderer defined for this instance
             this._sourceMesh._renderingGroup._edgesRenderers.push(this._edgesRenderer);
         }
     }
@@ -470,6 +475,11 @@ declare module "./mesh" {
          */
         registerInstancedBuffer(kind: string, stride: number): void;
 
+        /**
+         * true to use the edge renderer for all instances of this mesh
+         */
+        edgesShareWithInstances: boolean;
+
         /** @hidden */
         _userInstancedBuffersStorage: {
             data: {[key: string]: Float32Array},
@@ -489,6 +499,8 @@ declare module "./abstractMesh" {
         instancedBuffers: {[key: string]: any};
     }
 }
+
+Mesh.prototype.edgesShareWithInstances = false;
 
 Mesh.prototype.registerInstancedBuffer = function(kind: string, stride: number): void {
     // Remove existing one
