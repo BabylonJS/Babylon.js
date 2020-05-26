@@ -27,6 +27,7 @@
 - Added support in `ShadowGenerator` for fast fake soft transparent shadows ([Popov72](https://github.com/Popov72))
 - Added `boundingBoxRenderer.onBeforeBoxRenderingObservable` and `boundingBoxRenderer.onAfterBoxRenderingObservable` ([Deltakosh](https://github.com/deltakosh))
 - Added initial code for user facing DeviceSourceManager ([PolygonalSun](https://github.com/PolygonalSun))
+- Added a Simple and advanced timer, based on observables ([RaananW](https://github.com/RaananW))
 
 ### Engine
 
