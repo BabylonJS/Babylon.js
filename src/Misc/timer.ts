@@ -33,6 +33,10 @@ export interface ITimerOptions<T> {
      */
     onEnded?: (data: ITimerData<any>) => void;
     /**
+     * Will be triggered when the break condition has met (prematurely ended)
+     */
+    onAborted?: (data: ITimerData<any>) => void;
+    /**
      * Optional function to execute on each tick (or count)
      */
     onTick?: (data: ITimerData<any>) => void;
@@ -105,6 +109,7 @@ export function setAndStartTimer(options: ITimerOptions<any>): Nullable<Observer
         options.onTick && options.onTick(data);
         if (options.breakCondition && options.breakCondition()) {
             options.contextObservable.remove(observer);
+            options.onAborted && options.onAborted(data);
         }
         if (timer >= options.timeout) {
             options.contextObservable.remove(observer);
@@ -164,6 +169,9 @@ export class AdvancedTimer<T = any> implements IDisposable {
         }
         if (options.onTick) {
             this.onEachCountObservable.add(options.onTick);
+        }
+        if (options.onAborted) {
+            this.onTimerAbortedObservable.add(options.onAborted);
         }
     }
 
