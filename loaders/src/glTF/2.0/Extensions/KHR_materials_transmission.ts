@@ -31,7 +31,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
     /**
      * Defines a number that determines the order the extensions are applied.
      */
-    public order = 190;
+    public order = 175;
 
     private _loader: GLTFLoader;
 
