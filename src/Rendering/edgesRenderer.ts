@@ -151,21 +151,30 @@ export class EdgesRenderer implements IEdgesRenderer {
     /** Gets or sets a boolean indicating if the edgesRenderer is active */
     public isEnabled = true;
 
-    private static _LineShader: ShaderMaterial;
+    private static _LineShaders: Array<ShaderMaterial> = [];
+    private static _LineShaderScenes: Array<Scene> = [];
 
     private static GetShader(scene: Scene): ShaderMaterial {
-        if (!EdgesRenderer._LineShader) {
-            EdgesRenderer._LineShader = new ShaderMaterial("lineShader", scene, "line",
+        let idx = EdgesRenderer._LineShaderScenes.indexOf(scene);
+
+        if (idx < 0) {
+            EdgesRenderer._LineShaderScenes.push(scene);
+
+            const shader = new ShaderMaterial("lineShader", scene, "line",
                 {
                     attributes: ["position", "normal"],
                     uniforms: ["world", "viewProjection", "color", "width", "aspectRatio"]
                 });
 
-            EdgesRenderer._LineShader.disableDepthWrite = true;
-            EdgesRenderer._LineShader.backFaceCulling = false;
+            shader.disableDepthWrite = true;
+            shader.backFaceCulling = false;
+
+            EdgesRenderer._LineShaders.push(shader);
+
+            idx = EdgesRenderer._LineShaders.length - 1;
         }
 
-        return EdgesRenderer._LineShader;
+        return EdgesRenderer._LineShaders[idx];
     }
 
     /**
