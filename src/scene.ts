@@ -254,6 +254,9 @@ export class Scene extends AbstractScene implements IAnimatable {
     public get highDefinitionPipeline() {
         return this._highDefinitionPipeline;
     }
+    public set highDefinitionPipeline(b: boolean) {
+        this._highDefinitionPipeline = b;
+    }
 
     public highDefinitionMRT: MultiRenderTarget;
     public sceneCompositorPostProcess: SceneCompositorPostProcess;

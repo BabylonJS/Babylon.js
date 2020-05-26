@@ -1284,6 +1284,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         const scene = this.getScene();
         const engine = scene.getEngine();
 
+        if (scene.highDefinitionPipeline) {
+            defines.HIGH_DEFINITION_PIPELINE = true;
+        } else {
+            defines.HIGH_DEFINITION_PIPELINE = false;
+        }
+
         // Lights
         MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
         defines._needNormals = true;
@@ -1546,12 +1552,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
             this._imageProcessingConfiguration.prepareDefines(defines);
-        }
-
-        if (scene.highDefinitionPipeline) {
-            defines.HIGH_DEFINITION_PIPELINE = true;
-        } else {
-            defines.HIGH_DEFINITION_PIPELINE = false;
         }
 
         defines.FORCENORMALFORWARD = this._forceNormalForward;
