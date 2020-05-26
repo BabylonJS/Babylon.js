@@ -18,7 +18,7 @@ namespace Babylon
         }
     }
 
-    void AppRuntime::RunEnvironmentTier()
+    void AppRuntime::RunEnvironmentTier(const char*)
     {
         using DispatchFunction = std::function<void(std::function<void()>)>;
         DispatchFunction dispatchFunction{

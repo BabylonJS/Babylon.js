@@ -4,7 +4,7 @@
 
 namespace Babylon
 {
-    void AppRuntime::RunEnvironmentTier()
+    void AppRuntime::RunEnvironmentTier(const char*)
     {
         auto globalContext = JSGlobalContextCreateInGroup(nullptr, nullptr);
         Napi::Env env = Napi::Attach(globalContext);

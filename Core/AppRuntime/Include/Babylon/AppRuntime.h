@@ -32,7 +32,7 @@ namespace Babylon
         // but it also allows us to respect the requirement by certain platforms (notably V8)
         // that certain program state be allocated and stored only on the stack.
         void RunPlatformTier();
-        void RunEnvironmentTier();
+        void RunEnvironmentTier(const char* executablePath = ".");
         void Run(Napi::Env);
 
         std::unique_ptr<WorkQueue> m_workQueue;
