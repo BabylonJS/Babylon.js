@@ -1108,6 +1108,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
     }
 
+    /** @hidden */
+    public _postActivate(): void {
+        if (this.edgesShareWithInstances && this.edgesRenderer && this.edgesRenderer.isEnabled && this._renderingGroup) {
+            this._renderingGroup._edgesRenderers.pushNoDuplicate(this.edgesRenderer);
+            this.edgesRenderer.customInstances.push(this.getWorldMatrix());
+        }
+    }
+
     /**
      * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
      * This means the mesh underlying bounding box and sphere are recomputed.

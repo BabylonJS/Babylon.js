@@ -3,7 +3,7 @@ import { VertexBuffer } from "../Meshes/buffer";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { LinesMesh, InstancedLinesMesh } from "../Meshes/linesMesh";
-import { Vector3, TmpVectors } from "../Maths/math.vector";
+import { Vector3, TmpVectors, Matrix } from "../Maths/math.vector";
 import { IDisposable, Scene } from "../scene";
 import { Observer } from "../Misc/observable";
 import { Effect } from "../Materials/effect";
@@ -16,6 +16,7 @@ import { Node } from "../node";
 import "../Shaders/line.fragment";
 import "../Shaders/line.vertex";
 import { DataBuffer } from '../Meshes/dataBuffer';
+import { SmartArray } from '../Misc/smartArray';
 
 declare module "../scene" {
     export interface Scene {
@@ -122,6 +123,11 @@ export interface IEdgesRenderer extends IDisposable {
      * @return true if ready, otherwise false.
      */
     isReady(): boolean;
+
+    /**
+     * List of instances to render in case the source mesh has instances
+     */
+    customInstances: SmartArray<Matrix>;
 }
 
 /**
@@ -157,6 +163,8 @@ export class EdgesRenderer implements IEdgesRenderer {
 
     /** Gets or sets a boolean indicating if the edgesRenderer is active */
     public isEnabled = true;
+
+    public customInstances = new SmartArray<Matrix>(32);
 
     private static GetShader(scene: Scene): ShaderMaterial {
         if (!scene._edgeRenderLineShader) {
@@ -469,7 +477,7 @@ export class EdgesRenderer implements IEdgesRenderer {
      * @return true if ready, otherwise false.
      */
     public isReady(): boolean {
-        return this._lineShader.isReady(this._source, this._source.hasThinInstances);
+        return this._lineShader.isReady(this._source, (this._source.hasInstances && this.customInstances.length > 0) || this._source.hasThinInstances);
     }
 
     /**
@@ -491,7 +499,8 @@ export class EdgesRenderer implements IEdgesRenderer {
             engine.setAlphaMode(Constants.ALPHA_DISABLE);
         }
 
-        const useBuffersWithInstances = this._source.hasThinInstances;
+        const hasInstances = this._source.hasInstances && this.customInstances.length > 0;
+        const useBuffersWithInstances = hasInstances || this._source.hasThinInstances;
 
         let instanceCount = 0;
 
@@ -500,7 +509,25 @@ export class EdgesRenderer implements IEdgesRenderer {
             this._buffersForInstances["world1"] = (this._source as Mesh).getVertexBuffer("world1");
             this._buffersForInstances["world2"] = (this._source as Mesh).getVertexBuffer("world2");
             this._buffersForInstances["world3"] = (this._source as Mesh).getVertexBuffer("world3");
-            instanceCount = (this._source as Mesh).thinInstanceCount;
+
+            if (hasInstances) {
+                let instanceStorage = (this._source as Mesh)._instanceDataStorage;
+
+                instanceCount = this.customInstances.length;
+
+                if (!instanceStorage.isFrozen) {
+                    let offset = 0;
+
+                    for (let i = 0; i < instanceCount; ++i) {
+                        this.customInstances.data[i].copyToArray(instanceStorage.instancesData, offset);
+                        offset += 16;
+                    }
+
+                    instanceStorage.instancesBuffer!.updateDirectly(instanceStorage.instancesData, 0, instanceCount);
+                }
+            } else {
+                instanceCount = (this._source as Mesh).thinInstanceCount;
+            }
         }
 
         // VBOs
@@ -521,6 +548,8 @@ export class EdgesRenderer implements IEdgesRenderer {
         // Draw order
         engine.drawElementsType(Material.TriangleFillMode, 0, this._indicesCount, instanceCount);
         this._lineShader.unbind();
+
+        this.customInstances.reset();
     }
 }
 
