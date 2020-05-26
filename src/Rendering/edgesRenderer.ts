@@ -3,7 +3,7 @@ import { VertexBuffer } from "../Meshes/buffer";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { LinesMesh, InstancedLinesMesh } from "../Meshes/linesMesh";
 import { Vector3, TmpVectors } from "../Maths/math.vector";
-import { IDisposable } from "../scene";
+import { IDisposable, Scene } from "../scene";
 import { Observer } from "../Misc/observable";
 import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
@@ -149,6 +149,23 @@ export class EdgesRenderer implements IEdgesRenderer {
     /** Gets or sets a boolean indicating if the edgesRenderer is active */
     public isEnabled = true;
 
+    private static _LineShader: ShaderMaterial;
+
+    private static GetShader(scene: Scene): ShaderMaterial {
+        if (!EdgesRenderer._LineShader) {
+            EdgesRenderer._LineShader = new ShaderMaterial("lineShader", scene, "line",
+                {
+                    attributes: ["position", "normal"],
+                    uniforms: ["world", "viewProjection", "color", "width", "aspectRatio"]
+                });
+
+            EdgesRenderer._LineShader.disableDepthWrite = true;
+            EdgesRenderer._LineShader.backFaceCulling = false;
+        }
+
+        return EdgesRenderer._LineShader;
+    }
+
     /**
      * Creates an instance of the EdgesRenderer. It is primarily use to display edges of a mesh.
      * Beware when you use this class with complex objects as the adjacencies computation can be really long
@@ -182,14 +199,7 @@ export class EdgesRenderer implements IEdgesRenderer {
             return;
         }
 
-        this._lineShader = new ShaderMaterial("lineShader", this._source.getScene(), "line",
-            {
-                attributes: ["position", "normal"],
-                uniforms: ["worldViewProjection", "color", "width", "aspectRatio"]
-            });
-
-        this._lineShader.disableDepthWrite = true;
-        this._lineShader.backFaceCulling = false;
+        this._lineShader = EdgesRenderer.GetShader(this._source.getScene());
     }
 
     /** @hidden */
