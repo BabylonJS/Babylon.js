@@ -592,7 +592,7 @@ namespace Babylon
 
                 std::memcpy(m_projectionMatrix.Value().Data(), projectionMatrix.data(), m_projectionMatrix.Value().ByteLength());
 
-                XRRigidTransform::Unwrap(m_rigidTransform.Value())->Update(space, true);
+                XRRigidTransform::Unwrap(m_rigidTransform.Value())->Update(space, false);
             }
 
         private:
