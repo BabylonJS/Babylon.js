@@ -590,9 +590,11 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         type: string;
         index: string;
         selected: boolean;
+        selectControlPoint: (id: string) => void;
     }
     export class AnchorSvgPoint extends React.Component<IAnchorSvgPointProps> {
         constructor(props: IAnchorSvgPointProps);
+        select(): void;
         render(): JSX.Element;
     }
 }
@@ -604,15 +606,24 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         rightControlPoint: Vector2 | null;
         leftControlPoint: Vector2 | null;
         id: string;
+        selected: boolean;
+        isLeftActive: boolean;
+        isRightActive: boolean;
     }
     interface IKeyframeSvgPointProps {
         keyframePoint: Vector2;
         leftControlPoint: Vector2 | null;
         rightControlPoint: Vector2 | null;
         id: string;
+        selected: boolean;
+        selectKeyframe: (id: string) => void;
+        selectedControlPoint: (type: string, id: string) => void;
+        isLeftActive: boolean;
+        isRightActive: boolean;
     }
     export class KeyframeSvgPoint extends React.Component<IKeyframeSvgPointProps> {
         constructor(props: IKeyframeSvgPointProps);
+        select(): void;
         render(): JSX.Element;
     }
 }
@@ -625,6 +636,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         updatePosition: (updatedKeyframe: IKeyframeSvgPoint, index: number) => void;
         scale: number;
         viewBoxScale: number;
+        selectKeyframe: (id: string) => void;
+        selectedControlPoint: (type: string, id: string) => void;
     }
     export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps> {
         private _active;
@@ -706,6 +719,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         handleValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
         handleFrameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
         flatTangent: () => void;
+        brokeTangents: () => void;
+        brokenMode: boolean;
         currentValue: number;
         currentFrame: number;
     }
@@ -749,7 +764,9 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         currentValue: number;
         frameAxisLength: ICanvasAxis[];
         valueAxisLength: ICanvasAxis[];
-        flatTangent: boolean;
+        isFlatTangentMode: boolean;
+        isTangentMode: boolean;
+        isBrokenMode: boolean;
         scale: number;
         playheadOffset: number;
         notification: string;
@@ -768,35 +785,60 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _svgCanvas;
         constructor(props: IAnimationCurveEditorComponentProps);
         componentDidMount(): void;
-        resetPlayheadOffset(): void;
+        /**
+        * Notifications
+        * To add notification we set the state and clear to make the notification bar hide.
+        */
+        clearNotification(): void;
+        /**
+        * Zoom and Scroll
+        * This section handles zoom and scroll
+        * of the graph area.
+        */
+        zoom(e: React.WheelEvent<HTMLDivElement>): void;
         setAxesLength(): void;
         getValueLabel(i: number): number;
+        resetPlayheadOffset(): void;
+        /**
+        * Add New Animation
+        * This section handles events from AnimationCreation.
+        */
         handleNameChange(event: React.ChangeEvent<HTMLInputElement>): void;
-        handleValueChange(event: React.ChangeEvent<HTMLInputElement>): void;
-        handleFrameChange(event: React.ChangeEvent<HTMLInputElement>): void;
         handleTypeChange(event: React.ChangeEvent<HTMLSelectElement>): void;
         handlePropertyChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        getAnimationTypeofChange(selected: string): number;
         addAnimation(): void;
-        clearNotification(): void;
+        /**
+        * Keyframe Manipulation
+        * This section handles events from SvgDraggableArea.
+        */
+        selectKeyframe(id: string): void;
+        selectedControlPoint(type: string, id: string): void;
+        renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number): void;
+        /**
+        * Actions
+        * This section handles events from GraphActionsBar.
+        */
+        handleFrameChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        handleValueChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        setFlatTangent(): void;
+        setTangentMode(): void;
+        setBrokenMode(): void;
         addKeyframeClick(): void;
         removeKeyframeClick(): void;
         addKeyFrame(event: React.MouseEvent<SVGSVGElement>): void;
         updateKeyframe(keyframe: Vector2, index: number): void;
+        /**
+        * Curve Rendering Functions
+        * This section handles how to render curves.
+        */
         getAnimationProperties(animation: Animation): {
             easingType: string | undefined;
             easingMode: number | undefined;
         };
-        getPathData(animation: Animation): string;
-        drawAllFrames(initialKey: IAnimationKey, endKey: IAnimationKey, easingFunction: EasingFunction): void;
-        curvePathFlat(keyframes: IAnimationKey[], data: string, middle: number, dataType: number): string;
-        curvePathWithTangents(keyframes: IAnimationKey[], data: string, middle: number, type: number): string;
-        curvePath(keyframes: IAnimationKey[], data: string, middle: number, easingFunction: EasingFunction): string;
-        renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number): void;
         linearInterpolation(keyframes: IAnimationKey[], data: string, middle: number): string;
         setKeyframePointLinear(point: Vector2, index: number): void;
-        setKeyframePoint(controlPoints: Vector2[], index: number, keyframesCount: number): void;
-        isAnimationPlaying(): void;
-        selectAnimation(animation: Animation): void;
+        getPathData(animation: Animation): string;
         getAnimationData(animation: Animation): {
             loopMode: number | undefined;
             name: string;
@@ -806,13 +848,25 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
             framesPerSecond: number;
             highestFrame: number;
             serialized: any;
-            usesTangents: IAnimationKey | undefined;
+            usesTangents: boolean;
         };
-        getAnimationTypeofChange(selected: string): number;
+        drawAllFrames(initialKey: IAnimationKey, endKey: IAnimationKey, easingFunction: EasingFunction): void;
+        curvePathFlat(keyframes: IAnimationKey[], data: string, middle: number, dataType: number): string;
+        curvePathWithTangents(keyframes: IAnimationKey[], data: string, middle: number, type: number): string;
+        curvePath(keyframes: IAnimationKey[], data: string, middle: number, easingFunction: EasingFunction): string;
+        setKeyframePoint(controlPoints: Vector2[], index: number, keyframesCount: number): void;
         interpolateControlPoints(p0: Vector2, p1: Vector2, u: number, p2: Vector2, v: number, p3: Vector2): Vector2[] | undefined;
+        /**
+        * Core functions
+        * This section handles main Curve Editor Functions.
+        */
+        selectAnimation(animation: Animation): void;
+        isAnimationPlaying(): void;
+        /**
+        * Timeline
+        * This section controls the timeline.
+        */
         changeCurrentFrame(frame: number): void;
-        setFlatTangent(): void;
-        zoom(e: React.WheelEvent<HTMLDivElement>): void;
         render(): JSX.Element;
     }
 }
@@ -3729,9 +3783,11 @@ declare module INSPECTOR {
         type: string;
         index: string;
         selected: boolean;
+        selectControlPoint: (id: string) => void;
     }
     export class AnchorSvgPoint extends React.Component<IAnchorSvgPointProps> {
         constructor(props: IAnchorSvgPointProps);
+        select(): void;
         render(): JSX.Element;
     }
 }
@@ -3741,15 +3797,24 @@ declare module INSPECTOR {
         rightControlPoint: BABYLON.Vector2 | null;
         leftControlPoint: BABYLON.Vector2 | null;
         id: string;
+        selected: boolean;
+        isLeftActive: boolean;
+        isRightActive: boolean;
     }
     interface IKeyframeSvgPointProps {
         keyframePoint: BABYLON.Vector2;
         leftControlPoint: BABYLON.Vector2 | null;
         rightControlPoint: BABYLON.Vector2 | null;
         id: string;
+        selected: boolean;
+        selectKeyframe: (id: string) => void;
+        selectedControlPoint: (type: string, id: string) => void;
+        isLeftActive: boolean;
+        isRightActive: boolean;
     }
     export class KeyframeSvgPoint extends React.Component<IKeyframeSvgPointProps> {
         constructor(props: IKeyframeSvgPointProps);
+        select(): void;
         render(): JSX.Element;
     }
 }
@@ -3759,6 +3824,8 @@ declare module INSPECTOR {
         updatePosition: (updatedKeyframe: IKeyframeSvgPoint, index: number) => void;
         scale: number;
         viewBoxScale: number;
+        selectKeyframe: (id: string) => void;
+        selectedControlPoint: (type: string, id: string) => void;
     }
     export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps> {
         private _active;
@@ -3835,6 +3902,8 @@ declare module INSPECTOR {
         handleValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
         handleFrameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
         flatTangent: () => void;
+        brokeTangents: () => void;
+        brokenMode: boolean;
         currentValue: number;
         currentFrame: number;
     }
@@ -3870,7 +3939,9 @@ declare module INSPECTOR {
         currentValue: number;
         frameAxisLength: ICanvasAxis[];
         valueAxisLength: ICanvasAxis[];
-        flatTangent: boolean;
+        isFlatTangentMode: boolean;
+        isTangentMode: boolean;
+        isBrokenMode: boolean;
         scale: number;
         playheadOffset: number;
         notification: string;
@@ -3889,35 +3960,60 @@ declare module INSPECTOR {
         private _svgCanvas;
         constructor(props: IAnimationCurveEditorComponentProps);
         componentDidMount(): void;
-        resetPlayheadOffset(): void;
+        /**
+        * Notifications
+        * To add notification we set the state and clear to make the notification bar hide.
+        */
+        clearNotification(): void;
+        /**
+        * Zoom and Scroll
+        * This section handles zoom and scroll
+        * of the graph area.
+        */
+        zoom(e: React.WheelEvent<HTMLDivElement>): void;
         setAxesLength(): void;
         getValueLabel(i: number): number;
+        resetPlayheadOffset(): void;
+        /**
+        * Add New BABYLON.Animation
+        * This section handles events from AnimationCreation.
+        */
         handleNameChange(event: React.ChangeEvent<HTMLInputElement>): void;
-        handleValueChange(event: React.ChangeEvent<HTMLInputElement>): void;
-        handleFrameChange(event: React.ChangeEvent<HTMLInputElement>): void;
         handleTypeChange(event: React.ChangeEvent<HTMLSelectElement>): void;
         handlePropertyChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        getAnimationTypeofChange(selected: string): number;
         addAnimation(): void;
-        clearNotification(): void;
+        /**
+        * Keyframe Manipulation
+        * This section handles events from SvgDraggableArea.
+        */
+        selectKeyframe(id: string): void;
+        selectedControlPoint(type: string, id: string): void;
+        renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number): void;
+        /**
+        * Actions
+        * This section handles events from GraphActionsBar.
+        */
+        handleFrameChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        handleValueChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        setFlatTangent(): void;
+        setTangentMode(): void;
+        setBrokenMode(): void;
         addKeyframeClick(): void;
         removeKeyframeClick(): void;
         addKeyFrame(event: React.MouseEvent<SVGSVGElement>): void;
         updateKeyframe(keyframe: BABYLON.Vector2, index: number): void;
+        /**
+        * Curve Rendering Functions
+        * This section handles how to render curves.
+        */
         getAnimationProperties(animation: BABYLON.Animation): {
             easingType: string | undefined;
             easingMode: number | undefined;
         };
-        getPathData(animation: BABYLON.Animation): string;
-        drawAllFrames(initialKey: BABYLON.IAnimationKey, endKey: BABYLON.IAnimationKey, easingFunction: BABYLON.EasingFunction): void;
-        curvePathFlat(keyframes: BABYLON.IAnimationKey[], data: string, middle: number, dataType: number): string;
-        curvePathWithTangents(keyframes: BABYLON.IAnimationKey[], data: string, middle: number, type: number): string;
-        curvePath(keyframes: BABYLON.IAnimationKey[], data: string, middle: number, easingFunction: BABYLON.EasingFunction): string;
-        renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number): void;
         linearInterpolation(keyframes: BABYLON.IAnimationKey[], data: string, middle: number): string;
         setKeyframePointLinear(point: BABYLON.Vector2, index: number): void;
-        setKeyframePoint(controlPoints: BABYLON.Vector2[], index: number, keyframesCount: number): void;
-        isAnimationPlaying(): void;
-        selectAnimation(animation: BABYLON.Animation): void;
+        getPathData(animation: BABYLON.Animation): string;
         getAnimationData(animation: BABYLON.Animation): {
             loopMode: number | undefined;
             name: string;
@@ -3927,13 +4023,25 @@ declare module INSPECTOR {
             framesPerSecond: number;
             highestFrame: number;
             serialized: any;
-            usesTangents: BABYLON.IAnimationKey | undefined;
+            usesTangents: boolean;
         };
-        getAnimationTypeofChange(selected: string): number;
+        drawAllFrames(initialKey: BABYLON.IAnimationKey, endKey: BABYLON.IAnimationKey, easingFunction: BABYLON.EasingFunction): void;
+        curvePathFlat(keyframes: BABYLON.IAnimationKey[], data: string, middle: number, dataType: number): string;
+        curvePathWithTangents(keyframes: BABYLON.IAnimationKey[], data: string, middle: number, type: number): string;
+        curvePath(keyframes: BABYLON.IAnimationKey[], data: string, middle: number, easingFunction: BABYLON.EasingFunction): string;
+        setKeyframePoint(controlPoints: BABYLON.Vector2[], index: number, keyframesCount: number): void;
         interpolateControlPoints(p0: BABYLON.Vector2, p1: BABYLON.Vector2, u: number, p2: BABYLON.Vector2, v: number, p3: BABYLON.Vector2): BABYLON.Vector2[] | undefined;
+        /**
+        * Core functions
+        * This section handles main Curve Editor Functions.
+        */
+        selectAnimation(animation: BABYLON.Animation): void;
+        isAnimationPlaying(): void;
+        /**
+        * Timeline
+        * This section controls the timeline.
+        */
         changeCurrentFrame(frame: number): void;
-        setFlatTangent(): void;
-        zoom(e: React.WheelEvent<HTMLDivElement>): void;
         render(): JSX.Element;
     }
 }
