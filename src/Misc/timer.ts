@@ -17,6 +17,14 @@ export interface ITimerOptions<T> {
      */
     countingObservable: Observable<T>;
     /**
+     * Optional parameters when adding an observer to the observable
+     */
+    observableParameters?: {
+        mask?: number;
+        insertFirst?: boolean;
+        scope?: any;
+    };
+    /**
      * An optional break condition that will stop the times prematurely. In this case onEnded will not be triggered!
      */
     breakCondition?: (data?: ITimerData<T>) => boolean;
@@ -74,6 +82,7 @@ export enum TimerState {
 export const SetAndStartTimer = (options: ITimerOptions<any>): Nullable<Observer<any>> => {
     let timer = 0;
     const startTime = Date.now();
+    options.observableParameters = options.observableParameters ?? {};
     const observer = options.countingObservable.add((payload: any) => {
         const now = Date.now();
         timer = now - startTime;
@@ -92,7 +101,7 @@ export const SetAndStartTimer = (options: ITimerOptions<any>): Nullable<Observer
             options.countingObservable.remove(observer);
             options.onEnded && options.onEnded(data);
         }
-    });
+    }, options.observableParameters.mask, options.observableParameters.insertFirst, options.observableParameters.scope);
     return observer;
 };
 
@@ -120,6 +129,11 @@ export class AdvancedTimer<T = any> implements IDisposable {
 
     private _observer: Nullable<Observer<T>> = null;
     private _countingObservable: Observable<T>;
+    private _observableParameters: {
+        mask?: number;
+        insertFirst?: boolean;
+        scope?: any;
+    };
     private _startTime: number;
     private _timer: number;
     private _state: TimerState;
@@ -134,6 +148,7 @@ export class AdvancedTimer<T = any> implements IDisposable {
     constructor(options: ITimerOptions<T>) {
         this._setState(TimerState.INIT);
         this._countingObservable = options.countingObservable;
+        this._observableParameters = options.observableParameters ?? {};
         this._breakCondition = options.breakCondition ?? (() => false);
         if (options.onEnded) {
             this.onTimerEndedObservable.add(options.onEnded);
@@ -173,7 +188,7 @@ export class AdvancedTimer<T = any> implements IDisposable {
         this._timeToEnd = timeToEnd;
         this._startTime = Date.now();
         this._timer = 0;
-        this._observer = this._countingObservable.add(this._tick);
+        this._observer = this._countingObservable.add(this._tick, this._observableParameters.mask, this._observableParameters.insertFirst, this._observableParameters.scope);
         this._setState(TimerState.STARTED);
     }
 
