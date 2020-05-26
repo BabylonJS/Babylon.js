@@ -16,17 +16,16 @@ import { GraphActionsBar } from './graphActionsBar';
 import { Scene } from "babylonjs/scene";
 import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
+import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
 
 require("./curveEditor.scss");
 
 interface IAnimationCurveEditorComponentProps {
     close: (event: any) => void;
-    playOrPause: () => void;
+    playOrPause?: () => void;
     title: string;
-    animations: Animation[];
-    entityName: string;
     scene: Scene;
-    entity: IAnimatable;
+    entity: IAnimatable | TargetedAnimation;
 }
 
 interface ICanvasAxis {
@@ -39,7 +38,8 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     animationName: string,
     animationType: string,
     animationTargetProperty: string,
-    isOpen: boolean, selected: Animation,
+    isOpen: boolean,
+    selected: Animation | null,
     currentPathData: string | undefined,
     svgKeyframes: IKeyframeSvgPoint[] | undefined,
     currentFrame: number,
@@ -60,6 +60,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     // Height scale *Review this functionaliy
     private _heightScale: number = 100;
     // Canvas Length *Review this functionality
+    readonly _entityName: string;
     readonly _canvasLength: number = 20;
     private _newAnimations: Animation[] = [];
     private _svgKeyframes: IKeyframeSvgPoint[] = [];
@@ -68,19 +69,36 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     private _graphCanvas: React.RefObject<HTMLDivElement>;
     private _selectedCurve: React.RefObject<SVGPathElement>;
     private _svgCanvas: React.RefObject<SvgDraggableArea>;
+    private _isTargetedAnimation: boolean;
     constructor(props: IAnimationCurveEditorComponentProps) {
         super(props);
+        this._entityName = (this.props.entity as any).id;
         // Review is we really need this refs
         this._graphCanvas = React.createRef();
         this._selectedCurve = React.createRef();
         this._svgCanvas = React.createRef();
+
+        console.log(this.props.entity instanceof TargetedAnimation)
+
+        let initialSelection;
+        let initialPathData;
+        if (this.props.entity instanceof TargetedAnimation){
+            this._isTargetedAnimation = true;
+            initialSelection = this.props.entity.animation;
+            initialPathData = this.getPathData(this.props.entity.animation);
+        } else {
+            this._isTargetedAnimation = false;
+            initialSelection = this.props.entity.animations !== null ? this.props.entity.animations[0] : null;
+            initialPathData = this.props.entity.animations !== null ? this.getPathData(this.props.entity.animations[0]) : "";
+        }
+
         // will update this until we have a top scroll/zoom feature
         let valueInd = [2, 1.8, 1.6, 1.4, 1.2, 1, 0.8, 0.6, 0.4, 0.2, 0];
         this.state = {
             animations: this._newAnimations,
-            selected: this.props.animations[0],
+            selected: initialSelection,
             isOpen: true,
-            currentPathData: this.getPathData(this.props.animations[0]),
+            currentPathData: initialPathData,
             svgKeyframes: this._svgKeyframes,
             animationTargetProperty: 'position.x',
             animationName: "",
@@ -136,8 +154,13 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
         let length = Math.round(this._canvasLength * this.state.scale);
 
-        if (length < (this.state.selected.getHighestFrame() * 2) / 10) {
-            length = (this.state.selected.getHighestFrame() * 2) / 10
+        let highestFrame = 100;
+        if (this.state.selected !== null) {
+            highestFrame = this.state.selected.getHighestFrame();
+        }
+
+        if (length < (highestFrame * 2) / 10) {
+            length = (highestFrame * 2) / 10
         }
 
         let valueLines = Math.round((this.state.scale * this._heightScale) / 10);
@@ -187,6 +210,78 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     handlePropertyChange(event: React.ChangeEvent<HTMLInputElement>) {
         event.preventDefault();
         this.setState({ animationTargetProperty: event.target.value });
+    }
+
+    setListItem(animation: Animation, i: number) {
+        let element;
+
+        switch (animation.dataType) {
+            case Animation.ANIMATIONTYPE_FLOAT:
+                element = <li className={this.state.selected && this.state.selected.name === animation.name ? 'active' : ''} key={i} onClick={() => this.selectAnimation(animation)}>
+                    <p>{animation.name}&nbsp;
+                    <span>{animation.targetProperty}</span></p>
+                </li>
+                break;
+            case Animation.ANIMATIONTYPE_VECTOR2:
+                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
+                    <ul>
+                        <li key={`${i}_x`}>Property <strong>X</strong></li>
+                        <li key={`${i}_y`}>Property <strong>Y</strong></li>
+                    </ul>
+                </li>
+                break;
+            case Animation.ANIMATIONTYPE_VECTOR3:
+                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
+                    <ul>
+                        <li key={`${i}_x`}>Property <strong>X</strong></li>
+                        <li key={`${i}_y`}>Property <strong>Y</strong></li>
+                        <li key={`${i}_z`}>Property <strong>Z</strong></li>
+                    </ul>
+                </li>
+                break;
+            case Animation.ANIMATIONTYPE_QUATERNION:
+                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
+                    <ul>
+                        <li key={`${i}_x`}>Property <strong>X</strong></li>
+                        <li key={`${i}_y`}>Property <strong>Y</strong></li>
+                        <li key={`${i}_z`}>Property <strong>Z</strong></li>
+                        <li key={`${i}_w`}>Property <strong>W</strong></li>
+                    </ul>
+                </li>
+                break;
+            case Animation.ANIMATIONTYPE_COLOR3:
+                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
+                    <ul>
+                        <li key={`${i}_r`}>Property <strong>R</strong></li>
+                        <li key={`${i}_g`}>Property <strong>G</strong></li>
+                        <li key={`${i}_b`}>Property <strong>B</strong></li>
+                    </ul>
+                </li>
+                break;
+            case Animation.ANIMATIONTYPE_COLOR4:
+                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
+                    <ul>
+                        <li key={`${i}_r`}>Property <strong>R</strong></li>
+                        <li key={`${i}_g`}>Property <strong>G</strong></li>
+                        <li key={`${i}_b`}>Property <strong>B</strong></li>
+                        <li key={`${i}_a`}>Property <strong>A</strong></li>
+                    </ul>
+                </li>
+                break;
+            case Animation.ANIMATIONTYPE_SIZE:
+                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
+                    <ul>
+                        <li key={`${i}_width`}>Property <strong>Width</strong></li>
+                        <li key={`${i}_height`}>Property <strong>Height</strong></li>
+                    </ul>
+                </li>
+                break;
+            default: console.log("not recognized");
+                element = null;
+                break;
+        }
+
+        return element;
     }
 
     getAnimationTypeofChange(selected: string) {
@@ -362,7 +457,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     selectedControlPoint(type: string, id: string) {
         let updatedKeyframes = this.state.svgKeyframes?.map(kf => {
             if (kf.id === id) {
-                this.setState({isFlatTangentMode: false});
+                this.setState({ isFlatTangentMode: false });
                 if (type === "left") {
                     kf.isLeftActive = !kf.isLeftActive;
                     kf.isRightActive = false;
@@ -451,66 +546,81 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     handleValueChange(event: React.ChangeEvent<HTMLInputElement>) {
         event.preventDefault();
         this.setState({ currentValue: parseFloat(event.target.value) }, () => {
-            let animation = this.state.selected;
-            let keys = animation.getKeys();
+            if (this.state.selected !== null) {
+                let animation = this.state.selected;
+                let keys = animation.getKeys();
 
-            let isKeyframe = keys.find(k => k.frame === this.state.currentFrame);
-            if (isKeyframe) {
-                let updatedKeys = keys.map(k => {
-                    if (k.frame === this.state.currentFrame) {
-                        k.value = this.state.currentValue;
-                    }
-                    return k;
-                });
-                this.state.selected.setKeys(updatedKeys);
-                this.selectAnimation(animation);
+                let isKeyframe = keys.find(k => k.frame === this.state.currentFrame);
+                if (isKeyframe) {
+                    let updatedKeys = keys.map(k => {
+                        if (k.frame === this.state.currentFrame) {
+                            k.value = this.state.currentValue;
+                        }
+                        return k;
+                    });
+                    this.state.selected.setKeys(updatedKeys);
+                    this.selectAnimation(animation);
+                }
             }
         });
     }
 
     setFlatTangent() {
-        this.setState({ isFlatTangentMode: !this.state.isFlatTangentMode }, () => this.selectAnimation(this.state.selected));
+        if (this.state.selected !== null) {
+            let animation = this.state.selected;
+            this.setState({ isFlatTangentMode: !this.state.isFlatTangentMode }, () => this.selectAnimation(animation));
+        }
     }
 
     // Use this for Bezier curve mode
     setTangentMode() {
-        this.setState({ isTangentMode: !this.state.isTangentMode }, () => this.selectAnimation(this.state.selected));
+        if (this.state.selected !== null) {
+            let animation = this.state.selected;
+            this.setState({ isTangentMode: !this.state.isTangentMode }, () => this.selectAnimation(animation));
+        }
     }
 
     setBrokenMode() {
-        this.setState({ isBrokenMode: !this.state.isBrokenMode }, () => this.selectAnimation(this.state.selected));
+        if (this.state.selected !== null) {
+            let animation = this.state.selected;
+            this.setState({ isBrokenMode: !this.state.isBrokenMode }, () => this.selectAnimation(animation));
+        }
     }
 
     addKeyframeClick() {
 
-        let currentAnimation = this.state.selected;
+        if (this.state.selected !== null) {
+            let currentAnimation = this.state.selected;
 
-        if (currentAnimation.dataType === Animation.ANIMATIONTYPE_FLOAT) {
-            let keys = currentAnimation.getKeys();
-            let x = this.state.currentFrame;
-            let y = this.state.currentValue;
+            if (currentAnimation.dataType === Animation.ANIMATIONTYPE_FLOAT) {
+                let keys = currentAnimation.getKeys();
+                let x = this.state.currentFrame;
+                let y = this.state.currentValue;
 
-            keys.push({ frame: x, value: y, inTangent: 0, outTangent: 0 });
-            keys.sort((a, b) => a.frame - b.frame);
+                keys.push({ frame: x, value: y, inTangent: 0, outTangent: 0 });
+                keys.sort((a, b) => a.frame - b.frame);
 
-            currentAnimation.setKeys(keys);
+                currentAnimation.setKeys(keys);
 
-            this.selectAnimation(currentAnimation);
+                this.selectAnimation(currentAnimation);
+            }
         }
     }
 
     removeKeyframeClick() {
 
-        let currentAnimation = this.state.selected;
+        if (this.state.selected !== null) {
+            let currentAnimation = this.state.selected;
 
-        if (currentAnimation.dataType === Animation.ANIMATIONTYPE_FLOAT) {
-            let keys = currentAnimation.getKeys();
-            let x = this.state.currentFrame;
-            let filteredKeys = keys.filter(kf => kf.frame !== x);
+            if (currentAnimation.dataType === Animation.ANIMATIONTYPE_FLOAT) {
+                let keys = currentAnimation.getKeys();
+                let x = this.state.currentFrame;
+                let filteredKeys = keys.filter(kf => kf.frame !== x);
 
-            currentAnimation.setKeys(filteredKeys);
+                currentAnimation.setKeys(filteredKeys);
 
-            this.selectAnimation(currentAnimation);
+                this.selectAnimation(currentAnimation);
+            }
         }
     }
 
@@ -518,40 +628,42 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
         event.preventDefault();
 
-        var svg = event.target as SVGSVGElement;
+        if (this.state.selected !== null) {
 
-        var pt = svg.createSVGPoint();
+            var svg = event.target as SVGSVGElement;
 
-        pt.x = event.clientX;
-        pt.y = event.clientY;
+            var pt = svg.createSVGPoint();
 
-        var inverse = svg.getScreenCTM()?.inverse();
+            pt.x = event.clientX;
+            pt.y = event.clientY;
 
-        var cursorpt = pt.matrixTransform(inverse);
+            var inverse = svg.getScreenCTM()?.inverse();
 
-        var currentAnimation = this.state.selected;
+            var cursorpt = pt.matrixTransform(inverse);
 
-        var keys = currentAnimation.getKeys();
+            var currentAnimation = this.state.selected;
 
-        var height = 100;
-        var middle = (height / 2);
+            var keys = currentAnimation.getKeys();
 
-        var keyValue;
+            var height = 100;
+            var middle = (height / 2);
 
-        if (cursorpt.y < middle) {
-            keyValue = 1 + ((100 / cursorpt.y) * .1)
+            var keyValue;
+
+            if (cursorpt.y < middle) {
+                keyValue = 1 + ((100 / cursorpt.y) * .1)
+            }
+
+            if (cursorpt.y > middle) {
+                keyValue = 1 - ((100 / cursorpt.y) * .1)
+            }
+
+            keys.push({ frame: cursorpt.x, value: keyValue });
+
+            currentAnimation.setKeys(keys);
+
+            this.selectAnimation(currentAnimation);
         }
-
-        if (cursorpt.y > middle) {
-            keyValue = 1 - ((100 / cursorpt.y) * .1)
-        }
-
-        keys.push({ frame: cursorpt.x, value: keyValue });
-
-        currentAnimation.setKeys(keys);
-
-        this.selectAnimation(currentAnimation);
-
     }
 
     updateKeyframe(keyframe: Vector2, index: number) {
@@ -563,7 +675,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             if (i === index) {
                 k.keyframePoint.x = keyframe.x;
                 k.keyframePoint.y = keyframe.y;
-                //select here?
             }
 
             var height = 100;
@@ -639,11 +750,11 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         if (this.state && this.state.isFlatTangentMode) {
             keyframes = animation.getKeys().map(kf => {
 
-                if (kf.inTangent !== undefined){
+                if (kf.inTangent !== undefined) {
                     kf.inTangent = 0;
                 }
 
-                if (kf.outTangent !== undefined){
+                if (kf.outTangent !== undefined) {
                     kf.outTangent = 0;
                 }
 
@@ -973,9 +1084,15 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     }
 
     isAnimationPlaying() {
-        this._isPlaying = this.props.scene.getAllAnimatablesByTarget(this.props.entity).length > 0;
+
+        let target = this.props.entity;
+        if (this.props.entity instanceof TargetedAnimation){
+            target = this.props.entity.target;
+        }
+
+        this._isPlaying = this.props.scene.getAllAnimatablesByTarget(target).length > 0;
         if (this._isPlaying) {
-            this.props.playOrPause();
+            this.props.playOrPause && this.props.playOrPause();
         } else {
             this._isPlaying = false;
         }
@@ -1033,7 +1150,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                 <div className="content">
                     <div className="row">
                         <div className="animation-list">
-                            <div>
+                            <div style={{display: this._isTargetedAnimation ? "none" : "block"}}>
                                 <div className="label-input">
                                     <label>Animation Name</label>
                                     <input type="text" value={this.state.animationName} onChange={(e) => this.handleNameChange(e)}></input>
@@ -1058,79 +1175,14 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                             </div>
 
                             <div className="object-tree">
-                                <h2>{this.props.entityName}</h2>
+                                <h2>{this._entityName}</h2>
                                 <ul>
-                                    {this.props.animations && this.props.animations.map((animation, i) => {
+                                    {
+                                    
+                                    this.props.entity instanceof TargetedAnimation ? this.setListItem(this.props.entity.animation, 0) :
+                                    this.props.entity.animations && this.props.entity.animations.map((animation, i) => {
 
-                                        let element;
-
-                                        switch (animation.dataType) {
-                                            case Animation.ANIMATIONTYPE_FLOAT:
-                                                element = <li className={this.state.selected.name === animation.name ? 'active' : ''} key={i} onClick={() => this.selectAnimation(animation)}>
-                                                    <p>{animation.name}&nbsp;
-                                                    <span>{animation.targetProperty}</span></p>
-                                                </li>
-                                                break;
-                                            case Animation.ANIMATIONTYPE_VECTOR2:
-                                                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
-                                                    <ul>
-                                                        <li key={`${i}_x`}>Property <strong>X</strong></li>
-                                                        <li key={`${i}_y`}>Property <strong>Y</strong></li>
-                                                    </ul>
-                                                </li>
-                                                break;
-                                            case Animation.ANIMATIONTYPE_VECTOR3:
-                                                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
-                                                    <ul>
-                                                        <li key={`${i}_x`}>Property <strong>X</strong></li>
-                                                        <li key={`${i}_y`}>Property <strong>Y</strong></li>
-                                                        <li key={`${i}_z`}>Property <strong>Z</strong></li>
-                                                    </ul>
-                                                </li>
-                                                break;
-                                            case Animation.ANIMATIONTYPE_QUATERNION:
-                                                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
-                                                    <ul>
-                                                        <li key={`${i}_x`}>Property <strong>X</strong></li>
-                                                        <li key={`${i}_y`}>Property <strong>Y</strong></li>
-                                                        <li key={`${i}_z`}>Property <strong>Z</strong></li>
-                                                        <li key={`${i}_w`}>Property <strong>W</strong></li>
-                                                    </ul>
-                                                </li>
-                                                break;
-                                            case Animation.ANIMATIONTYPE_COLOR3:
-                                                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
-                                                    <ul>
-                                                        <li key={`${i}_r`}>Property <strong>R</strong></li>
-                                                        <li key={`${i}_g`}>Property <strong>G</strong></li>
-                                                        <li key={`${i}_b`}>Property <strong>B</strong></li>
-                                                    </ul>
-                                                </li>
-                                                break;
-                                            case Animation.ANIMATIONTYPE_COLOR4:
-                                                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
-                                                    <ul>
-                                                        <li key={`${i}_r`}>Property <strong>R</strong></li>
-                                                        <li key={`${i}_g`}>Property <strong>G</strong></li>
-                                                        <li key={`${i}_b`}>Property <strong>B</strong></li>
-                                                        <li key={`${i}_a`}>Property <strong>A</strong></li>
-                                                    </ul>
-                                                </li>
-                                                break;
-                                            case Animation.ANIMATIONTYPE_SIZE:
-                                                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
-                                                    <ul>
-                                                        <li key={`${i}_width`}>Property <strong>Width</strong></li>
-                                                        <li key={`${i}_height`}>Property <strong>Height</strong></li>
-                                                    </ul>
-                                                </li>
-                                                break;
-                                            default: console.log("not recognized");
-                                                element = null;
-                                                break;
-                                        }
-
-                                        return element;
+                                      return this.setListItem(animation, i);
 
                                     })}
 
@@ -1182,7 +1234,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                         </div>
                     </div>
                     <div className="row">
-                        <Timeline currentFrame={this.state.currentFrame} onCurrentFrameChange={(frame: number) => this.changeCurrentFrame(frame)} keyframes={this.state.selected.getKeys()} selected={this.state.selected.getKeys()[0]}></Timeline>
+                        <Timeline currentFrame={this.state.currentFrame} onCurrentFrameChange={(frame: number) => this.changeCurrentFrame(frame)} keyframes={this.state.selected && this.state.selected.getKeys()} selected={this.state.selected && this.state.selected.getKeys()[0]}></Timeline>
                     </div>
                 </div>
             </div>
