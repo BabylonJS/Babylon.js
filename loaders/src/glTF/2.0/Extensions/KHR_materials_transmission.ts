@@ -64,7 +64,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
             throw new Error(`${context}: Material type not supported`);
         }
         let pbrMaterial = babylonMaterial as PBRMaterial;
-        
+
         // Enables "refraction" texture which represents transmitted light.
         pbrMaterial.subSurface.isRefractionEnabled = true;
 
