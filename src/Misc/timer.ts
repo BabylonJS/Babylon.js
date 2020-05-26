@@ -88,7 +88,7 @@ export enum TimerState {
  *
  * @param options options with which to initialize this timer
  */
-export function SetAndStartTimer(options: ITimerOptions<any>): Nullable<Observer<any>> {
+export function setAndStartTimer(options: ITimerOptions<any>): Nullable<Observer<any>> {
     let timer = 0;
     const startTime = Date.now();
     options.observableParameters = options.observableParameters ?? {};
