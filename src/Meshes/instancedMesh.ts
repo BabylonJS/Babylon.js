@@ -500,16 +500,6 @@ declare module "./abstractMesh" {
     }
 }
 
-/*Object.defineProperty(Mesh.prototype, "edgesShareWithInstances", {
-    get: function(this: Mesh) {
-        return this.edgesShareWithInstances;
-    },
-    set: function(this: Mesh, value: boolean) {
-        this.edgesShareWithInstances = value;
-    },
-    enumerable: true,
-    configurable: true
-});*/
 Mesh.prototype.edgesShareWithInstances = false;
 
 Mesh.prototype.registerInstancedBuffer = function(kind: string, stride: number): void {
