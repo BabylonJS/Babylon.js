@@ -431,8 +431,8 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                                     controllerData.teleportationState.currentRotation = 0;
                                     const timeToSelect = this._options.timeToTeleport || 3000;
                                     setAndStartTimer({
-                                        time: timeToSelect,
-                                        countingObservable: this._xrSessionManager.onXRFrameObservable,
+                                        timeout: timeToSelect,
+                                        contextObservable: this._xrSessionManager.onXRFrameObservable,
                                         breakCondition: () => !mainComponent.pressed,
                                         onEnded: () => {
                                             if (this._currentTeleportationControllerId === controllerData.xrController.uniqueId && controllerData.teleportationState.forward) {
@@ -522,8 +522,8 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                     controllerData.teleportationState.currentRotation = 0;
                     const timeToSelect = this._options.timeToTeleport || 3000;
                     setAndStartTimer({
-                        time: timeToSelect,
-                        countingObservable: this._xrSessionManager.onXRFrameObservable,
+                        timeout: timeToSelect,
+                        contextObservable: this._xrSessionManager.onXRFrameObservable,
                         onEnded: () => {
                             if (this._currentTeleportationControllerId === controllerData.xrController.uniqueId && controllerData.teleportationState.forward) {
                                 this._teleportForward(xrController.uniqueId);

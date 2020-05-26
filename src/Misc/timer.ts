@@ -9,13 +9,13 @@ export interface ITimerOptions<T> {
     /**
      * Time-to-end
      */
-    time: number;
+    timeout: number;
     /**
-     * What is the counting observable. Will usually be OnBeforeRenderObservable.
-     * Time calculation is done ONLY when the observable is notifying, meaning that if
+     * The context observable is used to calculate time deltas and provides the context of the timer's callbacks. Will usually be OnBeforeRenderObservable.
+     * Countdown calculation is done ONLY when the observable is notifying its observers, meaning that if
      * you choose an observable that doesn't trigger too often, the wait time might extend further than the requested max time
      */
-    countingObservable: Observable<T>;
+    contextObservable: Observable<T>;
     /**
      * Optional parameters when adding an observer to the observable
      */
@@ -55,8 +55,8 @@ export interface ITimerData<T> {
      */
     deltaTime: number;
     /**
-     * How much was completed, in [0.0...1.0].
-     * Note that this CAN be higher than 1due to the fact that we don't actually measure time but observable calls
+     * How much is completed, in [0.0...1.0].
+     * Note that this CAN be higher than 1 due to the fact that we don't actually measure time but delta between observable calls
      */
     completeRate: number;
     /**
@@ -92,22 +92,22 @@ export function setAndStartTimer(options: ITimerOptions<any>): Nullable<Observer
     let timer = 0;
     const startTime = Date.now();
     options.observableParameters = options.observableParameters ?? {};
-    const observer = options.countingObservable.add((payload: any) => {
+    const observer = options.contextObservable.add((payload: any) => {
         const now = Date.now();
         timer = now - startTime;
         const data: ITimerData<any> = {
             startTime,
             currentTime: now,
             deltaTime: timer,
-            completeRate: timer / options.time,
+            completeRate: timer / options.timeout,
             payload
         };
         options.onTick && options.onTick(data);
         if (options.breakCondition && options.breakCondition()) {
-            options.countingObservable.remove(observer);
+            options.contextObservable.remove(observer);
         }
-        if (timer >= options.time) {
-            options.countingObservable.remove(observer);
+        if (timer >= options.timeout) {
+            options.contextObservable.remove(observer);
             options.onEnded && options.onEnded(data);
         }
     }, options.observableParameters.mask, options.observableParameters.insertFirst, options.observableParameters.scope);
@@ -137,7 +137,7 @@ export class AdvancedTimer<T = any> implements IDisposable {
     public onStateChangedObservable: Observable<TimerState> = new Observable();
 
     private _observer: Nullable<Observer<T>> = null;
-    private _countingObservable: Observable<T>;
+    private _contextObservable: Observable<T>;
     private _observableParameters: {
         mask?: number;
         insertFirst?: boolean;
@@ -156,7 +156,7 @@ export class AdvancedTimer<T = any> implements IDisposable {
      */
     constructor(options: ITimerOptions<T>) {
         this._setState(TimerState.INIT);
-        this._countingObservable = options.countingObservable;
+        this._contextObservable = options.contextObservable;
         this._observableParameters = options.observableParameters ?? {};
         this._breakCondition = options.breakCondition ?? (() => false);
         if (options.onEnded) {
@@ -197,7 +197,7 @@ export class AdvancedTimer<T = any> implements IDisposable {
         this._timeToEnd = timeToEnd;
         this._startTime = Date.now();
         this._timer = 0;
-        this._observer = this._countingObservable.add(this._tick, this._observableParameters.mask, this._observableParameters.insertFirst, this._observableParameters.scope);
+        this._observer = this._contextObservable.add(this._tick, this._observableParameters.mask, this._observableParameters.insertFirst, this._observableParameters.scope);
         this._setState(TimerState.STARTED);
     }
 
@@ -216,7 +216,7 @@ export class AdvancedTimer<T = any> implements IDisposable {
      */
     public dispose() {
         if (this._observer) {
-            this._countingObservable.remove(this._observer);
+            this._contextObservable.remove(this._observer);
         }
         this.clearObservables();
     }
@@ -245,7 +245,7 @@ export class AdvancedTimer<T = any> implements IDisposable {
     }
 
     private _stop(data: ITimerData<T>, aborted: boolean = false) {
-        this._countingObservable.remove(this._observer);
+        this._contextObservable.remove(this._observer);
         this._setState(TimerState.ENDED);
         if (aborted) {
             this.onTimerAbortedObservable.notifyObservers(data);
