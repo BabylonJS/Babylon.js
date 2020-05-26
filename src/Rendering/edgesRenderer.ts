@@ -1,6 +1,7 @@
 import { Nullable } from "../types";
 import { VertexBuffer } from "../Meshes/buffer";
 import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Mesh } from "../Meshes/mesh";
 import { LinesMesh, InstancedLinesMesh } from "../Meshes/linesMesh";
 import { Vector3, TmpVectors } from "../Maths/math.vector";
 import { IDisposable, Scene } from "../scene";
@@ -141,6 +142,7 @@ export class EdgesRenderer implements IEdgesRenderer {
     protected _lineShader: ShaderMaterial;
     protected _ib: DataBuffer;
     protected _buffers: { [key: string]: Nullable<VertexBuffer> } = {};
+    protected _buffersForInstances: { [key: string]: Nullable<VertexBuffer> } = {};
     protected _checkVerticesInsteadOfIndices = false;
 
     private _meshRebuildObserver: Nullable<Observer<AbstractMesh>>;
@@ -447,6 +449,9 @@ export class EdgesRenderer implements IEdgesRenderer {
         this._buffers[VertexBuffer.PositionKind] = new VertexBuffer(engine, this._linesPositions, VertexBuffer.PositionKind, false);
         this._buffers[VertexBuffer.NormalKind] = new VertexBuffer(engine, this._linesNormals, VertexBuffer.NormalKind, false, false, 4);
 
+        this._buffersForInstances[VertexBuffer.PositionKind] = this._buffers[VertexBuffer.PositionKind];
+        this._buffersForInstances[VertexBuffer.NormalKind] = this._buffers[VertexBuffer.NormalKind];
+
         this._ib = engine.createIndexBuffer(this._linesIndices);
 
         this._indicesCount = this._linesIndices.length;
@@ -457,7 +462,7 @@ export class EdgesRenderer implements IEdgesRenderer {
      * @return true if ready, otherwise false.
      */
     public isReady(): boolean {
-        return this._lineShader.isReady();
+        return this._lineShader.isReady(this._source, this._source.hasThinInstances);
     }
 
     /**
@@ -479,8 +484,20 @@ export class EdgesRenderer implements IEdgesRenderer {
             engine.setAlphaMode(Constants.ALPHA_DISABLE);
         }
 
+        const useBuffersWithInstances = this._source.hasThinInstances;
+
+        let instanceCount = 0;
+
+        if (useBuffersWithInstances) {
+            this._buffersForInstances["world0"] = (this._source as Mesh).getVertexBuffer("world0");
+            this._buffersForInstances["world1"] = (this._source as Mesh).getVertexBuffer("world1");
+            this._buffersForInstances["world2"] = (this._source as Mesh).getVertexBuffer("world2");
+            this._buffersForInstances["world3"] = (this._source as Mesh).getVertexBuffer("world3");
+            instanceCount = (this._source as Mesh).thinInstanceCount;
+        }
+
         // VBOs
-        engine.bindBuffers(this._buffers, this._ib, <Effect>this._lineShader.getEffect());
+        engine.bindBuffers(useBuffersWithInstances ? this._buffersForInstances : this._buffers, this._ib, <Effect>this._lineShader.getEffect());
 
         scene.resetCachedMaterial();
         this._lineShader.setColor4("color", this._source.edgesColor);
@@ -495,7 +512,7 @@ export class EdgesRenderer implements IEdgesRenderer {
         this._lineShader.bind(this._source.getWorldMatrix());
 
         // Draw order
-        engine.drawElementsType(Material.TriangleFillMode, 0, this._indicesCount);
+        engine.drawElementsType(Material.TriangleFillMode, 0, this._indicesCount, instanceCount);
         this._lineShader.unbind();
     }
 }
