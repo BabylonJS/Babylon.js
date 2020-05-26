@@ -4,16 +4,18 @@
 varying vec2 vUV;
 uniform vec2 texelSize;
 uniform sampler2D textureSampler;
+uniform sampler2D inputSampler;
 uniform sampler2D irradianceSampler;
 uniform sampler2D depthSampler;
+uniform sampler2D albedoSampler;
 
 uniform float filterRadius;
 uniform vec2 viewportSize;
 
 const float LOG2_E = 1.4426950408889634;
 const float PI = 3.1415926535897932;
-const float SSS_PIXELS_PER_SAMPLE = 1.;
-const int _SssSampleBudget = 32;
+const float SSS_PIXELS_PER_SAMPLE = 4.;
+const int _SssSampleBudget = 40;
 
 #define rcp(x) 1. / x
 #define Sq(x) x * x
@@ -61,7 +63,7 @@ vec2 SampleBurleyDiffusionProfile(float u, float rcpS)
 // TODO : inout vec3 totalIrradiance, inout vec3 totalWeight
 void EvaluateSample(int i, int n, vec3 S, float d, vec3 centerPosVS, float mmPerUnit, float pixelsPerMm,
                     float phase, vec3 tangentX, vec3 tangentY,
-                    vec3 totalIrradiance, vec3 totalWeight)
+                    inout vec3 totalIrradiance, inout vec3 totalWeight)
 {
     // The sample count is loop-invariant.
     float scale  = rcp(float(n));
@@ -155,7 +157,7 @@ void main(void)
 	float  distScale     = 1.; //sssData.subsurfaceMask;
 	vec3 S             = vec3(0.7568628, 0.32156864, 0.20000002); //_ShapeParamsAndMaxScatterDists[profileIndex].rgb diffusion color
 	float  d             = 0.7568628; //_ShapeParamsAndMaxScatterDists[profileIndex].a max scatter dist
-	float  metersPerUnit = 0.01; //_WorldScalesAndFilterRadiiAndThicknessRemaps[profileIndex].x;
+	float  metersPerUnit = 1.; //_WorldScalesAndFilterRadiiAndThicknessRemaps[profileIndex].x;
 
 	// Reconstruct the view-space position corresponding to the central sample.
 	vec2 centerPosNDC = vUV;
@@ -179,12 +181,8 @@ void main(void)
 	int  sampleCount  = int(filterArea * rcp(SSS_PIXELS_PER_SAMPLE));
 	int  sampleBudget = _SssSampleBudget;
 
-	// DEBUG
-	gl_FragColor = vec4(vec3(sampleCount) / 1000000., 1.0);
-	return;
-
 	int texturingMode = 0; // GetSubsurfaceScatteringTexturingMode(profileIndex);
-	vec3 albedo  = vec3(0.5); // texture2D(albedoSampler, vUV); //ApplySubsurfaceScatteringTexturingMode(texturingMode, sssData.diffuseColor);
+	vec3 albedo  = texture2D(albedoSampler, vUV).rgb; //ApplySubsurfaceScatteringTexturingMode(texturingMode, sssData.diffuseColor);
 
 	if (distScale == 0. || sampleCount < 1)
 	{
@@ -217,7 +215,7 @@ void main(void)
     // Total weight is 0 for color channels without scattering.
     totalWeight = max(totalWeight, 1e-12);
 
-    gl_FragColor = vec4(albedo * (totalIrradiance / totalWeight), 1.);
+    gl_FragColor = vec4(texture2D(inputSampler, vUV).rgb + albedo * (totalIrradiance / totalWeight), 1.);
 
 	// gl_FragColor = mix(texture2D(textureSampler, vUV), centerIrradiance, 0.5);
 }
