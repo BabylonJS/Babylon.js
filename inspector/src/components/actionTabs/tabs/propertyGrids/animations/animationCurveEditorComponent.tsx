@@ -55,7 +55,8 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     notification: string,
     currentPoint: SVGPoint | undefined,
     lastFrame: number,
-    playheadPos: number
+    playheadPos: number,
+    isPlaying: boolean
 }> {
 
     // Height scale *Review this functionaliy
@@ -119,6 +120,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             currentPoint: undefined,
             scale: 1,
             playheadPos: 0,
+            isPlaying: this.isAnimationPlaying()
         }
     }
 
@@ -1128,7 +1130,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     */
     selectAnimation(animation: Animation) {
 
-        this.isAnimationPlaying();
+        this.playStopAnimation();
 
         this._svgKeyframes = [];
 
@@ -1145,6 +1147,42 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     }
 
     isAnimationPlaying() {
+        let target = this.props.entity;
+        if (this.props.entity instanceof TargetedAnimation) {
+            target = this.props.entity.target;
+        }
+
+        return this.props.scene.getAllAnimatablesByTarget(target).length > 0;
+    }
+
+    playPause(direction: number) {
+
+        if (this.state.selected) {
+            let target = this.props.entity;
+            if (this.props.entity instanceof TargetedAnimation) {
+                target = this.props.entity.target;
+            }
+
+            if (this.state.isPlaying) {
+                this.props.scene.stopAnimation(target);
+                this.setState({ isPlaying: false })
+                this.forceUpdate();
+            } else {
+                if (direction === 1){
+                    this.props.scene.beginAnimation(target, this.state.selected.getKeys()[0].frame, this.state.selected.getHighestFrame(), true);
+                } 
+                if (direction === -1){
+                    this.props.scene.beginAnimation(target, this.state.selected.getHighestFrame(), this.state.selected.getKeys()[0].frame, true);
+                } 
+                this.props.scene.beginAnimation(target, this.state.selected.getKeys()[0].frame, this.state.selected.getHighestFrame(), true);
+                this._isPlaying = false;
+                this.setState({ isPlaying: true })
+                this.forceUpdate();
+            }
+        }
+    }
+
+    playStopAnimation() {
 
         let target = this.props.entity;
         if (this.props.entity instanceof TargetedAnimation) {
@@ -1154,8 +1192,10 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         this._isPlaying = this.props.scene.getAllAnimatablesByTarget(target).length > 0;
         if (this._isPlaying) {
             this.props.playOrPause && this.props.playOrPause();
+            return true;
         } else {
             this._isPlaying = false;
+            return false;
         }
     }
 
@@ -1326,7 +1366,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                         </div>
                     </div>
                     <div className="row">
-                        <Timeline currentFrame={this.state.currentFrame} dragKeyframe={(frame: number, index: number) => this.updateFrameInKeyFrame(frame, index)} onCurrentFrameChange={(frame: number) => this.changeCurrentFrame(frame)} keyframes={this.state.selected && this.state.selected.getKeys()} selected={this.state.selected && this.state.selected.getKeys()[0]}></Timeline>
+                        <Timeline currentFrame={this.state.currentFrame} playPause={(direction: number) => this.playPause(direction)} isPlaying={this.state.isPlaying} dragKeyframe={(frame: number, index: number) => this.updateFrameInKeyFrame(frame, index)} onCurrentFrameChange={(frame: number) => this.changeCurrentFrame(frame)} keyframes={this.state.selected && this.state.selected.getKeys()} selected={this.state.selected && this.state.selected.getKeys()[0]}></Timeline>
                     </div>
                 </div>
             </div>
