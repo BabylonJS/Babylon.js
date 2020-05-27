@@ -17,6 +17,7 @@ import { Scene } from "babylonjs/scene";
 import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
+import { Nullable } from 'babylonjs/types';
 
 require("./curveEditor.scss");
 
@@ -34,7 +35,6 @@ interface ICanvasAxis {
 }
 
 export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, {
-    animations: Animation[],
     animationName: string,
     animationType: string,
     animationTargetProperty: string,
@@ -63,7 +63,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     // Canvas Length *Review this functionality
     readonly _entityName: string;
     readonly _canvasLength: number = 20;
-    private _newAnimations: Animation[] = [];
     private _svgKeyframes: IKeyframeSvgPoint[] = [];
     private _frames: Vector2[] = [];
     private _isPlaying: boolean = false;
@@ -99,7 +98,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         // will update this until we have a top scroll/zoom feature
         let valueInd = [2, 1.8, 1.6, 1.4, 1.2, 1, 0.8, 0.6, 0.4, 0.2, 0];
         this.state = {
-            animations: this._newAnimations,
             selected: initialSelection,
             isOpen: true,
             currentPathData: initialPathData,
@@ -225,6 +223,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                 element = <li className={this.state.selected && this.state.selected.name === animation.name ? 'active' : ''} key={i} onClick={() => this.selectAnimation(animation)}>
                     <p>{animation.name}&nbsp;
                     <span>{animation.targetProperty}</span></p>
+                    { !(this.props.entity instanceof TargetedAnimation) ? this.state.selected && this.state.selected.name === animation.name ? <ButtonLineComponent label={"Remove"} onClick={() => this.deleteAnimation()} /> : null : null }
                 </li>
                 break;
             case Animation.ANIMATIONTYPE_VECTOR2:
@@ -317,6 +316,20 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
         return dataType;
 
+    }
+
+    deleteAnimation(){
+        let currentSelected = this.state.selected;
+        if (this.props.entity instanceof TargetedAnimation){
+            console.log("no animation remove allowed");
+        } else {
+            let animations = (this.props.entity as IAnimatable).animations;
+            if (animations){
+                let updatedAnimations = animations.filter(anim => anim !== currentSelected);
+                (this.props.entity as IAnimatable).animations = updatedAnimations as Nullable<Animation[]>;
+            } 
+        }
+        
     }
 
     addAnimation() {
@@ -416,24 +429,39 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                         break;
                 }
 
-                let animation = new Animation(this.state.animationName, this.state.animationTargetProperty, 30, animationDataType);
+                let alreadyAnimatedProperty = (this.props.entity as IAnimatable).animations?.find(anim => 
+                    anim.targetProperty === this.state.animationTargetProperty
+                , this);
 
-                // Start with two keyframes
-                var keys = [];
-                keys.push({
-                    frame: 0,
-                    value: startValue,
-                    outTangent: outTangent
-                });
+                let alreadyAnimationName = (this.props.entity as IAnimatable).animations?.find(anim => 
+                    anim.name === this.state.animationName
+                , this);
 
-                keys.push({
-                    inTangent: inTangent,
-                    frame: 100,
-                    value: endValue
-                });
+                if (alreadyAnimatedProperty){
+                    this.setState({ notification: `The property "${this.state.animationTargetProperty}" already has an animation` });
+                } else if (alreadyAnimationName){
+                    this.setState({ notification: `There is already an animation with the name: "${this.state.animationName}"` });
+                } else {
 
-                animation.setKeys(keys);
-                (this.props.entity as IAnimatable).animations?.push(animation);
+                    let animation = new Animation(this.state.animationName, this.state.animationTargetProperty, 30, animationDataType);
+
+                    // Start with two keyframes
+                    var keys = [];
+                    keys.push({
+                        frame: 0,
+                        value: startValue,
+                        outTangent: outTangent
+                    });
+
+                    keys.push({
+                        inTangent: inTangent,
+                        frame: 100,
+                        value: endValue
+                    });
+
+                    animation.setKeys(keys);
+                    (this.props.entity as IAnimatable).animations?.push(animation);
+                }
 
             } else {
                 this.setState({ notification: `The property "${this.state.animationTargetProperty}" is not a "${this.state.animationType}" type` });
@@ -1169,6 +1197,20 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         }
     }
 
+    updateFrameInKeyFrame(frame: number, index: number){
+        
+        if (this.state && this.state.selected){
+            let animation = this.state.selected;
+            let keys = [...animation.getKeys()];
+
+            keys[index].frame = frame;
+
+            animation.setKeys(keys);
+
+            this.selectAnimation(animation);
+        }
+    }
+
     render() {
         return (
             <div id="animation-curve-editor">
@@ -1281,7 +1323,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                         </div>
                     </div>
                     <div className="row">
-                        <Timeline currentFrame={this.state.currentFrame} onCurrentFrameChange={(frame: number) => this.changeCurrentFrame(frame)} keyframes={this.state.selected && this.state.selected.getKeys()} selected={this.state.selected && this.state.selected.getKeys()[0]}></Timeline>
+                        <Timeline currentFrame={this.state.currentFrame} dragKeyframe={(frame: number, index:number) => this.updateFrameInKeyFrame(frame, index)} onCurrentFrameChange={(frame: number) => this.changeCurrentFrame(frame)} keyframes={this.state.selected && this.state.selected.getKeys()} selected={this.state.selected && this.state.selected.getKeys()[0]}></Timeline>
                     </div>
                 </div>
             </div>
