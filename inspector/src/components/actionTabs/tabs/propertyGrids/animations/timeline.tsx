@@ -32,12 +32,12 @@ export class Timeline extends React.Component<ITimelineProps, { selected: IAnima
         this.props.playPause(-1);
     }
 
-    play(event: React.MouseEvent<HTMLDivElement>){
+    play(event: React.MouseEvent<HTMLDivElement>) {
         this.props.playPause(1);
     }
 
-    pause(event: React.MouseEvent<HTMLDivElement>){
-        if (this.props.isPlaying){
+    pause(event: React.MouseEvent<HTMLDivElement>) {
+        if (this.props.isPlaying) {
             this.props.playPause(1);
         }
     }
@@ -105,16 +105,15 @@ export class Timeline extends React.Component<ITimelineProps, { selected: IAnima
                 if (this._direction > e.clientX) {
                     console.log(`Dragging left ${this.state.activeKeyframe}`);
                     let used = this.isFrameBeingUsed(updatedKeyframe.frame - 1, -1);
-                    if (used){
+                    if (used) {
                         updatedKeyframe.frame = used
-                    } 
-                    
+                    }
                 } else {
                     console.log(`Dragging Right ${this.state.activeKeyframe}`)
                     let used = this.isFrameBeingUsed(updatedKeyframe.frame + 1, 1);
-                    if (used){
+                    if (used) {
                         updatedKeyframe.frame = used
-                    } 
+                    }
                 }
 
                 this.props.dragKeyframe(updatedKeyframe.frame, this.state.activeKeyframe);
@@ -123,9 +122,9 @@ export class Timeline extends React.Component<ITimelineProps, { selected: IAnima
         }
     }
 
-    isFrameBeingUsed(frame: number, direction: number){
+    isFrameBeingUsed(frame: number, direction: number) {
         let used = this.props.keyframes?.find(kf => kf.frame === frame);
-        if (used){
+        if (used) {
             this.isFrameBeingUsed(used.frame + direction, direction);
             return false;
         } else {
@@ -147,25 +146,22 @@ export class Timeline extends React.Component<ITimelineProps, { selected: IAnima
                 <div className="timeline">
                     <div ref={this._scrollable} className="display-line" >
                         <svg viewBox="0 0 2010 100" style={{ width: 2000 }} onMouseMove={(e) => this.drag(e)}
-                                        onTouchMove={(e) => this.drag(e)}
-                                        onTouchStart={(e) => this.dragStart(e)}
-                                        onTouchEnd={(e) => this.dragEnd(e)}
-                                        onMouseDown={(e) => this.dragStart(e)}
-                                        onMouseUp={(e) => this.dragEnd(e)}
-                                        onMouseLeave={(e) => this.dragEnd(e)}>
+                            onTouchMove={(e) => this.drag(e)}
+                            onTouchStart={(e) => this.dragStart(e)}
+                            onTouchEnd={(e) => this.dragEnd(e)}
+                            onMouseDown={(e) => this.dragStart(e)}
+                            onMouseUp={(e) => this.dragEnd(e)}
+                            onMouseLeave={(e) => this.dragEnd(e)}>
 
                             <line x1={this.props.currentFrame * 10} y1="10" x2={this.props.currentFrame * 10} y2="20" style={{ stroke: '#12506b', strokeWidth: 6 }} />
-
                             {
                                 this.props.keyframes && this.props.keyframes.map((kf, i) => {
 
                                     return <svg key={`kf_${i}`} style={{ cursor: 'pointer' }} tabIndex={i + 40} >
                                         <line id={`kf_${i.toString()}`} x1={kf.frame * 10} y1="10" x2={kf.frame * 10} y2="20" style={{ stroke: 'red', strokeWidth: 6 }} />
                                     </svg>
-
                                 })
                             }
-
                             {
                                 this._frames.map((frame, i) => {
 
@@ -173,10 +169,8 @@ export class Timeline extends React.Component<ITimelineProps, { selected: IAnima
                                         {i % 10 === 0 ? <text x={(i * 10) - 3} y="8" style={{ fontSize: 10 }}>{i}</text> : null}
                                         <line x1={i * 10} y1="10" x2={i * 10} y2="20" style={{ stroke: 'black', strokeWidth: 0.5 }} />
                                     </svg>
-
                                 })
                             }
-
                         </svg>
                     </div>
                     <div className="controls">
@@ -190,7 +184,7 @@ export class Timeline extends React.Component<ITimelineProps, { selected: IAnima
                             <FontAwesomeIcon icon={faStepBackward} />
                         </div>
                         <div className="previous-key-frame button" onClick={(e) => this.playBackwards(e)}>
-                            <FontAwesomeIcon icon={faPlay} style={{transform: 'rotate(180deg)'}} />
+                            <FontAwesomeIcon icon={faPlay} style={{ transform: 'rotate(180deg)' }} />
                         </div>
                         <div className="previous-key-frame button" onClick={(e) => this.pause(e)}>
                             <FontAwesomeIcon icon={faPause} />
