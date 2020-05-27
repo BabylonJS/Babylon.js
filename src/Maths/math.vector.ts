@@ -2325,7 +2325,7 @@ export class Vector4 {
     * @returns resulting value
     */
     public static MoveTowards(current: Vector4, target: Vector4, maxDelta: number): Vector4 {
-        const result: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
+        var result: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
         Vector4.MoveTowardsToRef(current, target, maxDelta, result);
         return result;
     }
@@ -2341,15 +2341,15 @@ export class Vector4 {
     * @param result vector to set resulting value
     */
     public static MoveTowardsToRef(current: Vector4, target: Vector4, maxDelta: number, result: Vector4): void {
-        const toVector_x: number = target.x - current.x;
-        const toVector_y: number = target.y - current.y;
-        const toVector_z: number = target.z - current.z;
-        const toVector_w: number = target.w - current.w;
-        const sqDist: number = (toVector_x * toVector_x + toVector_y * toVector_y + toVector_z * toVector_z + toVector_w * toVector_w);
+        var toVector_x: number = target.x - current.x;
+        var toVector_y: number = target.y - current.y;
+        var toVector_z: number = target.z - current.z;
+        var toVector_w: number = target.w - current.w;
+        var sqDist: number = (toVector_x * toVector_x + toVector_y * toVector_y + toVector_z * toVector_z + toVector_w * toVector_w);
         if (sqDist == 0 || (maxDelta >= 0 && sqDist <= maxDelta * maxDelta)) {
             result.set(target.x, target.y, target.z, target.w);
         } else {
-            const dist: number = Math.sqrt(sqDist);
+            var dist: number = Math.sqrt(sqDist);
             result.set((current.x + toVector_x / dist * maxDelta), (current.y + toVector_y / dist * maxDelta), (current.z + toVector_z / dist * maxDelta), (current.w + toVector_w / dist * maxDelta));
         }
     }
