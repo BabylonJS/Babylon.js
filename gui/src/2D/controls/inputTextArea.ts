@@ -1,15 +1,13 @@
 import { Nullable } from "babylonjs/types";
-import { Observable, Observer } from "babylonjs/Misc/observable";
+import { Observable } from "babylonjs/Misc/observable";
 import { Vector2 } from "babylonjs/Maths/math.vector";
-import { ClipboardEventTypes, ClipboardInfo } from "babylonjs/Events/clipboardEvents";
-import { PointerInfo, PointerEventTypes } from 'babylonjs/Events/pointerEvents';
 
 import { Control } from "./control";
-import { IFocusableControl } from "../advancedDynamicTexture";
 import { ValueAndUnit } from "../valueAndUnit";
 import { VirtualKeyboard } from "./virtualKeyboard";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { Measure } from '../measure';
+import { InputText } from "./inputText";
 
 /**
  * Enum that determines the text-wrapping mode to use.
@@ -34,8 +32,7 @@ export enum TextWrapping_ {
 /**
  * Class used to create input text control
  */
-export class InputTextArea extends Control implements IFocusableControl {
-    private _text = "";
+export class InputTextArea extends InputText {
 
     //private _textWrapping = TextWrapping_.Clip;
     private _textWrapping = TextWrapping_.WordWrap;
@@ -55,80 +52,16 @@ export class InputTextArea extends Control implements IFocusableControl {
     /**
     * An event triggered after the text was broken up into lines
     */
-    public onLinesReadyObservable = new Observable<InputTextArea>();
-
-    private _placeholderText = "";
-    private _background = "#222222";
-    private _focusedBackground = "#000000";
-    private _focusedColor = "white";
-    private _placeholderColor = "gray";
-    private _thickness = 1;
-    private _margin = new ValueAndUnit(10, ValueAndUnit.UNITMODE_PIXEL);
-    private _autoStretchWidth = true;
-    private _maxWidth = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
-    private _isFocused = false;
-    private _blinkTimeout: number;
-    private _blinkIsEven = false;
-    private _cursorOffset = 0;
-    private _scrollLeft: Nullable<number>;
-    private _textWidth: number;
-    private _clickedCoordinateX: Nullable<number>;
-    private _clickedCoordinateY: Nullable<number>;
-    private _deadKey = false;
-    private _addKey = true;
-    private _currentKey = "";
-    private _isTextHighlightOn = false;
-    private _textHighlightColor = "#d5e0ff";
-    private _highligherOpacity = 0.4;
-    private _highlightedText = "";
-    private _startHighlightIndex = 0;
-    private _endHighlightIndex = 0;
-    private _cursorIndex = -1;
-    private _onFocusSelectAll = false;
-    private _isPointerDown = false;
-    private _onClipboardObserver: Nullable<Observer<ClipboardInfo>>;
-    private _onPointerDblTapObserver: Nullable<Observer<PointerInfo>>;
+    public onLinesReadyObservable = new Observable<InputText>();
 
     private lastClickedCoordinateY = 0;
     private _selectedLineIndex = 0;
     /** @hidden */
     public _connectedVirtualKeyboard: Nullable<VirtualKeyboard>;
-
-    /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
-    public promptMessage = "Please enter text:";
-    /** Force disable prompt on mobile device */
-    public disableMobilePrompt = false;
-
-    /** Observable raised when the text changes */
-    public onTextChangedObservable = new Observable<InputTextArea>();
-    /** Observable raised just before an entered character is to be added */
-    public onBeforeKeyAddObservable = new Observable<InputTextArea>();
-    /** Observable raised when the control gets the focus */
-    public onFocusObservable = new Observable<InputTextArea>();
-    /** Observable raised when the control loses the focus */
-    public onBlurObservable = new Observable<InputTextArea>();
-    /**Observable raised when the text is highlighted */
-    public onTextHighlightObservable = new Observable<InputTextArea>();
-    /**Observable raised when copy event is triggered */
-    public onTextCopyObservable = new Observable<InputTextArea>();
-    /** Observable raised when cut event is triggered */
-    public onTextCutObservable = new Observable<InputTextArea>();
-    /** Observable raised when paste event is triggered */
-    public onTextPasteObservable = new Observable<InputTextArea>();
-    /** Observable raised when a key event was processed */
-    public onKeyboardEventProcessedObservable = new Observable<KeyboardEvent>();
     public measure: TextMetrics;
     private _contextForBreakLines: CanvasRenderingContext2D;
-
-    /** Gets or sets the maximum width allowed by the control */
-    public get maxWidth(): string | number {
-        return this._maxWidth.toString(this._host);
-    }
-
-    /** Gets the maximum width allowed by the control in pixels */
-    public get maxWidthInPixels(): number {
-        return this._maxWidth.getValueInPixel(this._host, this._cachedParentMeasure.width);
-    }
+    private _clickedCoordinateX: Nullable<number>;
+    private _clickedCoordinateY: Nullable<number>;
 
     /**
      * Gets or sets outlineWidth of the text to display
@@ -149,28 +82,6 @@ export class InputTextArea extends Control implements IFocusableControl {
     }
 
     /**
-     * Get text to display
-     */
-    public get text(): string {
-        return this._text;
-    }
-
-    /**
-     * Set text to display
-     */
-    public set text(value: string) {
-        let valueAsString = value.toString(); // Forcing convertion
-
-        if (this._text === valueAsString) {
-            return;
-        }
-        this._text = valueAsString;
-        this._markAsDirty();
-
-        this.onTextChangedObservable.notifyObservers(this);
-    }
-
-    /**
      * Gets or sets outlineColor of the text to display
      */
     public get outlineColor(): string {
@@ -188,234 +99,12 @@ export class InputTextArea extends Control implements IFocusableControl {
         this._markAsDirty();
     }
 
-    public set maxWidth(value: string | number) {
-        if (this._maxWidth.toString(this._host) === value) {
-            return;
-        }
-
-        if (this._maxWidth.fromString(value)) {
-            this._markAsDirty();
-        }
-    }
-
-    /** Gets or sets the text highlighter transparency; default: 0.4 */
-    public get highligherOpacity(): number {
-        return this._highligherOpacity;
-    }
-
-    public set highligherOpacity(value: number) {
-        if (this._highligherOpacity === value) {
-            return;
-        }
-        this._highligherOpacity = value;
-        this._markAsDirty();
-    }
-    /** Gets or sets a boolean indicating whether to select complete text by default on input focus */
-    public get onFocusSelectAll(): boolean {
-        return this._onFocusSelectAll;
-    }
-
-    public set onFocusSelectAll(value: boolean) {
-        if (this._onFocusSelectAll === value) {
-            return;
-        }
-
-        this._onFocusSelectAll = value;
-        this._markAsDirty();
-    }
-
-    /** Gets or sets the text hightlight color */
-    public get textHighlightColor(): string {
-        return this._textHighlightColor;
-    }
-
-    public set textHighlightColor(value: string) {
-        if (this._textHighlightColor === value) {
-            return;
-        }
-        this._textHighlightColor = value;
-        this._markAsDirty();
-    }
-
-    /** Gets or sets control margin */
-    public get margin(): string {
-        return this._margin.toString(this._host);
-    }
-
-    /** Gets control margin in pixels */
-    public get marginInPixels(): number {
-        return this._margin.getValueInPixel(this._host, this._cachedParentMeasure.width);
-    }
-
-    public set margin(value: string) {
-        if (this._margin.toString(this._host) === value) {
-            return;
-        }
-
-        if (this._margin.fromString(value)) {
-            this._markAsDirty();
-        }
-    }
-
-    /** Gets or sets a boolean indicating if the control can auto stretch its width to adapt to the text */
-    public get autoStretchWidth(): boolean {
-        return this._autoStretchWidth;
-    }
-
-    public set autoStretchWidth(value: boolean) {
-        if (this._autoStretchWidth === value) {
-            return;
-        }
-
-        this._autoStretchWidth = value;
-        this._markAsDirty();
-    }
-
-    /** Gets or sets border thickness */
-    public get thickness(): number {
-        return this._thickness;
-    }
-
-    public set thickness(value: number) {
-        if (this._thickness === value) {
-            return;
-        }
-
-        this._thickness = value;
-        this._markAsDirty();
-    }
-
-    /** Gets or sets the background color when focused */
-    public get focusedBackground(): string {
-        return this._focusedBackground;
-    }
-
-    public set focusedBackground(value: string) {
-        if (this._focusedBackground === value) {
-            return;
-        }
-
-        this._focusedBackground = value;
-        this._markAsDirty();
-    }
-
-    /** Gets or sets the background color when focused */
-    public get focusedColor(): string {
-        return this._focusedColor;
-    }
-
-    public set focusedColor(value: string) {
-        if (this._focusedColor === value) {
-            return;
-        }
-
-        this._focusedColor = value;
-        this._markAsDirty();
-    }
-
-    /** Gets or sets the background color */
-    public get background(): string {
-        return this._background;
-    }
-
-    public set background(value: string) {
-        if (this._background === value) {
-            return;
-        }
-
-        this._background = value;
-        this._markAsDirty();
-    }
-
-    /** Gets or sets the placeholder color */
-    public get placeholderColor(): string {
-        return this._placeholderColor;
-    }
-
-    public set placeholderColor(value: string) {
-        if (this._placeholderColor === value) {
-            return;
-        }
-
-        this._placeholderColor = value;
-        this._markAsDirty();
-    }
-
-    /** Gets or sets the text displayed when the control is empty */
-    public get placeholderText(): string {
-        return this._placeholderText;
-    }
-
-    public set placeholderText(value: string) {
-        if (this._placeholderText === value) {
-            return;
-        }
-        this._placeholderText = value;
-        this._markAsDirty();
-    }
-
-    /** Gets or sets the dead key flag */
-    public get deadKey(): boolean {
-        return this._deadKey;
-    }
-
-    public set deadKey(flag: boolean) {
-        this._deadKey = flag;
-    }
-
-    /** Gets or sets the highlight text */
-    public get highlightedText(): string {
-        return this._highlightedText;
-    }
-    public set highlightedText(text: string) {
-        if (this._highlightedText === text) {
-            return;
-        }
-        this._highlightedText = text;
-        this._markAsDirty();
-    }
-
-    /** Gets or sets if the current key should be added */
-    public get addKey(): boolean {
-        return this._addKey;
-    }
-
-    public set addKey(flag: boolean) {
-        this._addKey = flag;
-    }
-
-    /** Gets or sets the value of the current key being entered */
-    public get currentKey(): string {
-        return this._currentKey;
-    }
-
-    public set currentKey(key: string) {
-        this._currentKey = key;
-    }
-
-    /** Gets or sets control width */
-    public get width(): string | number {
-        return this._width.toString(this._host);
-    }
-
-    public set width(value: string | number) {
-        if (this._width.toString(this._host) === value) {
-            return;
-        }
-
-        if (this._width.fromString(value)) {
-            this._markAsDirty();
-        }
-
-        this.autoStretchWidth = false;
-    }
-
     /**
      * Creates a new InputTextArea
      * @param name defines the control name
      * @param text defines the text of the control
      */
-    constructor(public name?: string, text: string = "", singleLine: boolean = true) {
+    constructor(public name?: string, text: string = "") {
         super(name);
 
         this.text = text;
@@ -423,102 +112,8 @@ export class InputTextArea extends Control implements IFocusableControl {
         this.isPointerBlocker = true;
     }
 
-    /** @hidden */
-    public onBlur(): void {
-        this._isFocused = false;
-        this._scrollLeft = null;
-        this._cursorOffset = 0;
-        clearTimeout(this._blinkTimeout);
-        this._markAsDirty();
-
-        this.onBlurObservable.notifyObservers(this);
-
-        this._host.unRegisterClipboardEvents();
-        if (this._onClipboardObserver) {
-            this._host.onClipboardObservable.remove(this._onClipboardObserver);
-        }
-        let scene = this._host.getScene();
-        if (this._onPointerDblTapObserver && scene) {
-            scene.onPointerObservable.remove(this._onPointerDblTapObserver);
-        }
-    }
-
-    /** @hidden */
-    public onFocus(): void {
-        if (!this._isEnabled) {
-            return;
-        }
-        this._scrollLeft = null;
-        this._isFocused = true;
-        this._blinkIsEven = false;
-        this._cursorOffset = 0;
-        this._markAsDirty();
-
-        this.onFocusObservable.notifyObservers(this);
-
-        if (navigator.userAgent.indexOf("Mobile") !== -1 && !this.disableMobilePrompt) {
-            let value = prompt(this.promptMessage);
-
-            if (value !== null) {
-                this.text = value;
-            }
-            this._host.focusedControl = null;
-            return;
-        }
-
-        this._host.registerClipboardEvents();
-
-        this._onClipboardObserver = this._host.onClipboardObservable.add((clipboardInfo) => {
-            // process clipboard event, can be configured.
-            switch (clipboardInfo.type) {
-                case ClipboardEventTypes.COPY:
-                    this._onCopyText(clipboardInfo.event);
-                    this.onTextCopyObservable.notifyObservers(this);
-                    break;
-                case ClipboardEventTypes.CUT:
-                    this._onCutText(clipboardInfo.event);
-                    this.onTextCutObservable.notifyObservers(this);
-                    break;
-                case ClipboardEventTypes.PASTE:
-                    this._onPasteText(clipboardInfo.event);
-                    this.onTextPasteObservable.notifyObservers(this);
-                    break;
-                default: return;
-            }
-        });
-
-        let scene = this._host.getScene();
-        if (scene) {
-            //register the pointer double tap event
-            this._onPointerDblTapObserver = scene.onPointerObservable.add((pointerInfo) => {
-                if (!this._isFocused) {
-                    return;
-                }
-                if (pointerInfo.type === PointerEventTypes.POINTERDOUBLETAP) {
-                    this._processDblClick(pointerInfo);
-                }
-            });
-        }
-
-        if (this._onFocusSelectAll) {
-            this._selectAllText();
-        }
-
-    }
-
     protected _getTypeName(): string {
-        return "InputText";
-    }
-
-    /**
-     * Function called to get the list of controls that should not steal the focus from this control
-     * @returns an array of controls
-     */
-    public keepsFocusWith(): Nullable<Control[]> {
-        if (!this._connectedVirtualKeyboard) {
-            return null;
-        }
-        return [this._connectedVirtualKeyboard];
+        return "InputTextArea";
     }
 
     /** @hidden */
@@ -902,6 +497,7 @@ export class InputTextArea extends Control implements IFocusableControl {
                     if (addedLines.length > 1) { //lineBreak detected
 
                         //TODO: the property/key text exists? What's the issue here?
+                        // @ts-ignore
                         let breakWord = addedLines[1].text.split(" ");
                         //console.log("ISSUE",breakWord);
                         //console.log("ISSUE2", addedLines);
@@ -932,117 +528,6 @@ export class InputTextArea extends Control implements IFocusableControl {
                 }
             }
         }
-    }
-
-    /** @hidden */
-    private _updateValueFromCursorIndex(offset: number) {
-        //update the cursor
-        this._blinkIsEven = false;
-
-        if (this._cursorIndex === -1) {
-            this._cursorIndex = offset;
-        } else {
-            if (this._cursorIndex < this._cursorOffset) {
-                this._endHighlightIndex = this._text.length - this._cursorIndex;
-                this._startHighlightIndex = this._text.length - this._cursorOffset;
-            }
-            else if (this._cursorIndex > this._cursorOffset) {
-                this._endHighlightIndex = this._text.length - this._cursorOffset;
-                this._startHighlightIndex = this._text.length - this._cursorIndex;
-            }
-            else {
-                this._isTextHighlightOn = false;
-                this._markAsDirty();
-                return;
-            }
-        }
-        this._isTextHighlightOn = true;
-        this._markAsDirty();
-    }
-
-    /** @hidden */
-    private _processDblClick(evt: PointerInfo) {
-        //pre-find the start and end index of the word under cursor, speeds up the rendering
-        this._startHighlightIndex = this._text.length - this._cursorOffset;
-        this._endHighlightIndex = this._startHighlightIndex;
-        let rWord = /\w+/g, moveLeft, moveRight;
-        do {
-            moveRight = this._endHighlightIndex < this._text.length && (this._text[this._endHighlightIndex].search(rWord) !== -1) ? ++this._endHighlightIndex : 0;
-            moveLeft = this._startHighlightIndex > 0 && (this._text[this._startHighlightIndex - 1].search(rWord) !== -1) ? --this._startHighlightIndex : 0;
-        } while (moveLeft || moveRight);
-
-        this._cursorOffset = this.text.length - this._startHighlightIndex;
-        this.onTextHighlightObservable.notifyObservers(this);
-
-        this._isTextHighlightOn = true;
-        this._clickedCoordinateX = null;
-        this._clickedCoordinateY = null;
-        this._blinkIsEven = true;
-        this._cursorIndex = -1;
-        this._markAsDirty();
-    }
-    /** @hidden */
-    private _selectAllText() {
-        this._blinkIsEven = true;
-        this._isTextHighlightOn = true;
-
-        this._startHighlightIndex = 0;
-        this._endHighlightIndex = this._text.length;
-        this._cursorOffset = this._text.length;
-        this._cursorIndex = -1;
-        this._markAsDirty();
-    }
-
-    /**
-     * Handles the keyboard event
-     * @param evt Defines the KeyboardEvent
-     */
-    public processKeyboard(evt: KeyboardEvent): void {
-        // process pressed key
-        this.processKey(evt.keyCode, evt.key, evt);
-
-        this.onKeyboardEventProcessedObservable.notifyObservers(evt);
-    }
-
-    /** @hidden */
-    private _onCopyText(ev: ClipboardEvent): void {
-        this._isTextHighlightOn = false;
-        //when write permission to clipbaord data is denied
-        try {
-            ev.clipboardData && ev.clipboardData.setData("text/plain", this._highlightedText);
-        }
-        catch { } //pass
-        this._host.clipboardData = this._highlightedText;
-    }
-    /** @hidden */
-    private _onCutText(ev: ClipboardEvent): void {
-        if (!this._highlightedText) {
-            return;
-        }
-        this.text = this._text.slice(0, this._startHighlightIndex) + this._text.slice(this._endHighlightIndex);
-        this._isTextHighlightOn = false;
-        this._cursorOffset = this.text.length - this._startHighlightIndex;
-        //when write permission to clipbaord data is denied
-        try {
-            ev.clipboardData && ev.clipboardData.setData("text/plain", this._highlightedText);
-        }
-        catch { } //pass
-
-        this._host.clipboardData = this._highlightedText;
-        this._highlightedText = "";
-    }
-    /** @hidden */
-    private _onPasteText(ev: ClipboardEvent): void {
-        let data: string = "";
-        if (ev.clipboardData && ev.clipboardData.types.indexOf("text/plain") !== -1) {
-            data = ev.clipboardData.getData("text/plain");
-        }
-        else {
-            //get the cached data; returns blank string by default
-            data = this._host.clipboardData;
-        }
-        let insertPosition = this._text.length - this._cursorOffset;
-        this.text = this._text.slice(0, insertPosition) + data + this._text.slice(insertPosition);
     }
 
     protected _parseLineEllipsis(line: string = '', width: number,
@@ -1616,19 +1101,6 @@ export class InputTextArea extends Control implements IFocusableControl {
     // this method actually does nothing?
     protected _beforeRenderText(text: string): string {
         return text;
-    }
-
-    public dispose() {
-        super.dispose();
-
-        this.onBlurObservable.clear();
-        this.onFocusObservable.clear();
-        this.onTextChangedObservable.clear();
-        this.onTextCopyObservable.clear();
-        this.onTextCutObservable.clear();
-        this.onTextPasteObservable.clear();
-        this.onTextHighlightObservable.clear();
-        this.onKeyboardEventProcessedObservable.clear();
     }
 }
 _TypeStore.RegisteredTypes["BABYLON.GUI.InputTextArea"] = InputTextArea;
