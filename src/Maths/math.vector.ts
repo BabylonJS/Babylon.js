@@ -510,6 +510,44 @@ export class Vector2 {
     }
 
     /**
+    * Moves a value current towards target.
+    *
+    * This is essentially the same as Vector2.Lerp but instead the function will ensure that the speed never exceeds maxDelta.
+    * Negative values of maxDelta pushes the value away from target.
+    * @param current current value
+    * @param target target value
+    * @param maxDelta max distance to move
+    * @returns resulting value
+    */
+    public static MoveTowards(current: Vector2, target: Vector2, maxDistanceDelta: number): Vector2 {
+        var result: Vector2 = new Vector2(0.0, 0.0);
+        Vector2.MoveTowardsToRef(current, target, maxDistanceDelta, result);
+        return result;
+    }
+
+    /**
+    * Moves a value current towards target.
+    *
+    * This is essentially the same as Vector2.Lerp but instead the function will ensure that the speed never exceeds maxDelta.
+    * Negative values of maxDelta pushes the value away from target.
+    * @param current current value
+    * @param target target value
+    * @param maxDelta max distance to move
+    * @param result vector to set resulting value
+    */
+   public static MoveTowardsToRef(current: Vector2, target: Vector2, maxDistanceDelta: number, result: Vector2): void {
+        var toVector_x: number = target.x - current.x;
+        var toVector_y: number = target.y - current.y;
+        var sqDist: number = toVector_x * toVector_x + toVector_y * toVector_y;
+        if (sqDist == 0 || (maxDistanceDelta >= 0 && sqDist <= maxDistanceDelta * maxDistanceDelta)) {
+            result.set(target.x, target.y);
+        } else {
+            var dist: number = Math.sqrt(sqDist);
+            result.set((current.x + toVector_x / dist * maxDistanceDelta), (current.y + toVector_y / dist * maxDistanceDelta));
+        }
+    }
+
+    /**
      * Returns a new Vector2 located for "amount" (float) on the linear interpolation between the vector "start" adn the vector "end".
      * @param start defines the start vector
      * @param end defines the end vector
@@ -1687,6 +1725,45 @@ export class Vector3 {
     }
 
     /**
+    * Moves a value current towards target.
+    *
+    * This is essentially the same as Vector3.Lerp but instead the function will ensure that the speed never exceeds maxDelta.
+    * Negative values of maxDelta pushes the value away from target.
+    * @param current current value
+    * @param target target value
+    * @param maxDelta max distance to move
+    * @returns resulting value
+    */
+    public static MoveTowards(current: Vector3, target: Vector3, maxDelta: number): Vector3 {
+        var result: Vector3 = new Vector3(0.0, 0.0, 0.0);
+        Vector3.MoveTowardsToRef(current, target, maxDelta, result);
+        return result;
+    }
+
+    /**
+    * Moves a value current towards target.
+    *
+    * This is essentially the same as Vector3.Lerp but instead the function will ensure that the speed never exceeds maxDelta.
+    * Negative values of maxDelta pushes the value away from target.
+    * @param current current value
+    * @param target target value
+    * @param maxDelta max distance to move
+    * @param result vector to set resulting value
+    */
+    public static MoveTowardsToRef(current: Vector3, target: Vector3, maxDelta: number, result: Vector3): void {
+        var toVector_x: number = target.x - current.x;
+        var toVector_y: number = target.y - current.y;
+        var toVector_z: number = target.z - current.z;
+        var sqDist: number = toVector_x * toVector_x + toVector_y * toVector_y + toVector_z * toVector_z;
+        if (sqDist == 0 || sqDist <= maxDelta * maxDelta) {
+            result.set(target.x, target.y, target.z);
+        } else {
+            var dist: number = Math.sqrt(sqDist);
+            result.set((current.x + toVector_x / dist * maxDelta), (current.y + toVector_y / dist * maxDelta), (current.z + toVector_z / dist * maxDelta));
+        }
+    }
+
+    /**
      * Returns a new Vector3 located for "amount" (float) on the linear interpolation between the vectors "start" and "end"
      * @param start defines the start value
      * @param end defines the end value
@@ -2235,6 +2312,46 @@ export class Vector4 {
         result.z += this.z * scale;
         result.w += this.w * scale;
         return this;
+    }
+
+    /**
+    * Moves a value current towards target.
+    *
+    * This is essentially the same as Vector4.Lerp but instead the function will ensure that the speed never exceeds maxDelta.
+    * Negative values of maxDelta pushes the value away from target.
+    * @param current current value
+    * @param target target value
+    * @param maxDelta max distance to move
+    * @returns resulting value
+    */
+    public static MoveTowards(current: Vector4, target: Vector4, maxDelta: number): Vector4 {
+        const result: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
+        Vector4.MoveTowardsToRef(current, target, maxDelta, result);
+        return result;
+    }
+
+    /**
+    * Moves a value current towards target.
+    *
+    * This is essentially the same as Vector4.Lerp but instead the function will ensure that the speed never exceeds maxDelta.
+    * Negative values of maxDelta pushes the value away from target.
+    * @param current current value
+    * @param target target value
+    * @param maxDelta max distance to move
+    * @param result vector to set resulting value
+    */
+    public static MoveTowardsToRef(current: Vector4, target: Vector4, maxDelta: number, result: Vector4): void {
+        const toVector_x: number = target.x - current.x;
+        const toVector_y: number = target.y - current.y;
+        const toVector_z: number = target.z - current.z;
+        const toVector_w: number = target.w - current.w;
+        const sqDist: number = (toVector_x * toVector_x + toVector_y * toVector_y + toVector_z * toVector_z + toVector_w * toVector_w);
+        if (sqDist == 0 || (maxDelta >= 0 && sqDist <= maxDelta * maxDelta)) {
+            result.set(target.x, target.y, target.z, target.w);
+        } else {
+            const dist: number = Math.sqrt(sqDist);
+            result.set((current.x + toVector_x / dist * maxDelta), (current.y + toVector_y / dist * maxDelta), (current.z + toVector_z / dist * maxDelta), (current.w + toVector_w / dist * maxDelta));
+        }
     }
 
     /**

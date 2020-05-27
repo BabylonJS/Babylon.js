@@ -27,6 +27,7 @@
 - Added `boundingBoxRenderer.onBeforeBoxRenderingObservable` and `boundingBoxRenderer.onAfterBoxRenderingObservable` ([Deltakosh](https://github.com/deltakosh))
 - Added initial code for user facing DeviceSourceManager ([PolygonalSun](https://github.com/PolygonalSun))
 - Added a Simple and advanced timer, based on observables ([RaananW](https://github.com/RaananW))
+- Added vector math MoveTowards and MoveTowardsToRef functions. ([MackeyK24](https://github.com/MackeyK24))
 
 ### Engine
 
