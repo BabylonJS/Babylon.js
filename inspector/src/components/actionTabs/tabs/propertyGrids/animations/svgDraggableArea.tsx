@@ -71,7 +71,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
             if (coord !== undefined) {
 
                 var newPoints = [...this.props.keyframeSvgPoints];
-                // Check for NaN values here
+                // Check for NaN values here. 
                 if (this._isCurrentPointControl === "left") {
                     newPoints[this._currentPointIndex].leftControlPoint = coord;
                 } else if (this._isCurrentPointControl === "right") {

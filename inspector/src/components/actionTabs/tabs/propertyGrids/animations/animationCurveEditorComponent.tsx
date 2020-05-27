@@ -156,9 +156,8 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     }
 
     setAxesLength() {
-        // Check why we get undefined, or NaN in length?
-        let length = Math.round(this._canvasLength * this.state.scale);
-
+        
+        let length = Math.round(this._canvasLength * this.state.scale);// Check Undefined, or NaN
         let highestFrame = 100;
         if (this.state.selected !== null) {
             highestFrame = this.state.selected.getHighestFrame();
@@ -1156,13 +1155,11 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     }
 
     playPause(direction: number) {
-
         if (this.state.selected) {
             let target = this.props.entity;
             if (this.props.entity instanceof TargetedAnimation) {
                 target = this.props.entity.target;
             }
-
             if (this.state.isPlaying) {
                 this.props.scene.stopAnimation(target);
                 this.setState({ isPlaying: false })
@@ -1186,12 +1183,10 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     }
 
     playStopAnimation() {
-
         let target = this.props.entity;
         if (this.props.entity instanceof TargetedAnimation) {
             target = this.props.entity.target;
         }
-
         this._isPlaying = this.props.scene.getAllAnimatablesByTarget(target).length > 0;
         if (this._isPlaying) {
             this.props.playOrPause && this.props.playOrPause();
