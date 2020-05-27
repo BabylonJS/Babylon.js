@@ -2540,16 +2540,17 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         targetedAnimation: TargetedAnimation;
         scene: Scene;
         lockObject: LockObject;
+        onSelectionChangedObservable?: Observable<any>;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class TargetedAnimationGridComponent extends React.Component<ITargetedAnimationGridComponentProps> {
         private _isCurveEditorOpen;
-        private _isPlaying;
         private _animationGroup;
         constructor(props: ITargetedAnimationGridComponentProps);
         onOpenAnimationCurveEditor(): void;
         onCloseAnimationCurveEditor(window: Window | null): void;
         playOrPause(): void;
+        deleteAnimation(): void;
         render(): JSX.Element;
     }
 }
@@ -5288,16 +5289,17 @@ declare module INSPECTOR {
         targetedAnimation: BABYLON.TargetedAnimation;
         scene: BABYLON.Scene;
         lockObject: LockObject;
+        onSelectionChangedObservable?: BABYLON.Observable<any>;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class TargetedAnimationGridComponent extends React.Component<ITargetedAnimationGridComponentProps> {
         private _isCurveEditorOpen;
-        private _isPlaying;
         private _animationGroup;
         constructor(props: ITargetedAnimationGridComponentProps);
         onOpenAnimationCurveEditor(): void;
         onCloseAnimationCurveEditor(window: Window | null): void;
         playOrPause(): void;
+        deleteAnimation(): void;
         render(): JSX.Element;
     }
 }

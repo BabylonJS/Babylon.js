@@ -181,7 +181,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                     </LineContainerComponent>
                 }
                 {
-                    animations && animations.length > 0 &&
+                    animations && 
                     <>
                         <LineContainerComponent globalState={this.props.globalState} title="ANIMATIONS">
                             <TextLineComponent label="Count" value={animations.length.toString()} />
@@ -212,7 +212,9 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                                 </PopupComponent>
                             }
                         </LineContainerComponent>
-                        <LineContainerComponent globalState={this.props.globalState} title="ANIMATION GENERAL CONTROL">
+                        {
+                            animations.length > 0 &&
+                            <LineContainerComponent globalState={this.props.globalState} title="ANIMATION GENERAL CONTROL">
                             <FloatLineComponent lockObject={this.props.lockObject} isInteger={true} label="From" target={this._animationControl} propertyName="from" onChange={() => this.onChangeFromOrTo()} />
                             <FloatLineComponent lockObject={this.props.lockObject} isInteger={true} label="To" target={this._animationControl} propertyName="to" onChange={() => this.onChangeFromOrTo()} />
                             <CheckBoxLineComponent label="Loop" onSelect={value => this._animationControl.loop = value} isSelected={() => this._animationControl.loop} />
@@ -248,7 +250,8 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                                 </>
                             }
                         </LineContainerComponent>
-                    </>
+                        }
+                        </>
                 }
             </div>
         );
