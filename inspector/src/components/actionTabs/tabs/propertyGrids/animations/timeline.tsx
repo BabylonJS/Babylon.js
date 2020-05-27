@@ -2,7 +2,7 @@
 import * as React from "react";
 import { IAnimationKey } from 'babylonjs/Animations/animationKey';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCaretRight, faCaretLeft, faStepBackward, faStepForward } from "@fortawesome/free-solid-svg-icons";
+import { faCaretRight, faCaretLeft, faStepBackward, faStepForward, faPlay, faPause } from "@fortawesome/free-solid-svg-icons";
 
 interface ITimelineProps {
     keyframes: IAnimationKey[] | null;
@@ -10,6 +10,8 @@ interface ITimelineProps {
     currentFrame: number;
     onCurrentFrameChange: (frame: number) => void;
     dragKeyframe: (frame: number, index: number) => void;
+    playPause: (direction: number) => void;
+    isPlaying: boolean;
 }
 
 
@@ -24,6 +26,14 @@ export class Timeline extends React.Component<ITimelineProps, { selected: IAnima
         }
         this._scrollable = React.createRef();
         this._direction = 0;
+    }
+
+    playPauseBackwards(event: React.MouseEvent<HTMLDivElement>) {
+        this.props.playPause(-1);
+    }
+
+    playPause(event: React.MouseEvent<HTMLDivElement>){
+        this.props.playPause(1);
     }
 
     handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -171,6 +181,15 @@ export class Timeline extends React.Component<ITimelineProps, { selected: IAnima
                         </div>
                         <div className="previous-key-frame button" onClick={(e) => this.previousKeyframe(e)}>
                             <FontAwesomeIcon icon={faStepBackward} />
+                        </div>
+                        <div className="previous-key-frame button" onClick={(e) => this.playPauseBackwards(e)}>
+                            <FontAwesomeIcon icon={faPlay} style={{transform: 'rotate(180deg)'}} />
+                        </div>
+                        <div className="previous-key-frame button" onClick={(e) => this.playPause(e)}>
+                            <FontAwesomeIcon icon={faPause} />
+                        </div>
+                        <div className="previous-key-frame button" onClick={(e) => this.playPause(e)}>
+                            <FontAwesomeIcon icon={faPlay} />
                         </div>
                         <div className="next-key-frame button" onClick={(e) => this.nextKeyframe(e)}>
                             <FontAwesomeIcon icon={faStepForward} />
