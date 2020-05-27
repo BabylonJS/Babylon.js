@@ -10,7 +10,6 @@ import { ValueAndUnit } from "../valueAndUnit";
 import { VirtualKeyboard } from "./virtualKeyboard";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { Measure } from '../measure';
-import { type } from "os";
 
 /**
  * Enum that determines the text-wrapping mode to use.
