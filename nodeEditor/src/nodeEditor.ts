@@ -6,8 +6,9 @@ import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial"
 import { Popup } from "../src/sharedComponents/popup"
 import { SerializationTools } from './serializationTools';
 import { Observable } from 'babylonjs/Misc/observable';
-import { PreviewMeshType } from './components/preview/previewMeshType';
+import { PreviewType } from './components/preview/previewType';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
+import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 /**
  * Interface used to specify creation options for the node editor
  */
@@ -59,6 +60,7 @@ export class NodeEditor {
         if (options.customLoadObservable) {
             options.customLoadObservable.add(data => {
                 SerializationTools.Deserialize(data, globalState);
+                globalState.onResetRequiredObservable.notifyObservers();
                 globalState.onBuiltObservable.notifyObservers();
             })
         }
@@ -82,8 +84,8 @@ export class NodeEditor {
             };
         }
         window.addEventListener('beforeunload', () => {
-            if(DataStorage.ReadNumber("PreviewMeshType", PreviewMeshType.Box) === PreviewMeshType.Custom){
-                DataStorage.WriteNumber("PreviewMeshType", PreviewMeshType.Box)
+            if(DataStorage.ReadNumber("PreviewType", PreviewType.Box) === PreviewType.Custom){
+                DataStorage.WriteNumber("PreviewType", globalState.mode === NodeMaterialModes.Material ? PreviewType.Box : PreviewType.Bubbles);
             }
         });
     }

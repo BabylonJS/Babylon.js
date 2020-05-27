@@ -30,6 +30,7 @@ export class TextureBlock extends NodeMaterialBlock {
     private _textureInfoName: string;
     private _mainUVName: string;
     private _mainUVDefineName: string;
+    private _fragmentOnly: boolean;
 
     /**
      * Gets or sets the texture associated with the node
@@ -50,8 +51,10 @@ export class TextureBlock extends NodeMaterialBlock {
      * Create a new TextureBlock
      * @param name defines the block name
      */
-    public constructor(name: string) {
+    public constructor(name: string, fragmentOnly = false) {
         super(name, NodeMaterialBlockTargets.VertexAndFragment);
+
+        this._fragmentOnly = fragmentOnly;
 
         this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2, false, NodeMaterialBlockTargets.VertexAndFragment);
 
@@ -65,7 +68,7 @@ export class TextureBlock extends NodeMaterialBlock {
         this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
         this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector4);
 
-        this._inputs[0]._prioritizeVertex = true;
+        this._inputs[0]._prioritizeVertex = !fragmentOnly;
     }
 
     /**
@@ -173,11 +176,13 @@ export class TextureBlock extends NodeMaterialBlock {
                     uvInput.connectTo(this);
                 }
             } else {
-                let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "uv");
+                const attributeName = material.mode === NodeMaterialModes.Particle ? "particle_uv" : "uv";
+
+                let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === attributeName);
 
                 if (!uvInput) {
                     uvInput = new InputBlock("uv");
-                    uvInput.setAsAttribute();
+                    uvInput.setAsAttribute(attributeName);
                 }
                 uvInput.output.connectTo(this.uv);
             }
@@ -295,7 +300,7 @@ export class TextureBlock extends NodeMaterialBlock {
             return;
         }
 
-        if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
+        if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment || this._fragmentOnly) {
             state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${uvInput.associatedVariableName});\r\n`;
             return;
         }
@@ -327,19 +332,21 @@ export class TextureBlock extends NodeMaterialBlock {
 
         state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle}${complement};\r\n`;
 
-        state.compilationString += `#ifdef ${this._linearDefineName}\r\n`;
-        state.compilationString += `${output.associatedVariableName} = toGammaSpace(${output.associatedVariableName});\r\n`;
-        state.compilationString += `#endif\r\n`;
+        if (swizzle !== 'a') { // no conversion if the output is "a" (alpha)
+            state.compilationString += `#ifdef ${this._linearDefineName}\r\n`;
+            state.compilationString += `${output.associatedVariableName} = toGammaSpace(${output.associatedVariableName});\r\n`;
+            state.compilationString += `#endif\r\n`;
 
-        state.compilationString += `#ifdef ${this._gammaDefineName}\r\n`;
-        state.compilationString += `${output.associatedVariableName} = toLinearSpace(${output.associatedVariableName});\r\n`;
-        state.compilationString += `#endif\r\n`;
+            state.compilationString += `#ifdef ${this._gammaDefineName}\r\n`;
+            state.compilationString += `${output.associatedVariableName} = toLinearSpace(${output.associatedVariableName});\r\n`;
+            state.compilationString += `#endif\r\n`;
+        }
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        if (state.target === NodeMaterialBlockTargets.Vertex) {
+        if (state.target === NodeMaterialBlockTargets.Vertex || this._fragmentOnly) {
             this._tempTextureRead = state._getFreeVariableName("tempTextureRead");
         }
 
@@ -418,6 +425,7 @@ export class TextureBlock extends NodeMaterialBlock {
 
         serializationObject.convertToGammaSpace = this.convertToGammaSpace;
         serializationObject.convertToLinearSpace = this.convertToLinearSpace;
+        serializationObject.fragmentOnly = this._fragmentOnly;
         if (this.texture) {
             serializationObject.texture = this.texture.serialize();
         }
@@ -430,6 +438,7 @@ export class TextureBlock extends NodeMaterialBlock {
 
         this.convertToGammaSpace = serializationObject.convertToGammaSpace;
         this.convertToLinearSpace = !!serializationObject.convertToLinearSpace;
+        this._fragmentOnly = !!serializationObject.fragmentOnly;
 
         if (serializationObject.texture && !NodeMaterial.IgnoreTexturesAtLoadTime) {
             rootUrl = serializationObject.texture.url.indexOf("data:") === 0 ? "" : rootUrl;

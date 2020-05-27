@@ -4,7 +4,7 @@ import { Scene } from "../scene";
 import { Matrix, Vector3, Vector2, Vector4 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { SubMesh, BaseSubMesh } from "../Meshes/subMesh";
+import { SubMesh } from "../Meshes/subMesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
@@ -14,6 +14,8 @@ import { Material } from "./material";
 import { _TypeStore } from '../Misc/typeStore';
 import { Color3, Color4 } from '../Maths/math.color';
 import { EffectFallbacks } from './effectFallbacks';
+import { WebRequest } from '../Misc/webRequest';
+import { Engine } from '../Engines/engine';
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -91,6 +93,12 @@ export class ShaderMaterial extends Material {
     private _renderId: number;
     private _multiview: boolean = false;
     private _cachedDefines: string;
+
+    /** Define the Url to load snippets */
+    public static SnippetUrl = "https://snippet.babylonjs.com";
+
+    /** Snippet ID if the manager was created from the snippet server */
+    public snippetId: string;
 
     /**
      * Instantiate a new shader material.
@@ -463,7 +471,7 @@ export class ShaderMaterial extends Material {
      * @param useInstances specifies that instances should be used
      * @returns a boolean indicating that the submesh is ready or not
      */
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean {
+    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         return this.isReady(mesh, useInstances);
     }
 
@@ -525,6 +533,9 @@ export class ShaderMaterial extends Material {
         if (useInstances) {
             defines.push("#define INSTANCES");
             MaterialHelper.PushAttributesForInstances(attribs);
+            if (mesh?.hasThinInstances) {
+                defines.push("#define THIN_INSTANCES");
+            }
         }
 
         // Bones
@@ -1226,6 +1237,71 @@ export class ShaderMaterial extends Material {
         }
 
         return material;
+    }
+
+    /**
+     * Creates a new ShaderMaterial from a snippet saved in a remote file
+     * @param name defines the name of the ShaderMaterial to create (can be null or empty to use the one from the json data)
+     * @param url defines the url to load from
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a promise that will resolve to the new ShaderMaterial
+     */
+    public static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl: string = ""): Promise<ShaderMaterial> {
+
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        let serializationObject = JSON.parse(request.responseText);
+                        let output = this.Parse(serializationObject, scene || Engine.LastCreatedScene, rootUrl);
+
+                        if (name) {
+                            output.name = name;
+                        }
+
+                        resolve(output);
+                    } else {
+                        reject("Unable to load the ShaderMaterial");
+                    }
+                }
+            });
+
+            request.open("GET", url);
+            request.send();
+        });
+    }
+
+    /**
+     * Creates a ShaderMaterial from a snippet saved by the Inspector
+     * @param snippetId defines the snippet to load
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a promise that will resolve to the new ShaderMaterial
+     */
+    public static CreateFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = ""): Promise<ShaderMaterial> {
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
+                        let serializationObject = JSON.parse(snippet.shaderMaterial);
+                        let output = this.Parse(serializationObject, scene || Engine.LastCreatedScene, rootUrl);
+
+                        output.snippetId = snippetId;
+
+                        resolve(output);
+                    } else {
+                        reject("Unable to load the snippet " + snippetId);
+                    }
+                }
+            });
+
+            request.open("GET", this.SnippetUrl + "/" + snippetId.replace(/#/g, "/"));
+            request.send();
+        });
     }
 }
 

@@ -5,6 +5,10 @@ import { KeyframeSvgPoint, IKeyframeSvgPoint } from './keyframeSvgPoint';
 interface ISvgDraggableAreaProps {
     keyframeSvgPoints: IKeyframeSvgPoint[];
     updatePosition: (updatedKeyframe: IKeyframeSvgPoint, index: number) => void;
+    scale: number;
+    viewBoxScale: number;
+    selectKeyframe: (id: string) => void;
+    selectedControlPoint: (type: string, id: string) => void;
 }
 
 export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
@@ -15,6 +19,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
     private _draggableArea: React.RefObject<SVGSVGElement>;
     private _panStart: Vector2;
     private _panStop: Vector2;
+    private _width: number;
 
     constructor(props: ISvgDraggableAreaProps) {
         super(props);
@@ -28,7 +33,11 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
     componentDidMount() {
         this._draggableArea.current?.addEventListener("keydown", this.keyDown.bind(this));
         this._draggableArea.current?.addEventListener("keyup", this.keyUp.bind(this));
-    }  
+        setTimeout(() => {
+            this._width = this._draggableArea.current?.clientWidth !== undefined ? this._draggableArea.current?.clientWidth : 0;
+            console.log(this._width);
+        }, 500);
+    }
 
     dragStart(e: React.TouchEvent<SVGSVGElement>): void;
     dragStart(e: React.MouseEvent<SVGSVGElement, MouseEvent>): void;
@@ -179,7 +188,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
     render() {
         return (
             <>
-                <svg className="linear pannable" ref={this._draggableArea}  tabIndex={0}
+                <svg className="linear pannable" ref={this._draggableArea} tabIndex={0}
 
                     onMouseMove={(e) => this.drag(e)}
                     onTouchMove={(e) => this.drag(e)}
@@ -192,11 +201,21 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
                     // Add way to add new keyframe
                     onClick={(e) => this.focus(e)}
 
-                    viewBox="0 0 200 100">
+                    viewBox={`0 0 ${Math.round(this.props.scale * 200)} ${Math.round(this.props.scale * 100)}`}>
 
                     {this.props.children}
                     {this.props.keyframeSvgPoints.map((keyframe, i) =>
-                        <KeyframeSvgPoint key={i} id={i.toString()} keyframePoint={keyframe.keyframePoint} leftControlPoint={keyframe.leftControlPoint} rightControlPoint={keyframe.rightControlPoint} />
+                        <KeyframeSvgPoint
+                            key={i}
+                            id={i.toString()}
+                            keyframePoint={keyframe.keyframePoint} 
+                            leftControlPoint={keyframe.leftControlPoint} 
+                            rightControlPoint={keyframe.rightControlPoint}
+                            isLeftActive={keyframe.isLeftActive}
+                            isRightActive={keyframe.isRightActive}
+                            selected={keyframe.selected} 
+                            selectedControlPoint={(type: string, id: string) => this.props.selectedControlPoint(type, id)}
+                            selectKeyframe={(id: string) => this.props.selectKeyframe(id)} />
                     )}
                 </svg>
             </>)

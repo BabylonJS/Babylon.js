@@ -81,6 +81,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "CeilingBlock": "Outputs fractional values as the next higher whole number",
         "FloorBlock": "Outputs fractional values as the next lower whole number",
         "RoundBlock": "Outputs fractional values rounded to the nearest whole number",
+        "ModBlock": "Outputs the value of one parameter modulo another",
         "CameraPositionBlock": "Outputs a Vector3 position of the active scene camera",
         "FogBlock": "Applies fog to the scene with an increasing opacity based on distance from the camera",
         "FogColorBlock": "The system value for fog color pulled from the scene",
@@ -133,6 +134,15 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "SubSurfaceBlock": "PBR SubSurface block",
         "Position2DBlock": "A Vector2 representing the position of each vertex of the screen quad",
         "CurrentScreenBlock": "The screen buffer used as input for the post process",
+        "ParticleUVBlock": "The particle uv texture coordinate",
+        "ParticleTextureBlock": "The particle texture",
+        "ParticleColorBlock": "The particle color",
+        "ParticleTextureMaskBlock": "The particle texture mask",
+        "ParticleRampGradientBlock": "The particle ramp gradient block",
+        "ParticleBlendMultiplyBlock": "The particle blend multiply block",
+        "ParticlePositionWorldBlock": "The world position of the particle",
+        "FragCoordBlock": "The gl_FragCoord predefined variable that contains the window relative coordinate (x, y, z, 1/w)",
+        "ScreenSizeBlock": "The size (in pixels) of the screen window",
     };
 
     constructor(props: INodeListComponentProps) {
@@ -160,15 +170,16 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Animation: ["BonesBlock", "MorphTargetsBlock"],
             Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
-            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "ReflectionTextureBlock", "TimeBlock", "DeltaTimeBlock"],
+            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "ReflectionTextureBlock", "TimeBlock", "DeltaTimeBlock", "FragCoordBlock", "ScreenSizeBlock"],
             Interpolation: ["LerpBlock", "StepBlock", "SmoothStepBlock", "NLerpBlock"],
-            Math__Standard: ["AddBlock", "DivideBlock", "MaxBlock", "MinBlock", "MultiplyBlock", "NegateBlock", "OneMinusBlock", "ReciprocalBlock", "ScaleBlock", "SignBlock", "SqrtBlock", "SubtractBlock"],
+            Math__Standard: ["AddBlock", "DivideBlock", "MaxBlock", "MinBlock", "ModBlock", "MultiplyBlock", "NegateBlock", "OneMinusBlock", "ReciprocalBlock", "ScaleBlock", "SignBlock", "SqrtBlock", "SubtractBlock"],
             Math__Scientific: ["AbsBlock", "ArcCosBlock", "ArcSinBlock", "ArcTanBlock", "ArcTan2Block", "CosBlock", "DegreesToRadiansBlock", "ExpBlock", "Exp2Block", "FractBlock", "LogBlock", "PowBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "SinBlock", "SquareWaveBlock", "TanBlock", "TriangleWaveBlock"],
             Math__Vector: ["CrossBlock", "DerivativeBlock", "DistanceBlock", "DotBlock", "FresnelBlock", "LengthBlock", "ReflectBlock", "RefractBlock", "Rotate2dBlock", "TransformBlock", ],
             Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock"],
             Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock" , "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"],
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
+            Particle: ["ParticleBlendMultiplyBlock", "ParticleColorBlock", "ParticlePositionWorldBlock", "ParticleRampGradientBlock", "ParticleTextureBlock", "ParticleTextureMaskBlock", "ParticleUVBlock"],
             PBR: ["PBRMetallicRoughnessBlock", "AmbientOcclusionBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "ReflectivityBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
             PostProcess: ["Position2DBlock", "CurrentScreenBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
@@ -179,10 +190,18 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         switch (this.props.globalState.mode) {
             case NodeMaterialModes.Material:
                 delete allBlocks["PostProcess"];
+                delete allBlocks["Particle"];
                 break;
             case NodeMaterialModes.PostProcess:
                 delete allBlocks["Animation"];
                 delete allBlocks["Mesh"];
+                delete allBlocks["Particle"];
+                break;
+            case NodeMaterialModes.Particle:
+                delete allBlocks["Animation"];
+                delete allBlocks["Mesh"];
+                delete allBlocks["PostProcess"];
+                allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("VertexOutputBlock"), 1);
                 break;
         }
 

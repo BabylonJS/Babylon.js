@@ -5648,7 +5648,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "#graph-canvas {\n  width: 100%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  font: 14px \"acumin-pro\";\n  user-select: none;\n  overflow: hidden;\n  cursor: move;\n  background-image: linear-gradient(to right, #4F4E4F 1px, transparent 1px), linear-gradient(to bottom, #4F4E4F 1px, transparent 1px); }\n  #graph-canvas #selection-container {\n    pointer-events: none; }\n    #graph-canvas #selection-container .selection-box {\n      z-index: 10;\n      position: absolute;\n      background: rgba(72, 72, 196, 0.5);\n      border: blue solid 2px; }\n  #graph-canvas .port {\n    border-radius: 20px;\n    width: 20px;\n    height: 20px;\n    align-self: center; }\n    #graph-canvas .port .img {\n      width: 100%; }\n    #graph-canvas .port img.selected {\n      box-shadow: 0 0 0 2px;\n      border-radius: 50%; }\n    #graph-canvas .port:hover, #graph-canvas .port.selected {\n      filter: brightness(2); }\n  #graph-canvas .portLine {\n    height: 24px;\n    display: grid;\n    grid-template-rows: 100%; }\n  #graph-canvas .port-label {\n    align-items: center; }\n  #graph-canvas .inputsContainer {\n    grid-row: 1;\n    grid-column: 1; }\n    #graph-canvas .inputsContainer .portLine {\n      grid-template-columns: 12px calc(100% - 15px); }\n      #graph-canvas .inputsContainer .portLine .port-label {\n        grid-row: 1;\n        grid-column: 2; }\n      #graph-canvas .inputsContainer .portLine .port {\n        grid-row: 1;\n        grid-column: 1;\n        transform: translateX(-12px); }\n  #graph-canvas .outputsContainer {\n    grid-row: 1;\n    grid-column: 2; }\n    #graph-canvas .outputsContainer .portLine {\n      grid-template-columns: calc(100% - 10px) 12px; }\n      #graph-canvas .outputsContainer .portLine .port-label {\n        grid-row: 1;\n        grid-column: 1;\n        text-align: right; }\n      #graph-canvas .outputsContainer .portLine .port {\n        grid-row: 1;\n        grid-column: 2;\n        transform: translateX(2px); }\n  #graph-canvas #graph-container {\n    width: 100%;\n    height: 100%;\n    left: 0;\n    top: 0;\n    transform-origin: left top;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #graph-canvas #graph-container #frame-container {\n      overflow: visible;\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n    #graph-canvas #graph-container .frame-box {\n      position: absolute;\n      background: rgba(72, 72, 72, 0.7);\n      display: grid;\n      grid-template-rows: 40px calc(100% - 40px);\n      grid-template-columns: 100%;\n      box-sizing: border-box; }\n      #graph-canvas #graph-container .frame-box.collapsed {\n        height: auto !important;\n        width: 200px !important;\n        z-index: 3; }\n        #graph-canvas #graph-container .frame-box.collapsed .frame-box-header {\n          font-size: 16px;\n          grid-template-columns: calc(100% - 37px) 30px 7px; }\n          #graph-canvas #graph-container .frame-box.collapsed .frame-box-header .frame-box-header-collapse {\n            margin-top: -2px; }\n          #graph-canvas #graph-container .frame-box.collapsed .frame-box-header .frame-box-header-close {\n            display: none; }\n      #graph-canvas #graph-container .frame-box .frame-box-border {\n        grid-row: 1 / span 2;\n        grid-column: 1;\n        width: 100%;\n        height: 100%;\n        border: transparent solid 4px;\n        pointer-events: none;\n        box-sizing: border-box; }\n      #graph-canvas #graph-container .frame-box .frame-box-header {\n        grid-row: 1;\n        grid-column: 1;\n        background: #484848;\n        color: white;\n        font-size: 24px;\n        text-align: center;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: calc(100% - 74px) 30px 7px 30px 7px;\n        align-content: center;\n        overflow: hidden; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-button {\n          cursor: pointer;\n          align-self: center;\n          transform-origin: 50% 50%;\n          transform: scale(1);\n          stroke: transparent;\n          fill: white;\n          display: grid; }\n          #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-button.down {\n            transform: scale(0.9); }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-collapse {\n          grid-column: 2;\n          grid-row: 1; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-close {\n          grid-column: 4;\n          grid-row: 1; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-title {\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          height: 100%;\n          width: 100%;\n          align-self: stretch;\n          align-items: center;\n          margin-top: -2px; }\n      #graph-canvas #graph-container .frame-box .port-container {\n        margin-top: 6px;\n        margin-bottom: 6px;\n        margin-left: 4px;\n        margin-right: 4px;\n        color: white;\n        grid-row: 2;\n        grid-column: 1;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: 50% 50%;\n        z-index: 2; }\n      #graph-canvas #graph-container .frame-box .frame-comments.has-comments {\n        display: grid;\n        grid-row: 2;\n        grid-column: 1;\n        padding: 0 10px;\n        font-style: italic;\n        word-wrap: break-word; }\n      #graph-canvas #graph-container .frame-box.selected .frame-box-border {\n        border-color: white; }\n      #graph-canvas #graph-container .frame-box .right-handle {\n        grid-area: 1 / 2 / 3 / 2;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .right-handle::after {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px;\n          cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .right-handle.collapsed {\n          cursor: pointer; }\n      #graph-canvas #graph-container .frame-box .top-right-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: ne-resize;\n        width: 4px;\n        margin-left: -6px; }\n        #graph-canvas #graph-container .frame-box .top-right-corner-handle::after {\n          background-color: transparent;\n          cursor: ne-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .bottom-right-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: nw-resize;\n        grid-area: 4 / 2 / 4 / 2;\n        margin-left: -2px; }\n        #graph-canvas #graph-container .frame-box .bottom-right-corner-handle::after {\n          background-color: transparent;\n          height: 10px;\n          cursor: nw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .left-handle {\n        grid-area: 1 / 1 / 3 / 1;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .left-handle::before {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px; }\n      #graph-canvas #graph-container .frame-box .top-left-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: nw-resize;\n        width: 4px;\n        margin-left: -4px; }\n        #graph-canvas #graph-container .frame-box .top-left-corner-handle::before {\n          background-color: transparent;\n          cursor: nw-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .bottom-left-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: sw-resize;\n        grid-area: 4 / 1 / 4 / 1; }\n        #graph-canvas #graph-container .frame-box .bottom-left-corner-handle::before {\n          background-color: transparent;\n          height: 10px;\n          cursor: sw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .top-handle {\n        grid-area: 1 / 1 / 1 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #graph-canvas #graph-container .frame-box .top-handle::before {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: -4px;\n          bottom: 100%;\n          right: 0;\n          left: 0;\n          margin-bottom: -8px;\n          cursor: ns-resize;\n          height: 8px; }\n      #graph-canvas #graph-container .frame-box .bottom-handle {\n        grid-area: 3 / 1 / 3 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #graph-canvas #graph-container .frame-box .bottom-handle::after {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: 100%;\n          bottom: 0;\n          right: 0;\n          left: 0;\n          margin-top: -8px;\n          cursor: ns-resize;\n          height: 12px; }\n      #graph-canvas #graph-container .frame-box.collapsed .top-handle, #graph-canvas #graph-container .frame-box.collapsed .top-right-corner-handle, #graph-canvas #graph-container .frame-box.collapsed .right-handle, #graph-canvas #graph-container .frame-box.collapsed .bottom-right-corner-handle, #graph-canvas #graph-container .frame-box.collapsed .bottom-handle, #graph-canvas #graph-container .frame-box.collapsed .bottom-left-corner-handle, #graph-canvas #graph-container .frame-box.collapsed .left-handle, #graph-canvas #graph-container .frame-box.collapsed .top-left-corner-handle {\n        cursor: default; }\n      #graph-canvas #graph-container .frame-box.collapsed .right-handle::after, #graph-canvas #graph-container .frame-box.collapsed .bottom-handle::after, #graph-canvas #graph-container .frame-box.collapsed .top-right-corner-handle::after, #graph-canvas #graph-container .frame-box.collapsed .bottom-right-corner-handle::after {\n        cursor: default; }\n      #graph-canvas #graph-container .frame-box.collapsed .left-handle::before, #graph-canvas #graph-container .frame-box.collapsed .top-handle::before, #graph-canvas #graph-container .frame-box.collapsed .top-left-corner-handle::before, #graph-canvas #graph-container .frame-box.collapsed .bottom-left-corner-handle::before {\n        cursor: default; }\n    #graph-canvas #graph-container #graph-svg-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%;\n      overflow: visible;\n      pointer-events: none;\n      z-index: 2; }\n      #graph-canvas #graph-container #graph-svg-container .link {\n        stroke-width: 4px; }\n        #graph-canvas #graph-container #graph-svg-container .link.selected {\n          stroke: white !important;\n          stroke-dasharray: 10, 2; }\n        #graph-canvas #graph-container #graph-svg-container .link.hidden {\n          display: none; }\n      #graph-canvas #graph-container #graph-svg-container .selection-link {\n        pointer-events: all;\n        stroke-width: 16px;\n        opacity: 0;\n        transition: opacity 75ms;\n        stroke: transparent;\n        cursor: pointer; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link.hidden {\n          display: none; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link:hover, #graph-canvas #graph-container #graph-svg-container .selection-link.selected {\n          stroke: white !important;\n          opacity: 0.4; }\n    #graph-canvas #graph-container #graph-canvas-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n      #graph-canvas #graph-container #graph-canvas-container .visual {\n        z-index: 4;\n        width: 200px;\n        position: absolute;\n        left: 0;\n        top: 0;\n        background: gray;\n        border: 4px solid black;\n        border-radius: 12px;\n        display: grid;\n        grid-template-rows: 30px auto;\n        grid-template-columns: 100%;\n        color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.hidden {\n          display: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .comments {\n          position: absolute;\n          top: -50px;\n          width: 200px;\n          height: 45px;\n          overflow: hidden;\n          font-style: italic;\n          opacity: 0.8;\n          display: grid;\n          align-items: flex-end;\n          pointer-events: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .selection-border {\n          grid-row: 1 / span 3;\n          grid-column: 1;\n          margin: -4px;\n          transition: border-color 100ms;\n          border: 4px solid black;\n          border-radius: 12px; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.selected .selection-border {\n          border-color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .header {\n          grid-row: 1;\n          grid-column: 1;\n          border: 4px solid black;\n          border-top-right-radius: 7px;\n          border-top-left-radius: 7px;\n          font-size: 16px;\n          text-align: center;\n          margin-top: -1px;\n          margin-left: -1px;\n          margin-right: -1px;\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden;\n          background: black;\n          color: white; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.constant {\n            border-color: #464348;\n            background: #464348; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.inspector {\n            border-color: #66491b;\n            background: #66491b; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .connections {\n          grid-row: 2;\n          grid-column: 1;\n          display: grid;\n          grid-template-columns: 50% 50%; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .content {\n          min-height: 20px;\n          grid-row: 3;\n          grid-column: 1; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block {\n            grid-row: 2;\n            min-height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px 5px;\n            display: grid;\n            align-content: center; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block.small-font {\n              font-size: 17px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.output-block {\n            min-height: 0px;\n            height: 5px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.clamp-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.gradient-block {\n            grid-row: 2;\n            height: 34px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block {\n            grid-row: 3;\n            height: 140px;\n            width: 140px;\n            overflow: hidden;\n            border-bottom-left-radius: 7px;\n            border: black 4px solid;\n            border-left: 0px;\n            border-bottom: 0px; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img {\n              width: 100%;\n              height: 100%;\n              pointer-events: none; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img.empty {\n                display: none; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.regular-texture-block {\n            margin-top: -115px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.remap-block {\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.trigonometry-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n", ""]);
+exports.push([module.i, "#graph-canvas {\n  width: 100%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  font: 14px \"acumin-pro\";\n  user-select: none;\n  overflow: hidden;\n  cursor: move;\n  background-image: linear-gradient(to right, #4F4E4F 1px, transparent 1px), linear-gradient(to bottom, #4F4E4F 1px, transparent 1px); }\n  #graph-canvas #selection-container {\n    pointer-events: none; }\n    #graph-canvas #selection-container .selection-box {\n      z-index: 10;\n      position: absolute;\n      background: rgba(72, 72, 196, 0.5);\n      border: blue solid 2px; }\n  #graph-canvas .port {\n    border-radius: 20px;\n    width: 20px;\n    height: 20px;\n    align-self: center; }\n    #graph-canvas .port .img {\n      width: 100%; }\n    #graph-canvas .port img.selected {\n      box-shadow: 0 0 0 2px;\n      border-radius: 50%; }\n    #graph-canvas .port:hover, #graph-canvas .port.selected {\n      filter: brightness(2); }\n  #graph-canvas .portLine {\n    height: 24px;\n    display: grid;\n    grid-template-rows: 100%; }\n  #graph-canvas .port-label {\n    align-items: center; }\n  #graph-canvas .inputsContainer {\n    grid-row: 1;\n    grid-column: 1; }\n    #graph-canvas .inputsContainer .portLine {\n      grid-template-columns: 12px calc(100% - 15px); }\n      #graph-canvas .inputsContainer .portLine .port-label {\n        grid-row: 1;\n        grid-column: 2; }\n      #graph-canvas .inputsContainer .portLine .port {\n        grid-row: 1;\n        grid-column: 1;\n        transform: translateX(-12px); }\n  #graph-canvas .outputsContainer {\n    grid-row: 1;\n    grid-column: 2; }\n    #graph-canvas .outputsContainer .portLine {\n      grid-template-columns: calc(100% - 10px) 12px; }\n      #graph-canvas .outputsContainer .portLine .port-label {\n        grid-row: 1;\n        grid-column: 1;\n        text-align: right; }\n      #graph-canvas .outputsContainer .portLine .port {\n        grid-row: 1;\n        grid-column: 2;\n        transform: translateX(2px); }\n  #graph-canvas #graph-container {\n    width: 100%;\n    height: 100%;\n    left: 0;\n    top: 0;\n    transform-origin: left top;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #graph-canvas #graph-container #frame-container {\n      overflow: visible;\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n    #graph-canvas #graph-container .frame-box {\n      position: absolute;\n      background: rgba(72, 72, 72, 0.7);\n      display: grid;\n      grid-template-rows: 40px calc(100% - 40px);\n      grid-template-columns: 100%;\n      box-sizing: border-box; }\n      #graph-canvas #graph-container .frame-box.collapsed {\n        height: auto !important;\n        width: 200px !important;\n        z-index: 3; }\n        #graph-canvas #graph-container .frame-box.collapsed .frame-box-header {\n          font-size: 16px;\n          grid-template-columns: calc(100% - 37px) 30px 7px; }\n          #graph-canvas #graph-container .frame-box.collapsed .frame-box-header .frame-box-header-collapse {\n            margin-top: -2px; }\n          #graph-canvas #graph-container .frame-box.collapsed .frame-box-header .frame-box-header-close {\n            display: none; }\n        #graph-canvas #graph-container .frame-box.collapsed .frame-comments.has-comments .frame-comment-span {\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden; }\n      #graph-canvas #graph-container .frame-box .frame-box-border {\n        grid-row: 1 / span 2;\n        grid-column: 1;\n        width: 100%;\n        height: 100%;\n        border: transparent solid 4px;\n        pointer-events: none;\n        box-sizing: border-box; }\n      #graph-canvas #graph-container .frame-box .frame-box-header {\n        grid-row: 1;\n        grid-column: 1;\n        background: #484848;\n        color: white;\n        font-size: 24px;\n        text-align: center;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: calc(100% - 74px) 30px 7px 30px 7px;\n        align-content: center;\n        overflow: hidden; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-button {\n          cursor: pointer;\n          align-self: center;\n          transform-origin: 50% 50%;\n          transform: scale(1);\n          stroke: transparent;\n          fill: white;\n          display: grid; }\n          #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-button.down {\n            transform: scale(0.9); }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-collapse {\n          grid-column: 2;\n          grid-row: 1; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-close {\n          grid-column: 4;\n          grid-row: 1; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-title {\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          height: 100%;\n          width: 100%;\n          align-self: stretch;\n          align-items: center;\n          margin-top: -2px; }\n      #graph-canvas #graph-container .frame-box .port-container {\n        margin-top: 6px;\n        margin-bottom: 6px;\n        margin-left: 4px;\n        margin-right: 4px;\n        color: white;\n        grid-row: 2;\n        grid-column: 1;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: 50% 50%;\n        z-index: 2; }\n      #graph-canvas #graph-container .frame-box .frame-comments.has-comments {\n        display: grid;\n        grid-row: 2;\n        grid-column: 1;\n        padding: 0 10px;\n        font-style: italic;\n        word-wrap: break-word; }\n      #graph-canvas #graph-container .frame-box.selected .frame-box-border {\n        border-color: white; }\n      #graph-canvas #graph-container .frame-box .right-handle {\n        grid-area: 1 / 2 / 3 / 2;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .right-handle::after {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px;\n          cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .right-handle.collapsed {\n          cursor: pointer; }\n      #graph-canvas #graph-container .frame-box .top-right-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: ne-resize;\n        width: 4px;\n        margin-left: -6px; }\n        #graph-canvas #graph-container .frame-box .top-right-corner-handle::after {\n          background-color: transparent;\n          cursor: ne-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .bottom-right-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: nw-resize;\n        grid-area: 4 / 2 / 4 / 2;\n        margin-left: -2px; }\n        #graph-canvas #graph-container .frame-box .bottom-right-corner-handle::after {\n          background-color: transparent;\n          height: 10px;\n          cursor: nw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .left-handle {\n        grid-area: 1 / 1 / 3 / 1;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .left-handle::before {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px; }\n      #graph-canvas #graph-container .frame-box .top-left-corner-handle {\n        background-color: transparent;\n        height: 4px;\n        z-index: 21;\n        cursor: nw-resize;\n        width: 4px;\n        margin-left: -4px; }\n        #graph-canvas #graph-container .frame-box .top-left-corner-handle::before {\n          background-color: transparent;\n          cursor: nw-resize;\n          margin-left: unset;\n          top: -4px;\n          height: 10px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .bottom-left-corner-handle {\n        background-color: transparent;\n        height: 0px;\n        z-index: 21;\n        cursor: sw-resize;\n        grid-area: 4 / 1 / 4 / 1; }\n        #graph-canvas #graph-container .frame-box .bottom-left-corner-handle::before {\n          background-color: transparent;\n          height: 10px;\n          cursor: sw-resize;\n          top: unset;\n          bottom: -4px;\n          width: 10px; }\n      #graph-canvas #graph-container .frame-box .top-handle {\n        grid-area: 1 / 1 / 1 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #graph-canvas #graph-container .frame-box .top-handle::before {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: -4px;\n          bottom: 100%;\n          right: 0;\n          left: 0;\n          margin-bottom: -8px;\n          cursor: ns-resize;\n          height: 8px; }\n      #graph-canvas #graph-container .frame-box .bottom-handle {\n        grid-area: 3 / 1 / 3 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #graph-canvas #graph-container .frame-box .bottom-handle::after {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: 100%;\n          bottom: 0;\n          right: 0;\n          left: 0;\n          margin-top: -8px;\n          cursor: ns-resize;\n          height: 12px; }\n      #graph-canvas #graph-container .frame-box.collapsed .top-handle, #graph-canvas #graph-container .frame-box.collapsed .top-right-corner-handle, #graph-canvas #graph-container .frame-box.collapsed .right-handle, #graph-canvas #graph-container .frame-box.collapsed .bottom-right-corner-handle, #graph-canvas #graph-container .frame-box.collapsed .bottom-handle, #graph-canvas #graph-container .frame-box.collapsed .bottom-left-corner-handle, #graph-canvas #graph-container .frame-box.collapsed .left-handle, #graph-canvas #graph-container .frame-box.collapsed .top-left-corner-handle {\n        cursor: default; }\n      #graph-canvas #graph-container .frame-box.collapsed .right-handle::after, #graph-canvas #graph-container .frame-box.collapsed .bottom-handle::after, #graph-canvas #graph-container .frame-box.collapsed .top-right-corner-handle::after, #graph-canvas #graph-container .frame-box.collapsed .bottom-right-corner-handle::after {\n        cursor: default; }\n      #graph-canvas #graph-container .frame-box.collapsed .left-handle::before, #graph-canvas #graph-container .frame-box.collapsed .top-handle::before, #graph-canvas #graph-container .frame-box.collapsed .top-left-corner-handle::before, #graph-canvas #graph-container .frame-box.collapsed .bottom-left-corner-handle::before {\n        cursor: default; }\n    #graph-canvas #graph-container #graph-svg-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%;\n      overflow: visible;\n      pointer-events: none;\n      z-index: 2; }\n      #graph-canvas #graph-container #graph-svg-container .link {\n        stroke-width: 4px; }\n        #graph-canvas #graph-container #graph-svg-container .link.selected {\n          stroke: white !important;\n          stroke-dasharray: 10, 2; }\n        #graph-canvas #graph-container #graph-svg-container .link.hidden {\n          display: none; }\n      #graph-canvas #graph-container #graph-svg-container .selection-link {\n        pointer-events: all;\n        stroke-width: 16px;\n        opacity: 0;\n        transition: opacity 75ms;\n        stroke: transparent;\n        cursor: pointer; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link.hidden {\n          display: none; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link:hover, #graph-canvas #graph-container #graph-svg-container .selection-link.selected {\n          stroke: white !important;\n          opacity: 0.4; }\n    #graph-canvas #graph-container #graph-canvas-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n      #graph-canvas #graph-container #graph-canvas-container .visual {\n        z-index: 4;\n        width: 200px;\n        position: absolute;\n        left: 0;\n        top: 0;\n        background: gray;\n        border: 4px solid black;\n        border-radius: 12px;\n        display: grid;\n        grid-template-rows: 30px auto;\n        grid-template-columns: 100%;\n        color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.hidden {\n          display: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .comments {\n          position: absolute;\n          top: -50px;\n          width: 200px;\n          height: 45px;\n          overflow: hidden;\n          font-style: italic;\n          opacity: 0.8;\n          display: grid;\n          align-items: flex-end;\n          pointer-events: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .selection-border {\n          grid-row: 1 / span 3;\n          grid-column: 1;\n          margin: -4px;\n          transition: border-color 100ms;\n          border: 4px solid black;\n          border-radius: 12px; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.selected .selection-border {\n          border-color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .header {\n          grid-row: 1;\n          grid-column: 1;\n          border: 4px solid black;\n          border-top-right-radius: 7px;\n          border-top-left-radius: 7px;\n          font-size: 16px;\n          text-align: center;\n          margin-top: -1px;\n          margin-left: -1px;\n          margin-right: -1px;\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden;\n          background: black;\n          color: white; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.constant {\n            border-color: #464348;\n            background: #464348; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.inspector {\n            border-color: #66491b;\n            background: #66491b; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .connections {\n          grid-row: 2;\n          grid-column: 1;\n          display: grid;\n          grid-template-columns: 50% 50%; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .content {\n          min-height: 20px;\n          grid-row: 3;\n          grid-column: 1; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block {\n            grid-row: 2;\n            min-height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px 5px;\n            display: grid;\n            align-content: center; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block.small-font {\n              font-size: 17px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.output-block {\n            min-height: 0px;\n            height: 5px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.clamp-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.gradient-block {\n            grid-row: 2;\n            height: 34px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block {\n            grid-row: 3;\n            height: 140px;\n            width: 140px;\n            overflow: hidden;\n            border-bottom-left-radius: 7px;\n            border: black 4px solid;\n            border-left: 0px;\n            border-bottom: 0px; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img {\n              width: 100%;\n              height: 100%;\n              pointer-events: none; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img.empty {\n                display: none; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.regular-texture-block {\n            margin-top: -115px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.remap-block {\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.trigonometry-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n", ""]);
 
 // exports
 
@@ -59439,6 +59439,13 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
+
+
+
+
+
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
@@ -59479,7 +59486,7 @@ var BlockTools = /** @class */ (function () {
             case "VectorSplitterBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["VectorSplitterBlock"]("VectorSplitter");
             case "TextureBlock":
-                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TextureBlock"]("Texture");
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TextureBlock"]("Texture", nodeMaterial.mode === babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].Particle);
             case "ReflectionTextureBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ReflectionTextureBlock"]("Reflection texture");
             case "LightBlock":
@@ -59522,6 +59529,8 @@ var BlockTools = /** @class */ (function () {
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["DivideBlock"]("Divide");
             case "SubtractBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["SubtractBlock"]("Subtract");
+            case "ModBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ModBlock"]("Mod");
             case "StepBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["StepBlock"]("Step");
             case "SmoothStepBlock":
@@ -59823,6 +59832,36 @@ var BlockTools = /** @class */ (function () {
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["SubSurfaceBlock"]("SubSurface");
             case "CurrentScreenBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["CurrentScreenBlock"]("CurrentScreen");
+            case "ParticleUVBlock": {
+                var uv = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("uv");
+                uv.setAsAttribute("particle_uv");
+                return uv;
+            }
+            case "ParticleTextureBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ParticleTextureBlock"]("ParticleTexture");
+            case "ParticleColorBlock": {
+                var color = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("Color");
+                color.setAsAttribute("particle_color");
+                return color;
+            }
+            case "ParticleTextureMaskBlock": {
+                var u = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("TextureMask");
+                u.setAsAttribute("particle_texturemask");
+                return u;
+            }
+            case "ParticlePositionWorldBlock": {
+                var pos = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("PositionWorld");
+                pos.setAsAttribute("particle_positionw");
+                return pos;
+            }
+            case "ParticleRampGradientBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ParticleRampGradientBlock"]("ParticleRampGradient");
+            case "ParticleBlendMultiplyBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ParticleBlendMultiplyBlock"]("ParticleBlendMultiply");
+            case "FragCoordBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["FragCoordBlock"]("FragCoord");
+            case "ScreenSizeBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ScreenSizeBlock"]("ScreenSize");
         }
         return null;
     };
@@ -60066,15 +60105,16 @@ var NodeListComponent = /** @class */ (function (_super) {
             Animation: ["BonesBlock", "MorphTargetsBlock"],
             Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
-            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "ReflectionTextureBlock", "TimeBlock", "DeltaTimeBlock"],
+            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "ReflectionTextureBlock", "TimeBlock", "DeltaTimeBlock", "FragCoordBlock", "ScreenSizeBlock"],
             Interpolation: ["LerpBlock", "StepBlock", "SmoothStepBlock", "NLerpBlock"],
-            Math__Standard: ["AddBlock", "DivideBlock", "MaxBlock", "MinBlock", "MultiplyBlock", "NegateBlock", "OneMinusBlock", "ReciprocalBlock", "ScaleBlock", "SignBlock", "SqrtBlock", "SubtractBlock"],
+            Math__Standard: ["AddBlock", "DivideBlock", "MaxBlock", "MinBlock", "ModBlock", "MultiplyBlock", "NegateBlock", "OneMinusBlock", "ReciprocalBlock", "ScaleBlock", "SignBlock", "SqrtBlock", "SubtractBlock"],
             Math__Scientific: ["AbsBlock", "ArcCosBlock", "ArcSinBlock", "ArcTanBlock", "ArcTan2Block", "CosBlock", "DegreesToRadiansBlock", "ExpBlock", "Exp2Block", "FractBlock", "LogBlock", "PowBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "SinBlock", "SquareWaveBlock", "TanBlock", "TriangleWaveBlock"],
             Math__Vector: ["CrossBlock", "DerivativeBlock", "DistanceBlock", "DotBlock", "FresnelBlock", "LengthBlock", "ReflectBlock", "RefractBlock", "Rotate2dBlock", "TransformBlock",],
             Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock"],
             Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"],
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
+            Particle: ["ParticleBlendMultiplyBlock", "ParticleColorBlock", "ParticlePositionWorldBlock", "ParticleRampGradientBlock", "ParticleTextureBlock", "ParticleTextureMaskBlock", "ParticleUVBlock"],
             PBR: ["PBRMetallicRoughnessBlock", "AmbientOcclusionBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "ReflectivityBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
             PostProcess: ["Position2DBlock", "CurrentScreenBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
@@ -60084,10 +60124,18 @@ var NodeListComponent = /** @class */ (function (_super) {
         switch (this.props.globalState.mode) {
             case babylonjs_Materials_Node_Enums_nodeMaterialModes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialModes"].Material:
                 delete allBlocks["PostProcess"];
+                delete allBlocks["Particle"];
                 break;
             case babylonjs_Materials_Node_Enums_nodeMaterialModes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialModes"].PostProcess:
                 delete allBlocks["Animation"];
                 delete allBlocks["Mesh"];
+                delete allBlocks["Particle"];
+                break;
+            case babylonjs_Materials_Node_Enums_nodeMaterialModes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialModes"].Particle:
+                delete allBlocks["Animation"];
+                delete allBlocks["Mesh"];
+                delete allBlocks["PostProcess"];
+                allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("VertexOutputBlock"), 1);
                 break;
         }
         // Create node menu
@@ -60176,6 +60224,7 @@ var NodeListComponent = /** @class */ (function (_super) {
         "CeilingBlock": "Outputs fractional values as the next higher whole number",
         "FloorBlock": "Outputs fractional values as the next lower whole number",
         "RoundBlock": "Outputs fractional values rounded to the nearest whole number",
+        "ModBlock": "Outputs the value of one parameter modulo another",
         "CameraPositionBlock": "Outputs a Vector3 position of the active scene camera",
         "FogBlock": "Applies fog to the scene with an increasing opacity based on distance from the camera",
         "FogColorBlock": "The system value for fog color pulled from the scene",
@@ -60228,6 +60277,15 @@ var NodeListComponent = /** @class */ (function (_super) {
         "SubSurfaceBlock": "PBR SubSurface block",
         "Position2DBlock": "A Vector2 representing the position of each vertex of the screen quad",
         "CurrentScreenBlock": "The screen buffer used as input for the post process",
+        "ParticleUVBlock": "The particle uv texture coordinate",
+        "ParticleTextureBlock": "The particle texture",
+        "ParticleColorBlock": "The particle color",
+        "ParticleTextureMaskBlock": "The particle texture mask",
+        "ParticleRampGradientBlock": "The particle ramp gradient block",
+        "ParticleBlendMultiplyBlock": "The particle blend multiply block",
+        "ParticlePositionWorldBlock": "The world position of the particle",
+        "FragCoordBlock": "The gl_FragCoord predefined variable that contains the window relative coordinate (x, y, z, 1/w)",
+        "ScreenSizeBlock": "The size (in pixels) of the screen window",
     };
     return NodeListComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -60293,7 +60351,7 @@ var PreviewAreaComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview", style: { height: this.props.width + "px" } },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "preview-canvas" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "waitPanel" + (this.state.isLoading ? "" : " hidden") }, "Please wait, loading...")),
-            this.props.globalState.mode !== babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].PostProcess && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+            this.props.globalState.mode === babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Material && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-config-bar" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Render without back face culling", onClick: function () { return _this.changeBackFaceCulling(!_this.props.globalState.backFaceCulling); }, className: "button back-face" + (!this.props.globalState.backFaceCulling ? " selected" : "") },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: doubleSided, alt: "" })),
@@ -60340,8 +60398,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PreviewManager", function() { return PreviewManager; });
 /* harmony import */ var babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterial */ "babylonjs/Misc/dataStorage");
 /* harmony import */ var babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _previewMeshType__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./previewMeshType */ "./components/preview/previewMeshType.ts");
+/* harmony import */ var _previewType__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./previewType */ "./components/preview/previewType.ts");
 /* harmony import */ var _log_logComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../log/logComponent */ "./components/log/logComponent.tsx");
+
+
+
+
+
 
 
 
@@ -60409,9 +60472,7 @@ var PreviewManager = /** @class */ (function () {
             _this._engine.resize();
             _this._scene.render();
         });
-        //     let cameraLastRotation = 0;
         var lastOffsetX = undefined;
-        //   const lightRotationParallaxSpeed = 0.5;
         var lightRotationSpeed = 0.01;
         this._scene.onPointerObservable.add(function (evt) {
             if (_this._globalState.controlCamera) {
@@ -60485,29 +60546,41 @@ var PreviewManager = /** @class */ (function () {
             dir1.parent = this._lightParent;
         }
     };
-    PreviewManager.prototype._prepareMeshes = function () {
+    PreviewManager.prototype._prepareScene = function () {
         var _this = this;
-        if (this._globalState.mode !== babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].PostProcess) {
-            this._prepareLights();
-            // Framing
-            this._camera.useFramingBehavior = true;
-            var framingBehavior = this._camera.getBehaviorByName("Framing");
-            setTimeout(function () {
-                framingBehavior.framingTime = 0;
-                framingBehavior.elevationReturnTime = -1;
-                if (_this._scene.meshes.length) {
-                    var worldExtends = _this._scene.getWorldExtends();
-                    _this._camera.lowerRadiusLimit = null;
-                    _this._camera.upperRadiusLimit = null;
-                    framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
-                }
-                _this._camera.pinchPrecision = 200 / _this._camera.radius;
-                _this._camera.upperRadiusLimit = 5 * _this._camera.radius;
-            });
-            this._camera.wheelDeltaPercentage = 0.01;
-            this._camera.pinchDeltaPercentage = 0.01;
-            // Animations
-            this._handleAnimations();
+        this._camera.useFramingBehavior = this._globalState.mode === babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].Material;
+        switch (this._globalState.mode) {
+            case babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].Material: {
+                this._prepareLights();
+                var framingBehavior = this._camera.getBehaviorByName("Framing");
+                setTimeout(function () {
+                    framingBehavior.framingTime = 0;
+                    framingBehavior.elevationReturnTime = -1;
+                    if (_this._scene.meshes.length) {
+                        var worldExtends = _this._scene.getWorldExtends();
+                        _this._camera.lowerRadiusLimit = null;
+                        _this._camera.upperRadiusLimit = null;
+                        framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
+                    }
+                    _this._camera.pinchPrecision = 200 / _this._camera.radius;
+                    _this._camera.upperRadiusLimit = 5 * _this._camera.radius;
+                });
+                this._camera.wheelDeltaPercentage = 0.01;
+                this._camera.pinchDeltaPercentage = 0.01;
+                // Animations
+                this._handleAnimations();
+                break;
+            }
+            case babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].PostProcess: {
+                this._camera.radius = 4;
+                this._camera.upperRadiusLimit = 10;
+                break;
+            }
+            case babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].Particle: {
+                this._camera.radius = this._globalState.previewType === _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Explosion ? 50 : this._globalState.previewType === _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].DefaultParticleSystem ? 6 : 20;
+                this._camera.upperRadiusLimit = 5000;
+                break;
+            }
         }
         // Material
         var serializationObject = this._nodeMaterial.serialize();
@@ -60515,8 +60588,8 @@ var PreviewManager = /** @class */ (function () {
     };
     PreviewManager.prototype._refreshPreviewMesh = function () {
         var _this = this;
-        if (this._currentType !== this._globalState.previewMeshType || this._currentType === _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Custom) {
-            this._currentType = this._globalState.previewMeshType;
+        if (this._currentType !== this._globalState.previewType || this._currentType === _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Custom) {
+            this._currentType = this._globalState.previewType;
             if (this._meshes && this._meshes.length) {
                 for (var _i = 0, _a = this._meshes; _i < _a.length; _i++) {
                     var mesh = _a[_i];
@@ -60530,54 +60603,145 @@ var PreviewManager = /** @class */ (function () {
                 light.dispose();
             }
             this._engine.releaseEffects();
+            if (this._particleSystem) {
+                this._particleSystem.onBeforeDrawParticlesObservable.clear();
+                this._particleSystem.onDisposeObservable.clear();
+                this._particleSystem.stop();
+                this._particleSystem.dispose();
+                this._particleSystem = null;
+            }
             babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].ShowLoadingScreen = false;
             this._globalState.onIsLoadingChanged.notifyObservers(true);
-            if (this._globalState.mode !== babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].PostProcess) {
-                switch (this._globalState.previewMeshType) {
-                    case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Box:
+            if (this._globalState.mode === babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].Material) {
+                switch (this._globalState.previewType) {
+                    case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Box:
                         babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].AppendAsync("https://models.babylonjs.com/", "roundedCube.glb", this._scene).then(function () {
                             var _a;
                             (_a = _this._meshes).push.apply(_a, _this._scene.meshes);
-                            _this._prepareMeshes();
+                            _this._prepareScene();
                         });
                         return;
-                    case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Sphere:
+                    case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Sphere:
                         this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateSphere("dummy-sphere", 32, 2, this._scene));
                         break;
-                    case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Torus:
+                    case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Torus:
                         this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateTorus("dummy-torus", 2, 0.5, 32, this._scene));
                         break;
-                    case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Cylinder:
+                    case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Cylinder:
                         babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].AppendAsync("https://models.babylonjs.com/", "roundedCylinder.glb", this._scene).then(function () {
                             var _a;
                             (_a = _this._meshes).push.apply(_a, _this._scene.meshes);
-                            _this._prepareMeshes();
+                            _this._prepareScene();
                         });
                         return;
-                    case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Plane:
+                    case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Plane:
                         var plane = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateGround("dummy-plane", 2, 2, 128, this._scene);
                         plane.scaling.y = -1;
                         plane.rotation.x = Math.PI;
                         this._meshes.push(plane);
                         break;
-                    case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].ShaderBall:
+                    case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].ShaderBall:
                         babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].AppendAsync("https://models.babylonjs.com/", "shaderBall.glb", this._scene).then(function () {
                             var _a;
                             (_a = _this._meshes).push.apply(_a, _this._scene.meshes);
-                            _this._prepareMeshes();
+                            _this._prepareScene();
                         });
                         return;
-                    case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Custom:
-                        babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].AppendAsync("file:", this._globalState.previewMeshFile, this._scene).then(function () {
+                    case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Custom:
+                        babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].AppendAsync("file:", this._globalState.previewFile, this._scene).then(function () {
                             var _a;
                             (_a = _this._meshes).push.apply(_a, _this._scene.meshes);
-                            _this._prepareMeshes();
+                            _this._prepareScene();
                         });
                         return;
                 }
             }
-            this._prepareMeshes();
+            else if (this._globalState.mode === babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].Particle) {
+                switch (this._globalState.previewType) {
+                    case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].DefaultParticleSystem:
+                        this._particleSystem = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["ParticleHelper"].CreateDefault(new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](0, 0, 0), 500, this._scene);
+                        this._particleSystem.start();
+                        break;
+                    case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Bubbles:
+                        this._particleSystem = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["ParticleSystem"]("particles", 4000, this._scene);
+                        this._particleSystem.particleTexture = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Texture"]("https://assets.babylonjs.com/particles/textures/explosion/Flare.png", this._scene);
+                        this._particleSystem.minSize = 0.1;
+                        this._particleSystem.maxSize = 1.0;
+                        this._particleSystem.minLifeTime = 0.5;
+                        this._particleSystem.maxLifeTime = 5.0;
+                        this._particleSystem.minEmitPower = 0.5;
+                        this._particleSystem.maxEmitPower = 3.0;
+                        this._particleSystem.createBoxEmitter(new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](-1, 1, -1), new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](1, 1, 1), new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](-0.1, -0.1, -0.1), new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](0.1, 0.1, 0.1));
+                        this._particleSystem.emitRate = 100;
+                        this._particleSystem.blendMode = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["ParticleSystem"].BLENDMODE_ONEONE;
+                        this._particleSystem.color1 = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Color4"](1, 1, 0, 1);
+                        this._particleSystem.color2 = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Color4"](1, 0.5, 0, 1);
+                        this._particleSystem.gravity = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](0, -1.0, 0);
+                        this._particleSystem.start();
+                        break;
+                    case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Explosion:
+                        this._loadParticleSystem(this._globalState.previewType, 1);
+                        return;
+                    case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Fire:
+                    case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Rain:
+                    case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Smoke:
+                        this._loadParticleSystem(this._globalState.previewType);
+                        return;
+                    case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Custom:
+                        babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["FileTools"].ReadFile(this._globalState.previewFile, function (json) {
+                            _this._particleSystem = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["ParticleSystem"].Parse(JSON.parse(json), _this._scene, "");
+                            _this._particleSystem.start();
+                            _this._prepareScene();
+                        }, undefined, false, function (error) {
+                            console.log(error);
+                        });
+                        return;
+                }
+            }
+            this._prepareScene();
         }
+    };
+    PreviewManager.prototype._loadParticleSystem = function (particleNumber, systemIndex, prepareScene) {
+        var _this = this;
+        if (systemIndex === void 0) { systemIndex = 0; }
+        if (prepareScene === void 0) { prepareScene = true; }
+        var name = "";
+        switch (particleNumber) {
+            case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Explosion:
+                name = "explosion";
+                break;
+            case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Fire:
+                name = "fire";
+                break;
+            case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Rain:
+                name = "rain";
+                break;
+            case _previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Smoke:
+                name = "smoke";
+                break;
+        }
+        babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["ParticleHelper"].CreateAsync(name, this._scene).then(function (set) {
+            for (var i = 0; i < set.systems.length; ++i) {
+                if (i == systemIndex) {
+                    _this._particleSystem = set.systems[i];
+                    _this._particleSystem.disposeOnStop = true;
+                    _this._particleSystem.onDisposeObservable.add(function () {
+                        _this._loadParticleSystem(particleNumber, systemIndex, false);
+                    });
+                    _this._particleSystem.start();
+                }
+                else {
+                    set.systems[i].dispose();
+                }
+            }
+            if (prepareScene) {
+                _this._prepareScene();
+            }
+            else {
+                var serializationObject = _this._nodeMaterial.serialize();
+                _this._updatePreview(serializationObject);
+            }
+        });
     };
     PreviewManager.prototype._forceCompilationAsync = function (material, mesh) {
         return material.forceCompilationAsync(mesh);
@@ -60592,39 +60756,61 @@ var PreviewManager = /** @class */ (function () {
                 this._postprocess.dispose(this._camera);
                 this._postprocess = null;
             }
-            if (this._globalState.mode === babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].PostProcess) {
-                this._globalState.onIsLoadingChanged.notifyObservers(false);
-                this._postprocess = tempMaterial_1.createPostProcess(this._camera, 1.0, babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Constants"].TEXTURE_NEAREST_SAMPLINGMODE, this._engine);
-                var currentScreen_1 = tempMaterial_1.getBlockByPredicate(function (block) { return block instanceof babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["CurrentScreenBlock"]; });
-                if (currentScreen_1) {
-                    this._postprocess.onApplyObservable.add(function (effect) {
-                        effect.setTexture("textureSampler", currentScreen_1.texture);
+            switch (this._globalState.mode) {
+                case babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].PostProcess: {
+                    this._globalState.onIsLoadingChanged.notifyObservers(false);
+                    this._postprocess = tempMaterial_1.createPostProcess(this._camera, 1.0, babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Constants"].TEXTURE_NEAREST_SAMPLINGMODE, this._engine);
+                    var currentScreen_1 = tempMaterial_1.getBlockByPredicate(function (block) { return block instanceof babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["CurrentScreenBlock"]; });
+                    if (currentScreen_1) {
+                        this._postprocess.onApplyObservable.add(function (effect) {
+                            effect.setTexture("textureSampler", currentScreen_1.texture);
+                        });
+                    }
+                    if (this._material) {
+                        this._material.dispose();
+                    }
+                    this._material = tempMaterial_1;
+                    break;
+                }
+                case babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].Particle: {
+                    this._globalState.onIsLoadingChanged.notifyObservers(false);
+                    this._particleSystem.onBeforeDrawParticlesObservable.clear();
+                    this._particleSystem.onBeforeDrawParticlesObservable.add(function (effect) {
+                        var textureBlock = tempMaterial_1.getBlockByPredicate(function (block) { return block instanceof babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["ParticleTextureBlock"]; });
+                        if (textureBlock && textureBlock.texture && effect) {
+                            effect.setTexture("diffuseSampler", textureBlock.texture);
+                        }
                     });
-                }
-                if (this._material) {
-                    this._material.dispose();
-                }
-                this._material = tempMaterial_1;
-            }
-            else if (this._meshes.length) {
-                var tasks = this._meshes.map(function (m) { return _this._forceCompilationAsync(tempMaterial_1, m); });
-                Promise.all(tasks).then(function () {
-                    for (var _i = 0, _a = _this._meshes; _i < _a.length; _i++) {
-                        var mesh = _a[_i];
-                        mesh.material = tempMaterial_1;
+                    tempMaterial_1.createEffectForParticles(this._particleSystem);
+                    if (this._material) {
+                        this._material.dispose();
                     }
-                    if (_this._material) {
-                        _this._material.dispose();
+                    this._material = tempMaterial_1;
+                    break;
+                }
+                default: {
+                    if (this._meshes.length) {
+                        var tasks = this._meshes.map(function (m) { return _this._forceCompilationAsync(tempMaterial_1, m); });
+                        Promise.all(tasks).then(function () {
+                            for (var _i = 0, _a = _this._meshes; _i < _a.length; _i++) {
+                                var mesh = _a[_i];
+                                mesh.material = tempMaterial_1;
+                            }
+                            if (_this._material) {
+                                _this._material.dispose();
+                            }
+                            _this._material = tempMaterial_1;
+                            _this._globalState.onIsLoadingChanged.notifyObservers(false);
+                        }).catch(function (reason) {
+                            _this._globalState.onLogRequiredObservable.notifyObservers(new _log_logComponent__WEBPACK_IMPORTED_MODULE_2__["LogEntry"]("Shader compilation error:\r\n" + reason, true));
+                            _this._globalState.onIsLoadingChanged.notifyObservers(false);
+                        });
                     }
-                    _this._material = tempMaterial_1;
-                    _this._globalState.onIsLoadingChanged.notifyObservers(false);
-                }).catch(function (reason) {
-                    _this._globalState.onLogRequiredObservable.notifyObservers(new _log_logComponent__WEBPACK_IMPORTED_MODULE_2__["LogEntry"]("Shader compilation error:\r\n" + reason, true));
-                    _this._globalState.onIsLoadingChanged.notifyObservers(false);
-                });
-            }
-            else {
-                this._material = tempMaterial_1;
+                    else {
+                        this._material = tempMaterial_1;
+                    }
+                    break;
+                }
             }
         }
         catch (err) {
@@ -60674,7 +60860,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/dataStorage");
 /* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _previewMeshType__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./previewMeshType */ "./components/preview/previewMeshType.ts");
+/* harmony import */ var _previewType__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./previewType */ "./components/preview/previewType.ts");
 /* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
 
 
@@ -60702,22 +60888,22 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
         this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
     };
     PreviewMeshControlComponent.prototype.changeMeshType = function (newOne) {
-        if (this.props.globalState.previewMeshType === newOne) {
+        if (this.props.globalState.previewType === newOne) {
             return;
         }
-        this.props.globalState.previewMeshType = newOne;
+        this.props.globalState.previewType = newOne;
         this.props.globalState.onPreviewCommandActivated.notifyObservers(false);
-        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].WriteNumber("PreviewMeshType", newOne);
+        babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].WriteNumber("PreviewType", newOne);
         this.forceUpdate();
     };
     PreviewMeshControlComponent.prototype.useCustomMesh = function (evt) {
         var files = evt.target.files;
         if (files && files.length) {
             var file = files[0];
-            this.props.globalState.previewMeshFile = file;
-            this.props.globalState.previewMeshType = _previewMeshType__WEBPACK_IMPORTED_MODULE_3__["PreviewMeshType"].Custom;
+            this.props.globalState.previewFile = file;
+            this.props.globalState.previewType = _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Custom;
             this.props.globalState.onPreviewCommandActivated.notifyObservers(false);
-            this.props.globalState.listOfCustomPreviewMeshFiles = [file];
+            this.props.globalState.listOfCustomPreviewFiles = [file];
             this.forceUpdate();
         }
         if (this.filePickerRef.current) {
@@ -60748,23 +60934,37 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
     PreviewMeshControlComponent.prototype.render = function () {
         var _this = this;
         var meshTypeOptions = [
-            { label: "Cube", value: _previewMeshType__WEBPACK_IMPORTED_MODULE_3__["PreviewMeshType"].Box },
-            { label: "Cylinder", value: _previewMeshType__WEBPACK_IMPORTED_MODULE_3__["PreviewMeshType"].Cylinder },
-            { label: "Plane", value: _previewMeshType__WEBPACK_IMPORTED_MODULE_3__["PreviewMeshType"].Plane },
-            { label: "Shader ball", value: _previewMeshType__WEBPACK_IMPORTED_MODULE_3__["PreviewMeshType"].ShaderBall },
-            { label: "Sphere", value: _previewMeshType__WEBPACK_IMPORTED_MODULE_3__["PreviewMeshType"].Sphere },
-            { label: "Load...", value: _previewMeshType__WEBPACK_IMPORTED_MODULE_3__["PreviewMeshType"].Custom + 1 }
+            { label: "Cube", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Box },
+            { label: "Cylinder", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Cylinder },
+            { label: "Plane", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Plane },
+            { label: "Shader ball", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].ShaderBall },
+            { label: "Sphere", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Sphere },
+            { label: "Load...", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Custom + 1 }
         ];
-        if (this.props.globalState.listOfCustomPreviewMeshFiles.length > 0) {
+        var particleTypeOptions = [
+            { label: "Default", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].DefaultParticleSystem },
+            { label: "Bubbles", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Bubbles },
+            { label: "Explosion", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Explosion },
+            { label: "Fire", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Fire },
+            { label: "Rain", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Rain },
+            { label: "Smoke", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Smoke },
+            { label: "Load...", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Custom + 1 }
+        ];
+        if (this.props.globalState.listOfCustomPreviewFiles.length > 0) {
             meshTypeOptions.splice(0, 0, {
-                label: "Custom", value: _previewMeshType__WEBPACK_IMPORTED_MODULE_3__["PreviewMeshType"].Custom
+                label: "Custom", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Custom
+            });
+            particleTypeOptions.splice(0, 0, {
+                label: "Custom", value: _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Custom
             });
         }
+        var options = this.props.globalState.mode === babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Particle ? particleTypeOptions : meshTypeOptions;
+        var accept = this.props.globalState.mode === babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Particle ? ".json" : ".gltf, .glb, .babylon, .obj";
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-mesh-bar" },
-            this.props.globalState.mode !== babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].PostProcess && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_4__["OptionsLineComponent"], { label: "", options: meshTypeOptions, target: this.props.globalState, propertyName: "previewMeshType", noDirectUpdate: true, onSelect: function (value) {
+            (this.props.globalState.mode === babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Material || this.props.globalState.mode === babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Particle) && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_4__["OptionsLineComponent"], { label: "", options: options, target: this.props.globalState, propertyName: "previewType", noDirectUpdate: true, onSelect: function (value) {
                         var _a;
-                        if (value !== _previewMeshType__WEBPACK_IMPORTED_MODULE_3__["PreviewMeshType"].Custom + 1) {
+                        if (value !== _previewType__WEBPACK_IMPORTED_MODULE_3__["PreviewType"].Custom + 1) {
                             _this.changeMeshType(value);
                         }
                         else {
@@ -60774,7 +60974,8 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: {
                         display: "none"
                     }, title: "Preview with a custom mesh" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.filePickerRef, id: "file-picker", type: "file", onChange: function (evt) { return _this.useCustomMesh(evt); }, accept: ".gltf, .glb, .babylon, .obj" })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.filePickerRef, id: "file-picker", type: "file", onChange: function (evt) { return _this.useCustomMesh(evt); }, accept: accept }))),
+            this.props.globalState.mode === babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialModes"].Material && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn-table animation", onClick: function () { return _this.changeAnimation(); }, className: "button", id: "play-button" }, this.props.globalState.rotatePreview ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: pauseIcon, alt: "" }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: playIcon, alt: "" })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "color-picker-button", title: "Background color", className: "button align", onClick: function (_) { return _this.changeBackgroundClick(); } },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: colorPicker, alt: "" }),
@@ -60790,26 +60991,34 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./components/preview/previewMeshType.ts":
-/*!***********************************************!*\
-  !*** ./components/preview/previewMeshType.ts ***!
-  \***********************************************/
-/*! exports provided: PreviewMeshType */
+/***/ "./components/preview/previewType.ts":
+/*!*******************************************!*\
+  !*** ./components/preview/previewType.ts ***!
+  \*******************************************/
+/*! exports provided: PreviewType */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PreviewMeshType", function() { return PreviewMeshType; });
-var PreviewMeshType;
-(function (PreviewMeshType) {
-    PreviewMeshType[PreviewMeshType["Sphere"] = 0] = "Sphere";
-    PreviewMeshType[PreviewMeshType["Box"] = 1] = "Box";
-    PreviewMeshType[PreviewMeshType["Torus"] = 2] = "Torus";
-    PreviewMeshType[PreviewMeshType["Cylinder"] = 3] = "Cylinder";
-    PreviewMeshType[PreviewMeshType["Plane"] = 4] = "Plane";
-    PreviewMeshType[PreviewMeshType["ShaderBall"] = 5] = "ShaderBall";
-    PreviewMeshType[PreviewMeshType["Custom"] = 6] = "Custom";
-})(PreviewMeshType || (PreviewMeshType = {}));
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PreviewType", function() { return PreviewType; });
+var PreviewType;
+(function (PreviewType) {
+    // Meshes
+    PreviewType[PreviewType["Sphere"] = 0] = "Sphere";
+    PreviewType[PreviewType["Box"] = 1] = "Box";
+    PreviewType[PreviewType["Torus"] = 2] = "Torus";
+    PreviewType[PreviewType["Cylinder"] = 3] = "Cylinder";
+    PreviewType[PreviewType["Plane"] = 4] = "Plane";
+    PreviewType[PreviewType["ShaderBall"] = 5] = "ShaderBall";
+    // Particle systems
+    PreviewType[PreviewType["DefaultParticleSystem"] = 6] = "DefaultParticleSystem";
+    PreviewType[PreviewType["Bubbles"] = 7] = "Bubbles";
+    PreviewType[PreviewType["Smoke"] = 8] = "Smoke";
+    PreviewType[PreviewType["Rain"] = 9] = "Rain";
+    PreviewType[PreviewType["Explosion"] = 10] = "Explosion";
+    PreviewType[PreviewType["Fire"] = 11] = "Fire";
+    PreviewType[PreviewType["Custom"] = 12] = "Custom";
+})(PreviewType || (PreviewType = {}));
 
 
 /***/ }),
@@ -61230,6 +61439,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _diagram_nodePort__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ../../diagram/nodePort */ "./diagram/nodePort.ts");
 /* harmony import */ var _diagram_graphCanvas__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ../../diagram/graphCanvas */ "./diagram/graphCanvas.tsx");
 /* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
+/* harmony import */ var _preview_previewType__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ../preview/previewType */ "./components/preview/previewType.ts");
+
 
 
 
@@ -61333,7 +61544,9 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["Tools"].ReadFile(file, function (data) {
             var decoder = new TextDecoder("utf-8");
             _serializationTools__WEBPACK_IMPORTED_MODULE_7__["SerializationTools"].Deserialize(JSON.parse(decoder.decode(data)), _this.props.globalState);
-            _this.changeMode(_this.props.globalState.nodeMaterial.mode, true, false);
+            if (!_this.changeMode(_this.props.globalState.nodeMaterial.mode, true, false)) {
+                _this.props.globalState.onResetRequiredObservable.notifyObservers();
+            }
             _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         }, undefined, true);
     };
@@ -61405,8 +61618,9 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterial"].ParseFromSnippetAsync(snippedID, scene, "", material).then(function () {
             material.build();
-            _this.changeMode(_this.props.globalState.nodeMaterial.mode, true, false);
-            _this.props.globalState.onResetRequiredObservable.notifyObservers();
+            if (!_this.changeMode(_this.props.globalState.nodeMaterial.mode, true, false)) {
+                _this.props.globalState.onResetRequiredObservable.notifyObservers();
+            }
         }).catch(function (err) {
             alert("Unable to load your node material: " + err);
         });
@@ -61416,16 +61630,15 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         if (loadDefault === void 0) { loadDefault = true; }
         var _a, _b;
         if (this.props.globalState.mode === value) {
-            return;
+            return false;
         }
         if (!force && !confirm('Are your sure? You will lose your current changes (if any) if they are not saved!')) {
             (_a = this._modeSelect.current) === null || _a === void 0 ? void 0 : _a.setValue(this.props.globalState.mode);
-            return;
+            return false;
         }
         if (force) {
             (_b = this._modeSelect.current) === null || _b === void 0 ? void 0 : _b.setValue(value);
         }
-        this.props.globalState.mode = value;
         if (loadDefault) {
             switch (value) {
                 case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].Material:
@@ -61434,9 +61647,25 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].PostProcess:
                     this.props.globalState.nodeMaterial.setToDefaultPostProcess();
                     break;
+                case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].Particle:
+                    this.props.globalState.nodeMaterial.setToDefaultParticle();
+                    break;
             }
         }
+        switch (value) {
+            case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].Material:
+                this.props.globalState.previewType = _preview_previewType__WEBPACK_IMPORTED_MODULE_25__["PreviewType"].Sphere;
+                break;
+            case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].Particle:
+                this.props.globalState.previewType = _preview_previewType__WEBPACK_IMPORTED_MODULE_25__["PreviewType"].Bubbles;
+                break;
+        }
+        this.props.globalState.listOfCustomPreviewFiles = [];
+        this.props.globalState.previewFile = undefined;
+        babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].WriteNumber("PreviewType", this.props.globalState.previewType);
+        this.props.globalState.mode = value;
         this.props.globalState.onResetRequiredObservable.notifyObservers();
+        return true;
     };
     PropertyTabComponent.prototype.render = function () {
         var _this = this;
@@ -61458,13 +61687,18 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_properties_framePropertyComponent__WEBPACK_IMPORTED_MODULE_13__["FramePropertyTabComponent"], { globalState: this.props.globalState, frame: this.state.currentFrame }));
         }
         var gridSize = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].ReadNumber("GridSize", 20);
+        var modeList = [
+            { label: "Material", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].Material },
+            { label: "Post Process", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].PostProcess },
+            { label: "Particle", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].Particle },
+        ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "propertyTab" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: "https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "title" }, "NODE MATERIAL EDITOR")),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_24__["OptionsLineComponent"], { ref: this._modeSelect, label: "Mode", target: this, getSelection: function (target) { return _this.props.globalState.mode; }, options: [{ label: "Material", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].Material }, { label: "Post Process", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].PostProcess }], onSelect: function (value) { return _this.changeMode(value); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_24__["OptionsLineComponent"], { ref: this._modeSelect, label: "Mode", target: this, getSelection: function (target) { return _this.props.globalState.mode; }, options: modeList, onSelect: function (value) { return _this.changeMode(value); } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextLineComponent"], { label: "Version", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["Engine"].Version }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextLineComponent"], { label: "Help", value: "doc.babylonjs.com", underline: true, onLink: function () { return window.open('https://doc.babylonjs.com/how_to/node_material', '_blank'); } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Reset to default", onClick: function () {
@@ -61656,6 +61890,20 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+var inputNameToAttributeValue = {
+    "position2d": "position",
+    "particle_uv": "uv",
+    "particle_color": "color",
+    "particle_texturemask": "textureMask",
+    "particle_positionw": "positionW",
+};
+var inputNameToAttributeName = {
+    "position2d": "postprocess",
+    "particle_uv": "particle",
+    "particle_color": "particle",
+    "particle_texturemask": "particle",
+    "particle_positionw": "particle",
+};
 var InputDisplayManager = /** @class */ (function () {
     function InputDisplayManager() {
     }
@@ -61698,11 +61946,12 @@ var InputDisplayManager = /** @class */ (function () {
         return color;
     };
     InputDisplayManager.prototype.updatePreviewContent = function (block, contentArea) {
+        var _a, _b;
         var value = "";
         var inputBlock = block;
         if (inputBlock.isAttribute) {
-            var attrVal = inputBlock.name === 'position2d' ? 'position' : inputBlock.name;
-            var attrName = inputBlock.name === 'position2d' ? 'postprocess' : 'mesh';
+            var attrVal = (_a = inputNameToAttributeValue[inputBlock.name]) !== null && _a !== void 0 ? _a : inputBlock.name;
+            var attrName = (_b = inputNameToAttributeName[inputBlock.name]) !== null && _b !== void 0 ? _b : 'mesh';
             value = attrName + "." + attrVal;
         }
         else if (inputBlock.isSystemValue) {
@@ -61872,6 +62121,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var TextureDisplayManager = /** @class */ (function () {
     function TextureDisplayManager() {
     }
@@ -61892,7 +62142,7 @@ var TextureDisplayManager = /** @class */ (function () {
         var textureBlock = block;
         if (!this._previewCanvas) {
             contentArea.classList.add("texture-block");
-            if (block instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_0__["TextureBlock"] || block instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_0__["CurrentScreenBlock"]) {
+            if (block instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_0__["TextureBlock"] || block instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_0__["CurrentScreenBlock"] || block instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_0__["ParticleTextureBlock"]) {
                 contentArea.classList.add("regular-texture-block");
             }
             this._previewCanvas = contentArea.ownerDocument.createElement("canvas");
@@ -62008,6 +62258,7 @@ DisplayLedger.RegisteredControls["ReflectionTextureBlock"] = _display_textureDis
 DisplayLedger.RegisteredControls["ReflectionBlock"] = _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__["TextureDisplayManager"];
 DisplayLedger.RegisteredControls["RefractionBlock"] = _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__["TextureDisplayManager"];
 DisplayLedger.RegisteredControls["CurrentScreenBlock"] = _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__["TextureDisplayManager"];
+DisplayLedger.RegisteredControls["ParticleTextureBlock"] = _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__["TextureDisplayManager"];
 DisplayLedger.RegisteredControls["DiscardBlock"] = _display_discardDisplayManager__WEBPACK_IMPORTED_MODULE_7__["DiscardDisplayManager"];
 
 
@@ -63594,6 +63845,9 @@ var GraphFrame = /** @class */ (function () {
         this._commentsElement.className = 'frame-comments';
         this._commentsElement.style.color = 'white';
         this._commentsElement.style.fontSize = '16px';
+        var commentSpan = document.createElement('span');
+        commentSpan.className = "frame-comment-span";
+        this._commentsElement.appendChild(commentSpan);
         this.element.appendChild(this._commentsElement);
         // Get nodes
         if (!doNotCaptureNodes) {
@@ -63726,7 +63980,7 @@ var GraphFrame = /** @class */ (function () {
                             var localPort = void 0;
                             if (!portAdded) {
                                 portAdded = true;
-                                localPort = _frameNodePort__WEBPACK_IMPORTED_MODULE_3__["FrameNodePort"].CreateFrameNodePortElement(port.connectionPoint, link.nodeB, this._outputPortContainer, null, this._ownerCanvas.globalState, false, GraphFrame._FramePortCounter++, this.id);
+                                localPort = _frameNodePort__WEBPACK_IMPORTED_MODULE_3__["FrameNodePort"].CreateFrameNodePortElement(port.connectionPoint, link.nodeA, this._outputPortContainer, null, this._ownerCanvas.globalState, false, GraphFrame._FramePortCounter++, this.id);
                                 this._frameOutPorts.push(localPort);
                                 link.isVisible = true;
                                 var onLinkDisposedObserver = link.onDisposedObservable.add(function (nodeLink) {
@@ -63910,7 +64164,7 @@ var GraphFrame = /** @class */ (function () {
                 this._commentsElement.classList.remove('has-comments');
             }
             if (comments === "" || (comments && comments.length >= 0)) {
-                this._commentsElement.innerText = comments;
+                this._commentsElement.children[0].innerText = comments;
             }
             this.height = this._borderElement.offsetHeight;
             this._comments = comments;
@@ -65927,6 +66181,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var TexturePropertyTabComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TexturePropertyTabComponent, _super);
     function TexturePropertyTabComponent(props) {
@@ -66040,7 +66295,7 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         }
         url = url.replace(/\?nocache=\d+/, "");
         var isInReflectionMode = this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionTextureBlock"] || this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ReflectionBlock"] || this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["RefractionBlock"];
-        var isFrozenTexture = this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["CurrentScreenBlock"];
+        var isFrozenTexture = this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["CurrentScreenBlock"] || this.textureBlock instanceof babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["ParticleTextureBlock"];
         var reflectionModeOptions = [
             {
                 label: "Cubic", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CUBIC_MODE
@@ -66313,6 +66568,7 @@ PropertyLedger.RegisteredControls["ReflectionTextureBlock"] = _properties_textur
 PropertyLedger.RegisteredControls["ReflectionBlock"] = _properties_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__["TexturePropertyTabComponent"];
 PropertyLedger.RegisteredControls["RefractionBlock"] = _properties_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__["TexturePropertyTabComponent"];
 PropertyLedger.RegisteredControls["CurrentScreenBlock"] = _properties_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__["TexturePropertyTabComponent"];
+PropertyLedger.RegisteredControls["ParticleTextureBlock"] = _properties_texturePropertyTabComponent__WEBPACK_IMPORTED_MODULE_5__["TexturePropertyTabComponent"];
 PropertyLedger.RegisteredControls["TrigonometryBlock"] = _properties_trigonometryNodePropertyComponent__WEBPACK_IMPORTED_MODULE_6__["TrigonometryPropertyTabComponent"];
 
 
@@ -66330,7 +66586,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GlobalState", function() { return GlobalState; });
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/dataStorage");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _components_preview_previewMeshType__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/preview/previewMeshType */ "./components/preview/previewMeshType.ts");
+/* harmony import */ var _components_preview_previewType__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/preview/previewType */ "./components/preview/previewType.ts");
 
 
 
@@ -66361,16 +66617,16 @@ var GlobalState = /** @class */ (function () {
         this.onGraphNodeRemovalObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGridSizeChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onExposePortOnFrameObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.listOfCustomPreviewMeshFiles = [];
+        this.listOfCustomPreviewFiles = [];
         this.blockKeyboardEvents = false;
-        this.previewMeshType = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("PreviewMeshType", _components_preview_previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Box);
+        this.previewType = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("PreviewType", _components_preview_previewType__WEBPACK_IMPORTED_MODULE_1__["PreviewType"].Box);
         this.backFaceCulling = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("BackFaceCulling", true);
         this.depthPrePass = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("DepthPrePass", false);
         this.hemisphericLight = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("HemisphericLight", true);
         this.directionalLight0 = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("DirectionalLight0", false);
         this.directionalLight1 = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("DirectionalLight1", false);
         this.controlCamera = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("ControlCamera", true);
-        this._mode = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].Material;
+        this._mode = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("Mode", babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].Material);
         var r = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorR", 0.12549019607843137);
         var g = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorG", 0.09803921568627451);
         var b = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorB", 0.25098039215686274);
@@ -66383,6 +66639,7 @@ var GlobalState = /** @class */ (function () {
         },
         /** Sets the mode */
         set: function (m) {
+            babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].WriteNumber("Mode", m);
             this._mode = m;
             this.onPreviewCommandActivated.notifyObservers(true);
         },
@@ -67159,9 +67416,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _graphEditor__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./graphEditor */ "./graphEditor.tsx");
 /* harmony import */ var _src_sharedComponents_popup__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../src/sharedComponents/popup */ "./sharedComponents/popup.ts");
 /* harmony import */ var _serializationTools__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./serializationTools */ "./serializationTools.ts");
-/* harmony import */ var _components_preview_previewMeshType__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./components/preview/previewMeshType */ "./components/preview/previewMeshType.ts");
+/* harmony import */ var _components_preview_previewType__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./components/preview/previewType */ "./components/preview/previewType.ts");
 /* harmony import */ var babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! babylonjs/Misc/dataStorage */ "babylonjs/Misc/dataStorage");
 /* harmony import */ var babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_7__);
+
 
 
 
@@ -67205,6 +67463,7 @@ var NodeEditor = /** @class */ (function () {
         if (options.customLoadObservable) {
             options.customLoadObservable.add(function (data) {
                 _serializationTools__WEBPACK_IMPORTED_MODULE_5__["SerializationTools"].Deserialize(data, globalState);
+                globalState.onResetRequiredObservable.notifyObservers();
                 globalState.onBuiltObservable.notifyObservers();
             });
         }
@@ -67225,8 +67484,8 @@ var NodeEditor = /** @class */ (function () {
             };
         }
         window.addEventListener('beforeunload', function () {
-            if (babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_7__["DataStorage"].ReadNumber("PreviewMeshType", _components_preview_previewMeshType__WEBPACK_IMPORTED_MODULE_6__["PreviewMeshType"].Box) === _components_preview_previewMeshType__WEBPACK_IMPORTED_MODULE_6__["PreviewMeshType"].Custom) {
-                babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_7__["DataStorage"].WriteNumber("PreviewMeshType", _components_preview_previewMeshType__WEBPACK_IMPORTED_MODULE_6__["PreviewMeshType"].Box);
+            if (babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_7__["DataStorage"].ReadNumber("PreviewType", _components_preview_previewType__WEBPACK_IMPORTED_MODULE_6__["PreviewType"].Box) === _components_preview_previewType__WEBPACK_IMPORTED_MODULE_6__["PreviewType"].Custom) {
+                babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_7__["DataStorage"].WriteNumber("PreviewType", globalState.mode === babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_7__["NodeMaterialModes"].Material ? _components_preview_previewType__WEBPACK_IMPORTED_MODULE_6__["PreviewType"].Box : _components_preview_previewType__WEBPACK_IMPORTED_MODULE_6__["PreviewType"].Bubbles);
             }
         });
     };
@@ -67314,8 +67573,6 @@ var SerializationTools = /** @class */ (function () {
     SerializationTools.Deserialize = function (serializationObject, globalState) {
         globalState.onIsLoadingChanged.notifyObservers(true);
         globalState.nodeMaterial.loadFromSerialization(serializationObject, "");
-        globalState.mode = globalState.nodeMaterial.mode;
-        globalState.onResetRequiredObservable.notifyObservers();
     };
     return SerializationTools;
 }());
@@ -67574,7 +67831,7 @@ var Color3LineComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorPickerComponent__WEBPACK_IMPORTED_MODULE_6__["ColorPickerLineComponent"], { value: this.state.color, disableAlpha: true, onColorChanged: function (color) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorPickerComponent__WEBPACK_IMPORTED_MODULE_6__["ColorPickerLineComponent"], { value: this.state.color, disableAlpha: true, globalState: this.props.globalState, onColorChanged: function (color) {
                             _this.onChange(color);
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "copy hoverIcon", onClick: function () { return _this.copyToClipboard(); }, title: "Copy to clipboard" },
@@ -67731,7 +67988,7 @@ var Color4LineComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorPickerComponent__WEBPACK_IMPORTED_MODULE_6__["ColorPickerLineComponent"], { value: this.state.color, onColorChanged: function (color) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorPickerComponent__WEBPACK_IMPORTED_MODULE_6__["ColorPickerLineComponent"], { globalState: this.props.globalState, value: this.state.color, onColorChanged: function (color) {
                             _this.onChange(color);
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "copy hoverIcon", onClick: function () { return _this.copyToClipboard(); }, title: "Copy to clipboard" },
@@ -67812,14 +68069,18 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
     ColorPickerLineComponent.prototype.componentDidMount = function () {
         this.syncPositions();
     };
+    ColorPickerLineComponent.prototype.setPickerState = function (enabled) {
+        this.setState({ pickerEnabled: enabled });
+        this.props.globalState.blockKeyboardEvents = enabled;
+    };
     ColorPickerLineComponent.prototype.render = function () {
         var _this = this;
         var color = this.state.color;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-rect", ref: this._floatHostRef, style: { background: this.state.hex }, onClick: function () { return _this.setState({ pickerEnabled: true }); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-rect", ref: this._floatHostRef, style: { background: this.state.hex }, onClick: function () { return _this.setPickerState(true); } }),
             this.state.pickerEnabled &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-cover", onClick: function () { return _this.setState({ pickerEnabled: false }); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-cover", onClick: function () { return _this.setPickerState(false); } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-float", ref: this._floatRef },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react_color__WEBPACK_IMPORTED_MODULE_3__["SketchPicker"], { color: color, disableAlpha: this.props.disableAlpha, onChange: function (color) {
                                 var hex;

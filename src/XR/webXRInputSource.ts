@@ -5,6 +5,7 @@ import { Ray } from '../Culling/ray';
 import { Scene } from '../scene';
 import { WebXRAbstractMotionController } from './motionController/webXRAbstractMotionController';
 import { WebXRMotionControllerManager } from './motionController/webXRMotionControllerManager';
+import { Tools } from '../Misc/tools';
 
 let idCount = 0;
 
@@ -37,7 +38,6 @@ export interface IWebXRControllerOptions {
  * Represents an XR controller
  */
 export class WebXRInputSource {
-    private _tmpQuaternion = new Quaternion();
     private _tmpVector = new Vector3();
     private _uniqueId: string;
 
@@ -94,6 +94,8 @@ export class WebXRInputSource {
             this.grip.rotationQuaternion = new Quaternion();
         }
 
+        this._tmpVector.set(0, 0, (this._scene.useRightHandedSystem ? -1.0 : 1.0));
+
         // for now only load motion controllers if gamepad object available
         if (this.inputSource.gamepad) {
             WebXRMotionControllerManager.GetMotionControllerWithXRInput(inputSource, _scene, this._options.forceControllerProfile).then((motionController) => {
@@ -114,6 +116,8 @@ export class WebXRInputSource {
                         }
                     });
                 }
+            }, () => {
+                Tools.Warn(`Could not find a matching motion controller for the registered input source`);
             });
         }
     }
@@ -149,12 +153,13 @@ export class WebXRInputSource {
      */
     public getWorldPointerRayToRef(result: Ray, gripIfAvailable: boolean = false) {
         const object = gripIfAvailable && this.grip ? this.grip : this.pointer;
-        let worldMatrix = object.computeWorldMatrix();
-        worldMatrix.decompose(undefined, this._tmpQuaternion, undefined);
-        this._tmpVector.set(0, 0, (this._scene.useRightHandedSystem ? -1.0 : 1.0));
-        this._tmpVector.rotateByQuaternionToRef(this._tmpQuaternion, this._tmpVector);
+        Vector3.TransformNormalToRef(
+            this._tmpVector,
+            object.getWorldMatrix(),
+            result.direction
+        );
+        result.direction.normalize();
         result.origin.copyFrom(object.absolutePosition);
-        result.direction.copyFrom(this._tmpVector);
         result.length = 1000;
     }
 

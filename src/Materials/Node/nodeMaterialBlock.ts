@@ -372,8 +372,9 @@ export class NodeMaterialBlock {
      * @param nodeMaterial defines the node material requesting the update
      * @param defines defines the material defines to update
      * @param useInstances specifies that instances should be used
+     * @param subMesh defines which submesh to render
      */
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false) {
+    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false, subMesh?: SubMesh) {
         // Do nothing
     }
 
@@ -425,7 +426,7 @@ export class NodeMaterialBlock {
             (this.target !== NodeMaterialBlockTargets.VertexAndFragment && otherBlockWasGeneratedInVertexShader)
             )) { // context switch! We need a varying
             if ((!block.isInput && state.target !== block._buildTarget) // block was already emitted by vertex shader
-                || (block.isInput && (block as InputBlock).isAttribute) // block is an attribute
+                || (block.isInput && (block as InputBlock).isAttribute && !(block as InputBlock)._noContextSwitch) // block is an attribute
             ) {
                 let connectedPoint = input.connectedPoint!;
                 if (state._vertexState._emitVaryingFromString("v_" + connectedPoint.associatedVariableName, state._getGLType(connectedPoint.type))) {

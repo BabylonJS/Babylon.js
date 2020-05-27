@@ -18,12 +18,13 @@ import { ReflectionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/reflectionB
 import { RefractionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/refractionBlock';
 import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/textureBlock';
 import { CurrentScreenBlock } from 'babylonjs/Materials/Node/Blocks/Dual/currentScreenBlock';
+import { ParticleTextureBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleTextureBlock';
 import { GeneralPropertyTabComponent, GenericPropertyTabComponent } from './genericNodePropertyComponent';
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 
 type ReflectionTexture = ReflectionTextureBlock | ReflectionBlock | RefractionBlock;
 
-type AnyTexture = TextureBlock | ReflectionTexture | CurrentScreenBlock;
+type AnyTexture = TextureBlock | ReflectionTexture | CurrentScreenBlock | ParticleTextureBlock;
 
 export class TexturePropertyTabComponent extends React.Component<IPropertyComponentProps, {isEmbedded: boolean, loadAsCubeTexture: boolean}> {
 
@@ -153,7 +154,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
         url = url.replace(/\?nocache=\d+/, "");
 
         let isInReflectionMode = this.textureBlock instanceof ReflectionTextureBlock || this.textureBlock instanceof ReflectionBlock || this.textureBlock instanceof RefractionBlock;
-        let isFrozenTexture = this.textureBlock instanceof CurrentScreenBlock;
+        let isFrozenTexture = this.textureBlock instanceof CurrentScreenBlock || this.textureBlock instanceof ParticleTextureBlock;
 
         var reflectionModeOptions: {label: string, value: number}[] = [
             {

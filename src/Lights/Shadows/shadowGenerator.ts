@@ -1030,6 +1030,10 @@ export class ShadowGenerator implements IShadowGenerator {
             for (index = 0; index < transparentSubMeshes.length; index++) {
                 this._renderSubMeshForShadowMap(transparentSubMeshes.data[index], true);
             }
+        } else {
+            for (index = 0; index < transparentSubMeshes.length; index++) {
+                transparentSubMeshes.data[index].getEffectiveMesh()._internalAbstractMeshDataInfo._isActiveIntermediate = false;
+            }
         }
     }
 
@@ -1042,6 +1046,8 @@ export class ShadowGenerator implements IShadowGenerator {
 
         const world = mesh.getWorldMatrix();
 
+        effect.setMatrix(matriceNames?.world ?? "world", world);
+
         world.multiplyToRef(this.getTransformMatrix(), tmpMatrix);
 
         effect.setMatrix(matriceNames?.worldViewProjection ?? "worldViewProjection", tmpMatrix);
@@ -1052,10 +1058,8 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     protected _renderSubMeshForShadowMap(subMesh: SubMesh, isTransparent: boolean = false): void {
-        var ownerMesh = subMesh.getMesh();
-        var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh : null;
         var renderingMesh = subMesh.getRenderingMesh();
-        var effectiveMesh = replacementMesh ? replacementMesh : renderingMesh;
+        var effectiveMesh = subMesh.getEffectiveMesh();
         var scene = this._scene;
         var engine = scene.getEngine();
         let material = subMesh.getMaterial();
@@ -1070,12 +1074,12 @@ export class ShadowGenerator implements IShadowGenerator {
         engine.setState(material.backFaceCulling);
 
         // Managing instances
-        var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!replacementMesh);
+        var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
         if (batch.mustReturn) {
             return;
         }
 
-        var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
+        var hardwareInstancedRendering = engine.getCaps().instancedArrays && (batch.visibleInstances[subMesh._id] !== null && batch.visibleInstances[subMesh._id] !== undefined || renderingMesh.hasThinInstances);
         if (this.isReady(subMesh, hardwareInstancedRendering, isTransparent)) {
             const shadowDepthWrapper = renderingMesh.material?.shadowDepthWrapper;
 
@@ -1402,6 +1406,9 @@ export class ShadowGenerator implements IShadowGenerator {
             if (useInstances) {
                 defines.push("#define INSTANCES");
                 MaterialHelper.PushAttributesForInstances(attribs);
+                if (subMesh.getRenderingMesh().hasThinInstances) {
+                    defines.push("#define THIN_INSTANCES");
+                }
             }
 
             if (this.customShaderOptions) {

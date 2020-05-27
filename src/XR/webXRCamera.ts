@@ -111,6 +111,13 @@ export class WebXRCamera extends FreeCamera {
         return "WebXRCamera";
     }
 
+    /**
+     * Overriding the _getViewMatrix function, as it is computed by WebXR
+     */
+    public _getViewMatrix(): Matrix {
+        return this._computedViewMatrix;
+    }
+
     private _updateFromXRSession() {
         const pose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(this._xrSessionManager.referenceSpace);
 
@@ -136,11 +143,20 @@ export class WebXRCamera extends FreeCamera {
                 this.position.y += this._referencedPosition.y;
                 // avoid using the head rotation on the first frame.
                 this._referenceQuaternion.copyFromFloats(0, 0, 0, 1);
-                // update the reference space so that the position will be correct
             }
             else {
+                // update position and rotation as reference
                 this.rotationQuaternion.copyFrom(this._referenceQuaternion);
                 this.position.copyFrom(this._referencedPosition);
+                if (pose.transform.inverse) {
+                    Matrix.FromFloat32ArrayToRefScaled(pose.transform.inverse.matrix, 0, 1, this._computedViewMatrix);
+                } else {
+                    Matrix.FromFloat32ArrayToRefScaled(pose.transform.matrix, 0, 1, this._computedViewMatrix);
+                    this._computedViewMatrix.invert();
+                }
+                if (!this._scene.useRightHandedSystem) {
+                    this._computedViewMatrix.toggleModelMatrixHandInPlace();
+                }
             }
         }
 
@@ -160,19 +176,21 @@ export class WebXRCamera extends FreeCamera {
                 }
             }
             // Update view/projection matrix
-            if (view.transform.position) {
-                currentRig.position.copyFrom(view.transform.position);
-                currentRig.rotationQuaternion.copyFrom(view.transform.orientation);
-                if (!this._scene.useRightHandedSystem) {
-                    currentRig.position.z *= -1;
-                    currentRig.rotationQuaternion.z *= -1;
-                    currentRig.rotationQuaternion.w *= -1;
-                }
+            currentRig.position.copyFrom(view.transform.position);
+            currentRig.rotationQuaternion.copyFrom(view.transform.orientation);
+            if (!this._scene.useRightHandedSystem) {
+                currentRig.position.z *= -1;
+                currentRig.rotationQuaternion.z *= -1;
+                currentRig.rotationQuaternion.w *= -1;
+            }
+            if (view.transform.inverse) {
+                Matrix.FromFloat32ArrayToRefScaled(view.transform.inverse.matrix, 0, 1, currentRig._computedViewMatrix);
             } else {
                 Matrix.FromFloat32ArrayToRefScaled(view.transform.matrix, 0, 1, currentRig._computedViewMatrix);
-                if (!this._scene.useRightHandedSystem) {
-                    currentRig._computedViewMatrix.toggleModelMatrixHandInPlace();
-                }
+                currentRig._computedViewMatrix.invert();
+            }
+            if (!this._scene.useRightHandedSystem) {
+                currentRig._computedViewMatrix.toggleModelMatrixHandInPlace();
             }
             Matrix.FromFloat32ArrayToRefScaled(view.projectionMatrix, 0, 1, currentRig._projectionMatrix);
 
@@ -204,6 +222,12 @@ export class WebXRCamera extends FreeCamera {
             newCamera.updateUpVectorFromRotation = true;
             newCamera.isRigCamera = true;
             newCamera.rigParent = this;
+            // do not compute projection matrix, provided by XR
+            newCamera.freezeProjectionMatrix();
+            // use the view matrix provided by XR
+            newCamera._getViewMatrix = function(): Matrix {
+                return this._computedViewMatrix;
+            };
             this.rigCameras.push(newCamera);
         }
         while (this.rigCameras.length > viewCount) {

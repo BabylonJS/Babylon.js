@@ -1757,7 +1757,7 @@ export class Scene extends AbstractScene implements IAnimatable {
                 return false;
             }
 
-            let hardwareInstancedRendering = mesh.getClassName() === "InstancedMesh" || mesh.getClassName() === "InstancedLinesMesh" || engine.getCaps().instancedArrays && (<Mesh>mesh).instances.length > 0;
+            let hardwareInstancedRendering = mesh.hasThinInstances || mesh.getClassName() === "InstancedMesh" || mesh.getClassName() === "InstancedLinesMesh" || engine.getCaps().instancedArrays && (<Mesh>mesh).instances.length > 0;
             // Is Ready For Mesh
             for (let step of this._isReadyForMeshStage) {
                 if (!step.action(mesh, hardwareInstancedRendering)) {
@@ -3475,6 +3475,13 @@ export class Scene extends AbstractScene implements IAnimatable {
                 for (let i = 0; i < len; i++) {
                     let mesh = this._activeMeshes.data[i];
                     mesh.computeWorldMatrix();
+                }
+            }
+
+            if (this._activeParticleSystems) {
+                const psLength = this._activeParticleSystems.length;
+                for (let i = 0; i < psLength; i++) {
+                    this._activeParticleSystems.data[i].animate();
                 }
             }
 

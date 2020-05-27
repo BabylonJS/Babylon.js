@@ -17,6 +17,7 @@
     #endif
     };
 
+    #define pbr_inline
     void createReflectionCoords(
         const in vec3 vPositionW,
         const in vec3 normalW,
@@ -52,6 +53,8 @@
         #endif
     }
 
+    #define pbr_inline
+    #define inline
     void sampleReflectionTexture(
         const in float alphaG,
         const in vec3 vReflectionMicrosurfaceInfos,
@@ -111,8 +114,11 @@
             #else
                 float requestedReflectionLOD = reflectionLOD;
             #endif
-
-            environmentRadiance = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD);
+            #ifdef REALTIME_FILTERING
+                environmentRadiance = vec4(radiance(alphaG, reflectionSampler, reflectionCoords, vReflectionFilteringInfo), 1.0);
+            #else
+                environmentRadiance = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD);
+            #endif
         #else
             float lodReflectionNormalized = saturate(reflectionLOD / log2(vReflectionMicrosurfaceInfos.x));
             float lodReflectionNormalizedDoubled = lodReflectionNormalized * 2.0;
@@ -146,6 +152,8 @@
         environmentRadiance.rgb *= vReflectionColor.rgb;
     }
 
+    #define pbr_inline
+    #define inline
     void reflectionBlock(
         const in vec3 vPositionW,
         const in vec3 normalW,
@@ -254,8 +262,12 @@
                     irradianceVector.z *= -1.0;
                 #endif
 
-                #if defined(WEBGL2) && defined(REALTIME_FILTERING)
-                    environmentIrradiance = irradiance(reflectionSampler, irradianceVector);
+                #ifdef INVERTCUBICMAP
+                    irradianceVector.y *= -1.0;
+                #endif
+
+                #if defined(REALTIME_FILTERING)
+                    environmentIrradiance = irradiance(reflectionSampler, irradianceVector, vReflectionFilteringInfo);
                 #else
                     environmentIrradiance = computeEnvironmentIrradiance(irradianceVector);
                 #endif

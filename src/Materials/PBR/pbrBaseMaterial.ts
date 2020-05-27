@@ -21,7 +21,7 @@ import { Scalar } from "../../Maths/math.scalar";
 
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
 import { Effect, IEffectCreationOptions } from "../../Materials/effect";
-import { Material, IMaterialCompilationOptions } from "../../Materials/material";
+import { Material, IMaterialCompilationOptions, ICustomShaderNameResolveOptions } from "../../Materials/material";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
 import { MaterialHelper } from "../../Materials/materialHelper";
@@ -153,6 +153,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public HORIZONOCCLUSION = false;
 
     public INSTANCES = false;
+    public THIN_INSTANCES = false;
 
     public NUM_BONE_INFLUENCERS = 0;
     public BonesPerMesh = 0;
@@ -640,6 +641,30 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     protected _forceIrradianceInFragment = false;
 
+    private _realTimeFiltering: boolean = false;
+    /**
+     * Enables realtime filtering on the texture.
+     */
+    public get realTimeFiltering() {
+        return this._realTimeFiltering;
+    }
+    public set realTimeFiltering(b: boolean) {
+        this._realTimeFiltering = b;
+        this.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
+    private _realTimeFilteringQuality: number = Constants.TEXTURE_FILTERING_QUALITY_LOW;
+    /**
+     * Quality switch for realtime filtering
+     */
+    public get realTimeFilteringQuality() : number {
+        return this._realTimeFilteringQuality;
+    }
+    public set realTimeFilteringQuality(n: number) {
+        this._realTimeFilteringQuality = n;
+        this.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
     /**
      * Force normal to face away from face.
      */
@@ -1006,7 +1031,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         const previousEffect = subMesh.effect;
         const lightDisposed = defines._areLightsDisposed;
-        let effect = this._prepareEffect(mesh, defines, this.onCompiled, this.onError, useInstances);
+        let effect = this._prepareEffect(mesh, defines, this.onCompiled, this.onError, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
 
         if (effect) {
             if (this._onEffectCreatedObservable) {
@@ -1056,8 +1081,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         return false;
     }
 
-    private _prepareEffect(mesh: AbstractMesh, defines: PBRMaterialDefines, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, useInstances: Nullable<boolean> = null, useClipPlane: Nullable<boolean> = null): Nullable<Effect> {
-        this._prepareDefines(mesh, defines, useInstances, useClipPlane);
+    private _prepareEffect(mesh: AbstractMesh, defines: PBRMaterialDefines, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null,
+                useInstances: Nullable<boolean> = null, useClipPlane: Nullable<boolean> = null, useThinInstances: boolean): Nullable<Effect> {
+        this._prepareDefines(mesh, defines, useInstances, useClipPlane, useThinInstances);
 
         if (!defines.isDirty) {
             return null;
@@ -1184,7 +1210,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vMetallicReflectanceFactors", "vEmissiveColor", "visibility", "vReflectionColor",
             "vFogInfos", "vFogColor", "pointSize",
-            "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vReflectionPosition", "vReflectionSize", "vEmissiveInfos", "vReflectivityInfos", "vMetallicReflectanceInfos",
+            "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vReflectionPosition", "vReflectionSize", "vEmissiveInfos", "vReflectivityInfos", "vReflectionFilteringInfo", "vMetallicReflectanceInfos",
             "vMicroSurfaceSamplerInfos", "vBumpInfos", "vLightmapInfos",
             "mBones",
             "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "albedoMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "reflectivityMatrix", "normalMatrix", "microSurfaceSamplerMatrix", "bumpMatrix", "lightmapMatrix", "metallicReflectanceMatrix",
@@ -1198,8 +1224,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "vSphericalL2_2", "vSphericalL2_1", "vSphericalL20", "vSphericalL21", "vSphericalL22",
             "vReflectionMicrosurfaceInfos",
             "vTangentSpaceParams", "boneTextureWidth",
-            "vDebugMode",
-            "vFilteringInfo", "linearRoughness"
+            "vDebugMode"
         ];
 
         var samplers = ["albedoSampler", "reflectivitySampler", "ambientSampler", "emissiveSampler",
@@ -1234,8 +1259,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             maxSimultaneousLights: this._maxSimultaneousLights
         });
 
+        const csnrOptions: ICustomShaderNameResolveOptions = {};
+
         if (this.customShaderNameResolve) {
-            shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines, attribs);
+            shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines, attribs, csnrOptions);
         }
 
         var join = defines.toString();
@@ -1248,11 +1275,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             fallbacks: fallbacks,
             onCompiled: onCompiled,
             onError: onError,
-            indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS }
+            indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS },
+            processFinalCode: csnrOptions.processFinalCode,
         }, engine);
     }
 
-    private _prepareDefines(mesh: AbstractMesh, defines: PBRMaterialDefines, useInstances: Nullable<boolean> = null, useClipPlane: Nullable<boolean> = null): void {
+    private _prepareDefines(mesh: AbstractMesh, defines: PBRMaterialDefines, useInstances: Nullable<boolean> = null, useClipPlane: Nullable<boolean> = null, useThinInstances: boolean = false): void {
         const scene = this.getScene();
         const engine = scene.getEngine();
 
@@ -1302,8 +1330,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
                     defines.LINEARSPECULARREFLECTION = reflectionTexture.linearSpecularLOD;
 
-                    if (reflectionTexture.realTimeFiltering && reflectionTexture.realTimeFilteringQuality > 0) {
-                        defines.NUM_SAMPLES = reflectionTexture.realTimeFilteringQuality + "u";
+                    if (this.realTimeFiltering && this.realTimeFilteringQuality > 0) {
+                        defines.NUM_SAMPLES = "" + this.realTimeFilteringQuality;
+                        if (engine.webGLVersion > 1) {
+                            defines.NUM_SAMPLES = defines.NUM_SAMPLES + "u";
+                        }
+
                         defines.REALTIME_FILTERING = true;
                     } else {
                         defines.REALTIME_FILTERING = false;
@@ -1367,7 +1399,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                         else if (reflectionTexture.isCube) {
                             defines.USESPHERICALFROMREFLECTIONMAP = true;
                             defines.USEIRRADIANCEMAP = false;
-                            if (this._forceIrradianceInFragment || reflectionTexture.realTimeFiltering || scene.getEngine().getCaps().maxVaryingVectors <= 8) {
+                            if (this._forceIrradianceInFragment || this.realTimeFiltering || scene.getEngine().getCaps().maxVaryingVectors <= 8) {
                                 defines.USESPHERICALINVERTEX = false;
                             }
                             else {
@@ -1537,7 +1569,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this.sheen.prepareDefines(defines, scene);
 
         // Values that need to be evaluated on every frame
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, useClipPlane);
+        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, useClipPlane, useThinInstances);
 
         // Attribs
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true, this._transparencyMode !== PBRBaseMaterial.PBRMATERIAL_OPAQUE);
@@ -1554,7 +1586,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         };
 
         const defines = new PBRMaterialDefines();
-        const effect = this._prepareEffect(mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane)!;
+        const effect = this._prepareEffect(mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane, mesh.hasThinInstances)!;
         if (this._onEffectCreatedObservable) {
             onCreatedEffectParameters.effect = effect;
             onCreatedEffectParameters.subMesh = null;
@@ -1588,6 +1620,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         ubo.addUniform("vReflectivityInfos", 3);
         ubo.addUniform("vMicroSurfaceSamplerInfos", 2);
         ubo.addUniform("vReflectionInfos", 2);
+        ubo.addUniform("vReflectionFilteringInfo", 2);
         ubo.addUniform("vReflectionPosition", 3);
         ubo.addUniform("vReflectionSize", 3);
         ubo.addUniform("vBumpInfos", 3);
@@ -1669,7 +1702,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this._activeEffect = effect;
 
         // Matrices
-        if (!defines.INSTANCES) {
+        if (!defines.INSTANCES || defines.THIN_INSTANCES) {
             this.bindOnlyWorldMatrix(world);
         }
 
@@ -1723,12 +1756,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                             ubo.updateVector3("vReflectionSize", cubeTexture.boundingBoxSize);
                         }
 
-                        if (reflectionTexture.realTimeFiltering) {
+                        if (this.realTimeFiltering) {
                             const width = reflectionTexture.getSize().width;
-                            const alpha = this._roughness! * this._roughness!;
-
-                            this._activeEffect.setFloat2("vFilteringInfo", width, Scalar.Log2(width));
-                            this._activeEffect.setFloat("linearRoughness", alpha);
+                            ubo.updateFloat2("vReflectionFilteringInfo", width, Scalar.Log2(width));
                         }
 
                         if (!defines.USEIRRADIANCEMAP) {
@@ -1926,7 +1956,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 }
             }
 
-            this.subSurface.bindForSubMesh(ubo, scene, engine, this.isFrozen, defines.LODBASEDMICROSFURACE);
+            this.subSurface.bindForSubMesh(ubo, scene, engine, this.isFrozen, defines.LODBASEDMICROSFURACE, this.realTimeFiltering);
             this.clearCoat.bindForSubMesh(ubo, scene, engine, this._disableBumpMap, this.isFrozen, this._invertNormalMapX, this._invertNormalMapY);
             this.anisotropy.bindForSubMesh(ubo, scene, this.isFrozen);
             this.sheen.bindForSubMesh(ubo, scene, this.isFrozen);

@@ -118,14 +118,14 @@ export class ParticleHelper {
 
     /**
      * Creates a particle system from a snippet saved in a remote file
-     * @param name defines the name of the  particle system to create
+     * @param name defines the name of the particle system to create (can be null or empty to use the one from the json data)
      * @param url defines the url to load from
      * @param scene defines the hosting scene
      * @param gpu If the system will use gpu
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
-     * @returns a promise that will resolve to the new  particle system
+     * @returns a promise that will resolve to the new particle system
      */
-    public static ParseFromFileAsync(name: string, url: string, scene: Scene, gpu: boolean = false, rootUrl: string = ""): Promise<IParticleSystem> {
+    public static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, gpu: boolean = false, rootUrl: string = ""): Promise<IParticleSystem> {
 
         return new Promise((resolve, reject) => {
             var request = new WebRequest();
@@ -140,6 +140,11 @@ export class ParticleHelper {
                         } else {
                             output = ParticleSystem.Parse(serializationObject, scene, rootUrl);
                         }
+
+                        if (name) {
+                            output.name = name;
+                        }
+
                         resolve(output);
                     } else {
                         reject("Unable to load the particle system");
@@ -184,7 +189,7 @@ export class ParticleHelper {
                 }
             });
 
-            request.open("GET", this.SnippetUrl + "/" + snippetId.replace("#", "/"));
+            request.open("GET", this.SnippetUrl + "/" + snippetId.replace(/#/g, "/"));
             request.send();
         });
     }

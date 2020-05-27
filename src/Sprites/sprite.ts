@@ -1,7 +1,7 @@
 import { Vector3 } from "../Maths/math.vector";
 import { Nullable } from "../types";
 import { ActionManager } from "../Actions/actionManager";
-import { ISpriteManager } from "./spriteManager";
+import { ISpriteManager, SpriteManager } from "./spriteManager";
 import { Color4 } from '../Maths/math.color';
 import { Observable } from '../Misc/observable';
 import { IAnimatable } from '../Animations/animatable.interface';
@@ -66,7 +66,7 @@ export class Sprite implements IAnimatable {
     private _direction = 1;
     private _manager: ISpriteManager;
     private _time = 0;
-    private _onAnimationEnd: () => void;
+    private _onAnimationEnd: Nullable<() => void> = null;
     /**
      * Gets or sets a boolean indicating if the sprite is visible (renderable). Default is true
      */
@@ -82,6 +82,13 @@ export class Sprite implements IAnimatable {
     public set size(value: number) {
         this.width = value;
         this.height = value;
+    }
+
+    /**
+     * Returns a boolean indicating if the animation is started
+     */
+    public get animationStarted() {
+        return this._animationStarted;
     }
 
     /**
@@ -165,7 +172,7 @@ export class Sprite implements IAnimatable {
      * @param delay defines the start delay (in ms)
      * @param onAnimationEnd defines a callback to call when animation ends
      */
-    public playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: () => void): void {
+    public playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: Nullable<() => void> = null): void {
         this._fromIndex = from;
         this._toIndex = to;
         this._loopAnimation = loop;
@@ -229,5 +236,71 @@ export class Sprite implements IAnimatable {
         // Callback
         this.onDisposeObservable.notifyObservers(this);
         this.onDisposeObservable.clear();
+    }
+
+    /**
+     * Serializes the sprite to a JSON object
+     * @returns the JSON object
+     */
+    public serialize(): any {
+        var serializationObject: any = {};
+
+        serializationObject.name = this.name;
+        serializationObject.position = this.position.asArray();
+        serializationObject.color = this.color.asArray();
+        serializationObject.width = this.width;
+        serializationObject.height = this.height;
+        serializationObject.angle = this.angle;
+        serializationObject.cellIndex = this.cellIndex;
+        serializationObject.cellRef = this.cellRef;
+        serializationObject.invertU = this.invertU;
+        serializationObject.invertV = this.invertV;
+        serializationObject.disposeWhenFinishedAnimating = this.disposeWhenFinishedAnimating;
+        serializationObject.isPickable = this.isPickable;
+        serializationObject.isVisible = this.isVisible;
+        serializationObject.useAlphaForPicking = this.useAlphaForPicking;
+
+        serializationObject.animationStarted = this.animationStarted;
+        serializationObject.fromIndex = this.fromIndex;
+        serializationObject.toIndex = this.toIndex;
+        serializationObject.loopAnimation = this.loopAnimation;
+        serializationObject.delay = this.delay;
+
+        return serializationObject;
+    }
+
+    /**
+     * Parses a JSON object to create a new sprite
+     * @param parsedSprite The JSON object to parse
+     * @param manager defines the hosting manager
+     * @returns the new sprite
+     */
+    public static Parse(parsedSprite: any, manager: SpriteManager): Sprite {
+        var sprite = new Sprite(parsedSprite.name, manager);
+
+        sprite.position = Vector3.FromArray(parsedSprite.position);
+        sprite.color = Color4.FromArray(parsedSprite.color);
+        sprite.width = parsedSprite.width;
+        sprite.height = parsedSprite.height;
+        sprite.angle = parsedSprite.angle;
+        sprite.cellIndex = parsedSprite.cellIndex;
+        sprite.cellRef = parsedSprite.cellRef;
+        sprite.invertU = parsedSprite.invertU;
+        sprite.invertV = parsedSprite.invertV;
+        sprite.disposeWhenFinishedAnimating = parsedSprite.disposeWhenFinishedAnimating;
+        sprite.isPickable = parsedSprite.isPickable;
+        sprite.isVisible = parsedSprite.isVisible;
+        sprite.useAlphaForPicking = parsedSprite.useAlphaForPicking;
+
+        sprite.fromIndex = parsedSprite.fromIndex;
+        sprite.toIndex = parsedSprite.toIndex;
+        sprite.loopAnimation = parsedSprite.loopAnimation;
+        sprite.delay = parsedSprite.delay;
+
+        if (parsedSprite.animationStarted) {
+            sprite.playAnimation(sprite.fromIndex, sprite.toIndex, sprite.loopAnimation, sprite.delay);
+        }
+
+        return sprite;
     }
 }

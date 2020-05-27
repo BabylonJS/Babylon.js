@@ -62,7 +62,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                         </div>
                     }
                 </div>
-                { this.props.globalState.mode !== NodeMaterialModes.PostProcess && <>
+                { this.props.globalState.mode === NodeMaterialModes.Material && <>
                     <div id="preview-config-bar">
                         <div
                             title="Render without back face culling"

@@ -15,6 +15,25 @@ import { AnimatedInputBlockTypes } from './animatedInputBlockTypes';
 import { Observable } from '../../../../Misc/observable';
 import { MaterialHelper } from '../../../../Materials/materialHelper';
 
+const remapAttributeName: { [name: string]: string }  = {
+    "position2d": "position",
+    "particle_uv": "vUV",
+    "particle_color": "vColor",
+    "particle_texturemask": "textureMask",
+    "particle_positionw": "vPositionW",
+};
+
+const attributeInFragmentOnly: { [name: string]: boolean }  = {
+    "particle_uv": true,
+    "particle_color": true,
+    "particle_texturemask": true,
+    "particle_positionw": true,
+};
+
+const attributeAsUniform: { [name: string]: boolean }  = {
+    "particle_texturemask": true,
+};
+
 /**
  * Block used to expose an input value
  */
@@ -91,11 +110,13 @@ export class InputBlock extends NodeMaterialBlock {
                     case "position":
                     case "normal":
                     case "tangent":
+                    case "particle_positionw":
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector3;
                         return this._type;
                     case "uv":
                     case "uv2":
                     case "position2d":
+                    case "particle_uv":
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector2;
                         return this._type;
                     case "matricesIndices":
@@ -107,6 +128,8 @@ export class InputBlock extends NodeMaterialBlock {
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector4;
                         return this._type;
                     case "color":
+                    case "particle_color":
+                    case "particle_texturemask":
                         this._type = NodeMaterialBlockConnectionPointTypes.Color4;
                         return this._type;
                 }
@@ -393,6 +416,11 @@ export class InputBlock extends NodeMaterialBlock {
         return "";
     }
 
+    /** @hidden */
+    public get _noContextSwitch(): boolean {
+        return attributeInFragmentOnly[this.name];
+    }
+
     private _emit(state: NodeMaterialBuildState, define?: string) {
         // Uniforms
         if (this.isUniform) {
@@ -444,10 +472,18 @@ export class InputBlock extends NodeMaterialBlock {
 
         // Attribute
         if (this.isAttribute) {
-            this.associatedVariableName = this.name === 'position2d' ? 'position' : this.name;
+            this.associatedVariableName = remapAttributeName[this.name] ?? this.name;
 
             if (this.target === NodeMaterialBlockTargets.Vertex && state._vertexState) { // Attribute for fragment need to be carried over by varyings
-                this._emit(state._vertexState, define);
+                if (attributeInFragmentOnly[this.name]) {
+                    if (attributeAsUniform[this.name]) {
+                        state._emitUniformFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                    } else {
+                        state._emitVaryingFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                    }
+                } else {
+                    this._emit(state._vertexState, define);
+                }
                 return;
             }
 
@@ -456,12 +492,21 @@ export class InputBlock extends NodeMaterialBlock {
             }
 
             state.attributes.push(this.associatedVariableName);
-            if (define) {
-                state._attributeDeclaration += this._emitDefine(define);
-            }
-            state._attributeDeclaration += `attribute ${state._getGLType(this.type)} ${this.associatedVariableName};\r\n`;
-            if (define) {
-                state._attributeDeclaration += `#endif\r\n`;
+
+            if (attributeInFragmentOnly[this.name]) {
+                if (attributeAsUniform[this.name]) {
+                    state._emitUniformFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                } else {
+                    state._emitVaryingFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                }
+            } else {
+                if (define) {
+                    state._attributeDeclaration += this._emitDefine(define);
+                }
+                state._attributeDeclaration += `attribute ${state._getGLType(this.type)} ${this.associatedVariableName};\r\n`;
+                if (define) {
+                    state._attributeDeclaration += `#endif\r\n`;
+                }
             }
         }
     }

@@ -67,6 +67,11 @@
             "referenceImage": "node-material6.png"
         },    
         {
+            "title": "Node material PBR 1",
+            "playgroundId": "#D8AK3Z#6",
+            "referenceImage": "node-material-pbr-1.png"
+        },    
+        {
             "title": "Basis loader",
             "playgroundId": "#4RN0VF#0",
             "referenceImage": "basis.png"
@@ -115,7 +120,7 @@
         },
         {
             "title": "Camera rig",
-            "playgroundId": "#ATL1CS#11",
+            "playgroundId": "#ATL1CS#12",
             "referenceImage": "cameraRig.png"
         },
         {
@@ -761,6 +766,11 @@
             "referenceImage": "instancedBones.png"
         },
         {
+            "title": "Thin Instances",
+            "playgroundId": "#V1JE4Z#1",
+            "referenceImage": "thinInstances.png"
+        },
+        {
             "title": "Light Projection Texture",
             "playgroundId": "#CQNGRK#0",
             "referenceImage": "LightProjectionTexture.png"
@@ -827,6 +837,17 @@
             "title": "Visibility",
             "playgroundId": "#PXC9CF#2",
             "referenceImage": "visibility.png"
+        },
+        {
+            "title": "GLTF Extension EXT_mesh_gpu_instancing",
+            "playgroundId": "#QFIGLW#9",            
+            "renderCount": 10,
+            "referenceImage": "gltfExtensionExtMeshGpuInstancingTest.png"
+        },
+        {
+            "title": "Realtime Filtering",
+            "playgroundId": "#FEEK7G#118",
+            "referenceImage": "realtimeFiltering.png"
         }
     ]
 }

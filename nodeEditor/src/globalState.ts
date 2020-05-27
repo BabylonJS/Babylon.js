@@ -3,7 +3,7 @@ import { Nullable } from "babylonjs/types";
 import { Observable } from 'babylonjs/Misc/observable';
 import { LogEntry } from './components/log/logComponent';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
-import { PreviewMeshType } from './components/preview/previewMeshType';
+import { PreviewType } from './components/preview/previewType';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { Color4 } from 'babylonjs/Maths/math.color';
 import { GraphNode } from './diagram/graphNode';
@@ -44,9 +44,9 @@ export class GlobalState {
     onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
     onGridSizeChanged = new Observable<void>();
     onExposePortOnFrameObservable = new Observable<GraphNode>();
-    previewMeshType: PreviewMeshType;
-    previewMeshFile: File;
-    listOfCustomPreviewMeshFiles: File[] = [];
+    previewType: PreviewType;
+    previewFile: File;
+    listOfCustomPreviewFiles: File[] = [];
     rotatePreview: boolean;
     backgroundColor: Color4;
     backFaceCulling: boolean;
@@ -66,6 +66,7 @@ export class GlobalState {
 
     /** Sets the mode */
     public set mode(m: NodeMaterialModes) {
+        DataStorage.WriteNumber("Mode", m);
         this._mode = m;
         this.onPreviewCommandActivated.notifyObservers(true);
     }
@@ -73,14 +74,14 @@ export class GlobalState {
     customSave?: {label: string, action: (data: string) => Promise<void>};
 
     public constructor() {
-        this.previewMeshType = DataStorage.ReadNumber("PreviewMeshType", PreviewMeshType.Box);
+        this.previewType = DataStorage.ReadNumber("PreviewType", PreviewType.Box);
         this.backFaceCulling = DataStorage.ReadBoolean("BackFaceCulling", true);
         this.depthPrePass = DataStorage.ReadBoolean("DepthPrePass", false);
         this.hemisphericLight = DataStorage.ReadBoolean("HemisphericLight", true);
         this.directionalLight0 = DataStorage.ReadBoolean("DirectionalLight0", false);
         this.directionalLight1 = DataStorage.ReadBoolean("DirectionalLight1", false);
         this.controlCamera = DataStorage.ReadBoolean("ControlCamera", true);
-        this._mode = NodeMaterialModes.Material;
+        this._mode = DataStorage.ReadNumber("Mode", NodeMaterialModes.Material);
 
         let r = DataStorage.ReadNumber("BackgroundColorR", 0.12549019607843137);
         let g = DataStorage.ReadNumber("BackgroundColorG", 0.09803921568627451);

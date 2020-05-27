@@ -64,7 +64,7 @@ declare module "babylonjs-inspector/components/globalState" {
             [key: string]: any;
         };
         blockMutationUpdates: boolean;
-        selectedLineContainerTitle: string;
+        selectedLineContainerTitles: Array<string>;
         recorder: ReplayRecorder;
         private _onlyUseEulers;
         get onlyUseEulers(): boolean;
@@ -117,7 +117,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabsComponent" {
 declare module "babylonjs-inspector/components/actionTabs/lines/textLineComponent" {
     import * as React from "react";
     interface ITextLineComponentProps {
-        label: string;
+        label?: string;
         value?: string;
         color?: string;
         underline?: boolean;
@@ -589,9 +589,12 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         active: boolean;
         type: string;
         index: string;
+        selected: boolean;
+        selectControlPoint: (id: string) => void;
     }
     export class AnchorSvgPoint extends React.Component<IAnchorSvgPointProps> {
         constructor(props: IAnchorSvgPointProps);
+        select(): void;
         render(): JSX.Element;
     }
 }
@@ -603,15 +606,24 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         rightControlPoint: Vector2 | null;
         leftControlPoint: Vector2 | null;
         id: string;
+        selected: boolean;
+        isLeftActive: boolean;
+        isRightActive: boolean;
     }
     interface IKeyframeSvgPointProps {
         keyframePoint: Vector2;
         leftControlPoint: Vector2 | null;
         rightControlPoint: Vector2 | null;
         id: string;
+        selected: boolean;
+        selectKeyframe: (id: string) => void;
+        selectedControlPoint: (type: string, id: string) => void;
+        isLeftActive: boolean;
+        isRightActive: boolean;
     }
     export class KeyframeSvgPoint extends React.Component<IKeyframeSvgPointProps> {
         constructor(props: IKeyframeSvgPointProps);
+        select(): void;
         render(): JSX.Element;
     }
 }
@@ -622,6 +634,10 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     interface ISvgDraggableAreaProps {
         keyframeSvgPoints: IKeyframeSvgPoint[];
         updatePosition: (updatedKeyframe: IKeyframeSvgPoint, index: number) => void;
+        scale: number;
+        viewBoxScale: number;
+        selectKeyframe: (id: string) => void;
+        selectedControlPoint: (type: string, id: string) => void;
     }
     export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps> {
         private _active;
@@ -630,6 +646,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _draggableArea;
         private _panStart;
         private _panStop;
+        private _width;
         constructor(props: ISvgDraggableAreaProps);
         componentDidMount(): void;
         dragStart(e: React.TouchEvent<SVGSVGElement>): void;
@@ -652,8 +669,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     import * as React from "react";
     import { IAnimationKey } from 'babylonjs/Animations/animationKey';
     interface ITimelineProps {
-        keyframes: IAnimationKey[];
-        selected: IAnimationKey;
+        keyframes: IAnimationKey[] | null;
+        selected: IAnimationKey | null;
         currentFrame: number;
         onCurrentFrameChange: (frame: number) => void;
     }
@@ -682,6 +699,36 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/notification" {
+    import * as React from "react";
+    interface IPlayheadProps {
+        message: string;
+        open: boolean;
+        close: () => void;
+    }
+    export class Notification extends React.Component<IPlayheadProps> {
+        constructor(props: IPlayheadProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/graphActionsBar" {
+    import * as React from "react";
+    interface IGraphActionsBarProps {
+        addKeyframe: () => void;
+        removeKeyframe: () => void;
+        handleValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+        handleFrameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+        flatTangent: () => void;
+        brokeTangents: () => void;
+        brokenMode: boolean;
+        currentValue: number;
+        currentFrame: number;
+    }
+    export class GraphActionsBar extends React.Component<IGraphActionsBarProps> {
+        constructor(props: IGraphActionsBarProps);
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/animationCurveEditorComponent" {
     import * as React from "react";
     import { Animation } from 'babylonjs/Animations/animation';
@@ -691,58 +738,136 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     import { IKeyframeSvgPoint } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/keyframeSvgPoint";
     import { Scene } from "babylonjs/scene";
     import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
+    import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
     interface IAnimationCurveEditorComponentProps {
         close: (event: any) => void;
-        playOrPause: () => void;
+        playOrPause?: () => void;
         title: string;
-        animations: Animation[];
-        entityName: string;
         scene: Scene;
-        entity: IAnimatable;
+        entity: IAnimatable | TargetedAnimation;
     }
     interface ICanvasAxis {
         value: number;
+        label: number;
     }
     export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, {
         animations: Animation[];
         animationName: string;
+        animationType: string;
         animationTargetProperty: string;
         isOpen: boolean;
-        selected: Animation;
+        selected: Animation | null;
         currentPathData: string | undefined;
         svgKeyframes: IKeyframeSvgPoint[] | undefined;
         currentFrame: number;
+        currentValue: number;
         frameAxisLength: ICanvasAxis[];
+        valueAxisLength: ICanvasAxis[];
+        isFlatTangentMode: boolean;
+        isTangentMode: boolean;
+        isBrokenMode: boolean;
+        scale: number;
+        playheadOffset: number;
+        notification: string;
+        currentPoint: SVGPoint | undefined;
+        lastFrame: number;
+        playheadPos: number;
     }> {
-        readonly _heightScale: number;
+        private _heightScale;
+        readonly _entityName: string;
         readonly _canvasLength: number;
-        private _playheadOffset;
         private _newAnimations;
         private _svgKeyframes;
         private _frames;
         private _isPlaying;
         private _graphCanvas;
+        private _selectedCurve;
+        private _svgCanvas;
+        private _isTargetedAnimation;
         constructor(props: IAnimationCurveEditorComponentProps);
         componentDidMount(): void;
+        /**
+        * Notifications
+        * To add notification we set the state and clear to make the notification bar hide.
+        */
+        clearNotification(): void;
+        /**
+        * Zoom and Scroll
+        * This section handles zoom and scroll
+        * of the graph area.
+        */
+        zoom(e: React.WheelEvent<HTMLDivElement>): void;
+        setAxesLength(): void;
+        getValueLabel(i: number): number;
+        resetPlayheadOffset(): void;
+        /**
+        * Add New Animation
+        * This section handles events from AnimationCreation.
+        */
         handleNameChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        handleTypeChange(event: React.ChangeEvent<HTMLSelectElement>): void;
         handlePropertyChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        setListItem(animation: Animation, i: number): JSX.Element | null;
+        getAnimationTypeofChange(selected: string): number;
         addAnimation(): void;
+        /**
+        * Keyframe Manipulation
+        * This section handles events from SvgDraggableArea.
+        */
+        selectKeyframe(id: string): void;
+        selectedControlPoint(type: string, id: string): void;
+        renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number): void;
+        /**
+        * Actions
+        * This section handles events from GraphActionsBar.
+        */
+        handleFrameChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        handleValueChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        setFlatTangent(): void;
+        setTangentMode(): void;
+        setBrokenMode(): void;
+        addKeyframeClick(): void;
+        removeKeyframeClick(): void;
         addKeyFrame(event: React.MouseEvent<SVGSVGElement>): void;
         updateKeyframe(keyframe: Vector2, index: number): void;
+        /**
+        * Curve Rendering Functions
+        * This section handles how to render curves.
+        */
         getAnimationProperties(animation: Animation): {
             easingType: string | undefined;
             easingMode: number | undefined;
         };
-        getPathData(animation: Animation): string;
-        drawAllFrames(initialKey: IAnimationKey, endKey: IAnimationKey, easingFunction: EasingFunction): void;
-        curvePath(keyframes: IAnimationKey[], data: string, middle: number, easingFunction: EasingFunction): string;
-        renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number): void;
         linearInterpolation(keyframes: IAnimationKey[], data: string, middle: number): string;
         setKeyframePointLinear(point: Vector2, index: number): void;
+        getPathData(animation: Animation): string;
+        getAnimationData(animation: Animation): {
+            loopMode: number | undefined;
+            name: string;
+            blendingSpeed: number;
+            targetPropertyPath: string[];
+            targetProperty: string;
+            framesPerSecond: number;
+            highestFrame: number;
+            serialized: any;
+            usesTangents: boolean;
+        };
+        drawAllFrames(initialKey: IAnimationKey, endKey: IAnimationKey, easingFunction: EasingFunction): void;
+        curvePathFlat(keyframes: IAnimationKey[], data: string, middle: number, dataType: number): string;
+        curvePathWithTangents(keyframes: IAnimationKey[], data: string, middle: number, type: number): string;
+        curvePath(keyframes: IAnimationKey[], data: string, middle: number, easingFunction: EasingFunction): string;
         setKeyframePoint(controlPoints: Vector2[], index: number, keyframesCount: number): void;
-        isAnimationPlaying(): void;
-        selectAnimation(animation: Animation): void;
         interpolateControlPoints(p0: Vector2, p1: Vector2, u: number, p2: Vector2, v: number, p3: Vector2): Vector2[] | undefined;
+        /**
+        * Core functions
+        * This section handles main Curve Editor Functions.
+        */
+        selectAnimation(animation: Animation): void;
+        isAnimationPlaying(): void;
+        /**
+        * Timeline
+        * This section controls the timeline.
+        */
         changeCurrentFrame(frame: number): void;
         render(): JSX.Element;
     }
@@ -913,10 +1038,26 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/textureHelper" {
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
+    export enum TextureChannelToDisplay {
+        R = 0,
+        G = 1,
+        B = 2,
+        A = 3,
+        All = 4
+    }
+    export class TextureHelper {
+        private static _ProcessAsync;
+        static GetTextureDataAsync(texture: BaseTexture, width: number, height: number, face: number, channel: TextureChannelToDisplay, globalState?: GlobalState): Promise<Uint8Array>;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/lines/textureLineComponent" {
     import * as React from "react";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { TextureChannelToDisplay } from "babylonjs-inspector/textureHelper";
     interface ITextureLineComponentProps {
         texture: BaseTexture;
         width: number;
@@ -924,21 +1065,14 @@ declare module "babylonjs-inspector/components/actionTabs/lines/textureLineCompo
         globalState?: GlobalState;
         hideChannelSelect?: boolean;
     }
-    enum ChannelToDisplay {
-        R = 0,
-        G = 1,
-        B = 2,
-        A = 3,
-        All = 4
-    }
     export class TextureLineComponent extends React.Component<ITextureLineComponentProps, {
-        channel: ChannelToDisplay;
+        channel: TextureChannelToDisplay;
         face: number;
     }> {
         private canvasRef;
         constructor(props: ITextureLineComponentProps);
         shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: {
-            channel: ChannelToDisplay;
+            channel: TextureChannelToDisplay;
             face: number;
         }): boolean;
         componentDidMount(): void;
@@ -1225,6 +1359,43 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/cam
     export class ArcRotateCameraPropertyGridComponent extends React.Component<IArcRotateCameraPropertyGridComponentProps> {
         constructor(props: IArcRotateCameraPropertyGridComponentProps);
         render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/lines/indentedTextLineComponent" {
+    import * as React from "react";
+    interface IIndentedTextLineComponentProps {
+        value?: string;
+        color?: string;
+        underline?: boolean;
+        onLink?: () => void;
+        url?: string;
+        additionalClass?: string;
+    }
+    export class IndentedTextLineComponent extends React.Component<IIndentedTextLineComponentProps> {
+        constructor(props: IIndentedTextLineComponentProps);
+        onLink(): void;
+        renderContent(): JSX.Element;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/commonPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    interface ICommonPropertyGridComponentProps {
+        globalState: GlobalState;
+        host: {
+            metadata: any;
+        };
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class CommonPropertyGridComponent extends React.Component<ICommonPropertyGridComponentProps> {
+        constructor(props: ICommonPropertyGridComponentProps);
+        renderLevel(jsonObject: any): JSX.Element[];
+        render(): JSX.Element | null;
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent" {
@@ -1697,6 +1868,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/pos
     }
     export class PostProcessPropertyGridComponent extends React.Component<IPostProcessPropertyGridComponentProps> {
         constructor(props: IPostProcessPropertyGridComponentProps);
+        edit(): void;
         render(): JSX.Element;
     }
 }
@@ -2316,7 +2488,14 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/spr
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteManagerPropertyGridComponentProps> {
+        private _snippetUrl;
         constructor(props: ISpriteManagerPropertyGridComponentProps);
+        addNewSprite(): void;
+        disposeManager(): void;
+        saveToFile(): void;
+        loadFromFile(file: File): void;
+        loadFromSnippet(): void;
+        saveToSnippet(): void;
         render(): JSX.Element;
     }
 }
@@ -2335,8 +2514,42 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/spr
         onSelectionChangedObservable?: Observable<any>;
     }
     export class SpritePropertyGridComponent extends React.Component<ISpritePropertyGridComponentProps> {
+        private canvasRef;
+        private imageData;
+        private cachedCellIndex;
         constructor(props: ISpritePropertyGridComponentProps);
         onManagerLink(): void;
+        switchPlayStopState(): void;
+        disposeSprite(): void;
+        componentDidMount(): void;
+        componentDidUpdate(): void;
+        updatePreview(): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/targetedAnimationPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
+    import { Scene } from "babylonjs/scene";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    interface ITargetedAnimationGridComponentProps {
+        globalState: GlobalState;
+        targetedAnimation: TargetedAnimation;
+        scene: Scene;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class TargetedAnimationGridComponent extends React.Component<ITargetedAnimationGridComponentProps> {
+        private _isCurveEditorOpen;
+        private _isPlaying;
+        private _animationGroup;
+        constructor(props: ITargetedAnimationGridComponentProps);
+        onOpenAnimationCurveEditor(): void;
+        onCloseAnimationCurveEditor(window: Window | null): void;
+        playOrPause(): void;
         render(): JSX.Element;
     }
 }
@@ -2784,6 +2997,20 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/spriteTree
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/sceneExplorer/entities/targetedAnimationTreeItemComponent" {
+    import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
+    import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+    import * as React from "react";
+    interface ITargetedAnimationItemComponentProps {
+        targetedAnimation: TargetedAnimation;
+        extensibilityGroups?: IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class TargetedAnimationItemComponent extends React.Component<ITargetedAnimationItemComponentProps> {
+        constructor(props: ITargetedAnimationItemComponentProps);
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/sceneExplorer/treeItemSpecializedComponent" {
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     import * as React from "react";
@@ -3016,6 +3243,7 @@ declare module "babylonjs-inspector/inspector" {
         static OnPropertyChangedObservable: Observable<PropertyChangedEvent>;
         private static _GlobalState;
         static MarkLineContainerTitleForHighlighting(title: string): void;
+        static MarkMultipleLineContainerTitlesForHighlighting(titles: string[]): void;
         private static _CopyStyles;
         private static _CreateSceneExplorer;
         private static _CreateActionTabs;
@@ -3094,7 +3322,7 @@ declare module INSPECTOR {
             [key: string]: any;
         };
         blockMutationUpdates: boolean;
-        selectedLineContainerTitle: string;
+        selectedLineContainerTitles: Array<string>;
         recorder: ReplayRecorder;
         private _onlyUseEulers;
         get onlyUseEulers(): boolean;
@@ -3139,7 +3367,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface ITextLineComponentProps {
-        label: string;
+        label?: string;
         value?: string;
         color?: string;
         underline?: boolean;
@@ -3561,9 +3789,12 @@ declare module INSPECTOR {
         active: boolean;
         type: string;
         index: string;
+        selected: boolean;
+        selectControlPoint: (id: string) => void;
     }
     export class AnchorSvgPoint extends React.Component<IAnchorSvgPointProps> {
         constructor(props: IAnchorSvgPointProps);
+        select(): void;
         render(): JSX.Element;
     }
 }
@@ -3573,15 +3804,24 @@ declare module INSPECTOR {
         rightControlPoint: BABYLON.Vector2 | null;
         leftControlPoint: BABYLON.Vector2 | null;
         id: string;
+        selected: boolean;
+        isLeftActive: boolean;
+        isRightActive: boolean;
     }
     interface IKeyframeSvgPointProps {
         keyframePoint: BABYLON.Vector2;
         leftControlPoint: BABYLON.Vector2 | null;
         rightControlPoint: BABYLON.Vector2 | null;
         id: string;
+        selected: boolean;
+        selectKeyframe: (id: string) => void;
+        selectedControlPoint: (type: string, id: string) => void;
+        isLeftActive: boolean;
+        isRightActive: boolean;
     }
     export class KeyframeSvgPoint extends React.Component<IKeyframeSvgPointProps> {
         constructor(props: IKeyframeSvgPointProps);
+        select(): void;
         render(): JSX.Element;
     }
 }
@@ -3589,6 +3829,10 @@ declare module INSPECTOR {
     interface ISvgDraggableAreaProps {
         keyframeSvgPoints: IKeyframeSvgPoint[];
         updatePosition: (updatedKeyframe: IKeyframeSvgPoint, index: number) => void;
+        scale: number;
+        viewBoxScale: number;
+        selectKeyframe: (id: string) => void;
+        selectedControlPoint: (type: string, id: string) => void;
     }
     export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps> {
         private _active;
@@ -3597,6 +3841,7 @@ declare module INSPECTOR {
         private _draggableArea;
         private _panStart;
         private _panStop;
+        private _width;
         constructor(props: ISvgDraggableAreaProps);
         componentDidMount(): void;
         dragStart(e: React.TouchEvent<SVGSVGElement>): void;
@@ -3617,8 +3862,8 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface ITimelineProps {
-        keyframes: BABYLON.IAnimationKey[];
-        selected: BABYLON.IAnimationKey;
+        keyframes: BABYLON.IAnimationKey[] | null;
+        selected: BABYLON.IAnimationKey | null;
         currentFrame: number;
         onCurrentFrameChange: (frame: number) => void;
     }
@@ -3647,58 +3892,163 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IPlayheadProps {
+        message: string;
+        open: boolean;
+        close: () => void;
+    }
+    export class Notification extends React.Component<IPlayheadProps> {
+        constructor(props: IPlayheadProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IGraphActionsBarProps {
+        addKeyframe: () => void;
+        removeKeyframe: () => void;
+        handleValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+        handleFrameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+        flatTangent: () => void;
+        brokeTangents: () => void;
+        brokenMode: boolean;
+        currentValue: number;
+        currentFrame: number;
+    }
+    export class GraphActionsBar extends React.Component<IGraphActionsBarProps> {
+        constructor(props: IGraphActionsBarProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface IAnimationCurveEditorComponentProps {
         close: (event: any) => void;
-        playOrPause: () => void;
+        playOrPause?: () => void;
         title: string;
-        animations: BABYLON.Animation[];
-        entityName: string;
         scene: BABYLON.Scene;
-        entity: BABYLON.IAnimatable;
+        entity: BABYLON.IAnimatable | BABYLON.TargetedAnimation;
     }
     interface ICanvasAxis {
         value: number;
+        label: number;
     }
     export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, {
         animations: BABYLON.Animation[];
         animationName: string;
+        animationType: string;
         animationTargetProperty: string;
         isOpen: boolean;
-        selected: BABYLON.Animation;
+        selected: BABYLON.Animation | null;
         currentPathData: string | undefined;
         svgKeyframes: IKeyframeSvgPoint[] | undefined;
         currentFrame: number;
+        currentValue: number;
         frameAxisLength: ICanvasAxis[];
+        valueAxisLength: ICanvasAxis[];
+        isFlatTangentMode: boolean;
+        isTangentMode: boolean;
+        isBrokenMode: boolean;
+        scale: number;
+        playheadOffset: number;
+        notification: string;
+        currentPoint: SVGPoint | undefined;
+        lastFrame: number;
+        playheadPos: number;
     }> {
-        readonly _heightScale: number;
+        private _heightScale;
+        readonly _entityName: string;
         readonly _canvasLength: number;
-        private _playheadOffset;
         private _newAnimations;
         private _svgKeyframes;
         private _frames;
         private _isPlaying;
         private _graphCanvas;
+        private _selectedCurve;
+        private _svgCanvas;
+        private _isTargetedAnimation;
         constructor(props: IAnimationCurveEditorComponentProps);
         componentDidMount(): void;
+        /**
+        * Notifications
+        * To add notification we set the state and clear to make the notification bar hide.
+        */
+        clearNotification(): void;
+        /**
+        * Zoom and Scroll
+        * This section handles zoom and scroll
+        * of the graph area.
+        */
+        zoom(e: React.WheelEvent<HTMLDivElement>): void;
+        setAxesLength(): void;
+        getValueLabel(i: number): number;
+        resetPlayheadOffset(): void;
+        /**
+        * Add New BABYLON.Animation
+        * This section handles events from AnimationCreation.
+        */
         handleNameChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        handleTypeChange(event: React.ChangeEvent<HTMLSelectElement>): void;
         handlePropertyChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        setListItem(animation: BABYLON.Animation, i: number): JSX.Element | null;
+        getAnimationTypeofChange(selected: string): number;
         addAnimation(): void;
+        /**
+        * Keyframe Manipulation
+        * This section handles events from SvgDraggableArea.
+        */
+        selectKeyframe(id: string): void;
+        selectedControlPoint(type: string, id: string): void;
+        renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number): void;
+        /**
+        * Actions
+        * This section handles events from GraphActionsBar.
+        */
+        handleFrameChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        handleValueChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        setFlatTangent(): void;
+        setTangentMode(): void;
+        setBrokenMode(): void;
+        addKeyframeClick(): void;
+        removeKeyframeClick(): void;
         addKeyFrame(event: React.MouseEvent<SVGSVGElement>): void;
         updateKeyframe(keyframe: BABYLON.Vector2, index: number): void;
+        /**
+        * Curve Rendering Functions
+        * This section handles how to render curves.
+        */
         getAnimationProperties(animation: BABYLON.Animation): {
             easingType: string | undefined;
             easingMode: number | undefined;
         };
-        getPathData(animation: BABYLON.Animation): string;
-        drawAllFrames(initialKey: BABYLON.IAnimationKey, endKey: BABYLON.IAnimationKey, easingFunction: BABYLON.EasingFunction): void;
-        curvePath(keyframes: BABYLON.IAnimationKey[], data: string, middle: number, easingFunction: BABYLON.EasingFunction): string;
-        renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number): void;
         linearInterpolation(keyframes: BABYLON.IAnimationKey[], data: string, middle: number): string;
         setKeyframePointLinear(point: BABYLON.Vector2, index: number): void;
+        getPathData(animation: BABYLON.Animation): string;
+        getAnimationData(animation: BABYLON.Animation): {
+            loopMode: number | undefined;
+            name: string;
+            blendingSpeed: number;
+            targetPropertyPath: string[];
+            targetProperty: string;
+            framesPerSecond: number;
+            highestFrame: number;
+            serialized: any;
+            usesTangents: boolean;
+        };
+        drawAllFrames(initialKey: BABYLON.IAnimationKey, endKey: BABYLON.IAnimationKey, easingFunction: BABYLON.EasingFunction): void;
+        curvePathFlat(keyframes: BABYLON.IAnimationKey[], data: string, middle: number, dataType: number): string;
+        curvePathWithTangents(keyframes: BABYLON.IAnimationKey[], data: string, middle: number, type: number): string;
+        curvePath(keyframes: BABYLON.IAnimationKey[], data: string, middle: number, easingFunction: BABYLON.EasingFunction): string;
         setKeyframePoint(controlPoints: BABYLON.Vector2[], index: number, keyframesCount: number): void;
-        isAnimationPlaying(): void;
-        selectAnimation(animation: BABYLON.Animation): void;
         interpolateControlPoints(p0: BABYLON.Vector2, p1: BABYLON.Vector2, u: number, p2: BABYLON.Vector2, v: number, p3: BABYLON.Vector2): BABYLON.Vector2[] | undefined;
+        /**
+        * Core functions
+        * This section handles main Curve Editor Functions.
+        */
+        selectAnimation(animation: BABYLON.Animation): void;
+        isAnimationPlaying(): void;
+        /**
+        * Timeline
+        * This section controls the timeline.
+        */
         changeCurrentFrame(frame: number): void;
         render(): JSX.Element;
     }
@@ -3838,6 +4188,19 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export enum TextureChannelToDisplay {
+        R = 0,
+        G = 1,
+        B = 2,
+        A = 3,
+        All = 4
+    }
+    export class TextureHelper {
+        private static _ProcessAsync;
+        static GetTextureDataAsync(texture: BABYLON.BaseTexture, width: number, height: number, face: number, channel: TextureChannelToDisplay, globalState?: GlobalState): Promise<Uint8Array>;
+    }
+}
+declare module INSPECTOR {
     interface ITextureLineComponentProps {
         texture: BABYLON.BaseTexture;
         width: number;
@@ -3845,21 +4208,14 @@ declare module INSPECTOR {
         globalState?: GlobalState;
         hideChannelSelect?: boolean;
     }
-    enum ChannelToDisplay {
-        R = 0,
-        G = 1,
-        B = 2,
-        A = 3,
-        All = 4
-    }
     export class TextureLineComponent extends React.Component<ITextureLineComponentProps, {
-        channel: ChannelToDisplay;
+        channel: TextureChannelToDisplay;
         face: number;
     }> {
         private canvasRef;
         constructor(props: ITextureLineComponentProps);
         shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: {
-            channel: ChannelToDisplay;
+            channel: TextureChannelToDisplay;
             face: number;
         }): boolean;
         componentDidMount(): void;
@@ -4072,6 +4428,37 @@ declare module INSPECTOR {
     export class ArcRotateCameraPropertyGridComponent extends React.Component<IArcRotateCameraPropertyGridComponentProps> {
         constructor(props: IArcRotateCameraPropertyGridComponentProps);
         render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IIndentedTextLineComponentProps {
+        value?: string;
+        color?: string;
+        underline?: boolean;
+        onLink?: () => void;
+        url?: string;
+        additionalClass?: string;
+    }
+    export class IndentedTextLineComponent extends React.Component<IIndentedTextLineComponentProps> {
+        constructor(props: IIndentedTextLineComponentProps);
+        onLink(): void;
+        renderContent(): JSX.Element;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface ICommonPropertyGridComponentProps {
+        globalState: GlobalState;
+        host: {
+            metadata: any;
+        };
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class CommonPropertyGridComponent extends React.Component<ICommonPropertyGridComponentProps> {
+        constructor(props: ICommonPropertyGridComponentProps);
+        renderLevel(jsonObject: any): JSX.Element[];
+        render(): JSX.Element | null;
     }
 }
 declare module INSPECTOR {
@@ -4399,6 +4786,7 @@ declare module INSPECTOR {
     }
     export class PostProcessPropertyGridComponent extends React.Component<IPostProcessPropertyGridComponentProps> {
         constructor(props: IPostProcessPropertyGridComponentProps);
+        edit(): void;
         render(): JSX.Element;
     }
 }
@@ -4861,7 +5249,14 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteManagerPropertyGridComponentProps> {
+        private _snippetUrl;
         constructor(props: ISpriteManagerPropertyGridComponentProps);
+        addNewSprite(): void;
+        disposeManager(): void;
+        saveToFile(): void;
+        loadFromFile(file: File): void;
+        loadFromSnippet(): void;
+        saveToSnippet(): void;
         render(): JSX.Element;
     }
 }
@@ -4874,8 +5269,35 @@ declare module INSPECTOR {
         onSelectionChangedObservable?: BABYLON.Observable<any>;
     }
     export class SpritePropertyGridComponent extends React.Component<ISpritePropertyGridComponentProps> {
+        private canvasRef;
+        private imageData;
+        private cachedCellIndex;
         constructor(props: ISpritePropertyGridComponentProps);
         onManagerLink(): void;
+        switchPlayStopState(): void;
+        disposeSprite(): void;
+        componentDidMount(): void;
+        componentDidUpdate(): void;
+        updatePreview(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface ITargetedAnimationGridComponentProps {
+        globalState: GlobalState;
+        targetedAnimation: BABYLON.TargetedAnimation;
+        scene: BABYLON.Scene;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class TargetedAnimationGridComponent extends React.Component<ITargetedAnimationGridComponentProps> {
+        private _isCurveEditorOpen;
+        private _isPlaying;
+        private _animationGroup;
+        constructor(props: ITargetedAnimationGridComponentProps);
+        onOpenAnimationCurveEditor(): void;
+        onCloseAnimationCurveEditor(window: Window | null): void;
+        playOrPause(): void;
         render(): JSX.Element;
     }
 }
@@ -5255,6 +5677,17 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface ITargetedAnimationItemComponentProps {
+        targetedAnimation: BABYLON.TargetedAnimation;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        onClick: () => void;
+    }
+    export class TargetedAnimationItemComponent extends React.Component<ITargetedAnimationItemComponentProps> {
+        constructor(props: ITargetedAnimationItemComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface ITreeItemSpecializedComponentProps {
         label: string;
         entity?: any;
@@ -5457,6 +5890,7 @@ declare module INSPECTOR {
         static OnPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
         private static _GlobalState;
         static MarkLineContainerTitleForHighlighting(title: string): void;
+        static MarkMultipleLineContainerTitlesForHighlighting(titles: string[]): void;
         private static _CopyStyles;
         private static _CreateSceneExplorer;
         private static _CreateActionTabs;
