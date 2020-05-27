@@ -223,7 +223,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                 element = <li className={this.state.selected && this.state.selected.name === animation.name ? 'active' : ''} key={i} onClick={() => this.selectAnimation(animation)}>
                     <p>{animation.name}&nbsp;
                     <span>{animation.targetProperty}</span></p>
-                    { !(this.props.entity instanceof TargetedAnimation) ? this.state.selected && this.state.selected.name === animation.name ? <ButtonLineComponent label={"Remove"} onClick={() => this.deleteAnimation()} /> : null : null }
+                    {!(this.props.entity instanceof TargetedAnimation) ? this.state.selected && this.state.selected.name === animation.name ? <ButtonLineComponent label={"Remove"} onClick={() => this.deleteAnimation()} /> : null : null}
                 </li>
                 break;
             case Animation.ANIMATIONTYPE_VECTOR2:
@@ -318,17 +318,17 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
     }
 
-    deleteAnimation(){
+    deleteAnimation() {
         let currentSelected = this.state.selected;
-        if (this.props.entity instanceof TargetedAnimation){
+        if (this.props.entity instanceof TargetedAnimation) {
             console.log("no animation remove allowed");
         } else {
             let animations = (this.props.entity as IAnimatable).animations;
-            if (animations){
+            if (animations) {
                 let updatedAnimations = animations.filter(anim => anim !== currentSelected);
                 (this.props.entity as IAnimatable).animations = updatedAnimations as Nullable<Animation[]>;
-            } 
-        }   
+            }
+        }
     }
 
     addAnimation() {
@@ -428,17 +428,17 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                         break;
                 }
 
-                let alreadyAnimatedProperty = (this.props.entity as IAnimatable).animations?.find(anim => 
+                let alreadyAnimatedProperty = (this.props.entity as IAnimatable).animations?.find(anim =>
                     anim.targetProperty === this.state.animationTargetProperty
-                , this);
+                    , this);
 
-                let alreadyAnimationName = (this.props.entity as IAnimatable).animations?.find(anim => 
+                let alreadyAnimationName = (this.props.entity as IAnimatable).animations?.find(anim =>
                     anim.name === this.state.animationName
-                , this);
+                    , this);
 
-                if (alreadyAnimatedProperty){
+                if (alreadyAnimatedProperty) {
                     this.setState({ notification: `The property "${this.state.animationTargetProperty}" already has an animation` });
-                } else if (alreadyAnimationName){
+                } else if (alreadyAnimationName) {
                     this.setState({ notification: `There is already an animation with the name: "${this.state.animationName}"` });
                 } else {
 
@@ -523,17 +523,18 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         keys[index].frame = newFrame; // This value comes as percentage/frame/time
         keys[index].value = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2; // this value comes inverted svg from 0 = 100 to 100 = 0
 
-        if (!this.state.isBrokenMode) {
-            if (updatedSvgKeyFrame.isLeftActive) {
 
-                if (updatedSvgKeyFrame.leftControlPoint !== null) {
-                    // Rotate 
-                    let updatedValue = ((this._heightScale - updatedSvgKeyFrame.leftControlPoint.y) / this._heightScale) * 2;
+        if (updatedSvgKeyFrame.isLeftActive) {
 
-                    let keyframeValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2;
+            if (updatedSvgKeyFrame.leftControlPoint !== null) {
+                // Rotate 
+                let updatedValue = ((this._heightScale - updatedSvgKeyFrame.leftControlPoint.y) / this._heightScale) * 2;
 
-                    keys[index].inTangent = keyframeValue - updatedValue;
+                let keyframeValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2;
 
+                keys[index].inTangent = keyframeValue - updatedValue;
+
+                if (!this.state.isBrokenMode) {
                     // Right control point if exists
                     if (updatedSvgKeyFrame.rightControlPoint !== null) {
                         // Sets opposite value
@@ -541,23 +542,26 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                     }
                 }
             }
+        }
 
-            if (updatedSvgKeyFrame.isRightActive) {
+        if (updatedSvgKeyFrame.isRightActive) {
 
-                if (updatedSvgKeyFrame.rightControlPoint !== null) {
-                    // Rotate 
-                    let updatedValue = ((this._heightScale - updatedSvgKeyFrame.rightControlPoint.y) / this._heightScale) * 2;
+            if (updatedSvgKeyFrame.rightControlPoint !== null) {
+                // Rotate 
+                let updatedValue = ((this._heightScale - updatedSvgKeyFrame.rightControlPoint.y) / this._heightScale) * 2;
 
-                    let keyframeValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2;
+                let keyframeValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2;
 
-                    keys[index].outTangent = keyframeValue - updatedValue;
+                keys[index].outTangent = keyframeValue - updatedValue;
 
+                if (!this.state.isBrokenMode) {
                     if (updatedSvgKeyFrame.leftControlPoint !== null) {   // Sets opposite value
                         keys[index].inTangent = keys[index].outTangent * -1
                     }
                 }
             }
         }
+
 
         animation.setKeys(keys);
 
@@ -1196,9 +1200,9 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         }
     }
 
-    updateFrameInKeyFrame(frame: number, index: number){
-        
-        if (this.state && this.state.selected){
+    updateFrameInKeyFrame(frame: number, index: number) {
+
+        if (this.state && this.state.selected) {
             let animation = this.state.selected;
             let keys = [...animation.getKeys()];
 
@@ -1322,7 +1326,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                         </div>
                     </div>
                     <div className="row">
-                        <Timeline currentFrame={this.state.currentFrame} dragKeyframe={(frame: number, index:number) => this.updateFrameInKeyFrame(frame, index)} onCurrentFrameChange={(frame: number) => this.changeCurrentFrame(frame)} keyframes={this.state.selected && this.state.selected.getKeys()} selected={this.state.selected && this.state.selected.getKeys()[0]}></Timeline>
+                        <Timeline currentFrame={this.state.currentFrame} dragKeyframe={(frame: number, index: number) => this.updateFrameInKeyFrame(frame, index)} onCurrentFrameChange={(frame: number) => this.changeCurrentFrame(frame)} keyframes={this.state.selected && this.state.selected.getKeys()} selected={this.state.selected && this.state.selected.getKeys()[0]}></Timeline>
                     </div>
                 </div>
             </div>
