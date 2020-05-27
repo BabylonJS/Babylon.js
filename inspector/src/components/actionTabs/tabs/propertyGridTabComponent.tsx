@@ -328,6 +328,7 @@ export class PropertyGridTabComponent extends PaneComponent {
                     targetedAnimation={targetedAnimation}
                     scene={this.props.scene}
                     lockObject={this._lockObject}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }            
 

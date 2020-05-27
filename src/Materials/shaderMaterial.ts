@@ -97,7 +97,7 @@ export class ShaderMaterial extends Material {
     /** Define the Url to load snippets */
     public static SnippetUrl = "https://snippet.babylonjs.com";
 
-    /** Snippet ID if the manager was created from the snippet server */
+    /** Snippet ID if the material was created from the snippet server */
     public snippetId: string;
 
     /**
