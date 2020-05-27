@@ -61,7 +61,7 @@
 ### Cameras
 
 - Fixed up vector not correctly handled with stereoscopic rig ([cedricguillemet](https://github.com/cedricguillemet))
-- handle reattachment of panning button for `ArcRotateCamera`  ([cedricguillemet](https://github.com/cedricguillemet))
+- handle reattachment of panning button for `ArcRotateCamera` ([cedricguillemet](https://github.com/cedricguillemet))
 - Added flag to TargetCamera to invert rotation direction and multiplier to adjust speed ([Exolun](https://github.com/Exolun))
 - Added upwards and downwards keyboard input to `FreeCamera` ([Pheater](https://github.com/pheater))
 
@@ -203,7 +203,7 @@
 - Fixed an issue with stereoscopic rendering ([#8000](https://github.com/BabylonJS/Babylon.js/issues/8000)) ([RaananW](https://github.com/RaananW))
 - Fix bug with multiple scenes when resizing the screen and there's a glow or highlight layer active ([Popov72](https://github.com/Popov72))
 - Fix an error when compiling with the closure compiler ([ageneau](https://github.com/ageneau/))
-- Fix an error in applying texture to sides of `extrudePolygon` using faceUV[1] ([JohnK](https://github.com/BabylonJSGuide/))
+- Fix an error in applying texture to sides of `extrudePolygon` using faceUV\[1\] ([JohnK](https://github.com/BabylonJSGuide/))
 - Playground didn't work if query params were added to the URL ([RaananW](https://github.com/RaananW))
 - Fixed Path3D `_distances` / length computation ([Poolminer](https://github.com/Poolminer))
 - Make sure bone matrices are up to date when calling `TransformNode.attachToBone` ([Popov72](https://github.com/Popov72))
@@ -213,7 +213,7 @@
 - Fix bug when using `ShadowOnlyMaterial` with Cascaded Shadow Map and `autoCalcDepthBounds` is `true` ([Popov72](https://github.com/Popov72))
 - Fix OBJ serializer default scene scene handedness causing [OBJ Mirror export](https://forum.babylonjs.com/t/obj-export-mirrored/10835/10)
 - Fix bug when using shadows + instances + transparent meshes + `transparencyShadow = false` ([Popov72](https://github.com/Popov72))
-- Incorrect initialization when reattaching XR pointer selection  ([#8227](https://github.com/BabylonJS/Babylon.js/issues/8227)) ([RaananW](https://github.com/RaananW))
+- Incorrect initialization when reattaching XR pointer selection ([#8227](https://github.com/BabylonJS/Babylon.js/issues/8227)) ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 
