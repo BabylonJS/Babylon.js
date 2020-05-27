@@ -328,8 +328,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                 let updatedAnimations = animations.filter(anim => anim !== currentSelected);
                 (this.props.entity as IAnimatable).animations = updatedAnimations as Nullable<Animation[]>;
             } 
-        }
-        
+        }   
     }
 
     addAnimation() {
