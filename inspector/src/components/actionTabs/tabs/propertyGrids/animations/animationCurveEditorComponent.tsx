@@ -49,6 +49,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     isFlatTangentMode: boolean,
     isTangentMode: boolean,
     isBrokenMode: boolean,
+    lerpMode: boolean,
     scale: number,
     playheadOffset: number,
     notification: string,
@@ -82,12 +83,15 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
         let initialSelection;
         let initialPathData;
-        if (this.props.entity instanceof TargetedAnimation){
+        let initialLerpMode;
+        if (this.props.entity instanceof TargetedAnimation) {
             this._isTargetedAnimation = true;
             initialSelection = this.props.entity.animation;
+            initialLerpMode = this.analizeAnimation(this.props.entity.animation);
             initialPathData = this.getPathData(this.props.entity.animation);
         } else {
             this._isTargetedAnimation = false;
+            initialLerpMode = this.analizeAnimation(this.props.entity.animations && this.props.entity.animations[0]);
             initialSelection = this.props.entity.animations !== null ? this.props.entity.animations[0] : null;
             initialPathData = this.props.entity.animations !== null ? this.getPathData(this.props.entity.animations[0]) : "";
         }
@@ -108,6 +112,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             isFlatTangentMode: false,
             isTangentMode: false,
             isBrokenMode: false,
+            lerpMode: initialLerpMode,
             playheadOffset: this._graphCanvas.current ? (this._graphCanvas.current.children[1].clientWidth) / (this._canvasLength * 10) : 0,
             frameAxisLength: (new Array(this._canvasLength)).fill(0).map((s, i) => { return { value: i * 10, label: i * 10 } }),
             valueAxisLength: (new Array(10)).fill(0).map((s, i) => { return { value: i * 10, label: valueInd[i] } }),
@@ -151,7 +156,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     }
 
     setAxesLength() {
-
+        // Check why we get undefined, or NaN in length?
         let length = Math.round(this._canvasLength * this.state.scale);
 
         let highestFrame = 100;
@@ -491,7 +496,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         keys[index].frame = newFrame; // This value comes as percentage/frame/time
         keys[index].value = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2; // this value comes inverted svg from 0 = 100 to 100 = 0
 
-
         if (!this.state.isBrokenMode) {
             if (updatedSvgKeyFrame.isLeftActive) {
 
@@ -584,6 +588,13 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         if (this.state.selected !== null) {
             let animation = this.state.selected;
             this.setState({ isBrokenMode: !this.state.isBrokenMode }, () => this.selectAnimation(animation));
+        }
+    }
+
+    setLerpMode() {
+        if (this.state.selected !== null) {
+            let animation = this.state.selected;
+            this.setState({ lerpMode: !this.state.lerpMode }, () => this.selectAnimation(animation));
         }
     }
 
@@ -771,16 +782,35 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         // START OF LINE/CURVE
         let data: string | undefined = `M${startKey.frame}, ${this._heightScale - (startKey.value * middle)}`;
 
-        if (this.getAnimationData(animation).usesTangents) {
-            data = this.curvePathWithTangents(keyframes, data, middle, animation.dataType);
+        if (this.state && this.state.lerpMode) {
+            data = this.linearInterpolation(keyframes, data, middle);
         } else {
-            console.log("no tangents in this animation");
-            const { easingMode, easingType } = this.getAnimationProperties(animation);
-            if (easingType === undefined && easingMode === undefined) {
-                data = this.linearInterpolation(keyframes, data, middle);
+            if (this.getAnimationData(animation).usesTangents) {
+                data = this.curvePathWithTangents(keyframes, data, middle, animation.dataType);
             } else {
-                let easingFunction = animation.getEasingFunction();
-                data = this.curvePath(keyframes, data, middle, easingFunction as EasingFunction)
+                const { easingMode, easingType } = this.getAnimationProperties(animation);
+                if (easingType !== undefined && easingMode !== undefined) {
+                    let easingFunction = animation.getEasingFunction();
+                    data = this.curvePath(keyframes, data, middle, easingFunction as EasingFunction)
+                } else {
+                    if (this.state !== undefined) {
+                        let emptyTangents = keyframes.map((kf, i) => {
+                            if (i === 0) {
+                                kf.outTangent = 0;
+                            } else if (i === keyframes.length - 1) {
+                                kf.inTangent = 0;
+                            } else {
+                                kf.inTangent = 0;
+                                kf.outTangent = 0;
+                            }
+                            return kf;
+                        });
+                        data = this.curvePathWithTangents(emptyTangents, data, middle, animation.dataType);
+                    } else {
+                        data = this.linearInterpolation(keyframes, data, middle);
+                    }
+
+                }
             }
         }
 
@@ -1086,7 +1116,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     isAnimationPlaying() {
 
         let target = this.props.entity;
-        if (this.props.entity instanceof TargetedAnimation){
+        if (this.props.entity instanceof TargetedAnimation) {
             target = this.props.entity.target;
         }
 
@@ -1095,6 +1125,21 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             this.props.playOrPause && this.props.playOrPause();
         } else {
             this._isPlaying = false;
+        }
+    }
+
+    analizeAnimation(animation: Animation | null) {
+        if (animation !== null) {
+            const { easingMode, easingType } = this.getAnimationProperties(animation);
+            let hasDefinedTangents = this.getAnimationData(animation).usesTangents;
+
+            if (easingType === undefined && easingMode === undefined && !hasDefinedTangents) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
         }
     }
 
@@ -1145,12 +1190,14 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                     removeKeyframe={() => this.removeKeyframeClick()}
                     brokenMode={this.state.isBrokenMode}
                     brokeTangents={() => this.setBrokenMode()}
+                    lerpMode={this.state.lerpMode}
+                    setLerpMode={() => this.setLerpMode()}
                     flatTangent={() => this.setFlatTangent()} />
 
                 <div className="content">
                     <div className="row">
                         <div className="animation-list">
-                            <div style={{display: this._isTargetedAnimation ? "none" : "block"}}>
+                            <div style={{ display: this._isTargetedAnimation ? "none" : "block" }}>
                                 <div className="label-input">
                                     <label>Animation Name</label>
                                     <input type="text" value={this.state.animationName} onChange={(e) => this.handleNameChange(e)}></input>
@@ -1178,13 +1225,13 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                                 <h2>{this._entityName}</h2>
                                 <ul>
                                     {
-                                    
-                                    this.props.entity instanceof TargetedAnimation ? this.setListItem(this.props.entity.animation, 0) :
-                                    this.props.entity.animations && this.props.entity.animations.map((animation, i) => {
 
-                                      return this.setListItem(animation, i);
+                                        this.props.entity instanceof TargetedAnimation ? this.setListItem(this.props.entity.animation, 0) :
+                                            this.props.entity.animations && this.props.entity.animations.map((animation, i) => {
 
-                                    })}
+                                                return this.setListItem(animation, i);
+
+                                            })}
 
                                 </ul>
                             </div>
