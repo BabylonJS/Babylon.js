@@ -1166,17 +1166,20 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             if (this.state.isPlaying) {
                 this.props.scene.stopAnimation(target);
                 this.setState({ isPlaying: false })
+                this._isPlaying = false;
                 this.forceUpdate();
             } else {
+                let keys = this.state.selected.getKeys();
+                let firstFrame = keys[0].frame;
+                let LastFrame = keys[keys.length - 1].frame;
                 if (direction === 1){
-                    this.props.scene.beginAnimation(target, this.state.selected.getKeys()[0].frame, this.state.selected.getHighestFrame(), true);
+                    this.props.scene.beginAnimation(target, firstFrame, LastFrame, true);
                 } 
                 if (direction === -1){
-                    this.props.scene.beginAnimation(target, this.state.selected.getHighestFrame(), this.state.selected.getKeys()[0].frame, true);
+                    this.props.scene.beginAnimation(target, LastFrame, firstFrame, true);
                 } 
-                this.props.scene.beginAnimation(target, this.state.selected.getKeys()[0].frame, this.state.selected.getHighestFrame(), true);
-                this._isPlaying = false;
-                this.setState({ isPlaying: true })
+                this._isPlaying = true;
+                this.setState({ isPlaying: true });
                 this.forceUpdate();
             }
         }
