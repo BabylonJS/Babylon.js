@@ -487,7 +487,7 @@ void main(void) {
 
     #include<pbrBlockFinalColorComposition>
 
-        #include<logDepthFragment>yes 
+    #include<logDepthFragment>
     #include<fogFragment>(color, finalColor)
 
     #include<pbrBlockImageProcessing>
