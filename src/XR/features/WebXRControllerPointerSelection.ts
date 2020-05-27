@@ -155,7 +155,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     /**
      * Default color of the laser pointer
      */
-    public lasterPointerDefaultColor: Color3 = new Color3(0.7, 0.7, 0.7);
+    public laserPointerDefaultColor: Color3 = new Color3(0.7, 0.7, 0.7);
     /**
      * default color of the selection ring
      */
@@ -418,7 +418,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                             } else {
                                 this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
                                 (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
-                        (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.lasterPointerDefaultColor;
+                        (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerDefaultColor;
                             }
                         }
                     }
@@ -443,7 +443,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 if (event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
                     this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
                     (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
-                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.lasterPointerDefaultColor;
+                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerDefaultColor;
                 }
             };
 
@@ -503,7 +503,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         }, sceneToRenderTo);
         laserPointer.parent = xrController.pointer;
         let laserPointerMaterial = new StandardMaterial("laserPointerMat", sceneToRenderTo);
-        laserPointerMaterial.emissiveColor = this.lasterPointerDefaultColor;
+        laserPointerMaterial.emissiveColor = this.laserPointerDefaultColor;
         laserPointerMaterial.alpha = 0.7;
         laserPointer.material = laserPointerMaterial;
         laserPointer.rotation.x = Math.PI / 2;
@@ -556,6 +556,12 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             distance *= -1;
         }
         _laserPointer.position.z = (distance / 2) + 0.05;
+    }
+
+    /** @hidden */
+    public get lasterPointerDefaultColor(): Color3 {
+        // here due to a typo
+        return this.laserPointerDefaultColor;
     }
 }
 
