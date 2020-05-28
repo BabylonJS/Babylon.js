@@ -1602,12 +1602,35 @@ export class NodeMaterial extends PushMaterial {
         }
     }
 
+
+    private _restoreConnectionsTEST(block: NodeMaterialBlock, attachedBlocks: any, map: {[key: number]: NodeMaterialBlock}) {
+        for (var outputPoint of block.outputs) {
+            for (var candidate of attachedBlocks) {
+                let target = candidate;
+
+                for (var input of candidate.inputs) {
+                    if (/*input.targetConnectionName === outputPoint.name*/ input.target === outputPoint.target) {
+                        let inputPoint = target.getInputByName(input.inputName);
+                        if (!inputPoint || inputPoint.isConnected) {
+                            continue;
+                        }
+
+                        outputPoint.connectTo(inputPoint, true);
+                        this._restoreConnections(target, attachedBlocks, map);
+                        continue;
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Clear the current graph and load a new one from a serialization object
      * @param source defines the JSON representation of the material
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @param isFrame defines whether or not source is Frame or standard NodeMaterial
      */
-    public loadFromSerialization(source: any, rootUrl: string = "") {
+    public loadFromSerialization(source: any, rootUrl: string = "", isFrame: boolean = false) {
         this.clear();
 
         let map: {[key: number]: NodeMaterialBlock} = {};
@@ -1631,7 +1654,7 @@ export class NodeMaterial extends PushMaterial {
             let parsedBlock = source.blocks[blockIndex];
             let block = map[parsedBlock.id];
 
-            if (block.inputs.length) {
+            if (isFrame === false && block.inputs.length) {
                 continue;
             }
             this._restoreConnections(block, source, map);
@@ -1676,6 +1699,71 @@ export class NodeMaterial extends PushMaterial {
 
         this._mode = source.mode ?? NodeMaterialModes.Material;
     }
+
+    /**
+     * Add Frame blocks to the graph from a serialization object 
+     * @param source defines the JSON representation of the frame
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     */
+    public addFrameSerialization(source: any, rootUrl: string = "") {
+
+        let map: {[key: number]: NodeMaterialBlock} = {};
+
+        this.attachedBlocks.forEach((block: NodeMaterialBlock) => {
+            map[block.uniqueId] = block
+        })
+
+        // Create blocks for nodes in frame
+        for (var parsedBlock of source.blocks) {
+            let blockType = _TypeStore.GetClass(parsedBlock.customType);
+            if (blockType) {
+                let block: NodeMaterialBlock = new blockType();
+                block._deserialize(parsedBlock, this.getScene(), rootUrl);
+                map[parsedBlock.id] = block;
+
+                this.attachedBlocks.push(block);
+            }
+        }
+
+        // Connections
+
+        // Frame blocks only
+        for (var blockIndex = 0; blockIndex < source.blocks.length; blockIndex++) {
+            let parsedBlock = source.blocks[blockIndex];
+            let block = map[parsedBlock.id];
+
+            this._restoreConnections(block, source, map);
+        }
+
+        // UI related info
+        if (source.locations || source.editorData && source.editorData.locations) {
+            let locationsOfNewBlocks: {
+                blockId: number;
+                x: number;
+                y: number;
+            }[] = source.locations || source.editorData.locations;
+
+            for (var location of locationsOfNewBlocks) {
+                if (map[location.blockId]) {
+                    location.blockId = map[location.blockId].uniqueId;
+                }
+            }
+
+
+            this.editorData.locations = this.editorData.locations.concat(locationsOfNewBlocks)
+            this.editorData.frames = this.editorData.frames.concat(source.editorData.frames)
+
+
+            let blockMap: number[] = [];
+           
+            for (var key in map) {
+                blockMap[key] = map[key].uniqueId;
+            }
+
+            this.editorData.map = blockMap;
+        }
+    }
+
 
     /**
      * Makes a duplicate of the current material.

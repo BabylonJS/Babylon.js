@@ -42,6 +42,7 @@ export class GlobalState {
     onCandidatePortSelectedObservable = new Observable<Nullable<NodePort | FrameNodePort>>();
     onGraphNodeRemovalObservable = new Observable<GraphNode>();
     onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
+    onImportFrameObservable = new Observable<void>();
     onGridSizeChanged = new Observable<void>();
     onExposePortOnFrameObservable = new Observable<GraphNode>();
     previewType: PreviewType;

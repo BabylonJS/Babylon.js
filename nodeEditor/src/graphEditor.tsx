@@ -157,6 +157,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             }
         });
 
+        this.props.globalState.onImportFrameObservable.add(() => {
+            this.loadGraph();
+            this.reOrganize(this.props.globalState.nodeMaterial.editorData);
+        })
+
         this.props.globalState.onZoomToFitRequiredObservable.add(() => {
             this.zoomToFit();
         });
@@ -397,31 +402,35 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         // Load graph of nodes from the material
         if (this.props.globalState.nodeMaterial) {
-            var material = this.props.globalState.nodeMaterial;
-            material._vertexOutputNodes.forEach((n: any) => {
-                this.createNodeFromObject(n);
-            });
-            material._fragmentOutputNodes.forEach((n: any) => {
-                this.createNodeFromObject(n);
-            });
-
-            material.attachedBlocks.forEach((n: any) => {
-                this.createNodeFromObject(n);
-            });
-
-            // Links
-            material.attachedBlocks.forEach((n: any) => {
-                if (n.inputs.length) {
-                    for (var input of n.inputs) {
-                        if (input.isConnected) {
-                            this._graphCanvas.connectPorts(input.connectedPoint!, input);
-                        }
-                    }
-                }
-            });            
+            this.loadGraph() 
         }
 
         this.reOrganize(editorData);
+    }
+
+    loadGraph() {
+        var material = this.props.globalState.nodeMaterial;
+        material._vertexOutputNodes.forEach((n: any) => {
+            this.createNodeFromObject(n, true);
+        });
+        material._fragmentOutputNodes.forEach((n: any) => {
+            this.createNodeFromObject(n, true);
+        });
+
+        material.attachedBlocks.forEach((n: any) => {
+            this.createNodeFromObject(n, true);
+        });
+
+        // Links
+        material.attachedBlocks.forEach((n: any) => {
+            if (n.inputs.length) {
+                for (var input of n.inputs) {
+                    if (input.isConnected) {
+                        this._graphCanvas.connectPorts(input.connectedPoint!, input);
+                    }
+                }
+            }
+        });           
     }
 
     showWaitScreen() {

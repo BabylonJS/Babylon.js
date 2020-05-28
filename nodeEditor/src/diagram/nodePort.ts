@@ -19,7 +19,6 @@ export class NodePort {
     protected _portLabelElement: Element;
     protected _onCandidateLinkMovedObserver: Nullable<Observer<Nullable<Vector2>>>;
     protected _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;
-    protected _exposedOnFrame: boolean;
     
     public delegatedPort: Nullable<FrameNodePort> = null;
 
@@ -67,7 +66,7 @@ export class NodePort {
     }
 
     public get exposedOnFrame() {
-        if(!!this._exposedOnFrame || this._isConnectedToNodeOutsideOfFrame()) {
+        if(!!this.connectionPoint.isExposedOnFrame || this._isConnectedToNodeOutsideOfFrame()) {
             return true
         } return false;
     }
@@ -76,7 +75,7 @@ export class NodePort {
         if(this.disabled){
             return;
         }
-        this._exposedOnFrame = value;
+        this.connectionPoint.isExposedOnFrame = value;
     }
     
     

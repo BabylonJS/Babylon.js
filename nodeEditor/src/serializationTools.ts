@@ -38,8 +38,15 @@ export class SerializationTools {
         return JSON.stringify(serializationObject, undefined, 2);
     }
 
-    public static Deserialize(serializationObject: any, globalState: GlobalState) {
+    public static Deserialize(serializationObject: any, globalState: GlobalState, isFrame = false) {
         globalState.onIsLoadingChanged.notifyObservers(true);
-        globalState.nodeMaterial!.loadFromSerialization(serializationObject, "");
+        globalState.nodeMaterial!.loadFromSerialization(serializationObject, "", isFrame);
+    }
+
+    public static AddFrameToMaterial(serializationObject: any, globalState: GlobalState, currentMaterial: NodeMaterial) {
+        globalState.onIsLoadingChanged.notifyObservers(true);
+        this.UpdateLocations(currentMaterial, globalState);
+        globalState.nodeMaterial!.addFrameSerialization(serializationObject, "");
+        globalState.onImportFrameObservable.notifyObservers();
     }
 }

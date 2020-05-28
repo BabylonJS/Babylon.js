@@ -154,12 +154,29 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     load(file: File) {
         Tools.ReadFile(file, (data) => {
             let decoder = new TextDecoder("utf-8");
-            SerializationTools.Deserialize(JSON.parse(decoder.decode(data)), this.props.globalState);
+            const serializationObj = JSON.parse(decoder.decode(data));
+
+            if(serializationObj.editorData.frames.length) {
+                SerializationTools.Deserialize(serializationObj, this.props.globalState, true);
+
+            } else {
+                SerializationTools.Deserialize(serializationObj, this.props.globalState);
+            }
 
             if (!this.changeMode(this.props.globalState.nodeMaterial!.mode, true, false)) {
                 this.props.globalState.onResetRequiredObservable.notifyObservers();
             }
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+        }, undefined, true);
+    }
+
+    
+    loadFrame(file: File) {
+        Tools.ReadFile(file, (data) => {
+            // get Frame Data from file
+            let decoder = new TextDecoder("utf-8");
+            const frameData = JSON.parse(decoder.decode(data));
+            SerializationTools.AddFrameToMaterial(frameData, this.props.globalState, this.props.globalState.nodeMaterial);
         }, undefined, true);
     }
 
@@ -412,6 +429,10 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         }
 
                     </LineContainerComponent>
+                    <LineContainerComponent title="FRAME">
+                        <FileButtonLineComponent label="Load Frame" uploadName={'frame-upload'} onClick={(file) => this.loadFrame(file)} accept=".json" />
+                    </LineContainerComponent>
+
                     {
                         !this.props.globalState.customSave &&
                         <LineContainerComponent title="SNIPPET">
