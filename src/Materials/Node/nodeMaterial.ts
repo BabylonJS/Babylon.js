@@ -1628,9 +1628,9 @@ export class NodeMaterial extends PushMaterial {
      * Clear the current graph and load a new one from a serialization object
      * @param source defines the JSON representation of the material
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
-     * @param isFrame defines whether or not source is Frame or standard NodeMaterial
+     * @param hasFrames defines whether or not source is Frame or standard NodeMaterial
      */
-    public loadFromSerialization(source: any, rootUrl: string = "", isFrame: boolean = false) {
+    public loadFromSerialization(source: any, rootUrl: string = "", hasFrames: boolean = false) {
         this.clear();
 
         let map: {[key: number]: NodeMaterialBlock} = {};
@@ -1654,7 +1654,7 @@ export class NodeMaterial extends PushMaterial {
             let parsedBlock = source.blocks[blockIndex];
             let block = map[parsedBlock.id];
 
-            if (isFrame === false && block.inputs.length) {
+            if (hasFrames === false && block.inputs.length) {
                 continue;
             }
             this._restoreConnections(block, source, map);

@@ -38,9 +38,9 @@ export class SerializationTools {
         return JSON.stringify(serializationObject, undefined, 2);
     }
 
-    public static Deserialize(serializationObject: any, globalState: GlobalState, isFrame = false) {
+    public static Deserialize(serializationObject: any, globalState: GlobalState, hasFrames = false) {
         globalState.onIsLoadingChanged.notifyObservers(true);
-        globalState.nodeMaterial!.loadFromSerialization(serializationObject, "", isFrame);
+        globalState.nodeMaterial!.loadFromSerialization(serializationObject, "", hasFrames);
     }
 
     public static AddFrameToMaterial(serializationObject: any, globalState: GlobalState, currentMaterial: NodeMaterial) {
