@@ -47703,7 +47703,7 @@ declare module BABYLON {
         /**
          * Default color of the laser pointer
          */
-        lasterPointerDefaultColor: Color3;
+        laserPointerDefaultColor: Color3;
         /**
          * default color of the selection ring
          */
@@ -47760,6 +47760,8 @@ declare module BABYLON {
         private _generateNewMeshPair;
         private _pickingMoved;
         private _updatePointerDistance;
+        /** @hidden */
+        get lasterPointerDefaultColor(): Color3;
     }
 }
 declare module BABYLON {
