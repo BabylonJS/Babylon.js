@@ -121,7 +121,7 @@
                     display: flex;
                     justify-content: center;
                     align-items: center;
-                    width: 8em;
+                    width: 15em;
 
                     .input-frame input {
                         width: 3em;
@@ -152,13 +152,14 @@
                     p {
                         font-weight: bolder;
                         font-variant: all-small-caps;
+                        display: inline;
                     }
                     cursor: pointer;
                     &:before {
                         content: '';
                         display: inline-block;
-                        height: 1em;
-                        width: 1em;
+                        height: 0.7em;
+                        width: 0.7em;
                         background-size: contain;
                         background-repeat: no-repeat;
                         margin-right:0.5em; 

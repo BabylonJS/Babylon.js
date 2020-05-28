@@ -59444,6 +59444,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
@@ -59847,10 +59849,19 @@ var BlockTools = /** @class */ (function () {
                 u.setAsAttribute("particle_texturemask");
                 return u;
             }
+            case "ParticlePositionWorldBlock": {
+                var pos = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("PositionWorld");
+                pos.setAsAttribute("particle_positionw");
+                return pos;
+            }
             case "ParticleRampGradientBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ParticleRampGradientBlock"]("ParticleRampGradient");
             case "ParticleBlendMultiplyBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ParticleBlendMultiplyBlock"]("ParticleBlendMultiply");
+            case "FragCoordBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["FragCoordBlock"]("FragCoord");
+            case "ScreenSizeBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ScreenSizeBlock"]("ScreenSize");
         }
         return null;
     };
@@ -60094,7 +60105,7 @@ var NodeListComponent = /** @class */ (function (_super) {
             Animation: ["BonesBlock", "MorphTargetsBlock"],
             Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
-            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "ReflectionTextureBlock", "TimeBlock", "DeltaTimeBlock"],
+            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "ReflectionTextureBlock", "TimeBlock", "DeltaTimeBlock", "FragCoordBlock", "ScreenSizeBlock"],
             Interpolation: ["LerpBlock", "StepBlock", "SmoothStepBlock", "NLerpBlock"],
             Math__Standard: ["AddBlock", "DivideBlock", "MaxBlock", "MinBlock", "ModBlock", "MultiplyBlock", "NegateBlock", "OneMinusBlock", "ReciprocalBlock", "ScaleBlock", "SignBlock", "SqrtBlock", "SubtractBlock"],
             Math__Scientific: ["AbsBlock", "ArcCosBlock", "ArcSinBlock", "ArcTanBlock", "ArcTan2Block", "CosBlock", "DegreesToRadiansBlock", "ExpBlock", "Exp2Block", "FractBlock", "LogBlock", "PowBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "SinBlock", "SquareWaveBlock", "TanBlock", "TriangleWaveBlock"],
@@ -60103,7 +60114,7 @@ var NodeListComponent = /** @class */ (function (_super) {
             Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"],
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
-            Particle: ["ParticleBlendMultiplyBlock", "ParticleColorBlock", "ParticleRampGradientBlock", "ParticleTextureBlock", "ParticleTextureMaskBlock", "ParticleUVBlock"],
+            Particle: ["ParticleBlendMultiplyBlock", "ParticleColorBlock", "ParticlePositionWorldBlock", "ParticleRampGradientBlock", "ParticleTextureBlock", "ParticleTextureMaskBlock", "ParticleUVBlock"],
             PBR: ["PBRMetallicRoughnessBlock", "AmbientOcclusionBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "ReflectivityBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
             PostProcess: ["Position2DBlock", "CurrentScreenBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
@@ -60272,6 +60283,9 @@ var NodeListComponent = /** @class */ (function (_super) {
         "ParticleTextureMaskBlock": "The particle texture mask",
         "ParticleRampGradientBlock": "The particle ramp gradient block",
         "ParticleBlendMultiplyBlock": "The particle blend multiply block",
+        "ParticlePositionWorldBlock": "The world position of the particle",
+        "FragCoordBlock": "The gl_FragCoord predefined variable that contains the window relative coordinate (x, y, z, 1/w)",
+        "ScreenSizeBlock": "The size (in pixels) of the screen window",
     };
     return NodeListComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -61881,12 +61895,14 @@ var inputNameToAttributeValue = {
     "particle_uv": "uv",
     "particle_color": "color",
     "particle_texturemask": "textureMask",
+    "particle_positionw": "positionW",
 };
 var inputNameToAttributeName = {
     "position2d": "postprocess",
     "particle_uv": "particle",
     "particle_color": "particle",
     "particle_texturemask": "particle",
+    "particle_positionw": "particle",
 };
 var InputDisplayManager = /** @class */ (function () {
     function InputDisplayManager() {

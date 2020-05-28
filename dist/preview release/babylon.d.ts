@@ -16301,6 +16301,10 @@ declare module BABYLON {
              * @param stride defines the stride in floats
              */
             registerInstancedBuffer(kind: string, stride: number): void;
+            /**
+             * true to use the edge renderer for all instances of this mesh
+             */
+            edgesShareWithInstances: boolean;
             /** @hidden */
             _userInstancedBuffersStorage: {
                 data: {
@@ -16395,6 +16399,10 @@ declare module BABYLON {
         private _renderId;
         private _multiview;
         private _cachedDefines;
+        /** Define the Url to load snippets */
+        static SnippetUrl: string;
+        /** Snippet ID if the material was created from the snippet server */
+        snippetId: string;
         /**
          * Instantiate a new shader material.
          * The ShaderMaterial object has the necessary methods to pass data from your scene to the Vertex and Fragment Shaders and returns a material that can be applied to any mesh.
@@ -16649,6 +16657,23 @@ declare module BABYLON {
          * @returns a new material
          */
         static Parse(source: any, scene: Scene, rootUrl: string): ShaderMaterial;
+        /**
+         * Creates a new ShaderMaterial from a snippet saved in a remote file
+         * @param name defines the name of the ShaderMaterial to create (can be null or empty to use the one from the json data)
+         * @param url defines the url to load from
+         * @param scene defines the hosting scene
+         * @param rootUrl defines the root URL to use to load textures and relative dependencies
+         * @returns a promise that will resolve to the new ShaderMaterial
+         */
+        static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl?: string): Promise<ShaderMaterial>;
+        /**
+         * Creates a ShaderMaterial from a snippet saved by the Inspector
+         * @param snippetId defines the snippet to load
+         * @param scene defines the hosting scene
+         * @param rootUrl defines the root URL to use to load textures and relative dependencies
+         * @returns a promise that will resolve to the new ShaderMaterial
+         */
+        static CreateFromSnippetAsync(snippetId: string, scene: Scene, rootUrl?: string): Promise<ShaderMaterial>;
     }
 }
 declare module BABYLON {
@@ -16788,6 +16813,10 @@ declare module BABYLON {
     };
 }
 declare module BABYLON {
+        interface Scene {
+            /** @hidden */
+            _edgeRenderLineShader: Nullable<ShaderMaterial>;
+        }
         interface AbstractMesh {
             /**
              * Gets the edgesRenderer associated with the mesh
@@ -16833,6 +16862,10 @@ declare module BABYLON {
          * @return true if ready, otherwise false.
          */
         isReady(): boolean;
+        /**
+         * List of instances to render in case the source mesh has instances
+         */
+        customInstances: SmartArray<Matrix>;
     }
     /**
      * This class is used to generate edges of the mesh that could then easily be rendered in a scene.
@@ -16857,11 +16890,19 @@ declare module BABYLON {
         protected _buffers: {
             [key: string]: Nullable<VertexBuffer>;
         };
+        protected _buffersForInstances: {
+            [key: string]: Nullable<VertexBuffer>;
+        };
         protected _checkVerticesInsteadOfIndices: boolean;
         private _meshRebuildObserver;
         private _meshDisposeObserver;
         /** Gets or sets a boolean indicating if the edgesRenderer is active */
         isEnabled: boolean;
+        /**
+         * List of instances to render in case the source mesh has instances
+         */
+        customInstances: SmartArray<Matrix>;
+        private static GetShader;
         /**
          * Creates an instance of the EdgesRenderer. It is primarily use to display edges of a mesh.
          * Beware when you use this class with complex objects as the adjacencies computation can be really long
@@ -21616,6 +21657,15 @@ declare module BABYLON {
          */
         get transform(): NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+        /**
+         * Update defines for shader compilation
+         * @param mesh defines the mesh to be rendered
+         * @param nodeMaterial defines the node material requesting the update
+         * @param defines defines the material defines to update
+         * @param useInstances specifies that instances should be used
+         * @param subMesh defines which submesh to render
+         */
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean, subMesh?: SubMesh): void;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
         protected _dumpPropertiesCode(): string;
@@ -27577,6 +27627,8 @@ declare module BABYLON {
         /** @hidden */
         _registerInstanceForRenderId(instance: InstancedMesh, renderId: number): Mesh;
         protected _afterComputeWorldMatrix(): void;
+        /** @hidden */
+        _postActivate(): void;
         /**
          * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
          * This means the mesh underlying bounding box and sphere are recomputed.
@@ -32203,6 +32255,10 @@ declare module BABYLON {
          * When matrix interpolation is enabled, this boolean forces the system to use Matrix.DecomposeLerp instead of Matrix.Lerp. Interpolation is more precise but slower
          */
         static AllowMatrixDecomposeForInterpolation: boolean;
+        /** Define the Url to load snippets */
+        static SnippetUrl: string;
+        /** Snippet ID if the animation was created from the snippet server */
+        snippetId: string;
         /**
          * Stores the key frames of the animation
          */
@@ -32590,6 +32646,19 @@ declare module BABYLON {
          * @param destination Target to store the animations
          */
         static AppendSerializedAnimations(source: IAnimatable, destination: any): void;
+        /**
+         * Creates a new animation from a snippet saved in a remote file
+         * @param name defines the name of the animation to create (can be null or empty to use the one from the json data)
+         * @param url defines the url to load from
+         * @returns a promise that will resolve to the new animation
+         */
+        static ParseFromFileAsync(name: Nullable<string>, url: string): Promise<Animation>;
+        /**
+         * Creates an animation from a snippet saved by the Inspector
+         * @param snippetId defines the snippet to load
+         * @returns a promise that will resolve to the new animation
+         */
+        static CreateFromSnippetAsync(snippetId: string): Promise<Animation>;
     }
 }
 declare module BABYLON {
@@ -34047,6 +34116,10 @@ declare module BABYLON {
          * Defines that engine should compile shaders with high precision floats (if supported). True by default
          */
         useHighPrecisionFloats?: boolean;
+        /**
+         * Make the canvas XR Compatible for XR sessions
+         */
+        xrCompatible?: boolean;
     }
     /**
      * The base engine class (root of all engines)
@@ -37880,6 +37953,11 @@ declare module BABYLON {
          */
         target: any;
         /**
+         * Returns the string "TargetedAnimation"
+         * @returns "TargetedAnimation"
+         */
+        getClassName(): string;
+        /**
          * Serialize the object
          * @returns the JSON object representing the current entity
          */
@@ -37971,6 +38049,10 @@ declare module BABYLON {
          * returning the list of animatables controlled by this animation group.
          */
         get animatables(): Array<Animatable>;
+        /**
+         * Gets the list of target animations
+         */
+        get children(): TargetedAnimation[];
         /**
          * Instantiates a new Animation Group.
          * This helps managing several animations at once.
@@ -47621,7 +47703,7 @@ declare module BABYLON {
         /**
          * Default color of the laser pointer
          */
-        lasterPointerDefaultColor: Color3;
+        laserPointerDefaultColor: Color3;
         /**
          * default color of the selection ring
          */
@@ -47678,6 +47760,8 @@ declare module BABYLON {
         private _generateNewMeshPair;
         private _pickingMoved;
         private _updatePointerDistance;
+        /** @hidden */
+        get lasterPointerDefaultColor(): Color3;
     }
 }
 declare module BABYLON {
@@ -47855,6 +47939,157 @@ declare module BABYLON {
             instance?: LinesMesh;
             useVertexAlpha?: boolean;
         }, scene?: Nullable<Scene>): LinesMesh;
+    }
+}
+declare module BABYLON {
+    /**
+     * Construction options for a timer
+     */
+    export interface ITimerOptions<T> {
+        /**
+         * Time-to-end
+         */
+        timeout: number;
+        /**
+         * The context observable is used to calculate time deltas and provides the context of the timer's callbacks. Will usually be OnBeforeRenderObservable.
+         * Countdown calculation is done ONLY when the observable is notifying its observers, meaning that if
+         * you choose an observable that doesn't trigger too often, the wait time might extend further than the requested max time
+         */
+        contextObservable: Observable<T>;
+        /**
+         * Optional parameters when adding an observer to the observable
+         */
+        observableParameters?: {
+            mask?: number;
+            insertFirst?: boolean;
+            scope?: any;
+        };
+        /**
+         * An optional break condition that will stop the times prematurely. In this case onEnded will not be triggered!
+         */
+        breakCondition?: (data?: ITimerData<T>) => boolean;
+        /**
+         * Will be triggered when the time condition has met
+         */
+        onEnded?: (data: ITimerData<any>) => void;
+        /**
+         * Will be triggered when the break condition has met (prematurely ended)
+         */
+        onAborted?: (data: ITimerData<any>) => void;
+        /**
+         * Optional function to execute on each tick (or count)
+         */
+        onTick?: (data: ITimerData<any>) => void;
+    }
+    /**
+     * An interface defining the data sent by the timer
+     */
+    export interface ITimerData<T> {
+        /**
+         * When did it start
+         */
+        startTime: number;
+        /**
+         * Time now
+         */
+        currentTime: number;
+        /**
+         * Time passed since started
+         */
+        deltaTime: number;
+        /**
+         * How much is completed, in [0.0...1.0].
+         * Note that this CAN be higher than 1 due to the fact that we don't actually measure time but delta between observable calls
+         */
+        completeRate: number;
+        /**
+         * What the registered observable sent in the last count
+         */
+        payload: T;
+    }
+    /**
+     * The current state of the timer
+     */
+    export enum TimerState {
+        /**
+         * Timer initialized, not yet started
+         */
+        INIT = 0,
+        /**
+         * Timer started and counting
+         */
+        STARTED = 1,
+        /**
+         * Timer ended (whether aborted or time reached)
+         */
+        ENDED = 2
+    }
+    /**
+     * A simple version of the timer. Will take options and start the timer immediately after calling it
+     *
+     * @param options options with which to initialize this timer
+     */
+    export function setAndStartTimer(options: ITimerOptions<any>): Nullable<Observer<any>>;
+    /**
+     * An advanced implementation of a timer class
+     */
+    export class AdvancedTimer<T = any> implements IDisposable {
+        /**
+         * Will notify each time the timer calculates the remaining time
+         */
+        onEachCountObservable: Observable<ITimerData<T>>;
+        /**
+         * Will trigger when the timer was aborted due to the break condition
+         */
+        onTimerAbortedObservable: Observable<ITimerData<T>>;
+        /**
+         * Will trigger when the timer ended successfully
+         */
+        onTimerEndedObservable: Observable<ITimerData<T>>;
+        /**
+         * Will trigger when the timer state has changed
+         */
+        onStateChangedObservable: Observable<TimerState>;
+        private _observer;
+        private _contextObservable;
+        private _observableParameters;
+        private _startTime;
+        private _timer;
+        private _state;
+        private _breakCondition;
+        private _timeToEnd;
+        private _breakOnNextTick;
+        /**
+         * Will construct a new advanced timer based on the options provided. Timer will not start until start() is called.
+         * @param options construction options for this advanced timer
+         */
+        constructor(options: ITimerOptions<T>);
+        /**
+         * set a breaking condition for this timer. Default is to never break during count
+         * @param predicate the new break condition. Returns true to break, false otherwise
+         */
+        set breakCondition(predicate: (data: ITimerData<T>) => boolean);
+        /**
+         * Reset ALL associated observables in this advanced timer
+         */
+        clearObservables(): void;
+        /**
+         * Will start a new iteration of this timer. Only one instance of this timer can run at a time.
+         *
+         * @param timeToEnd how much time to measure until timer ended
+         */
+        start(timeToEnd?: number): void;
+        /**
+         * Will force a stop on the next tick.
+         */
+        stop(): void;
+        /**
+         * Dispose this timer, clearing all resources
+         */
+        dispose(): void;
+        private _setState;
+        private _tick;
+        private _stop;
     }
 }
 declare module BABYLON {
@@ -49328,9 +49563,9 @@ declare module BABYLON {
         /**
          * Select a specific entity in the scene explorer and highlight a specific block in that entity property grid
          * @param entity defines the entity to select
-         * @param lineContainerTitle defines the specific block to highlight
+         * @param lineContainerTitles defines the specific blocks to highlight (could be a string or an array of strings)
          */
-        select(entity: any, lineContainerTitle?: string): void;
+        select(entity: any, lineContainerTitles?: string | string[]): void;
         /** Get the inspector from bundle or global */
         private _getGlobalInspector;
         /**
@@ -60998,6 +61233,87 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Block used to make gl_FragCoord available
+     */
+    export class FragCoordBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new FragCoordBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the xy component
+         */
+        get xy(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyz component
+         */
+        get xyz(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyzw component
+         */
+        get xyzw(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the x component
+         */
+        get x(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the y component
+         */
+        get y(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the z component
+         */
+        get z(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the w component
+         */
+        get output(): NodeMaterialConnectionPoint;
+        protected writeOutputs(state: NodeMaterialBuildState): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to get the screen sizes
+     */
+    export class ScreenSizeBlock extends NodeMaterialBlock {
+        private _varName;
+        private _scene;
+        /**
+         * Creates a new ScreenSizeBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the xy component
+         */
+        get xy(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the x component
+         */
+        get x(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the y component
+         */
+        get y(): NodeMaterialConnectionPoint;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        protected writeOutputs(state: NodeMaterialBuildState, varName: string): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
      * Block used to add support for scene fog
      */
     export class FogBlock extends NodeMaterialBlock {
@@ -62535,6 +62851,8 @@ declare module BABYLON {
         _vReflectionMicrosurfaceInfosName: string;
         /** @hidden */
         _vReflectionInfosName: string;
+        /** @hidden */
+        _vReflectionFilteringInfoName: string;
         private _scene;
         /**
          * The three properties below are set by the main PBR block prior to calling methods of this class.
@@ -62671,10 +62989,6 @@ declare module BABYLON {
          */
         get roughness(): NodeMaterialConnectionPoint;
         /**
-         * Gets the texture input component
-         */
-        get texture(): NodeMaterialConnectionPoint;
-        /**
          * Gets the sheen object output component
          */
         get sheen(): NodeMaterialConnectionPoint;
@@ -62696,6 +63010,15 @@ declare module BABYLON {
      * Block used to implement the reflectivity module of the PBR material
      */
     export class ReflectivityBlock extends NodeMaterialBlock {
+        private _metallicReflectanceColor;
+        private _metallicF0Factor;
+        /** @hidden */
+        _vMetallicReflectanceFactorsName: string;
+        /**
+         * The property below is set by the main PBR block prior to calling methods of this class.
+        */
+        /** @hidden */
+        indexOfRefractionConnectionPoint: Nullable<NodeMaterialConnectionPoint>;
         /**
          * Specifies if the metallic texture contains the ambient occlusion information in its red channel.
          */
@@ -62743,12 +63066,14 @@ declare module BABYLON {
          * Gets the reflectivity object output component
          */
         get reflectivity(): NodeMaterialConnectionPoint;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh): void;
         /**
          * Gets the main code of the block (fragment side)
+         * @param state current state of the node material building
          * @param aoIntensityVarName name of the variable with the ambient occlusion intensity
          * @returns the shader code
          */
-        getCode(aoIntensityVarName: string): string;
+        getCode(state: NodeMaterialBuildState, aoIntensityVarName: string): string;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
         protected _dumpPropertiesCode(): string;
@@ -62878,10 +63203,6 @@ declare module BABYLON {
          * Gets the tint thickness input component
          */
         get tintThickness(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the tint texture input component
-         */
-        get tintTexture(): NodeMaterialConnectionPoint;
         /**
          * Gets the world tangent input component
          */
@@ -63060,6 +63381,14 @@ declare module BABYLON {
          */
         enableSpecularAntiAliasing: boolean;
         /**
+         * Enables realtime filtering on the texture.
+         */
+        realTimeFiltering: boolean;
+        /**
+         * Quality switch for realtime filtering
+         */
+        realTimeFilteringQuality: number;
+        /**
          * Defines if the material uses energy conservation.
          */
         useEnergyConservation: boolean;
@@ -63128,10 +63457,6 @@ declare module BABYLON {
          * Gets the base color input component
          */
         get baseColor(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the base texture input component
-         */
-        get baseTexture(): NodeMaterialConnectionPoint;
         /**
          * Gets the opacity texture input component
          */

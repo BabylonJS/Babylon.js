@@ -67,6 +67,11 @@
             "referenceImage": "node-material6.png"
         },    
         {
+            "title": "Node material PBR 1",
+            "playgroundId": "#D8AK3Z#7",
+            "referenceImage": "node-material-pbr-1.png"
+        },    
+        {
             "title": "Basis loader",
             "playgroundId": "#4RN0VF#0",
             "referenceImage": "basis.png"

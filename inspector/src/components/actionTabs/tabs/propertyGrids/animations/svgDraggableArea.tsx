@@ -7,6 +7,8 @@ interface ISvgDraggableAreaProps {
     updatePosition: (updatedKeyframe: IKeyframeSvgPoint, index: number) => void;
     scale: number;
     viewBoxScale: number;
+    selectKeyframe: (id: string) => void;
+    selectedControlPoint: (type: string, id: string) => void;
 }
 
 export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
@@ -35,8 +37,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
             this._width = this._draggableArea.current?.clientWidth !== undefined ? this._draggableArea.current?.clientWidth : 0;
             console.log(this._width);
         }, 500);
-        
-    }  
+    }
 
     dragStart(e: React.TouchEvent<SVGSVGElement>): void;
     dragStart(e: React.MouseEvent<SVGSVGElement, MouseEvent>): void;
@@ -70,7 +71,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
             if (coord !== undefined) {
 
                 var newPoints = [...this.props.keyframeSvgPoints];
-
+                // Check for NaN values here. 
                 if (this._isCurrentPointControl === "left") {
                     newPoints[this._currentPointIndex].leftControlPoint = coord;
                 } else if (this._isCurrentPointControl === "right") {
@@ -187,7 +188,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
     render() {
         return (
             <>
-                <svg className="linear pannable" ref={this._draggableArea}  tabIndex={0} 
+                <svg className="linear pannable" ref={this._draggableArea} tabIndex={0}
 
                     onMouseMove={(e) => this.drag(e)}
                     onTouchMove={(e) => this.drag(e)}
@@ -204,7 +205,17 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
 
                     {this.props.children}
                     {this.props.keyframeSvgPoints.map((keyframe, i) =>
-                        <KeyframeSvgPoint key={i} id={i.toString()} keyframePoint={keyframe.keyframePoint} leftControlPoint={keyframe.leftControlPoint} rightControlPoint={keyframe.rightControlPoint} />
+                        <KeyframeSvgPoint
+                            key={i}
+                            id={i.toString()}
+                            keyframePoint={keyframe.keyframePoint} 
+                            leftControlPoint={keyframe.leftControlPoint} 
+                            rightControlPoint={keyframe.rightControlPoint}
+                            isLeftActive={keyframe.isLeftActive}
+                            isRightActive={keyframe.isRightActive}
+                            selected={keyframe.selected} 
+                            selectedControlPoint={(type: string, id: string) => this.props.selectedControlPoint(type, id)}
+                            selectKeyframe={(id: string) => this.props.selectKeyframe(id)} />
                     )}
                 </svg>
             </>)

@@ -29,12 +29,13 @@ uniform vec3 particlesInfos; // x (number of rows) y(number of columns) z(rowSiz
 // Output
 varying vec2 vUV;
 varying vec4 vColor;
+varying vec3 vPositionW;
 
 #ifdef RAMPGRADIENT
 varying vec4 remapRanges;
 #endif
 
-#if defined(CLIPPLANE) || defined(CLIPPLANE2) || defined(CLIPPLANE3) || defined(CLIPPLANE4) || defined(CLIPPLANE5) || defined(CLIPPLANE6)
+#if defined(BILLBOARD) && !defined(BILLBOARDY) && !defined(BILLBOARDSTRETCHED)
 uniform mat4 invView;
 #endif
 #include<clipPlaneVertexDeclaration>
@@ -91,24 +92,26 @@ void main(void) {
 	vec3 yaxis = position - eyePosition;
 	yaxis.y = 0.;
 
-	vec3 worldPos = rotate(normalize(yaxis), rotatedCorner);
+	vPositionW = rotate(normalize(yaxis), rotatedCorner);
 
-	vec3 viewPos = (view * vec4(worldPos, 1.0)).xyz;
+	vec3 viewPos = (view * vec4(vPositionW, 1.0)).xyz;
 #elif defined(BILLBOARDSTRETCHED)
 	rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);
 	rotatedCorner.y = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);
 	rotatedCorner.z = 0.;
 
 	vec3 toCamera = position - eyePosition;
-	vec3 worldPos = rotateAlign(toCamera, rotatedCorner);
+	vPositionW = rotateAlign(toCamera, rotatedCorner);
 
-	vec3 viewPos = (view * vec4(worldPos, 1.0)).xyz;
+	vec3 viewPos = (view * vec4(vPositionW, 1.0)).xyz;
 #else
 	rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);
 	rotatedCorner.y = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);
 	rotatedCorner.z = 0.;
 
 	vec3 viewPos = (view * vec4(position, 1.0)).xyz + rotatedCorner;
+
+    vPositionW = (invView * vec4(viewPos, 1)).xyz;
 #endif
 
 #ifdef RAMPGRADIENT
@@ -125,9 +128,9 @@ void main(void) {
 	rotatedCorner.y = 0.;
 
 	vec3 yaxis = normalize(direction);
-	vec3 worldPos = rotate(yaxis, rotatedCorner);
+	vPositionW = rotate(yaxis, rotatedCorner);
 
-	gl_Position = projection * view * vec4(worldPos, 1.0);
+	gl_Position = projection * view * vec4(vPositionW, 1.0);
 #endif
 	vColor = color;
 
@@ -144,7 +147,7 @@ void main(void) {
 
 	// Clip plane
 #if defined(CLIPPLANE) || defined(CLIPPLANE2) || defined(CLIPPLANE3) || defined(CLIPPLANE4) || defined(CLIPPLANE5) || defined(CLIPPLANE6)
-	vec4 worldPos = invView * vec4(viewPos, 1.0);
+    vec4 worldPos = vec4(vPositionW, 1.0);
 #endif
 	#include<clipPlaneVertex>
 
