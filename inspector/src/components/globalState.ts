@@ -31,7 +31,7 @@ export class GlobalState {
     public glTFLoaderDefaults: { [key: string]: any } = { "validate": true };
 
     public blockMutationUpdates = false;
-    public selectedLineContainerTitle = "";
+    public selectedLineContainerTitles:Array<string> = [];
 
     public recorder = new ReplayRecorder();
 
