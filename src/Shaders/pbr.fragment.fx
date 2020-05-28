@@ -505,10 +505,10 @@ void main(void) {
     // Lightmaps ? (can we consider them as pure diffuse ?)
     // AO and shadows, should they dim the diffuseLight ? (right now they are)
     gl_FragData[0] = finalColor;
-    gl_FragData[1] = vec4(irradiance, 1.0);
+    gl_FragData[1] = vec4(irradiance / sqrt(surfaceAlbedo), 1.0); // pre and post scatter
     gl_FragData[2] = vec4(vViewPos.z, 0.0, 0.0, 1.0);
-    gl_FragData[3] = vec4(surfaceAlbedo, 1.0);
-    gl_FragData[4] = vec4(finalColor.rgb - irradiance, 1.0);
+    gl_FragData[3] = vec4(sqrt(surfaceAlbedo), 1.0);
+    gl_FragData[4] = vec4(finalColor.rgb - irradiance, 0.0);
 #else
     // #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
     gl_FragColor = finalColor;

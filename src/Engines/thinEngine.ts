@@ -1326,13 +1326,17 @@ export class ThinEngine {
 
         // If MSAA, we need to bitblt back to main texture
         var gl = this._gl;
-
         if (texture._MSAAFramebuffer) {
-            gl.bindFramebuffer(gl.READ_FRAMEBUFFER, texture._MSAAFramebuffer);
-            gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, texture._framebuffer);
-            gl.blitFramebuffer(0, 0, texture.width, texture.height,
-                0, 0, texture.width, texture.height,
-                gl.COLOR_BUFFER_BIT, gl.NEAREST);
+            this.unBindMultiColorAttachmentFramebuffer(texture._textureCount!, texture._textureArray!, disableGenerateMipMaps, onBeforeUnbind);
+            return;
+        //     gl.bindFramebuffer(gl.READ_FRAMEBUFFER, texture._MSAAFramebuffer);
+        //     gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, texture._framebuffer);
+        //     gl.readBuffer(gl.COLOR_ATTACHMENT0);
+        //     gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
+        //     gl.blitFramebuffer(0, 0, texture.width, texture.height,
+        //         0, 0, texture.width, texture.height,
+        //         gl.COLOR_BUFFER_BIT, gl.NEAREST);
+        // }
         }
 
         if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
