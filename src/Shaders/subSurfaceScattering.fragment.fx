@@ -19,6 +19,7 @@ const int _SssSampleBudget = 40;
 
 #define rcp(x) 1. / x
 #define Sq(x) x * x
+// #define DEBUG_SSS_SAMPLES true
 
 vec3 EvalBurleyDiffusionProfile(float r, vec3 S)
 {
@@ -131,14 +132,18 @@ void main(void)
 {
 	vec3 centerIrradiance  = texture2D(irradianceSampler, vUV).rgb;
 	float  centerDepth       = 0.;
-	bool   passedStencilTest = true; //TestLightingForSSS(centerIrradiance);
+    vec4 inputColor = texture2D(inputSampler, vUV);
+	bool passedStencilTest = (inputColor.a == 0.0);
 
 	if (passedStencilTest)
 	{
 	    centerDepth = texture2D(depthSampler, vUV).r;
 	}
 
-    if (!passedStencilTest) { return; }
+    if (!passedStencilTest) { 
+        gl_FragColor = texture2D(textureSampler, vUV);
+        return;
+    }
 
 
     // SKIN DIFFUSION PROFILE
@@ -157,7 +162,7 @@ void main(void)
 	float  distScale     = 1.; //sssData.subsurfaceMask;
 	vec3 S             = vec3(0.7568628, 0.32156864, 0.20000002); //_ShapeParamsAndMaxScatterDists[profileIndex].rgb diffusion color
 	float  d             = 0.7568628; //_ShapeParamsAndMaxScatterDists[profileIndex].a max scatter dist
-	float  metersPerUnit = 1.; //_WorldScalesAndFilterRadiiAndThicknessRemaps[profileIndex].x;
+	float  metersPerUnit = 0.15; //_WorldScalesAndFilterRadiiAndThicknessRemaps[profileIndex].x;
 
 	// Reconstruct the view-space position corresponding to the central sample.
 	vec2 centerPosNDC = vUV;
@@ -186,8 +191,21 @@ void main(void)
 
 	if (distScale == 0. || sampleCount < 1)
 	{
-	    gl_FragColor = vec4(albedo * centerIrradiance, 1.0);
+        #ifdef DEBUG_SSS_SAMPLES
+            vec3 green = vec3(0., 1., 0.);
+            gl_FragColor = vec4(green, 1.0);
+            return;
+        #endif
+	    gl_FragColor = vec4(inputColor.rgb + albedo * centerIrradiance, 1.0);
+        return;
 	}
+
+    #ifdef DEBUG_SSS_SAMPLES
+        vec3 red  = vec3(1., 0., 0.);
+        vec3 blue = vec3(0., 0., 1.);
+        gl_FragColor = vec4(mix(blue, red, clamp(float(sampleCount) / float(sampleBudget), 0.0, 1.0)), 1.0);
+        return;
+    #endif
 
 	// TODO : TANGENT PLANE
 	vec3 normalVS = vec3(0., 0., 0.);
@@ -215,7 +233,7 @@ void main(void)
     // Total weight is 0 for color channels without scattering.
     totalWeight = max(totalWeight, 1e-12);
 
-    gl_FragColor = vec4(texture2D(inputSampler, vUV).rgb + albedo * (totalIrradiance / totalWeight), 1.);
+    gl_FragColor = vec4(inputColor.rgb + albedo * (totalIrradiance / totalWeight), 1.);
 
 	// gl_FragColor = mix(texture2D(textureSampler, vUV), centerIrradiance, 0.5);
 }
