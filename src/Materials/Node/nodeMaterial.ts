@@ -1602,28 +1602,6 @@ export class NodeMaterial extends PushMaterial {
         }
     }
 
-
-    private _restoreConnectionsTEST(block: NodeMaterialBlock, attachedBlocks: any, map: {[key: number]: NodeMaterialBlock}) {
-        for (var outputPoint of block.outputs) {
-            for (var candidate of attachedBlocks) {
-                let target = candidate;
-
-                for (var input of candidate.inputs) {
-                    if (/*input.targetConnectionName === outputPoint.name*/ input.target === outputPoint.target) {
-                        let inputPoint = target.getInputByName(input.inputName);
-                        if (!inputPoint || inputPoint.isConnected) {
-                            continue;
-                        }
-
-                        outputPoint.connectTo(inputPoint, true);
-                        this._restoreConnections(target, attachedBlocks, map);
-                        continue;
-                    }
-                }
-            }
-        }
-    }
-
     /**
      * Clear the current graph and load a new one from a serialization object
      * @param source defines the JSON representation of the material

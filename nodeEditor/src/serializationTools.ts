@@ -40,7 +40,7 @@ export class SerializationTools {
 
     public static Deserialize(serializationObject: any, globalState: GlobalState, hasFrames = false) {
         globalState.onIsLoadingChanged.notifyObservers(true);
-        globalState.nodeMaterial!.loadFromSerialization(serializationObject, "", hasFrames);
+        globalState.nodeMaterial!.loadFromSerialization(serializationObject, "", );
     }
 
     public static AddFrameToMaterial(serializationObject: any, globalState: GlobalState, currentMaterial: NodeMaterial) {
