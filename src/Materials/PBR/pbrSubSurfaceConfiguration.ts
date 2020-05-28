@@ -134,6 +134,32 @@ export class PBRSubSurfaceConfiguration {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public indexOfRefraction = 1.5;
 
+    
+    private _volumeIndexOfRefraction = -1.0;
+    
+    /**
+     * Index of refraction of the material's volume.
+     * https://en.wikipedia.org/wiki/List_of_refractive_indices
+     *
+     * This ONLY impacts refraction. If not provided or given a non-valid value,
+     * the volume will use the same IOR as the surface.
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public get volumeIndexOfRefraction(): number {
+        if (this._volumeIndexOfRefraction >= 1.0) {
+            return this._volumeIndexOfRefraction;
+        }
+        return this._indexOfRefraction;
+    }
+    public set volumeIndexOfRefraction(value: number) {
+        if (value >= 1.0) {
+            this._volumeIndexOfRefraction = value;
+        } else {
+            this._volumeIndexOfRefraction = -1.0;
+        }
+    }
+
     private _invertRefractionY = false;
     /**
      * Controls if refraction needs to be inverted on Y. This could be useful for procedural texture.
@@ -326,8 +352,8 @@ export class PBRSubSurfaceConfiguration {
                 }
 
                 var width = refractionTexture.getSize().width;
-
-                uniformBuffer.updateFloat4("vRefractionInfos", refractionTexture.level, 1 / this._indexOfRefraction, depth, this._invertRefractionY ? -1 : 1);
+                var refractionIor = this.volumeIndexOfRefraction;
+                uniformBuffer.updateFloat4("vRefractionInfos", refractionTexture.level, 1 / refractionIor, depth, this._invertRefractionY ? -1 : 1);
                 uniformBuffer.updateFloat3("vRefractionMicrosurfaceInfos",
                     width,
                     refractionTexture.lodGenerationScale,

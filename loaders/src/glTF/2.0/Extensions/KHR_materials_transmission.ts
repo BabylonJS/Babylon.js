@@ -71,7 +71,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         pbrMaterial.subSurface.isRefractionEnabled = true;
 
         // Since this extension models thin-surface transmission only, we must make IOR = 1.0
-        pbrMaterial.subSurface.indexOfRefraction = 1.0;
+        pbrMaterial.subSurface.volumeIndexOfRefraction = 1.0;
 
         // Albedo colour will tint transmission.
         pbrMaterial.subSurface.useAlbedoToTintRefraction = true;
