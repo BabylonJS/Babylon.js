@@ -1679,7 +1679,7 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
-     * Add Frame blocks to the graph from a serialization object 
+     * Add Frame blocks to the graph from a serialization object
      * @param source defines the JSON representation of the frame
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      */
@@ -1688,8 +1688,8 @@ export class NodeMaterial extends PushMaterial {
         let map: {[key: number]: NodeMaterialBlock} = {};
 
         this.attachedBlocks.forEach((block: NodeMaterialBlock) => {
-            map[block.uniqueId] = block
-        })
+            map[block.uniqueId] = block;
+        });
 
         // Create blocks for nodes in frame
         for (var parsedBlock of source.blocks) {
@@ -1727,13 +1727,11 @@ export class NodeMaterial extends PushMaterial {
                 }
             }
 
-
-            this.editorData.locations = this.editorData.locations.concat(locationsOfNewBlocks)
-            this.editorData.frames = this.editorData.frames.concat(source.editorData.frames)
-
+            this.editorData.locations = this.editorData.locations.concat(locationsOfNewBlocks);
+            this.editorData.frames = this.editorData.frames.concat(source.editorData.frames);
 
             let blockMap: number[] = [];
-           
+
             for (var key in map) {
                 blockMap[key] = map[key].uniqueId;
             }
@@ -1741,7 +1739,6 @@ export class NodeMaterial extends PushMaterial {
             this.editorData.map = blockMap;
         }
     }
-
 
     /**
      * Makes a duplicate of the current material.
