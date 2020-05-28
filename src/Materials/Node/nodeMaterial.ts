@@ -1614,6 +1614,44 @@ export class NodeMaterial extends PushMaterial {
         let map: {[key: number]: NodeMaterialBlock} = {};
 
         // Create blocks
+        this._addBlocksFromSource(source, rootUrl, map);
+
+        // Connections
+
+        // Starts with input blocks only
+        this._restoreConnectionsBetweenBlocks(source, map, hasFrames);
+
+        // Outputs
+        for (var outputNodeId of source.outputNodes) {
+            this.addOutputNode(map[outputNodeId]);
+        }
+
+        // UI related info
+        this._updateEditorDataAndNodeLocations(source, map, false);
+
+        this._mode = source.mode ?? NodeMaterialModes.Material;
+    }
+
+    /**
+     * Add Frame blocks to the graph from a serialization object
+     * @param source defines the JSON representation of the frame
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     */
+    public addFrameFromSerialization(source: any, rootUrl: string = "") {
+
+        let map: {[key: number]: NodeMaterialBlock} = {};
+
+        this._addBlocksFromSource(source, rootUrl, map);
+
+        // Connections between Frame blocks only
+        this._restoreConnectionsBetweenBlocks(source, map, true);
+
+        // UI related info
+        this._updateEditorDataAndNodeLocations(source, map, true);
+      }
+
+    private _addBlocksFromSource(source: any, rootUrl: string = "", map: {[key: number]: NodeMaterialBlock}) {
+        // Create blocks for nodes in frame
         for (var parsedBlock of source.blocks) {
             let blockType = _TypeStore.GetClass(parsedBlock.customType);
             if (blockType) {
@@ -1624,10 +1662,9 @@ export class NodeMaterial extends PushMaterial {
                 this.attachedBlocks.push(block);
             }
         }
+    }
 
-        // Connections
-
-        // Starts with input blocks only
+    private _restoreConnectionsBetweenBlocks(source: any, map: {[key: number]: NodeMaterialBlock}, hasFrames = false) {
         for (var blockIndex = 0; blockIndex < source.blocks.length; blockIndex++) {
             let parsedBlock = source.blocks[blockIndex];
             let block = map[parsedBlock.id];
@@ -1637,13 +1674,9 @@ export class NodeMaterial extends PushMaterial {
             }
             this._restoreConnections(block, source, map);
         }
+    }
 
-        // Outputs
-        for (var outputNodeId of source.outputNodes) {
-            this.addOutputNode(map[outputNodeId]);
-        }
-
-        // UI related info
+    private _updateEditorDataAndNodeLocations(source: any, map: {[key: number]: NodeMaterialBlock}, isImportingAFrame = false) {
         if (source.locations || source.editorData && source.editorData.locations) {
             let locations: {
                 blockId: number;
@@ -1656,88 +1689,32 @@ export class NodeMaterial extends PushMaterial {
                     location.blockId = map[location.blockId].uniqueId;
                 }
             }
-
-            if (source.locations) {
-                this.editorData = {
-                    locations: locations
-                };
+            if (isImportingAFrame) {
+                this.editorData.locations = this.editorData.locations.concat(locations);
+                this.editorData.frames = this.editorData.frames.concat(source.editorData.frames);
             } else {
-                this.editorData = source.editorData;
-                this.editorData.locations = locations;
-            }
-
-            let blockMap: number[] = [];
-
-            for (var key in map) {
-                blockMap[key] = map[key].uniqueId;
-            }
-
-            this.editorData.map = blockMap;
-        }
-
-        this._mode = source.mode ?? NodeMaterialModes.Material;
-    }
-
-    /**
-     * Add Frame blocks to the graph from a serialization object
-     * @param source defines the JSON representation of the frame
-     * @param rootUrl defines the root URL to use to load textures and relative dependencies
-     */
-    public addFrameSerialization(source: any, rootUrl: string = "") {
-
-        let map: {[key: number]: NodeMaterialBlock} = {};
-
-        this.attachedBlocks.forEach((block: NodeMaterialBlock) => {
-            map[block.uniqueId] = block;
-        });
-
-        // Create blocks for nodes in frame
-        for (var parsedBlock of source.blocks) {
-            let blockType = _TypeStore.GetClass(parsedBlock.customType);
-            if (blockType) {
-                let block: NodeMaterialBlock = new blockType();
-                block._deserialize(parsedBlock, this.getScene(), rootUrl);
-                map[parsedBlock.id] = block;
-
-                this.attachedBlocks.push(block);
-            }
-        }
-
-        // Connections
-
-        // Frame blocks only
-        for (var blockIndex = 0; blockIndex < source.blocks.length; blockIndex++) {
-            let parsedBlock = source.blocks[blockIndex];
-            let block = map[parsedBlock.id];
-
-            this._restoreConnections(block, source, map);
-        }
-
-        // UI related info
-        if (source.locations || source.editorData && source.editorData.locations) {
-            let locationsOfNewBlocks: {
-                blockId: number;
-                x: number;
-                y: number;
-            }[] = source.locations || source.editorData.locations;
-
-            for (var location of locationsOfNewBlocks) {
-                if (map[location.blockId]) {
-                    location.blockId = map[location.blockId].uniqueId;
+                if (source.locations) {
+                    this.editorData = {
+                        locations: locations
+                    };
+                } else {
+                    this.editorData = source.editorData;
+                    this.editorData.locations = locations;
                 }
             }
 
-            this.editorData.locations = this.editorData.locations.concat(locationsOfNewBlocks);
-            this.editorData.frames = this.editorData.frames.concat(source.editorData.frames);
-
-            let blockMap: number[] = [];
-
-            for (var key in map) {
-                blockMap[key] = map[key].uniqueId;
-            }
-
-            this.editorData.map = blockMap;
+            this._addBlockMapToEditorData(map);
         }
+    }
+
+    private _addBlockMapToEditorData(map: {[key: number]: NodeMaterialBlock}) {
+        let blockMap: number[] = [];
+
+        for (var key in map) {
+            blockMap[key] = map[key].uniqueId;
+        }
+
+        this.editorData.map = blockMap;
     }
 
     /**

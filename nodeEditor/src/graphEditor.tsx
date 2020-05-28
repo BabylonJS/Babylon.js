@@ -159,7 +159,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         this.props.globalState.onImportFrameObservable.add(() => {
             this.loadGraph();
-            this.reOrganize(this.props.globalState.nodeMaterial.editorData);
+            this.reOrganize(this.props.globalState.nodeMaterial.editorData, true);
         })
 
         this.props.globalState.onZoomToFitRequiredObservable.add(() => {
@@ -441,7 +441,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this.props.globalState.hostDocument.querySelector(".wait-screen")?.classList.add("hidden");
     }
 
-    reOrganize(editorData: Nullable<IEditorData> = null) {
+    reOrganize(editorData: Nullable<IEditorData> = null, isImportingAFrame = false) {
         this.showWaitScreen();
         this._graphCanvas._isLoading = true; // Will help loading large graphes
 
@@ -461,7 +461,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     }
                 }
 
-                this._graphCanvas.processEditorData(editorData);
+                this._graphCanvas.processEditorData(editorData, isImportingAFrame);
             }
 
             this._graphCanvas._isLoading = false;

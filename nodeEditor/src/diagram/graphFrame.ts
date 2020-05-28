@@ -1305,7 +1305,7 @@ export class GraphFrame {
 
     public static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent, map?: {[key: number]: number}) {
         let newFrame = new GraphFrame(null, canvas, true);
-        const isCollapsed = !!serializationData.isCollapsed;
+        const isCollapsed = true;
 
         newFrame.x = serializationData.x;
         newFrame.y = serializationData.y;
