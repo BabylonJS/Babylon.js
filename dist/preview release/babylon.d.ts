@@ -16401,7 +16401,7 @@ declare module BABYLON {
         private _cachedDefines;
         /** Define the Url to load snippets */
         static SnippetUrl: string;
-        /** Snippet ID if the manager was created from the snippet server */
+        /** Snippet ID if the material was created from the snippet server */
         snippetId: string;
         /**
          * Instantiate a new shader material.
@@ -32255,6 +32255,10 @@ declare module BABYLON {
          * When matrix interpolation is enabled, this boolean forces the system to use Matrix.DecomposeLerp instead of Matrix.Lerp. Interpolation is more precise but slower
          */
         static AllowMatrixDecomposeForInterpolation: boolean;
+        /** Define the Url to load snippets */
+        static SnippetUrl: string;
+        /** Snippet ID if the animation was created from the snippet server */
+        snippetId: string;
         /**
          * Stores the key frames of the animation
          */
@@ -32642,6 +32646,19 @@ declare module BABYLON {
          * @param destination Target to store the animations
          */
         static AppendSerializedAnimations(source: IAnimatable, destination: any): void;
+        /**
+         * Creates a new animation from a snippet saved in a remote file
+         * @param name defines the name of the animation to create (can be null or empty to use the one from the json data)
+         * @param url defines the url to load from
+         * @returns a promise that will resolve to the new animation
+         */
+        static ParseFromFileAsync(name: Nullable<string>, url: string): Promise<Animation>;
+        /**
+         * Creates an animation from a snippet saved by the Inspector
+         * @param snippetId defines the snippet to load
+         * @returns a promise that will resolve to the new animation
+         */
+        static CreateFromSnippetAsync(snippetId: string): Promise<Animation>;
     }
 }
 declare module BABYLON {
@@ -47686,7 +47703,7 @@ declare module BABYLON {
         /**
          * Default color of the laser pointer
          */
-        lasterPointerDefaultColor: Color3;
+        laserPointerDefaultColor: Color3;
         /**
          * default color of the selection ring
          */
@@ -47743,6 +47760,8 @@ declare module BABYLON {
         private _generateNewMeshPair;
         private _pickingMoved;
         private _updatePointerDistance;
+        /** @hidden */
+        get lasterPointerDefaultColor(): Color3;
     }
 }
 declare module BABYLON {
