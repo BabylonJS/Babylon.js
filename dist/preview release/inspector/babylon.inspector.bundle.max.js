@@ -58590,6 +58590,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 __webpack_require__(/*! ./curveEditor.scss */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor.scss");
 var AnimationCurveEditorComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AnimationCurveEditorComponent, _super);
@@ -58597,23 +58598,36 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         // Height scale *Review this functionaliy
         _this._heightScale = 100;
-        // Canvas Length *Review this functionality
         _this._canvasLength = 20;
         _this._newAnimations = [];
         _this._svgKeyframes = [];
         _this._frames = [];
         _this._isPlaying = false;
+        _this._entityName = _this.props.entity.id;
         // Review is we really need this refs
         _this._graphCanvas = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         _this._selectedCurve = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         _this._svgCanvas = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        console.log(_this.props.entity instanceof babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["TargetedAnimation"]);
+        var initialSelection;
+        var initialPathData;
+        if (_this.props.entity instanceof babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["TargetedAnimation"]) {
+            _this._isTargetedAnimation = true;
+            initialSelection = _this.props.entity.animation;
+            initialPathData = _this.getPathData(_this.props.entity.animation);
+        }
+        else {
+            _this._isTargetedAnimation = false;
+            initialSelection = _this.props.entity.animations !== null ? _this.props.entity.animations[0] : null;
+            initialPathData = _this.props.entity.animations !== null ? _this.getPathData(_this.props.entity.animations[0]) : "";
+        }
         // will update this until we have a top scroll/zoom feature
         var valueInd = [2, 1.8, 1.6, 1.4, 1.2, 1, 0.8, 0.6, 0.4, 0.2, 0];
         _this.state = {
             animations: _this._newAnimations,
-            selected: _this.props.animations[0],
+            selected: initialSelection,
             isOpen: true,
-            currentPathData: _this.getPathData(_this.props.animations[0]),
+            currentPathData: initialPathData,
             svgKeyframes: _this._svgKeyframes,
             animationTargetProperty: 'position.x',
             animationName: "",
@@ -58665,8 +58679,12 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
     AnimationCurveEditorComponent.prototype.setAxesLength = function () {
         var _this = this;
         var length = Math.round(this._canvasLength * this.state.scale);
-        if (length < (this.state.selected.getHighestFrame() * 2) / 10) {
-            length = (this.state.selected.getHighestFrame() * 2) / 10;
+        var highestFrame = 100;
+        if (this.state.selected !== null) {
+            highestFrame = this.state.selected.getHighestFrame();
+        }
+        if (length < (highestFrame * 2) / 10) {
+            length = (highestFrame * 2) / 10;
         }
         var valueLines = Math.round((this.state.scale * this._heightScale) / 10);
         var newFrameLength = (new Array(length)).fill(0).map(function (s, i) { return { value: i * 10, label: i * 10 }; });
@@ -58708,6 +58726,108 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
     AnimationCurveEditorComponent.prototype.handlePropertyChange = function (event) {
         event.preventDefault();
         this.setState({ animationTargetProperty: event.target.value });
+    };
+    AnimationCurveEditorComponent.prototype.setListItem = function (animation, i) {
+        var _this = this;
+        var element;
+        switch (animation.dataType) {
+            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Animation"].ANIMATIONTYPE_FLOAT:
+                element = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { className: this.state.selected && this.state.selected.name === animation.name ? 'active' : '', key: i, onClick: function () { return _this.selectAnimation(animation); } },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null,
+                        animation.name,
+                        "\u00A0",
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("span", null, animation.targetProperty)));
+                break;
+            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Animation"].ANIMATIONTYPE_VECTOR2:
+                element = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { className: "property", key: i },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null, animation.targetProperty),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("ul", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_x" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "X")),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_y" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "Y"))));
+                break;
+            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Animation"].ANIMATIONTYPE_VECTOR3:
+                element = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { className: "property", key: i },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null, animation.targetProperty),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("ul", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_x" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "X")),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_y" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "Y")),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_z" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "Z"))));
+                break;
+            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Animation"].ANIMATIONTYPE_QUATERNION:
+                element = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { className: "property", key: i },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null, animation.targetProperty),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("ul", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_x" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "X")),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_y" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "Y")),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_z" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "Z")),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_w" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "W"))));
+                break;
+            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Animation"].ANIMATIONTYPE_COLOR3:
+                element = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { className: "property", key: i },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null, animation.targetProperty),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("ul", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_r" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "R")),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_g" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "G")),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_b" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "B"))));
+                break;
+            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Animation"].ANIMATIONTYPE_COLOR4:
+                element = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { className: "property", key: i },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null, animation.targetProperty),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("ul", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_r" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "R")),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_g" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "G")),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_b" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "B")),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_a" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "A"))));
+                break;
+            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Animation"].ANIMATIONTYPE_SIZE:
+                element = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { className: "property", key: i },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null, animation.targetProperty),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("ul", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_width" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "Width")),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_height" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "Height"))));
+                break;
+            default:
+                console.log("not recognized");
+                element = null;
+                break;
+        }
+        return element;
     };
     AnimationCurveEditorComponent.prototype.getAnimationTypeofChange = function (selected) {
         var dataType = 0;
@@ -58945,79 +59065,96 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         var _this = this;
         event.preventDefault();
         this.setState({ currentValue: parseFloat(event.target.value) }, function () {
-            var animation = _this.state.selected;
-            var keys = animation.getKeys();
-            var isKeyframe = keys.find(function (k) { return k.frame === _this.state.currentFrame; });
-            if (isKeyframe) {
-                var updatedKeys = keys.map(function (k) {
-                    if (k.frame === _this.state.currentFrame) {
-                        k.value = _this.state.currentValue;
-                    }
-                    return k;
-                });
-                _this.state.selected.setKeys(updatedKeys);
-                _this.selectAnimation(animation);
+            if (_this.state.selected !== null) {
+                var animation = _this.state.selected;
+                var keys = animation.getKeys();
+                var isKeyframe = keys.find(function (k) { return k.frame === _this.state.currentFrame; });
+                if (isKeyframe) {
+                    var updatedKeys = keys.map(function (k) {
+                        if (k.frame === _this.state.currentFrame) {
+                            k.value = _this.state.currentValue;
+                        }
+                        return k;
+                    });
+                    _this.state.selected.setKeys(updatedKeys);
+                    _this.selectAnimation(animation);
+                }
             }
         });
     };
     AnimationCurveEditorComponent.prototype.setFlatTangent = function () {
         var _this = this;
-        this.setState({ isFlatTangentMode: !this.state.isFlatTangentMode }, function () { return _this.selectAnimation(_this.state.selected); });
+        if (this.state.selected !== null) {
+            var animation_1 = this.state.selected;
+            this.setState({ isFlatTangentMode: !this.state.isFlatTangentMode }, function () { return _this.selectAnimation(animation_1); });
+        }
     };
     // Use this for Bezier curve mode
     AnimationCurveEditorComponent.prototype.setTangentMode = function () {
         var _this = this;
-        this.setState({ isTangentMode: !this.state.isTangentMode }, function () { return _this.selectAnimation(_this.state.selected); });
+        if (this.state.selected !== null) {
+            var animation_2 = this.state.selected;
+            this.setState({ isTangentMode: !this.state.isTangentMode }, function () { return _this.selectAnimation(animation_2); });
+        }
     };
     AnimationCurveEditorComponent.prototype.setBrokenMode = function () {
         var _this = this;
-        this.setState({ isBrokenMode: !this.state.isBrokenMode }, function () { return _this.selectAnimation(_this.state.selected); });
+        if (this.state.selected !== null) {
+            var animation_3 = this.state.selected;
+            this.setState({ isBrokenMode: !this.state.isBrokenMode }, function () { return _this.selectAnimation(animation_3); });
+        }
     };
     AnimationCurveEditorComponent.prototype.addKeyframeClick = function () {
-        var currentAnimation = this.state.selected;
-        if (currentAnimation.dataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Animation"].ANIMATIONTYPE_FLOAT) {
-            var keys = currentAnimation.getKeys();
-            var x = this.state.currentFrame;
-            var y = this.state.currentValue;
-            keys.push({ frame: x, value: y, inTangent: 0, outTangent: 0 });
-            keys.sort(function (a, b) { return a.frame - b.frame; });
-            currentAnimation.setKeys(keys);
-            this.selectAnimation(currentAnimation);
+        if (this.state.selected !== null) {
+            var currentAnimation = this.state.selected;
+            if (currentAnimation.dataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Animation"].ANIMATIONTYPE_FLOAT) {
+                var keys = currentAnimation.getKeys();
+                var x = this.state.currentFrame;
+                var y = this.state.currentValue;
+                keys.push({ frame: x, value: y, inTangent: 0, outTangent: 0 });
+                keys.sort(function (a, b) { return a.frame - b.frame; });
+                currentAnimation.setKeys(keys);
+                this.selectAnimation(currentAnimation);
+            }
         }
     };
     AnimationCurveEditorComponent.prototype.removeKeyframeClick = function () {
-        var currentAnimation = this.state.selected;
-        if (currentAnimation.dataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Animation"].ANIMATIONTYPE_FLOAT) {
-            var keys = currentAnimation.getKeys();
-            var x_1 = this.state.currentFrame;
-            var filteredKeys = keys.filter(function (kf) { return kf.frame !== x_1; });
-            currentAnimation.setKeys(filteredKeys);
-            this.selectAnimation(currentAnimation);
+        if (this.state.selected !== null) {
+            var currentAnimation = this.state.selected;
+            if (currentAnimation.dataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Animation"].ANIMATIONTYPE_FLOAT) {
+                var keys = currentAnimation.getKeys();
+                var x_1 = this.state.currentFrame;
+                var filteredKeys = keys.filter(function (kf) { return kf.frame !== x_1; });
+                currentAnimation.setKeys(filteredKeys);
+                this.selectAnimation(currentAnimation);
+            }
         }
     };
     AnimationCurveEditorComponent.prototype.addKeyFrame = function (event) {
         var _a;
         event.preventDefault();
-        var svg = event.target;
-        var pt = svg.createSVGPoint();
-        pt.x = event.clientX;
-        pt.y = event.clientY;
-        var inverse = (_a = svg.getScreenCTM()) === null || _a === void 0 ? void 0 : _a.inverse();
-        var cursorpt = pt.matrixTransform(inverse);
-        var currentAnimation = this.state.selected;
-        var keys = currentAnimation.getKeys();
-        var height = 100;
-        var middle = (height / 2);
-        var keyValue;
-        if (cursorpt.y < middle) {
-            keyValue = 1 + ((100 / cursorpt.y) * .1);
+        if (this.state.selected !== null) {
+            var svg = event.target;
+            var pt = svg.createSVGPoint();
+            pt.x = event.clientX;
+            pt.y = event.clientY;
+            var inverse = (_a = svg.getScreenCTM()) === null || _a === void 0 ? void 0 : _a.inverse();
+            var cursorpt = pt.matrixTransform(inverse);
+            var currentAnimation = this.state.selected;
+            var keys = currentAnimation.getKeys();
+            var height = 100;
+            var middle = (height / 2);
+            var keyValue;
+            if (cursorpt.y < middle) {
+                keyValue = 1 + ((100 / cursorpt.y) * .1);
+            }
+            if (cursorpt.y > middle) {
+                keyValue = 1 - ((100 / cursorpt.y) * .1);
+            }
+            keys.push({ frame: cursorpt.x, value: keyValue });
+            currentAnimation.setKeys(keys);
+            this.selectAnimation(currentAnimation);
         }
-        if (cursorpt.y > middle) {
-            keyValue = 1 - ((100 / cursorpt.y) * .1);
-        }
-        keys.push({ frame: cursorpt.x, value: keyValue });
-        currentAnimation.setKeys(keys);
-        this.selectAnimation(currentAnimation);
     };
     AnimationCurveEditorComponent.prototype.updateKeyframe = function (keyframe, index) {
         var _a;
@@ -59027,7 +59164,6 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
             if (i === index) {
                 k.keyframePoint.x = keyframe.x;
                 k.keyframePoint.y = keyframe.y;
-                //select here?
             }
             var height = 100;
             var middle = (height / 2);
@@ -59345,9 +59481,13 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         this.setState({ selected: animation, currentPathData: pathData, svgKeyframes: this._svgKeyframes, lastFrame: lastFrame });
     };
     AnimationCurveEditorComponent.prototype.isAnimationPlaying = function () {
-        this._isPlaying = this.props.scene.getAllAnimatablesByTarget(this.props.entity).length > 0;
+        var target = this.props.entity;
+        if (this.props.entity instanceof babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["TargetedAnimation"]) {
+            target = this.props.entity.target;
+        }
+        this._isPlaying = this.props.scene.getAllAnimatablesByTarget(target).length > 0;
         if (this._isPlaying) {
-            this.props.playOrPause();
+            this.props.playOrPause && this.props.playOrPause();
         }
         else {
             this._isPlaying = false;
@@ -59383,7 +59523,7 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "content" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "row" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "animation-list" },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: { display: this._isTargetedAnimation ? "none" : "block" } },
                             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label-input" },
                                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", null, "Animation Name"),
                                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", value: this.state.animationName, onChange: function (e) { return _this.handleNameChange(e); } })),
@@ -59402,108 +59542,11 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
                                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", value: this.state.animationTargetProperty, onChange: function (e) { return _this.handlePropertyChange(e); } })),
                             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Add Animation", onClick: function () { return _this.addAnimation(); } })),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "object-tree" },
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("h2", null, this.props.entityName),
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("ul", null, this.props.animations && this.props.animations.map(function (animation, i) {
-                                var element;
-                                switch (animation.dataType) {
-                                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Animation"].ANIMATIONTYPE_FLOAT:
-                                        element = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { className: _this.state.selected.name === animation.name ? 'active' : '', key: i, onClick: function () { return _this.selectAnimation(animation); } },
-                                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null,
-                                                animation.name,
-                                                "\u00A0",
-                                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("span", null, animation.targetProperty)));
-                                        break;
-                                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Animation"].ANIMATIONTYPE_VECTOR2:
-                                        element = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { className: "property", key: i },
-                                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null, animation.targetProperty),
-                                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("ul", null,
-                                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_x" },
-                                                    "Property ",
-                                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "X")),
-                                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_y" },
-                                                    "Property ",
-                                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "Y"))));
-                                        break;
-                                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Animation"].ANIMATIONTYPE_VECTOR3:
-                                        element = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { className: "property", key: i },
-                                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null, animation.targetProperty),
-                                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("ul", null,
-                                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_x" },
-                                                    "Property ",
-                                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "X")),
-                                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_y" },
-                                                    "Property ",
-                                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "Y")),
-                                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_z" },
-                                                    "Property ",
-                                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "Z"))));
-                                        break;
-                                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Animation"].ANIMATIONTYPE_QUATERNION:
-                                        element = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { className: "property", key: i },
-                                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null, animation.targetProperty),
-                                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("ul", null,
-                                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_x" },
-                                                    "Property ",
-                                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "X")),
-                                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_y" },
-                                                    "Property ",
-                                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "Y")),
-                                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_z" },
-                                                    "Property ",
-                                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "Z")),
-                                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_w" },
-                                                    "Property ",
-                                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "W"))));
-                                        break;
-                                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Animation"].ANIMATIONTYPE_COLOR3:
-                                        element = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { className: "property", key: i },
-                                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null, animation.targetProperty),
-                                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("ul", null,
-                                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_r" },
-                                                    "Property ",
-                                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "R")),
-                                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_g" },
-                                                    "Property ",
-                                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "G")),
-                                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_b" },
-                                                    "Property ",
-                                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "B"))));
-                                        break;
-                                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Animation"].ANIMATIONTYPE_COLOR4:
-                                        element = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { className: "property", key: i },
-                                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null, animation.targetProperty),
-                                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("ul", null,
-                                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_r" },
-                                                    "Property ",
-                                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "R")),
-                                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_g" },
-                                                    "Property ",
-                                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "G")),
-                                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_b" },
-                                                    "Property ",
-                                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "B")),
-                                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_a" },
-                                                    "Property ",
-                                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "A"))));
-                                        break;
-                                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["Animation"].ANIMATIONTYPE_SIZE:
-                                        element = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { className: "property", key: i },
-                                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null, animation.targetProperty),
-                                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("ul", null,
-                                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_width" },
-                                                    "Property ",
-                                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "Width")),
-                                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_height" },
-                                                    "Property ",
-                                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "Height"))));
-                                        break;
-                                    default:
-                                        console.log("not recognized");
-                                        element = null;
-                                        break;
-                                }
-                                return element;
-                            })))),
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("h2", null, this._entityName),
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("ul", null, this.props.entity instanceof babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_4__["TargetedAnimation"] ? this.setListItem(this.props.entity.animation, 0) :
+                                this.props.entity.animations && this.props.entity.animations.map(function (animation, i) {
+                                    return _this.setListItem(animation, i);
+                                })))),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { ref: this._graphCanvas, className: "graph-chart", onWheel: function (e) { return _this.zoom(e); } },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_playhead__WEBPACK_IMPORTED_MODULE_7__["Playhead"], { frame: this.state.currentFrame, offset: this.state.playheadOffset }),
                         this.state.svgKeyframes && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_svgDraggableArea__WEBPACK_IMPORTED_MODULE_5__["SvgDraggableArea"], { ref: this._svgCanvas, selectKeyframe: function (id) { return _this.selectKeyframe(id); }, viewBoxScale: this.state.frameAxisLength.length, scale: this.state.scale, keyframeSvgPoints: this.state.svgKeyframes, selectedControlPoint: function (type, id) { return _this.selectedControlPoint(type, id); }, updatePosition: function (updatedSvgKeyFrame, index) { return _this.renderPoints(updatedSvgKeyFrame, index); } },
@@ -59523,7 +59566,7 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
                                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("circle", { cx: "0", cy: "0", r: "2", stroke: "black", strokeWidth: "1", fill: "white" }));
                             })))),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "row" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_timeline__WEBPACK_IMPORTED_MODULE_6__["Timeline"], { currentFrame: this.state.currentFrame, onCurrentFrameChange: function (frame) { return _this.changeCurrentFrame(frame); }, keyframes: this.state.selected.getKeys(), selected: this.state.selected.getKeys()[0] })))));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_timeline__WEBPACK_IMPORTED_MODULE_6__["Timeline"], { currentFrame: this.state.currentFrame, onCurrentFrameChange: function (frame) { return _this.changeCurrentFrame(frame); }, keyframes: this.state.selected && this.state.selected.getKeys(), selected: this.state.selected && this.state.selected.getKeys()[0] })))));
     };
     return AnimationCurveEditorComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -59830,7 +59873,7 @@ var AnimationGridComponent = /** @class */ (function (_super) {
                             return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { key: anim.targetProperty + i, label: "#" + i + " >", value: anim.targetProperty }));
                         }),
                         this._isCurveEditorOpen && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_popupComponent__WEBPACK_IMPORTED_MODULE_10__["PopupComponent"], { id: "curve-editor", title: "Curve Animation Editor", size: { width: 950, height: 540 }, onOpen: function (window) { window.console.log("Window opened!!"); }, onClose: function (window) { return _this.onCloseAnimationCurveEditor(window); } },
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_animationCurveEditorComponent__WEBPACK_IMPORTED_MODULE_9__["AnimationCurveEditorComponent"], { title: "Animations Curve Editor", scene: this.props.scene, entity: animatableAsAny, entityName: animatableAsAny.id, close: function (event) { return _this.onCloseAnimationCurveEditor(event.view); }, playOrPause: function () { return _this.playOrPause(); }, animations: animations }))),
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_animationCurveEditorComponent__WEBPACK_IMPORTED_MODULE_9__["AnimationCurveEditorComponent"], { title: "Animations Curve Editor", scene: this.props.scene, entity: animatableAsAny, close: function (event) { return _this.onCloseAnimationCurveEditor(event.view); }, playOrPause: function () { return _this.playOrPause(); } }))),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ANIMATION GENERAL CONTROL" },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { lockObject: this.props.lockObject, isInteger: true, label: "From", target: this._animationControl, propertyName: "from", onChange: function () { return _this.onChangeFromOrTo(); } }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { lockObject: this.props.lockObject, isInteger: true, label: "To", target: this._animationControl, propertyName: "to", onChange: function () { return _this.onChangeFromOrTo(); } }),
@@ -60312,6 +60355,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
+/* harmony import */ var _animations_popupComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../animations/popupComponent */ "./components/actionTabs/tabs/propertyGrids/animations/popupComponent.tsx");
+/* harmony import */ var _animations_animationCurveEditorComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../animations/animationCurveEditorComponent */ "./components/actionTabs/tabs/propertyGrids/animations/animationCurveEditorComponent.tsx");
+
+
 
 
 
@@ -60321,10 +60368,37 @@ __webpack_require__.r(__webpack_exports__);
 var TargetedAnimationGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TargetedAnimationGridComponent, _super);
     function TargetedAnimationGridComponent(props) {
-        return _super.call(this, props) || this;
+        var _this = _super.call(this, props) || this;
+        _this._animationGroup = _this.props.scene.animationGroups.find(function (ag) {
+            var ta = ag.targetedAnimations.find(function (ta) { return ta === _this.props.targetedAnimation; });
+            return ta !== undefined;
+        });
+        return _this;
     }
     TargetedAnimationGridComponent.prototype.onOpenAnimationCurveEditor = function () {
-        // Need to connect with Animation curve editor
+        this._isCurveEditorOpen = true;
+    };
+    TargetedAnimationGridComponent.prototype.onCloseAnimationCurveEditor = function (window) {
+        this._isCurveEditorOpen = false;
+        if (window === null) {
+            console.log("Window already closed");
+        }
+        else {
+            window.close();
+        }
+    };
+    TargetedAnimationGridComponent.prototype.playOrPause = function () {
+        if (this._animationGroup) {
+            this._isPlaying = this.props.scene.getAllAnimatablesByTarget(this.props.targetedAnimation.target).length > 0;
+            var animationGroup = this.props.scene.getAnimationGroupByName(this._animationGroup.name);
+            if (this._isPlaying) {
+                animationGroup === null || animationGroup === void 0 ? void 0 : animationGroup.stop();
+            }
+            else {
+                animationGroup === null || animationGroup === void 0 ? void 0 : animationGroup.start();
+            }
+            this.forceUpdate();
+        }
     };
     TargetedAnimationGridComponent.prototype.render = function () {
         var _this = this;
@@ -60335,7 +60409,9 @@ var TargetedAnimationGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Name", target: targetedAnimation.animation, propertyName: "name", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 targetedAnimation.target.name &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Target", value: targetedAnimation.target.name, onLink: function () { return _this.props.globalState.onSelectionChangedObservable.notifyObservers(targetedAnimation); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Edit animation", onClick: function () { return _this.onOpenAnimationCurveEditor(); } }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Edit animation", onClick: function () { return _this.onOpenAnimationCurveEditor(); } }),
+                this._isCurveEditorOpen && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_popupComponent__WEBPACK_IMPORTED_MODULE_6__["PopupComponent"], { id: "curve-editor", title: "Curve Animation Editor", size: { width: 950, height: 540 }, onOpen: function (window) { window.console.log("Window opened!!"); }, onClose: function (window) { return _this.onCloseAnimationCurveEditor(window); } },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_animationCurveEditorComponent__WEBPACK_IMPORTED_MODULE_7__["AnimationCurveEditorComponent"], { title: "Animations Curve Editor", scene: this.props.scene, entity: targetedAnimation, playOrPause: function () { return _this.playOrPause(); }, close: function (event) { return _this.onCloseAnimationCurveEditor(event.view); } })))));
     };
     return TargetedAnimationGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -60368,7 +60444,9 @@ var Timeline = /** @class */ (function (_super) {
     function Timeline(props) {
         var _this = _super.call(this, props) || this;
         _this._frames = Array(300).fill({});
-        _this.state = { selected: _this.props.selected };
+        if (_this.props.selected !== null) {
+            _this.state = { selected: _this.props.selected };
+        }
         _this._scrollable = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
     }
@@ -60391,21 +60469,25 @@ var Timeline = /** @class */ (function (_super) {
     Timeline.prototype.nextKeyframe = function (event) {
         var _this = this;
         event.preventDefault();
-        var first = this.props.keyframes.find(function (kf) { return kf.frame > _this.props.currentFrame; });
-        if (first) {
-            this.props.onCurrentFrameChange(first.frame);
-            this.setState({ selected: first });
-            this._scrollable.current.scrollLeft = first.frame * 5;
+        if (this.props.keyframes !== null) {
+            var first = this.props.keyframes.find(function (kf) { return kf.frame > _this.props.currentFrame; });
+            if (first) {
+                this.props.onCurrentFrameChange(first.frame);
+                this.setState({ selected: first });
+                this._scrollable.current.scrollLeft = first.frame * 5;
+            }
         }
     };
     Timeline.prototype.previousKeyframe = function (event) {
         var _this = this;
         event.preventDefault();
-        var first = this.props.keyframes.find(function (kf) { return kf.frame < _this.props.currentFrame; });
-        if (first) {
-            this.props.onCurrentFrameChange(first.frame);
-            this.setState({ selected: first });
-            this._scrollable.current.scrollLeft = -(first.frame * 5);
+        if (this.props.keyframes !== null) {
+            var first = this.props.keyframes.find(function (kf) { return kf.frame < _this.props.currentFrame; });
+            if (first) {
+                this.props.onCurrentFrameChange(first.frame);
+                this.setState({ selected: first });
+                this._scrollable.current.scrollLeft = -(first.frame * 5);
+            }
         }
     };
     Timeline.prototype.render = function () {
@@ -60415,7 +60497,7 @@ var Timeline = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { ref: this._scrollable, className: "display-line" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { viewBox: "0 0 2010 100", style: { width: 2000 } },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: this.props.currentFrame * 10, y1: "10", x2: this.props.currentFrame * 10, y2: "20", style: { stroke: '#12506b', strokeWidth: 6 } }),
-                        this.props.keyframes.map(function (kf, i) {
+                        this.props.keyframes && this.props.keyframes.map(function (kf, i) {
                             return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { key: "kf_" + i },
                                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: kf.frame * 10, y1: "10", x2: kf.frame * 10, y2: "20", style: { stroke: 'red', strokeWidth: 6 } }));
                         }),
