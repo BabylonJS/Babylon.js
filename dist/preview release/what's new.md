@@ -212,6 +212,7 @@
 - Fix OBJ serializer default scene scene handedness causing [OBJ Mirror export](https://forum.babylonjs.com/t/obj-export-mirrored/10835/10)
 - Fix bug when using shadows + instances + transparent meshes + `transparencyShadow = false` ([Popov72](https://github.com/Popov72))
 - Incorrect initialization when reattaching XR pointer selection  ([#8227](https://github.com/BabylonJS/Babylon.js/issues/8227)) ([RaananW](https://github.com/RaananW))
+- Fixed `DracoCompression` to not load empty data into attributes ([bghgary](https://github.com/bghgary))
 
 ## Breaking changes
 
