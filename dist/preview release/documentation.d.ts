@@ -32647,18 +32647,18 @@ declare module BABYLON {
          */
         static AppendSerializedAnimations(source: IAnimatable, destination: any): void;
         /**
-         * Creates a new animation from a snippet saved in a remote file
+         * Creates a new animation or an array of animations from a snippet saved in a remote file
          * @param name defines the name of the animation to create (can be null or empty to use the one from the json data)
          * @param url defines the url to load from
-         * @returns a promise that will resolve to the new animation
+         * @returns a promise that will resolve to the new animation or an array of animations
          */
-        static ParseFromFileAsync(name: Nullable<string>, url: string): Promise<Animation>;
+        static ParseFromFileAsync(name: Nullable<string>, url: string): Promise<Animation | Array<Animation>>;
         /**
-         * Creates an animation from a snippet saved by the Inspector
+         * Creates an animation or an array of animations from a snippet saved by the Inspector
          * @param snippetId defines the snippet to load
-         * @returns a promise that will resolve to the new animation
+         * @returns a promise that will resolve to the new animation or a new array of animations
          */
-        static CreateFromSnippetAsync(snippetId: string): Promise<Animation>;
+        static CreateFromSnippetAsync(snippetId: string): Promise<Animation | Array<Animation>>;
     }
 }
 declare module BABYLON {
