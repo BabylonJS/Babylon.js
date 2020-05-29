@@ -134,9 +134,8 @@ export class PBRSubSurfaceConfiguration {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public indexOfRefraction = 1.5;
 
-    
     private _volumeIndexOfRefraction = -1.0;
-    
+
     /**
      * Index of refraction of the material's volume.
      * https://en.wikipedia.org/wiki/List_of_refractive_indices
