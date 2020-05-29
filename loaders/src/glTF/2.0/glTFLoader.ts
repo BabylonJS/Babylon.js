@@ -2203,7 +2203,8 @@ export class GLTFLoader implements IGLTFLoader {
         return (Tools.IsBase64(uri) || uri.indexOf("..") === -1);
     }
 
-    private static _GetDrawMode(context: string, mode: number | undefined): number {
+    /** @hidden */
+    public static _GetDrawMode(context: string, mode: number | undefined): number {
         if (mode == undefined) {
             mode = MeshPrimitiveMode.TRIANGLES;
         }
