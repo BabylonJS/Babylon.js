@@ -15,6 +15,10 @@ void albedoOpacityBlock(
     const in vec4 opacityMap,
     const in vec2 vOpacityInfos,
 #endif
+#ifdef DETAIL
+    const in vec4 detailColor,
+    const in vec4 vDetailInfos,
+#endif
     out albedoOpacityOutParams outParams
 )
 {
@@ -38,6 +42,10 @@ void albedoOpacityBlock(
 
     #ifdef VERTEXCOLOR
         surfaceAlbedo *= vColor.rgb;
+    #endif
+
+    #ifdef DETAIL
+        surfaceAlbedo.rgb = surfaceAlbedo.rgb * (saturate(vec3(detailColor.r) + vDetailInfos.y));
     #endif
 
     #define CUSTOM_FRAGMENT_UPDATE_ALBEDO
