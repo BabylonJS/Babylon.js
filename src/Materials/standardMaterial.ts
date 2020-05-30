@@ -192,7 +192,7 @@ export class StandardMaterial extends PushMaterial {
     /**
      * The detail texture of the material.
      */
-    @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public detailTexture: Nullable<BaseTexture>;
 
     /**
@@ -864,16 +864,6 @@ export class StandardMaterial extends PushMaterial {
                     defines.DIFFUSE = false;
                 }
 
-                if (this._detailTexture && StandardMaterial.DetailTextureEnabled) {
-                    if (!this._detailTexture.isReadyOrNotBlocking()) {
-                        return false;
-                    } else {
-                        MaterialHelper.PrepareDefinesForMergedUV(this._detailTexture, defines, "DETAIL");
-                    }
-                } else {
-                    defines.DETAIL = false;
-                }
-
                 if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
                     if (!this._ambientTexture.isReadyOrNotBlocking()) {
                         return false;
@@ -993,6 +983,16 @@ export class StandardMaterial extends PushMaterial {
                     defines.OBJECTSPACE_NORMALMAP = this._useObjectSpaceNormalMap;
                 } else {
                     defines.BUMP = false;
+                }
+
+                if (scene.getEngine().getCaps().standardDerivatives && this._detailTexture && StandardMaterial.DetailTextureEnabled) {
+                    if (!this._detailTexture.isReadyOrNotBlocking()) {
+                        return false;
+                    } else {
+                        MaterialHelper.PrepareDefinesForMergedUV(this._detailTexture, defines, "DETAIL");
+                    }
+                } else {
+                    defines.DETAIL = false;
                 }
 
                 if (this._refractionTexture && StandardMaterial.RefractionTextureEnabled) {
