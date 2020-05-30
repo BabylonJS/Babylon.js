@@ -39,6 +39,10 @@ attribute vec4 color;
 varying vec2 vDiffuseUV;
 #endif
 
+#if defined(DETAIL) && DETAILDIRECTUV == 0
+varying vec2 vDetailUV;
+#endif
+
 #if defined(AMBIENT) && AMBIENTDIRECTUV == 0
 varying vec2 vAmbientUV;
 #endif
@@ -181,6 +185,17 @@ void main(void) {
 	else
 	{
 		vDiffuseUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));
+	}
+#endif
+
+#if defined(DETAIL) && DETAILDIRECTUV == 0
+	if (vDetailInfos.x == 0.)
+	{
+		vDetailUV = vec2(detailMatrix * vec4(uvUpdated, 1.0, 0.0));
+	}
+	else
+	{
+		vDetailUV = vec2(detailMatrix * vec4(uv2, 1.0, 0.0));
 	}
 #endif
 
