@@ -218,6 +218,10 @@ void main(void) {
 	baseColor.rgb *= vColor.rgb;
 #endif
 
+#ifdef DETAIL
+    baseColor.rgb = baseColor.rgb * (saturate(vec3(detailColor.r) + vDetailInfos.y));
+#endif
+
 #define CUSTOM_FRAGMENT_UPDATE_DIFFUSE
 
 	// Ambient color
