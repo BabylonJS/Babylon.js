@@ -120,6 +120,9 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public ALPHATEST_AFTERALLALPHACOMPUTATIONS = false;
     public ALPHABLEND = true;
 
+    public HIGH_DEFINITION_PIPELINE = false;
+    public SCENE_MRT_COUNT = 0;
+
     public RGBDLIGHTMAP = false;
     public RGBDREFLECTION = false;
     public RGBDREFRACTION = false;
@@ -811,6 +814,7 @@ export class StandardMaterial extends PushMaterial {
 
         // Multiview
         MaterialHelper.PrepareDefinesForMultiview(scene, defines);
+        MaterialHelper.PrepareDefinesForDeferred(scene, defines);
 
         // Textures
         if (defines._areTexturesDirty) {

@@ -44,6 +44,8 @@ varying vec4 vColor;
 #include<lightsFragmentFunctions>
 #include<shadowsFragmentFunctions>
 
+#include<mrtInput>[SCENE_MRT_COUNT]
+
 // Samplers
 #ifdef DIFFUSE
 	#if DIFFUSEDIRECTUV == 1
@@ -470,5 +472,9 @@ color.rgb = max(color.rgb, 0.);
 #endif
 
 #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
-	gl_FragColor = color;
+
+gl_FragColor = color;
+
+#include<mrtOutput>
+
 }

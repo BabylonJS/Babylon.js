@@ -14,10 +14,7 @@
 
 precision highp float;
 
-#ifdef HIGH_DEFINITION_PIPELINE
-#extension GL_EXT_draw_buffers : require
-#include<mrtFragmentDeclaration>[5]
-#endif
+#include<mrtInput>[SCENE_MRT_COUNT]
 
 // Forces linear space for image processing
 #ifndef FROMLINEARSPACE

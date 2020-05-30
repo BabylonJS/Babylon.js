@@ -155,6 +155,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public INSTANCES = false;
     
     public HIGH_DEFINITION_PIPELINE = false;
+    public SCENE_MRT_COUNT = 0;
 
     public NUM_BONE_INFLUENCERS = 0;
     public BonesPerMesh = 0;
@@ -1284,11 +1285,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         const scene = this.getScene();
         const engine = scene.getEngine();
 
-        if (scene.highDefinitionPipeline) {
-            defines.HIGH_DEFINITION_PIPELINE = true;
-        } else {
-            defines.HIGH_DEFINITION_PIPELINE = false;
-        }
 
         // Lights
         MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
@@ -1296,6 +1292,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         // Multiview
         MaterialHelper.PrepareDefinesForMultiview(scene, defines);
+        MaterialHelper.PrepareDefinesForDeferred(scene, defines);
 
         // Textures
         defines.METALLICWORKFLOW = this.isMetallicWorkflow();

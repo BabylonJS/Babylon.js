@@ -289,6 +289,20 @@ export class MaterialHelper {
     }
 
     /**
+     * Prepares the defines related to defferred shading
+     * @param scene The scene we are intending to draw
+     * @param defines The defines to update
+     */
+    public static PrepareDefinesForDeferred(scene: Scene, defines: any) {
+        if (scene.highDefinitionPipeline) {
+            defines.HIGH_DEFINITION_PIPELINE = true;
+            defines.SCENE_MRT_COUNT = scene.mrtCount;
+        } else {
+            defines.HIGH_DEFINITION_PIPELINE = false;
+        }
+    }
+
+    /**
      * Prepares the defines related to the light information passed in parameter
      * @param scene The scene we are intending to draw
      * @param mesh The mesh the effect is compiling for
