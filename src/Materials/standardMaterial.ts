@@ -41,6 +41,9 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public MAINUV2 = false;
     public DIFFUSE = false;
     public DIFFUSEDIRECTUV = 0;
+    public DETAIL = false;
+    public DETAILDIRECTUV = 0;
+    public DETAIL_NORMALBLENDMETHOD = 0;
     public AMBIENT = false;
     public AMBIENTDIRECTUV = 0;
     public OPACITY = false;
@@ -183,6 +186,36 @@ export class StandardMaterial extends PushMaterial {
      */
     @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
     public diffuseTexture: Nullable<BaseTexture>;
+
+    @serializeAsTexture("detailTexture")
+    private _detailTexture: Nullable<BaseTexture> = null;
+    /**
+     * The detail texture of the material.
+     */
+    @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
+    public detailTexture: Nullable<BaseTexture>;
+
+    /**
+     * Defines how strongly the detail diffuse channel is blended with the regular diffuse texture
+     * Bigger values mean stronger blending
+     */
+    @serialize()
+    public detailDiffuseBlendLevel = 0.5;
+
+    /**
+     * Defines how strong the bump effect from the detail map is
+     * Bigger values mean stronger effect
+     */
+    @serialize()
+    public detailBumpLevel = 1;
+
+    @serialize()
+    private _detailNormalBlendMethod = Material.MATERIAL_NORMALBLENDMETHOD_WHITEOUT;
+    /**
+     * The method used to blend the bump and detail normals together
+     */
+    @expandToProperty("_markAllSubMeshesAsMiscDirty")
+    public detailNormalBlendMethod: number;
 
     @serializeAsTexture("ambientTexture")
     private _ambientTexture: Nullable<BaseTexture> = null;
@@ -813,6 +846,8 @@ export class StandardMaterial extends PushMaterial {
         // Multiview
         MaterialHelper.PrepareDefinesForMultiview(scene, defines);
 
+        defines.DETAIL_NORMALBLENDMETHOD = this._detailNormalBlendMethod;
+
         // Textures
         if (defines._areTexturesDirty) {
             defines._needUVs = false;
@@ -827,6 +862,16 @@ export class StandardMaterial extends PushMaterial {
                     }
                 } else {
                     defines.DIFFUSE = false;
+                }
+
+                if (this._detailTexture && StandardMaterial.DetailTextureEnabled) {
+                    if (!this._detailTexture.isReadyOrNotBlocking()) {
+                        return false;
+                    } else {
+                        MaterialHelper.PrepareDefinesForMergedUV(this._detailTexture, defines, "DETAIL");
+                    }
+                } else {
+                    defines.DETAIL = false;
                 }
 
                 if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
@@ -967,6 +1012,7 @@ export class StandardMaterial extends PushMaterial {
                 defines.TWOSIDEDLIGHTING = !this._backFaceCulling && this._twoSidedLighting;
             } else {
                 defines.DIFFUSE = false;
+                defines.DETAIL = false;
                 defines.AMBIENT = false;
                 defines.OPACITY = false;
                 defines.REFLECTION = false;
@@ -1138,7 +1184,7 @@ export class StandardMaterial extends PushMaterial {
 
             var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor", "visibility",
                 "vFogInfos", "vFogColor", "pointSize",
-                "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
+                "vDiffuseInfos", "vDetailInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
                 "mBones",
                 "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "normalMatrix", "lightmapMatrix", "refractionMatrix",
                 "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
@@ -1146,7 +1192,7 @@ export class StandardMaterial extends PushMaterial {
                 "logarithmicDepthConstant", "vTangentSpaceParams", "alphaCutOff", "boneTextureWidth"
             ];
 
-            var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler",
+            var samplers = ["diffuseSampler", "detailSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler",
                 "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler",
                 "refractionCubeSampler", "refraction2DSampler", "boneSampler"];
 
@@ -1251,8 +1297,10 @@ export class StandardMaterial extends PushMaterial {
         ubo.addUniform("vLightmapInfos", 2);
         ubo.addUniform("vSpecularInfos", 2);
         ubo.addUniform("vBumpInfos", 3);
+        ubo.addUniform("vDetailInfos", 3);
 
         ubo.addUniform("diffuseMatrix", 16);
+        ubo.addUniform("detailMatrix", 16);
         ubo.addUniform("ambientMatrix", 16);
         ubo.addUniform("opacityMatrix", 16);
         ubo.addUniform("reflectionMatrix", 16);
@@ -1376,6 +1424,11 @@ export class StandardMaterial extends PushMaterial {
                         }
                     }
 
+                    if (this._detailTexture && StandardMaterial.DetailTextureEnabled) {
+                        ubo.updateFloat3("vDetailInfos", this._detailTexture.coordinatesIndex, 1 - this.detailDiffuseBlendLevel, this.detailBumpLevel);
+                        MaterialHelper.BindTextureMatrix(this._detailTexture, ubo, "detail");
+                    }
+
                     if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
                         ubo.updateFloat2("vAmbientInfos", this._ambientTexture.coordinatesIndex, this._ambientTexture.level);
                         MaterialHelper.BindTextureMatrix(this._ambientTexture, ubo, "ambient");
@@ -1458,6 +1511,10 @@ export class StandardMaterial extends PushMaterial {
             if (scene.texturesEnabled) {
                 if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
                     effect.setTexture("diffuseSampler", this._diffuseTexture);
+                }
+
+                if (this._detailTexture && StandardMaterial.DetailTextureEnabled) {
+                    effect.setTexture("detailSampler", this._detailTexture);
                 }
 
                 if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
@@ -1557,6 +1614,10 @@ export class StandardMaterial extends PushMaterial {
             results.push(this._diffuseTexture);
         }
 
+        if (this._detailTexture && this._detailTexture.animations && this._detailTexture.animations.length > 0) {
+            results.push(this._detailTexture);
+        }
+
         if (this._ambientTexture && this._ambientTexture.animations && this._ambientTexture.animations.length > 0) {
             results.push(this._ambientTexture);
         }
@@ -1601,6 +1662,10 @@ export class StandardMaterial extends PushMaterial {
 
         if (this._diffuseTexture) {
             activeTextures.push(this._diffuseTexture);
+        }
+
+        if (this._detailTexture) {
+            activeTextures.push(this._detailTexture);
         }
 
         if (this._ambientTexture) {
@@ -1652,6 +1717,10 @@ export class StandardMaterial extends PushMaterial {
             return true;
         }
 
+        if (this._detailTexture === texture) {
+            return true;
+        }
+
         if (this._ambientTexture === texture) {
             return true;
         }
@@ -1696,6 +1765,10 @@ export class StandardMaterial extends PushMaterial {
         if (forceDisposeTextures) {
             if (this._diffuseTexture) {
                 this._diffuseTexture.dispose();
+            }
+
+            if (this._detailTexture) {
+                this._detailTexture.dispose();
             }
 
             if (this._ambientTexture) {
@@ -1780,6 +1853,16 @@ export class StandardMaterial extends PushMaterial {
     }
     public static set DiffuseTextureEnabled(value: boolean) {
         MaterialFlags.DiffuseTextureEnabled = value;
+    }
+
+    /**
+     * Are detail textures enabled in the application.
+     */
+    public static get DetailTextureEnabled(): boolean {
+        return MaterialFlags.DetailTextureEnabled;
+    }
+    public static set DetailTextureEnabled(value: boolean) {
+        MaterialFlags.DetailTextureEnabled = value;
     }
 
     /**
