@@ -258,6 +258,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         this._highDefinitionPipeline = b;
     }
 
+    public mrtCount: number = 5;
     public highDefinitionMRT: MultiRenderTarget;
     public sceneCompositorPostProcess: SceneCompositorPostProcess;
     public subSurfaceScatteringPostProcess: SubSurfaceScatteringPostProcess;
@@ -1453,9 +1454,9 @@ export class Scene extends AbstractScene implements IAnimatable {
             Constants.TEXTURETYPE_UNSIGNED_INT,
         ];
 
-        this.highDefinitionMRT = new MultiRenderTarget("sceneHighDefinitionMRT", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, 5, this,
+        this.highDefinitionMRT = new MultiRenderTarget("sceneHighDefinitionMRT", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, this.mrtCount, this,
             { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: types });
-        this.highDefinitionMRT.samples = 4;
+        this.highDefinitionMRT.samples = 1;
         this.sceneCompositorPostProcess = new SceneCompositorPostProcess("sceneCompositor", 1, null, undefined, this._engine);
         this.sceneCompositorPostProcess.inputTexture = this.highDefinitionMRT.getInternalTexture()!;
         this.subSurfaceScatteringPostProcess = new SubSurfaceScatteringPostProcess("subSurfaceScattering", this, 1, null, undefined, this._engine);
