@@ -1133,7 +1133,7 @@ export class ThinEngine {
      * @param depth defines if the depth buffer must be cleared
      * @param stencil defines if the stencil buffer must be cleared
      */
-    public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+    public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false, texture?: InternalTexture): void {
         this.applyStates();
 
         var mode = 0;
@@ -1141,6 +1141,7 @@ export class ThinEngine {
             this._gl.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
             mode |= this._gl.COLOR_BUFFER_BIT;
         }
+
         if (depth) {
             if (this.useReverseDepthBuffer) {
                 this._depthCullingState.depthFunc = this._gl.GREATER;
@@ -1155,6 +1156,10 @@ export class ThinEngine {
             mode |= this._gl.STENCIL_BUFFER_BIT;
         }
         this._gl.clear(mode);
+
+        if (texture) {
+            this.clearColorAttachments(texture);
+        }
     }
 
     private _viewportCached = { x: 0, y: 0, z: 0, w: 0 };
