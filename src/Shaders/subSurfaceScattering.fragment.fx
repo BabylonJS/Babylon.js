@@ -19,6 +19,8 @@ const int _SssSampleBudget = 40;
 
 #define rcp(x) 1. / x
 #define Sq(x) x * x
+#define SSS_BILATERAL_FILTER true
+// #define SSS_CLAMP_ARTIFACT true
 // #define DEBUG_SSS_SAMPLES true
 
 vec3 EvalBurleyDiffusionProfile(float r, vec3 S)
@@ -60,11 +62,30 @@ vec2 SampleBurleyDiffusionProfile(float u, float rcpS)
     return vec2(r, rcpPdf);
 }
 
+// Computes f(r, s)/p(r, s), s.t. r = sqrt(xy^2 + z^2).
+// Rescaling of the PDF is handled by 'totalWeight'.
+vec3 ComputeBilateralWeight(float xy2, float z, float mmPerUnit, vec3 S, float rcpPdf)
+{
+    #ifndef SSS_BILATERAL_FILTER
+        z = 0.;
+    #endif
+
+    // Note: we perform all computation in millimeters.
+    // So we must convert from world units (using 'mmPerUnit') to millimeters.
+    // Only 'z' requires conversion to millimeters.
+    float r = sqrt(xy2 + (z * mmPerUnit) * (z * mmPerUnit));
+    float area = rcpPdf;
+
+    #if SSS_CLAMP_ARTIFACT
+        return clamp(EvalBurleyDiffusionProfile(r, S) * area, 0.0, 1.0);
+    #else
+        return EvalBurleyDiffusionProfile(r, S) * area;
+    #endif
+}
 
 // TODO : inout vec3 totalIrradiance, inout vec3 totalWeight
 void EvaluateSample(int i, int n, vec3 S, float d, vec3 centerPosVS, float mmPerUnit, float pixelsPerMm,
-                    float phase, vec3 tangentX, vec3 tangentY,
-                    inout vec3 totalIrradiance, inout vec3 totalWeight)
+                    float phase, inout vec3 totalIrradiance, inout vec3 totalWeight)
 {
     // The sample count is loop-invariant.
     float scale  = rcp(float(n));
@@ -103,17 +124,19 @@ void EvaluateSample(int i, int n, vec3 S, float d, vec3 centerPosVS, float mmPer
     xy2      = r * r;
 
     vec4 textureSample = texture2D(irradianceSampler, position);
+    float viewZ = texture2D(depthSampler, position).r;
     vec3 irradiance    = textureSample.rgb;
 
     // Check the results of the stencil test.
-    if (true) //TestLightingForSSS(irradiance))
+    // TODO
+    if (true)
     {
         // Apply bilateral weighting.
-        // float  viewZ  = textureSample.a;
-        // float  relZ   = viewZ - centerPosVS.z;
-        vec3 weight = vec3(1.); //ComputeBilateralWeight(xy2, relZ, mmPerUnit, S, rcpPdf);
+        float relZ = viewZ - centerPosVS.z;
+        vec3 weight = ComputeBilateralWeight(xy2, relZ, mmPerUnit, S, rcpPdf);
 
         // Note: if the texture sample if off-screen, (z = 0) -> (viewZ = far) -> (weight ≈ 0).
+        // TODO : HANDLE OFFSCREN
         totalIrradiance += weight * irradiance;
         totalWeight     += weight;
     }
@@ -207,12 +230,7 @@ void main(void)
         return;
     #endif
 
-	// TODO : TANGENT PLANE
-	vec3 normalVS = vec3(0., 0., 0.);
-    vec3 tangentX = vec3(0., 0., 0.);
-    vec3 tangentY = vec3(0., 0., 0.);
-
-    // TODO : RANDOM ROTATION
+    // we dont perform random rotation since we dont have temporal filter
     float phase = 0.;
 
     int n = min(sampleCount, sampleBudget);
@@ -226,10 +244,8 @@ void main(void)
     {
         // Integrate over the image or tangent plane in the view space.
         EvaluateSample(i, n, S, d, centerPosVS, mmPerUnit, pixelsPerMm,
-                       phase, tangentX, tangentY,
-                       totalIrradiance, totalWeight);
+                       phase, totalIrradiance, totalWeight);
     }
-
     // Total weight is 0 for color channels without scattering.
     totalWeight = max(totalWeight, 1e-12);
 

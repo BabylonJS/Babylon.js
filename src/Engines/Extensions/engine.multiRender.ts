@@ -4,6 +4,7 @@ import { Logger } from '../../Misc/logger';
 import { Nullable } from '../../types';
 import { Constants } from '../constants';
 import { ThinEngine } from '../thinEngine';
+import { IColor4Like } from '../../Maths/math.like';
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -35,8 +36,35 @@ declare module "../../Engines/thinEngine" {
          * @returns the effective sample count (could be 0 if multisample render targets are not supported)
          */
         updateMultipleRenderTargetTextureSampleCount(count: number, textures: Nullable<InternalTexture[]>, samples: number): number;
+
+        /**
+         * Clears attachments from index 1 to last index.
+         * @param color Clear color
+         * @param attachments attachments to clear
+         */
+        clearColorAttachments(texture: InternalTexture, color?: IColor4Like) : void;
     }
 }
+
+ThinEngine.prototype.clearColorAttachments = function(texture: InternalTexture, color?: IColor4Like): void {
+    // Default clear everything to transparent black
+    const gl = this._gl;
+
+    // Texture created with createMultipleRenderTarget should have its attachments
+    const attachments = texture._attachments!.slice(0);
+    attachments[0] = gl.NONE;
+
+    // We don't clear the first attachments which is cleared with the user clear color
+    gl.drawBuffers(attachments);
+    if (color) {
+        gl.clearColor(color.r, color.g, color.b, color.a);
+    } else {
+        gl.clearColor(0, 0, 0, 0);
+    }
+
+    gl.clear(gl.COLOR_BUFFER_BIT);
+}
+
 
 ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(count: number, textures: InternalTexture[], disableGenerateMipMaps: boolean = false, onBeforeUnbind?: () => void): void {
     this._currentRenderTarget = null;
