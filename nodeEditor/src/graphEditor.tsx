@@ -316,6 +316,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         let newNodes:GraphNode[] = [];
 
+        // Copy to prevent recursive side effects while creating nodes.
+        copiedNodes = copiedNodes.slice();
+
         // Create new nodes
         for (var node of copiedNodes) {
             let block = node.block;
@@ -329,7 +332,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             if (!clone) {
                 return;
             }
-            
+
             let newNode = this.createNodeFromObject(clone, false);
 
             let x = 0;
