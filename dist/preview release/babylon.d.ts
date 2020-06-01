@@ -10303,6 +10303,8 @@ declare module BABYLON {
         bv: number;
         /** The index of the face on the mesh that was picked, or the index of the Line if the picked Mesh is a LinesMesh */
         faceId: number;
+        /** The index of the face on the subMesh that was picked, or the index of the Line if the picked Mesh is a LinesMesh */
+        subMeshFaceId: number;
         /** Id of the the submesh that was picked */
         subMeshId: number;
         /** If a sprite was picked, this will be the sprite the pick collided with */
