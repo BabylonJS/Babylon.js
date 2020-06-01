@@ -263,7 +263,7 @@ export class ArcFollowCamera extends TargetCamera {
         public beta: number,
         /** The radius of the camera from its target */
         public radius: number,
-        /** Define the camera target (the messh it should follow) */
+        /** Define the camera target (the mesh it should follow) */
         public target: Nullable<AbstractMesh>,
         scene: Scene) {
         super(name, Vector3.Zero(), scene);
