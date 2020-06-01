@@ -1,6 +1,6 @@
 
 import * as React from "react";
-import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
+import { IconButtonLineComponent } from '../../../lines/iconButtonLineComponent';
 
 interface IGraphActionsBarProps {
    addKeyframe: () => void;
@@ -14,6 +14,9 @@ interface IGraphActionsBarProps {
    lerpMode: boolean;
    currentValue: number;
    currentFrame: number;
+   title: string;
+   close: (event: any) => void;
+   enabled: boolean;
 }
 
 export class GraphActionsBar extends React.Component<IGraphActionsBarProps>{ 
@@ -24,19 +27,25 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps>{
     render() { 
        return (
            <div className="actions-wrapper">
+               <div className="title-container">
+               <div className="icon babylon-logo"></div>
+               <div className="title">{this.props.title}</div>
+               </div>
+               <div className="buttons-container" style={{display: this.props.enabled ? 'flex' : 'none'}}>
                <div className="action-input">
-               <label>Frame</label>
                <input type="number" value={this.props.currentFrame} onChange={this.props.handleFrameChange} step="1"/>
                </div>
                <div className="action-input">
-               <label>Value</label>
                <input type="number" value={this.props.currentValue.toFixed(3)} onChange={this.props.handleValueChange} step="0.001"/>
                </div>
-              <ButtonLineComponent label={"Add Keyframe"} onClick={this.props.addKeyframe} />
-              <ButtonLineComponent label={"Remove Keyframe"} onClick={this.props.removeKeyframe} />
-              <ButtonLineComponent label={"Flat Tangents"} onClick={this.props.flatTangent} />
-              <ButtonLineComponent label={this.props.brokenMode ? "Broken Mode On" : "Broken Mode Off" } onClick={this.props.brokeTangents} />
-              <ButtonLineComponent label={this.props.lerpMode ? "Lerp On" : "lerp Off" } onClick={this.props.setLerpMode} />
+              <IconButtonLineComponent tooltip={"Add Keyframe"} icon="new-key" onClick={this.props.addKeyframe} />
+              <IconButtonLineComponent tooltip={"Remove Keyframe"} icon="frame" onClick={this.props.removeKeyframe} />
+              <IconButtonLineComponent tooltip={"Flat Tangents"} icon="flat-tangent" onClick={this.props.flatTangent} />
+              <IconButtonLineComponent tooltip={this.props.brokenMode ? "Broken Mode On" : "Broken Mode Off" } icon={this.props.brokenMode ? "break-tangent" : "unify-tangent" } onClick={this.props.brokeTangents} />
+              <IconButtonLineComponent tooltip={this.props.lerpMode ? "Lerp On" : "lerp Off" } icon="linear-tangent" onClick={this.props.setLerpMode} />
+              </div>
+              <div className="icon close" onClick={(event: React.MouseEvent<HTMLDivElement, MouseEvent>) => this.props.close(event)}>
+              </div>
            </div>
         )
     }

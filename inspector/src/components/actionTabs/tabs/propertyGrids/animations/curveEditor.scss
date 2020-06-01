@@ -3,6 +3,256 @@
 
     font-family: acumin-pro-condensed;
 
+    .icon {
+        width: 40px;
+        height: 40px;
+        &.babylon-logo {
+            background-image: url('./assets/babylonLogo.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+        }
+
+        &.close {
+            background-image: url('./assets/closeWindowIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+            cursor: pointer;
+        }
+
+        &.auto-tangent {
+            background-image: url('./assets/autoTangentIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+            cursor: pointer;
+        }
+
+        &.break-tangent {
+            background-image: url('./assets/breakTangentIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+            cursor: pointer;
+        }
+
+        &.flat-tangent {
+            background-image: url('./assets/flatTangentIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+            cursor: pointer;
+        }
+
+        &.frame {
+            background-image: url('./assets/frameIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+            cursor: pointer;
+        }
+
+        &.linear-tangent {
+            background-image: url('./assets/linearTangentIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+            cursor: pointer;
+        }
+
+        &.unify-tangent {
+            background-image: url('./assets/unifyTangentIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+            cursor: pointer;
+        }
+
+        &.add-animation {
+            background-image: url('./assets/addAnimationIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+            cursor: pointer;
+        }
+
+        &.animation-bullet {
+            background-image: url('./assets/animationBulletIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.animation-delete {
+            background-image: url('./assets/animationDeleteIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.animation-end {
+            background-image: url('./assets/animationEndIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.animation-lastkey {
+            background-image: url('./assets/animationLastKeyIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+
+            &:hover{
+                background-image: url('./assets/animationLastKeyHoverIcon.svg');
+            }
+        }
+
+        &.animation-nextkey {
+            background-image: url('./assets/animationNextKeyIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+
+            &:hover{
+                background-image: url('./assets/animationNextKeyHoverIcon.svg');
+            }
+        }
+
+        &.animation-options {
+            background-image: url('./assets/animationOptionsIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.animation-playfwd {
+            background-image: url('./assets/animationPlayFwdIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.animation-playrev {
+            background-image: url('./assets/animationPlayRevIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.animation-start {
+            background-image: url('./assets/animationStartIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.animation-stop {
+            background-image: url('./assets/animationStopIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.animation-triangle {
+            background-image: url('./assets/animationTriangleIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.key-active {
+            background-image: url('./assets/keyActiveIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.key-inactive {
+            background-image: url('./assets/keyInactiveIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.key-selected {
+            background-image: url('./assets/keySelectedIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.loop-active {
+            background-image: url('./assets/loopActiveIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.loop-inactive {
+            background-image: url('./assets/loopInactiveIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.move {
+            background-image: url('./assets/moveIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.new-key {
+            background-image: url('./assets/newKeyIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.scale {
+            background-image: url('./assets/scaleIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.scrollbar-handle {
+            background-image: url('./assets/scrollbarHandleIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+    }
+
     .notification-area{
         position: absolute;
         width: auto;
@@ -55,23 +305,46 @@
     .actions-wrapper {
         display: flex;
         flex-direction: row;
-        justify-content: flex-end;
-        align-items: flex-end;
-        padding: 6px;
+        justify-content: flex-start;
+        align-items: center;
         background: #333333;
+
+        .close {
+            position: absolute;
+            right: 1px;
+        }
+
+        .title-container {
+            display: flex;
+            justify-content: stretch;
+            align-items: center;
+            color: white;
+            width: 220px;
+
+            .title {
+                font-size: 15pt;
+            }
+        }
+
+        .buttons-container{
+            display: flex;
+        }
 
         .action-input{
             display: flex;
             justify-content: center;
             flex-direction: row;
             align-items: center;
-            label { margin-right: 0.5em; color: white; }
+            margin-right: 8px;
             input {
-                width: 4em;
-                height: 2em;
+                width: 75px;
+                height: 24px;
                 color: white;
-                font-size: 12pt;
+                font-size: 12px;
+                background: none;
+                border: none;
                 background-color: black;
+                padding: 6px;
             }
         }
     }
@@ -88,11 +361,11 @@
             justify-content: flex-start;
             flex-direction: row;
             width: 100vw;
-            height: 78.5vh;
+            height: 84vh;
 
             .timeline{
                 width: 100vw;
-                background: gray;
+                background: #333333;
                 display: flex;
                 align-items: center;
                 justify-content: stretch;
@@ -184,7 +457,7 @@
             }
 
             .object-tree{
-                background-color: rgba(0, 0, 0, 0.3);
+                background-color:#111111;
                 padding: 10px;
                 margin-top: 19px;
                 height: 11em;
@@ -214,7 +487,7 @@
             padding-left: 32px;
             overflow-y: scroll;
             scroll-behavior: smooth;
-            background-color: #444444;
+            background-color: #111111;
             height: 100%;
 
             .linear{

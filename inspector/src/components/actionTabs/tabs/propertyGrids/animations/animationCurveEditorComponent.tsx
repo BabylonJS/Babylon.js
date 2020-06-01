@@ -1,6 +1,4 @@
 import * as React from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { Animation } from 'babylonjs/Animations/animation';
 import { Vector2, Vector3, Quaternion } from 'babylonjs/Maths/math.vector';
 import { Size } from 'babylonjs/Maths/math.size';
@@ -24,7 +22,6 @@ require("./curveEditor.scss");
 interface IAnimationCurveEditorComponentProps {
     close: (event: any) => void;
     playOrPause?: () => void;
-    title: string;
     scene: Scene;
     entity: IAnimatable | TargetedAnimation;
 }
@@ -1267,14 +1264,11 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
                 <Notification message={this.state.notification} open={this.state.notification !== "" ? true : false} close={() => this.clearNotification()} />
 
-                <div className="header">
-                    <div className="title">{this.props.title}</div>
-                    <div className="close" onClick={(event: React.MouseEvent<HTMLDivElement, MouseEvent>) => this.props.close(event)}>
-                        <FontAwesomeIcon icon={faTimes} />
-                    </div>
-                </div>
-
-                <GraphActionsBar currentValue={this.state.currentValue}
+                <GraphActionsBar
+                    enabled={this.state.selected === null || this.state.selected === undefined ? false : true}
+                    title={this._entityName}
+                    close={this.props.close}
+                    currentValue={this.state.currentValue}
                     currentFrame={this.state.currentFrame}
                     handleFrameChange={(e) => this.handleFrameChange(e)}
                     handleValueChange={(e) => this.handleValueChange(e)}
@@ -1285,7 +1279,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                     lerpMode={this.state.lerpMode}
                     setLerpMode={() => this.setLerpMode()}
                     flatTangent={() => this.setFlatTangent()} />
-
+                    
                 <div className="content">
                     <div className="row">
                         <div className="animation-list">
@@ -1314,7 +1308,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                             </div>
 
                             <div className="object-tree">
-                                <h2>{this._entityName}</h2>
                                 <ul>
                                     {
 
