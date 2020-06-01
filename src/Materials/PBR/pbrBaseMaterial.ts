@@ -977,12 +977,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     }
                 }
 
-                if (this._detailTexture && MaterialFlags.DetailTextureEnabled) {
-                    if (!this._detailTexture.isReadyOrNotBlocking()) {
-                        return false;
-                    }
-                }
-
                 if (this._ambientTexture && MaterialFlags.AmbientTextureEnabled) {
                     if (!this._ambientTexture.isReadyOrNotBlocking()) {
                         return false;
@@ -1045,6 +1039,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 if (engine.getCaps().standardDerivatives && this._bumpTexture && MaterialFlags.BumpTextureEnabled && !this._disableBumpMap) {
                     // Bump texture cannot be not blocking.
                     if (!this._bumpTexture.isReady()) {
+                        return false;
+                    }
+                }
+
+                if (engine.getCaps().standardDerivatives && this._detailTexture && MaterialFlags.DetailTextureEnabled) {
+                    // Detail texture cannot be not blocking.
+                    if (!this._detailTexture.isReady()) {
                         return false;
                     }
                 }
