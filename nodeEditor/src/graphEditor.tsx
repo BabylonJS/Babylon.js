@@ -243,7 +243,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     newFrame.y = currentY;
 
                     // Paste nodes
-
                     if (this._copiedFrame.nodes.length) {
                         currentX = newFrame.x + this._copiedFrame.nodes[0].x - this._copiedFrame.x;
                         currentY = newFrame.y + this._copiedFrame.nodes[0].y - this._copiedFrame.y;
@@ -253,6 +252,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     if (this._copiedFrame.isCollapsed) {
                         newFrame.isCollapsed = true;
                     }
+
+                    // Select
+                    this.props.globalState.onSelectionChangedObservable.notifyObservers(newFrame);
                     return;
                 }
 
@@ -261,7 +263,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 }
 
                 let currentX = (this._mouseLocationX - rootElement.offsetLeft - this._graphCanvas.x - this.NodeWidth) / zoomLevel;
-                this.pasteSelection(this._copiedNodes, currentX, currentY);
+                this.pasteSelection(this._copiedNodes, currentX, currentY, true);
             }
 
         }, false);
@@ -310,11 +312,17 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         done[nodeIndex] = true;
     }
 
-    pasteSelection(copiedNodes: GraphNode[], currentX: number, currentY: number) {
+    pasteSelection(copiedNodes: GraphNode[], currentX: number, currentY: number, selectNew = false) {
 
         let originalNode: Nullable<GraphNode> = null;
 
         let newNodes:GraphNode[] = [];
+
+        // Copy to prevent recursive side effects while creating nodes.
+        copiedNodes = copiedNodes.slice();
+
+        // Cancel selection        
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
 
         // Create new nodes
         for (var node of copiedNodes) {
@@ -329,7 +337,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             if (!clone) {
                 return;
             }
-            
+
             let newNode = this.createNodeFromObject(clone, false);
 
             let x = 0;
@@ -348,6 +356,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             newNode.cleanAccumulation();
 
             newNodes.push(newNode);
+
+            if (selectNew) {
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(newNode);
+            }
         }
 
         // Relink
