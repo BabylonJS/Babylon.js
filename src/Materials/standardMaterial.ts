@@ -1425,7 +1425,7 @@ export class StandardMaterial extends PushMaterial {
                     }
 
                     if (this._detailTexture && StandardMaterial.DetailTextureEnabled) {
-                        ubo.updateFloat3("vDetailInfos", this._detailTexture.coordinatesIndex, this.detailDiffuseBlendLevel, this.detailBumpLevel);
+                        ubo.updateFloat3("vDetailInfos", this._detailTexture.coordinatesIndex, 1 - this.detailDiffuseBlendLevel, this.detailBumpLevel);
                         MaterialHelper.BindTextureMatrix(this._detailTexture, ubo, "detail");
                     }
 

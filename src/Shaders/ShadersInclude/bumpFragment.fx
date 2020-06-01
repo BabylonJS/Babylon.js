@@ -49,12 +49,10 @@
 		normalW = perturbNormal(TBN, vBumpUV + uvOffset);
     #else
         vec3 bumpNormal = texture2D(bumpSampler, vBumpUV + uvOffset).xyz * 2.0 - 1.0;
-        #if DETAIL_NORMALBLENDMETHOD == 0 // linear
-            vec3 blendedNormal = normalize(bumpNormal + detailNormal * vec3(vDetailInfos.z));
-        #elif DETAIL_NORMALBLENDMETHOD == 1 // whiteout
+        #if DETAIL_NORMALBLENDMETHOD == 0 // whiteout
             detailNormal.xy *= vDetailInfos.z;
             vec3 blendedNormal = normalize(vec3(bumpNormal.xy + detailNormal.xy, bumpNormal.z * detailNormal.z));
-        #elif DETAIL_NORMALBLENDMETHOD == 2 // RNM
+        #elif DETAIL_NORMALBLENDMETHOD == 1 // RNM
             detailNormal.xy *= vDetailInfos.z;
             bumpNormal += vec3(0.0, 0.0, 1.0);
             detailNormal *= vec3(-1.0, -1.0, 1.0);
