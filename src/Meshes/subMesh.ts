@@ -117,6 +117,7 @@ export class SubMesh implements ICullable {
      * @param mesh defines the parent mesh
      * @param renderingMesh defines an optional rendering mesh
      * @param createBoundingBox defines if bounding box should be created for this submesh
+     * @param addToMesh defines a boolean indicating that the submesh must be added to the mesh.subMeshes array (true by default)
      */
     constructor(
         /** the material index to use */
@@ -128,10 +129,12 @@ export class SubMesh implements ICullable {
         /** index start */
         public indexStart: number,
         /** indices count */
-        public indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true) {
+        public indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true, addToMesh = true) {
         this._mesh = mesh;
         this._renderingMesh = renderingMesh || <Mesh>mesh;
-        mesh.subMeshes.push(this);
+        if (addToMesh) {
+            mesh.subMeshes.push(this);
+        }
 
         this._trianglePlanes = [];
 
