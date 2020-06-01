@@ -93,7 +93,7 @@ export class TargetedAnimationGridComponent extends React.Component<ITargetedAni
                         this._isCurveEditorOpen && <PopupComponent
                             id="curve-editor"
                             title="Curve Animation Editor"
-                            size={{ width: 950, height: 540 }}
+                            size={{ width: 1024, height: 512 }}
                             onOpen={(window: Window) => { window.console.log("Window opened!!") }}
                             onClose={(window: Window) => this.onCloseAnimationCurveEditor(window)}>
 

@@ -87,13 +87,18 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         if (this.props.entity instanceof TargetedAnimation) {
             this._isTargetedAnimation = true;
             initialSelection = this.props.entity.animation;
-            initialLerpMode = this.analizeAnimation(this.props.entity.animation);
-            initialPathData = this.getPathData(this.props.entity.animation);
+            initialLerpMode = initialSelection !== undefined ? this.analizeAnimation(initialSelection) : false;
+            initialPathData = initialSelection !== undefined ? this.getPathData(initialSelection) : "";
         } else {
             this._isTargetedAnimation = false;
-            initialLerpMode = this.analizeAnimation(this.props.entity.animations && this.props.entity.animations[0]);
-            initialSelection = this.props.entity.animations !== null ? this.props.entity.animations[0] : null;
-            initialPathData = this.props.entity.animations !== null ? this.getPathData(this.props.entity.animations[0]) : "";
+
+            let hasAnimations = this.props.entity.animations !== undefined || this.props.entity.animations !== null ? this.props.entity.animations : false;
+            initialSelection = hasAnimations !== false ? hasAnimations && hasAnimations[0] : null;
+
+
+            initialLerpMode = initialSelection !== undefined ? this.analizeAnimation(this.props.entity.animations && initialSelection) : false;
+            initialPathData = initialSelection && this.getPathData(initialSelection);
+            initialPathData = initialPathData === null || initialPathData === undefined ? "" : initialPathData;
         }
 
         // will update this until we have a top scroll/zoom feature
@@ -780,7 +785,11 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         this._svgKeyframes.push(svgKeyframe);
     }
 
-    getPathData(animation: Animation) {
+    getPathData(animation: Animation | null) {
+
+        if (animation === null){
+            return "";
+        }
 
         // Check if Tangent mode is active and broken mode is active. (Only one tangent moves)
         let keyframes = animation.getKeys();
@@ -847,7 +856,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         }
 
         return data;
-
+        
     }
 
     getAnimationData(animation: Animation) {

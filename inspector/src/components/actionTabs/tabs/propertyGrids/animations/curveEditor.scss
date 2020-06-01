@@ -1,6 +1,8 @@
 
 #animation-curve-editor {
 
+    font-family: acumin-pro-condensed;
+
     .notification-area{
         position: absolute;
         width: auto;
@@ -32,7 +34,7 @@
     .header{
         display: flex;
         padding: 9px;
-        background: black;
+        background: #333333;
         color: white;
         height: 1.3em;
         justify-content: space-between;
@@ -56,16 +58,20 @@
         justify-content: flex-end;
         align-items: flex-end;
         padding: 6px;
+        background: #333333;
 
         .action-input{
             display: flex;
             justify-content: center;
             flex-direction: row;
             align-items: center;
-            label { margin-right: 0.5em }
+            label { margin-right: 0.5em; color: white; }
             input {
                 width: 4em;
                 height: 2em;
+                color: white;
+                font-size: 12pt;
+                background-color: black;
             }
         }
     }
@@ -137,7 +143,7 @@
 
         .animation-list{
             padding: 1.5rem;
-            background: rgb(87, 86, 86);
+            background: #333333;
             color: white;
             ul {
                 list-style:none;
