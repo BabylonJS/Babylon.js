@@ -75,6 +75,12 @@ namespace Babylon
                         break;
                 }
                 uniformString += uniform.name;
+                if (uniform.size > 1)
+                {
+                    char tempArrayString[512];
+                    sprintf(tempArrayString, "[%d]", uniform.size);
+                    uniformString += tempArrayString;
+                }
                 uniformString += ";";
                 compiler->add_header_line(uniformString);
             }
