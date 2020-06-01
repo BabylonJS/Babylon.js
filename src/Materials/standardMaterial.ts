@@ -1425,7 +1425,7 @@ export class StandardMaterial extends PushMaterial {
                     }
 
                     if (this._detailTexture && StandardMaterial.DetailTextureEnabled) {
-                        ubo.updateFloat3("vDetailInfos", this._detailTexture.coordinatesIndex, 1 - this.detailDiffuseBlendLevel, this.detailBumpLevel);
+                        ubo.updateFloat3("vDetailInfos", this._detailTexture.coordinatesIndex, this.detailDiffuseBlendLevel, this.detailBumpLevel);
                         MaterialHelper.BindTextureMatrix(this._detailTexture, ubo, "detail");
                     }
 
@@ -1513,10 +1513,6 @@ export class StandardMaterial extends PushMaterial {
                     effect.setTexture("diffuseSampler", this._diffuseTexture);
                 }
 
-                if (this._detailTexture && StandardMaterial.DetailTextureEnabled) {
-                    effect.setTexture("detailSampler", this._detailTexture);
-                }
-
                 if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
                     effect.setTexture("ambientSampler", this._ambientTexture);
                 }
@@ -1547,6 +1543,10 @@ export class StandardMaterial extends PushMaterial {
 
                 if (this._bumpTexture && scene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled) {
                     effect.setTexture("bumpSampler", this._bumpTexture);
+                }
+
+                if (this._detailTexture && scene.getEngine().getCaps().standardDerivatives && StandardMaterial.DetailTextureEnabled) {
+                    effect.setTexture("detailSampler", this._detailTexture);
                 }
 
                 if (this._refractionTexture && StandardMaterial.RefractionTextureEnabled) {
