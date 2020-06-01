@@ -56,7 +56,7 @@ export class PBRMaterialDefines extends MaterialDefines
     IMaterialSubSurfaceDefines {
     public PBR = true;
 
-    public NUM_SAMPLES = "0u";
+    public NUM_SAMPLES = "0";
     public REALTIME_FILTERING = false;
 
     public MAINUV1 = false;
