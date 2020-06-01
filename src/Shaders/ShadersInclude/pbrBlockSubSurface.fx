@@ -270,6 +270,11 @@ struct subSurfaceOutParams
             refractionTransmittance *= cocaLambert(volumeAlbedo, vThicknessParam.y);
         #endif
 
+        #ifdef SS_ALBEDOFORREFRACTIONTINT
+            // Tint the transmission with albedo.
+            environmentRefraction.rgb *= surfaceAlbedo.rgb;
+        #endif
+
         // Decrease Albedo Contribution
         outParams.surfaceAlbedo = surfaceAlbedo * (1. - refractionIntensity);
 
