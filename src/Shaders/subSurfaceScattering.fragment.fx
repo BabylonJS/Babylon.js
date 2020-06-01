@@ -4,7 +4,6 @@
 varying vec2 vUV;
 uniform vec2 texelSize;
 uniform sampler2D textureSampler;
-uniform sampler2D inputSampler;
 uniform sampler2D irradianceSampler;
 uniform sampler2D depthSampler;
 uniform sampler2D albedoSampler;
@@ -83,6 +82,10 @@ vec3 ComputeBilateralWeight(float xy2, float z, float mmPerUnit, vec3 S, float r
     #endif
 }
 
+bool IsSSSMaterial(vec3 irradiance) {
+    return irradiance.b > 0.;
+}
+
 // TODO : inout vec3 totalIrradiance, inout vec3 totalWeight
 void EvaluateSample(int i, int n, vec3 S, float d, vec3 centerPosVS, float mmPerUnit, float pixelsPerMm,
                     float phase, inout vec3 totalIrradiance, inout vec3 totalWeight)
@@ -129,7 +132,7 @@ void EvaluateSample(int i, int n, vec3 S, float d, vec3 centerPosVS, float mmPer
 
     // Check the results of the stencil test.
     // TODO
-    if (true)
+    if (IsSSSMaterial(irradiance))
     {
         // Apply bilateral weighting.
         float relZ = viewZ - centerPosVS.z;
@@ -155,8 +158,8 @@ void main(void)
 {
 	vec3 centerIrradiance  = texture2D(irradianceSampler, vUV).rgb;
 	float  centerDepth       = 0.;
-    vec4 inputColor = texture2D(inputSampler, vUV);
-	bool passedStencilTest = (inputColor.a == 0.0);
+    vec4 inputColor = texture2D(textureSampler, vUV);
+	bool passedStencilTest = IsSSSMaterial(centerIrradiance);
 
 	if (passedStencilTest)
 	{
@@ -209,8 +212,8 @@ void main(void)
 	int  sampleCount  = int(filterArea * rcp(SSS_PIXELS_PER_SAMPLE));
 	int  sampleBudget = _SssSampleBudget;
 
-	int texturingMode = 0; // GetSubsurfaceScatteringTexturingMode(profileIndex);
-	vec3 albedo  = texture2D(albedoSampler, vUV).rgb; //ApplySubsurfaceScatteringTexturingMode(texturingMode, sssData.diffuseColor);
+	int texturingMode = 0;
+	vec3 albedo  = texture2D(albedoSampler, vUV).rgb;
 
 	if (distScale == 0. || sampleCount < 1)
 	{

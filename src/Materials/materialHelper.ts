@@ -301,11 +301,17 @@ export class MaterialHelper {
      * @param defines The defines to update
      */
     public static PrepareDefinesForDeferred(scene: Scene, defines: any) {
+        var previousDeferred = defines.HIGH_DEFINITION_PIPELINE;
+
         if (scene.highDefinitionPipeline) {
             defines.HIGH_DEFINITION_PIPELINE = true;
             defines.SCENE_MRT_COUNT = scene.mrtCount;
         } else {
             defines.HIGH_DEFINITION_PIPELINE = false;
+        }
+
+        if (defines.HIGH_DEFINITION_PIPELINE != previousDeferred) {
+            defines.markAsUnprocessed();
         }
     }
 
