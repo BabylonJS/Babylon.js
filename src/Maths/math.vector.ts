@@ -1145,10 +1145,6 @@ export class Vector3 {
             return true;
         }
 
-        if (absY !== absZ) {
-            return true;
-        }
-
         return false;
     }
 

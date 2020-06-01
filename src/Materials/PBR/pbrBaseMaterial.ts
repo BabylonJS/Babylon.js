@@ -153,6 +153,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public HORIZONOCCLUSION = false;
 
     public INSTANCES = false;
+    public THIN_INSTANCES = false;
 
     public HIGH_DEFINITION_PIPELINE = false;
     public SCENE_MRT_COUNT = 0;
@@ -232,7 +233,7 @@ export class PBRMaterialDefines extends MaterialDefines
 
     public SS_REFRACTION = false;
     public SS_TRANSLUCENCY = false;
-    public SS_SCATERRING = false;
+    public SS_SCATTERING = false;
 
     public SS_THICKNESSANDMASK_TEXTURE = false;
     public SS_THICKNESSANDMASK_TEXTUREDIRECTUV = 0;
@@ -244,6 +245,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public SS_RGBDREFRACTION = false;
     public SS_LINEARSPECULARREFRACTION = false;
     public SS_LINKREFRACTIONTOTRANSPARENCY = false;
+    public SS_ALBEDOFORREFRACTIONTINT = false;
 
     public SS_MASK_FROM_THICKNESS_TEXTURE = false;
 
@@ -1033,7 +1035,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         const previousEffect = subMesh.effect;
         const lightDisposed = defines._areLightsDisposed;
-        let effect = this._prepareEffect(mesh, defines, this.onCompiled, this.onError, useInstances);
+        let effect = this._prepareEffect(mesh, defines, this.onCompiled, this.onError, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
 
         if (effect) {
             if (this._onEffectCreatedObservable) {
@@ -1083,8 +1085,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         return false;
     }
 
-    private _prepareEffect(mesh: AbstractMesh, defines: PBRMaterialDefines, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, useInstances: Nullable<boolean> = null, useClipPlane: Nullable<boolean> = null): Nullable<Effect> {
-        this._prepareDefines(mesh, defines, useInstances, useClipPlane);
+    private _prepareEffect(mesh: AbstractMesh, defines: PBRMaterialDefines, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null,
+                useInstances: Nullable<boolean> = null, useClipPlane: Nullable<boolean> = null, useThinInstances: boolean): Nullable<Effect> {
+        this._prepareDefines(mesh, defines, useInstances, useClipPlane, useThinInstances);
 
         if (!defines.isDirty) {
             return null;
@@ -1281,7 +1284,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }, engine);
     }
 
-    private _prepareDefines(mesh: AbstractMesh, defines: PBRMaterialDefines, useInstances: Nullable<boolean> = null, useClipPlane: Nullable<boolean> = null): void {
+    private _prepareDefines(mesh: AbstractMesh, defines: PBRMaterialDefines, useInstances: Nullable<boolean> = null, useClipPlane: Nullable<boolean> = null, useThinInstances: boolean = false): void {
         const scene = this.getScene();
         const engine = scene.getEngine();
 
@@ -1573,7 +1576,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this.sheen.prepareDefines(defines, scene);
 
         // Values that need to be evaluated on every frame
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, useClipPlane);
+        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, useClipPlane, useThinInstances);
 
         // Attribs
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true, this._transparencyMode !== PBRBaseMaterial.PBRMATERIAL_OPAQUE);
@@ -1590,7 +1593,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         };
 
         const defines = new PBRMaterialDefines();
-        const effect = this._prepareEffect(mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane)!;
+        const effect = this._prepareEffect(mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane, mesh.hasThinInstances)!;
         if (this._onEffectCreatedObservable) {
             onCreatedEffectParameters.effect = effect;
             onCreatedEffectParameters.subMesh = null;
@@ -1706,7 +1709,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this._activeEffect = effect;
 
         // Matrices
-        if (!defines.INSTANCES) {
+        if (!defines.INSTANCES || defines.THIN_INSTANCES) {
             this.bindOnlyWorldMatrix(world);
         }
 

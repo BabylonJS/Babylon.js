@@ -83,6 +83,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public BonesPerMesh = 0;
     public BONETEXTURE = false;
     public INSTANCES = false;
+    public THIN_INSTANCES = false;
     public GLOSSINESS = false;
     public ROUGHNESS = false;
     public EMISSIVEASILLUMINATION = false;
@@ -1039,7 +1040,7 @@ export class StandardMaterial extends PushMaterial {
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
 
         // Values that need to be evaluated on every frame
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
 
         // Get correct effect
         if (defines.isDirty) {
@@ -1320,7 +1321,7 @@ export class StandardMaterial extends PushMaterial {
         this._activeEffect = effect;
 
         // Matrices
-        if (!defines.INSTANCES) {
+        if (!defines.INSTANCES || defines.THIN_INSTANCES) {
             this.bindOnlyWorldMatrix(world);
         }
 

@@ -26,6 +26,7 @@ class GridMaterialDefines extends MaterialDefines {
     public UV1 = false;
     public UV2 = false;
     public INSTANCES = false;
+    public THIN_INSTANCES = false;
 
     constructor() {
         super();
@@ -221,7 +222,7 @@ export class GridMaterial extends PushMaterial {
         this._activeEffect = effect;
 
         // Matrices
-        if (!defines.INSTANCES) {
+        if (!defines.INSTANCES || defines.THIN_INSTANCE) {
             this.bindOnlyWorldMatrix(world);
         }
         this._activeEffect.setMatrix("view", scene.getViewMatrix());

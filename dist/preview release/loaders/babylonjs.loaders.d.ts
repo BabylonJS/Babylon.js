@@ -1213,7 +1213,7 @@ declare module BABYLON.GLTF2 {
          * @param assign A function called synchronously after parsing the glTF properties
          * @returns A promise that resolves with the loaded mesh when the load is complete or null if not handled
          */
-        _loadMeshPrimitiveAsync?(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Promise<AbstractMesh>;
+        _loadMeshPrimitiveAsync?(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Nullable<Promise<AbstractMesh>>;
         /**
          * @hidden
          * Define this method to modify the default behavior when loading materials. Load material creates the material and then loads material properties.
@@ -1328,6 +1328,8 @@ declare module BABYLON.GLTF2 {
         _forAssetContainer: boolean;
         /** Storage */
         _babylonLights: Light[];
+        /** @hidden */
+        _disableInstancedMesh: number;
         private _disposed;
         private _parent;
         private _state;
@@ -1906,6 +1908,81 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
         private _loadIorPropertiesAsync;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1681)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_materials_variants implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        private _loader;
+        /**
+         * The default variant name.
+         */
+        defaultVariant: string | undefined;
+        private _tagsToMap;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /**
+         * Return a list of available variants for this asset.
+         * @returns {string[]}
+         */
+        getVariants(): string[];
+        /**
+         * Select a variant by providing a list of variant tag names.
+         *
+         * @param {(string | string[])} variantName
+         */
+        selectVariant(variantName: string | string[]): void;
+        /**
+         * Select a variant by providing a single variant tag.
+         *
+         * @param {string} variantName
+         */
+        selectVariantTag(variantName: string): void;
+        /** @hidden */
+        onLoading(): void;
+        /** @hidden */
+        _loadMeshPrimitiveAsync(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Nullable<Promise<AbstractMesh>>;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1698)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_materials_transmission implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        private _loadTransparentPropertiesAsync;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {

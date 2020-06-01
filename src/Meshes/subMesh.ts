@@ -20,9 +20,9 @@ declare type Ray = import("../Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("../Culling/ray").TrianglePickingPredicate;
 
 /**
- * Base class for submeshes
+ * Defines a subdivision inside a mesh
  */
-export class BaseSubMesh {
+export class SubMesh implements ICullable {
     /** @hidden */
     public _materialDefines: Nullable<MaterialDefines> = null;
     /** @hidden */
@@ -66,12 +66,7 @@ export class BaseSubMesh {
         this._materialDefines = defines;
         this._materialEffect = effect;
     }
-}
 
-/**
- * Defines a subdivision inside a mesh
- */
-export class SubMesh extends BaseSubMesh implements ICullable {
     /** @hidden */
     public _linesIndexCount: number = 0;
     private _mesh: AbstractMesh;
@@ -122,6 +117,7 @@ export class SubMesh extends BaseSubMesh implements ICullable {
      * @param mesh defines the parent mesh
      * @param renderingMesh defines an optional rendering mesh
      * @param createBoundingBox defines if bounding box should be created for this submesh
+     * @param addToMesh defines a boolean indicating that the submesh must be added to the mesh.subMeshes array (true by default)
      */
     constructor(
         /** the material index to use */
@@ -133,11 +129,12 @@ export class SubMesh extends BaseSubMesh implements ICullable {
         /** index start */
         public indexStart: number,
         /** indices count */
-        public indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true) {
-        super();
+        public indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true, addToMesh = true) {
         this._mesh = mesh;
         this._renderingMesh = renderingMesh || <Mesh>mesh;
-        mesh.subMeshes.push(this);
+        if (addToMesh) {
+            mesh.subMeshes.push(this);
+        }
 
         this._trianglePlanes = [];
 
@@ -193,6 +190,24 @@ export class SubMesh extends BaseSubMesh implements ICullable {
      */
     public getRenderingMesh(): Mesh {
         return this._renderingMesh;
+    }
+
+    /**
+     * Returns the replacement mesh of the submesh
+     * @returns the replacement mesh (could be different from parent mesh)
+     */
+    public getReplacementMesh(): Nullable<AbstractMesh> {
+        return this._mesh._internalAbstractMeshDataInfo._actAsRegularMesh ? this._mesh : null;
+    }
+
+    /**
+     * Returns the effective mesh of the submesh
+     * @returns the effective mesh (could be different from parent mesh)
+     */
+    public getEffectiveMesh(): AbstractMesh {
+        const replacementMesh = this._mesh._internalAbstractMeshDataInfo._actAsRegularMesh ? this._mesh : null;
+
+        return replacementMesh ? replacementMesh : this._renderingMesh;
     }
 
     /**

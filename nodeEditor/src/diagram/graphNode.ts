@@ -309,7 +309,7 @@ export class GraphNode {
         }
 
         const indexInSelection = this._ownerCanvas.selectedNodes.indexOf(this) ;
-        if (indexInSelection=== -1) {
+        if (indexInSelection === -1) {
             this._globalState.onSelectionChangedObservable.notifyObservers(this);
         } else if (evt.ctrlKey) {
             this.isSelected = false;

@@ -16301,6 +16301,10 @@ declare module BABYLON {
              * @param stride defines the stride in floats
              */
             registerInstancedBuffer(kind: string, stride: number): void;
+            /**
+             * true to use the edge renderer for all instances of this mesh
+             */
+            edgesShareWithInstances: boolean;
             /** @hidden */
             _userInstancedBuffersStorage: {
                 data: {
@@ -16395,6 +16399,10 @@ declare module BABYLON {
         private _renderId;
         private _multiview;
         private _cachedDefines;
+        /** Define the Url to load snippets */
+        static SnippetUrl: string;
+        /** Snippet ID if the material was created from the snippet server */
+        snippetId: string;
         /**
          * Instantiate a new shader material.
          * The ShaderMaterial object has the necessary methods to pass data from your scene to the Vertex and Fragment Shaders and returns a material that can be applied to any mesh.
@@ -16583,7 +16591,7 @@ declare module BABYLON {
          * @param useInstances specifies that instances should be used
          * @returns a boolean indicating that the submesh is ready or not
          */
-        isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean;
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         /**
          * Checks if the material is ready to render the requested mesh
          * @param mesh Define the mesh to render
@@ -16649,6 +16657,23 @@ declare module BABYLON {
          * @returns a new material
          */
         static Parse(source: any, scene: Scene, rootUrl: string): ShaderMaterial;
+        /**
+         * Creates a new ShaderMaterial from a snippet saved in a remote file
+         * @param name defines the name of the ShaderMaterial to create (can be null or empty to use the one from the json data)
+         * @param url defines the url to load from
+         * @param scene defines the hosting scene
+         * @param rootUrl defines the root URL to use to load textures and relative dependencies
+         * @returns a promise that will resolve to the new ShaderMaterial
+         */
+        static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl?: string): Promise<ShaderMaterial>;
+        /**
+         * Creates a ShaderMaterial from a snippet saved by the Inspector
+         * @param snippetId defines the snippet to load
+         * @param scene defines the hosting scene
+         * @param rootUrl defines the root URL to use to load textures and relative dependencies
+         * @returns a promise that will resolve to the new ShaderMaterial
+         */
+        static CreateFromSnippetAsync(snippetId: string, scene: Scene, rootUrl?: string): Promise<ShaderMaterial>;
     }
 }
 declare module BABYLON {
@@ -16788,6 +16813,10 @@ declare module BABYLON {
     };
 }
 declare module BABYLON {
+        interface Scene {
+            /** @hidden */
+            _edgeRenderLineShader: Nullable<ShaderMaterial>;
+        }
         interface AbstractMesh {
             /**
              * Gets the edgesRenderer associated with the mesh
@@ -16833,6 +16862,10 @@ declare module BABYLON {
          * @return true if ready, otherwise false.
          */
         isReady(): boolean;
+        /**
+         * List of instances to render in case the source mesh has instances
+         */
+        customInstances: SmartArray<Matrix>;
     }
     /**
      * This class is used to generate edges of the mesh that could then easily be rendered in a scene.
@@ -16857,11 +16890,19 @@ declare module BABYLON {
         protected _buffers: {
             [key: string]: Nullable<VertexBuffer>;
         };
+        protected _buffersForInstances: {
+            [key: string]: Nullable<VertexBuffer>;
+        };
         protected _checkVerticesInsteadOfIndices: boolean;
         private _meshRebuildObserver;
         private _meshDisposeObserver;
         /** Gets or sets a boolean indicating if the edgesRenderer is active */
         isEnabled: boolean;
+        /**
+         * List of instances to render in case the source mesh has instances
+         */
+        customInstances: SmartArray<Matrix>;
+        private static GetShader;
         /**
          * Creates an instance of the EdgesRenderer. It is primarily use to display edges of a mesh.
          * Beware when you use this class with complex objects as the adjacencies computation can be really long
@@ -20006,8 +20047,10 @@ declare module BABYLON {
          * @param defines specifies the list of active defines
          * @param useInstances defines if instances have to be turned on
          * @param useClipPlane defines if clip plane have to be turned on
+         * @param useInstances defines if instances have to be turned on
+         * @param useThinInstances defines if thin instances have to be turned on
          */
-        static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: any, useInstances: boolean, useClipPlane?: Nullable<boolean>): void;
+        static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: any, useInstances: boolean, useClipPlane?: Nullable<boolean>, useThinInstances?: boolean): void;
         /**
          * Prepares the defines for bones
          * @param mesh The mesh containing the geometry data we will draw
@@ -21464,8 +21507,9 @@ declare module BABYLON {
          * @param nodeMaterial defines the node material requesting the update
          * @param defines defines the material defines to update
          * @param useInstances specifies that instances should be used
+         * @param subMesh defines which submesh to render
          */
-        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean, subMesh?: SubMesh): void;
         /**
          * Lets the block try to connect some inputs automatically
          * @param material defines the hosting NodeMaterial
@@ -21533,12 +21577,6 @@ declare module BABYLON {
     export class PushMaterial extends Material {
         protected _activeEffect: Effect;
         protected _normalMatrix: Matrix;
-        /**
-         * Gets or sets a boolean indicating that the material is allowed to do shader hot swapping.
-         * This means that the material can keep using a previous shader while a new one is being compiled.
-         * This is mostly used when shader parallel compilation is supported (true by default)
-         */
-        allowShaderHotSwapping: boolean;
         constructor(name: string, scene: Scene);
         getEffect(): Effect;
         isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
@@ -21613,6 +21651,15 @@ declare module BABYLON {
          */
         get transform(): NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+        /**
+         * Update defines for shader compilation
+         * @param mesh defines the mesh to be rendered
+         * @param nodeMaterial defines the node material requesting the update
+         * @param defines defines the material defines to update
+         * @param useInstances specifies that instances should be used
+         * @param subMesh defines which submesh to render
+         */
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean, subMesh?: SubMesh): void;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
         protected _dumpPropertiesCode(): string;
@@ -23738,6 +23785,12 @@ declare module BABYLON {
          */
         shadowDepthWrapper: Nullable<ShadowDepthWrapper>;
         /**
+         * Gets or sets a boolean indicating that the material is allowed (if supported) to do shader hot swapping.
+         * This means that the material can keep using a previous shader while a new one is being compiled.
+         * This is mostly used when shader parallel compilation is supported (true by default)
+         */
+        allowShaderHotSwapping: boolean;
+        /**
          * The ID of the material
          */
         id: string;
@@ -24054,7 +24107,7 @@ declare module BABYLON {
          * @param useInstances specifies that instances should be used
          * @returns a boolean indicating that the submesh is ready or not
          */
-        isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean;
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         /**
          * Returns the material effect
          * @returns the effect associated with the material
@@ -24339,7 +24392,7 @@ declare module BABYLON {
          * @param useInstances Define whether or not the material is used with instances
          * @returns true if ready, otherwise false
          */
-        isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean;
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         /**
          * Clones the current material and its related sub materials
          * @param name Define the name of the newly cloned material
@@ -24370,9 +24423,19 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Base class for submeshes
+     * Defines a subdivision inside a mesh
      */
-    export class BaseSubMesh {
+    export class SubMesh implements ICullable {
+        /** the material index to use */
+        materialIndex: number;
+        /** vertex index start */
+        verticesStart: number;
+        /** vertices count */
+        verticesCount: number;
+        /** index start */
+        indexStart: number;
+        /** indices count */
+        indexCount: number;
         /** @hidden */
         _materialDefines: Nullable<MaterialDefines>;
         /** @hidden */
@@ -24397,21 +24460,6 @@ declare module BABYLON {
          * @param defines defines the set of defines used to compile this effect
          */
         setEffect(effect: Nullable<Effect>, defines?: Nullable<MaterialDefines>): void;
-    }
-    /**
-     * Defines a subdivision inside a mesh
-     */
-    export class SubMesh extends BaseSubMesh implements ICullable {
-        /** the material index to use */
-        materialIndex: number;
-        /** vertex index start */
-        verticesStart: number;
-        /** vertices count */
-        verticesCount: number;
-        /** index start */
-        indexStart: number;
-        /** indices count */
-        indexCount: number;
         /** @hidden */
         _linesIndexCount: number;
         private _mesh;
@@ -24456,6 +24504,7 @@ declare module BABYLON {
          * @param mesh defines the parent mesh
          * @param renderingMesh defines an optional rendering mesh
          * @param createBoundingBox defines if bounding box should be created for this submesh
+         * @param addToMesh defines a boolean indicating that the submesh must be added to the mesh.subMeshes array (true by default)
          */
         constructor(
         /** the material index to use */
@@ -24467,7 +24516,7 @@ declare module BABYLON {
         /** index start */
         indexStart: number, 
         /** indices count */
-        indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox?: boolean);
+        indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox?: boolean, addToMesh?: boolean);
         /**
          * Returns true if this submesh covers the entire parent mesh
          * @ignorenaming
@@ -24494,6 +24543,16 @@ declare module BABYLON {
          * @returns the rendering mesh (could be different from parent mesh)
          */
         getRenderingMesh(): Mesh;
+        /**
+         * Returns the replacement mesh of the submesh
+         * @returns the replacement mesh (could be different from parent mesh)
+         */
+        getReplacementMesh(): Nullable<AbstractMesh>;
+        /**
+         * Returns the effective mesh of the submesh
+         * @returns the effective mesh (could be different from parent mesh)
+         */
+        getEffectiveMesh(): AbstractMesh;
         /**
          * Returns the submesh material
          * @returns null or the current material
@@ -27162,6 +27221,16 @@ declare module BABYLON {
         hardwareInstancedRendering: boolean[];
     }
     /**
+     * @hidden
+     **/
+    class _ThinInstanceDataStorage {
+        instancesCount: number;
+        matrixBuffer: Nullable<Buffer>;
+        matrixBufferSize: number;
+        matrixData: Nullable<Float32Array>;
+        boundingVectors: Array<Vector3>;
+    }
+    /**
      * Class used to represent renderable models
      */
     export class Mesh extends AbstractMesh implements IGetSetVerticesData {
@@ -27275,6 +27344,7 @@ declare module BABYLON {
          */
         set onBeforeDraw(callback: () => void);
         get hasInstances(): boolean;
+        get hasThinInstances(): boolean;
         /**
          * Gets the delay loading state of the mesh (when delay loading is turned on)
          * @see http://doc.babylonjs.com/how_to/using_the_incremental_loading_system
@@ -27314,6 +27384,8 @@ declare module BABYLON {
         _delayLoadingFunction: (any: any, mesh: Mesh) => void;
         /** @hidden */
         _instanceDataStorage: _InstanceDataStorage;
+        /** @hidden */
+        _thinInstanceDataStorage: _ThinInstanceDataStorage;
         private _effectiveMaterial;
         /** @hidden */
         _shouldGenerateFlatShading: boolean;
@@ -27555,6 +27627,9 @@ declare module BABYLON {
         _preActivateForIntermediateRendering(renderId: number): Mesh;
         /** @hidden */
         _registerInstanceForRenderId(instance: InstancedMesh, renderId: number): Mesh;
+        protected _afterComputeWorldMatrix(): void;
+        /** @hidden */
+        _postActivate(): void;
         /**
          * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
          * This means the mesh underlying bounding box and sphere are recomputed.
@@ -27719,6 +27794,8 @@ declare module BABYLON {
         /** @hidden */
         _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: Engine): Mesh;
         /** @hidden */
+        _renderWithThinInstances(subMesh: SubMesh, fillMode: number, effect: Effect, engine: Engine): void;
+        /** @hidden */
         _processInstancedBuffers(visibleInstances: InstancedMesh[], renderSelf: boolean): void;
         /** @hidden */
         _processRendering(renderingMesh: AbstractMesh, subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material): Mesh;
@@ -27822,6 +27899,8 @@ declare module BABYLON {
         dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
         /** @hidden */
         _disposeInstanceSpecificData(): void;
+        /** @hidden */
+        _disposeThinInstanceSpecificData(): void;
         /**
          * Modifies the mesh geometry according to a displacement map.
          * A displacement map is a colored image. Each pixel color value (actually a gradient computed from red, green, blue values) will give the displacement to apply to each mesh vertex.
@@ -29314,6 +29393,7 @@ declare module BABYLON {
         BonesPerMesh: number;
         BONETEXTURE: boolean;
         INSTANCES: boolean;
+        THIN_INSTANCES: boolean;
         GLOSSINESS: boolean;
         ROUGHNESS: boolean;
         EMISSIVEASILLUMINATION: boolean;
@@ -31320,6 +31400,10 @@ declare module BABYLON {
          */
         get hasInstances(): boolean;
         /**
+         * Gets a boolean indicating if this mesh has thin instances
+         */
+        get hasThinInstances(): boolean;
+        /**
          * Perform relative position change from the point of view of behind the front of the mesh.
          * This is performed taking into account the meshes current rotation, so you do not have to care.
          * Supports definition of mesh facing forward or backward
@@ -32172,6 +32256,10 @@ declare module BABYLON {
          * When matrix interpolation is enabled, this boolean forces the system to use Matrix.DecomposeLerp instead of Matrix.Lerp. Interpolation is more precise but slower
          */
         static AllowMatrixDecomposeForInterpolation: boolean;
+        /** Define the Url to load snippets */
+        static SnippetUrl: string;
+        /** Snippet ID if the animation was created from the snippet server */
+        snippetId: string;
         /**
          * Stores the key frames of the animation
          */
@@ -32559,6 +32647,19 @@ declare module BABYLON {
          * @param destination Target to store the animations
          */
         static AppendSerializedAnimations(source: IAnimatable, destination: any): void;
+        /**
+         * Creates a new animation or an array of animations from a snippet saved in a remote file
+         * @param name defines the name of the animation to create (can be null or empty to use the one from the json data)
+         * @param url defines the url to load from
+         * @returns a promise that will resolve to the new animation or an array of animations
+         */
+        static ParseFromFileAsync(name: Nullable<string>, url: string): Promise<Animation | Array<Animation>>;
+        /**
+         * Creates an animation or an array of animations from a snippet saved by the Inspector
+         * @param snippetId defines the snippet to load
+         * @returns a promise that will resolve to the new animation or a new array of animations
+         */
+        static CreateFromSnippetAsync(snippetId: string): Promise<Animation | Array<Animation>>;
     }
 }
 declare module BABYLON {
@@ -34016,6 +34117,10 @@ declare module BABYLON {
          * Defines that engine should compile shaders with high precision floats (if supported). True by default
          */
         useHighPrecisionFloats?: boolean;
+        /**
+         * Make the canvas XR Compatible for XR sessions
+         */
+        xrCompatible?: boolean;
     }
     /**
      * The base engine class (root of all engines)
@@ -37849,6 +37954,11 @@ declare module BABYLON {
          */
         target: any;
         /**
+         * Returns the string "TargetedAnimation"
+         * @returns "TargetedAnimation"
+         */
+        getClassName(): string;
+        /**
          * Serialize the object
          * @returns the JSON object representing the current entity
          */
@@ -37940,6 +38050,10 @@ declare module BABYLON {
          * returning the list of animatables controlled by this animation group.
          */
         get animatables(): Array<Animatable>;
+        /**
+         * Gets the list of target animations
+         */
+        get children(): TargetedAnimation[];
         /**
          * Instantiates a new Animation Group.
          * This helps managing several animations at once.
@@ -43474,7 +43588,7 @@ declare module BABYLON {
         beta: number;
         /** The radius of the camera from its target */
         radius: number;
-        /** Define the camera target (the messh it should follow) */
+        /** Define the camera target (the mesh it should follow) */
         target: Nullable<AbstractMesh>;
         private _cartesianCoordinates;
         /**
@@ -43494,7 +43608,7 @@ declare module BABYLON {
         beta: number, 
         /** The radius of the camera from its target */
         radius: number, 
-        /** Define the camera target (the messh it should follow) */
+        /** Define the camera target (the mesh it should follow) */
         target: Nullable<AbstractMesh>, scene: Scene);
         private _follow;
         /** @hidden */
@@ -47590,7 +47704,7 @@ declare module BABYLON {
         /**
          * Default color of the laser pointer
          */
-        lasterPointerDefaultColor: Color3;
+        laserPointerDefaultColor: Color3;
         /**
          * default color of the selection ring
          */
@@ -47647,6 +47761,8 @@ declare module BABYLON {
         private _generateNewMeshPair;
         private _pickingMoved;
         private _updatePointerDistance;
+        /** @hidden */
+        get lasterPointerDefaultColor(): Color3;
     }
 }
 declare module BABYLON {
@@ -47824,6 +47940,157 @@ declare module BABYLON {
             instance?: LinesMesh;
             useVertexAlpha?: boolean;
         }, scene?: Nullable<Scene>): LinesMesh;
+    }
+}
+declare module BABYLON {
+    /**
+     * Construction options for a timer
+     */
+    export interface ITimerOptions<T> {
+        /**
+         * Time-to-end
+         */
+        timeout: number;
+        /**
+         * The context observable is used to calculate time deltas and provides the context of the timer's callbacks. Will usually be OnBeforeRenderObservable.
+         * Countdown calculation is done ONLY when the observable is notifying its observers, meaning that if
+         * you choose an observable that doesn't trigger too often, the wait time might extend further than the requested max time
+         */
+        contextObservable: Observable<T>;
+        /**
+         * Optional parameters when adding an observer to the observable
+         */
+        observableParameters?: {
+            mask?: number;
+            insertFirst?: boolean;
+            scope?: any;
+        };
+        /**
+         * An optional break condition that will stop the times prematurely. In this case onEnded will not be triggered!
+         */
+        breakCondition?: (data?: ITimerData<T>) => boolean;
+        /**
+         * Will be triggered when the time condition has met
+         */
+        onEnded?: (data: ITimerData<any>) => void;
+        /**
+         * Will be triggered when the break condition has met (prematurely ended)
+         */
+        onAborted?: (data: ITimerData<any>) => void;
+        /**
+         * Optional function to execute on each tick (or count)
+         */
+        onTick?: (data: ITimerData<any>) => void;
+    }
+    /**
+     * An interface defining the data sent by the timer
+     */
+    export interface ITimerData<T> {
+        /**
+         * When did it start
+         */
+        startTime: number;
+        /**
+         * Time now
+         */
+        currentTime: number;
+        /**
+         * Time passed since started
+         */
+        deltaTime: number;
+        /**
+         * How much is completed, in [0.0...1.0].
+         * Note that this CAN be higher than 1 due to the fact that we don't actually measure time but delta between observable calls
+         */
+        completeRate: number;
+        /**
+         * What the registered observable sent in the last count
+         */
+        payload: T;
+    }
+    /**
+     * The current state of the timer
+     */
+    export enum TimerState {
+        /**
+         * Timer initialized, not yet started
+         */
+        INIT = 0,
+        /**
+         * Timer started and counting
+         */
+        STARTED = 1,
+        /**
+         * Timer ended (whether aborted or time reached)
+         */
+        ENDED = 2
+    }
+    /**
+     * A simple version of the timer. Will take options and start the timer immediately after calling it
+     *
+     * @param options options with which to initialize this timer
+     */
+    export function setAndStartTimer(options: ITimerOptions<any>): Nullable<Observer<any>>;
+    /**
+     * An advanced implementation of a timer class
+     */
+    export class AdvancedTimer<T = any> implements IDisposable {
+        /**
+         * Will notify each time the timer calculates the remaining time
+         */
+        onEachCountObservable: Observable<ITimerData<T>>;
+        /**
+         * Will trigger when the timer was aborted due to the break condition
+         */
+        onTimerAbortedObservable: Observable<ITimerData<T>>;
+        /**
+         * Will trigger when the timer ended successfully
+         */
+        onTimerEndedObservable: Observable<ITimerData<T>>;
+        /**
+         * Will trigger when the timer state has changed
+         */
+        onStateChangedObservable: Observable<TimerState>;
+        private _observer;
+        private _contextObservable;
+        private _observableParameters;
+        private _startTime;
+        private _timer;
+        private _state;
+        private _breakCondition;
+        private _timeToEnd;
+        private _breakOnNextTick;
+        /**
+         * Will construct a new advanced timer based on the options provided. Timer will not start until start() is called.
+         * @param options construction options for this advanced timer
+         */
+        constructor(options: ITimerOptions<T>);
+        /**
+         * set a breaking condition for this timer. Default is to never break during count
+         * @param predicate the new break condition. Returns true to break, false otherwise
+         */
+        set breakCondition(predicate: (data: ITimerData<T>) => boolean);
+        /**
+         * Reset ALL associated observables in this advanced timer
+         */
+        clearObservables(): void;
+        /**
+         * Will start a new iteration of this timer. Only one instance of this timer can run at a time.
+         *
+         * @param timeToEnd how much time to measure until timer ended
+         */
+        start(timeToEnd?: number): void;
+        /**
+         * Will force a stop on the next tick.
+         */
+        stop(): void;
+        /**
+         * Dispose this timer, clearing all resources
+         */
+        dispose(): void;
+        private _setState;
+        private _tick;
+        private _stop;
     }
 }
 declare module BABYLON {
@@ -49297,9 +49564,9 @@ declare module BABYLON {
         /**
          * Select a specific entity in the scene explorer and highlight a specific block in that entity property grid
          * @param entity defines the entity to select
-         * @param lineContainerTitle defines the specific block to highlight
+         * @param lineContainerTitles defines the specific blocks to highlight (could be a string or an array of strings)
          */
-        select(entity: any, lineContainerTitle?: string): void;
+        select(entity: any, lineContainerTitles?: string | string[]): void;
         /** Get the inspector from bundle or global */
         private _getGlobalInspector;
         /**
@@ -49750,11 +50017,13 @@ declare module BABYLON {
         private _gamepadDisconnectedEvent;
         private static _MAX_KEYCODES;
         private static _MAX_POINTER_INPUTS;
+        private constructor();
         /**
-         * Default Constructor
-         * @param engine - engine to pull input element from
+         * Creates a new DeviceInputSystem instance
+         * @param engine Engine to pull input element from
+         * @returns The new instance
          */
-        constructor(engine: Engine);
+        static Create(engine: Engine): DeviceInputSystem;
         /**
          * Checks for current device input value, given an id and input index
          * @param deviceName Id of connected device
@@ -53984,7 +54253,7 @@ declare module BABYLON {
         SUBSURFACE: boolean;
         SS_REFRACTION: boolean;
         SS_TRANSLUCENCY: boolean;
-        SS_SCATERRING: boolean;
+        SS_SCATTERING: boolean;
         SS_THICKNESSANDMASK_TEXTURE: boolean;
         SS_THICKNESSANDMASK_TEXTUREDIRECTUV: number;
         SS_REFRACTIONMAP_3D: boolean;
@@ -53994,6 +54263,7 @@ declare module BABYLON {
         SS_RGBDREFRACTION: boolean;
         SS_LINEARSPECULARREFRACTION: boolean;
         SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
+        SS_ALBEDOFORREFRACTIONTINT: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
         /** @hidden */
         _areTexturesDirty: boolean;
@@ -54031,6 +54301,10 @@ declare module BABYLON {
          * is addded to the diffuse part of the material.
          */
         scatteringIntensity: number;
+        /**
+         * When enabled, transparent surfaces will be tinted with the albedo colour (independent of thickness)
+         */
+        useAlbedoToTintRefraction: boolean;
         private _thicknessTexture;
         /**
          * Stores the average thickness of a mesh in a texture (The texture is holding the values linearly).
@@ -54055,6 +54329,16 @@ declare module BABYLON {
          * From dielectric fresnel rules: F0 = square((iorT - iorI) / (iorT + iorI))
          */
         indexOfRefraction: number;
+        private _volumeIndexOfRefraction;
+        /**
+         * Index of refraction of the material's volume.
+         * https://en.wikipedia.org/wiki/List_of_refractive_indices
+         *
+         * This ONLY impacts refraction. If not provided or given a non-valid value,
+         * the volume will use the same IOR as the surface.
+         */
+        get volumeIndexOfRefraction(): number;
+        set volumeIndexOfRefraction(value: number);
         private _invertRefractionY;
         /**
          * Controls if refraction needs to be inverted on Y. This could be useful for procedural texture.
@@ -54568,6 +54852,7 @@ declare module BABYLON {
         RADIANCEOCCLUSION: boolean;
         HORIZONOCCLUSION: boolean;
         INSTANCES: boolean;
+        THIN_INSTANCES: boolean;
         NUM_BONE_INFLUENCERS: number;
         BonesPerMesh: number;
         BONETEXTURE: boolean;
@@ -54631,7 +54916,7 @@ declare module BABYLON {
         SUBSURFACE: boolean;
         SS_REFRACTION: boolean;
         SS_TRANSLUCENCY: boolean;
-        SS_SCATERRING: boolean;
+        SS_SCATTERING: boolean;
         SS_THICKNESSANDMASK_TEXTURE: boolean;
         SS_THICKNESSANDMASK_TEXTUREDIRECTUV: number;
         SS_REFRACTIONMAP_3D: boolean;
@@ -54641,6 +54926,7 @@ declare module BABYLON {
         SS_RGBDREFRACTION: boolean;
         SS_LINEARSPECULARREFRACTION: boolean;
         SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
+        SS_ALBEDOFORREFRACTIONTINT: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
         UNLIT: boolean;
         DEBUGMODE: number;
@@ -60688,7 +60974,7 @@ declare module BABYLON {
          */
         get instanceID(): NodeMaterialConnectionPoint;
         autoConfigure(material: NodeMaterial): void;
-        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
+        prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean, subMesh?: SubMesh): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -60959,6 +61245,87 @@ declare module BABYLON {
          * Gets the derivative output on y
          */
         get dy(): NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to make gl_FragCoord available
+     */
+    export class FragCoordBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new FragCoordBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the xy component
+         */
+        get xy(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyz component
+         */
+        get xyz(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyzw component
+         */
+        get xyzw(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the x component
+         */
+        get x(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the y component
+         */
+        get y(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the z component
+         */
+        get z(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the w component
+         */
+        get output(): NodeMaterialConnectionPoint;
+        protected writeOutputs(state: NodeMaterialBuildState): string;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to get the screen sizes
+     */
+    export class ScreenSizeBlock extends NodeMaterialBlock {
+        private _varName;
+        private _scene;
+        /**
+         * Creates a new ScreenSizeBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the xy component
+         */
+        get xy(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the x component
+         */
+        get x(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the y component
+         */
+        get y(): NodeMaterialConnectionPoint;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
+        protected writeOutputs(state: NodeMaterialBuildState, varName: string): string;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -62501,6 +62868,8 @@ declare module BABYLON {
         _vReflectionMicrosurfaceInfosName: string;
         /** @hidden */
         _vReflectionInfosName: string;
+        /** @hidden */
+        _vReflectionFilteringInfoName: string;
         private _scene;
         /**
          * The three properties below are set by the main PBR block prior to calling methods of this class.
@@ -62637,10 +63006,6 @@ declare module BABYLON {
          */
         get roughness(): NodeMaterialConnectionPoint;
         /**
-         * Gets the texture input component
-         */
-        get texture(): NodeMaterialConnectionPoint;
-        /**
          * Gets the sheen object output component
          */
         get sheen(): NodeMaterialConnectionPoint;
@@ -62662,6 +63027,15 @@ declare module BABYLON {
      * Block used to implement the reflectivity module of the PBR material
      */
     export class ReflectivityBlock extends NodeMaterialBlock {
+        private _metallicReflectanceColor;
+        private _metallicF0Factor;
+        /** @hidden */
+        _vMetallicReflectanceFactorsName: string;
+        /**
+         * The property below is set by the main PBR block prior to calling methods of this class.
+        */
+        /** @hidden */
+        indexOfRefractionConnectionPoint: Nullable<NodeMaterialConnectionPoint>;
         /**
          * Specifies if the metallic texture contains the ambient occlusion information in its red channel.
          */
@@ -62709,12 +63083,14 @@ declare module BABYLON {
          * Gets the reflectivity object output component
          */
         get reflectivity(): NodeMaterialConnectionPoint;
+        bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh): void;
         /**
          * Gets the main code of the block (fragment side)
+         * @param state current state of the node material building
          * @param aoIntensityVarName name of the variable with the ambient occlusion intensity
          * @returns the shader code
          */
-        getCode(aoIntensityVarName: string): string;
+        getCode(state: NodeMaterialBuildState, aoIntensityVarName: string): string;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
         protected _dumpPropertiesCode(): string;
@@ -62844,10 +63220,6 @@ declare module BABYLON {
          * Gets the tint thickness input component
          */
         get tintThickness(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the tint texture input component
-         */
-        get tintTexture(): NodeMaterialConnectionPoint;
         /**
          * Gets the world tangent input component
          */
@@ -63026,6 +63398,14 @@ declare module BABYLON {
          */
         enableSpecularAntiAliasing: boolean;
         /**
+         * Enables realtime filtering on the texture.
+         */
+        realTimeFiltering: boolean;
+        /**
+         * Quality switch for realtime filtering
+         */
+        realTimeFilteringQuality: number;
+        /**
          * Defines if the material uses energy conservation.
          */
         useEnergyConservation: boolean;
@@ -63094,10 +63474,6 @@ declare module BABYLON {
          * Gets the base color input component
          */
         get baseColor(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the base texture input component
-         */
-        get baseTexture(): NodeMaterialConnectionPoint;
         /**
          * Gets the opacity texture input component
          */
@@ -64895,6 +65271,85 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+        interface Mesh {
+            /**
+             * Creates a new thin instance
+             * @param matrix the matrix or array of matrices (position, rotation, scale) of the thin instance(s) to create
+             * @param refresh true to refresh the underlying gpu buffer (default: true). If you do multiple calls to this method in a row, set refresh to true only for the last call to save performance
+             * @returns the thin instance index number. If you pass an array of matrices, other instance indexes are index+1, index+2, etc
+             */
+            thinInstanceAdd(matrix: DeepImmutableObject<Matrix> | Array<DeepImmutableObject<Matrix>>, refresh: boolean): number;
+            /**
+             * Adds the transformation (matrix) of the current mesh as a thin instance
+             * @param refresh true to refresh the underlying gpu buffer (default: true). If you do multiple calls to this method in a row, set refresh to true only for the last call to save performance
+             * @returns the thin instance index number
+             */
+            thinInstanceAddSelf(refresh: boolean): number;
+            /**
+             * Registers a custom attribute to be used with thin instances
+             * @param kind name of the attribute
+             * @param stride size in floats of the attribute
+             */
+            thinInstanceRegisterAttribute(kind: string, stride: number): void;
+            /**
+             * Sets the matrix of a thin instance
+             * @param index index of the thin instance
+             * @param matrix matrix to set
+             * @param refresh true to refresh the underlying gpu buffer (default: true). If you do multiple calls to this method in a row, set refresh to true only for the last call to save performance
+             */
+            thinInstanceSetMatrixAt(index: number, matrix: DeepImmutableObject<Matrix>, refresh: boolean): void;
+            /**
+             * Sets the value of a custom attribute for a thin instance
+             * @param kind name of the attribute
+             * @param index index of the thin instance
+             * @param value value to set
+             * @param refresh true to refresh the underlying gpu buffer (default: true). If you do multiple calls to this method in a row, set refresh to true only for the last call to save performance
+             */
+            thinInstanceSetAttributeAt(kind: string, index: number, value: Array<number>, refresh: boolean): void;
+            /**
+             * Gets / sets the number of thin instances to display. Note that you can't set a number higher than what the underlying buffer can handle.
+             */
+            thinInstanceCount: number;
+            /**
+             * Sets a buffer to be used with thin instances. This method is a faster way to setup multiple instances than calling thinInstanceAdd repeatedly
+             * @param kind name of the attribute. Use "matrix" to setup the buffer of matrices
+             * @param buffer buffer to set
+             * @param stride size in floats of each value of the buffer
+             * @param staticBuffer indicates that the buffer is static, so that you won't change it after it is set (better performances - false by default)
+             */
+            thinInstanceSetBuffer(kind: string, buffer: Nullable<Float32Array>, stride: number, staticBuffer: boolean): void;
+            /**
+             * Synchronize the gpu buffers with a thin instance buffer. Call this method if you update later on the buffers passed to thinInstanceSetBuffer
+             * @param kind name of the attribute to update. Use "matrix" to update the buffer of matrices
+             */
+            thinInstanceBufferUpdated(kind: string): void;
+            /**
+             * Refreshes the bounding info, taking into account all the thin instances defined
+             * @param forceRefreshParentInfo true to force recomputing the mesh bounding info and use it to compute the aggregated bounding info
+             */
+            thinInstanceRefreshBoundingInfo(forceRefreshParentInfo: boolean): void;
+            /** @hidden */
+            _thinInstanceInitializeUserStorage(): void;
+            /** @hidden */
+            _thinInstanceUpdateBufferSize(kind: string, numInstances: number): void;
+            /** @hidden */
+            _userThinInstanceBuffersStorage: {
+                data: {
+                    [key: string]: Float32Array;
+                };
+                sizes: {
+                    [key: string]: number;
+                };
+                vertexBuffers: {
+                    [key: string]: Nullable<VertexBuffer>;
+                };
+                strides: {
+                    [key: string]: number;
+                };
+            };
+        }
+}
+declare module BABYLON {
     /**
      * Navigation plugin interface to add navigation constrained by a navigation mesh
      */
@@ -66114,10 +66569,6 @@ declare module BABYLON {
              */
             getHierarchyEmittedParticleSystems(): IParticleSystem[];
         }
-    /**
-     * @hidden
-     */
-    export var _IDoNeedToBeInTheBuild: number;
 }
 declare module BABYLON {
     /** Defines the 4 color options */
@@ -71982,6 +72433,15 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * An interface for all Hit test features
+     */
+    export interface IWebXRHitTestFeature<T extends IWebXRLegacyHitResult> extends IWebXRFeature {
+        /**
+         * Triggered when new babylon (transformed) hit test results are available
+         */
+        onHitTestResultObservable: Observable<T[]>;
+    }
+    /**
      * Options used for hit testing
      */
     export interface IWebXRLegacyHitTestOptions {
@@ -72012,7 +72472,7 @@ declare module BABYLON {
      * Hit test (or Ray-casting) is used to interact with the real world.
      * For further information read here - https://github.com/immersive-web/hit-test
      */
-    export class WebXRHitTestLegacy extends WebXRAbstractFeature {
+    export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRHitTestFeature<IWebXRLegacyHitResult> {
         /**
          * options to use when constructing this feature
          */
@@ -72091,6 +72551,260 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Options used for hit testing (version 2)
+     */
+    export interface IWebXRHitTestOptions extends IWebXRLegacyHitTestOptions {
+        /**
+         * Do not create a permanent hit test. Will usually be used when only
+         * transient inputs are needed.
+         */
+        disablePermanentHitTest?: boolean;
+        /**
+         * Enable transient (for example touch-based) hit test inspections
+         */
+        enableTransientHitTest?: boolean;
+        /**
+         * Offset ray for the permanent hit test
+         */
+        offsetRay?: Vector3;
+        /**
+         * Offset ray for the transient hit test
+         */
+        transientOffsetRay?: Vector3;
+        /**
+         * Instead of using viewer space for hit tests, use the reference space defined in the session manager
+         */
+        useReferenceSpace?: boolean;
+    }
+    /**
+     * Interface defining the babylon result of hit-test
+     */
+    export interface IWebXRHitResult extends IWebXRLegacyHitResult {
+        /**
+         * The input source that generated this hit test (if transient)
+         */
+        inputSource?: XRInputSource;
+        /**
+         * Is this a transient hit test
+         */
+        isTransient?: boolean;
+        /**
+         * Position of the hit test result
+         */
+        position: Vector3;
+        /**
+         * Rotation of the hit test result
+         */
+        rotationQuaternion: Quaternion;
+        /**
+         * The native hit test result
+         */
+        xrHitResult: XRHitTestResult;
+    }
+    /**
+     * The currently-working hit-test module.
+     * Hit test (or Ray-casting) is used to interact with the real world.
+     * For further information read here - https://github.com/immersive-web/hit-test
+     *
+     * Tested on chrome (mobile) 80.
+     */
+    export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestFeature<IWebXRHitResult> {
+        /**
+         * options to use when constructing this feature
+         */
+        readonly options: IWebXRHitTestOptions;
+        private _tmpMat;
+        private _tmpPos;
+        private _tmpQuat;
+        private _transientXrHitTestSource;
+        private _xrHitTestSource;
+        private initHitTestSource;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the WebXR specs version
+         */
+        static readonly Version: number;
+        /**
+         * When set to true, each hit test will have its own position/rotation objects
+         * When set to false, position and rotation objects will be reused for each hit test. It is expected that
+         * the developers will clone them or copy them as they see fit.
+         */
+        autoCloneTransformation: boolean;
+        /**
+         * Triggered when new babylon (transformed) hit test results are available
+         */
+        onHitTestResultObservable: Observable<IWebXRHitResult[]>;
+        /**
+         * Use this to temporarily pause hit test checks.
+         */
+        paused: boolean;
+        /**
+         * Creates a new instance of the hit test feature
+         * @param _xrSessionManager an instance of WebXRSessionManager
+         * @param options options to use when constructing this feature
+         */
+        constructor(_xrSessionManager: WebXRSessionManager, 
+        /**
+         * options to use when constructing this feature
+         */
+        options?: IWebXRHitTestOptions);
+        /**
+         * attach this feature
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        attach(): boolean;
+        /**
+         * detach this feature.
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+        /**
+         * Dispose this feature and all of the resources attached
+         */
+        dispose(): void;
+        protected _onXRFrame(frame: XRFrame): void;
+        private _processWebXRHitTestResult;
+    }
+}
+declare module BABYLON {
+    /**
+     * Configuration options of the anchor system
+     */
+    export interface IWebXRAnchorSystemOptions {
+        /**
+         * a node that will be used to convert local to world coordinates
+         */
+        worldParentNode?: TransformNode;
+        /**
+         * If set to true a reference of the created anchors will be kept until the next session starts
+         * If not defined, anchors will be removed from the array when the feature is detached or the session ended.
+         */
+        doNotRemoveAnchorsOnSessionEnded?: boolean;
+    }
+    /**
+     * A babylon container for an XR Anchor
+     */
+    export interface IWebXRAnchor {
+        /**
+         * A babylon-assigned ID for this anchor
+         */
+        id: number;
+        /**
+         * Transformation matrix to apply to an object attached to this anchor
+         */
+        transformationMatrix: Matrix;
+        /**
+         * The native anchor object
+         */
+        xrAnchor: XRAnchor;
+        /**
+         * if defined, this object will be constantly updated by the anchor's position and rotation
+         */
+        attachedNode?: TransformNode;
+    }
+    /**
+     * An implementation of the anchor system for WebXR.
+     * For further information see https://github.com/immersive-web/anchors/
+     */
+    export class WebXRAnchorSystem extends WebXRAbstractFeature {
+        private _options;
+        private _lastFrameDetected;
+        private _trackedAnchors;
+        private _referenceSpaceForFrameAnchors;
+        private _futureAnchors;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the WebXR specs version
+         */
+        static readonly Version: number;
+        /**
+         * Observers registered here will be executed when a new anchor was added to the session
+         */
+        onAnchorAddedObservable: Observable<IWebXRAnchor>;
+        /**
+         * Observers registered here will be executed when an anchor was removed from the session
+         */
+        onAnchorRemovedObservable: Observable<IWebXRAnchor>;
+        /**
+         * Observers registered here will be executed when an existing anchor updates
+         * This can execute N times every frame
+         */
+        onAnchorUpdatedObservable: Observable<IWebXRAnchor>;
+        /**
+         * Set the reference space to use for anchor creation, when not using a hit test.
+         * Will default to the session's reference space if not defined
+         */
+        set referenceSpaceForFrameAnchors(referenceSpace: XRReferenceSpace);
+        /**
+         * constructs a new anchor system
+         * @param _xrSessionManager an instance of WebXRSessionManager
+         * @param _options configuration object for this feature
+         */
+        constructor(_xrSessionManager: WebXRSessionManager, _options?: IWebXRAnchorSystemOptions);
+        private _tmpVector;
+        private _tmpQuaternion;
+        private _populateTmpTransformation;
+        /**
+         * Create a new anchor point using a hit test result at a specific point in the scene
+         * An anchor is tracked only after it is added to the trackerAnchors in xrFrame. The promise returned here does not yet guaranty that.
+         * Use onAnchorAddedObservable to get newly added anchors if you require tracking guaranty.
+         *
+         * @param hitTestResult The hit test result to use for this anchor creation
+         * @param position an optional position offset for this anchor
+         * @param rotationQuaternion an optional rotation offset for this anchor
+         * @returns A promise that fulfills when the XR anchor was registered in the system (but not necessarily added to the tracked anchors)
+         */
+        addAnchorPointUsingHitTestResultAsync(hitTestResult: IWebXRHitResult, position?: Vector3, rotationQuaternion?: Quaternion): Promise<XRAnchor>;
+        /**
+         * Add a new anchor at a specific position and rotation
+         * This function will add a new anchor per default in the next available frame. Unless forced, the createAnchor function
+         * will be called in the next xrFrame loop to make sure that the anchor can be created correctly.
+         * An anchor is tracked only after it is added to the trackerAnchors in xrFrame. The promise returned here does not yet guaranty that.
+         * Use onAnchorAddedObservable to get newly added anchors if you require tracking guaranty.
+         *
+         * @param position the position in which to add an anchor
+         * @param rotationQuaternion an optional rotation for the anchor transformation
+         * @param forceCreateInCurrentFrame force the creation of this anchor in the current frame. Must be called inside xrFrame loop!
+         * @returns A promise that fulfills when the XR anchor was registered in the system (but not necessarily added to the tracked anchors)
+         */
+        addAnchorAtPositionAndRotationAsync(position: Vector3, rotationQuaternion?: Quaternion, forceCreateInCurrentFrame?: boolean): Promise<XRAnchor>;
+        /**
+         * detach this feature.
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+        /**
+         * Dispose this feature and all of the resources attached
+         */
+        dispose(): void;
+        protected _onXRFrame(frame: XRFrame): void;
+        /**
+         * avoiding using Array.find for global support.
+         * @param xrAnchor the plane to find in the array
+         */
+        private _findIndexInAnchorArray;
+        private _updateAnchorWithXRFrame;
+        private _createAnchorAtTransformation;
+    }
+}
+declare module BABYLON {
+    /**
      * Options used in the plane detector module
      */
     export interface IWebXRPlaneDetectorOptions {
@@ -72098,6 +72812,11 @@ declare module BABYLON {
          * The node to use to transform the local results to world coordinates
          */
         worldParentNode?: TransformNode;
+        /**
+         * If set to true a reference of the created planes will be kept until the next session starts
+         * If not defined, planes will be removed from the array when the feature is detached or the session ended.
+         */
+        doNotRemovePlanesOnSessionEnded?: boolean;
     }
     /**
      * A babylon interface for a WebXR plane.
@@ -72163,6 +72882,13 @@ declare module BABYLON {
          */
         constructor(_xrSessionManager: WebXRSessionManager, _options?: IWebXRPlaneDetectorOptions);
         /**
+         * detach this feature.
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+        /**
          * Dispose this feature and all of the resources attached
          */
         dispose(): void;
@@ -72174,131 +72900,6 @@ declare module BABYLON {
          * @param xrPlane the plane to find in the array
          */
         private findIndexInPlaneArray;
-    }
-}
-declare module BABYLON {
-    /**
-     * Configuration options of the anchor system
-     */
-    export interface IWebXRAnchorSystemOptions {
-        /**
-         * Should a new anchor be added every time a select event is triggered
-         */
-        addAnchorOnSelect?: boolean;
-        /**
-         * should the anchor system use plane detection.
-         * If set to true, the plane-detection feature should be set using setPlaneDetector
-         */
-        usePlaneDetection?: boolean;
-        /**
-         * a node that will be used to convert local to world coordinates
-         */
-        worldParentNode?: TransformNode;
-    }
-    /**
-     * A babylon container for an XR Anchor
-     */
-    export interface IWebXRAnchor {
-        /**
-         * A babylon-assigned ID for this anchor
-         */
-        id: number;
-        /**
-         * Transformation matrix to apply to an object attached to this anchor
-         */
-        transformationMatrix: Matrix;
-        /**
-         * The native anchor object
-         */
-        xrAnchor: XRAnchor;
-    }
-    /**
-     * An implementation of the anchor system of WebXR.
-     * Note that the current documented implementation is not available in any browser. Future implementations
-     * will use the frame to create an anchor and not the session or a detected plane
-     * For further information see https://github.com/immersive-web/anchors/
-     */
-    export class WebXRAnchorSystem extends WebXRAbstractFeature {
-        private _options;
-        private _enabled;
-        private _hitTestModule;
-        private _lastFrameDetected;
-        private _onSelect;
-        private _planeDetector;
-        private _trackedAnchors;
-        /**
-         * The module's name
-         */
-        static readonly Name: string;
-        /**
-         * The (Babylon) version of this module.
-         * This is an integer representing the implementation version.
-         * This number does not correspond to the WebXR specs version
-         */
-        static readonly Version: number;
-        /**
-         * Observers registered here will be executed when a new anchor was added to the session
-         */
-        onAnchorAddedObservable: Observable<IWebXRAnchor>;
-        /**
-         * Observers registered here will be executed when an anchor was removed from the session
-         */
-        onAnchorRemovedObservable: Observable<IWebXRAnchor>;
-        /**
-         * Observers registered here will be executed when an existing anchor updates
-         * This can execute N times every frame
-         */
-        onAnchorUpdatedObservable: Observable<IWebXRAnchor>;
-        /**
-         * constructs a new anchor system
-         * @param _xrSessionManager an instance of WebXRSessionManager
-         * @param _options configuration object for this feature
-         */
-        constructor(_xrSessionManager: WebXRSessionManager, _options?: IWebXRAnchorSystemOptions);
-        /**
-         * Add anchor at a specific XR point.
-         *
-         * @param xrRigidTransformation xr-coordinates where a new anchor should be added
-         * @param anchorCreator the object o use to create an anchor with. either a session or a plane
-         * @returns a promise the fulfills when the anchor was created
-         */
-        addAnchorAtRigidTransformation(xrRigidTransformation: XRRigidTransform, anchorCreator?: XRAnchorCreator): Promise<XRAnchor>;
-        /**
-         * attach this feature
-         * Will usually be called by the features manager
-         *
-         * @returns true if successful.
-         */
-        attach(): boolean;
-        /**
-         * detach this feature.
-         * Will usually be called by the features manager
-         *
-         * @returns true if successful.
-         */
-        detach(): boolean;
-        /**
-         * Dispose this feature and all of the resources attached
-         */
-        dispose(): void;
-        /**
-         * If set, it will improve performance by using the current hit-test results instead of executing a new hit-test
-         * @param hitTestModule the hit-test module to use.
-         */
-        setHitTestModule(hitTestModule: WebXRHitTestLegacy): void;
-        /**
-         * set the plane detector to use in order to create anchors from frames
-         * @param planeDetector the plane-detector module to use
-         * @param enable enable plane-anchors. default is true
-         */
-        setPlaneDetector(planeDetector: WebXRPlaneDetector, enable?: boolean): void;
-        protected _onXRFrame(frame: XRFrame): void;
-        /**
-         * avoiding using Array.find for global support.
-         * @param xrAnchor the plane to find in the array
-         */
-        private _findIndexInAnchorArray;
-        private _updateAnchorWithXRFrame;
     }
 }
 declare module BABYLON {
@@ -72535,132 +73136,6 @@ declare module BABYLON {
         }): void;
         protected _onXRFrame(_xrFrame: any): void;
         private _detachController;
-    }
-}
-declare module BABYLON {
-    /**
-     * Options used for hit testing (version 2)
-     */
-    export interface IWebXRHitTestOptions extends IWebXRLegacyHitTestOptions {
-        /**
-         * Do not create a permanent hit test. Will usually be used when only
-         * transient inputs are needed.
-         */
-        disablePermanentHitTest?: boolean;
-        /**
-         * Enable transient (for example touch-based) hit test inspections
-         */
-        enableTransientHitTest?: boolean;
-        /**
-         * Offset ray for the permanent hit test
-         */
-        offsetRay?: Vector3;
-        /**
-         * Offset ray for the transient hit test
-         */
-        transientOffsetRay?: Vector3;
-        /**
-         * Instead of using viewer space for hit tests, use the reference space defined in the session manager
-         */
-        useReferenceSpace?: boolean;
-    }
-    /**
-     * Interface defining the babylon result of hit-test
-     */
-    export interface IWebXRHitResult extends IWebXRLegacyHitResult {
-        /**
-         * The input source that generated this hit test (if transient)
-         */
-        inputSource?: XRInputSource;
-        /**
-         * Is this a transient hit test
-         */
-        isTransient?: boolean;
-        /**
-         * Position of the hit test result
-         */
-        position: Vector3;
-        /**
-         * Rotation of the hit test result
-         */
-        rotationQuaternion: Quaternion;
-    }
-    /**
-     * The currently-working hit-test module.
-     * Hit test (or Ray-casting) is used to interact with the real world.
-     * For further information read here - https://github.com/immersive-web/hit-test
-     *
-     * Tested on chrome (mobile) 80.
-     */
-    export class WebXRHitTest extends WebXRAbstractFeature {
-        /**
-         * options to use when constructing this feature
-         */
-        readonly options: IWebXRHitTestOptions;
-        private _tmpMat;
-        private _tmpPos;
-        private _tmpQuat;
-        private _transientXrHitTestSource;
-        private _xrHitTestSource;
-        private initHitTestSource;
-        /**
-         * The module's name
-         */
-        static readonly Name: string;
-        /**
-         * The (Babylon) version of this module.
-         * This is an integer representing the implementation version.
-         * This number does not correspond to the WebXR specs version
-         */
-        static readonly Version: number;
-        /**
-         * When set to true, each hit test will have its own position/rotation objects
-         * When set to false, position and rotation objects will be reused for each hit test. It is expected that
-         * the developers will clone them or copy them as they see fit.
-         */
-        autoCloneTransformation: boolean;
-        /**
-         * Populated with the last native XR Hit Results
-         */
-        lastNativeXRHitResults: XRHitResult[];
-        /**
-         * Triggered when new babylon (transformed) hit test results are available
-         */
-        onHitTestResultObservable: Observable<IWebXRHitResult[]>;
-        /**
-         * Use this to temporarily pause hit test checks.
-         */
-        paused: boolean;
-        /**
-         * Creates a new instance of the hit test feature
-         * @param _xrSessionManager an instance of WebXRSessionManager
-         * @param options options to use when constructing this feature
-         */
-        constructor(_xrSessionManager: WebXRSessionManager, 
-        /**
-         * options to use when constructing this feature
-         */
-        options?: IWebXRHitTestOptions);
-        /**
-         * attach this feature
-         * Will usually be called by the features manager
-         *
-         * @returns true if successful.
-         */
-        attach(): boolean;
-        /**
-         * detach this feature.
-         * Will usually be called by the features manager
-         *
-         * @returns true if successful.
-         */
-        detach(): boolean;
-        /**
-         * Dispose this feature and all of the resources attached
-         */
-        dispose(): void;
-        protected _onXRFrame(frame: XRFrame): void;
-        private _processWebXRHitTestResult;
     }
 }
 declare module BABYLON {
@@ -73468,7 +73943,7 @@ interface XRSessionInit {
     requiredFeatures?: string[];
 }
 
-interface XRSession extends XRAnchorCreator {
+interface XRSession {
     addEventListener: Function;
     removeEventListener: Function;
     requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace>;
@@ -73509,6 +73984,7 @@ interface XRFrame {
     getHitTestResultsForTransientInput(hitTestSource: XRTransientInputHitTestSource): Array<XRTransientInputHitTestResult>;
     // Anchors
     trackedAnchors?: XRAnchorSet;
+    createAnchor(pose: XRRigidTransform, space: XRSpace): Promise<XRAnchor>;
     // Planes
     worldInformation: {
         detectedPlanes?: XRPlaneSet;
@@ -73593,6 +74069,8 @@ interface XRTransientInputHitTestResult {
 
 interface XRHitTestResult {
     getPose(baseSpace: XRSpace): XRPose | undefined;
+    // When anchor system is enabled
+    createAnchor?(pose: XRRigidTransform): Promise<XRAnchor>;
 }
 
 interface XRHitTestSource {
@@ -73616,23 +74094,15 @@ interface XRTransientInputHitTestOptionsInit {
 }
 
 interface XRAnchor {
-    // remove?
-    id?: string;
     anchorSpace: XRSpace;
-    lastChangedTime: number;
-    detach(): void;
+    delete(): void;
 }
 
-interface XRPlane extends XRAnchorCreator {
+interface XRPlane {
     orientation: "Horizontal" | "Vertical";
     planeSpace: XRSpace;
     polygon: Array<DOMPointReadOnly>;
     lastChangedTime: number;
-}
-
-interface XRAnchorCreator {
-    // AR Anchors
-    createAnchor(pose: XRPose | XRRigidTransform, referenceSpace: XRReferenceSpace): Promise<XRAnchor>;
 }
 
 /**
@@ -75072,6 +75542,10 @@ declare module BABYLON.GUI {
         * An event triggered after the text was broken up into lines
         */
         onLinesReadyObservable: BABYLON.Observable<TextBlock>;
+        /**
+         * Function used to split a string into words. By default, a string is split at each space character found
+         */
+        wordSplittingFunction: BABYLON.Nullable<(line: string) => string[]>;
         /**
          * Return the line list (you may need to use the onLinesReadyObservable to make sure the list is ready)
          */
@@ -78945,7 +79419,7 @@ declare module BABYLON.GLTF2 {
          * @param assign A function called synchronously after parsing the glTF properties
          * @returns A promise that resolves with the loaded mesh when the load is complete or null if not handled
          */
-        _loadMeshPrimitiveAsync?(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Promise<AbstractMesh>;
+        _loadMeshPrimitiveAsync?(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Nullable<Promise<AbstractMesh>>;
         /**
          * @hidden
          * Define this method to modify the default behavior when loading materials. Load material creates the material and then loads material properties.
@@ -79060,6 +79534,8 @@ declare module BABYLON.GLTF2 {
         _forAssetContainer: boolean;
         /** Storage */
         _babylonLights: Light[];
+        /** @hidden */
+        _disableInstancedMesh: number;
         private _disposed;
         private _parent;
         private _state;
@@ -79638,6 +80114,81 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
         private _loadIorPropertiesAsync;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1681)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_materials_variants implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        private _loader;
+        /**
+         * The default variant name.
+         */
+        defaultVariant: string | undefined;
+        private _tagsToMap;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /**
+         * Return a list of available variants for this asset.
+         * @returns {string[]}
+         */
+        getVariants(): string[];
+        /**
+         * Select a variant by providing a list of variant tag names.
+         *
+         * @param {(string | string[])} variantName
+         */
+        selectVariant(variantName: string | string[]): void;
+        /**
+         * Select a variant by providing a single variant tag.
+         *
+         * @param {string} variantName
+         */
+        selectVariantTag(variantName: string): void;
+        /** @hidden */
+        onLoading(): void;
+        /** @hidden */
+        _loadMeshPrimitiveAsync(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Nullable<Promise<AbstractMesh>>;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1698)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_materials_transmission implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        private _loadTransparentPropertiesAsync;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {

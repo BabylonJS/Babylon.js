@@ -13,6 +13,7 @@ import { AnimationEvent } from './animationEvent';
 import { Node } from "../node";
 import { IAnimatable } from './animatable.interface';
 import { Size } from '../Maths/math.size';
+import { WebRequest } from '../Misc/webRequest';
 
 declare type Animatable = import("./animatable").Animatable;
 declare type RuntimeAnimation = import("./runtimeAnimation").RuntimeAnimation;
@@ -42,6 +43,12 @@ export class Animation {
      * When matrix interpolation is enabled, this boolean forces the system to use Matrix.DecomposeLerp instead of Matrix.Lerp. Interpolation is more precise but slower
      */
     public static AllowMatrixDecomposeForInterpolation = true;
+
+    /** Define the Url to load snippets */
+    public static SnippetUrl = "https://snippet.babylonjs.com";
+
+    /** Snippet ID if the animation was created from the snippet server */
+    public snippetId: string;
 
     /**
      * Stores the key frames of the animation
@@ -1209,6 +1216,88 @@ export class Animation {
      */
     public static AppendSerializedAnimations(source: IAnimatable, destination: any): void {
         SerializationHelper.AppendSerializedAnimations(source, destination);
+    }
+
+    /**
+     * Creates a new animation or an array of animations from a snippet saved in a remote file
+     * @param name defines the name of the animation to create (can be null or empty to use the one from the json data)
+     * @param url defines the url to load from
+     * @returns a promise that will resolve to the new animation or an array of animations
+     */
+    public static ParseFromFileAsync(name: Nullable<string>, url: string): Promise<Animation | Array<Animation>> {
+
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        let serializationObject = JSON.parse(request.responseText);
+
+                        if (serializationObject.length) {
+                            let output = new Array<Animation>();
+                            for (var serializedAnimation of serializationObject) {
+                                output.push(this.Parse(serializedAnimation));
+                            }
+
+                            resolve(output);
+                        } else {
+                            let output = this.Parse(serializationObject);
+
+                            if (name) {
+                                output.name = name;
+                            }
+
+                            resolve(output);
+                        }
+                    } else {
+                        reject("Unable to load the animation");
+                    }
+                }
+            });
+
+            request.open("GET", url);
+            request.send();
+        });
+    }
+
+    /**
+     * Creates an animation or an array of animations from a snippet saved by the Inspector
+     * @param snippetId defines the snippet to load
+     * @returns a promise that will resolve to the new animation or a new array of animations
+     */
+    public static CreateFromSnippetAsync(snippetId: string): Promise<Animation | Array<Animation>> {
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
+
+                        if (snippet.animations) {
+                            let serializationObject = JSON.parse(snippet.animations);
+                            let output = new Array<Animation>();
+                            for (var serializedAnimation of serializationObject) {
+                                output.push(this.Parse(serializedAnimation));
+                            }
+
+                            resolve(output);
+                        } else {
+                            let serializationObject = JSON.parse(snippet.animation);
+                            let output = this.Parse(serializationObject);
+
+                            output.snippetId = snippetId;
+
+                            resolve(output);
+                        }
+                    } else {
+                        reject("Unable to load the snippet " + snippetId);
+                    }
+                }
+            });
+
+            request.open("GET", this.SnippetUrl + "/" + snippetId.replace(/#/g, "/"));
+            request.send();
+        });
     }
 }
 

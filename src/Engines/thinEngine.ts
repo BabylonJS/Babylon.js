@@ -106,6 +106,10 @@ export interface EngineOptions extends WebGLContextAttributes {
      * Defines that engine should compile shaders with high precision floats (if supported). True by default
      */
     useHighPrecisionFloats?: boolean;
+    /**
+     * Make the canvas XR Compatible for XR sessions
+     */
+    xrCompatible?: boolean;
 }
 
 /**
@@ -132,14 +136,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.2.0-alpha.16";
+        return "babylonjs@4.2.0-alpha.17";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.2.0-alpha.16";
+        return "4.2.0-alpha.17";
     }
 
     /**
@@ -514,6 +518,10 @@ export class ThinEngine {
 
             if (options.premultipliedAlpha === false) {
                 this.premultipliedAlpha = false;
+            }
+
+            if (options.xrCompatible === undefined) {
+                options.xrCompatible = true;
             }
 
             this._doNotHandleContextLost = options.doNotHandleContextLost ? true : false;

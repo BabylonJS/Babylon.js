@@ -2,7 +2,9 @@ import * as React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { Animation } from 'babylonjs/Animations/animation';
-import { Vector2 } from 'babylonjs/Maths/math.vector';
+import { Vector2, Vector3, Quaternion } from 'babylonjs/Maths/math.vector';
+import { Size } from 'babylonjs/Maths/math.size';
+import { Color3, Color4 } from 'babylonjs/Maths/math.color';
 import { EasingFunction } from 'babylonjs/Animations/easing';
 import { IAnimationKey } from 'babylonjs/Animations/animationKey';
 import { IKeyframeSvgPoint } from './keyframeSvgPoint';
@@ -14,17 +16,17 @@ import { GraphActionsBar } from './graphActionsBar';
 import { Scene } from "babylonjs/scene";
 import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
+import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
+import { Nullable } from 'babylonjs/types';
 
 require("./curveEditor.scss");
 
 interface IAnimationCurveEditorComponentProps {
     close: (event: any) => void;
-    playOrPause: () => void;
+    playOrPause?: () => void;
     title: string;
-    animations: Animation[];
-    entityName: string;
     scene: Scene;
-    entity: IAnimatable;
+    entity: IAnimatable | TargetedAnimation;
 }
 
 interface ICanvasAxis {
@@ -32,36 +34,93 @@ interface ICanvasAxis {
     label: number;
 }
 
-export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, { animations: Animation[], animationName: string, animationType: string, animationTargetProperty: string, isOpen: boolean, selected: Animation, currentPathData: string | undefined, svgKeyframes: IKeyframeSvgPoint[] | undefined, currentFrame: number, currentValue: number, frameAxisLength: ICanvasAxis[], valueAxisLength: ICanvasAxis[], flatTangent: boolean, scale: number, playheadOffset: number, notification: string }> {
+export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, {
+    animationName: string,
+    animationType: string,
+    animationTargetProperty: string,
+    isOpen: boolean,
+    selected: Animation | null,
+    currentPathData: string | undefined,
+    svgKeyframes: IKeyframeSvgPoint[] | undefined,
+    currentFrame: number,
+    currentValue: number,
+    frameAxisLength: ICanvasAxis[],
+    valueAxisLength: ICanvasAxis[],
+    isFlatTangentMode: boolean,
+    isTangentMode: boolean,
+    isBrokenMode: boolean,
+    lerpMode: boolean,
+    scale: number,
+    playheadOffset: number,
+    notification: string,
+    currentPoint: SVGPoint | undefined,
+    lastFrame: number,
+    playheadPos: number,
+    isPlaying: boolean
+}> {
 
+    // Height scale *Review this functionaliy
     private _heightScale: number = 100;
+    // Canvas Length *Review this functionality
+    readonly _entityName: string;
     readonly _canvasLength: number = 20;
-    private _newAnimations: Animation[] = [];
     private _svgKeyframes: IKeyframeSvgPoint[] = [];
     private _frames: Vector2[] = [];
     private _isPlaying: boolean = false;
     private _graphCanvas: React.RefObject<HTMLDivElement>;
+    private _selectedCurve: React.RefObject<SVGPathElement>;
+    private _svgCanvas: React.RefObject<SvgDraggableArea>;
+    private _isTargetedAnimation: boolean;
     constructor(props: IAnimationCurveEditorComponentProps) {
         super(props);
+        this._entityName = (this.props.entity as any).id;
+        // Review is we really need this refs
         this._graphCanvas = React.createRef();
-        let valueInd = [2, 1.8, 1.6, 1.4, 1.2, 1, 0.8, 0.6, 0.4, 0.2, 0]; // will update this until we have a top scroll/zoom feature
+        this._selectedCurve = React.createRef();
+        this._svgCanvas = React.createRef();
+
+        console.log(this.props.entity instanceof TargetedAnimation)
+
+        let initialSelection;
+        let initialPathData;
+        let initialLerpMode;
+        if (this.props.entity instanceof TargetedAnimation) {
+            this._isTargetedAnimation = true;
+            initialSelection = this.props.entity.animation;
+            initialLerpMode = this.analizeAnimation(this.props.entity.animation);
+            initialPathData = this.getPathData(this.props.entity.animation);
+        } else {
+            this._isTargetedAnimation = false;
+            initialLerpMode = this.analizeAnimation(this.props.entity.animations && this.props.entity.animations[0]);
+            initialSelection = this.props.entity.animations !== null ? this.props.entity.animations[0] : null;
+            initialPathData = this.props.entity.animations !== null ? this.getPathData(this.props.entity.animations[0]) : "";
+        }
+
+        // will update this until we have a top scroll/zoom feature
+        let valueInd = [2, 1.8, 1.6, 1.4, 1.2, 1, 0.8, 0.6, 0.4, 0.2, 0];
         this.state = {
-            animations: this._newAnimations,
-            selected: this.props.animations[0],
+            selected: initialSelection,
             isOpen: true,
-            currentPathData: this.getPathData(this.props.animations[0]),
+            currentPathData: initialPathData,
             svgKeyframes: this._svgKeyframes,
             animationTargetProperty: 'position.x',
             animationName: "",
             animationType: "Float",
             currentFrame: 0,
             currentValue: 1,
-            flatTangent: false,
+            isFlatTangentMode: false,
+            isTangentMode: false,
+            isBrokenMode: false,
+            lerpMode: initialLerpMode,
             playheadOffset: this._graphCanvas.current ? (this._graphCanvas.current.children[1].clientWidth) / (this._canvasLength * 10) : 0,
             frameAxisLength: (new Array(this._canvasLength)).fill(0).map((s, i) => { return { value: i * 10, label: i * 10 } }),
             valueAxisLength: (new Array(10)).fill(0).map((s, i) => { return { value: i * 10, label: valueInd[i] } }),
             notification: "",
-            scale: 1
+            lastFrame: 0,
+            currentPoint: undefined,
+            scale: 1,
+            playheadPos: 0,
+            isPlaying: this.isAnimationPlaying()
         }
     }
 
@@ -69,18 +128,43 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         setTimeout(() => this.resetPlayheadOffset(), 500);
     }
 
-    resetPlayheadOffset() {
-        if (this._graphCanvas && this._graphCanvas.current) {
-            this.setState({ playheadOffset: (this._graphCanvas.current.children[1].clientWidth) / (this._canvasLength * 10 * this.state.scale) });
+    /**
+    * Notifications
+    * To add notification we set the state and clear to make the notification bar hide.
+    */
+    clearNotification() {
+        this.setState({ notification: "" });
+    }
+
+    /**
+    * Zoom and Scroll
+    * This section handles zoom and scroll
+    * of the graph area.
+    */
+    zoom(e: React.WheelEvent<HTMLDivElement>) {
+        e.nativeEvent.stopImmediatePropagation();
+        console.log(e.deltaY);
+        let scaleX = 1;
+        if (Math.sign(e.deltaY) === -1) {
+            scaleX = (this.state.scale - 0.01);
+        } else {
+            scaleX = (this.state.scale + 0.01);
         }
+
+        this.setState({ scale: scaleX }, this.setAxesLength);
+
     }
 
     setAxesLength() {
+        
+        let length = Math.round(this._canvasLength * this.state.scale);// Check Undefined, or NaN
+        let highestFrame = 100;
+        if (this.state.selected !== null) {
+            highestFrame = this.state.selected.getHighestFrame();
+        }
 
-        let length = Math.round(this._canvasLength * this.state.scale);
-
-        if (length < (this.state.selected.getHighestFrame() * 2) / 10) {
-            length = (this.state.selected.getHighestFrame() * 2) / 10
+        if (length < (highestFrame * 2) / 10) {
+            length = (highestFrame * 2) / 10
         }
 
         let valueLines = Math.round((this.state.scale * this._heightScale) / 10);
@@ -105,14 +189,21 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         return label;
     }
 
-    handleNameChange(event: React.ChangeEvent<HTMLInputElement>) {
-        event.preventDefault();
-        this.setState({ animationName: event.target.value });
+    resetPlayheadOffset() {
+        if (this._graphCanvas && this._graphCanvas.current) {
+            this.setState({ playheadOffset: (this._graphCanvas.current.children[1].clientWidth) / (this._canvasLength * 10 * this.state.scale) });
+        }
     }
 
-    handleValueChange(event: React.ChangeEvent<HTMLInputElement>) {
+
+
+    /**
+    * Add New Animation
+    * This section handles events from AnimationCreation.
+    */
+    handleNameChange(event: React.ChangeEvent<HTMLInputElement>) {
         event.preventDefault();
-        this.setState({ currentValue: parseFloat(event.target.value) });
+        this.setState({ animationName: event.target.value.trim() });
     }
 
     handleTypeChange(event: React.ChangeEvent<HTMLSelectElement>) {
@@ -125,6 +216,122 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         this.setState({ animationTargetProperty: event.target.value });
     }
 
+    setListItem(animation: Animation, i: number) {
+        let element;
+
+        switch (animation.dataType) {
+            case Animation.ANIMATIONTYPE_FLOAT:
+                element = <li className={this.state.selected && this.state.selected.name === animation.name ? 'active' : ''} key={i} onClick={() => this.selectAnimation(animation)}>
+                    <p>{animation.name}&nbsp;
+                    <span>{animation.targetProperty}</span></p>
+                    {!(this.props.entity instanceof TargetedAnimation) ? this.state.selected && this.state.selected.name === animation.name ? <ButtonLineComponent label={"Remove"} onClick={() => this.deleteAnimation()} /> : null : null}
+                </li>
+                break;
+            case Animation.ANIMATIONTYPE_VECTOR2:
+                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
+                    <ul>
+                        <li key={`${i}_x`}>Property <strong>X</strong></li>
+                        <li key={`${i}_y`}>Property <strong>Y</strong></li>
+                    </ul>
+                </li>
+                break;
+            case Animation.ANIMATIONTYPE_VECTOR3:
+                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
+                    <ul>
+                        <li key={`${i}_x`}>Property <strong>X</strong></li>
+                        <li key={`${i}_y`}>Property <strong>Y</strong></li>
+                        <li key={`${i}_z`}>Property <strong>Z</strong></li>
+                    </ul>
+                </li>
+                break;
+            case Animation.ANIMATIONTYPE_QUATERNION:
+                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
+                    <ul>
+                        <li key={`${i}_x`}>Property <strong>X</strong></li>
+                        <li key={`${i}_y`}>Property <strong>Y</strong></li>
+                        <li key={`${i}_z`}>Property <strong>Z</strong></li>
+                        <li key={`${i}_w`}>Property <strong>W</strong></li>
+                    </ul>
+                </li>
+                break;
+            case Animation.ANIMATIONTYPE_COLOR3:
+                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
+                    <ul>
+                        <li key={`${i}_r`}>Property <strong>R</strong></li>
+                        <li key={`${i}_g`}>Property <strong>G</strong></li>
+                        <li key={`${i}_b`}>Property <strong>B</strong></li>
+                    </ul>
+                </li>
+                break;
+            case Animation.ANIMATIONTYPE_COLOR4:
+                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
+                    <ul>
+                        <li key={`${i}_r`}>Property <strong>R</strong></li>
+                        <li key={`${i}_g`}>Property <strong>G</strong></li>
+                        <li key={`${i}_b`}>Property <strong>B</strong></li>
+                        <li key={`${i}_a`}>Property <strong>A</strong></li>
+                    </ul>
+                </li>
+                break;
+            case Animation.ANIMATIONTYPE_SIZE:
+                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
+                    <ul>
+                        <li key={`${i}_width`}>Property <strong>Width</strong></li>
+                        <li key={`${i}_height`}>Property <strong>Height</strong></li>
+                    </ul>
+                </li>
+                break;
+            default: console.log("not recognized");
+                element = null;
+                break;
+        }
+
+        return element;
+    }
+
+    getAnimationTypeofChange(selected: string) {
+        let dataType = 0;
+        switch (selected) {
+            case "Float":
+                dataType = Animation.ANIMATIONTYPE_FLOAT;
+                break;
+            case "Quaternion":
+                dataType = Animation.ANIMATIONTYPE_QUATERNION;
+                break;
+            case "Vector3":
+                dataType = Animation.ANIMATIONTYPE_VECTOR3;
+                break;
+            case "Vector2":
+                dataType = Animation.ANIMATIONTYPE_VECTOR2;
+                break;
+            case "Size":
+                dataType = Animation.ANIMATIONTYPE_SIZE;
+                break;
+            case "Color3":
+                dataType = Animation.ANIMATIONTYPE_COLOR3;
+                break;
+            case "Color4":
+                dataType = Animation.ANIMATIONTYPE_COLOR4;
+                break;
+        }
+
+        return dataType;
+
+    }
+
+    deleteAnimation() {
+        let currentSelected = this.state.selected;
+        if (this.props.entity instanceof TargetedAnimation) {
+            console.log("no animation remove allowed");
+        } else {
+            let animations = (this.props.entity as IAnimatable).animations;
+            if (animations) {
+                let updatedAnimations = animations.filter(anim => anim !== currentSelected);
+                (this.props.entity as IAnimatable).animations = updatedAnimations as Nullable<Animation[]>;
+            }
+        }
+    }
+
     addAnimation() {
         if (this.state.animationName != "" && this.state.animationTargetProperty != "") {
 
@@ -135,31 +342,33 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             if (matchTypeTargetProperty.length === 1) {
                 let match = (this.props.entity as any)[matchTypeTargetProperty[0]];
 
-                switch (match.constructor.name) {
-                    case "Vector2":
-                        animationDataType === Animation.ANIMATIONTYPE_VECTOR2 ? matched = true : matched = false;
-                        break;
-                    case "Vector3":
-                        animationDataType === Animation.ANIMATIONTYPE_VECTOR3 ? matched = true : matched = false;
-                        break;
-                    case "Quaternion":
-                        animationDataType === Animation.ANIMATIONTYPE_QUATERNION ? matched = true : matched = false;
-                        break;
-                    case "Color3":
-                        animationDataType === Animation.ANIMATIONTYPE_COLOR3 ? matched = true : matched = false;
-                        break;
-                    case "Color4":
-                        animationDataType === Animation.ANIMATIONTYPE_COLOR4 ? matched = true : matched = false;
-                        break;
-                    case "Size":
-                        animationDataType === Animation.ANIMATIONTYPE_SIZE ? matched = true : matched = false;
-                        break;
-                    default: console.log("not recognized");
-                        break;
+                if (match) {
+                    switch (match.constructor.name) {
+                        case "Vector2":
+                            animationDataType === Animation.ANIMATIONTYPE_VECTOR2 ? matched = true : matched = false;
+                            break;
+                        case "Vector3":
+                            animationDataType === Animation.ANIMATIONTYPE_VECTOR3 ? matched = true : matched = false;
+                            break;
+                        case "Quaternion":
+                            animationDataType === Animation.ANIMATIONTYPE_QUATERNION ? matched = true : matched = false;
+                            break;
+                        case "Color3":
+                            animationDataType === Animation.ANIMATIONTYPE_COLOR3 ? matched = true : matched = false;
+                            break;
+                        case "Color4":
+                            animationDataType === Animation.ANIMATIONTYPE_COLOR4 ? matched = true : matched = false;
+                            break;
+                        case "Size":
+                            animationDataType === Animation.ANIMATIONTYPE_SIZE ? matched = true : matched = false;
+                            break;
+                        default: console.log("not recognized");
+                            break;
+                    }
+                } else {
+                    this.setState({ notification: `The selected entity doesn't have a ${matchTypeTargetProperty[0]} property` });
                 }
-            }
-
-            if (matchTypeTargetProperty.length > 1) {
+            } else if (matchTypeTargetProperty.length > 1) {
                 let match = (this.props.entity as any)[matchTypeTargetProperty[0]][matchTypeTargetProperty[1]];
                 if (typeof match === "number") {
                     animationDataType === Animation.ANIMATIONTYPE_FLOAT ? matched = true : matched = false;
@@ -167,25 +376,95 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             }
 
             if (matched) {
-                let animation = new Animation(this.state.animationName, this.state.animationTargetProperty, 30, animationDataType);
 
-                // Start with two keyframes
-                var keys = [];
-                keys.push({
-                    frame: 0,
-                    value: 1
-                });
+                let startValue;
+                let endValue;
+                let outTangent;
+                let inTangent;
+                // Default start and end values for new animations
+                switch (animationDataType) {
+                    case Animation.ANIMATIONTYPE_FLOAT:
+                        startValue = 1;
+                        endValue = 1;
+                        outTangent = 0;
+                        inTangent = 0;
+                        break;
+                    case Animation.ANIMATIONTYPE_VECTOR2:
+                        startValue = new Vector2(1, 1);
+                        endValue = new Vector2(1, 1);
+                        outTangent = Vector2.Zero();
+                        inTangent = Vector2.Zero();
+                        break;
+                    case Animation.ANIMATIONTYPE_VECTOR3:
+                        startValue = new Vector3(1, 1, 1);
+                        endValue = new Vector3(1, 1, 1);
+                        outTangent = Vector3.Zero();
+                        inTangent = Vector3.Zero();
+                        break;
+                    case Animation.ANIMATIONTYPE_QUATERNION:
+                        startValue = new Quaternion(1, 1, 1, 1);
+                        endValue = new Quaternion(1, 1, 1, 1);
+                        outTangent = Quaternion.Zero();
+                        inTangent = Quaternion.Zero();
+                        break;
+                    case Animation.ANIMATIONTYPE_COLOR3:
+                        startValue = new Color3(1, 1, 1);
+                        endValue = new Color3(1, 1, 1);
+                        outTangent = new Color3(0, 0, 0);
+                        inTangent = new Color3(0, 0, 0);
+                        break;
+                    case Animation.ANIMATIONTYPE_COLOR4:
+                        startValue = new Color4(1, 1, 1, 1);
+                        endValue = new Color4(1, 1, 1, 1);
+                        outTangent = new Color4(0, 0, 0, 0);
+                        inTangent = new Color4(0, 0, 0, 0);
+                        break;
+                    case Animation.ANIMATIONTYPE_SIZE:
+                        startValue = new Size(1, 1);
+                        endValue = new Size(1, 1);
+                        outTangent = Size.Zero();
+                        inTangent = Size.Zero();
+                        break;
+                    default: console.log("not recognized");
+                        break;
+                }
 
-                keys.push({
-                    frame: 100,
-                    value: 1
-                });
+                let alreadyAnimatedProperty = (this.props.entity as IAnimatable).animations?.find(anim =>
+                    anim.targetProperty === this.state.animationTargetProperty
+                    , this);
 
-                animation.setKeys(keys);
-                (this.props.entity as IAnimatable).animations?.push(animation);
+                let alreadyAnimationName = (this.props.entity as IAnimatable).animations?.find(anim =>
+                    anim.name === this.state.animationName
+                    , this);
+
+                if (alreadyAnimatedProperty) {
+                    this.setState({ notification: `The property "${this.state.animationTargetProperty}" already has an animation` });
+                } else if (alreadyAnimationName) {
+                    this.setState({ notification: `There is already an animation with the name: "${this.state.animationName}"` });
+                } else {
+
+                    let animation = new Animation(this.state.animationName, this.state.animationTargetProperty, 30, animationDataType);
+
+                    // Start with two keyframes
+                    var keys = [];
+                    keys.push({
+                        frame: 0,
+                        value: startValue,
+                        outTangent: outTangent
+                    });
+
+                    keys.push({
+                        inTangent: inTangent,
+                        frame: 100,
+                        value: endValue
+                    });
+
+                    animation.setKeys(keys);
+                    (this.props.entity as IAnimatable).animations?.push(animation);
+                }
 
             } else {
-                this.setState({ notification: `The property "${this.state.animationTargetProperty}" if not a "${this.state.animationType}" type` })
+                this.setState({ notification: `The property "${this.state.animationTargetProperty}" is not a "${this.state.animationType}" type` });
             }
 
         } else {
@@ -193,31 +472,198 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         }
     }
 
-    clearNotification() {
-        this.setState({ notification: "" });
+    /**
+    * Keyframe Manipulation
+    * This section handles events from SvgDraggableArea.
+    */
+    selectKeyframe(id: string) {
+        let updatedKeyframes = this.state.svgKeyframes?.map(kf => {
+            if (kf.id === id) {
+                kf.selected = !kf.selected
+            }
+            return kf;
+        });
+        this.setState({ svgKeyframes: updatedKeyframes });
+
+    }
+
+    selectedControlPoint(type: string, id: string) {
+        let updatedKeyframes = this.state.svgKeyframes?.map(kf => {
+            if (kf.id === id) {
+                this.setState({ isFlatTangentMode: false });
+                if (type === "left") {
+                    kf.isLeftActive = !kf.isLeftActive;
+                    kf.isRightActive = false;
+                }
+                if (type === "right") {
+                    kf.isRightActive = !kf.isRightActive;
+                    kf.isLeftActive = false;
+                }
+            }
+            return kf;
+        });
+        this.setState({ svgKeyframes: updatedKeyframes });
+    }
+
+    renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number) {
+
+        let animation = this.state.selected as Animation;
+        // Bug: After play/stop we get an extra keyframe at 0
+
+        let keys = [...animation.getKeys()];
+
+        let newFrame = 0;
+        if (updatedSvgKeyFrame.keyframePoint.x !== 0) {
+            if (updatedSvgKeyFrame.keyframePoint.x > 0 && updatedSvgKeyFrame.keyframePoint.x < 1) {
+                newFrame = 1;
+            } else {
+                newFrame = Math.round(updatedSvgKeyFrame.keyframePoint.x);
+            }
+        }
+
+        keys[index].frame = newFrame; // This value comes as percentage/frame/time
+        keys[index].value = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2; // this value comes inverted svg from 0 = 100 to 100 = 0
+
+
+        if (updatedSvgKeyFrame.isLeftActive) {
+
+            if (updatedSvgKeyFrame.leftControlPoint !== null) {
+                // Rotate 
+                let updatedValue = ((this._heightScale - updatedSvgKeyFrame.leftControlPoint.y) / this._heightScale) * 2;
+
+                let keyframeValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2;
+
+                keys[index].inTangent = keyframeValue - updatedValue;
+
+                if (!this.state.isBrokenMode) {
+                    // Right control point if exists
+                    if (updatedSvgKeyFrame.rightControlPoint !== null) {
+                        // Sets opposite value
+                        keys[index].outTangent = keys[index].inTangent * -1
+                    }
+                }
+            }
+        }
+
+        if (updatedSvgKeyFrame.isRightActive) {
+
+            if (updatedSvgKeyFrame.rightControlPoint !== null) {
+                // Rotate 
+                let updatedValue = ((this._heightScale - updatedSvgKeyFrame.rightControlPoint.y) / this._heightScale) * 2;
+
+                let keyframeValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2;
+
+                keys[index].outTangent = keyframeValue - updatedValue;
+
+                if (!this.state.isBrokenMode) {
+                    if (updatedSvgKeyFrame.leftControlPoint !== null) {   // Sets opposite value
+                        keys[index].inTangent = keys[index].outTangent * -1
+                    }
+                }
+            }
+        }
+
+
+        animation.setKeys(keys);
+
+        this.selectAnimation(animation);
+
+    }
+
+    /**
+    * Actions
+    * This section handles events from GraphActionsBar.
+    */
+    handleFrameChange(event: React.ChangeEvent<HTMLInputElement>) {
+        event.preventDefault();
+        this.changeCurrentFrame(parseInt(event.target.value))
+    }
+
+    handleValueChange(event: React.ChangeEvent<HTMLInputElement>) {
+        event.preventDefault();
+        this.setState({ currentValue: parseFloat(event.target.value) }, () => {
+            if (this.state.selected !== null) {
+                let animation = this.state.selected;
+                let keys = animation.getKeys();
+
+                let isKeyframe = keys.find(k => k.frame === this.state.currentFrame);
+                if (isKeyframe) {
+                    let updatedKeys = keys.map(k => {
+                        if (k.frame === this.state.currentFrame) {
+                            k.value = this.state.currentValue;
+                        }
+                        return k;
+                    });
+                    this.state.selected.setKeys(updatedKeys);
+                    this.selectAnimation(animation);
+                }
+            }
+        });
+    }
+
+    setFlatTangent() {
+        if (this.state.selected !== null) {
+            let animation = this.state.selected;
+            this.setState({ isFlatTangentMode: !this.state.isFlatTangentMode }, () => this.selectAnimation(animation));
+        }
+    }
+
+    // Use this for Bezier curve mode
+    setTangentMode() {
+        if (this.state.selected !== null) {
+            let animation = this.state.selected;
+            this.setState({ isTangentMode: !this.state.isTangentMode }, () => this.selectAnimation(animation));
+        }
+    }
+
+    setBrokenMode() {
+        if (this.state.selected !== null) {
+            let animation = this.state.selected;
+            this.setState({ isBrokenMode: !this.state.isBrokenMode }, () => this.selectAnimation(animation));
+        }
+    }
+
+    setLerpMode() {
+        if (this.state.selected !== null) {
+            let animation = this.state.selected;
+            this.setState({ lerpMode: !this.state.lerpMode }, () => this.selectAnimation(animation));
+        }
     }
 
     addKeyframeClick() {
 
-        let currentAnimation = this.state.selected;
+        if (this.state.selected !== null) {
+            let currentAnimation = this.state.selected;
 
-        if (currentAnimation.dataType === Animation.ANIMATIONTYPE_FLOAT) {
-            let keys = currentAnimation.getKeys();
+            if (currentAnimation.dataType === Animation.ANIMATIONTYPE_FLOAT) {
+                let keys = currentAnimation.getKeys();
+                let x = this.state.currentFrame;
+                let y = this.state.currentValue;
 
-            let x = this.state.currentFrame
-            let y = this.state.currentValue;
+                keys.push({ frame: x, value: y, inTangent: 0, outTangent: 0 });
+                keys.sort((a, b) => a.frame - b.frame);
 
-            let previousFrame = keys.find(kf => kf.frame <= x);
+                currentAnimation.setKeys(keys);
 
-            console.log(previousFrame);
+                this.selectAnimation(currentAnimation);
+            }
+        }
+    }
 
-            keys.push({ frame: x, value: y });
+    removeKeyframeClick() {
 
-            keys.sort((a, b) => a.frame - b.frame);
+        if (this.state.selected !== null) {
+            let currentAnimation = this.state.selected;
 
-            currentAnimation.setKeys(keys);
+            if (currentAnimation.dataType === Animation.ANIMATIONTYPE_FLOAT) {
+                let keys = currentAnimation.getKeys();
+                let x = this.state.currentFrame;
+                let filteredKeys = keys.filter(kf => kf.frame !== x);
 
-            this.selectAnimation(currentAnimation);
+                currentAnimation.setKeys(filteredKeys);
+
+                this.selectAnimation(currentAnimation);
+            }
         }
     }
 
@@ -225,40 +671,42 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
         event.preventDefault();
 
-        var svg = event.target as SVGSVGElement;
+        if (this.state.selected !== null) {
 
-        var pt = svg.createSVGPoint();
+            var svg = event.target as SVGSVGElement;
 
-        pt.x = event.clientX;
-        pt.y = event.clientY;
+            var pt = svg.createSVGPoint();
 
-        var inverse = svg.getScreenCTM()?.inverse();
+            pt.x = event.clientX;
+            pt.y = event.clientY;
 
-        var cursorpt = pt.matrixTransform(inverse);
+            var inverse = svg.getScreenCTM()?.inverse();
 
-        var currentAnimation = this.state.selected;
+            var cursorpt = pt.matrixTransform(inverse);
 
-        var keys = currentAnimation.getKeys();
+            var currentAnimation = this.state.selected;
 
-        var height = 100;
-        var middle = (height / 2);
+            var keys = currentAnimation.getKeys();
 
-        var keyValue;
+            var height = 100;
+            var middle = (height / 2);
 
-        if (cursorpt.y < middle) {
-            keyValue = 1 + ((100 / cursorpt.y) * .1)
+            var keyValue;
+
+            if (cursorpt.y < middle) {
+                keyValue = 1 + ((100 / cursorpt.y) * .1)
+            }
+
+            if (cursorpt.y > middle) {
+                keyValue = 1 - ((100 / cursorpt.y) * .1)
+            }
+
+            keys.push({ frame: cursorpt.x, value: keyValue });
+
+            currentAnimation.setKeys(keys);
+
+            this.selectAnimation(currentAnimation);
         }
-
-        if (cursorpt.y > middle) {
-            keyValue = 1 - ((100 / cursorpt.y) * .1)
-        }
-
-        keys.push({ frame: cursorpt.x, value: keyValue });
-
-        currentAnimation.setKeys(keys);
-
-        this.selectAnimation(currentAnimation);
-
     }
 
     updateKeyframe(keyframe: Vector2, index: number) {
@@ -295,6 +743,10 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
     }
 
+    /**
+    * Curve Rendering Functions
+    * This section handles how to render curves.
+    */
     getAnimationProperties(animation: Animation) {
         let easingType, easingMode;
         let easingFunction: EasingFunction = animation.getEasingFunction() as EasingFunction;
@@ -308,43 +760,110 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         return { easingType, easingMode }
     }
 
+    linearInterpolation(keyframes: IAnimationKey[], data: string, middle: number): string {
+        keyframes.forEach((key, i) => {
+
+            var point = new Vector2(0, 0);
+            point.x = key.frame;
+            point.y = this._heightScale - (key.value * middle);
+            this.setKeyframePointLinear(point, i);
+
+            if (i !== 0) {
+                data += ` L${point.x} ${point.y}`
+            }
+        });
+        return data;
+    }
+
+    setKeyframePointLinear(point: Vector2, index: number) {
+        let svgKeyframe = { keyframePoint: point, rightControlPoint: null, leftControlPoint: null, id: index.toString(), selected: false, isLeftActive: false, isRightActive: false }
+        this._svgKeyframes.push(svgKeyframe);
+    }
+
     getPathData(animation: Animation) {
 
-        const { easingMode, easingType } = this.getAnimationProperties(animation);
-
-        const keyframes = animation.getKeys();
+        // Check if Tangent mode is active and broken mode is active. (Only one tangent moves)
+        let keyframes = animation.getKeys();
 
         if (keyframes === undefined) {
             return "";
         }
 
+        // Checks if Flat Tangent is active (tangents are set to zero)
+        if (this.state && this.state.isFlatTangentMode) {
+            keyframes = animation.getKeys().map(kf => {
+
+                if (kf.inTangent !== undefined) {
+                    kf.inTangent = 0;
+                }
+
+                if (kf.outTangent !== undefined) {
+                    kf.outTangent = 0;
+                }
+
+                return kf;
+            });
+        } else {
+            keyframes = animation.getKeys();
+        }
+
         const startKey = keyframes[0];
 
-        // This assumes the startkey is always 0... beed to change this
         let middle = this._heightScale / 2;
 
         // START OF LINE/CURVE
         let data: string | undefined = `M${startKey.frame}, ${this._heightScale - (startKey.value * middle)}`;
 
-        if (this.state && this.state.flatTangent) {
-            data = this.curvePathFlat(keyframes, data, middle, animation.dataType);
+        if (this.state && this.state.lerpMode) {
+            data = this.linearInterpolation(keyframes, data, middle);
         } else {
-
             if (this.getAnimationData(animation).usesTangents) {
                 data = this.curvePathWithTangents(keyframes, data, middle, animation.dataType);
             } else {
-                console.log("no tangents in this animation");
-                if (easingType === undefined && easingMode === undefined) {
-                    data = this.linearInterpolation(keyframes, data, middle);
-                } else {
+                const { easingMode, easingType } = this.getAnimationProperties(animation);
+                if (easingType !== undefined && easingMode !== undefined) {
                     let easingFunction = animation.getEasingFunction();
-
                     data = this.curvePath(keyframes, data, middle, easingFunction as EasingFunction)
+                } else {
+                    if (this.state !== undefined) {
+                        let emptyTangents = keyframes.map((kf, i) => {
+                            if (i === 0) {
+                                kf.outTangent = 0;
+                            } else if (i === keyframes.length - 1) {
+                                kf.inTangent = 0;
+                            } else {
+                                kf.inTangent = 0;
+                                kf.outTangent = 0;
+                            }
+                            return kf;
+                        });
+                        data = this.curvePathWithTangents(emptyTangents, data, middle, animation.dataType);
+                    } else {
+                        data = this.linearInterpolation(keyframes, data, middle);
+                    }
+
                 }
             }
         }
 
         return data;
+
+    }
+
+    getAnimationData(animation: Animation) {
+
+        // General Props
+        let loopMode = animation.loopMode;
+        let name = animation.name;
+        let blendingSpeed = animation.blendingSpeed;
+        let targetProperty = animation.targetProperty;
+        let targetPropertyPath = animation.targetPropertyPath;
+        let framesPerSecond = animation.framePerSecond;
+        let highestFrame = animation.getHighestFrame();
+        let serialized = animation.serialize();
+        let usesTangents = animation.getKeys().find(kf => kf.hasOwnProperty('inTangent') || kf.hasOwnProperty('outTangent')) !== undefined ? true : false;
+
+        return { loopMode, name, blendingSpeed, targetPropertyPath, targetProperty, framesPerSecond, highestFrame, serialized, usesTangents }
 
     }
 
@@ -376,11 +895,25 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                 } else {
                     pointA.set(keyframes[i - 1].frame, this._heightScale - (keyframes[i - 1].value * middle));
 
-                    let tangentA = new Vector2(pointA.x + 10, pointA.y);
+                    let defaultWeight = 10;
+
+                    let nextKeyframe = keyframes[i + 1];
+                    let prevKeyframe = keyframes[i - 1];
+                    if (nextKeyframe !== undefined) {
+                        let distance = keyframes[i + 1].frame - key.frame;
+                        defaultWeight = distance * .33;
+                    }
+
+                    if (prevKeyframe !== undefined) {
+                        let distance = key.frame - keyframes[i - 1].frame;
+                        defaultWeight = distance * .33;
+                    }
+
+                    let tangentA = new Vector2(pointA.x + defaultWeight, pointA.y);
 
                     let pointB = new Vector2(key.frame, this._heightScale - (key.value * middle));
 
-                    let tangentB = new Vector2(pointB.x - 10, pointB.y);
+                    let tangentB = new Vector2(pointB.x - defaultWeight, pointB.y);
 
                     this.setKeyframePoint([pointA, tangentA, tangentB, pointB], i, keyframes.length);
 
@@ -396,44 +929,74 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
     curvePathWithTangents(keyframes: IAnimationKey[], data: string, middle: number, type: number) {
 
-        switch (type) {
-            case Animation.ANIMATIONTYPE_FLOAT:
-                // value float
-                break;
-            case Animation.ANIMATIONTYPE_VECTOR3:
-                // value float
-                break;
-        }
-
-
         keyframes.forEach((key, i) => {
 
-            var inTangent = key.inTangent;
-            var outTangent = key.outTangent;
-
             let svgKeyframe;
+            let outTangent;
+            let inTangent;
+            let defaultWeight = 5;
+
+            var inT = key.inTangent === undefined ? null : key.inTangent;
+            var outT = key.outTangent === undefined ? null : key.outTangent;
+
+            let y = this._heightScale - (key.value * middle);
+
+            let nextKeyframe = keyframes[i + 1];
+            let prevKeyframe = keyframes[i - 1];
+            if (nextKeyframe !== undefined) {
+                let distance = keyframes[i + 1].frame - key.frame;
+                defaultWeight = distance * .33;
+            }
+
+            if (prevKeyframe !== undefined) {
+                let distance = key.frame - keyframes[i - 1].frame;
+                defaultWeight = distance * .33;
+            }
+
+            if (inT !== null) {
+                let valueIn = (y * inT) + y;
+                inTangent = new Vector2(key.frame - defaultWeight, valueIn)
+            } else {
+                inTangent = null;
+            }
+
+            if (outT !== null) {
+                let valueOut = (y * outT) + y;
+                outTangent = new Vector2(key.frame + defaultWeight, valueOut);
+            } else {
+                outTangent = null;
+            }
 
             if (i === 0) {
-
-                svgKeyframe = { keyframePoint: new Vector2(key.frame, this._heightScale - (key.value * middle)), rightControlPoint: outTangent, leftControlPoint: null, id: i.toString() }
-
-                data += ` C${svgKeyframe.keyframePoint.x} ${svgKeyframe.keyframePoint.y} ${outTangent.x} ${outTangent.y}`
+                svgKeyframe = { keyframePoint: new Vector2(key.frame, this._heightScale - (key.value * middle)), rightControlPoint: outTangent, leftControlPoint: null, id: i.toString(), selected: false, isLeftActive: false, isRightActive: false }
+                if (outTangent !== null) {
+                    data += ` C${outTangent.x} ${outTangent.y} `;
+                }
 
             } else {
 
-                svgKeyframe = { keyframePoint: new Vector2(keyframes[i - 1].frame, this._heightScale - (keyframes[i - 1].value * middle)), rightControlPoint: outTangent, leftControlPoint: inTangent, id: i.toString() }
+                svgKeyframe = { keyframePoint: new Vector2(key.frame, this._heightScale - (key.value * middle)), rightControlPoint: outTangent, leftControlPoint: inTangent, id: i.toString(), selected: false, isLeftActive: false, isRightActive: false }
 
-                if (outTangent) {
-                    data += `${inTangent.x} ${inTangent.y} C${svgKeyframe.keyframePoint.x} ${svgKeyframe.keyframePoint.y} ${outTangent.x} ${outTangent.y} `
-                } else {
-                    data += `${inTangent.x} ${inTangent.y} C${svgKeyframe.keyframePoint.x} ${svgKeyframe.keyframePoint.y} `
+                if (outTangent !== null && inTangent !== null) {
+                    data += ` ${inTangent.x} ${inTangent.y} ${svgKeyframe.keyframePoint.x} ${svgKeyframe.keyframePoint.y} C${outTangent.x} ${outTangent.y} `
+                } else if (inTangent !== null) {
+                    data += ` ${inTangent.x} ${inTangent.y} ${svgKeyframe.keyframePoint.x} ${svgKeyframe.keyframePoint.y} `
                 }
 
             }
 
+            if (this.state) {
+                let prev = this.state.svgKeyframes?.find(kf => kf.id === i.toString());
+                if (prev) {
+                    svgKeyframe.isLeftActive = prev?.isLeftActive;
+                    svgKeyframe.isRightActive = prev?.isRightActive;
+                    svgKeyframe.selected = prev?.selected
+                }
+            }
+
             this._svgKeyframes.push(svgKeyframe);
 
-        });
+        }, this);
 
         return data;
 
@@ -506,137 +1069,17 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
     }
 
-    renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number) {
-
-        let animation = this.state.selected as Animation;
-        // Bug: After play/stop we get an extra keyframe at 0
-
-        let keys = [...animation.getKeys()];
-
-        let newFrame = 0;
-        if (updatedSvgKeyFrame.keyframePoint.x !== 0) {
-            if (updatedSvgKeyFrame.keyframePoint.x > 0 && updatedSvgKeyFrame.keyframePoint.x < 1) {
-                newFrame = 1;
-            } else {
-                newFrame = Math.round(updatedSvgKeyFrame.keyframePoint.x);
-            }
-        }
-
-        keys[index].frame = newFrame; // This value comes as percentage/frame/time
-        keys[index].value = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2; // this value comes inverted svg from 0 = 100 to 100 = 0
-
-        animation.setKeys(keys);
-
-        this.selectAnimation(animation);
-
-    }
-
-
-    linearInterpolation(keyframes: IAnimationKey[], data: string, middle: number): string {
-        keyframes.forEach((key, i) => {
-
-            var point = new Vector2(0, 0);
-            point.x = key.frame;
-            point.y = this._heightScale - (key.value * middle);
-            this.setKeyframePointLinear(point, i);
-
-            if (i !== 0) {
-                data += ` L${point.x} ${point.y}`
-            }
-        });
-        return data;
-    }
-
-    setKeyframePointLinear(point: Vector2, index: number) {
-        let svgKeyframe = { keyframePoint: point, rightControlPoint: null, leftControlPoint: null, id: index.toString() }
-        this._svgKeyframes.push(svgKeyframe);
-    }
-
     setKeyframePoint(controlPoints: Vector2[], index: number, keyframesCount: number) {
 
         let svgKeyframe;
         if (index === 0) {
-            svgKeyframe = { keyframePoint: controlPoints[0], rightControlPoint: null, leftControlPoint: null, id: index.toString() }
+            svgKeyframe = { keyframePoint: controlPoints[0], rightControlPoint: null, leftControlPoint: null, id: index.toString(), selected: false, isLeftActive: false, isRightActive: false }
         } else {
             this._svgKeyframes[index - 1].rightControlPoint = controlPoints[1];
-            svgKeyframe = { keyframePoint: controlPoints[3], rightControlPoint: null, leftControlPoint: controlPoints[2], id: index.toString() }
+            svgKeyframe = { keyframePoint: controlPoints[3], rightControlPoint: null, leftControlPoint: controlPoints[2], id: index.toString(), selected: false, isLeftActive: false, isRightActive: false }
         }
 
         this._svgKeyframes.push(svgKeyframe);
-    }
-
-    isAnimationPlaying() {
-        this._isPlaying = this.props.scene.getAllAnimatablesByTarget(this.props.entity).length > 0;
-        if (this._isPlaying) {
-            this.props.playOrPause();
-        } else {
-            this._isPlaying = false;
-        }
-    }
-
-    selectAnimation(animation: Animation) {
-
-        this.isAnimationPlaying();
-
-        this._svgKeyframes = [];
-
-        const pathData = this.getPathData(animation);
-        if (pathData === "") {
-            console.log("no keyframes in this animation");
-        }
-
-        this.setState({ selected: animation, currentPathData: pathData, svgKeyframes: this._svgKeyframes });
-
-    }
-
-    getAnimationData(animation: Animation) {
-
-        // General Props
-        let loopMode = animation.loopMode;
-        let name = animation.name;
-        let blendingSpeed = animation.blendingSpeed;
-        let targetProperty = animation.targetProperty;
-        let targetPropertyPath = animation.targetPropertyPath;
-        let framesPerSecond = animation.framePerSecond;
-        let highestFrame = animation.getHighestFrame();
-
-        // Should we use this for export?
-        let serialized = animation.serialize();
-
-        let usesTangents = animation.getKeys().find(kf => kf.inTangent);
-
-        return { loopMode, name, blendingSpeed, targetPropertyPath, targetProperty, framesPerSecond, highestFrame, serialized, usesTangents }
-
-    }
-
-    getAnimationTypeofChange(selected: string) {
-        let dataType = 0;
-        switch (selected) {
-            case "Float":
-                dataType = Animation.ANIMATIONTYPE_FLOAT;
-                break;
-            case "Quaternion":
-                dataType = Animation.ANIMATIONTYPE_QUATERNION;
-                break;
-            case "Vector3":
-                dataType = Animation.ANIMATIONTYPE_VECTOR3;
-                break;
-            case "Vector2":
-                dataType = Animation.ANIMATIONTYPE_VECTOR2;
-                break;
-            case "Size":
-                dataType = Animation.ANIMATIONTYPE_SIZE;
-                break;
-            case "Color3":
-                dataType = Animation.ANIMATIONTYPE_COLOR3;
-                break;
-            case "Color4":
-                dataType = Animation.ANIMATIONTYPE_COLOR4;
-                break;
-        }
-
-        return dataType;
-
     }
 
     interpolateControlPoints(p0: Vector2, p1: Vector2, u: number, p2: Vector2, v: number, p3: Vector2): Vector2[] | undefined {
@@ -680,45 +1123,164 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
     }
 
-    changeCurrentFrame(frame: number) {
-        this.setState({ currentFrame: frame });
-    }
+    /**
+    * Core functions
+    * This section handles main Curve Editor Functions.
+    */
+    selectAnimation(animation: Animation) {
 
-    setFlatTangent() {
-        this.setState({ flatTangent: !this.state.flatTangent }, () => this.selectAnimation(this.state.selected));
-    }
+        this.playStopAnimation();
 
-    zoom(e: React.WheelEvent<HTMLDivElement>) {
-        e.nativeEvent.stopImmediatePropagation();
-        console.log(e.deltaY);
-        let scaleX = 1;
-        if (Math.sign(e.deltaY) === -1) {
-            scaleX = (this.state.scale - 0.01);
-        } else {
-            scaleX = (this.state.scale + 0.01);
+        this._svgKeyframes = [];
+
+        const pathData = this.getPathData(animation);
+
+        let lastFrame = animation.getHighestFrame();
+
+        if (pathData === "") {
+            console.log("no keyframes in this animation");
         }
 
-        this.setState({ scale: scaleX }, this.setAxesLength);
+        this.setState({ selected: animation, currentPathData: pathData, svgKeyframes: this._svgKeyframes, lastFrame: lastFrame });
 
+    }
+
+    isAnimationPlaying() {
+        let target = this.props.entity;
+        if (this.props.entity instanceof TargetedAnimation) {
+            target = this.props.entity.target;
+        }
+
+        return this.props.scene.getAllAnimatablesByTarget(target).length > 0;
+    }
+
+    playPause(direction: number) {
+        if (this.state.selected) {
+            let target = this.props.entity;
+            if (this.props.entity instanceof TargetedAnimation) {
+                target = this.props.entity.target;
+            }
+            if (this.state.isPlaying) {
+                this.props.scene.stopAnimation(target);
+                this.setState({ isPlaying: false })
+                this._isPlaying = false;
+                this.forceUpdate();
+            } else {
+                let keys = this.state.selected.getKeys();
+                let firstFrame = keys[0].frame;
+                let LastFrame = keys[keys.length - 1].frame;
+                if (direction === 1){
+                    this.props.scene.beginAnimation(target, firstFrame, LastFrame, true);
+                } 
+                if (direction === -1){
+                    this.props.scene.beginAnimation(target, LastFrame, firstFrame, true);
+                } 
+                this._isPlaying = true;
+                this.setState({ isPlaying: true });
+                this.forceUpdate();
+            }
+        }
+    }
+
+    playStopAnimation() {
+        let target = this.props.entity;
+        if (this.props.entity instanceof TargetedAnimation) {
+            target = this.props.entity.target;
+        }
+        this._isPlaying = this.props.scene.getAllAnimatablesByTarget(target).length > 0;
+        if (this._isPlaying) {
+            this.props.playOrPause && this.props.playOrPause();
+            return true;
+        } else {
+            this._isPlaying = false;
+            return false;
+        }
+    }
+
+    analizeAnimation(animation: Animation | null) {
+        if (animation !== null) {
+            const { easingMode, easingType } = this.getAnimationProperties(animation);
+            let hasDefinedTangents = this.getAnimationData(animation).usesTangents;
+
+            if (easingType === undefined && easingMode === undefined && !hasDefinedTangents) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    /**
+    * Timeline
+    * This section controls the timeline.
+    */
+    changeCurrentFrame(frame: number) {
+
+        let currentValue;
+        let selectedCurve = this._selectedCurve.current;
+        if (selectedCurve) {
+
+            var curveLength = selectedCurve.getTotalLength();
+
+            let frameValue = (frame * curveLength) / 100;
+            let currentP = selectedCurve.getPointAtLength(frameValue);
+            let middle = this._heightScale / 2;
+
+            let offset = (((currentP?.y * this._heightScale) - (this._heightScale ** 2) / 2) / middle) / this._heightScale;
+
+            let unit = Math.sign(offset);
+            currentValue = unit === -1 ? Math.abs(offset + unit) : unit - offset;
+
+            this.setState({ currentFrame: frame, currentValue: currentValue, currentPoint: currentP });
+
+        }
+    }
+
+    updateFrameInKeyFrame(frame: number, index: number) {
+
+        if (this.state && this.state.selected) {
+            let animation = this.state.selected;
+            let keys = [...animation.getKeys()];
+
+            keys[index].frame = frame;
+
+            animation.setKeys(keys);
+
+            this.selectAnimation(animation);
+        }
     }
 
     render() {
         return (
             <div id="animation-curve-editor">
+
                 <Notification message={this.state.notification} open={this.state.notification !== "" ? true : false} close={() => this.clearNotification()} />
+
                 <div className="header">
                     <div className="title">{this.props.title}</div>
                     <div className="close" onClick={(event: React.MouseEvent<HTMLDivElement, MouseEvent>) => this.props.close(event)}>
                         <FontAwesomeIcon icon={faTimes} />
                     </div>
                 </div>
-                <GraphActionsBar currentValue={this.state.currentValue} handleValueChange={(e) => this.handleValueChange(e)} addKeyframe={() => this.addKeyframeClick()} flatTangent={() => this.setFlatTangent()} />
-                <div className="content">
 
+                <GraphActionsBar currentValue={this.state.currentValue}
+                    currentFrame={this.state.currentFrame}
+                    handleFrameChange={(e) => this.handleFrameChange(e)}
+                    handleValueChange={(e) => this.handleValueChange(e)}
+                    addKeyframe={() => this.addKeyframeClick()}
+                    removeKeyframe={() => this.removeKeyframeClick()}
+                    brokenMode={this.state.isBrokenMode}
+                    brokeTangents={() => this.setBrokenMode()}
+                    lerpMode={this.state.lerpMode}
+                    setLerpMode={() => this.setLerpMode()}
+                    flatTangent={() => this.setFlatTangent()} />
+
+                <div className="content">
                     <div className="row">
                         <div className="animation-list">
-
-                            <div>
+                            <div style={{ display: this._isTargetedAnimation ? "none" : "block" }}>
                                 <div className="label-input">
                                     <label>Animation Name</label>
                                     <input type="text" value={this.state.animationName} onChange={(e) => this.handleNameChange(e)}></input>
@@ -743,20 +1305,31 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                             </div>
 
                             <div className="object-tree">
-                                <h2>{this.props.entityName}</h2>
+                                <h2>{this._entityName}</h2>
                                 <ul>
-                                    {this.props.animations && this.props.animations.map((animation, i) => {
-                                        return <li className={this.state.selected.name === animation.name ? 'active' : ''} key={i} onClick={() => this.selectAnimation(animation)}>{animation.name} <strong>{animation.targetProperty}</strong></li>
-                                    })}
+                                    {
+
+                                        this.props.entity instanceof TargetedAnimation ? this.setListItem(this.props.entity.animation, 0) :
+                                            this.props.entity.animations && this.props.entity.animations.map((animation, i) => {
+
+                                                return this.setListItem(animation, i);
+
+                                            })}
 
                                 </ul>
                             </div>
                         </div>
+
                         <div ref={this._graphCanvas} className="graph-chart" onWheel={(e) => this.zoom(e)} >
 
                             <Playhead frame={this.state.currentFrame} offset={this.state.playheadOffset} />
 
-                            {this.state.svgKeyframes && <SvgDraggableArea viewBoxScale={this.state.frameAxisLength.length} scale={this.state.scale} keyframeSvgPoints={this.state.svgKeyframes} updatePosition={(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number) => this.renderPoints(updatedSvgKeyFrame, index)}>
+                            {this.state.svgKeyframes && <SvgDraggableArea ref={this._svgCanvas}
+                                selectKeyframe={(id: string) => this.selectKeyframe(id)}
+                                viewBoxScale={this.state.frameAxisLength.length} scale={this.state.scale}
+                                keyframeSvgPoints={this.state.svgKeyframes}
+                                selectedControlPoint={(type: string, id: string) => this.selectedControlPoint(type, id)}
+                                updatePosition={(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number) => this.renderPoints(updatedSvgKeyFrame, index)}>
 
                                 {/* Frame Labels  */}
                                 { /* Vertical Grid  */}
@@ -776,7 +1349,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                                 })}
 
                                 { /* Single Curve -Modify this for multiple selection and view  */}
-                                <path id="curve" d={this.state.currentPathData} style={{ stroke: 'red', fill: 'none', strokeWidth: '0.5' }}></path>
+                                <path ref={this._selectedCurve} pathLength={this.state.lastFrame} id="curve" d={this.state.currentPathData} style={{ stroke: 'red', fill: 'none', strokeWidth: '0.5' }}></path>
 
                                 {this._frames && this._frames.map(frame =>
                                     <svg x={frame.x} y={frame.y} style={{ overflow: 'visible' }}>
@@ -791,7 +1364,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                         </div>
                     </div>
                     <div className="row">
-                        <Timeline currentFrame={this.state.currentFrame} onCurrentFrameChange={(frame: number) => this.changeCurrentFrame(frame)} keyframes={this.state.selected.getKeys()} selected={this.state.selected.getKeys()[0]}></Timeline>
+                        <Timeline currentFrame={this.state.currentFrame} playPause={(direction: number) => this.playPause(direction)} isPlaying={this.state.isPlaying} dragKeyframe={(frame: number, index: number) => this.updateFrameInKeyFrame(frame, index)} onCurrentFrameChange={(frame: number) => this.changeCurrentFrame(frame)} keyframes={this.state.selected && this.state.selected.getKeys()} selected={this.state.selected && this.state.selected.getKeys()[0]}></Timeline>
                     </div>
                 </div>
             </div>
