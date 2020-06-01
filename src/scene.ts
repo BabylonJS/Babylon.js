@@ -258,7 +258,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         this._highDefinitionPipeline = b;
     }
 
-    public mrtCount: number = 5;
+    public mrtCount: number = 4;
     public highDefinitionMRT: MultiRenderTarget;
     public sceneCompositorPostProcess: SceneCompositorPostProcess;
     public subSurfaceScatteringPostProcess: SubSurfaceScatteringPostProcess;
@@ -1450,8 +1450,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             Constants.TEXTURETYPE_UNSIGNED_INT, // Original color
             Constants.TEXTURETYPE_UNSIGNED_INT, // Irradiance
             Constants.TEXTURETYPE_FLOAT, // Depth (world units)
-            Constants.TEXTURETYPE_UNSIGNED_INT,
-            Constants.TEXTURETYPE_UNSIGNED_INT,
+            Constants.TEXTURETYPE_UNSIGNED_INT
         ];
 
         this.highDefinitionMRT = new MultiRenderTarget("sceneHighDefinitionMRT", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, this.mrtCount, this,

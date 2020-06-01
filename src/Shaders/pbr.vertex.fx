@@ -173,7 +173,9 @@ void main(void) {
 
     vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
     vPositionW = vec3(worldPos);
+#ifdef HIGH_DEFINITION_PIPELINE
     vViewPos = (view * worldPos).rgb;
+#endif
 
 #ifdef NORMAL
     mat3 normalWorld = mat3(finalWorld);
