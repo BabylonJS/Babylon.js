@@ -1,6 +1,4 @@
 import * as React from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { Animation } from 'babylonjs/Animations/animation';
 import { Vector2, Vector3, Quaternion } from 'babylonjs/Maths/math.vector';
 import { Size } from 'babylonjs/Maths/math.size';
@@ -24,7 +22,6 @@ require("./curveEditor.scss");
 interface IAnimationCurveEditorComponentProps {
     close: (event: any) => void;
     playOrPause?: () => void;
-    title: string;
     scene: Scene;
     entity: IAnimatable | TargetedAnimation;
 }
@@ -87,13 +84,18 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         if (this.props.entity instanceof TargetedAnimation) {
             this._isTargetedAnimation = true;
             initialSelection = this.props.entity.animation;
-            initialLerpMode = this.analizeAnimation(this.props.entity.animation);
-            initialPathData = this.getPathData(this.props.entity.animation);
+            initialLerpMode = initialSelection !== undefined ? this.analizeAnimation(initialSelection) : false;
+            initialPathData = initialSelection !== undefined ? this.getPathData(initialSelection) : "";
         } else {
             this._isTargetedAnimation = false;
-            initialLerpMode = this.analizeAnimation(this.props.entity.animations && this.props.entity.animations[0]);
-            initialSelection = this.props.entity.animations !== null ? this.props.entity.animations[0] : null;
-            initialPathData = this.props.entity.animations !== null ? this.getPathData(this.props.entity.animations[0]) : "";
+
+            let hasAnimations = this.props.entity.animations !== undefined || this.props.entity.animations !== null ? this.props.entity.animations : false;
+            initialSelection = hasAnimations !== false ? hasAnimations && hasAnimations[0] : null;
+
+
+            initialLerpMode = initialSelection !== undefined ? this.analizeAnimation(this.props.entity.animations && initialSelection) : false;
+            initialPathData = initialSelection && this.getPathData(initialSelection);
+            initialPathData = initialPathData === null || initialPathData === undefined ? "" : initialPathData;
         }
 
         // will update this until we have a top scroll/zoom feature
@@ -780,7 +782,11 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         this._svgKeyframes.push(svgKeyframe);
     }
 
-    getPathData(animation: Animation) {
+    getPathData(animation: Animation | null) {
+
+        if (animation === null){
+            return "";
+        }
 
         // Check if Tangent mode is active and broken mode is active. (Only one tangent moves)
         let keyframes = animation.getKeys();
@@ -847,7 +853,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         }
 
         return data;
-
+        
     }
 
     getAnimationData(animation: Animation) {
@@ -1258,14 +1264,11 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
                 <Notification message={this.state.notification} open={this.state.notification !== "" ? true : false} close={() => this.clearNotification()} />
 
-                <div className="header">
-                    <div className="title">{this.props.title}</div>
-                    <div className="close" onClick={(event: React.MouseEvent<HTMLDivElement, MouseEvent>) => this.props.close(event)}>
-                        <FontAwesomeIcon icon={faTimes} />
-                    </div>
-                </div>
-
-                <GraphActionsBar currentValue={this.state.currentValue}
+                <GraphActionsBar
+                    enabled={this.state.selected === null || this.state.selected === undefined ? false : true}
+                    title={this._entityName}
+                    close={this.props.close}
+                    currentValue={this.state.currentValue}
                     currentFrame={this.state.currentFrame}
                     handleFrameChange={(e) => this.handleFrameChange(e)}
                     handleValueChange={(e) => this.handleValueChange(e)}
@@ -1276,7 +1279,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                     lerpMode={this.state.lerpMode}
                     setLerpMode={() => this.setLerpMode()}
                     flatTangent={() => this.setFlatTangent()} />
-
+                    
                 <div className="content">
                     <div className="row">
                         <div className="animation-list">
@@ -1305,7 +1308,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                             </div>
 
                             <div className="object-tree">
-                                <h2>{this._entityName}</h2>
                                 <ul>
                                     {
 
