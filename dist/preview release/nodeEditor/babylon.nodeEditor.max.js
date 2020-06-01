@@ -65204,7 +65204,7 @@ var NodePort = /** @class */ (function () {
     };
     Object.defineProperty(NodePort.prototype, "exposedOnFrame", {
         get: function () {
-            if (!!this._exposedOnFrame || this._isConnectedToNodeOutsideOfFrame()) {
+            if (!!this.connectionPoint.isExposedOnFrame || this._isConnectedToNodeOutsideOfFrame()) {
                 return true;
             }
             return false;
@@ -65213,7 +65213,7 @@ var NodePort = /** @class */ (function () {
             if (this.disabled) {
                 return;
             }
-            this._exposedOnFrame = value;
+            this.connectionPoint.isExposedOnFrame = value;
         },
         enumerable: true,
         configurable: true
