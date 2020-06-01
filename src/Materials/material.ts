@@ -7,7 +7,7 @@ import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Matrix } from "../Maths/math.vector";
 import { EngineStore } from "../Engines/engineStore";
-import { BaseSubMesh, SubMesh } from "../Meshes/subMesh";
+import { SubMesh } from "../Meshes/subMesh";
 import { Geometry } from "../Meshes/geometry";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { UniformBuffer } from "./uniformBuffer";
@@ -163,6 +163,13 @@ export class Material implements IAnimatable {
      * Custom shadow depth material to use for shadow rendering instead of the in-built one
      */
     public shadowDepthWrapper: Nullable<ShadowDepthWrapper> = null;
+
+    /**
+     * Gets or sets a boolean indicating that the material is allowed (if supported) to do shader hot swapping.
+     * This means that the material can keep using a previous shader while a new one is being compiled.
+     * This is mostly used when shader parallel compilation is supported (true by default)
+     */
+    public allowShaderHotSwapping = true;
 
     /**
      * The ID of the material
@@ -709,7 +716,7 @@ export class Material implements IAnimatable {
      * @param useInstances specifies that instances should be used
      * @returns a boolean indicating that the submesh is ready or not
      */
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean {
+    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         return false;
     }
 
@@ -1044,16 +1051,13 @@ export class Material implements IAnimatable {
             ...options
         };
 
-        var subMesh = new BaseSubMesh();
         var scene = this.getScene();
+        let currentHotSwapingState = this.allowShaderHotSwapping;
+        this.allowShaderHotSwapping = false; // Turned off to let us evaluate the real compilation state
 
         var checkReady = () => {
             if (!this._scene || !this._scene.getEngine()) {
                 return;
-            }
-
-            if (subMesh._materialDefines) {
-                subMesh._materialDefines._renderId = -1;
             }
 
             var clipPlaneState = scene.clipPlane;
@@ -1063,22 +1067,47 @@ export class Material implements IAnimatable {
             }
 
             if (this._storeEffectOnSubMeshes) {
-                if (this.isReadyForSubMesh(mesh, subMesh, localOptions.useInstances)) {
+                var allDone = true, lastError = null;
+                if (mesh.subMeshes) {
+                    let tempSubMesh = new SubMesh(0, 0, 0, 0, 0, mesh, undefined, false, false);
+                    if (this._storeEffectOnSubMeshes) {
+                        if (tempSubMesh._materialDefines) {
+                            tempSubMesh._materialDefines._renderId = -1;
+                        }
+                        if (!this.isReadyForSubMesh(mesh, tempSubMesh, localOptions.useInstances)) {
+                            if (tempSubMesh.effect && tempSubMesh.effect.getCompilationError() && tempSubMesh.effect.allFallbacksProcessed()) {
+                                lastError = tempSubMesh.effect.getCompilationError();
+                            } else {
+                                allDone = false;
+                                setTimeout(checkReady, 16);
+                            }
+                        }
+                    } else {
+                        tempSubMesh._renderId = -1;
+                        if (!this.isReady(mesh, localOptions.useInstances)) {
+                            if (this.getEffect() && this.getEffect()!.getCompilationError() && this.getEffect()!.allFallbacksProcessed()) {
+                                lastError = this.getEffect()!.getCompilationError();
+                            } else {
+                                allDone = false;
+                                setTimeout(checkReady, 16);
+                            }
+                        }
+                    }
+                }
+                if (allDone) {
+                    this.allowShaderHotSwapping = currentHotSwapingState;
+                    if (lastError) {
+                        if (onError) {
+                            onError(lastError);
+                        }
+                    }
                     if (onCompiled) {
                         onCompiled(this);
                     }
                 }
-                else {
-                    if (subMesh.effect && subMesh.effect.getCompilationError() && subMesh.effect.allFallbacksProcessed()) {
-                        if (onError) {
-                            onError(subMesh.effect.getCompilationError());
-                        }
-                    } else {
-                        setTimeout(checkReady, 16);
-                    }
-                }
             } else {
                 if (this.isReady()) {
+                    this.allowShaderHotSwapping = currentHotSwapingState;
                     if (onCompiled) {
                         onCompiled(this);
                     }

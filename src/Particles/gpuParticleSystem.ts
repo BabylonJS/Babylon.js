@@ -1196,6 +1196,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                     defines.push("#define BILLBOARDSTRETCHED");
                     break;
                 case ParticleSystem.BILLBOARDMODE_ALL:
+                    defines.push("#define BILLBOARDMODE_ALL");
+                    break;
                 default:
                     break;
             }
@@ -1509,11 +1511,16 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                 effect.setVector3("eyePosition", camera.globalPosition);
             }
 
+            const defines = effect.defines;
+
             if (this._scene.clipPlane || this._scene.clipPlane2 || this._scene.clipPlane3 || this._scene.clipPlane4 || this._scene.clipPlane5 || this._scene.clipPlane6) {
+                MaterialHelper.BindClipPlane(effect, this._scene);
+            }
+
+            if (defines.indexOf("#define BILLBOARDMODE_ALL") >= 0) {
                 var invView = viewMatrix.clone();
                 invView.invert();
                 effect.setMatrix("invView", invView);
-                MaterialHelper.BindClipPlane(effect, this._scene);
             }
 
             // image processing
@@ -1682,7 +1689,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         var result = new GPUParticleSystem(name, { capacity: this._capacity, randomTextureSize: this._randomTextureSize }, this._scene);
         result._customEffect = custom;
 
-        DeepCopier.DeepCopy(this, result, ["particles", "customShader", "noiseTexture", "particleTexture", "onDisposeObservable"]);
+        DeepCopier.DeepCopy(this, result, ["particles", "customShader", "noiseTexture", "particleTexture", "onDisposeObservable", "vertexShaderName"]);
 
         if (newEmitter === undefined) {
             newEmitter = this.emitter;

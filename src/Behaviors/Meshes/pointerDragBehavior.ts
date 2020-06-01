@@ -8,7 +8,7 @@ import { Vector3 } from "../../Maths/math.vector";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Ray } from "../../Culling/ray";
 import { PivotTools } from '../../Misc/pivotTools';
-
+import { ArcRotateCamera } from '../../Cameras/arcRotateCamera';
 import "../../Meshes/Builders/planeBuilder";
 
 /**
@@ -255,7 +255,12 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
 
         // Reattach camera controls
         if (this.detachCameraControls && this._attachedElement && this._scene.activeCamera && !this._scene.activeCamera.leftCamera) {
-            this._scene.activeCamera.attachControl(this._attachedElement, this._scene.activeCamera.inputs ? this._scene.activeCamera.inputs.noPreventDefault : true);
+            if (this._scene.activeCamera.getClassName() === "ArcRotateCamera") {
+                const arcRotateCamera = this._scene.activeCamera as ArcRotateCamera;
+                arcRotateCamera.attachControl(this._attachedElement, arcRotateCamera.inputs ? arcRotateCamera.inputs.noPreventDefault : true, arcRotateCamera._useCtrlForPanning, arcRotateCamera._panningMouseButton);
+            } else {
+                this._scene.activeCamera.attachControl(this._attachedElement, this._scene.activeCamera.inputs ? this._scene.activeCamera.inputs.noPreventDefault : true);
+            }
         }
     }
 

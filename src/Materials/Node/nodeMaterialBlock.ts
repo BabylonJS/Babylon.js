@@ -372,8 +372,9 @@ export class NodeMaterialBlock {
      * @param nodeMaterial defines the node material requesting the update
      * @param defines defines the material defines to update
      * @param useInstances specifies that instances should be used
+     * @param subMesh defines which submesh to render
      */
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false) {
+    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false, subMesh?: SubMesh) {
         // Do nothing
     }
 
