@@ -289,7 +289,7 @@ export class MaterialHelper {
     }
 
     /**
-     * Prepares the defines related to defferred shading
+     * Prepares the defines related to deferred shading
      * @param scene The scene we are intending to draw
      * @param defines The defines to update
      */

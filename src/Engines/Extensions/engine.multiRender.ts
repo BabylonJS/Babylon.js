@@ -63,8 +63,9 @@ ThinEngine.prototype.clearColorAttachments = function(texture: InternalTexture, 
     }
 
     gl.clear(gl.COLOR_BUFFER_BIT);
-}
 
+    gl.drawBuffers(texture._attachments!);
+};
 
 ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(count: number, textures: InternalTexture[], disableGenerateMipMaps: boolean = false, onBeforeUnbind?: () => void): void {
     this._currentRenderTarget = null;

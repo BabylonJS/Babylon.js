@@ -14,7 +14,7 @@
 
 precision highp float;
 
-#include<mrtInput>[SCENE_MRT_COUNT]
+#include<deferredDeclaration>[SCENE_MRT_COUNT]
 
 // Forces linear space for image processing
 #ifndef FROMLINEARSPACE
@@ -489,6 +489,7 @@ void main(void) {
 
     #include<pbrBlockImageProcessing>
 
+    #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 
 #ifdef HIGH_DEFINITION_PIPELINE
     vec3 irradiance = finalDiffuse;
@@ -506,9 +507,8 @@ void main(void) {
     gl_FragData[2] = vec4(vViewPos.z, 0.0, 0.0, 1.0);
     gl_FragData[3] = vec4(sqrt(surfaceAlbedo), 1.0);
     gl_FragData[4] = vec4(finalColor.rgb - irradiance, 0.0);
-#else
-    // #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
-    gl_FragColor = finalColor;
 #endif
+
+    gl_FragColor = finalColor;
     #include<pbrDebug>
 }

@@ -45,6 +45,9 @@ varying vec2 vFurUV;
 #include<fogFragmentDeclaration>
 #include<clipPlaneFragmentDeclaration>
 
+// Deferred
+#include<deferredDeclaration>[SCENE_MRT_COUNT]
+
 float Rand(vec3 rv) {
 	float x = dot(rv, vec3(12.9898,78.233, 24.65487));
 	return fract(sin(x) * 43758.5453);
@@ -130,4 +133,7 @@ void main(void) {
 #include<fogFragment>
 
 	gl_FragColor = color;
+
+#include<deferredDefaultOutput>
+
 }

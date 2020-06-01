@@ -20,6 +20,8 @@ class GridMaterialDefines extends MaterialDefines {
     public OPACITY = false;
     public TRANSPARENT = false;
     public FOG = false;
+    public HIGH_DEFINITION_PIPELINE = false;
+    public SCENE_MRT_COUNT = 0;
     public PREMULTIPLYALPHA = false;
     public UV1 = false;
     public UV2 = false;
@@ -156,6 +158,9 @@ export class GridMaterial extends PushMaterial {
         }
 
         MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, false, this.fogEnabled, false, defines);
+
+        // Deferred
+        MaterialHelper.PrepareDefinesForDeferred(scene, defines);
 
         // Values that need to be evaluated on every frame
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, scene.getEngine(), defines, !!useInstances);

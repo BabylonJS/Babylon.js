@@ -26,6 +26,9 @@ varying vec3 vNormalW;
 // Fog
 #include<fogFragmentDeclaration>
 
+// Deferred
+#include<deferredDeclaration>[SCENE_MRT_COUNT]
+
 void main(void) {
 #include<clipPlaneFragment>
 
@@ -52,4 +55,7 @@ void main(void) {
 #include<fogFragment>
 
 	gl_FragColor = color;
+
+#include<deferredDefaultOutput>
+
 }
