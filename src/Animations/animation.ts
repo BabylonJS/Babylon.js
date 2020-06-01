@@ -1219,12 +1219,12 @@ export class Animation {
     }
 
     /**
-     * Creates a new animation from a snippet saved in a remote file
+     * Creates a new animation or an array of animations from a snippet saved in a remote file
      * @param name defines the name of the animation to create (can be null or empty to use the one from the json data)
      * @param url defines the url to load from
-     * @returns a promise that will resolve to the new animation
+     * @returns a promise that will resolve to the new animation or an array of animations
      */
-    public static ParseFromFileAsync(name: Nullable<string>, url: string): Promise<Animation> {
+    public static ParseFromFileAsync(name: Nullable<string>, url: string): Promise<Animation | Array<Animation>> {
 
         return new Promise((resolve, reject) => {
             var request = new WebRequest();
@@ -1232,13 +1232,23 @@ export class Animation {
                 if (request.readyState == 4) {
                     if (request.status == 200) {
                         let serializationObject = JSON.parse(request.responseText);
-                        let output = this.Parse(serializationObject);
 
-                        if (name) {
-                            output.name = name;
+                        if (serializationObject.length) {
+                            let output = new Array<Animation>();
+                            for (var serializedAnimation of serializationObject) {
+                                output.push(this.Parse(serializedAnimation));
+                            }
+
+                            resolve(output);
+                        } else {
+                            let output = this.Parse(serializationObject);
+
+                            if (name) {
+                                output.name = name;
+                            }
+
+                            resolve(output);
                         }
-
-                        resolve(output);
                     } else {
                         reject("Unable to load the animation");
                     }
@@ -1251,23 +1261,34 @@ export class Animation {
     }
 
     /**
-     * Creates an animation from a snippet saved by the Inspector
+     * Creates an animation or an array of animations from a snippet saved by the Inspector
      * @param snippetId defines the snippet to load
-     * @returns a promise that will resolve to the new animation
+     * @returns a promise that will resolve to the new animation or a new array of animations
      */
-    public static CreateFromSnippetAsync(snippetId: string): Promise<Animation> {
+    public static CreateFromSnippetAsync(snippetId: string): Promise<Animation | Array<Animation>> {
         return new Promise((resolve, reject) => {
             var request = new WebRequest();
             request.addEventListener("readystatechange", () => {
                 if (request.readyState == 4) {
                     if (request.status == 200) {
                         var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
-                        let serializationObject = JSON.parse(snippet.animation);
-                        let output = this.Parse(serializationObject);
 
-                        output.snippetId = snippetId;
+                        if (snippet.animations) {
+                            let serializationObject = JSON.parse(snippet.animations);
+                            let output = new Array<Animation>();
+                            for (var serializedAnimation of serializationObject) {
+                                output.push(this.Parse(serializedAnimation));
+                            }
 
-                        resolve(output);
+                            resolve(output);
+                        } else {
+                            let serializationObject = JSON.parse(snippet.animation);
+                            let output = this.Parse(serializationObject);
+
+                            output.snippetId = snippetId;
+
+                            resolve(output);
+                        }
                     } else {
                         reject("Unable to load the snippet " + snippetId);
                     }
