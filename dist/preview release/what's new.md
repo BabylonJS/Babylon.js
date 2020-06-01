@@ -47,6 +47,7 @@
 - Fix bug where long comments on collapsed frames broke port alignment ([belfortk](https://github.com/belfortk))
 - Add the `FragCoord` and `ScreenSize` blocks ([Popov72](https://github.com/Popov72))
 - Particle systems: add the `ParticlePositionWorld` block ([Popov72](https://github.com/Popov72))
+- Add isExposedOnFrame property to connection points ([belfortk](https://github.com/belfortk))
 
 ### Inspector
 
