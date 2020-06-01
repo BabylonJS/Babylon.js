@@ -1552,7 +1552,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             pickingInfo.pickedMesh = this;
             pickingInfo.bu = intersectInfo.bu || 0;
             pickingInfo.bv = intersectInfo.bv || 0;
-            pickingInfo.faceId = intersectInfo.faceId;
+            pickingInfo.subMeshFaceId = intersectInfo.faceId;
+            pickingInfo.faceId = intersectInfo.faceId + subMeshes.data[intersectInfo.subMeshId].indexStart / (this.getClassName().indexOf("LinesMesh") !== -1 ? 2 : 3);
             pickingInfo.subMeshId = intersectInfo.subMeshId;
             return pickingInfo;
         }

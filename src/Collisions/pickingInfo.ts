@@ -36,6 +36,8 @@ export class PickingInfo {
     public bv = 0;
     /** The index of the face on the mesh that was picked, or the index of the Line if the picked Mesh is a LinesMesh */
     public faceId = -1;
+    /** The index of the face on the subMesh that was picked, or the index of the Line if the picked Mesh is a LinesMesh */
+    public subMeshFaceId = -1;
     /** Id of the the submesh that was picked */
     public subMeshId = 0;
     /** If a sprite was picked, this will be the sprite the pick collided with */
