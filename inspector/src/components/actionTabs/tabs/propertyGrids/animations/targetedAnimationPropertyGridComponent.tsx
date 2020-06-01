@@ -97,8 +97,7 @@ export class TargetedAnimationGridComponent extends React.Component<ITargetedAni
                             onOpen={(window: Window) => { window.console.log("Window opened!!") }}
                             onClose={(window: Window) => this.onCloseAnimationCurveEditor(window)}>
 
-                            <AnimationCurveEditorComponent 
-                                title="Animations Curve Editor" 
+                            <AnimationCurveEditorComponent
                                 scene={this.props.scene} 
                                 entity={targetedAnimation as any} 
                                 playOrPause={() => this.playOrPause()}
