@@ -67,7 +67,7 @@ export class NodePort {
     }
 
     public get exposedOnFrame() {
-        if(!!this._exposedOnFrame || this._isConnectedToNodeOutsideOfFrame()) {
+        if(!!this.connectionPoint.isExposedOnFrame || this._isConnectedToNodeOutsideOfFrame()) {
             return true
         } return false;
     }
@@ -76,7 +76,7 @@ export class NodePort {
         if(this.disabled){
             return;
         }
-        this._exposedOnFrame = value;
+        this.connectionPoint.isExposedOnFrame = value;
     }
     
     
