@@ -1288,6 +1288,7 @@ export class GraphFrame {
 
     public serialize(): IFrameData {
         return {
+            id: this._id,
             x: this._x,
             y: this._y,
             width: this._width,
@@ -1302,7 +1303,7 @@ export class GraphFrame {
 
     public export() {
         const state = this._ownerCanvas.globalState;
-        const json = SerializationTools.Serialize(state.nodeMaterial, state, this.nodes.map(n => n.block));
+        const json = SerializationTools.Serialize(state.nodeMaterial, state, this.nodes.map(n => n.block), this._id);
         StringTools.DownloadAsFile(state.hostDocument, json, this._name + ".json");
     }
 
