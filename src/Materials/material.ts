@@ -169,7 +169,7 @@ export class Material implements IAnimatable {
      * This means that the material can keep using a previous shader while a new one is being compiled.
      * This is mostly used when shader parallel compilation is supported (true by default)
      */
-    public allowShaderHotSwapping = true;    
+    public allowShaderHotSwapping = true;
 
     /**
      * The ID of the material
@@ -1094,7 +1094,7 @@ export class Material implements IAnimatable {
                         }
                     }
                 }
-                if (allDone) {                    
+                if (allDone) {
                     this.allowShaderHotSwapping = currentHotSwapingState;
                     if (lastError) {
                         if (onError) {
