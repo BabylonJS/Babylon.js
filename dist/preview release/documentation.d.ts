@@ -21577,12 +21577,6 @@ declare module BABYLON {
     export class PushMaterial extends Material {
         protected _activeEffect: Effect;
         protected _normalMatrix: Matrix;
-        /**
-         * Gets or sets a boolean indicating that the material is allowed to do shader hot swapping.
-         * This means that the material can keep using a previous shader while a new one is being compiled.
-         * This is mostly used when shader parallel compilation is supported (true by default)
-         */
-        allowShaderHotSwapping: boolean;
         constructor(name: string, scene: Scene);
         getEffect(): Effect;
         isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
@@ -23791,6 +23785,12 @@ declare module BABYLON {
          */
         shadowDepthWrapper: Nullable<ShadowDepthWrapper>;
         /**
+         * Gets or sets a boolean indicating that the material is allowed (if supported) to do shader hot swapping.
+         * This means that the material can keep using a previous shader while a new one is being compiled.
+         * This is mostly used when shader parallel compilation is supported (true by default)
+         */
+        allowShaderHotSwapping: boolean;
+        /**
          * The ID of the material
          */
         id: string;
@@ -24504,6 +24504,7 @@ declare module BABYLON {
          * @param mesh defines the parent mesh
          * @param renderingMesh defines an optional rendering mesh
          * @param createBoundingBox defines if bounding box should be created for this submesh
+         * @param addToMesh defines a boolean indicating that the submesh must be added to the mesh.subMeshes array (true by default)
          */
         constructor(
         /** the material index to use */
@@ -24515,7 +24516,7 @@ declare module BABYLON {
         /** index start */
         indexStart: number, 
         /** indices count */
-        indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox?: boolean);
+        indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox?: boolean, addToMesh?: boolean);
         /**
          * Returns true if this submesh covers the entire parent mesh
          * @ignorenaming
@@ -43587,7 +43588,7 @@ declare module BABYLON {
         beta: number;
         /** The radius of the camera from its target */
         radius: number;
-        /** Define the camera target (the messh it should follow) */
+        /** Define the camera target (the mesh it should follow) */
         target: Nullable<AbstractMesh>;
         private _cartesianCoordinates;
         /**
@@ -43607,7 +43608,7 @@ declare module BABYLON {
         beta: number, 
         /** The radius of the camera from its target */
         radius: number, 
-        /** Define the camera target (the messh it should follow) */
+        /** Define the camera target (the mesh it should follow) */
         target: Nullable<AbstractMesh>, scene: Scene);
         private _follow;
         /** @hidden */
@@ -54252,7 +54253,7 @@ declare module BABYLON {
         SUBSURFACE: boolean;
         SS_REFRACTION: boolean;
         SS_TRANSLUCENCY: boolean;
-        SS_SCATERRING: boolean;
+        SS_SCATTERING: boolean;
         SS_THICKNESSANDMASK_TEXTURE: boolean;
         SS_THICKNESSANDMASK_TEXTUREDIRECTUV: number;
         SS_REFRACTIONMAP_3D: boolean;
@@ -54262,6 +54263,7 @@ declare module BABYLON {
         SS_RGBDREFRACTION: boolean;
         SS_LINEARSPECULARREFRACTION: boolean;
         SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
+        SS_ALBEDOFORREFRACTIONTINT: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
         /** @hidden */
         _areTexturesDirty: boolean;
@@ -54299,6 +54301,10 @@ declare module BABYLON {
          * is addded to the diffuse part of the material.
          */
         scatteringIntensity: number;
+        /**
+         * When enabled, transparent surfaces will be tinted with the albedo colour (independent of thickness)
+         */
+        useAlbedoToTintRefraction: boolean;
         private _thicknessTexture;
         /**
          * Stores the average thickness of a mesh in a texture (The texture is holding the values linearly).
@@ -54323,6 +54329,16 @@ declare module BABYLON {
          * From dielectric fresnel rules: F0 = square((iorT - iorI) / (iorT + iorI))
          */
         indexOfRefraction: number;
+        private _volumeIndexOfRefraction;
+        /**
+         * Index of refraction of the material's volume.
+         * https://en.wikipedia.org/wiki/List_of_refractive_indices
+         *
+         * This ONLY impacts refraction. If not provided or given a non-valid value,
+         * the volume will use the same IOR as the surface.
+         */
+        get volumeIndexOfRefraction(): number;
+        set volumeIndexOfRefraction(value: number);
         private _invertRefractionY;
         /**
          * Controls if refraction needs to be inverted on Y. This could be useful for procedural texture.
@@ -54900,7 +54916,7 @@ declare module BABYLON {
         SUBSURFACE: boolean;
         SS_REFRACTION: boolean;
         SS_TRANSLUCENCY: boolean;
-        SS_SCATERRING: boolean;
+        SS_SCATTERING: boolean;
         SS_THICKNESSANDMASK_TEXTURE: boolean;
         SS_THICKNESSANDMASK_TEXTUREDIRECTUV: number;
         SS_REFRACTIONMAP_3D: boolean;
@@ -54910,6 +54926,7 @@ declare module BABYLON {
         SS_RGBDREFRACTION: boolean;
         SS_LINEARSPECULARREFRACTION: boolean;
         SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
+        SS_ALBEDOFORREFRACTIONTINT: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
         UNLIT: boolean;
         DEBUGMODE: number;
@@ -80144,6 +80161,34 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         onLoading(): void;
         /** @hidden */
         _loadMeshPrimitiveAsync(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Nullable<Promise<AbstractMesh>>;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1698)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_materials_transmission implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        private _loadTransparentPropertiesAsync;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
