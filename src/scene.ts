@@ -4074,9 +4074,9 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         // Clear
         if (this.autoClearDepthAndStencil || this.autoClear) {
-            this._engine.clear(this.clearColor, 
-                this.autoClear || this.forceWireframe || this.forcePointsCloud, 
-                this.autoClearDepthAndStencil, 
+            this._engine.clear(this.clearColor,
+                this.autoClear || this.forceWireframe || this.forcePointsCloud,
+                this.autoClearDepthAndStencil,
                 this.autoClearDepthAndStencil,
                 this.highDefinitionPipeline ? this.highDefinitionMRT._texture! : undefined);
         }

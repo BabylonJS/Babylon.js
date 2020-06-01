@@ -36,6 +36,9 @@ uniform vec2 vDiffuseInfos;
 // Fog
 #include<fogFragmentDeclaration>
 
+// Deferred
+#include<deferredDeclaration>[SCENE_MRT_COUNT]
+
 // Custom
 vec3 computeCustomDiffuseLighting(lightingInfo info, vec3 diffuseBase, float shadow)
 {
@@ -146,4 +149,7 @@ void main(void)
 #include<fogFragment>
 
 	gl_FragColor = color;
+
+#include<deferredDefaultOutput>
+	
 }

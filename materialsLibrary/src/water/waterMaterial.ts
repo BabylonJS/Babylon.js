@@ -40,6 +40,8 @@ class WaterMaterialDefines extends MaterialDefines implements IImageProcessingCo
     public DEPTHPREPASS = false;
     public POINTSIZE = false;
     public FOG = false;
+    public HIGH_DEFINITION_PIPELINE = false;
+    public SCENE_MRT_COUNT = 0;
     public NORMAL = false;
     public UV1 = false;
     public UV2 = false;
@@ -342,6 +344,8 @@ export class WaterMaterial extends PushMaterial {
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
 
         MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
+
+        MaterialHelper.PrepareDefinesForDeferred(scene, defines);
 
         if (defines._areMiscDirty) {
             if (this._fresnelSeparate) {

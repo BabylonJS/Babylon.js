@@ -33,6 +33,8 @@ class FireMaterialDefines extends MaterialDefines {
     public DEPTHPREPASS = false;
     public POINTSIZE = false;
     public FOG = false;
+    public HIGH_DEFINITION_PIPELINE = false;
+    public SCENE_MRT_COUNT = 0;
     public UV1 = false;
     public VERTEXCOLOR = false;
     public VERTEXALPHA = false;
@@ -131,6 +133,9 @@ export class FireMaterial extends PushMaterial {
 
         // Values that need to be evaluated on every frame
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
+
+        // Deferred
+        MaterialHelper.PrepareDefinesForDeferred(scene, defines);
 
         // Attribs
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true);

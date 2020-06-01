@@ -32,6 +32,9 @@ varying vec2 vDistortionCoords3;
 // Fog
 #include<fogFragmentDeclaration>
 
+// Deferred
+#include<deferredDeclaration>[SCENE_MRT_COUNT]
+
 vec4 bx2(vec4 x)
 {
    return vec4(2.0) * x - vec4(1.0);
@@ -97,4 +100,7 @@ void main(void) {
 #include<fogFragment>
 
 	gl_FragColor = color;
+
+#include<deferredDefaultOutput>
+
 }

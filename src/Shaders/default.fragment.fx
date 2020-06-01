@@ -44,7 +44,7 @@ varying vec4 vColor;
 #include<lightsFragmentFunctions>
 #include<shadowsFragmentFunctions>
 
-#include<mrtInput>[SCENE_MRT_COUNT]
+#include<deferredDeclaration>[SCENE_MRT_COUNT]
 
 // Samplers
 #ifdef DIFFUSE
@@ -475,6 +475,6 @@ color.rgb = max(color.rgb, 0.);
 
 gl_FragColor = color;
 
-#include<mrtOutput>
+#include<deferredDefaultOutput>
 
 }

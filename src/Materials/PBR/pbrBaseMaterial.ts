@@ -153,7 +153,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public HORIZONOCCLUSION = false;
 
     public INSTANCES = false;
-    
+
     public HIGH_DEFINITION_PIPELINE = false;
     public SCENE_MRT_COUNT = 0;
 
@@ -1285,13 +1285,14 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         const scene = this.getScene();
         const engine = scene.getEngine();
 
-
         // Lights
         MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
         defines._needNormals = true;
 
         // Multiview
         MaterialHelper.PrepareDefinesForMultiview(scene, defines);
+
+        // Deferred
         MaterialHelper.PrepareDefinesForDeferred(scene, defines);
 
         // Textures

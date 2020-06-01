@@ -37,7 +37,7 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
             effect.setTexture("depthSampler", scene.highDefinitionMRT.textures[2]);
             effect.setTexture("albedoSampler", scene.highDefinitionMRT.textures[3]);
             effect.setFloat("filterRadius", this._filterRadius);
-            effect.setFloat2("viewportSize", 
+            effect.setFloat2("viewportSize",
                 Math.tan(scene.activeCamera!.fov / 2) * scene.getEngine().getAspectRatio(scene.activeCamera!, true),
                 Math.tan(scene.activeCamera!.fov / 2));
         });
@@ -78,7 +78,7 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
         u = 1 - u; // Convert CDF to CCDF
 
         let g = 1 + (4 * u) * (2 * u + Math.sqrt(1 + (4 * u) * u));
-        let n = Math.pow(g, -1.0/3.0);                      // g^(-1/3)
+        let n = Math.pow(g, -1.0 / 3.0);                      // g^(-1/3)
         let p = (g * n) * n;                                   // g^(+1/3)
         let c = 1 + p + n;                                     // 1 + g^(+1/3) + g^(-1/3)
         let x = 3 * Math.log(c / (4 * u));
