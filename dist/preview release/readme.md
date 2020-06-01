@@ -111,7 +111,7 @@ If you want to contribute, please read our [contribution guidelines](https://git
 - [Examples](https://doc.babylonjs.com/examples)
 
 ## Contributing
-Please see the [Contributing Guidelines](./contributing.md)
+Please see the [Contributing Guidelines](./contributing.md).
 
 ## Useful links
 
