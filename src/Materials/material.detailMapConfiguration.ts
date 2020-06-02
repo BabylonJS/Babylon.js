@@ -23,8 +23,13 @@ export interface IMaterialDetailMapDefines {
 
 /**
  * Define the code related to the detail map parameters of a material
+ *
+ * Inspired from:
+ *   Unity: https://docs.unity3d.com/Packages/com.unity.render-pipelines.high-definition@9.0/manual/Mask-Map-and-Detail-Map.html and https://docs.unity3d.com/Manual/StandardShaderMaterialParameterDetail.html
+ *   Unreal: https://docs.unrealengine.com/en-US/Engine/Rendering/Materials/HowTo/DetailTexturing/index.html
+ *   Cryengine: https://docs.cryengine.com/display/SDKDOC2/Detail+Maps
  */
-export class DetailMap {
+export class DetailMapConfiguration {
 
     private _texture: Nullable<BaseTexture> = null;
     /**
@@ -238,7 +243,7 @@ export class DetailMap {
      * Makes a duplicate of the current instance into another one.
      * @param detailMap define the instance where to copy the info
      */
-    public copyTo(detailMap: DetailMap): void {
+    public copyTo(detailMap: DetailMapConfiguration): void {
         SerializationHelper.Clone(() => detailMap, this);
     }
 

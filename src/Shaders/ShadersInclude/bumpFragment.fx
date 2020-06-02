@@ -49,6 +49,7 @@
 		normalW = perturbNormal(TBN, vBumpUV + uvOffset);
     #else
         vec3 bumpNormal = texture2D(bumpSampler, vBumpUV + uvOffset).xyz * 2.0 - 1.0;
+        // Reference for normal blending: https://blog.selfshadow.com/publications/blending-in-detail/
         #if DETAIL_NORMALBLENDMETHOD == 0 // whiteout
             detailNormal.xy *= vDetailInfos.z;
             vec3 blendedNormal = normalize(vec3(bumpNormal.xy + detailNormal.xy, bumpNormal.z * detailNormal.z));

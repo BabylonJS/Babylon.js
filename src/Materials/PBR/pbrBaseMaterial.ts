@@ -1,4 +1,4 @@
-import { serialize, serializeAsImageProcessingConfiguration, expandToProperty  } from "../../Misc/decorators";
+import { serialize, serializeAsImageProcessingConfiguration, expandToProperty } from "../../Misc/decorators";
 import { Observer } from "../../Misc/observable";
 import { Logger } from "../../Misc/logger";
 import { SmartArray } from "../../Misc/smartArray";
@@ -40,7 +40,7 @@ import "../../Shaders/pbr.fragment";
 import "../../Shaders/pbr.vertex";
 
 import { EffectFallbacks } from '../effectFallbacks';
-import { IMaterialDetailMapDefines, DetailMap } from '../material.detailMap';
+import { IMaterialDetailMapDefines, DetailMapConfiguration } from '../material.detailMapConfiguration';
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -801,7 +801,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Defines the detail map parameters for the material.
      */
-    public readonly detailMap = new DetailMap(this._markAllSubMeshesAsTexturesDirty.bind(this));
+    public readonly detailMap = new DetailMapConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
 
     protected _rebuildInParallel = false;
 
@@ -1247,8 +1247,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         var uniformBuffers = ["Material", "Scene"];
 
-        DetailMap.AddUniforms(uniforms);
-        DetailMap.AddSamplers(samplers);
+        DetailMapConfiguration.AddUniforms(uniforms);
+        DetailMapConfiguration.AddSamplers(samplers);
 
         PBRSubSurfaceConfiguration.AddUniforms(uniforms);
         PBRSubSurfaceConfiguration.AddSamplers(samplers);
@@ -1669,7 +1669,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         PBRAnisotropicConfiguration.PrepareUniformBuffer(ubo);
         PBRSheenConfiguration.PrepareUniformBuffer(ubo);
         PBRSubSurfaceConfiguration.PrepareUniformBuffer(ubo);
-        DetailMap.PrepareUniformBuffer(ubo);
+        DetailMapConfiguration.PrepareUniformBuffer(ubo);
 
         ubo.create();
     }
