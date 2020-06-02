@@ -4,6 +4,7 @@ set(SOURCES
     "Source/Console.h")
 
 add_library(Console ${SOURCES})
+warnings_as_errors(Console)
 
 target_include_directories(Console PUBLIC "Include")
 

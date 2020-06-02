@@ -96,6 +96,7 @@ else()
     add_executable(Playground ${BABYLONSCRIPTS} ${SCRIPTS} ${SOURCES} ${RESOURCE_FILES})
 endif()
 
+warnings_as_errors(Playground)
 target_compile_definitions(Playground PRIVATE UNICODE)
 target_compile_definitions(Playground PRIVATE _UNICODE)
 

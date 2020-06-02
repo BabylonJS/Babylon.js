@@ -4,6 +4,7 @@ set(SOURCES
     "Source/Window.cpp")
 
 add_library(Window ${SOURCES})
+warnings_as_errors(Window)
 
 target_include_directories(Window
     PUBLIC "Include")

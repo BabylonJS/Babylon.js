@@ -31,6 +31,7 @@ elseif(UNIX)
     add_executable(ValidationTests ${BABYLONSCRIPTS} ${SCRIPTS} ${SOURCES})
 endif()
 
+warnings_as_errors(ValidationTests)
 target_compile_definitions(ValidationTests PRIVATE UNICODE)
 target_compile_definitions(ValidationTests PRIVATE _UNICODE)
 

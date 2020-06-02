@@ -1,3 +1,7 @@
+#if _MSC_VER 
+#pragma warning( disable : 4100 ) // unreferenced formal parameter in glslang header
+#endif
+
 #include "ShaderCompiler.h"
 #include "ResourceLimits.h"
 #include <arcana/experimental/array.h>

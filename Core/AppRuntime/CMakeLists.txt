@@ -7,6 +7,7 @@ set(SOURCES
     "Source/WorkQueue.h")
 
 add_library(AppRuntime ${SOURCES})
+warnings_as_errors(AppRuntime)
 
 target_include_directories(AppRuntime PRIVATE "Include/Babylon")
 target_include_directories(AppRuntime INTERFACE "Include")

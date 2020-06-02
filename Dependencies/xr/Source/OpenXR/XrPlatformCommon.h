@@ -88,5 +88,6 @@ namespace xr
     inline void XrAssert(XrResult result)
     {
         assert(!XR_FAILED(result));
+        (void)result;
     }
 }

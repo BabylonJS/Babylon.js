@@ -13,7 +13,7 @@
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
 #include <bimg/bimg.h>
-#include <bx/readerwriter.h>
+#include <bx/allocator.h>
 
 #include <gsl/gsl>
 
@@ -21,6 +21,7 @@
 
 #include <arcana/containers/weak_table.h>
 #include <arcana/threading/cancellation.h>
+#include <unordered_map>
 
 namespace Babylon
 {
@@ -192,6 +193,7 @@ namespace Babylon
         void Unbind(FrameBufferData* data)
         {
             assert(m_boundFrameBuffer == data);
+            (void)data;
             m_boundFrameBuffer = m_backBuffer;
         }
 

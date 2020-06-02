@@ -38,10 +38,9 @@ namespace xr
     // Permission request ID used to uniquely identify our request in the callback when calling requestPermissions.
     const int PERMISSION_REQUEST_ID = 8435;
 
-    class System::Impl
+    struct System::Impl
     {
-    public:
-        Impl(const std::string& applicationName)
+        Impl(const std::string& /*applicationName*/)
         {
         }
 
@@ -278,7 +277,7 @@ namespace xr
                 auto permissionTicket
                 {
                     AddRequestPermissionsResultCallback(
-                    [permissionTcs](int32_t requestCode, const std::vector<std::string>& permissionList, const std::vector<int32_t>& results) mutable
+                    [permissionTcs](int32_t requestCode, const std::vector<std::string>& /*permissionList*/, const std::vector<int32_t>& results) mutable
                     {
                         // Check if this is our permission request ID.
                         if (requestCode == PERMISSION_REQUEST_ID)
@@ -309,16 +308,15 @@ namespace xr
         }
     }
 
-    class System::Session::Impl
+    struct System::Session::Impl
     {
-    public:
         const System::Impl& SystemImpl;
         std::vector<Frame::View> ActiveFrameViews{ {} };
         std::vector<Frame::InputSource> InputSources;
         float DepthNearZ{ DEFAULT_DEPTH_NEAR_Z };
         float DepthFarZ{ DEFAULT_DEPTH_FAR_Z };
 
-        Impl(System::Impl& systemImpl, void* graphicsContext)
+        Impl(System::Impl& systemImpl, void* /*graphicsContext*/)
             : SystemImpl{ systemImpl }
             , pauseTicket{AddPauseCallback([this]() { this->PauseSession(); }) }
             , resumeTicket{AddResumeCallback([this]() { this->ResumeSession(); })}
@@ -540,7 +538,7 @@ namespace xr
             sessionEnded = true;
         }
 
-        Size GetWidthAndHeightForViewIndex(size_t viewIndex) const
+        Size GetWidthAndHeightForViewIndex(size_t /*viewIndex*/) const
         {
             // Return a valid (non-zero) size, but otherwise it doesn't matter as the render texture created from this isn't currently used
             return {1,1};
@@ -789,7 +787,7 @@ namespace xr
         {
             // Spin up a background thread to own the polling check.
             arcana::task_completion_source<bool, std::exception_ptr> tcs;
-            std::thread([sessionType, tcs]() mutable
+            std::thread([tcs]() mutable
             {
                 // Query ARCore to check if AR sessions are supported.
                 // If not yet installed then poll supported status up to 100 times over 20 seconds.
@@ -834,7 +832,7 @@ namespace xr
     arcana::task<std::shared_ptr<System::Session>, std::exception_ptr> System::Session::CreateAsync(System& system, void* graphicsDevice)
     {
         // First perform the ARCore installation check, request install if not yet installed.
-        return CheckAndInstallARCoreAsync().then(arcana::inline_scheduler, arcana::cancellation::none(), [&system, graphicsDevice]()
+        return CheckAndInstallARCoreAsync().then(arcana::inline_scheduler, arcana::cancellation::none(), []()
         {
             // Next check for camera permissions, and request if not already granted.
             return CheckCameraPermissionAsync();

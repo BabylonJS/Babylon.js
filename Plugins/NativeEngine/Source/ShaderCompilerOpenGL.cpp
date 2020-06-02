@@ -153,7 +153,7 @@ namespace Babylon
 #else
             glsl = compiled;
 #endif
-            return std::move(compiler);
+            return compiler;
         }
     }
 

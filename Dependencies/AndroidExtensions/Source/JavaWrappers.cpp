@@ -27,7 +27,7 @@ namespace java::lang
     {
         std::vector<std::byte> result{static_cast<size_t>(m_env->GetArrayLength(m_byteArray))};
         std::memcpy(result.data(), m_env->GetByteArrayElements(m_byteArray, nullptr), result.size());
-        return std::move(result);
+        return result;
     }
 
     Object::operator jobject() const

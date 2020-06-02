@@ -71,9 +71,8 @@ namespace xr
         };
     }
 
-    class System::Impl
+    struct System::Impl
     {
-    public:
         static constexpr XrFormFactor FORM_FACTOR{ XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY };
         static constexpr XrViewConfigurationType VIEW_CONFIGURATION_TYPE{ XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO };
         static constexpr uint32_t STEREO_VIEW_COUNT{ 2 }; // PRIMARY_STEREO view configuration always has 2 views
@@ -156,9 +155,8 @@ namespace xr
         }
     };
 
-    class System::Session::Impl
+    struct System::Session::Impl
     {
-    public:
         const System::Impl& HmdImpl;
         XrSession Session{ XR_NULL_HANDLE };
 
@@ -352,7 +350,7 @@ namespace xr
                 actionInfo.actionType = XR_ACTION_TYPE_POSE_INPUT;
                 strcpy_s(actionInfo.actionName, ActionResources.CONTROLLER_GET_GRIP_POSE_ACTION_NAME);
                 strcpy_s(actionInfo.localizedActionName, ActionResources.CONTROLLER_GET_GRIP_POSE_ACTION_LOCALIZED_NAME);
-                actionInfo.countSubactionPaths = ActionResources.ControllerSubactionPaths.size();
+                actionInfo.countSubactionPaths = static_cast<uint32_t>(ActionResources.ControllerSubactionPaths.size());
                 actionInfo.subactionPaths = ActionResources.ControllerSubactionPaths.data();
                 XrCheck(xrCreateAction(ActionResources.ActionSet, &actionInfo, &ActionResources.ControllerGetGripPoseAction));
                 // For each controller subaction
@@ -379,7 +377,7 @@ namespace xr
                 actionInfo.actionType = XR_ACTION_TYPE_POSE_INPUT;
                 strcpy_s(actionInfo.actionName, ActionResources.CONTROLLER_GET_AIM_POSE_ACTION_NAME);
                 strcpy_s(actionInfo.localizedActionName, ActionResources.CONTROLLER_GET_AIM_POSE_ACTION_LOCALIZED_NAME);
-                actionInfo.countSubactionPaths = ActionResources.ControllerSubactionPaths.size();
+                actionInfo.countSubactionPaths = static_cast<uint32_t>(ActionResources.ControllerSubactionPaths.size());
                 actionInfo.subactionPaths = ActionResources.ControllerSubactionPaths.data();
                 XrCheck(xrCreateAction(ActionResources.ActionSet, &actionInfo, &ActionResources.ControllerGetAimPoseAction));
                 // For each controller subaction
@@ -736,7 +734,7 @@ namespace xr
         }
     }
 
-    void System::Session::Frame::GetHitTestResults(std::vector<Pose>& filteredResults, Ray) const {
+    void System::Session::Frame::GetHitTestResults(std::vector<Pose>& /*filteredResults*/, Ray) const {
         // Stubbed out for now, should be implemented if we want to support OpenXR based passthrough AR devices.
     }
 

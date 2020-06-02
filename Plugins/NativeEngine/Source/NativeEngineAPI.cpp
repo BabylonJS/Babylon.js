@@ -7,7 +7,7 @@ namespace Babylon::Plugins::NativeEngine
 {
     void InitializeGraphics(void* windowPtr, size_t width, size_t height)
     {
-        Babylon::NativeEngine::InitializeWindow(windowPtr, width, height);
+        Babylon::NativeEngine::InitializeWindow(windowPtr, static_cast<uint32_t>(width), static_cast<uint32_t>(height));
     }
 
     void Initialize(Napi::Env env)
@@ -24,7 +24,7 @@ namespace Babylon::Plugins::NativeEngine
         pd.backBuffer = nullptr;
         pd.backBufferDS = nullptr;
         bgfx::setPlatformData(pd);
-        bgfx::reset(width, height);
+        bgfx::reset(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
 
         auto& window = Plugins::Internal::NativeWindow::GetFromJavaScript(env);
         window.Resize(width, height);

@@ -47,6 +47,18 @@ set_property(TARGET squish PROPERTY FOLDER Dependencies/bgfx/3rdparty)
 set_property(TARGET bgfx PROPERTY FOLDER Dependencies/bgfx)
 set_property(TARGET bimg PROPERTY FOLDER Dependencies/bgfx)
 set_property(TARGET bx PROPERTY FOLDER Dependencies/bgfx)
+disable_warnings(astc)
+disable_warnings(astc-codec)
+disable_warnings(edtaa3)
+disable_warnings(etc1)
+disable_warnings(etc2)
+disable_warnings(iqa)
+disable_warnings(nvtt)
+disable_warnings(pvrtc)
+disable_warnings(squish)
+disable_warnings(bgfx)
+disable_warnings(bimg)
+disable_warnings(bx)
 
 # -------------------------------- glslang --------------------------------
 # Dependencies: none
@@ -61,6 +73,10 @@ set_property(TARGET glslang PROPERTY FOLDER Dependencies/glslang)
 set_property(TARGET OGLCompiler PROPERTY FOLDER Dependencies/glslang)
 set_property(TARGET OSDependent PROPERTY FOLDER Dependencies/glslang)
 set_property(TARGET SPIRV PROPERTY FOLDER Dependencies/glslang)
+disable_warnings(glslang)
+disable_warnings(OGLCompiler)
+disable_warnings(OSDependent)
+disable_warnings(SPIRV)
 
 # -------------------------------- ios-cmake --------------------------------
 # Nothing to do here.
@@ -77,6 +93,9 @@ add_subdirectory(SPIRV-Cross)
 set_property(TARGET spirv-cross-core PROPERTY FOLDER Dependencies/SPIRV-Cross)
 set_property(TARGET spirv-cross-glsl PROPERTY FOLDER Dependencies/SPIRV-Cross)
 set_property(TARGET spirv-cross-hlsl PROPERTY FOLDER Dependencies/SPIRV-Cross)
+disable_warnings(spirv-cross-core)
+disable_warnings(spirv-cross-glsl)
+disable_warnings(spirv-cross-hlsl)
 
 # -------------------------------- xr --------------------------------
 # Dependencies: none
@@ -84,10 +103,12 @@ set_property(TARGET spirv-cross-hlsl PROPERTY FOLDER Dependencies/SPIRV-Cross)
 if(WIN32 OR WINDOWS_STORE OR ANDROID)
     add_subdirectory(xr)
     set_property(TARGET xr PROPERTY FOLDER Dependencies/xr)
+    warnings_as_errors(xr)
     if(WIN32 OR WINDOWS_STORE)
         set_property(TARGET openxr_loader PROPERTY FOLDER Dependencies/xr/OpenXR)
         set_property(TARGET generate_openxr_header PROPERTY FOLDER Dependencies/xr/OpenXR/Generated)
         set_property(TARGET xr_global_generated_files PROPERTY FOLDER Dependencies/xr/OpenXR/Generated)
+        disable_warnings(openxr_loader)
     endif()
 endif()
 

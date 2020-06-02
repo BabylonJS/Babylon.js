@@ -83,12 +83,12 @@ namespace Babylon::Polyfills::Internal
         return Napi::Value::From(info.Env(), decodedData);
     }
 
-    void Window::AddEventListener(const Napi::CallbackInfo& info)
+    void Window::AddEventListener(const Napi::CallbackInfo& /*info*/)
     {
         // TODO: handle events
     }
 
-    void Window::RemoveEventListener(const Napi::CallbackInfo& info)
+    void Window::RemoveEventListener(const Napi::CallbackInfo& /*info*/)
     {
         // TODO: handle events
     }

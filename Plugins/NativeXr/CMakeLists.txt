@@ -3,6 +3,7 @@ set(SOURCES
     "Source/NativeXr.cpp")
 
 add_library(NativeXr ${SOURCES})
+warnings_as_errors(NativeXr)
 
 target_include_directories(NativeXr
     PRIVATE "Include/Babylon/Plugins"

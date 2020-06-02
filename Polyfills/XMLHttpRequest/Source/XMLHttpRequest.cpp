@@ -172,7 +172,7 @@ namespace Babylon::Polyfills::Internal
         SetReadyState(ReadyState::Opened);
     }
 
-    void XMLHttpRequest::Send(const Napi::CallbackInfo& info)
+    void XMLHttpRequest::Send(const Napi::CallbackInfo& /*info*/)
     {
         m_request.SendAsync().then(m_runtimeScheduler, arcana::cancellation::none(), [this]() {
             SetReadyState(ReadyState::Done);

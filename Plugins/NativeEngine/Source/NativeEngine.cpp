@@ -1,5 +1,6 @@
 #include "NativeEngine.h"
-
+#include <spirv_cross.hpp>
+#include "ShaderCompiler.h"
 #include <arcana/threading/task.h>
 #include <arcana/threading/task_schedulers.h>
 
@@ -23,7 +24,6 @@ namespace bgfx
 #include <bimg/encode.h>
 
 #include <bx/math.h>
-#include <bx/readerwriter.h>
 
 #include <queue>
 #include <regex>
@@ -94,7 +94,7 @@ namespace Babylon
 
                 for (const auto size : memberType.array)
                 {
-                    regCount *= size;
+                    regCount *= static_cast<uint16_t>(size);
                 }
 
                 AppendBytes(bytes, static_cast<uint8_t>(name.size()));
@@ -106,7 +106,7 @@ namespace Babylon
             }
         }
 
-        void AppendSamplers(std::vector<uint8_t>& bytes, const spirv_cross::Compiler& compiler, const spirv_cross::SmallVector<spirv_cross::Resource>& samplers, bool isFragment, std::unordered_map<std::string, UniformInfo>& cache)
+        void AppendSamplers(std::vector<uint8_t>& bytes, const spirv_cross::Compiler& compiler, const spirv_cross::SmallVector<spirv_cross::Resource>& samplers, bool /*isFragment*/, std::unordered_map<std::string, UniformInfo>& cache)
         {
             for (const spirv_cross::Resource& sampler : samplers)
             {
@@ -119,7 +119,7 @@ namespace Babylon
                 AppendBytes(bytes, static_cast<uint16_t>(0));
                 AppendBytes(bytes, static_cast<uint16_t>(0));
 
-                cache[sampler.name].Stage = compiler.get_decoration(sampler.id, spv::DecorationBinding);
+                cache[sampler.name].Stage = static_cast<uint8_t>(compiler.get_decoration(sampler.id, spv::DecorationBinding));
             }
         }
 
@@ -255,15 +255,15 @@ namespace Babylon
             *image = output;
         }
 
-        void CreateTextureFromImage(bx::AllocatorI* allocator, TextureData* texture, bimg::ImageContainer* image)
+        void CreateTextureFromImage(TextureData* texture, bimg::ImageContainer* image)
         {
-            auto releaseFn = [](void* ptr, void* userData) {
+            auto releaseFn = [](void* /*ptr*/, void* userData) {
                 bimg::imageFree(static_cast<bimg::ImageContainer*>(userData));
             };
 
             auto mem = bgfx::makeRef(image->m_data, image->m_size, releaseFn, image);
 
-            texture->Handle = bgfx::createTexture2D(image->m_width, image->m_height, (image->m_numMips > 1), 1, Cast(image->m_format), BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE, mem);
+            texture->Handle = bgfx::createTexture2D(static_cast<uint16_t>(image->m_width), static_cast<uint16_t>(image->m_height), (image->m_numMips > 1), 1, Cast(image->m_format), BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE, mem);
             texture->Width = image->m_width;
             texture->Height = image->m_height;
         }
@@ -291,7 +291,7 @@ namespace Babylon
                 bimg::imageFree(image);
             }
 
-            texture->Handle = bgfx::createTextureCube(width, hasMips, 1, format, BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE, mem);
+            texture->Handle = bgfx::createTextureCube(static_cast<uint16_t>(width), hasMips, 1, format, BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE, mem);
             texture->Width = width;
             texture->Height = height;
         }
@@ -322,7 +322,7 @@ namespace Babylon
     public:
         IndexBufferData(const Napi::TypedArray& bytes, uint16_t flags, bool dynamic)
         {
-            const bgfx::Memory* memory = bgfx::copy(bytes.As<Napi::Uint8Array>().Data(), bytes.ByteLength());
+            const bgfx::Memory* memory = bgfx::copy(bytes.As<Napi::Uint8Array>().Data(), static_cast<uint32_t>(bytes.ByteLength()));
             if (!dynamic)
             {
                 m_handle = bgfx::createIndexBuffer(memory, flags);
@@ -402,7 +402,7 @@ namespace Babylon
             DoForHandleTypes(nonDynamic, dynamic);
         }
 
-        void EnsureFinalized(Napi::Env env, const bgfx::VertexLayout& layout)
+        void EnsureFinalized(Napi::Env /*env*/, const bgfx::VertexLayout& layout)
         {
             const auto nonDynamic = [&layout, this](auto handle) {
                 if (handle.idx != bgfx::kInvalidHandle)
@@ -411,7 +411,7 @@ namespace Babylon
                 }
 
                 const bgfx::Memory* memory = bgfx::makeRef(
-                    m_bytes.data(), m_bytes.size(), [](void*, void* userData) {
+                    m_bytes.data(), static_cast<uint32_t>(m_bytes.size()), [](void*, void* userData) {
                         auto* bytes = reinterpret_cast<std::vector<uint8_t>*>(userData);
                         bytes->clear();
                     },
@@ -426,7 +426,7 @@ namespace Babylon
                 }
 
                 const bgfx::Memory* memory = bgfx::makeRef(
-                    m_bytes.data(), m_bytes.size(), [](void*, void* userData) {
+                    m_bytes.data(), static_cast<uint32_t>(m_bytes.size()), [](void*, void* userData) {
                         auto* bytes = reinterpret_cast<std::vector<uint8_t>*>(userData);
                         bytes->clear();
                     },
@@ -490,7 +490,7 @@ namespace Babylon
         init.callback = &s_bgfxCallback;
         bgfx::init(init);
         bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
-        bgfx::setViewRect(0, 0, 0, init.resolution.width, init.resolution.height);
+        bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(init.resolution.width), static_cast<uint16_t>(init.resolution.height));
         bgfx::touch(0);
     }
 
@@ -633,7 +633,7 @@ namespace Babylon
         m_programDataCollection.clear();
     }
 
-    void NativeEngine::Dispose(const Napi::CallbackInfo& info)
+    void NativeEngine::Dispose(const Napi::CallbackInfo& /*info*/)
     {
         Dispose();
     }
@@ -660,7 +660,7 @@ namespace Babylon
                 m_requestAnimationFrameCalback.Call({});
                 EndFrame();
             }
-            catch (std::exception ex)
+            catch (const std::exception& ex)
             {
                 Napi::Error::New(env, ex.what()).ThrowAsJavaScriptException();
             }
@@ -755,7 +755,7 @@ namespace Babylon
         vertexLayout.begin();
         const bgfx::Attrib::Enum attrib = static_cast<bgfx::Attrib::Enum>(location);
         const bgfx::AttribType::Enum attribType = ConvertAttribType(static_cast<WebGLAttribType>(type));
-        vertexLayout.add(attrib, numElements, attribType, normalized);
+        vertexLayout.add(attrib, static_cast<uint8_t>(numElements), attribType, normalized);
         vertexLayout.m_stride = static_cast<uint16_t>(byteStride);
         vertexLayout.end();
 
@@ -991,14 +991,14 @@ namespace Babylon
         //const auto zOffset = info[1].As<Napi::Number>().FloatValue();
     }
 
-    void NativeEngine::SetZOffset(const Napi::CallbackInfo& info)
+    void NativeEngine::SetZOffset(const Napi::CallbackInfo& /*info*/)
     {
         //const auto zOffset = info[0].As<Napi::Number>().FloatValue();
 
         // STUB: Stub.
     }
 
-    Napi::Value NativeEngine::GetZOffset(const Napi::CallbackInfo& info)
+    Napi::Value NativeEngine::GetZOffset(const Napi::CallbackInfo& /*info*/)
     {
         // STUB: Stub.
         return {};
@@ -1094,7 +1094,7 @@ namespace Babylon
         const size_t elementLength = matrix.ElementLength();
         assert(elementLength == size * size);
 
-        if (size < 4)
+        if constexpr (size < 4)
         {
             std::array<float, 16> matrixValues{};
 
@@ -1219,7 +1219,7 @@ namespace Babylon
 
         arcana::make_task(arcana::threadpool_scheduler, m_cancelSource,
             [this, dataSpan, generateMips, invertY]() {
-                bimg::ImageContainer* image = bimg::imageParse(&m_allocator, dataSpan.data(), dataSpan.size());
+                bimg::ImageContainer* image = bimg::imageParse(&m_allocator, dataSpan.data(), static_cast<uint32_t>(dataSpan.size()));
                 // todo: bimg::imageParse will return nullptr when trying to load a texture with an url that is not a valid texture
                 // Like a 404 html page.
                 if (invertY)
@@ -1232,8 +1232,8 @@ namespace Babylon
                 }
                 return image;
             })
-            .then(m_runtimeScheduler, m_cancelSource, [this, texture, dataRef = Napi::Persistent(data)](bimg::ImageContainer* image) {
-                CreateTextureFromImage(&m_allocator, texture, image);
+            .then(m_runtimeScheduler, m_cancelSource, [texture, dataRef = Napi::Persistent(data)](bimg::ImageContainer* image) {
+                CreateTextureFromImage(texture, image);
             })
             .then(arcana::inline_scheduler, m_cancelSource, [onSuccessRef = Napi::Persistent(onSuccess), onErrorRef = Napi::Persistent(onError)](arcana::expected<void, std::exception_ptr> result) {
                 if (result.has_error())
@@ -1261,7 +1261,7 @@ namespace Babylon
             const auto typedArray = data[face].As<Napi::TypedArray>();
             const auto dataSpan = gsl::make_span(static_cast<uint8_t*>(typedArray.ArrayBuffer().Data()) + typedArray.ByteOffset(), typedArray.ByteLength());
             tasks[face] = arcana::make_task(arcana::threadpool_scheduler, m_cancelSource, [this, dataSpan, generateMips]() {
-                bimg::ImageContainer* image = bimg::imageParse(&m_allocator, dataSpan.data(), dataSpan.size());
+                bimg::ImageContainer* image = bimg::imageParse(&m_allocator, dataSpan.data(), static_cast<uint32_t>(dataSpan.size()));
                 if (generateMips)
                 {
                     GenerateMips(&m_allocator, &image);
@@ -1303,7 +1303,7 @@ namespace Babylon
                 const auto typedArray = faceData[face].As<Napi::TypedArray>();
                 const auto dataSpan = gsl::make_span(static_cast<uint8_t*>(typedArray.ArrayBuffer().Data()) + typedArray.ByteOffset(), typedArray.ByteLength());
                 tasks[(face * numMips) + mip] = arcana::make_task(arcana::threadpool_scheduler, m_cancelSource, [this, dataSpan]() {
-                    bimg::ImageContainer* image = bimg::imageParse(&m_allocator, dataSpan.data(), dataSpan.size());
+                    bimg::ImageContainer* image = bimg::imageParse(&m_allocator, dataSpan.data(), static_cast<uint32_t>(dataSpan.size()));
                     FlipY(image);
                     return image;
                 });
@@ -1390,7 +1390,7 @@ namespace Babylon
         const auto texture = info[0].As<Napi::External<TextureData>>().Data();
         const auto value = info[1].As<Napi::Number>().Uint32Value();
 
-        texture->AnisotropicLevel = value;
+        texture->AnisotropicLevel = static_cast<uint8_t>(value);
 
         // if Anisotropic is set to 0 after being >1, then set texture flags back to linear
         texture->Flags &= ~(BGFX_SAMPLER_MIN_MASK | BGFX_SAMPLER_MAG_MASK | BGFX_SAMPLER_MIP_MASK);
@@ -1449,7 +1449,7 @@ namespace Babylon
                 bgfx::createTexture2D(width, height, generateMips, 1, TEXTURE_FORMAT[formatIndex], BGFX_TEXTURE_RT),
                 bgfx::createTexture2D(width, height, generateMips, 1, depthStencilFormat, BGFX_TEXTURE_RT)};
             std::array<bgfx::Attachment, textures.size()> attachments{};
-            for (int idx = 0; idx < attachments.size(); ++idx)
+            for (size_t idx = 0; idx < attachments.size(); ++idx)
             {
                 attachments[idx].init(textures[idx]);
             }
@@ -1479,7 +1479,7 @@ namespace Babylon
         m_frameBufferManager.Unbind(frameBufferData);
     }
 
-    void NativeEngine::DrawIndexed(const Napi::CallbackInfo& info)
+    void NativeEngine::DrawIndexed(const Napi::CallbackInfo& /*info*/)
     {
         //const auto fillMode = info[0].As<Napi::Number>().Int32Value();
         //const auto elementStart = info[1].As<Napi::Number>().Int32Value();
@@ -1502,7 +1502,7 @@ namespace Babylon
 #endif
     }
 
-    void NativeEngine::Draw(const Napi::CallbackInfo& info)
+    void NativeEngine::Draw(const Napi::CallbackInfo& /*info*/)
     {
         //const auto fillMode = info[0].As<Napi::Number>().Int32Value();
         //const auto elementStart = info[1].As<Napi::Number>().Int32Value();
@@ -1581,7 +1581,7 @@ namespace Babylon
         auto imageData = new ImageData();
         //const auto buffer = info[0].As<Napi::ArrayBuffer>();
 
-        imageData->Image.reset(bimg::imageAlloc(&m_allocator, bimg::TextureFormat::RGBA8, width, height, 1, 1, false, false));
+        imageData->Image.reset(bimg::imageAlloc(&m_allocator, bimg::TextureFormat::RGBA8, static_cast<uint16_t>(width), static_cast<uint16_t>(height), 1, 1, false, false));
 
         auto bitmap = static_cast<uint8_t*>(imageData->Image->m_data);
 

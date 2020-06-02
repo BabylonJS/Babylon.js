@@ -3,6 +3,7 @@ set(SOURCES
     "Source/JsRuntime.cpp")
 
 add_library(JsRuntime ${SOURCES})
+warnings_as_errors(JsRuntime)
 
 target_include_directories(JsRuntime PRIVATE "Include/Babylon")
 target_include_directories(JsRuntime INTERFACE "Include")

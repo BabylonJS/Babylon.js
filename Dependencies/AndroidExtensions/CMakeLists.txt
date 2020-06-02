@@ -5,6 +5,7 @@ set(SOURCES
     "Source/JavaWrappers.cpp")
 
 add_library(AndroidExtensions ${SOURCES})
+warnings_as_errors(AndroidExtensions)
 
 target_link_to_dependencies(AndroidExtensions 
     PUBLIC arcana)

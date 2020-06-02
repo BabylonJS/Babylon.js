@@ -28,6 +28,7 @@ set(SOURCES
     ${ADDITIONAL_SOURCES})
 
 add_library(UrlLib ${SOURCES})
+warnings_as_errors(UrlLib)
 
 target_include_directories(UrlLib PUBLIC "Include")
 target_include_directories(UrlLib PRIVATE "Source")

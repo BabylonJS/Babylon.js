@@ -27,7 +27,7 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
     arguments = [arguments subarrayWithRange:NSMakeRange(1, arguments.count - 1)];
     __block std::vector<std::string> scripts;
     scripts.reserve([arguments count]);
-    [arguments enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    [arguments enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger /*idx*/, BOOL * _Nonnull /*stop*/) {
         scripts.push_back([obj UTF8String]);
     }];
 
@@ -112,7 +112,7 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
     }
 }
 
-- (void)mouseDown:(NSEvent *)theEvent {
+- (void)mouseDown:(NSEvent *)__unused theEvent {
     if (inputBuffer)
     {
         inputBuffer->SetPointerDown(true);
@@ -127,14 +127,14 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
     }
 }
 
-- (void)mouseUp:(NSEvent *)theEvent {
+- (void)mouseUp:(NSEvent *)__unused theEvent {
     if (inputBuffer)
     {
         inputBuffer->SetPointerDown(false);
     }
 }
 
--(IBAction) refresh:(id)sender
+-(IBAction) refresh:(id)__unused sender
 {
     [self refreshBabylon];
 }

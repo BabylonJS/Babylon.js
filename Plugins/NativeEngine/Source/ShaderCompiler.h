@@ -2,11 +2,15 @@
 
 #include <string_view>
 #include <gsl/span>
-#include <spirv_cross.hpp>
+#include <functional>
 
 namespace glslang
 {
     class TShader;
+}
+namespace spirv_cross
+{
+    class Compiler;
 }
 
 namespace Babylon

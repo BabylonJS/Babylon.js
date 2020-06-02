@@ -37,6 +37,7 @@ target_link_to_dependencies(NativeEngine
     PRIVATE SPIRV
     PRIVATE spirv-cross-hlsl
     PRIVATE NativeWindowInternal)
+warnings_as_errors(NativeEngine)
 
 if(APPLE)
     target_link_to_dependencies(NativeEngine

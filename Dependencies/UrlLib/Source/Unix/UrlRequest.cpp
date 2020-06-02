@@ -97,7 +97,7 @@ namespace UrlLib
                 curl_easy_setopt(curl, CURLOPT_URL, m_url.data());
                 curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 
-                curl_write_callback callback = [](char* buffer, size_t size, size_t nitems, void* userData) {
+                curl_write_callback callback = [](char* buffer, size_t /*size*/, size_t nitems, void* userData) {
                     auto& data = *static_cast<DataT*>(userData);
                     Append(data, buffer, nitems);
                     return nitems;

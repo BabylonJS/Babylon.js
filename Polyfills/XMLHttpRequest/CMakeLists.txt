@@ -4,6 +4,7 @@ set(SOURCES
     "Source/XMLHttpRequest.h")
 
 add_library(XMLHttpRequest ${SOURCES})
+warnings_as_errors(XMLHttpRequest)
 
 target_include_directories(XMLHttpRequest PUBLIC "Include")
 

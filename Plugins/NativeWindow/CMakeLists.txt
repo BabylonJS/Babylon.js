@@ -4,6 +4,7 @@ set(SOURCES
     "Source/NativeWindow.cpp")
 
 add_library(NativeWindow ${SOURCES})
+warnings_as_errors(NativeWindow)
 
 target_include_directories(NativeWindow
     PUBLIC "Include")

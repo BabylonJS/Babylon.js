@@ -6,6 +6,7 @@ set(SOURCES
     "Source/DeviceInputSystem.h")
 
 add_library(NativeInput ${SOURCES})
+warnings_as_errors(NativeInput)
 
 target_include_directories(NativeInput PUBLIC "Include")
 

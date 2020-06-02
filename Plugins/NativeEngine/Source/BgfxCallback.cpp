@@ -51,11 +51,11 @@ namespace Babylon
         bx::debugOutput(out);
     }
 
-    void BgfxCallback::profilerBegin(const char* name, uint32_t abgr, const char* filePath, uint16_t line)
+    void BgfxCallback::profilerBegin(const char* /*name*/, uint32_t /*abgr*/, const char* /*filePath*/, uint16_t /*line*/)
     {
     }
 
-    void BgfxCallback::profilerBeginLiteral(const char* name, uint32_t abgr, const char* filePath, uint16_t line)
+    void BgfxCallback::profilerBeginLiteral(const char* /*name*/, uint32_t /*abgr*/, const char* /*filePath*/, uint16_t /*line*/)
     {
     }
 
@@ -63,21 +63,21 @@ namespace Babylon
     {
     }
 
-    uint32_t BgfxCallback::cacheReadSize(uint64_t id)
+    uint32_t BgfxCallback::cacheReadSize(uint64_t /*id*/)
     {
         return 0;
     }
 
-    bool BgfxCallback::cacheRead(uint64_t id, void* data, uint32_t size)
+    bool BgfxCallback::cacheRead(uint64_t /*id*/, void* /*data*/, uint32_t /*size*/)
     {
         return false;
     }
 
-    void BgfxCallback::cacheWrite(uint64_t id, const void* data, uint32_t size)
+    void BgfxCallback::cacheWrite(uint64_t /*id*/, const void* /*data*/, uint32_t /*size*/)
     {
     }
 
-    void BgfxCallback::screenShot(const char* filePath, uint32_t width, uint32_t height, uint32_t pitch, const void* data, uint32_t size, bool yflip)
+    void BgfxCallback::screenShot(const char* /*filePath*/, uint32_t width, uint32_t height, uint32_t pitch, const void* data, uint32_t /*size*/, bool yflip)
     {
         m_screenShotBitmap.resize(width * height * 4);
         for (uint32_t y = 0; y < height; y++)
@@ -87,7 +87,7 @@ namespace Babylon
         }
     }
 
-    void BgfxCallback::captureBegin(uint32_t width, uint32_t height, uint32_t pitch, bgfx::TextureFormat::Enum format, bool yflip)
+    void BgfxCallback::captureBegin(uint32_t /*width*/, uint32_t /*height*/, uint32_t /*pitch*/, bgfx::TextureFormat::Enum /*format*/, bool /*yflip*/)
     {
     }
 
@@ -95,7 +95,7 @@ namespace Babylon
     {
     }
 
-    void BgfxCallback::captureFrame(const void* _data, uint32_t _size)
+    void BgfxCallback::captureFrame(const void* /*_data*/, uint32_t /*_size*/)
     {
     }
 }

@@ -72,7 +72,7 @@ namespace xr
         class Session
         {
             friend class System;
-            class Impl;
+            struct Impl;
 
         public:
             class Frame
@@ -136,7 +136,7 @@ namespace xr
                 void GetHitTestResults(std::vector<Pose>&, Ray) const;
 
             private:
-                class Impl;
+                struct Impl;
                 std::unique_ptr<Impl> m_impl{};
             };
 
@@ -164,7 +164,7 @@ namespace xr
         static arcana::task<bool, std::exception_ptr> IsSessionSupportedAsync(SessionType);
 
     private:
-        class Impl;
+        struct Impl;
         std::unique_ptr<Impl> m_impl{};
     };
 }

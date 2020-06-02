@@ -16,11 +16,13 @@ namespace Babylon
     {
         HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
         assert(SUCCEEDED(hr));
+        _CRT_UNUSED(hr);
         auto coInitScopeGuard = gsl::finally([] { CoUninitialize(); });
 
         char filename[FILENAME_BUFFER_SIZE];
-        DWORD result = GetModuleFileNameA(nullptr, filename, std::size(filename));
+        auto result = GetModuleFileNameA(nullptr, filename, static_cast<DWORD>(std::size(filename)));
         assert(result != 0);
+        (void)result;
         RunEnvironmentTier(filename);
     }
 }
