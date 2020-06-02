@@ -73,7 +73,8 @@ void reflectivityBlock(
         #endif
 
         #ifdef DETAIL
-            metallicRoughness.g = saturate(metallicRoughness.g + detailColor.b * vDetailInfos.w);
+            float detailRoughness = 2.0 * mix(0.5, detailColor.b, vDetailInfos.w);
+            metallicRoughness.g = saturate(metallicRoughness.g * detailRoughness);
         #endif
 
         #ifdef MICROSURFACEMAP

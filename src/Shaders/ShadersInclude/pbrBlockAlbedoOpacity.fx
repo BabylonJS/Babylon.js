@@ -45,7 +45,8 @@ void albedoOpacityBlock(
     #endif
 
     #ifdef DETAIL
-        surfaceAlbedo.rgb = surfaceAlbedo.rgb * (saturate(vec3(detailColor.r) + vDetailInfos.y));
+        float detailAlbedo = 2.0 * mix(0.5, detailColor.r, vDetailInfos.y);
+        surfaceAlbedo.rgb = surfaceAlbedo.rgb * detailAlbedo * detailAlbedo; // should be pow(detailAlbedo, 2.2) but detailAlbedo² is close enough and cheaper to compute
     #endif
 
     #define CUSTOM_FRAGMENT_UPDATE_ALBEDO
