@@ -1,4 +1,4 @@
-import { serialize, serializeAsImageProcessingConfiguration, expandToProperty, serializeAsTexture } from "../../Misc/decorators";
+import { serialize, serializeAsImageProcessingConfiguration, expandToProperty  } from "../../Misc/decorators";
 import { Observer } from "../../Misc/observable";
 import { Logger } from "../../Misc/logger";
 import { SmartArray } from "../../Misc/smartArray";
@@ -801,7 +801,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Defines the detail map parameters for the material.
      */
-    public readonly detailMap = new DetailMap();
+    public readonly detailMap = new DetailMap(this._markAllSubMeshesAsTexturesDirty.bind(this));
 
     protected _rebuildInParallel = false;
 

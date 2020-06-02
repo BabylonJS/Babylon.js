@@ -64,7 +64,21 @@ export class DetailMap {
      * Enable or disable the detail map on this material
      */
     @serialize()
-    public disableDetailMap: boolean = false;
+    /** @hidden */
+    private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
+
+    /** @hidden */
+    public _markAllSubMeshesAsTexturesDirty(): void {
+        this._internalMarkAllSubMeshesAsTexturesDirty();
+    }
+
+    /**
+     * Instantiate a new detail map
+     * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
+     */
+    constructor(markAllSubMeshesAsTexturesDirty: () => void) {
+        this._internalMarkAllSubMeshesAsTexturesDirty = markAllSubMeshesAsTexturesDirty;
+    }
 
     /**
      * Gets whether the submesh is ready to be used or not.
