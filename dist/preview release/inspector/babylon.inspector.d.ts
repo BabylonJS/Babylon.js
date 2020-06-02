@@ -647,6 +647,17 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export interface IIconButtonLineComponentProps {
+        icon: string;
+        onClick: () => void;
+        tooltip: string;
+    }
+    export class IconButtonLineComponent extends React.Component<IIconButtonLineComponentProps> {
+        constructor(props: IIconButtonLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface IGraphActionsBarProps {
         addKeyframe: () => void;
         removeKeyframe: () => void;
@@ -659,6 +670,9 @@ declare module INSPECTOR {
         lerpMode: boolean;
         currentValue: number;
         currentFrame: number;
+        title: string;
+        close: (event: any) => void;
+        enabled: boolean;
     }
     export class GraphActionsBar extends React.Component<IGraphActionsBarProps> {
         constructor(props: IGraphActionsBarProps);
@@ -669,7 +683,6 @@ declare module INSPECTOR {
     interface IAnimationCurveEditorComponentProps {
         close: (event: any) => void;
         playOrPause?: () => void;
-        title: string;
         scene: BABYLON.Scene;
         entity: BABYLON.IAnimatable | BABYLON.TargetedAnimation;
     }
@@ -769,7 +782,7 @@ declare module INSPECTOR {
         };
         linearInterpolation(keyframes: BABYLON.IAnimationKey[], data: string, middle: number): string;
         setKeyframePointLinear(point: BABYLON.Vector2, index: number): void;
-        getPathData(animation: BABYLON.Animation): string;
+        getPathData(animation: BABYLON.Animation | null): string;
         getAnimationData(animation: BABYLON.Animation): {
             loopMode: number | undefined;
             name: string;

@@ -20453,6 +20453,10 @@ declare module BABYLON {
          */
         isOptional: boolean;
         /**
+         * Gets or sets a boolean indicating that this connection point is exposed on a frame
+         */
+        isExposedOnFrame: boolean;
+        /**
          * Gets or sets a string indicating that this uniform must be defined under a #ifdef
          */
         define: string;
@@ -21564,7 +21568,7 @@ declare module BABYLON {
         serialize(): any;
         /** @hidden */
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
-        private _deserializePortDisplayNames;
+        private _deserializePortDisplayNamesAndExposedOnFrame;
         /**
          * Release resources
          */
