@@ -136,6 +136,7 @@ namespace
         loader.LoadScript(scriptsRootUrl + "/babylon.max.js");
         loader.LoadScript(scriptsRootUrl + "/babylon.glTF2FileLoader.js");
         loader.LoadScript(scriptsRootUrl + "/babylonjs.materials.js");
+        loader.LoadScript(scriptsRootUrl + "/meshwriter.min.js");
 
         std::vector<std::string> scripts = GetCommandLineArguments();
         if (scripts.empty())

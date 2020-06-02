@@ -6,6 +6,7 @@ var rtt = false;
 var vr = false;
 var ar = false;
 var xrHitTest = false;
+var text = false;
 
 function CreateBoxAsync() {
     BABYLON.Mesh.CreateBox("box1", 0.2);
@@ -158,6 +159,18 @@ CreateBoxAsync().then(function () {
                 xr.baseExperience.enterXRAsync(vr ? "immersive-vr" : "immersive-ar", "unbounded", xr.renderTarget);
             });
         }, 5000);
+    }
+
+    if (text) {
+        var Writer = BABYLON.MeshWriter(scene, { scale: 1.0, defaultFont: "Arial" });
+        new Writer(
+            "Lorem ipsum dolor sit amet...",
+            {
+                "anchor": "center",
+                "letter-height": 5,
+                "color": "#FF0000"
+            }
+        );
     }
     
 }, function (ex) {

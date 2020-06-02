@@ -3,6 +3,7 @@ set(BABYLONSCRIPTS
     "../BabylonScripts/babylon.max.js"
     "../BabylonScripts/babylonjs.materials.js"
     "../BabylonScripts/ammo.js"
+    "../BabylonScripts/meshwriter.min.js"
     "../BabylonScripts/recast.js")
 
 set(SCRIPTS
