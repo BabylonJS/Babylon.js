@@ -1,8 +1,6 @@
 import * as React from "react";
 import { Animation } from 'babylonjs/Animations/animation';
-import { Vector2, Vector3, Quaternion } from 'babylonjs/Maths/math.vector';
-import { Size } from 'babylonjs/Maths/math.size';
-import { Color3, Color4 } from 'babylonjs/Maths/math.color';
+import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { EasingFunction } from 'babylonjs/Animations/easing';
 import { IAnimationKey } from 'babylonjs/Animations/animationKey';
 import { IKeyframeSvgPoint } from './keyframeSvgPoint';
@@ -15,7 +13,9 @@ import { Scene } from "babylonjs/scene";
 import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
+import { AddAnimation } from './addAnimation';
 import { Nullable } from 'babylonjs/types';
+import { IconButtonLineComponent } from '../../../lines/iconButtonLineComponent';
 
 require("./curveEditor.scss");
 
@@ -32,9 +32,6 @@ interface ICanvasAxis {
 }
 
 export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, {
-    animationName: string,
-    animationType: string,
-    animationTargetProperty: string,
     isOpen: boolean,
     selected: Animation | null,
     currentPathData: string | undefined,
@@ -53,7 +50,8 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     currentPoint: SVGPoint | undefined,
     lastFrame: number,
     playheadPos: number,
-    isPlaying: boolean
+    isPlaying: boolean,
+    isAnimationDialogOpen: boolean
 }> {
 
     // Height scale *Review this functionaliy
@@ -105,9 +103,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             isOpen: true,
             currentPathData: initialPathData,
             svgKeyframes: this._svgKeyframes,
-            animationTargetProperty: 'position.x',
-            animationName: "",
-            animationType: "Float",
             currentFrame: 0,
             currentValue: 1,
             isFlatTangentMode: false,
@@ -122,7 +117,8 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             currentPoint: undefined,
             scale: 1,
             playheadPos: 0,
-            isPlaying: this.isAnimationPlaying()
+            isPlaying: this.isAnimationPlaying(),
+            isAnimationDialogOpen: false
         }
     }
 
@@ -195,27 +191,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         if (this._graphCanvas && this._graphCanvas.current) {
             this.setState({ playheadOffset: (this._graphCanvas.current.children[1].clientWidth) / (this._canvasLength * 10 * this.state.scale) });
         }
-    }
-
-
-
-    /**
-    * Add New Animation
-    * This section handles events from AnimationCreation.
-    */
-    handleNameChange(event: React.ChangeEvent<HTMLInputElement>) {
-        event.preventDefault();
-        this.setState({ animationName: event.target.value.trim() });
-    }
-
-    handleTypeChange(event: React.ChangeEvent<HTMLSelectElement>) {
-        event.preventDefault();
-        this.setState({ animationType: event.target.value });
-    }
-
-    handlePropertyChange(event: React.ChangeEvent<HTMLInputElement>) {
-        event.preventDefault();
-        this.setState({ animationTargetProperty: event.target.value });
     }
 
     setListItem(animation: Animation, i: number) {
@@ -291,36 +266,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         return element;
     }
 
-    getAnimationTypeofChange(selected: string) {
-        let dataType = 0;
-        switch (selected) {
-            case "Float":
-                dataType = Animation.ANIMATIONTYPE_FLOAT;
-                break;
-            case "Quaternion":
-                dataType = Animation.ANIMATIONTYPE_QUATERNION;
-                break;
-            case "Vector3":
-                dataType = Animation.ANIMATIONTYPE_VECTOR3;
-                break;
-            case "Vector2":
-                dataType = Animation.ANIMATIONTYPE_VECTOR2;
-                break;
-            case "Size":
-                dataType = Animation.ANIMATIONTYPE_SIZE;
-                break;
-            case "Color3":
-                dataType = Animation.ANIMATIONTYPE_COLOR3;
-                break;
-            case "Color4":
-                dataType = Animation.ANIMATIONTYPE_COLOR4;
-                break;
-        }
-
-        return dataType;
-
-    }
-
     deleteAnimation() {
         let currentSelected = this.state.selected;
         if (this.props.entity instanceof TargetedAnimation) {
@@ -331,146 +276,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                 let updatedAnimations = animations.filter(anim => anim !== currentSelected);
                 (this.props.entity as IAnimatable).animations = updatedAnimations as Nullable<Animation[]>;
             }
-        }
-    }
-
-    addAnimation() {
-        if (this.state.animationName != "" && this.state.animationTargetProperty != "") {
-
-            let matchTypeTargetProperty = this.state.animationTargetProperty.split('.');
-            let animationDataType = this.getAnimationTypeofChange(this.state.animationType);
-            let matched = false;
-
-            if (matchTypeTargetProperty.length === 1) {
-                let match = (this.props.entity as any)[matchTypeTargetProperty[0]];
-
-                if (match) {
-                    switch (match.constructor.name) {
-                        case "Vector2":
-                            animationDataType === Animation.ANIMATIONTYPE_VECTOR2 ? matched = true : matched = false;
-                            break;
-                        case "Vector3":
-                            animationDataType === Animation.ANIMATIONTYPE_VECTOR3 ? matched = true : matched = false;
-                            break;
-                        case "Quaternion":
-                            animationDataType === Animation.ANIMATIONTYPE_QUATERNION ? matched = true : matched = false;
-                            break;
-                        case "Color3":
-                            animationDataType === Animation.ANIMATIONTYPE_COLOR3 ? matched = true : matched = false;
-                            break;
-                        case "Color4":
-                            animationDataType === Animation.ANIMATIONTYPE_COLOR4 ? matched = true : matched = false;
-                            break;
-                        case "Size":
-                            animationDataType === Animation.ANIMATIONTYPE_SIZE ? matched = true : matched = false;
-                            break;
-                        default: console.log("not recognized");
-                            break;
-                    }
-                } else {
-                    this.setState({ notification: `The selected entity doesn't have a ${matchTypeTargetProperty[0]} property` });
-                }
-            } else if (matchTypeTargetProperty.length > 1) {
-                let match = (this.props.entity as any)[matchTypeTargetProperty[0]][matchTypeTargetProperty[1]];
-                if (typeof match === "number") {
-                    animationDataType === Animation.ANIMATIONTYPE_FLOAT ? matched = true : matched = false;
-                }
-            }
-
-            if (matched) {
-
-                let startValue;
-                let endValue;
-                let outTangent;
-                let inTangent;
-                // Default start and end values for new animations
-                switch (animationDataType) {
-                    case Animation.ANIMATIONTYPE_FLOAT:
-                        startValue = 1;
-                        endValue = 1;
-                        outTangent = 0;
-                        inTangent = 0;
-                        break;
-                    case Animation.ANIMATIONTYPE_VECTOR2:
-                        startValue = new Vector2(1, 1);
-                        endValue = new Vector2(1, 1);
-                        outTangent = Vector2.Zero();
-                        inTangent = Vector2.Zero();
-                        break;
-                    case Animation.ANIMATIONTYPE_VECTOR3:
-                        startValue = new Vector3(1, 1, 1);
-                        endValue = new Vector3(1, 1, 1);
-                        outTangent = Vector3.Zero();
-                        inTangent = Vector3.Zero();
-                        break;
-                    case Animation.ANIMATIONTYPE_QUATERNION:
-                        startValue = new Quaternion(1, 1, 1, 1);
-                        endValue = new Quaternion(1, 1, 1, 1);
-                        outTangent = Quaternion.Zero();
-                        inTangent = Quaternion.Zero();
-                        break;
-                    case Animation.ANIMATIONTYPE_COLOR3:
-                        startValue = new Color3(1, 1, 1);
-                        endValue = new Color3(1, 1, 1);
-                        outTangent = new Color3(0, 0, 0);
-                        inTangent = new Color3(0, 0, 0);
-                        break;
-                    case Animation.ANIMATIONTYPE_COLOR4:
-                        startValue = new Color4(1, 1, 1, 1);
-                        endValue = new Color4(1, 1, 1, 1);
-                        outTangent = new Color4(0, 0, 0, 0);
-                        inTangent = new Color4(0, 0, 0, 0);
-                        break;
-                    case Animation.ANIMATIONTYPE_SIZE:
-                        startValue = new Size(1, 1);
-                        endValue = new Size(1, 1);
-                        outTangent = Size.Zero();
-                        inTangent = Size.Zero();
-                        break;
-                    default: console.log("not recognized");
-                        break;
-                }
-
-                let alreadyAnimatedProperty = (this.props.entity as IAnimatable).animations?.find(anim =>
-                    anim.targetProperty === this.state.animationTargetProperty
-                    , this);
-
-                let alreadyAnimationName = (this.props.entity as IAnimatable).animations?.find(anim =>
-                    anim.name === this.state.animationName
-                    , this);
-
-                if (alreadyAnimatedProperty) {
-                    this.setState({ notification: `The property "${this.state.animationTargetProperty}" already has an animation` });
-                } else if (alreadyAnimationName) {
-                    this.setState({ notification: `There is already an animation with the name: "${this.state.animationName}"` });
-                } else {
-
-                    let animation = new Animation(this.state.animationName, this.state.animationTargetProperty, 30, animationDataType);
-
-                    // Start with two keyframes
-                    var keys = [];
-                    keys.push({
-                        frame: 0,
-                        value: startValue,
-                        outTangent: outTangent
-                    });
-
-                    keys.push({
-                        inTangent: inTangent,
-                        frame: 100,
-                        value: endValue
-                    });
-
-                    animation.setKeys(keys);
-                    (this.props.entity as IAnimatable).animations?.push(animation);
-                }
-
-            } else {
-                this.setState({ notification: `The property "${this.state.animationTargetProperty}" is not a "${this.state.animationType}" type` });
-            }
-
-        } else {
-            this.setState({ notification: "You need to provide a name and target property." });
         }
     }
 
@@ -1283,29 +1088,20 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                 <div className="content">
                     <div className="row">
                         <div className="animation-list">
-                            <div style={{ display: this._isTargetedAnimation ? "none" : "block" }}>
-                                <div className="label-input">
-                                    <label>Animation Name</label>
-                                    <input type="text" value={this.state.animationName} onChange={(e) => this.handleNameChange(e)}></input>
-                                </div>
-                                <div className="label-input">
-                                    <label>Type</label>
-                                    <select onChange={(e) => this.handleTypeChange(e)} value={this.state.animationType}>
-                                        <option value="Float">Float</option>
-                                        <option value="Vector3">Vector3</option>
-                                        <option value="Vector2">Vector2</option>
-                                        <option value="Quaternion">Quaternion</option>
-                                        <option value="Color3">Color3</option>
-                                        <option value="Color4">Color4</option>
-                                        <option value="Size">Size</option>
-                                    </select>
-                                </div>
-                                <div className="label-input">
-                                    <label>Target Property</label>
-                                    <input type="text" value={this.state.animationTargetProperty} onChange={(e) => this.handlePropertyChange(e)}></input>
-                                </div>
-                                <ButtonLineComponent label={"Add Animation"} onClick={() => this.addAnimation()} />
+                            <div className="controls-header">
+                            {this._isTargetedAnimation ? null : <IconButtonLineComponent active={this.state.isAnimationDialogOpen} tooltip="Add Animation" icon="medium add-animation" onClick={() => { this.setState({ isAnimationDialogOpen: true})}}></IconButtonLineComponent>}
+                            <IconButtonLineComponent tooltip="Load Animation" icon="medium load" onClick={() => { this.setState({ isAnimationDialogOpen: true})}}></IconButtonLineComponent>
+                            <IconButtonLineComponent tooltip="Save Animation" icon="medium save" onClick={() => { this.setState({ isAnimationDialogOpen: true})}}></IconButtonLineComponent>
+                            <IconButtonLineComponent tooltip="Edit Animations" icon="medium animation-edit" onClick={() => { this.setState({ isAnimationDialogOpen: true})}}></IconButtonLineComponent>
+                            <IconButtonLineComponent tooltip="Loop/Unloop" icon="medium loop-active" onClick={() => { this.setState({ isAnimationDialogOpen: true})}}></IconButtonLineComponent>
                             </div>
+                            { (this.props.entity instanceof TargetedAnimation) ? null : 
+                                <AddAnimation 
+                                    isOpen={this.state.isAnimationDialogOpen} 
+                                    close={() => { this.setState({isAnimationDialogOpen: false})}} 
+                                    entity={this.props.entity} 
+                                    setNotificationMessage={(message: string) => { this.setState({notification: message})}} />
+                            }
 
                             <div className="object-tree">
                                 <ul>
