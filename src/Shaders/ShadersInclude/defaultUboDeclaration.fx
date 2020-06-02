@@ -21,9 +21,7 @@ uniform Material
 	vec2 vLightmapInfos;
 	vec2 vSpecularInfos;
 	vec3 vBumpInfos;
-	vec3 vDetailInfos;
 	mat4 diffuseMatrix;
-	mat4 detailMatrix;
 	mat4 ambientMatrix;
 	mat4 opacityMatrix;
 	mat4 reflectionMatrix;
@@ -39,6 +37,9 @@ uniform Material
 	vec3 vEmissiveColor;
 	float visibility;
 	vec4 vDiffuseColor;
+
+	vec3 vDetailInfos;
+	mat4 detailMatrix;
 };
 
 uniform Scene {

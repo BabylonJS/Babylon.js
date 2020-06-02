@@ -40,6 +40,7 @@ import "../../Shaders/pbr.fragment";
 import "../../Shaders/pbr.vertex";
 
 import { EffectFallbacks } from '../effectFallbacks';
+import { IMaterialDetailMapDefines, DetailMap } from '../material.detailMap';
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -53,7 +54,8 @@ export class PBRMaterialDefines extends MaterialDefines
     IMaterialAnisotropicDefines,
     IMaterialBRDFDefines,
     IMaterialSheenDefines,
-    IMaterialSubSurfaceDefines {
+    IMaterialSubSurfaceDefines,
+    IMaterialDetailMapDefines {
     public PBR = true;
 
     public NUM_SAMPLES = "0u";
@@ -796,44 +798,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public readonly subSurface = new PBRSubSurfaceConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
 
+    /**
+     * Defines the detail map parameters for the material.
+     */
+    public readonly detailMap = new DetailMap();
+
     protected _rebuildInParallel = false;
-
-    @serializeAsTexture("detailTexture")
-    private _detailTexture: Nullable<BaseTexture> = null;
-    /**
-     * The detail texture of the material.
-     */
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public detailTexture: Nullable<BaseTexture>;
-
-    /**
-     * Defines how strongly the detail albedo channel is blended with the regular albedo texture
-     * Bigger values mean stronger blending
-     */
-    @serialize()
-    public detailAlbedoBlendLevel = 0.5;
-
-    /**
-     * Defines how strongly the detail roughness channel is blended with the regular roughness value
-     * Bigger values mean stronger blending
-     */
-    @serialize()
-    public detailRoughnessBlendLevel = 0.5;
-
-    /**
-     * Defines how strong the bump effect from the detail map is
-     * Bigger values mean stronger effect
-     */
-    @serialize()
-    public detailBumpLevel = 1;
-
-    @serialize()
-    private _detailNormalBlendMethod = Material.MATERIAL_NORMALBLENDMETHOD_WHITEOUT;
-    /**
-     * The method used to blend the bump and detail normals together
-     */
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public detailNormalBlendMethod: number;
 
     /**
      * Instantiates a new PBRMaterial instance.
@@ -1044,13 +1014,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     }
                 }
 
-                if (engine.getCaps().standardDerivatives && this._detailTexture && MaterialFlags.DetailTextureEnabled) {
-                    // Detail texture cannot be not blocking.
-                    if (!this._detailTexture.isReady()) {
-                        return false;
-                    }
-                }
-
                 if (this._environmentBRDFTexture && MaterialFlags.ReflectionTextureEnabled) {
                     // This is blocking.
                     if (!this._environmentBRDFTexture.isReady()) {
@@ -1063,7 +1026,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         if (!this.subSurface.isReadyForSubMesh(defines, scene) ||
             !this.clearCoat.isReadyForSubMesh(defines, scene, engine, this._disableBumpMap) ||
             !this.sheen.isReadyForSubMesh(defines, scene) ||
-            !this.anisotropy.isReadyForSubMesh(defines, scene)) {
+            !this.anisotropy.isReadyForSubMesh(defines, scene) ||
+            !this.detailMap.isReadyForSubMesh(defines, scene)) {
             return false;
         }
 
@@ -1259,7 +1223,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vMetallicReflectanceFactors", "vEmissiveColor", "visibility", "vReflectionColor",
             "vFogInfos", "vFogColor", "pointSize",
-            "vAlbedoInfos", "vDetailInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vReflectionPosition", "vReflectionSize", "vEmissiveInfos", "vReflectivityInfos", "vReflectionFilteringInfo", "vMetallicReflectanceInfos",
+            "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vReflectionPosition", "vReflectionSize", "vEmissiveInfos", "vReflectivityInfos", "vReflectionFilteringInfo", "vMetallicReflectanceInfos",
             "vMicroSurfaceSamplerInfos", "vBumpInfos", "vLightmapInfos",
             "mBones",
             "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "albedoMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "reflectivityMatrix", "normalMatrix", "microSurfaceSamplerMatrix", "bumpMatrix", "lightmapMatrix", "metallicReflectanceMatrix",
@@ -1276,12 +1240,15 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "vDebugMode"
         ];
 
-        var samplers = ["albedoSampler", "detailSampler", "reflectivitySampler", "ambientSampler", "emissiveSampler",
+        var samplers = ["albedoSampler", "reflectivitySampler", "ambientSampler", "emissiveSampler",
             "bumpSampler", "lightmapSampler", "opacitySampler",
             "reflectionSampler", "reflectionSamplerLow", "reflectionSamplerHigh", "irradianceSampler",
             "microSurfaceSampler", "environmentBrdfSampler", "boneSampler", "metallicReflectanceSampler"];
 
         var uniformBuffers = ["Material", "Scene"];
+
+        DetailMap.AddUniforms(uniforms);
+        DetailMap.AddSamplers(samplers);
 
         PBRSubSurfaceConfiguration.AddUniforms(uniforms);
         PBRSubSurfaceConfiguration.AddSamplers(samplers);
@@ -1543,13 +1510,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     defines.BUMP = false;
                 }
 
-                if (scene.getEngine().getCaps().standardDerivatives && this._detailTexture && MaterialFlags.DetailTextureEnabled && !this._disableBumpMap) {
-                    MaterialHelper.PrepareDefinesForMergedUV(this._detailTexture, defines, "DETAIL");
-                    defines.DETAIL_NORMALBLENDMETHOD = this._detailNormalBlendMethod;
-                } else {
-                    defines.DETAIL = false;
-                }
-
                 if (this._environmentBRDFTexture && MaterialFlags.ReflectionTextureEnabled) {
                     defines.ENVIRONMENTBRDF = true;
                     // Not actual true RGBD, only the B chanel is encoded as RGBD for sheen.
@@ -1618,6 +1578,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         // External config
+        this.detailMap.prepareDefines(defines, scene);
         this.subSurface.prepareDefines(defines, scene);
         this.clearCoat.prepareDefines(defines, scene);
         this.anisotropy.prepareDefines(defines, mesh, scene);
@@ -1680,9 +1641,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         ubo.addUniform("vReflectionPosition", 3);
         ubo.addUniform("vReflectionSize", 3);
         ubo.addUniform("vBumpInfos", 3);
-        ubo.addUniform("vDetailInfos", 4);
         ubo.addUniform("albedoMatrix", 16);
-        ubo.addUniform("detailMatrix", 16);
         ubo.addUniform("ambientMatrix", 16);
         ubo.addUniform("opacityMatrix", 16);
         ubo.addUniform("emissiveMatrix", 16);
@@ -1710,6 +1669,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         PBRAnisotropicConfiguration.PrepareUniformBuffer(ubo);
         PBRSheenConfiguration.PrepareUniformBuffer(ubo);
         PBRSubSurfaceConfiguration.PrepareUniformBuffer(ubo);
+        DetailMap.PrepareUniformBuffer(ubo);
 
         ubo.create();
     }
@@ -1791,11 +1751,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     if (this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
                         ubo.updateFloat2("vAlbedoInfos", this._albedoTexture.coordinatesIndex, this._albedoTexture.level);
                         MaterialHelper.BindTextureMatrix(this._albedoTexture, ubo, "albedo");
-                    }
-
-                    if (this._detailTexture && MaterialFlags.DetailTextureEnabled) {
-                        ubo.updateFloat4("vDetailInfos", this._detailTexture.coordinatesIndex, 1 - this.detailAlbedoBlendLevel, this.detailBumpLevel, this.detailRoughnessBlendLevel);
-                        MaterialHelper.BindTextureMatrix(this._detailTexture, ubo, "detail");
                     }
 
                     if (this._ambientTexture && MaterialFlags.AmbientTextureEnabled) {
@@ -1962,10 +1917,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     ubo.setTexture("albedoSampler", this._albedoTexture);
                 }
 
-                if (this._detailTexture && MaterialFlags.DetailTextureEnabled) {
-                    ubo.setTexture("detailSampler", this._detailTexture);
-                }
-
                 if (this._ambientTexture && MaterialFlags.AmbientTextureEnabled) {
                     ubo.setTexture("ambientSampler", this._ambientTexture);
                 }
@@ -2023,6 +1974,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 }
             }
 
+            this.detailMap.bindForSubMesh(ubo, scene, this.isFrozen);
             this.subSurface.bindForSubMesh(ubo, scene, engine, this.isFrozen, defines.LODBASEDMICROSFURACE, this.realTimeFiltering);
             this.clearCoat.bindForSubMesh(ubo, scene, engine, this._disableBumpMap, this.isFrozen, this._invertNormalMapX, this._invertNormalMapY);
             this.anisotropy.bindForSubMesh(ubo, scene, this.isFrozen);
@@ -2088,10 +2040,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             results.push(this._albedoTexture);
         }
 
-        if (this._detailTexture && this._detailTexture.animations && this._detailTexture.animations.length > 0) {
-            results.push(this._detailTexture);
-        }
-
         if (this._ambientTexture && this._ambientTexture.animations && this._ambientTexture.animations.length > 0) {
             results.push(this._ambientTexture);
         }
@@ -2123,6 +2071,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             results.push(this._lightmapTexture);
         }
 
+        this.detailMap.getAnimatables(results);
         this.subSurface.getAnimatables(results);
         this.clearCoat.getAnimatables(results);
         this.sheen.getAnimatables(results);
@@ -2152,10 +2101,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         if (this._albedoTexture) {
             activeTextures.push(this._albedoTexture);
-        }
-
-        if (this._detailTexture) {
-            activeTextures.push(this._detailTexture);
         }
 
         if (this._ambientTexture) {
@@ -2198,6 +2143,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             activeTextures.push(this._lightmapTexture);
         }
 
+        this.detailMap.getActiveTextures(activeTextures);
         this.subSurface.getActiveTextures(activeTextures);
         this.clearCoat.getActiveTextures(activeTextures);
         this.sheen.getActiveTextures(activeTextures);
@@ -2217,10 +2163,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         if (this._albedoTexture === texture) {
-            return true;
-        }
-
-        if (this._detailTexture === texture) {
             return true;
         }
 
@@ -2260,7 +2202,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             return true;
         }
 
-        return this.subSurface.hasTexture(texture) ||
+        return this.detailMap.hasTexture(texture) ||
+            this.subSurface.hasTexture(texture) ||
             this.clearCoat.hasTexture(texture) ||
             this.sheen.hasTexture(texture) ||
             this.anisotropy.hasTexture(texture);
@@ -2278,7 +2221,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
 
             this._albedoTexture?.dispose();
-            this._detailTexture?.dispose();
             this._ambientTexture?.dispose();
             this._opacityTexture?.dispose();
             this._reflectionTexture?.dispose();
@@ -2291,6 +2233,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             this._microSurfaceTexture?.dispose();
         }
 
+        this.detailMap.dispose(forceDisposeTextures);
         this.subSurface.dispose(forceDisposeTextures);
         this.clearCoat.dispose(forceDisposeTextures);
         this.sheen.dispose(forceDisposeTextures);

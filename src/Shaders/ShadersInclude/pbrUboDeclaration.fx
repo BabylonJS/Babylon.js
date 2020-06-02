@@ -14,9 +14,7 @@ uniform Material
     uniform vec3 vReflectionPosition;
     uniform vec3 vReflectionSize;
     uniform vec3 vBumpInfos;
-    uniform vec4 vDetailInfos;
     uniform mat4 albedoMatrix;
-    uniform mat4 detailMatrix;
     uniform mat4 ambientMatrix;
     uniform mat4 opacityMatrix;
     uniform mat4 emissiveMatrix;
@@ -71,6 +69,9 @@ uniform Material
     uniform vec3 vDiffusionDistance;
     uniform vec4 vTintColor;
     uniform vec3 vSubSurfaceIntensity;
+
+    uniform vec4 vDetailInfos;
+    uniform mat4 detailMatrix;
 };
 
 uniform Scene {
