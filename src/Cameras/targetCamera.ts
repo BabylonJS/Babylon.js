@@ -87,9 +87,6 @@ export class TargetCamera extends Camera {
     /** @hidden */
     public _transformedReferencePoint = Vector3.Zero();
 
-    protected _globalCurrentTarget = Vector3.Zero();
-    protected _globalCurrentUpVector = Vector3.Zero();
-
     /** @hidden */
     public _reset: () => void;
 
@@ -424,14 +421,10 @@ export class TargetCamera extends Camera {
     }
 
     protected _computeViewMatrix(position: Vector3, target: Vector3, up: Vector3): void {
-        this._globalPosition.copyFrom(position);
-        this._globalCurrentTarget.copyFrom(target);
-        this._globalCurrentUpVector.copyFrom(up);
-
         if (this.getScene().useRightHandedSystem) {
-            Matrix.LookAtRHToRef(this._globalPosition, this._globalCurrentTarget, this._globalCurrentUpVector, this._viewMatrix);
+            Matrix.LookAtRHToRef(position, target, up, this._viewMatrix);
         } else {
-            Matrix.LookAtLHToRef(this._globalPosition, this._globalCurrentTarget, this._globalCurrentUpVector, this._viewMatrix);
+            Matrix.LookAtLHToRef(position, target, up, this._viewMatrix);
         }
 
         if (this.parent) {
@@ -441,6 +434,8 @@ export class TargetCamera extends Camera {
             this._viewMatrix.getTranslationToRef(this._globalPosition);
             this._viewMatrix.invert();
             this._markSyncedWithParent();
+        } else {
+            this._globalPosition.copyFrom(position);
         }
     }
 
