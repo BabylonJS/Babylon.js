@@ -2,7 +2,7 @@ import { DeepImmutable } from '../types';
 import { Vector3, Matrix } from './math.vector';
 
 /**
- * Represens a plane by the equation ax + by + cz + d = 0
+ * Represents a plane by the equation ax + by + cz + d = 0
  */
 export class Plane {
     private static _TmpMatrix = Matrix.Identity();
