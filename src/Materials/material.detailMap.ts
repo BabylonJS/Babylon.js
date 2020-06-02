@@ -23,47 +23,51 @@ export interface IMaterialDetailMapDefines {
 
 export class DetailMap {
 
-    @serializeAsTexture("detailTexture")
-    private _detailTexture: Nullable<BaseTexture> = null;
+    private _texture: Nullable<BaseTexture> = null;
     /**
      * The detail texture of the material.
      */
+    @serializeAsTexture("detailTexture")
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public detailTexture: Nullable<BaseTexture>;
+    public texture: Nullable<BaseTexture>;
 
     /**
      * Defines how strongly the detail diffuse/albedo channel is blended with the regular diffuse/albedo texture
      * Bigger values mean stronger blending
      */
     @serialize()
-    public detailDiffuseBlendLevel = 0.5;
+    public diffuseBlendLevel = 0.5;
 
     /**
      * Defines how strongly the detail roughness channel is blended with the regular roughness value
      * Bigger values mean stronger blending. Only used with PBR materials
      */
     @serialize()
-    public detailRoughnessBlendLevel = 0.5;
+    public roughnessBlendLevel = 0.5;
 
     /**
      * Defines how strong the bump effect from the detail map is
      * Bigger values mean stronger effect
      */
     @serialize()
-    public detailBumpLevel = 1;
+    public bumpLevel = 1;
 
-    @serialize()
-    private _detailNormalBlendMethod = Material.MATERIAL_NORMALBLENDMETHOD_WHITEOUT;
+    private _normalBlendMethod = Material.MATERIAL_NORMALBLENDMETHOD_WHITEOUT;
     /**
      * The method used to blend the bump and detail normals together
      */
-    @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public detailNormalBlendMethod: number;
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public normalBlendMethod: number;
 
+    private _isEnabled = false;
     /**
      * Enable or disable the detail map on this material
      */
     @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public isEnabled = false;
+
     /** @hidden */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
 
@@ -90,9 +94,9 @@ export class DetailMap {
         const engine = scene.getEngine();
 
         if (defines._areTexturesDirty && scene.texturesEnabled) {
-            if (engine.getCaps().standardDerivatives && this._detailTexture && MaterialFlags.DetailTextureEnabled) {
+            if (engine.getCaps().standardDerivatives && this._texture && MaterialFlags.DetailTextureEnabled) {
                 // Detail texture cannot be not blocking.
-                if (!this._detailTexture.isReady()) {
+                if (!this._texture.isReady()) {
                     return false;
                 }
             }
@@ -107,15 +111,15 @@ export class DetailMap {
      * @param scene defines the scene the material belongs to.
      */
     public prepareDefines(defines: IMaterialDetailMapDefines, scene: Scene): boolean {
-        if (!this.disableDetailMap) {
-            defines.DETAIL_NORMALBLENDMETHOD = this._detailNormalBlendMethod;
+        if (this._isEnabled) {
+            defines.DETAIL_NORMALBLENDMETHOD = this._normalBlendMethod;
 
             const engine = scene.getEngine();
 
             if (defines._areTexturesDirty) {
-                if (engine.getCaps().standardDerivatives && this._detailTexture && MaterialFlags.DetailTextureEnabled && !this.disableDetailMap) {
-                    MaterialHelper.PrepareDefinesForMergedUV(this._detailTexture, defines, "DETAIL");
-                    defines.DETAIL_NORMALBLENDMETHOD = this._detailNormalBlendMethod;
+                if (engine.getCaps().standardDerivatives && this._texture && MaterialFlags.DetailTextureEnabled && this._isEnabled) {
+                    MaterialHelper.PrepareDefinesForMergedUV(this._texture, defines, "DETAIL");
+                    defines.DETAIL_NORMALBLENDMETHOD = this._normalBlendMethod;
                 } else {
                     defines.DETAIL = false;
                 }
@@ -134,21 +138,21 @@ export class DetailMap {
      * @param isFrozen defines whether the material is frozen or not.
      */
     public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean): void {
-        if (this.disableDetailMap) {
+        if (!this._isEnabled) {
             return;
         }
 
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
-            if (this._detailTexture && MaterialFlags.DetailTextureEnabled) {
-                uniformBuffer.updateFloat4("vDetailInfos", this._detailTexture.coordinatesIndex, this.detailDiffuseBlendLevel, this.detailBumpLevel, this.detailRoughnessBlendLevel);
-                MaterialHelper.BindTextureMatrix(this._detailTexture, uniformBuffer, "detail");
+            if (this._texture && MaterialFlags.DetailTextureEnabled) {
+                uniformBuffer.updateFloat4("vDetailInfos", this._texture.coordinatesIndex, this.diffuseBlendLevel, this.bumpLevel, this.roughnessBlendLevel);
+                MaterialHelper.BindTextureMatrix(this._texture, uniformBuffer, "detail");
             }
         }
 
         // Textures
         if (scene.texturesEnabled) {
-            if (this._detailTexture && MaterialFlags.DetailTextureEnabled) {
-                uniformBuffer.setTexture("detailSampler", this._detailTexture);
+            if (this._texture && MaterialFlags.DetailTextureEnabled) {
+                uniformBuffer.setTexture("detailSampler", this._texture);
             }
         }
     }
@@ -159,7 +163,7 @@ export class DetailMap {
      * @returns - Boolean specifying if a texture is used in the material.
      */
     public hasTexture(texture: BaseTexture): boolean {
-        if (this._detailTexture === texture) {
+        if (this._texture === texture) {
             return true;
         }
 
@@ -171,8 +175,8 @@ export class DetailMap {
      * @param activeTextures Array of BaseTextures
      */
     public getActiveTextures(activeTextures: BaseTexture[]): void {
-        if (this._detailTexture) {
-            activeTextures.push(this._detailTexture);
+        if (this._texture) {
+            activeTextures.push(this._texture);
         }
     }
 
@@ -181,8 +185,8 @@ export class DetailMap {
      * @param animatables Array of animatable textures.
      */
     public getAnimatables(animatables: IAnimatable[]): void {
-        if (this._detailTexture && this._detailTexture.animations && this._detailTexture.animations.length > 0) {
-            animatables.push(this._detailTexture);
+        if (this._texture && this._texture.animations && this._texture.animations.length > 0) {
+            animatables.push(this._texture);
         }
     }
 
@@ -192,7 +196,7 @@ export class DetailMap {
      */
     public dispose(forceDisposeTextures?: boolean): void {
         if (forceDisposeTextures) {
-            this._detailTexture?.dispose();
+            this._texture?.dispose();
         }
     }
 

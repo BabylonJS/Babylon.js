@@ -37,8 +37,8 @@
 #ifdef DETAIL
 	vec4 detailColor = texture2D(detailSampler, vDetailUV + uvOffset);
     vec2 detailNormalRG = detailColor.wy * 2.0 - 1.0;
-    float detailNormalNormalB = sqrt(1. - saturate(dot(detailNormalRG, detailNormalRG)));
-    vec3 detailNormal = vec3(detailNormalRG, detailNormalNormalB);
+    float detailNormalB = sqrt(1. - saturate(dot(detailNormalRG, detailNormalRG)));
+    vec3 detailNormal = vec3(detailNormalRG, detailNormalB);
 #endif
 
 #ifdef BUMP
