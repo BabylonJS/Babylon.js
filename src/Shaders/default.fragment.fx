@@ -219,7 +219,7 @@ void main(void) {
 #endif
 
 #ifdef DETAIL
-    baseColor.rgb = baseColor.rgb * (saturate(vec3(detailColor.r) + vDetailInfos.y));
+    baseColor.rgb = baseColor.rgb * 2.0 * mix(0.5, detailColor.r, vDetailInfos.y);
 #endif
 
 #define CUSTOM_FRAGMENT_UPDATE_DIFFUSE
