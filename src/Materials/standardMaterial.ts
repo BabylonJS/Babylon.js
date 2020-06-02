@@ -32,7 +32,7 @@ import "../Shaders/default.vertex";
 import { Constants } from "../Engines/constants";
 import { EffectFallbacks } from './effectFallbacks';
 import { Effect, IEffectCreationOptions } from './effect';
-import { IMaterialDetailMapDefines, DetailMap } from './material.detailMap';
+import { IMaterialDetailMapDefines, DetailMapConfiguration } from './material.detailMapConfiguration';
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -676,7 +676,7 @@ export class StandardMaterial extends PushMaterial {
     /**
      * Defines the detail map parameters for the material.
      */
-    public readonly detailMap = new DetailMap(this._markAllSubMeshesAsTexturesDirty.bind(this));
+    public readonly detailMap = new DetailMapConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
 
     protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
     protected _worldViewProjectionMatrix = Matrix.Zero();
@@ -1168,8 +1168,8 @@ export class StandardMaterial extends PushMaterial {
 
             var uniformBuffers = ["Material", "Scene"];
 
-            DetailMap.AddUniforms(uniforms);
-            DetailMap.AddSamplers(samplers);
+            DetailMapConfiguration.AddUniforms(uniforms);
+            DetailMapConfiguration.AddSamplers(samplers);
 
             if (ImageProcessingConfiguration) {
                 ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
@@ -1288,7 +1288,7 @@ export class StandardMaterial extends PushMaterial {
         ubo.addUniform("visibility", 1);
         ubo.addUniform("vDiffuseColor", 4);
 
-        DetailMap.PrepareUniformBuffer(ubo);
+        DetailMapConfiguration.PrepareUniformBuffer(ubo);
 
         ubo.create();
     }
