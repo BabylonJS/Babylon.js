@@ -32,15 +32,19 @@ import "../Shaders/default.vertex";
 import { Constants } from "../Engines/constants";
 import { EffectFallbacks } from './effectFallbacks';
 import { Effect, IEffectCreationOptions } from './effect';
+import { IMaterialDetailMapDefines, DetailMapConfiguration } from './material.detailMapConfiguration';
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
 /** @hidden */
-export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
+export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines, IMaterialDetailMapDefines {
     public MAINUV1 = false;
     public MAINUV2 = false;
     public DIFFUSE = false;
     public DIFFUSEDIRECTUV = 0;
+    public DETAIL = false;
+    public DETAILDIRECTUV = 0;
+    public DETAIL_NORMALBLENDMETHOD = 0;
     public AMBIENT = false;
     public AMBIENTDIRECTUV = 0;
     public OPACITY = false;
@@ -669,6 +673,11 @@ export class StandardMaterial extends PushMaterial {
         this._imageProcessingConfiguration.colorCurves = value;
     }
 
+    /**
+     * Defines the detail map parameters for the material.
+     */
+    public readonly detailMap = new DetailMapConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
+
     protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
     protected _worldViewProjectionMatrix = Matrix.Zero();
     protected _globalAmbientColor = new Color3(0, 0, 0);
@@ -991,6 +1000,10 @@ export class StandardMaterial extends PushMaterial {
             defines.ALPHABLEND = this.transparencyMode === null || this.needAlphaBlendingForMesh(mesh); // check on null for backward compatibility
         }
 
+        if (!this.detailMap.isReadyForSubMesh(defines, scene)) {
+            return false;
+        }
+
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
             if (!this._imageProcessingConfiguration.isReady()) {
                 return false;
@@ -1037,6 +1050,9 @@ export class StandardMaterial extends PushMaterial {
 
         // Values that need to be evaluated on every frame
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
+
+        // External config
+        this.detailMap.prepareDefines(defines, scene);
 
         // Get correct effect
         if (defines.isDirty) {
@@ -1151,6 +1167,9 @@ export class StandardMaterial extends PushMaterial {
                 "refractionCubeSampler", "refraction2DSampler", "boneSampler"];
 
             var uniformBuffers = ["Material", "Scene"];
+
+            DetailMapConfiguration.AddUniforms(uniforms);
+            DetailMapConfiguration.AddSamplers(samplers);
 
             if (ImageProcessingConfiguration) {
                 ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
@@ -1268,6 +1287,8 @@ export class StandardMaterial extends PushMaterial {
         ubo.addUniform("vEmissiveColor", 3);
         ubo.addUniform("visibility", 1);
         ubo.addUniform("vDiffuseColor", 4);
+
+        DetailMapConfiguration.PrepareUniformBuffer(ubo);
 
         ubo.create();
     }
@@ -1502,6 +1523,8 @@ export class StandardMaterial extends PushMaterial {
                 }
             }
 
+            this.detailMap.bindForSubMesh(ubo, scene, this.isFrozen);
+
             // Clip plane
             MaterialHelper.BindClipPlane(effect, scene);
 
@@ -1589,6 +1612,8 @@ export class StandardMaterial extends PushMaterial {
             results.push(this._refractionTexture);
         }
 
+        this.detailMap.getAnimatables(results);
+
         return results;
     }
 
@@ -1634,6 +1659,8 @@ export class StandardMaterial extends PushMaterial {
         if (this._refractionTexture) {
             activeTextures.push(this._refractionTexture);
         }
+
+        this.detailMap.getActiveTextures(activeTextures);
 
         return activeTextures;
     }
@@ -1684,7 +1711,7 @@ export class StandardMaterial extends PushMaterial {
             return true;
         }
 
-        return false;
+        return this.detailMap.hasTexture(texture);
     }
 
     /**
@@ -1694,42 +1721,18 @@ export class StandardMaterial extends PushMaterial {
      */
     public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
         if (forceDisposeTextures) {
-            if (this._diffuseTexture) {
-                this._diffuseTexture.dispose();
-            }
-
-            if (this._ambientTexture) {
-                this._ambientTexture.dispose();
-            }
-
-            if (this._opacityTexture) {
-                this._opacityTexture.dispose();
-            }
-
-            if (this._reflectionTexture) {
-                this._reflectionTexture.dispose();
-            }
-
-            if (this._emissiveTexture) {
-                this._emissiveTexture.dispose();
-            }
-
-            if (this._specularTexture) {
-                this._specularTexture.dispose();
-            }
-
-            if (this._bumpTexture) {
-                this._bumpTexture.dispose();
-            }
-
-            if (this._lightmapTexture) {
-                this._lightmapTexture.dispose();
-            }
-
-            if (this._refractionTexture) {
-                this._refractionTexture.dispose();
-            }
+            this._diffuseTexture?.dispose();
+            this._ambientTexture?.dispose();
+            this._opacityTexture?.dispose();
+            this._reflectionTexture?.dispose();
+            this._emissiveTexture?.dispose();
+            this._specularTexture?.dispose();
+            this._bumpTexture?.dispose();
+            this._lightmapTexture?.dispose();
+            this._refractionTexture?.dispose();
         }
+
+        this.detailMap.dispose(forceDisposeTextures);
 
         if (this._imageProcessingConfiguration && this._imageProcessingObserver) {
             this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
@@ -1780,6 +1783,16 @@ export class StandardMaterial extends PushMaterial {
     }
     public static set DiffuseTextureEnabled(value: boolean) {
         MaterialFlags.DiffuseTextureEnabled = value;
+    }
+
+    /**
+     * Are detail textures enabled in the application.
+     */
+    public static get DetailTextureEnabled(): boolean {
+        return MaterialFlags.DetailTextureEnabled;
+    }
+    public static set DetailTextureEnabled(value: boolean) {
+        MaterialFlags.DetailTextureEnabled = value;
     }
 
     /**

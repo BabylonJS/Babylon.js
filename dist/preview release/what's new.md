@@ -35,6 +35,7 @@
 - Fix Draco decoder when running on IE11 ([bghgary](https://github.com/bghgary))
 - Change default camera calculations to only include visible and enabled meshes ([bghgary](https://github.com/bghgary))
 - Optimized frozen instances ([Deltakosh](https://github.com/deltakosh))
+- Add support for detail maps in both the standard and PBR materials ([Popov72](https://github.com/Popov72))
 
 ### NME
 
