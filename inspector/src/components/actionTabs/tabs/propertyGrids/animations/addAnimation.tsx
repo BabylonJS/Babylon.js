@@ -190,11 +190,9 @@ export class AddAnimation extends React.Component<IAddAnimationProps, {animation
                         this.props.close();
                     }   
                 }
-
             } else {
                 this.props.setNotificationMessage(`The property "${this.state.animationTargetProperty}" is not a "${this.state.animationType}" type`);
             }
-
         } else {
             this.props.setNotificationMessage(`You need to provide a name and target property.`);
         }
