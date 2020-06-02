@@ -424,22 +424,23 @@ export class TargetCamera extends Camera {
     }
 
     protected _computeViewMatrix(position: Vector3, target: Vector3, up: Vector3): void {
-        if (this.parent) {
-            const parentWorldMatrix = this.parent.getWorldMatrix();
-            Vector3.TransformCoordinatesToRef(position, parentWorldMatrix, this._globalPosition);
-            Vector3.TransformCoordinatesToRef(target, parentWorldMatrix, this._globalCurrentTarget);
-            Vector3.TransformNormalToRef(up, parentWorldMatrix, this._globalCurrentUpVector);
-            this._markSyncedWithParent();
-        } else {
-            this._globalPosition.copyFrom(position);
-            this._globalCurrentTarget.copyFrom(target);
-            this._globalCurrentUpVector.copyFrom(up);
-        }
+        this._globalPosition.copyFrom(position);
+        this._globalCurrentTarget.copyFrom(target);
+        this._globalCurrentUpVector.copyFrom(up);
 
         if (this.getScene().useRightHandedSystem) {
             Matrix.LookAtRHToRef(this._globalPosition, this._globalCurrentTarget, this._globalCurrentUpVector, this._viewMatrix);
         } else {
             Matrix.LookAtLHToRef(this._globalPosition, this._globalCurrentTarget, this._globalCurrentUpVector, this._viewMatrix);
+        }
+
+        if (this.parent) {
+            const parentWorldMatrix = this.parent.getWorldMatrix();
+            this._viewMatrix.invert();
+            this._viewMatrix.multiplyToRef(parentWorldMatrix, this._viewMatrix);
+            this._viewMatrix.getTranslationToRef(this._globalPosition);
+            this._viewMatrix.invert();
+            this._markSyncedWithParent();
         }
     }
 
