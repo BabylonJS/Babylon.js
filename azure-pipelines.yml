@@ -215,10 +215,7 @@ jobs:
       git submodule update --init --recursive
     displayName: 'Checkout dependencies'
   - script: |
-      set -eu
-      curl -Ls https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-mac.zip -o ninja-mac.zip
-      unzip ninja-mac.zip
-      sudo cp -v ninja /usr/local/bin/
+      brew install ninja
     displayName: 'Install Ninja'
   - script: |
       cd Apps/Playground/Android
@@ -243,10 +240,7 @@ jobs:
       git submodule update --init --recursive
     displayName: 'Checkout dependencies'
   - script: |
-      set -eu
-      curl -Ls https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-mac.zip -o ninja-mac.zip
-      unzip ninja-mac.zip
-      sudo cp -v ninja /usr/local/bin/
+      brew install ninja
     displayName: 'Install Ninja'
   - script: |
       cd Apps/Playground/Android
