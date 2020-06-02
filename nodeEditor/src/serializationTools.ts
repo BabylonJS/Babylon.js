@@ -8,18 +8,14 @@ import { GraphFrame } from './diagram/graphFrame';
 
 export class SerializationTools {
 
-    public static UpdateLocations(material: NodeMaterial, globalState: GlobalState, selectedBlocks?: NodeMaterialBlock[], frame?: Nullable<GraphFrame>) {
+    public static UpdateLocations(material: NodeMaterial, globalState: GlobalState, frame?: Nullable<GraphFrame>) {
         material.editorData = {
             locations: []
         };
 
         // Store node locations
-        let blocks: NodeMaterialBlock[];
-        if (selectedBlocks) {
-            blocks = selectedBlocks;
-        } else {
-            blocks = material.attachedBlocks;
-        }
+        const blocks: NodeMaterialBlock[] = frame ? frame.nodes.map(n => n.block) : material.attachedBlocks;
+
         for (var block of blocks) {
             let node = globalState.onGetNodeFromBlock(block);
 
@@ -33,11 +29,13 @@ export class SerializationTools {
         globalState.storeEditorData(material.editorData, frame);
     }
 
-    public static Serialize(material: NodeMaterial, globalState: GlobalState, selectedBlocks?: NodeMaterialBlock[], frame?: Nullable<GraphFrame>) {
+    public static Serialize(material: NodeMaterial, globalState: GlobalState, frame?: Nullable<GraphFrame>) {
         let bufferSerializationState = Texture.SerializeBuffers;
         Texture.SerializeBuffers = DataStorage.ReadBoolean("EmbedTextures", true);
 
-        this.UpdateLocations(material, globalState, selectedBlocks, frame);
+        this.UpdateLocations(material, globalState, frame);
+
+        const selectedBlocks = frame ? frame.nodes.map(n => n.block) : undefined;
 
         let serializationObject = material.serialize(selectedBlocks);
 
