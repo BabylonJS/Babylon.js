@@ -96,6 +96,10 @@ void main(void) {
         opacityMap,
         vOpacityInfos,
     #endif
+    #ifdef DETAIL
+        detailColor,
+        vDetailInfos,
+    #endif
         albedoOpacityOut
     );
 
@@ -169,6 +173,10 @@ void main(void) {
     #endif
     #ifdef MICROSURFACEMAP
         microSurfaceTexel,
+    #endif
+    #ifdef DETAIL
+        detailColor,
+        vDetailInfos,
     #endif
         reflectivityOut
     );
