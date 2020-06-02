@@ -38,7 +38,7 @@ uniform Material
 	float visibility;
 	vec4 vDiffuseColor;
 
-	vec3 vDetailInfos;
+	vec4 vDetailInfos;
 	mat4 detailMatrix;
 };
 

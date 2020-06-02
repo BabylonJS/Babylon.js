@@ -21,6 +21,9 @@ export interface IMaterialDetailMapDefines {
     _areTexturesDirty: boolean;
 }
 
+/**
+ * Define the code related to the detail map parameters of a material
+ */
 export class DetailMap {
 
     private _texture: Nullable<BaseTexture> = null;
@@ -110,7 +113,7 @@ export class DetailMap {
      * @param defines the list of "defines" to update.
      * @param scene defines the scene the material belongs to.
      */
-    public prepareDefines(defines: IMaterialDetailMapDefines, scene: Scene): boolean {
+    public prepareDefines(defines: IMaterialDetailMapDefines, scene: Scene): void {
         if (this._isEnabled) {
             defines.DETAIL_NORMALBLENDMETHOD = this._normalBlendMethod;
 
@@ -127,8 +130,6 @@ export class DetailMap {
         } else {
             defines.DETAIL = false;
         }
-
-        return true;
     }
 
     /**
