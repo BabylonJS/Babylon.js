@@ -6,6 +6,10 @@
     .icon {
         width: 40px;
         height: 40px;
+        &.medium {
+            width: 30px;
+            height: 30px;
+        }
         &.babylon-logo {
             background-image: url('./assets/babylonLogo.svg');
             background-repeat: no-repeat;
@@ -95,6 +99,14 @@
 
         &.animation-delete {
             background-image: url('./assets/animationDeleteIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.animation-edit {
+            background-image: url('./assets/editIcon.svg');
             background-repeat: no-repeat;
             background-color: transparent;
             background-size: contain;
@@ -227,6 +239,39 @@
             color: white;
         }
 
+        &.save {
+            background-image: url('./assets/saveIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.load {
+            background-image: url('./assets/loadIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.checked {
+            background-image: url('./assets/checkboxCheckedIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.unchecked {
+            background-image: url('./assets/checkboxDefaultIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+
         &.new-key {
             background-image: url('./assets/newKeyIcon.svg');
             background-repeat: no-repeat;
@@ -263,7 +308,7 @@
         border-radius: 5px;
         color: white;
         right: 2em;
-        z-index: 10;
+        z-index: 1000;
 
         button{
             position: absolute;
@@ -362,6 +407,7 @@
             flex-direction: row;
             width: 100vw;
             height: 84vh;
+            background-color: #333333;
 
             .timeline{
                 width: 100vw;
@@ -415,9 +461,62 @@
         }
 
         .animation-list{
-            padding: 1.5rem;
-            background: #333333;
+            margin: 10px;
+            margin-top: 0;
+            margin-bottom: 0;
+            background: #111111;
             color: white;
+            width: 210px;
+
+            .controls-header {
+                display: flex;
+                background-color: #252525;
+            }
+
+            .new-animation{
+                display: block;
+                position: absolute;
+                background-color: #111111;
+                height: 367px;
+                z-index: 10;
+
+                .sub-header {
+                    display: flex;
+                    align-items: start;
+                    width: 250px;
+                    justify-content: space-between;
+                    .title {
+                    margin: 0px;
+                    font-size: 15pt;
+                    }
+                }
+
+                .sub-content{
+                    background-color: #111111;
+                    padding: 10px;
+                    display: inline-grid;
+                    grid-template-columns: 63px 127px;
+                    grid-template-rows: repeat(6, 30px);
+                    font-size: 12px;
+
+                    .confirm-buttons {
+                        grid-column-start: 2;
+
+                        .buttonLine {
+                            button {
+                                width: 60px;
+                                height: 20px;
+                                background-color: rgb(68, 68, 68);
+                                color: white;
+                                font-size: 12px;
+                                line-height: 11px;
+                                margin: 5px;
+                            }
+                        }
+                    }
+                }
+            }
+
             ul {
                 list-style:none;
                 padding-left: 0px;
@@ -429,8 +528,6 @@
                 }
                 li {
                     p {
-                        font-weight: bolder;
-                        font-variant: all-small-caps;
                         display: inline;
                     }
                     cursor: pointer;
@@ -466,10 +563,40 @@
             }
 
             .label-input{
-                display: grid;
-                height: 54px;
-                place-items: center stretch;
-                color:white;
+                display: contents;
+
+                label {
+                    text-align: right;
+                }
+
+                input {
+                    margin-left: 5px;
+                    height: 20px;
+                    background-color: #444444;
+                    border: none;
+                    color: white;
+                    padding-left: 3px;
+                    font-size: 10px;
+                    &:focus{
+                        border-radius: 0px;
+                        outline-style: auto;
+                        outline-color: lightgrey;
+                    }
+                }
+
+                select {
+                    height: 20px;
+                    margin-left: 5px;
+                    font-size: 10px;
+                    background-color: #444444;
+                    border: none;
+                    color: white;
+                    &:focus{
+                        border-radius: 0px;
+                        outline-style: auto;
+                        outline-color: lightgrey;
+                    }
+                }
             }
         }
 
