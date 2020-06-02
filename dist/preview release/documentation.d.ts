@@ -1913,7 +1913,7 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Represens a plane by the equation ax + by + cz + d = 0
+     * Represents a plane by the equation ax + by + cz + d = 0
      */
     export class Plane {
         private static _TmpMatrix;
@@ -18251,8 +18251,6 @@ declare module BABYLON {
         _referencePoint: Vector3;
         /** @hidden */
         _transformedReferencePoint: Vector3;
-        protected _globalCurrentTarget: Vector3;
-        protected _globalCurrentUpVector: Vector3;
         /** @hidden */
         _reset: () => void;
         private _defaultUp;

@@ -732,6 +732,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/iconButtonLineCo
         icon: string;
         onClick: () => void;
         tooltip: string;
+        active?: boolean;
     }
     export class IconButtonLineComponent extends React.Component<IIconButtonLineComponentProps> {
         constructor(props: IIconButtonLineComponentProps);
@@ -761,6 +762,38 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/addAnimation" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { Animation } from 'babylonjs/Animations/animation';
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
+    interface IAddAnimationProps {
+        isOpen: boolean;
+        close: () => void;
+        entity: IAnimatable;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        setNotificationMessage: (message: string) => void;
+    }
+    export class AddAnimation extends React.Component<IAddAnimationProps, {
+        animationName: string;
+        animationTargetProperty: string;
+        animationType: string;
+        loopMode: number;
+        animationTargetPath: string;
+    }> {
+        constructor(props: IAddAnimationProps);
+        getAnimationTypeofChange(selected: string): number;
+        addAnimation(): void;
+        raiseOnPropertyChanged(newValue: Animation[], previousValue: Animation[]): void;
+        handleNameChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        handlePathChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        handleTypeChange(event: React.ChangeEvent<HTMLSelectElement>): void;
+        handlePropertyChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        handleLoopModeChange(event: React.ChangeEvent<HTMLSelectElement>): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/animationCurveEditorComponent" {
     import * as React from "react";
     import { Animation } from 'babylonjs/Animations/animation';
@@ -782,9 +815,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         label: number;
     }
     export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, {
-        animationName: string;
-        animationType: string;
-        animationTargetProperty: string;
         isOpen: boolean;
         selected: Animation | null;
         currentPathData: string | undefined;
@@ -804,6 +834,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         lastFrame: number;
         playheadPos: number;
         isPlaying: boolean;
+        isAnimationDialogOpen: boolean;
     }> {
         private _heightScale;
         readonly _entityName: string;
@@ -831,17 +862,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         setAxesLength(): void;
         getValueLabel(i: number): number;
         resetPlayheadOffset(): void;
-        /**
-        * Add New Animation
-        * This section handles events from AnimationCreation.
-        */
-        handleNameChange(event: React.ChangeEvent<HTMLInputElement>): void;
-        handleTypeChange(event: React.ChangeEvent<HTMLSelectElement>): void;
-        handlePropertyChange(event: React.ChangeEvent<HTMLInputElement>): void;
         setListItem(animation: Animation, i: number): JSX.Element | null;
-        getAnimationTypeofChange(selected: string): number;
         deleteAnimation(): void;
-        addAnimation(): void;
         /**
         * Keyframe Manipulation
         * This section handles events from SvgDraggableArea.
@@ -3960,6 +3982,7 @@ declare module INSPECTOR {
         icon: string;
         onClick: () => void;
         tooltip: string;
+        active?: boolean;
     }
     export class IconButtonLineComponent extends React.Component<IIconButtonLineComponentProps> {
         constructor(props: IIconButtonLineComponentProps);
@@ -3989,6 +4012,33 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IAddAnimationProps {
+        isOpen: boolean;
+        close: () => void;
+        entity: BABYLON.IAnimatable;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        setNotificationMessage: (message: string) => void;
+    }
+    export class AddAnimation extends React.Component<IAddAnimationProps, {
+        animationName: string;
+        animationTargetProperty: string;
+        animationType: string;
+        loopMode: number;
+        animationTargetPath: string;
+    }> {
+        constructor(props: IAddAnimationProps);
+        getAnimationTypeofChange(selected: string): number;
+        addAnimation(): void;
+        raiseOnPropertyChanged(newValue: BABYLON.Animation[], previousValue: BABYLON.Animation[]): void;
+        handleNameChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        handlePathChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        handleTypeChange(event: React.ChangeEvent<HTMLSelectElement>): void;
+        handlePropertyChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        handleLoopModeChange(event: React.ChangeEvent<HTMLSelectElement>): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface IAnimationCurveEditorComponentProps {
         close: (event: any) => void;
         playOrPause?: () => void;
@@ -4000,9 +4050,6 @@ declare module INSPECTOR {
         label: number;
     }
     export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, {
-        animationName: string;
-        animationType: string;
-        animationTargetProperty: string;
         isOpen: boolean;
         selected: BABYLON.Animation | null;
         currentPathData: string | undefined;
@@ -4022,6 +4069,7 @@ declare module INSPECTOR {
         lastFrame: number;
         playheadPos: number;
         isPlaying: boolean;
+        isAnimationDialogOpen: boolean;
     }> {
         private _heightScale;
         readonly _entityName: string;
@@ -4049,17 +4097,8 @@ declare module INSPECTOR {
         setAxesLength(): void;
         getValueLabel(i: number): number;
         resetPlayheadOffset(): void;
-        /**
-        * Add New BABYLON.Animation
-        * This section handles events from AnimationCreation.
-        */
-        handleNameChange(event: React.ChangeEvent<HTMLInputElement>): void;
-        handleTypeChange(event: React.ChangeEvent<HTMLSelectElement>): void;
-        handlePropertyChange(event: React.ChangeEvent<HTMLInputElement>): void;
         setListItem(animation: BABYLON.Animation, i: number): JSX.Element | null;
-        getAnimationTypeofChange(selected: string): number;
         deleteAnimation(): void;
-        addAnimation(): void;
         /**
         * Keyframe Manipulation
         * This section handles events from SvgDraggableArea.
