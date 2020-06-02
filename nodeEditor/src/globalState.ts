@@ -56,7 +56,7 @@ export class GlobalState {
     directionalLight0: boolean;
     directionalLight1: boolean;
     controlCamera: boolean;
-    storeEditorData: (serializationObject: any, frameId?: number) => void;
+    storeEditorData: (serializationObject: any, frame?: Nullable<GraphFrame>) => void;
     _mode: NodeMaterialModes;
 
     /** Gets the mode */
