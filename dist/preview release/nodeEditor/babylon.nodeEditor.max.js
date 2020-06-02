@@ -65204,7 +65204,7 @@ var NodePort = /** @class */ (function () {
     };
     Object.defineProperty(NodePort.prototype, "exposedOnFrame", {
         get: function () {
-            if (!!this._exposedOnFrame || this._isConnectedToNodeOutsideOfFrame()) {
+            if (!!this.connectionPoint.isExposedOnFrame || this._isConnectedToNodeOutsideOfFrame()) {
                 return true;
             }
             return false;
@@ -65213,7 +65213,7 @@ var NodePort = /** @class */ (function () {
             if (this.disabled) {
                 return;
             }
-            this._exposedOnFrame = value;
+            this.connectionPoint.isExposedOnFrame = value;
         },
         enumerable: true,
         configurable: true
@@ -66965,13 +66965,15 @@ var GraphEditor = /** @class */ (function (_super) {
                     if (_this._copiedFrame.isCollapsed) {
                         newFrame.isCollapsed = true;
                     }
+                    // Select
+                    _this.props.globalState.onSelectionChangedObservable.notifyObservers(newFrame);
                     return;
                 }
                 if (!_this._copiedNodes.length) {
                     return;
                 }
                 var currentX = (_this._mouseLocationX - rootElement.offsetLeft - _this._graphCanvas.x - _this.NodeWidth) / zoomLevel;
-                _this.pasteSelection(_this._copiedNodes, currentX, currentY);
+                _this.pasteSelection(_this._copiedNodes, currentX, currentY, true);
             }
         }, false);
         return _this;
@@ -67075,9 +67077,14 @@ var GraphEditor = /** @class */ (function (_super) {
         currentNode.refresh();
         done[nodeIndex] = true;
     };
-    GraphEditor.prototype.pasteSelection = function (copiedNodes, currentX, currentY) {
+    GraphEditor.prototype.pasteSelection = function (copiedNodes, currentX, currentY, selectNew) {
+        if (selectNew === void 0) { selectNew = false; }
         var originalNode = null;
         var newNodes = [];
+        // Copy to prevent recursive side effects while creating nodes.
+        copiedNodes = copiedNodes.slice();
+        // Cancel selection        
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         // Create new nodes
         for (var _i = 0, copiedNodes_1 = copiedNodes; _i < copiedNodes_1.length; _i++) {
             var node = copiedNodes_1[_i];
@@ -67105,6 +67112,9 @@ var GraphEditor = /** @class */ (function (_super) {
             newNode.y = y;
             newNode.cleanAccumulation();
             newNodes.push(newNode);
+            if (selectNew) {
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(newNode);
+            }
         }
         // Relink
         var done = new Array(newNodes.length);

@@ -56,7 +56,7 @@ export class PBRMaterialDefines extends MaterialDefines
     IMaterialSubSurfaceDefines {
     public PBR = true;
 
-    public NUM_SAMPLES = "0u";
+    public NUM_SAMPLES = "0";
     public REALTIME_FILTERING = false;
 
     public MAINUV1 = false;
@@ -230,7 +230,7 @@ export class PBRMaterialDefines extends MaterialDefines
 
     public SS_REFRACTION = false;
     public SS_TRANSLUCENCY = false;
-    public SS_SCATERRING = false;
+    public SS_SCATTERING = false;
 
     public SS_THICKNESSANDMASK_TEXTURE = false;
     public SS_THICKNESSANDMASK_TEXTUREDIRECTUV = 0;
@@ -242,6 +242,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public SS_RGBDREFRACTION = false;
     public SS_LINEARSPECULARREFRACTION = false;
     public SS_LINKREFRACTIONTOTRANSPARENCY = false;
+    public SS_ALBEDOFORREFRACTIONTINT = false;
 
     public SS_MASK_FROM_THICKNESS_TEXTURE = false;
 

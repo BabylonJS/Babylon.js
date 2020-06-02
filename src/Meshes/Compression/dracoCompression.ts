@@ -72,22 +72,24 @@ function decodeMesh(decoderModule: any, dataView: ArrayBufferView, attributes: {
             try {
                 decoder.GetAttributeFloatForAllPoints(geometry, attribute, dracoData);
                 const numComponents = attribute.num_components();
-                if (kind === "color" && numComponents === 3) {
-                    const babylonData = new Float32Array(numPoints * 4);
-                    for (let i = 0, j = 0; i < babylonData.length; i += 4, j += numComponents) {
-                        babylonData[i + 0] = dracoData.GetValue(j + 0);
-                        babylonData[i + 1] = dracoData.GetValue(j + 1);
-                        babylonData[i + 2] = dracoData.GetValue(j + 2);
-                        babylonData[i + 3] = 1;
+                if (numComponents) {
+                    if (kind === "color" && numComponents === 3) {
+                        const babylonData = new Float32Array(numPoints * 4);
+                        for (let i = 0, j = 0; i < babylonData.length; i += 4, j += numComponents) {
+                            babylonData[i + 0] = dracoData.GetValue(j + 0);
+                            babylonData[i + 1] = dracoData.GetValue(j + 1);
+                            babylonData[i + 2] = dracoData.GetValue(j + 2);
+                            babylonData[i + 3] = 1;
+                        }
+                        onAttributeData(kind, babylonData);
                     }
-                    onAttributeData(kind, babylonData);
-                }
-                else {
-                    const babylonData = new Float32Array(numPoints * numComponents);
-                    for (let i = 0; i < babylonData.length; i++) {
-                        babylonData[i] = dracoData.GetValue(i);
+                    else {
+                        const babylonData = new Float32Array(numPoints * numComponents);
+                        for (let i = 0; i < babylonData.length; i++) {
+                            babylonData[i] = dracoData.GetValue(i);
+                        }
+                        onAttributeData(kind, babylonData);
                     }
-                    onAttributeData(kind, babylonData);
                 }
             }
             finally {

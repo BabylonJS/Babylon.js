@@ -673,18 +673,33 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         selected: IAnimationKey | null;
         currentFrame: number;
         onCurrentFrameChange: (frame: number) => void;
+        dragKeyframe: (frame: number, index: number) => void;
+        playPause: (direction: number) => void;
+        isPlaying: boolean;
     }
     export class Timeline extends React.Component<ITimelineProps, {
         selected: IAnimationKey;
+        activeKeyframe: number | null;
     }> {
         readonly _frames: object[];
         private _scrollable;
+        private _direction;
         constructor(props: ITimelineProps);
+        playBackwards(event: React.MouseEvent<HTMLDivElement>): void;
+        play(event: React.MouseEvent<HTMLDivElement>): void;
+        pause(event: React.MouseEvent<HTMLDivElement>): void;
         handleInputChange(event: React.ChangeEvent<HTMLInputElement>): void;
         nextFrame(event: React.MouseEvent<HTMLDivElement>): void;
         previousFrame(event: React.MouseEvent<HTMLDivElement>): void;
         nextKeyframe(event: React.MouseEvent<HTMLDivElement>): void;
         previousKeyframe(event: React.MouseEvent<HTMLDivElement>): void;
+        dragStart(e: React.TouchEvent<SVGSVGElement>): void;
+        dragStart(e: React.MouseEvent<SVGSVGElement, MouseEvent>): void;
+        drag(e: React.TouchEvent<SVGSVGElement>): void;
+        drag(e: React.MouseEvent<SVGSVGElement, MouseEvent>): void;
+        isFrameBeingUsed(frame: number, direction: number): number | false;
+        dragEnd(e: React.TouchEvent<SVGSVGElement>): void;
+        dragEnd(e: React.MouseEvent<SVGSVGElement, MouseEvent>): void;
         render(): JSX.Element;
     }
 }
@@ -711,6 +726,18 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/lines/iconButtonLineComponent" {
+    import * as React from "react";
+    export interface IIconButtonLineComponentProps {
+        icon: string;
+        onClick: () => void;
+        tooltip: string;
+    }
+    export class IconButtonLineComponent extends React.Component<IIconButtonLineComponentProps> {
+        constructor(props: IIconButtonLineComponentProps);
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/graphActionsBar" {
     import * as React from "react";
     interface IGraphActionsBarProps {
@@ -720,9 +747,14 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         handleFrameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
         flatTangent: () => void;
         brokeTangents: () => void;
+        setLerpMode: () => void;
         brokenMode: boolean;
+        lerpMode: boolean;
         currentValue: number;
         currentFrame: number;
+        title: string;
+        close: (event: any) => void;
+        enabled: boolean;
     }
     export class GraphActionsBar extends React.Component<IGraphActionsBarProps> {
         constructor(props: IGraphActionsBarProps);
@@ -742,7 +774,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     interface IAnimationCurveEditorComponentProps {
         close: (event: any) => void;
         playOrPause?: () => void;
-        title: string;
         scene: Scene;
         entity: IAnimatable | TargetedAnimation;
     }
@@ -751,7 +782,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         label: number;
     }
     export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, {
-        animations: Animation[];
         animationName: string;
         animationType: string;
         animationTargetProperty: string;
@@ -766,17 +796,18 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         isFlatTangentMode: boolean;
         isTangentMode: boolean;
         isBrokenMode: boolean;
+        lerpMode: boolean;
         scale: number;
         playheadOffset: number;
         notification: string;
         currentPoint: SVGPoint | undefined;
         lastFrame: number;
         playheadPos: number;
+        isPlaying: boolean;
     }> {
         private _heightScale;
         readonly _entityName: string;
         readonly _canvasLength: number;
-        private _newAnimations;
         private _svgKeyframes;
         private _frames;
         private _isPlaying;
@@ -809,6 +840,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         handlePropertyChange(event: React.ChangeEvent<HTMLInputElement>): void;
         setListItem(animation: Animation, i: number): JSX.Element | null;
         getAnimationTypeofChange(selected: string): number;
+        deleteAnimation(): void;
         addAnimation(): void;
         /**
         * Keyframe Manipulation
@@ -826,6 +858,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         setFlatTangent(): void;
         setTangentMode(): void;
         setBrokenMode(): void;
+        setLerpMode(): void;
         addKeyframeClick(): void;
         removeKeyframeClick(): void;
         addKeyFrame(event: React.MouseEvent<SVGSVGElement>): void;
@@ -840,7 +873,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         };
         linearInterpolation(keyframes: IAnimationKey[], data: string, middle: number): string;
         setKeyframePointLinear(point: Vector2, index: number): void;
-        getPathData(animation: Animation): string;
+        getPathData(animation: Animation | null): string;
         getAnimationData(animation: Animation): {
             loopMode: number | undefined;
             name: string;
@@ -863,12 +896,16 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         * This section handles main Curve Editor Functions.
         */
         selectAnimation(animation: Animation): void;
-        isAnimationPlaying(): void;
+        isAnimationPlaying(): boolean;
+        playPause(direction: number): void;
+        playStopAnimation(): boolean;
+        analizeAnimation(animation: Animation | null): boolean;
         /**
         * Timeline
         * This section controls the timeline.
         */
         changeCurrentFrame(frame: number): void;
+        updateFrameInKeyFrame(frame: number, index: number): void;
         render(): JSX.Element;
     }
 }
@@ -2540,16 +2577,17 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         targetedAnimation: TargetedAnimation;
         scene: Scene;
         lockObject: LockObject;
+        onSelectionChangedObservable?: Observable<any>;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class TargetedAnimationGridComponent extends React.Component<ITargetedAnimationGridComponentProps> {
         private _isCurveEditorOpen;
-        private _isPlaying;
         private _animationGroup;
         constructor(props: ITargetedAnimationGridComponentProps);
         onOpenAnimationCurveEditor(): void;
         onCloseAnimationCurveEditor(window: Window | null): void;
         playOrPause(): void;
+        deleteAnimation(): void;
         render(): JSX.Element;
     }
 }
@@ -3866,18 +3904,33 @@ declare module INSPECTOR {
         selected: BABYLON.IAnimationKey | null;
         currentFrame: number;
         onCurrentFrameChange: (frame: number) => void;
+        dragKeyframe: (frame: number, index: number) => void;
+        playPause: (direction: number) => void;
+        isPlaying: boolean;
     }
     export class Timeline extends React.Component<ITimelineProps, {
         selected: BABYLON.IAnimationKey;
+        activeKeyframe: number | null;
     }> {
         readonly _frames: object[];
         private _scrollable;
+        private _direction;
         constructor(props: ITimelineProps);
+        playBackwards(event: React.MouseEvent<HTMLDivElement>): void;
+        play(event: React.MouseEvent<HTMLDivElement>): void;
+        pause(event: React.MouseEvent<HTMLDivElement>): void;
         handleInputChange(event: React.ChangeEvent<HTMLInputElement>): void;
         nextFrame(event: React.MouseEvent<HTMLDivElement>): void;
         previousFrame(event: React.MouseEvent<HTMLDivElement>): void;
         nextKeyframe(event: React.MouseEvent<HTMLDivElement>): void;
         previousKeyframe(event: React.MouseEvent<HTMLDivElement>): void;
+        dragStart(e: React.TouchEvent<SVGSVGElement>): void;
+        dragStart(e: React.MouseEvent<SVGSVGElement, MouseEvent>): void;
+        drag(e: React.TouchEvent<SVGSVGElement>): void;
+        drag(e: React.MouseEvent<SVGSVGElement, MouseEvent>): void;
+        isFrameBeingUsed(frame: number, direction: number): number | false;
+        dragEnd(e: React.TouchEvent<SVGSVGElement>): void;
+        dragEnd(e: React.MouseEvent<SVGSVGElement, MouseEvent>): void;
         render(): JSX.Element;
     }
 }
@@ -3903,6 +3956,17 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export interface IIconButtonLineComponentProps {
+        icon: string;
+        onClick: () => void;
+        tooltip: string;
+    }
+    export class IconButtonLineComponent extends React.Component<IIconButtonLineComponentProps> {
+        constructor(props: IIconButtonLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface IGraphActionsBarProps {
         addKeyframe: () => void;
         removeKeyframe: () => void;
@@ -3910,9 +3974,14 @@ declare module INSPECTOR {
         handleFrameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
         flatTangent: () => void;
         brokeTangents: () => void;
+        setLerpMode: () => void;
         brokenMode: boolean;
+        lerpMode: boolean;
         currentValue: number;
         currentFrame: number;
+        title: string;
+        close: (event: any) => void;
+        enabled: boolean;
     }
     export class GraphActionsBar extends React.Component<IGraphActionsBarProps> {
         constructor(props: IGraphActionsBarProps);
@@ -3923,7 +3992,6 @@ declare module INSPECTOR {
     interface IAnimationCurveEditorComponentProps {
         close: (event: any) => void;
         playOrPause?: () => void;
-        title: string;
         scene: BABYLON.Scene;
         entity: BABYLON.IAnimatable | BABYLON.TargetedAnimation;
     }
@@ -3932,7 +4000,6 @@ declare module INSPECTOR {
         label: number;
     }
     export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, {
-        animations: BABYLON.Animation[];
         animationName: string;
         animationType: string;
         animationTargetProperty: string;
@@ -3947,17 +4014,18 @@ declare module INSPECTOR {
         isFlatTangentMode: boolean;
         isTangentMode: boolean;
         isBrokenMode: boolean;
+        lerpMode: boolean;
         scale: number;
         playheadOffset: number;
         notification: string;
         currentPoint: SVGPoint | undefined;
         lastFrame: number;
         playheadPos: number;
+        isPlaying: boolean;
     }> {
         private _heightScale;
         readonly _entityName: string;
         readonly _canvasLength: number;
-        private _newAnimations;
         private _svgKeyframes;
         private _frames;
         private _isPlaying;
@@ -3990,6 +4058,7 @@ declare module INSPECTOR {
         handlePropertyChange(event: React.ChangeEvent<HTMLInputElement>): void;
         setListItem(animation: BABYLON.Animation, i: number): JSX.Element | null;
         getAnimationTypeofChange(selected: string): number;
+        deleteAnimation(): void;
         addAnimation(): void;
         /**
         * Keyframe Manipulation
@@ -4007,6 +4076,7 @@ declare module INSPECTOR {
         setFlatTangent(): void;
         setTangentMode(): void;
         setBrokenMode(): void;
+        setLerpMode(): void;
         addKeyframeClick(): void;
         removeKeyframeClick(): void;
         addKeyFrame(event: React.MouseEvent<SVGSVGElement>): void;
@@ -4021,7 +4091,7 @@ declare module INSPECTOR {
         };
         linearInterpolation(keyframes: BABYLON.IAnimationKey[], data: string, middle: number): string;
         setKeyframePointLinear(point: BABYLON.Vector2, index: number): void;
-        getPathData(animation: BABYLON.Animation): string;
+        getPathData(animation: BABYLON.Animation | null): string;
         getAnimationData(animation: BABYLON.Animation): {
             loopMode: number | undefined;
             name: string;
@@ -4044,12 +4114,16 @@ declare module INSPECTOR {
         * This section handles main Curve Editor Functions.
         */
         selectAnimation(animation: BABYLON.Animation): void;
-        isAnimationPlaying(): void;
+        isAnimationPlaying(): boolean;
+        playPause(direction: number): void;
+        playStopAnimation(): boolean;
+        analizeAnimation(animation: BABYLON.Animation | null): boolean;
         /**
         * Timeline
         * This section controls the timeline.
         */
         changeCurrentFrame(frame: number): void;
+        updateFrameInKeyFrame(frame: number, index: number): void;
         render(): JSX.Element;
     }
 }
@@ -5288,16 +5362,17 @@ declare module INSPECTOR {
         targetedAnimation: BABYLON.TargetedAnimation;
         scene: BABYLON.Scene;
         lockObject: LockObject;
+        onSelectionChangedObservable?: BABYLON.Observable<any>;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class TargetedAnimationGridComponent extends React.Component<ITargetedAnimationGridComponentProps> {
         private _isCurveEditorOpen;
-        private _isPlaying;
         private _animationGroup;
         constructor(props: ITargetedAnimationGridComponentProps);
         onOpenAnimationCurveEditor(): void;
         onCloseAnimationCurveEditor(window: Window | null): void;
         playOrPause(): void;
+        deleteAnimation(): void;
         render(): JSX.Element;
     }
 }

@@ -19,14 +19,14 @@ interface ITargetedAnimationGridComponentProps {
     globalState: GlobalState;
     targetedAnimation: TargetedAnimation,
     scene: Scene,
-    lockObject: LockObject,
+    lockObject: LockObject,    
+    onSelectionChangedObservable?: Observable<any>,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
 export class TargetedAnimationGridComponent extends React.Component<ITargetedAnimationGridComponentProps> {
 
     private _isCurveEditorOpen: boolean;
-    private _isPlaying: boolean;
     private _animationGroup: AnimationGroup | undefined;
     constructor(props: ITargetedAnimationGridComponentProps) {
         super(props);
@@ -51,15 +51,29 @@ export class TargetedAnimationGridComponent extends React.Component<ITargetedAni
 
     playOrPause() {
         if (this._animationGroup){
-            this._isPlaying = this.props.scene.getAllAnimatablesByTarget(this.props.targetedAnimation.target).length > 0;
-            let animationGroup = this.props.scene.getAnimationGroupByName(this._animationGroup.name);
-            if (this._isPlaying) {
-                animationGroup?.stop();
+            if (this._animationGroup.isPlaying) {
+                this._animationGroup.stop();
             } else {
-                animationGroup?.start();
+                this._animationGroup.start();
             }
             this.forceUpdate();
         } 
+    }
+
+    deleteAnimation() {        
+        if (this._animationGroup) {
+            let index = this._animationGroup.targetedAnimations.indexOf(this.props.targetedAnimation);
+
+            if (index > -1) {
+                this._animationGroup.targetedAnimations.splice(index, 1);
+                this.props.onSelectionChangedObservable?.notifyObservers(null);
+
+                if (this._animationGroup.isPlaying) {
+                    this._animationGroup.stop();
+                    this._animationGroup.start();
+                }
+            }
+        }
     }
 
     render() {
@@ -79,18 +93,18 @@ export class TargetedAnimationGridComponent extends React.Component<ITargetedAni
                         this._isCurveEditorOpen && <PopupComponent
                             id="curve-editor"
                             title="Curve Animation Editor"
-                            size={{ width: 950, height: 540 }}
+                            size={{ width: 1024, height: 512 }}
                             onOpen={(window: Window) => { window.console.log("Window opened!!") }}
                             onClose={(window: Window) => this.onCloseAnimationCurveEditor(window)}>
 
-                            <AnimationCurveEditorComponent 
-                                title="Animations Curve Editor" 
+                            <AnimationCurveEditorComponent
                                 scene={this.props.scene} 
                                 entity={targetedAnimation as any} 
                                 playOrPause={() => this.playOrPause()}
                                 close={(event) => this.onCloseAnimationCurveEditor(event.view)} />
                         </PopupComponent>
-                        }
+                    }                    
+                    <ButtonLineComponent label="Dispose" onClick={() => this.deleteAnimation()} />
                 </LineContainerComponent>
             </div>
         );
