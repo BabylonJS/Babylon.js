@@ -5,7 +5,6 @@ export interface INodeLocationInfo {
 }
 
 export interface IFrameData {
-    id: number;
     x: number;
     y: number;
     width: number;
