@@ -1297,10 +1297,8 @@ export class StandardMaterial extends PushMaterial {
         ubo.addUniform("vLightmapInfos", 2);
         ubo.addUniform("vSpecularInfos", 2);
         ubo.addUniform("vBumpInfos", 3);
-        ubo.addUniform("vDetailInfos", 3);
 
         ubo.addUniform("diffuseMatrix", 16);
-        ubo.addUniform("detailMatrix", 16);
         ubo.addUniform("ambientMatrix", 16);
         ubo.addUniform("opacityMatrix", 16);
         ubo.addUniform("reflectionMatrix", 16);
@@ -1316,6 +1314,9 @@ export class StandardMaterial extends PushMaterial {
         ubo.addUniform("vEmissiveColor", 3);
         ubo.addUniform("visibility", 1);
         ubo.addUniform("vDiffuseColor", 4);
+
+        ubo.addUniform("vDetailInfos", 3);
+        ubo.addUniform("detailMatrix", 16);
 
         ubo.create();
     }
@@ -1425,7 +1426,7 @@ export class StandardMaterial extends PushMaterial {
                     }
 
                     if (this._detailTexture && StandardMaterial.DetailTextureEnabled) {
-                        ubo.updateFloat3("vDetailInfos", this._detailTexture.coordinatesIndex, 1 - this.detailDiffuseBlendLevel, this.detailBumpLevel);
+                        ubo.updateFloat3("vDetailInfos", this._detailTexture.coordinatesIndex, this.detailDiffuseBlendLevel, this.detailBumpLevel);
                         MaterialHelper.BindTextureMatrix(this._detailTexture, ubo, "detail");
                     }
 

@@ -61,5 +61,5 @@
         normalW = perturbNormalBase(TBN, blendedNormal, vBumpInfos.y);
 	#endif
 #elif defined(DETAIL)    
-		normalW = perturbNormalBase(TBN, detailNormal, 1.0 / vDetailInfos.z);
+		normalW = perturbNormalBase(TBN, detailNormal, vDetailInfos.z);
 #endif
