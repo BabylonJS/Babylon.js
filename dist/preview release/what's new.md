@@ -65,6 +65,7 @@
 - handle reattachment of panning button for `ArcRotateCamera` ([cedricguillemet](https://github.com/cedricguillemet))
 - Added flag to TargetCamera to invert rotation direction and multiplier to adjust speed ([Exolun](https://github.com/Exolun))
 - Added upwards and downwards keyboard input to `FreeCamera` ([Pheater](https://github.com/pheater))
+- Handle scales in camera matrices ([Popov72](https://github.com/Popov72))
 
 ### Sprites
 
