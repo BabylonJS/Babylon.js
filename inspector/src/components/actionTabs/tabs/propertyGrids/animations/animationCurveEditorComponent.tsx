@@ -10,12 +10,9 @@ import { Playhead } from './playhead';
 import { Notification } from './notification';
 import { GraphActionsBar } from './graphActionsBar';
 import { Scene } from "babylonjs/scene";
-import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
-import { AddAnimation } from './addAnimation';
-import { Nullable } from 'babylonjs/types';
-import { IconButtonLineComponent } from '../../../lines/iconButtonLineComponent';
+import { EditorControls } from './editorControls';
 
 require("./curveEditor.scss");
 
@@ -51,7 +48,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     lastFrame: number,
     playheadPos: number,
     isPlaying: boolean,
-    isAnimationDialogOpen: boolean
 }> {
 
     // Height scale *Review this functionaliy
@@ -118,7 +114,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             scale: 1,
             playheadPos: 0,
             isPlaying: this.isAnimationPlaying(),
-            isAnimationDialogOpen: false
         }
     }
 
@@ -190,92 +185,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     resetPlayheadOffset() {
         if (this._graphCanvas && this._graphCanvas.current) {
             this.setState({ playheadOffset: (this._graphCanvas.current.children[1].clientWidth) / (this._canvasLength * 10 * this.state.scale) });
-        }
-    }
-
-    setListItem(animation: Animation, i: number) {
-        let element;
-
-        switch (animation.dataType) {
-            case Animation.ANIMATIONTYPE_FLOAT:
-                element = <li className={this.state.selected && this.state.selected.name === animation.name ? 'active' : ''} key={i} onClick={() => this.selectAnimation(animation)}>
-                    <p>{animation.name}&nbsp;
-                    <span>{animation.targetProperty}</span></p>
-                    {!(this.props.entity instanceof TargetedAnimation) ? this.state.selected && this.state.selected.name === animation.name ? <ButtonLineComponent label={"Remove"} onClick={() => this.deleteAnimation()} /> : null : null}
-                </li>
-                break;
-            case Animation.ANIMATIONTYPE_VECTOR2:
-                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
-                    <ul>
-                        <li key={`${i}_x`}>Property <strong>X</strong></li>
-                        <li key={`${i}_y`}>Property <strong>Y</strong></li>
-                    </ul>
-                </li>
-                break;
-            case Animation.ANIMATIONTYPE_VECTOR3:
-                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
-                    <ul>
-                        <li key={`${i}_x`}>Property <strong>X</strong></li>
-                        <li key={`${i}_y`}>Property <strong>Y</strong></li>
-                        <li key={`${i}_z`}>Property <strong>Z</strong></li>
-                    </ul>
-                </li>
-                break;
-            case Animation.ANIMATIONTYPE_QUATERNION:
-                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
-                    <ul>
-                        <li key={`${i}_x`}>Property <strong>X</strong></li>
-                        <li key={`${i}_y`}>Property <strong>Y</strong></li>
-                        <li key={`${i}_z`}>Property <strong>Z</strong></li>
-                        <li key={`${i}_w`}>Property <strong>W</strong></li>
-                    </ul>
-                </li>
-                break;
-            case Animation.ANIMATIONTYPE_COLOR3:
-                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
-                    <ul>
-                        <li key={`${i}_r`}>Property <strong>R</strong></li>
-                        <li key={`${i}_g`}>Property <strong>G</strong></li>
-                        <li key={`${i}_b`}>Property <strong>B</strong></li>
-                    </ul>
-                </li>
-                break;
-            case Animation.ANIMATIONTYPE_COLOR4:
-                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
-                    <ul>
-                        <li key={`${i}_r`}>Property <strong>R</strong></li>
-                        <li key={`${i}_g`}>Property <strong>G</strong></li>
-                        <li key={`${i}_b`}>Property <strong>B</strong></li>
-                        <li key={`${i}_a`}>Property <strong>A</strong></li>
-                    </ul>
-                </li>
-                break;
-            case Animation.ANIMATIONTYPE_SIZE:
-                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
-                    <ul>
-                        <li key={`${i}_width`}>Property <strong>Width</strong></li>
-                        <li key={`${i}_height`}>Property <strong>Height</strong></li>
-                    </ul>
-                </li>
-                break;
-            default: console.log("not recognized");
-                element = null;
-                break;
-        }
-
-        return element;
-    }
-
-    deleteAnimation() {
-        let currentSelected = this.state.selected;
-        if (this.props.entity instanceof TargetedAnimation) {
-            console.log("no animation remove allowed");
-        } else {
-            let animations = (this.props.entity as IAnimatable).animations;
-            if (animations) {
-                let updatedAnimations = animations.filter(anim => anim !== currentSelected);
-                (this.props.entity as IAnimatable).animations = updatedAnimations as Nullable<Animation[]>;
-            }
         }
     }
 
@@ -1087,37 +996,13 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                     
                 <div className="content">
                     <div className="row">
-                        <div className="animation-list">
-                            <div className="controls-header">
-                            {this._isTargetedAnimation ? null : <IconButtonLineComponent active={this.state.isAnimationDialogOpen} tooltip="Add Animation" icon="medium add-animation" onClick={() => { this.setState({ isAnimationDialogOpen: true})}}></IconButtonLineComponent>}
-                            <IconButtonLineComponent tooltip="Load Animation" icon="medium load" onClick={() => { this.setState({ isAnimationDialogOpen: true})}}></IconButtonLineComponent>
-                            <IconButtonLineComponent tooltip="Save Animation" icon="medium save" onClick={() => { this.setState({ isAnimationDialogOpen: true})}}></IconButtonLineComponent>
-                            <IconButtonLineComponent tooltip="Edit Animations" icon="medium animation-edit" onClick={() => { this.setState({ isAnimationDialogOpen: true})}}></IconButtonLineComponent>
-                            <IconButtonLineComponent tooltip="Loop/Unloop" icon="medium loop-active" onClick={() => { this.setState({ isAnimationDialogOpen: true})}}></IconButtonLineComponent>
-                            </div>
-                            { (this.props.entity instanceof TargetedAnimation) ? null : 
-                                <AddAnimation 
-                                    isOpen={this.state.isAnimationDialogOpen} 
-                                    close={() => { this.setState({isAnimationDialogOpen: false})}} 
-                                    entity={this.props.entity} 
-                                    setNotificationMessage={(message: string) => { this.setState({notification: message})}} />
-                            }
-
-                            <div className="object-tree">
-                                <ul>
-                                    {
-
-                                        this.props.entity instanceof TargetedAnimation ? this.setListItem(this.props.entity.animation, 0) :
-                                            this.props.entity.animations && this.props.entity.animations.map((animation, i) => {
-
-                                                return this.setListItem(animation, i);
-
-                                            })}
-
-                                </ul>
-                            </div>
-                        </div>
-
+                        <EditorControls selectAnimation={(animation: Animation) => this.selectAnimation(animation)} 
+                        isTargetedAnimation={this._isTargetedAnimation} 
+                        entity={this.props.entity} 
+                        selected={this.state.selected} 
+                        setNotificationMessage={(message: string) => { this.setState({notification: message})}}
+                        />
+                        
                         <div ref={this._graphCanvas} className="graph-chart" onWheel={(e) => this.zoom(e)} >
 
                             <Playhead frame={this.state.currentFrame} offset={this.state.playheadOffset} />
