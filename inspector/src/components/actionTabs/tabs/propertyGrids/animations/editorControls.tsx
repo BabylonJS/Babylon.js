@@ -8,7 +8,7 @@ import { IconButtonLineComponent } from '../../../lines/iconButtonLineComponent'
 import { NumericInputComponent } from '../../../lines/numericInputComponent';
 import { AddAnimation } from './addAnimation';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
-import { TargetedAnimation } from 'babylonjs';
+import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
 import { Nullable } from 'babylonjs/types';
 
 interface IEditorControlsProps {
