@@ -135,6 +135,7 @@
 ### Animation
 
 - Added support for Additive Animation Blending. Existing animations can be converted to additive using the new MakeAnimationAdditive method for Skeletons, AnimationGroups and Animations. Animations can be played additively using the new isAdditive input parameter to the begin animation methods. ([c-morten](https://github.com/c-morten))
+- Sort events by frame in ascending order in `Animation#addEvent()` ([ycw](https://github.com/ycw))
 
 ### Maths
 
