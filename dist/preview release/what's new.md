@@ -49,6 +49,7 @@
 - Particle systems: add the `ParticlePositionWorld` block ([Popov72](https://github.com/Popov72))
 - Add isExposedOnFrame property to connection points ([belfortk](https://github.com/belfortk))
 - Add support for exporting frames ([belfortk](https://github.com/belfortk))
+- Add support for importing frames and their nodes (unconnected) and exposed frame ports ([belfortk](https://github.com/belfortk))
 
 ### Inspector
 

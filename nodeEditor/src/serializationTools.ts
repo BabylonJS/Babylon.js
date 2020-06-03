@@ -48,4 +48,11 @@ export class SerializationTools {
         globalState.onIsLoadingChanged.notifyObservers(true);
         globalState.nodeMaterial!.loadFromSerialization(serializationObject, "");
     }
+
+    public static AddFrameToMaterial(serializationObject: any, globalState: GlobalState, currentMaterial: NodeMaterial) {
+        globalState.onIsLoadingChanged.notifyObservers(true);
+        this.UpdateLocations(currentMaterial, globalState);
+        globalState.nodeMaterial!.addFrameNodesFromeSerialization(serializationObject, "");
+        globalState.onImportFrameObservable.notifyObservers();
+    }
 }

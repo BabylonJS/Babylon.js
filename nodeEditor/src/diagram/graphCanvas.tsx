@@ -841,23 +841,30 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this.props.globalState.onRebuildRequiredObservable.notifyObservers();
     }
 
-    processEditorData(editorData: IEditorData) {
-        const frames = this._frames.splice(0);
-        for (var frame of frames) {
-            frame.dispose();
+    processEditorData(editorData: IEditorData, isImportingAFrame = false) {
+        if (!isImportingAFrame) {
+            const frames = this._frames.splice(0);
+            for (var frame of frames) {
+                frame.dispose();
+            }
+
+            this._frames = [];
+            this.x = editorData.x || 0;
+            this.y = editorData.y || 0;
+            this.zoom = editorData.zoom || 1;
         }
-
-        this._frames = [];
-
-        this.x = editorData.x || 0;
-        this.y = editorData.y || 0;
-        this.zoom = editorData.zoom || 1;
 
         // Frames
         if (editorData.frames) {
-            for (var frameData of editorData.frames) {
-                var frame = GraphFrame.Parse(frameData, this, editorData.map);
+            if (isImportingAFrame) {
+                var frame = GraphFrame.Parse(editorData.frames[editorData.frames.length - 1], this, editorData.map);
                 this._frames.push(frame);
+                this.globalState.onSelectionChangedObservable.notifyObservers(frame);
+            } else {
+                for (var frameData of editorData.frames) {
+                    var frame = GraphFrame.Parse(frameData, this, editorData.map);
+                    this._frames.push(frame);
+                }
             }
         }
     }
