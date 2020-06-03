@@ -23781,6 +23781,16 @@ declare module BABYLON {
          */
         static readonly MATERIAL_ALPHATESTANDBLEND: number;
         /**
+         * The Whiteout method is used to blend normals.
+         * Details of the algorithm can be found here: https://blog.selfshadow.com/publications/blending-in-detail/
+         */
+        static readonly MATERIAL_NORMALBLENDMETHOD_WHITEOUT: number;
+        /**
+         * The Reoriented Normal Mapping method is used to blend normals.
+         * Details of the algorithm can be found here: https://blog.selfshadow.com/publications/blending-in-detail/
+         */
+        static readonly MATERIAL_NORMALBLENDMETHOD_RNM: number;
+        /**
          * Custom callback helping to override the default shader used in the material.
          */
         customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[], options?: ICustomShaderNameResolveOptions) => string;
@@ -29089,6 +29099,12 @@ declare module BABYLON {
          */
         static get DiffuseTextureEnabled(): boolean;
         static set DiffuseTextureEnabled(value: boolean);
+        private static _DetailTextureEnabled;
+        /**
+         * Are detail textures enabled in the application.
+         */
+        static get DetailTextureEnabled(): boolean;
+        static set DetailTextureEnabled(value: boolean);
         private static _AmbientTextureEnabled;
         /**
          * Are ambient textures enabled in the application.
@@ -29349,12 +29365,154 @@ declare module BABYLON {
     };
 }
 declare module BABYLON {
+    /**
+     * @hidden
+     */
+    export interface IMaterialDetailMapDefines {
+        DETAIL: boolean;
+        DETAILDIRECTUV: number;
+        DETAIL_NORMALBLENDMETHOD: number;
+        /** @hidden */
+        _areTexturesDirty: boolean;
+    }
+    /**
+     * Define the code related to the detail map parameters of a material
+     *
+     * Inspired from:
+     *   Unity: https://docs.unity3d.com/Packages/com.unity.render-pipelines.high-definition@9.0/manual/Mask-Map-and-Detail-Map.html and https://docs.unity3d.com/Manual/StandardShaderMaterialParameterDetail.html
+     *   Unreal: https://docs.unrealengine.com/en-US/Engine/Rendering/Materials/HowTo/DetailTexturing/index.html
+     *   Cryengine: https://docs.cryengine.com/display/SDKDOC2/Detail+Maps
+     */
+    export class DetailMapConfiguration {
+        private _texture;
+        /**
+         * The detail texture of the material.
+         */
+        texture: Nullable<BaseTexture>;
+        /**
+         * Defines how strongly the detail diffuse/albedo channel is blended with the regular diffuse/albedo texture
+         * Bigger values mean stronger blending
+         */
+        diffuseBlendLevel: number;
+        /**
+         * Defines how strongly the detail roughness channel is blended with the regular roughness value
+         * Bigger values mean stronger blending. Only used with PBR materials
+         */
+        roughnessBlendLevel: number;
+        /**
+         * Defines how strong the bump effect from the detail map is
+         * Bigger values mean stronger effect
+         */
+        bumpLevel: number;
+        private _normalBlendMethod;
+        /**
+         * The method used to blend the bump and detail normals together
+         */
+        normalBlendMethod: number;
+        private _isEnabled;
+        /**
+         * Enable or disable the detail map on this material
+         */
+        isEnabled: boolean;
+        /** @hidden */
+        private _internalMarkAllSubMeshesAsTexturesDirty;
+        /** @hidden */
+        _markAllSubMeshesAsTexturesDirty(): void;
+        /**
+         * Instantiate a new detail map
+         * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
+         */
+        constructor(markAllSubMeshesAsTexturesDirty: () => void);
+        /**
+         * Gets whether the submesh is ready to be used or not.
+         * @param defines the list of "defines" to update.
+         * @param scene defines the scene the material belongs to.
+         * @returns - boolean indicating that the submesh is ready or not.
+         */
+        isReadyForSubMesh(defines: IMaterialDetailMapDefines, scene: Scene): boolean;
+        /**
+         * Update the defines for detail map usage
+         * @param defines the list of "defines" to update.
+         * @param scene defines the scene the material belongs to.
+         */
+        prepareDefines(defines: IMaterialDetailMapDefines, scene: Scene): void;
+        /**
+         * Binds the material data.
+         * @param uniformBuffer defines the Uniform buffer to fill in.
+         * @param scene defines the scene the material belongs to.
+         * @param isFrozen defines whether the material is frozen or not.
+         */
+        bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean): void;
+        /**
+         * Checks to see if a texture is used in the material.
+         * @param texture - Base texture to use.
+         * @returns - Boolean specifying if a texture is used in the material.
+         */
+        hasTexture(texture: BaseTexture): boolean;
+        /**
+         * Returns an array of the actively used textures.
+         * @param activeTextures Array of BaseTextures
+         */
+        getActiveTextures(activeTextures: BaseTexture[]): void;
+        /**
+         * Returns the animatable textures.
+         * @param animatables Array of animatable textures.
+         */
+        getAnimatables(animatables: IAnimatable[]): void;
+        /**
+         * Disposes the resources of the material.
+         * @param forceDisposeTextures - Forces the disposal of all textures.
+         */
+        dispose(forceDisposeTextures?: boolean): void;
+        /**
+        * Get the current class name useful for serialization or dynamic coding.
+        * @returns "DetailMap"
+        */
+        getClassName(): string;
+        /**
+         * Add the required uniforms to the current list.
+         * @param uniforms defines the current uniform list.
+         */
+        static AddUniforms(uniforms: string[]): void;
+        /**
+         * Add the required samplers to the current list.
+         * @param samplers defines the current sampler list.
+         */
+        static AddSamplers(samplers: string[]): void;
+        /**
+         * Add the required uniforms to the current buffer.
+         * @param uniformBuffer defines the current uniform buffer.
+         */
+        static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void;
+        /**
+         * Makes a duplicate of the current instance into another one.
+         * @param detailMap define the instance where to copy the info
+         */
+        copyTo(detailMap: DetailMapConfiguration): void;
+        /**
+         * Serializes this detail map instance
+         * @returns - An object with the serialized instance.
+         */
+        serialize(): any;
+        /**
+         * Parses a detail map setting from a serialized object.
+         * @param source - Serialized object.
+         * @param scene Defines the scene we are parsing for
+         * @param rootUrl Defines the rootUrl to load from
+         */
+        parse(source: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
     /** @hidden */
-    export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
+    export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines, IMaterialDetailMapDefines {
         MAINUV1: boolean;
         MAINUV2: boolean;
         DIFFUSE: boolean;
         DIFFUSEDIRECTUV: number;
+        DETAIL: boolean;
+        DETAILDIRECTUV: number;
+        DETAIL_NORMALBLENDMETHOD: number;
         AMBIENT: boolean;
         AMBIENTDIRECTUV: number;
         OPACITY: boolean;
@@ -29780,6 +29938,10 @@ declare module BABYLON {
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
         set cameraColorCurves(value: Nullable<ColorCurves>);
+        /**
+         * Defines the detail map parameters for the material.
+         */
+        readonly detailMap: DetailMapConfiguration;
         protected _renderTargets: SmartArray<RenderTargetTexture>;
         protected _worldViewProjectionMatrix: Matrix;
         protected _globalAmbientColor: Color3;
@@ -29898,6 +30060,11 @@ declare module BABYLON {
          */
         static get DiffuseTextureEnabled(): boolean;
         static set DiffuseTextureEnabled(value: boolean);
+        /**
+         * Are detail textures enabled in the application.
+         */
+        static get DetailTextureEnabled(): boolean;
+        static set DetailTextureEnabled(value: boolean);
         /**
          * Are ambient textures enabled in the application.
          */
@@ -54770,7 +54937,7 @@ declare module BABYLON {
      * Manages the defines for the PBR Material.
      * @hidden
      */
-    export class PBRMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines, IMaterialClearCoatDefines, IMaterialAnisotropicDefines, IMaterialBRDFDefines, IMaterialSheenDefines, IMaterialSubSurfaceDefines {
+    export class PBRMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines, IMaterialClearCoatDefines, IMaterialAnisotropicDefines, IMaterialBRDFDefines, IMaterialSheenDefines, IMaterialSubSurfaceDefines, IMaterialDetailMapDefines {
         PBR: boolean;
         NUM_SAMPLES: string;
         REALTIME_FILTERING: boolean;
@@ -54782,6 +54949,9 @@ declare module BABYLON {
         GAMMAALBEDO: boolean;
         ALBEDODIRECTUV: number;
         VERTEXCOLOR: boolean;
+        DETAIL: boolean;
+        DETAILDIRECTUV: number;
+        DETAIL_NORMALBLENDMETHOD: number;
         AMBIENT: boolean;
         AMBIENTDIRECTUV: number;
         AMBIENTINGRAYSCALE: boolean;
@@ -55346,6 +55516,10 @@ declare module BABYLON {
          * Defines the SubSurface parameters for the material.
          */
         readonly subSurface: PBRSubSurfaceConfiguration;
+        /**
+         * Defines the detail map parameters for the material.
+         */
+        readonly detailMap: DetailMapConfiguration;
         protected _rebuildInParallel: boolean;
         /**
          * Instantiates a new PBRMaterial instance.

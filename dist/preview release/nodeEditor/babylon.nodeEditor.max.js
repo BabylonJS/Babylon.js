@@ -62540,14 +62540,19 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             _this._ctrlKeyIsPressed = false;
         }, false);
         // Store additional data to serialization object
-        _this.props.globalState.storeEditorData = function (editorData) {
-            editorData.zoom = _this.zoom;
-            editorData.x = _this.x;
-            editorData.y = _this.y;
+        _this.props.globalState.storeEditorData = function (editorData, graphFrame) {
             editorData.frames = [];
-            for (var _i = 0, _a = _this._frames; _i < _a.length; _i++) {
-                var frame = _a[_i];
-                editorData.frames.push(frame.serialize());
+            if (graphFrame) {
+                editorData.frames.push(graphFrame.serialize());
+            }
+            else {
+                editorData.x = _this.x;
+                editorData.y = _this.y;
+                editorData.zoom = _this.zoom;
+                for (var _i = 0, _a = _this._frames; _i < _a.length; _i++) {
+                    var frame = _a[_i];
+                    editorData.frames.push(frame.serialize());
+                }
             }
         };
         return _this;
@@ -64433,7 +64438,7 @@ var GraphFrame = /** @class */ (function () {
     };
     GraphFrame.prototype.export = function () {
         var state = this._ownerCanvas.globalState;
-        var json = _serializationTools__WEBPACK_IMPORTED_MODULE_1__["SerializationTools"].Serialize(state.nodeMaterial, state, this.nodes.map(function (n) { return n.block; }));
+        var json = _serializationTools__WEBPACK_IMPORTED_MODULE_1__["SerializationTools"].Serialize(state.nodeMaterial, state, this);
         _stringTools__WEBPACK_IMPORTED_MODULE_2__["StringTools"].DownloadAsFile(state.hostDocument, json, this._name + ".json");
     };
     GraphFrame.Parse = function (serializationData, canvas, map) {
@@ -65411,7 +65416,10 @@ var FramePropertyTabComponent = /** @class */ (function (_super) {
                     this.props.frame.isCollapsed &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Expand", onClick: function () {
                                 _this.props.frame.isCollapsed = false;
-                            } })))));
+                            } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Export", onClick: function () {
+                            _this.props.frame.export();
+                        } })))));
     };
     return FramePropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -67556,13 +67564,14 @@ __webpack_require__.r(__webpack_exports__);
 var SerializationTools = /** @class */ (function () {
     function SerializationTools() {
     }
-    SerializationTools.UpdateLocations = function (material, globalState) {
+    SerializationTools.UpdateLocations = function (material, globalState, frame) {
         material.editorData = {
             locations: []
         };
         // Store node locations
-        for (var _i = 0, _a = material.attachedBlocks; _i < _a.length; _i++) {
-            var block = _a[_i];
+        var blocks = frame ? frame.nodes.map(function (n) { return n.block; }) : material.attachedBlocks;
+        for (var _i = 0, blocks_1 = blocks; _i < blocks_1.length; _i++) {
+            var block = blocks_1[_i];
             var node = globalState.onGetNodeFromBlock(block);
             material.editorData.locations.push({
                 blockId: block.uniqueId,
@@ -67570,12 +67579,13 @@ var SerializationTools = /** @class */ (function () {
                 y: node ? node.y : 0
             });
         }
-        globalState.storeEditorData(material.editorData);
+        globalState.storeEditorData(material.editorData, frame);
     };
-    SerializationTools.Serialize = function (material, globalState, selectedBlocks) {
+    SerializationTools.Serialize = function (material, globalState, frame) {
         var bufferSerializationState = babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].SerializeBuffers;
         babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].SerializeBuffers = babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("EmbedTextures", true);
-        this.UpdateLocations(material, globalState);
+        this.UpdateLocations(material, globalState, frame);
+        var selectedBlocks = frame ? frame.nodes.map(function (n) { return n.block; }) : undefined;
         var serializationObject = material.serialize(selectedBlocks);
         babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].SerializeBuffers = bufferSerializationState;
         return JSON.stringify(serializationObject, undefined, 2);
