@@ -3,6 +3,10 @@
 
     font-family: acumin-pro-condensed;
 
+    .last {
+        margin-left: 3px;
+    }
+
     .icon {
         width: 40px;
         height: 40px;
@@ -221,6 +225,7 @@
             background-color: transparent;
             background-size: contain;
             color: white;
+            cursor: pointer;
         }
 
         &.loop-inactive {
@@ -229,6 +234,7 @@
             background-color: transparent;
             background-size: contain;
             color: white;
+            cursor: pointer;
         }
 
         &.move {
@@ -245,6 +251,7 @@
             background-color: transparent;
             background-size: contain;
             color: white;
+            cursor: pointer;
         }
 
         &.load {
@@ -253,6 +260,7 @@
             background-color: transparent;
             background-size: contain;
             color: white;
+            cursor: pointer;
         }
 
         &.checked {
@@ -471,6 +479,40 @@
             .controls-header {
                 display: flex;
                 background-color: #252525;
+
+               .input-fps{
+                display: flex;
+                align-items: center;
+                width: 52px;
+                padding-left: 4px;
+                    .numeric{
+                        input{
+                            width: 52px;
+                            font-size: 12px;
+                            height: 22px;
+                            background-color: black;
+                            border: none;
+                            color: white;
+                            text-align: center;
+                            &::-webkit-inner-spin-button, &::-webkit-outer-spin-button {
+                                appearance: none;
+                                -webkit-appearance: none; 
+                                margin: 0;
+                            }
+                            font-family: acumin-pro-condensed;
+                        }
+                    }
+                    p {
+                        color: white;
+                        font-size: 12px;
+                        margin: 0px;
+                        position: relative;
+                        right: 17px;
+                        line-height: 20px;
+                        height: 20px;
+                        margin-top: -2px;
+                    }
+               } 
             }
 
             .new-animation{
@@ -511,6 +553,8 @@
                                 font-size: 12px;
                                 line-height: 11px;
                                 margin: 5px;
+                                font-size: 10px;
+                                font-family: acumin-pro-condensed;
                             }
                         }
                     }
@@ -557,9 +601,8 @@
                 background-color:#111111;
                 padding: 10px;
                 margin-top: 19px;
-                height: 11em;
                 overflow: scroll;
-                overflow-x: hidden;
+                overflow-x: auto;
             }
 
             .label-input{
@@ -582,6 +625,7 @@
                         outline-style: auto;
                         outline-color: lightgrey;
                     }
+                    font-family: acumin-pro-condensed;
                 }
 
                 select {
@@ -596,6 +640,7 @@
                         outline-style: auto;
                         outline-color: lightgrey;
                     }
+                    font-family: acumin-pro-condensed;
                 }
             }
         }
