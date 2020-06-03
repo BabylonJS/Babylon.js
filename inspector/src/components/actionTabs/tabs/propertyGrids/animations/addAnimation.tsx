@@ -15,6 +15,7 @@ interface IAddAnimationProps {
    entity: IAnimatable;
    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
    setNotificationMessage: (message: string) => void;
+   changed: () => void;
 }
 
 export class AddAnimation extends React.Component<IAddAnimationProps, {animationName: string, animationTargetProperty: string, animationType:string, loopMode: number, animationTargetPath:string}>{ 
@@ -187,6 +188,7 @@ export class AddAnimation extends React.Component<IAddAnimationProps, {animation
                         const updatedCollection = [...this.props.entity.animations, animation]
                         this.raiseOnPropertyChanged(updatedCollection, store);
                         this.props.entity.animations = updatedCollection;
+                        this.props.changed();
                         this.props.close();
                     }   
                 }
