@@ -1678,6 +1678,53 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Load new blocks and frame from a frame serialization object
+     * @param source defines the JSON representation of the frame
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     */
+    public addFrameNodesFromeSerialization(source: any, rootUrl: string = "") {
+        let map: {[key: number]: NodeMaterialBlock} = {};
+
+        // Create blocks
+        for (var parsedBlock of source.blocks) {
+            let blockType = _TypeStore.GetClass(parsedBlock.customType);
+            if (blockType) {
+                let block: NodeMaterialBlock = new blockType();
+                block._deserialize(parsedBlock, this.getScene(), rootUrl);
+                map[parsedBlock.id] = block;
+
+                this.attachedBlocks.push(block);
+            }
+        }
+
+        if (source.locations || source.editorData && source.editorData.locations) {
+            let locations: {
+                blockId: number;
+                x: number;
+                y: number;
+            }[] = source.locations || source.editorData.locations;
+
+            for (var location of locations) {
+                if (map[location.blockId]) {
+                    location.blockId = map[location.blockId].uniqueId;
+                }
+            }
+
+            this.editorData.locations = this.editorData.locations.concat(locations);
+            this.editorData.frames = this.editorData.frames.concat(source.editorData.frames);
+
+            let blockMap: number[] = [];
+
+            for (var key in map) {
+                blockMap[key] = map[key].uniqueId;
+            }
+
+            this.editorData.map = blockMap;
+
+        }
+    }
+
+    /**
      * Makes a duplicate of the current material.
      * @param name - name to use for the new material.
      */
