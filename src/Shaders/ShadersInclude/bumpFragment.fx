@@ -6,7 +6,7 @@
 	#elif defined(BUMP)
 		float normalScale = vBumpInfos.y;
 	#else
-		float normalScale = vDetailInfos.z;
+		float normalScale = 1.0;
 	#endif
 
 	#if defined(TANGENT) && defined(NORMAL)
@@ -61,6 +61,7 @@
         #endif
         normalW = perturbNormalBase(TBN, blendedNormal, vBumpInfos.y);
 	#endif
-#elif defined(DETAIL)    
+#elif defined(DETAIL)
+        detailNormal.xy *= vDetailInfos.z;
 		normalW = perturbNormalBase(TBN, detailNormal, vDetailInfos.z);
 #endif
