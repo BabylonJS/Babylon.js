@@ -163,10 +163,11 @@ declare module "babylonjs-node-editor/nodeLocationInfo" {
 declare module "babylonjs-node-editor/serializationTools" {
     import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
     import { GlobalState } from "babylonjs-node-editor/globalState";
-    import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
+    import { Nullable } from 'babylonjs/types';
+    import { GraphFrame } from "babylonjs-node-editor/diagram/graphFrame";
     export class SerializationTools {
-        static UpdateLocations(material: NodeMaterial, globalState: GlobalState): void;
-        static Serialize(material: NodeMaterial, globalState: GlobalState, selectedBlocks?: NodeMaterialBlock[]): string;
+        static UpdateLocations(material: NodeMaterial, globalState: GlobalState, frame?: Nullable<GraphFrame>): void;
+        static Serialize(material: NodeMaterial, globalState: GlobalState, frame?: Nullable<GraphFrame>): string;
         static Deserialize(serializationObject: any, globalState: GlobalState): void;
     }
 }
@@ -1478,7 +1479,7 @@ declare module "babylonjs-node-editor/globalState" {
         hostElement: HTMLElement;
         hostDocument: HTMLDocument;
         hostWindow: Window;
-        onSelectionChangedObservable: Observable<Nullable<GraphNode | NodePort | GraphFrame | NodeLink | FramePortData>>;
+        onSelectionChangedObservable: Observable<Nullable<GraphFrame | GraphNode | NodePort | NodeLink | FramePortData>>;
         onRebuildRequiredObservable: Observable<void>;
         onBuiltObservable: Observable<void>;
         onResetRequiredObservable: Observable<void>;
@@ -1514,7 +1515,7 @@ declare module "babylonjs-node-editor/globalState" {
         directionalLight0: boolean;
         directionalLight1: boolean;
         controlCamera: boolean;
-        storeEditorData: (serializationObject: any) => void;
+        storeEditorData: (serializationObject: any, frame?: Nullable<GraphFrame>) => void;
         _mode: NodeMaterialModes;
         /** Gets the mode */
         get mode(): NodeMaterialModes;
@@ -1937,8 +1938,8 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class SerializationTools {
-        static UpdateLocations(material: BABYLON.NodeMaterial, globalState: GlobalState): void;
-        static Serialize(material: BABYLON.NodeMaterial, globalState: GlobalState, selectedBlocks?: BABYLON.NodeMaterialBlock[]): string;
+        static UpdateLocations(material: BABYLON.NodeMaterial, globalState: GlobalState, frame?: BABYLON.Nullable<GraphFrame>): void;
+        static Serialize(material: BABYLON.NodeMaterial, globalState: GlobalState, frame?: BABYLON.Nullable<GraphFrame>): string;
         static Deserialize(serializationObject: any, globalState: GlobalState): void;
     }
 }
@@ -3058,7 +3059,7 @@ declare module NODEEDITOR {
         hostElement: HTMLElement;
         hostDocument: HTMLDocument;
         hostWindow: Window;
-        onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<GraphNode | NodePort | GraphFrame | NodeLink | FramePortData>>;
+        onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<GraphFrame | GraphNode | NodePort | NodeLink | FramePortData>>;
         onRebuildRequiredObservable: BABYLON.Observable<void>;
         onBuiltObservable: BABYLON.Observable<void>;
         onResetRequiredObservable: BABYLON.Observable<void>;
@@ -3094,7 +3095,7 @@ declare module NODEEDITOR {
         directionalLight0: boolean;
         directionalLight1: boolean;
         controlCamera: boolean;
-        storeEditorData: (serializationObject: any) => void;
+        storeEditorData: (serializationObject: any, frame?: BABYLON.Nullable<GraphFrame>) => void;
         _mode: BABYLON.NodeMaterialModes;
         /** Gets the mode */
         get mode(): BABYLON.NodeMaterialModes;

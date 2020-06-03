@@ -774,6 +774,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         entity: IAnimatable;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
         setNotificationMessage: (message: string) => void;
+        changed: () => void;
     }
     export class AddAnimation extends React.Component<IAddAnimationProps, {
         animationName: string;
@@ -791,6 +792,39 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         handleTypeChange(event: React.ChangeEvent<HTMLSelectElement>): void;
         handlePropertyChange(event: React.ChangeEvent<HTMLInputElement>): void;
         handleLoopModeChange(event: React.ChangeEvent<HTMLSelectElement>): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/editorControls" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { Animation } from 'babylonjs/Animations/animation';
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
+    import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
+    interface IEditorControlsProps {
+        isTargetedAnimation: boolean;
+        entity: IAnimatable | TargetedAnimation;
+        selected: Animation | null;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        setNotificationMessage: (message: string) => void;
+        selectAnimation: (selected: Animation) => void;
+    }
+    export class EditorControls extends React.Component<IEditorControlsProps, {
+        isAnimationTabOpen: boolean;
+        isEditTabOpen: boolean;
+        isLoadTabOpen: boolean;
+        isSaveTabOpen: boolean;
+        isLoopActive: boolean;
+        animationsCount: number;
+        framesPerSecond: number;
+    }> {
+        constructor(props: IEditorControlsProps);
+        animationsChanged(): void;
+        deleteAnimation(): void;
+        setListItem(animation: Animation, i: number): JSX.Element | null;
+        handleTabs(tab: number): void;
+        handleChangeFps(fps: number): void;
         render(): JSX.Element;
     }
 }
@@ -834,7 +868,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         lastFrame: number;
         playheadPos: number;
         isPlaying: boolean;
-        isAnimationDialogOpen: boolean;
     }> {
         private _heightScale;
         readonly _entityName: string;
@@ -862,8 +895,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         setAxesLength(): void;
         getValueLabel(i: number): number;
         resetPlayheadOffset(): void;
-        setListItem(animation: Animation, i: number): JSX.Element | null;
-        deleteAnimation(): void;
         /**
         * Keyframe Manipulation
         * This section handles events from SvgDraggableArea.
@@ -4018,6 +4049,7 @@ declare module INSPECTOR {
         entity: BABYLON.IAnimatable;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         setNotificationMessage: (message: string) => void;
+        changed: () => void;
     }
     export class AddAnimation extends React.Component<IAddAnimationProps, {
         animationName: string;
@@ -4035,6 +4067,33 @@ declare module INSPECTOR {
         handleTypeChange(event: React.ChangeEvent<HTMLSelectElement>): void;
         handlePropertyChange(event: React.ChangeEvent<HTMLInputElement>): void;
         handleLoopModeChange(event: React.ChangeEvent<HTMLSelectElement>): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IEditorControlsProps {
+        isTargetedAnimation: boolean;
+        entity: BABYLON.IAnimatable | BABYLON.TargetedAnimation;
+        selected: BABYLON.Animation | null;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        setNotificationMessage: (message: string) => void;
+        selectAnimation: (selected: BABYLON.Animation) => void;
+    }
+    export class EditorControls extends React.Component<IEditorControlsProps, {
+        isAnimationTabOpen: boolean;
+        isEditTabOpen: boolean;
+        isLoadTabOpen: boolean;
+        isSaveTabOpen: boolean;
+        isLoopActive: boolean;
+        animationsCount: number;
+        framesPerSecond: number;
+    }> {
+        constructor(props: IEditorControlsProps);
+        animationsChanged(): void;
+        deleteAnimation(): void;
+        setListItem(animation: BABYLON.Animation, i: number): JSX.Element | null;
+        handleTabs(tab: number): void;
+        handleChangeFps(fps: number): void;
         render(): JSX.Element;
     }
 }
@@ -4069,7 +4128,6 @@ declare module INSPECTOR {
         lastFrame: number;
         playheadPos: number;
         isPlaying: boolean;
-        isAnimationDialogOpen: boolean;
     }> {
         private _heightScale;
         readonly _entityName: string;
@@ -4097,8 +4155,6 @@ declare module INSPECTOR {
         setAxesLength(): void;
         getValueLabel(i: number): number;
         resetPlayheadOffset(): void;
-        setListItem(animation: BABYLON.Animation, i: number): JSX.Element | null;
-        deleteAnimation(): void;
         /**
         * Keyframe Manipulation
         * This section handles events from SvgDraggableArea.
