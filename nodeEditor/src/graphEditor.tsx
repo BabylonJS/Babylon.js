@@ -22,6 +22,7 @@ import { GraphNode } from './diagram/graphNode';
 import { GraphFrame } from './diagram/graphFrame';
 import * as ReactDOM from 'react-dom';
 import { IInspectorOptions } from "babylonjs/Debug/debugLayer";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 
 require("./main.scss");
@@ -157,8 +158,15 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             }
         });
 
-        this.props.globalState.onImportFrameObservable.add(() => {
-            this.loadGraph();
+        this.props.globalState.onImportFrameObservable.add((source: any) => {
+            let editorData = this.props.globalState.nodeMaterial.editorData;        
+    
+            if (editorData instanceof Array) {
+                editorData = {
+                    locations: editorData
+                }
+            }
+            this.addFrameFromSerialization(editorData, source, "");
             this.reOrganize(this.props.globalState.nodeMaterial.editorData, true);
         })
 
@@ -472,8 +480,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                         }
                     }
                 }
-
-                this._graphCanvas.processEditorData(editorData, isImportingAFrame);
+                if (isImportingAFrame) {
+                    this._graphCanvas.addFrame(editorData);
+                } else {
+                    this._graphCanvas.processEditorData(editorData);
+                }
             }
 
             this._graphCanvas._isLoading = false;
@@ -482,6 +493,47 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             }
             this.hideWaitScreen();
         });
+    }
+
+    addFrameFromSerialization(editorData: IEditorData , source: any, rootUrl: string = "") {
+        let map: {[key: number]: NodeMaterialBlock} = {};
+
+        // Create blocks
+        for (var parsedBlock of source.blocks) {
+            let blockType = _TypeStore.GetClass(parsedBlock.customType);
+            if (blockType) {
+                let block: NodeMaterialBlock = new blockType();
+                block._deserialize(parsedBlock, this.props.globalState.nodeMaterial.getScene(), rootUrl);
+                map[parsedBlock.id] = block;
+
+                this.createNodeFromObject(block);
+            }
+        }
+
+        if (source.locations || source.editorData && source.editorData.locations) {
+            let locations: {
+                blockId: number;
+                x: number;
+                y: number;
+            }[] = source.locations || source.editorData.locations;
+
+            for (var location of locations) {
+                if (map[location.blockId]) {
+                    location.blockId = map[location.blockId].uniqueId;
+                }
+            }
+
+            editorData.locations = editorData.locations.concat(locations);
+            editorData.frames = editorData.frames ? editorData.frames.concat(source.editorData.frames) : source.editorData.frames;
+
+            let blockMap: number[] = [];
+
+            for (var key in map) {
+                blockMap[key] = map[key].uniqueId;
+            }
+
+            editorData.map = blockMap;
+        }
     }
 
     onPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
