@@ -1302,7 +1302,7 @@ export class GraphFrame {
 
     public export() {
         const state = this._ownerCanvas.globalState;
-        const json = SerializationTools.Serialize(state.nodeMaterial, state, this.nodes.map(n => n.block));
+        const json = SerializationTools.Serialize(state.nodeMaterial, state, this);
         StringTools.DownloadAsFile(state.hostDocument, json, this._name + ".json");
     }
 

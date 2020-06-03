@@ -155,6 +155,18 @@ export class Material implements IAnimatable {
     public static readonly MATERIAL_ALPHATESTANDBLEND = 3;
 
     /**
+     * The Whiteout method is used to blend normals.
+     * Details of the algorithm can be found here: https://blog.selfshadow.com/publications/blending-in-detail/
+     */
+    public static readonly MATERIAL_NORMALBLENDMETHOD_WHITEOUT = 0;
+
+    /**
+     * The Reoriented Normal Mapping method is used to blend normals.
+     * Details of the algorithm can be found here: https://blog.selfshadow.com/publications/blending-in-detail/
+     */
+    public static readonly MATERIAL_NORMALBLENDMETHOD_RNM = 1;
+
+    /**
      * Custom callback helping to override the default shader used in the material.
      */
     public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[], options?: ICustomShaderNameResolveOptions) => string;
