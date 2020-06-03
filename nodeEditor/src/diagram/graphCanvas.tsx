@@ -857,7 +857,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         // Frames
         if (editorData.frames) {
             if (isImportingAFrame) {
-                var frame = GraphFrame.Parse(editorData.frames[editorData.frames.length - 1], this, editorData.map);
+                const frame = GraphFrame.Parse(editorData.frames[editorData.frames.length - 1], this, editorData.map);
                 this._frames.push(frame);
                 this.globalState.onSelectionChangedObservable.notifyObservers(frame);
             } else {
