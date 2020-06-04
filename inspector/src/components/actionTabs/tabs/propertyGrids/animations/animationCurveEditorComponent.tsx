@@ -847,22 +847,25 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     * Core functions
     * This section handles main Curve Editor Functions.
     */
-    selectAnimation(animation: Animation) {
+    selectAnimation(animation: Animation, axis?: string) {
 
-        this.playStopAnimation();
+        if (!axis){
+            this.playStopAnimation();
 
-        this._svgKeyframes = [];
+            this._svgKeyframes = [];
 
-        const pathData = this.getPathData(animation);
+            const pathData = this.getPathData(animation);
 
-        let lastFrame = animation.getHighestFrame();
+            let lastFrame = animation.getHighestFrame();
 
-        if (pathData === "") {
-            console.log("no keyframes in this animation");
+            if (pathData === "") {
+                console.log("no keyframes in this animation");
+            }
+
+            this.setState({ selected: animation, currentPathData: pathData, svgKeyframes: this._svgKeyframes, lastFrame: lastFrame });
+        } else {
+            console.log(axis); // This will handle animations that are not Float type
         }
-
-        this.setState({ selected: animation, currentPathData: pathData, svgKeyframes: this._svgKeyframes, lastFrame: lastFrame });
-
     }
 
     isAnimationPlaying() {
@@ -996,7 +999,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                     
                 <div className="content">
                     <div className="row">
-                        <EditorControls selectAnimation={(animation: Animation) => this.selectAnimation(animation)} 
+                        <EditorControls selectAnimation={(animation: Animation, axis?: string) => this.selectAnimation(animation, axis)} 
                         isTargetedAnimation={this._isTargetedAnimation} 
                         entity={this.props.entity} 
                         selected={this.state.selected} 

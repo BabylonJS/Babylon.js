@@ -567,6 +567,7 @@
                                 margin: 5px;
                                 font-size: 10px;
                                 font-family: acumin-pro-condensed;
+                                border: none;
                             }
                         }
                     }
@@ -598,10 +599,6 @@
                             margin: 0px;
                             flex: 8;
                             cursor: pointer;
-                        }
-
-                        div.icon {
-                            //flex: 1;
                         }
 
                         .spacer{
@@ -649,6 +646,10 @@
                             flex-grow: 1;
                             flex-shrink: 1;
                             flex-basis: 100%;
+
+                            .property{
+                                cursor: pointer;
+                            }
                         }
                     }
                 }

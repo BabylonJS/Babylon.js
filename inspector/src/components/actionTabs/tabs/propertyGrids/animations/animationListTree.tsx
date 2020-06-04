@@ -13,7 +13,7 @@ interface IAnimationListTreeProps {
     entity: IAnimatable | TargetedAnimation;
     selected: Animation | null
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-    selectAnimation: (selected: Animation) => void;
+    selectAnimation: (selected: Animation, axis?: string) => void;
     empty: () => void;
 }
 
@@ -89,15 +89,15 @@ export class AnimationListTree extends React.Component<IAnimationListTreeProps, 
                 </li>
                 break;
             case Animation.ANIMATIONTYPE_VECTOR3:
-                element = <li className={this.props.selected && this.props.selected.name === animation.name ? 'property sub active' : 'property sub'} key={i} onClick={() => this.props.selectAnimation(animation)}>
+                element = <li className={this.props.selected && this.props.selected.name === animation.name ? 'property sub active' : 'property sub'} key={i} onClick={() => this.props.selectAnimation(animation, 'Vector3')}>
                     <div className={`animation-arrow ${this.state.list[i].open ? '' : 'flip'}`} onClick={() => this.toggleProperty(i)}></div>
                     <p>{animation.targetProperty}</p>
                     <IconButtonLineComponent tooltip="Options" icon="small animation-options" onClick={() => this.editAnimation()} />
                     {!(this.props.entity instanceof TargetedAnimation) ? this.props.selected && this.props.selected.name === animation.name ? <IconButtonLineComponent tooltip="Remove" icon="small animation-delete" onClick={() => this.deleteAnimation()} /> : <div className="spacer"></div> : null}
                     <ul className={`sub-list ${this.state.list[i].open ? '' : 'hidden'}`}>
-                        <li key={`${i}_x`} className="property" style={{color: '#db3e3e'}}><div className={`handle-indicator ${''}`}></div>{animation.targetProperty} X</li>
-                        <li key={`${i}_y`} className="property" style={{color: '#51e22d'}}><div className={`handle-indicator ${''}`}></div>{animation.targetProperty} Y</li>
-                        <li key={`${i}_z`} className="property" style={{color: '#00a3ff'}}><div className={`handle-indicator ${''}`}></div>{animation.targetProperty} Z</li>
+                        <li key={`${i}_x`} className="property" style={{color: '#db3e3e'}} onClick={() => this.props.selectAnimation(animation, 'x')}><div className={`handle-indicator ${''}`}></div>{animation.targetProperty} X</li>
+                        <li key={`${i}_y`} className="property" style={{color: '#51e22d'}} onClick={() => this.props.selectAnimation(animation, 'y')}><div className={`handle-indicator ${''}`}></div>{animation.targetProperty} Y</li>
+                        <li key={`${i}_z`} className="property" style={{color: '#00a3ff'}} onClick={() => this.props.selectAnimation(animation, 'z')}><div className={`handle-indicator ${''}`}></div>{animation.targetProperty} Z</li>
                     </ul>
                 </li>
                 break;

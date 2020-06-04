@@ -17,7 +17,7 @@ interface IEditorControlsProps {
    selected: Animation | null
    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
    setNotificationMessage: (message: string) => void;
-   selectAnimation: (selected: Animation) => void;
+   selectAnimation: (selected: Animation, axis?: string) => void;
 }
 
 export class EditorControls extends React.Component<IEditorControlsProps, {isAnimationTabOpen: boolean, isEditTabOpen: boolean, isLoadTabOpen: boolean, isSaveTabOpen: boolean, isLoopActive: boolean, animationsCount: number; framesPerSecond: number}>{ 
@@ -28,9 +28,12 @@ export class EditorControls extends React.Component<IEditorControlsProps, {isAni
         this.state = { isAnimationTabOpen: count === 0 ? true : false, isEditTabOpen: count === 0 ? false : true, isSaveTabOpen: false, isLoadTabOpen: false, isLoopActive: false, animationsCount: count, framesPerSecond: 60 }
     }
 
-    animationsChanged(){
-        let recount = (this.props.entity as IAnimatable).animations?.length ?? 0;
-        this.setState( { animationsCount: recount } );
+    animationAdded(){
+        this.setState( { animationsCount: this.recountAnimations(), isEditTabOpen: true, isAnimationTabOpen: false } );
+    }
+
+    recountAnimations() {
+        return (this.props.entity as IAnimatable).animations?.length ?? 0;
     }
 
     handleTabs(tab: number){
@@ -59,9 +62,8 @@ export class EditorControls extends React.Component<IEditorControlsProps, {isAni
         this.setState({framesPerSecond: fps});
     }
 
-    emptyList(){
-        this.animationsChanged()
-        this.setState({isEditTabOpen: false, isAnimationTabOpen: true}); 
+    emptiedList(){
+        this.setState( { animationsCount: this.recountAnimations(), isEditTabOpen: false, isAnimationTabOpen: true } );
     }
 
     render() { 
@@ -90,7 +92,7 @@ export class EditorControls extends React.Component<IEditorControlsProps, {isAni
                     close={() => { this.setState({isAnimationTabOpen: false})}} 
                     entity={(this.props.entity as IAnimatable)} 
                     setNotificationMessage={(message: string) => { this.props.setNotificationMessage(message) }}
-                    changed={() => this.animationsChanged() }
+                    changed={() => this.animationAdded() }
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
             }
 
@@ -103,7 +105,7 @@ export class EditorControls extends React.Component<IEditorControlsProps, {isAni
                 entity={this.props.entity} 
                 selected={this.props.selected} 
                 onPropertyChangedObservable={this.props.onPropertyChangedObservable} 
-                empty={() => this.emptyList() }
+                empty={() => this.emptiedList() }
                 selectAnimation={this.props.selectAnimation}/>
             : null }
         </div>
