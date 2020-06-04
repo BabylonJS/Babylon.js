@@ -190,6 +190,8 @@ export class AddAnimation extends React.Component<IAddAnimationProps, {animation
                         this.props.entity.animations = updatedCollection;
                         this.props.changed();
                         this.props.close();
+                        //Cleaning form fields
+                        this.setState({ animationName: "", animationTargetPath: "", animationType: "Float", loopMode: Animation.ANIMATIONLOOPMODE_CYCLE, animationTargetProperty: ""});
                     }   
                 }
             } else {

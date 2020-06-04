@@ -22341,8 +22341,9 @@ declare module BABYLON {
          * Clear the current graph and load a new one from a serialization object
          * @param source defines the JSON representation of the material
          * @param rootUrl defines the root URL to use to load textures and relative dependencies
+         * @param merge defines whether or not the source must be merged or replace the current content
          */
-        loadFromSerialization(source: any, rootUrl?: string): void;
+        loadFromSerialization(source: any, rootUrl?: string, merge?: boolean): void;
         /**
          * Makes a duplicate of the current material.
          * @param name - name to use for the new material.
