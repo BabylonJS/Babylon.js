@@ -709,13 +709,41 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IAnimationListTreeProps {
+        isTargetedAnimation: boolean;
+        entity: BABYLON.IAnimatable | BABYLON.TargetedAnimation;
+        selected: BABYLON.Animation | null;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        selectAnimation: (selected: BABYLON.Animation, axis?: string) => void;
+        empty: () => void;
+    }
+    interface Item {
+        index: number;
+        name: string;
+        property: string;
+        selected: boolean;
+        open: boolean;
+    }
+    export class AnimationListTree extends React.Component<IAnimationListTreeProps, {
+        list: Item[];
+    }> {
+        constructor(props: IAnimationListTreeProps);
+        deleteAnimation(): void;
+        generateList(): void;
+        editAnimation(): void;
+        toggleProperty(index: number): void;
+        setListItem(animation: BABYLON.Animation, i: number): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface IEditorControlsProps {
         isTargetedAnimation: boolean;
         entity: BABYLON.IAnimatable | BABYLON.TargetedAnimation;
         selected: BABYLON.Animation | null;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         setNotificationMessage: (message: string) => void;
-        selectAnimation: (selected: BABYLON.Animation) => void;
+        selectAnimation: (selected: BABYLON.Animation, axis?: string) => void;
     }
     export class EditorControls extends React.Component<IEditorControlsProps, {
         isAnimationTabOpen: boolean;
@@ -727,11 +755,11 @@ declare module INSPECTOR {
         framesPerSecond: number;
     }> {
         constructor(props: IEditorControlsProps);
-        animationsChanged(): void;
-        deleteAnimation(): void;
-        setListItem(animation: BABYLON.Animation, i: number): JSX.Element | null;
+        animationAdded(): void;
+        recountAnimations(): number;
         handleTabs(tab: number): void;
         handleChangeFps(fps: number): void;
+        emptiedList(): void;
         render(): JSX.Element;
     }
 }
@@ -846,7 +874,7 @@ declare module INSPECTOR {
         * Core functions
         * This section handles main Curve Editor Functions.
         */
-        selectAnimation(animation: BABYLON.Animation): void;
+        selectAnimation(animation: BABYLON.Animation, axis?: string): void;
         isAnimationPlaying(): boolean;
         playPause(direction: number): void;
         playStopAnimation(): boolean;

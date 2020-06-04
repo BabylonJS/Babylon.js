@@ -1606,10 +1606,10 @@ export class NodeMaterial extends PushMaterial {
      * Clear the current graph and load a new one from a serialization object
      * @param source defines the JSON representation of the material
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
-     * @param isImportingAFrame defines whether or not the source is a single frame json
+     * @param merge defines whether or not the source must be merged or replace the current content
      */
-    public loadFromSerialization(source: any, rootUrl: string = "", isImportingAFrame = false) {
-        if (!isImportingAFrame) {
+    public loadFromSerialization(source: any, rootUrl: string = "", merge = false) {
+        if (!merge) {
             this.clear();
         }
 
@@ -1628,7 +1628,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         // Connections
-        if (!isImportingAFrame) {
+        if (!merge) {
             // Starts with input blocks only
             for (var blockIndex = 0; blockIndex < source.blocks.length; blockIndex++) {
                 let parsedBlock = source.blocks[blockIndex];
@@ -1678,7 +1678,7 @@ export class NodeMaterial extends PushMaterial {
             this.editorData.map = blockMap;
         }
 
-        if (!isImportingAFrame) {
+        if (!merge) {
             this._mode = source.mode ?? NodeMaterialModes.Material;
         }
     }

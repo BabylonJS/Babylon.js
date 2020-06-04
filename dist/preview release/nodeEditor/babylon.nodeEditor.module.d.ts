@@ -169,6 +169,7 @@ declare module "babylonjs-node-editor/serializationTools" {
         static UpdateLocations(material: NodeMaterial, globalState: GlobalState, frame?: Nullable<GraphFrame>): void;
         static Serialize(material: NodeMaterial, globalState: GlobalState, frame?: Nullable<GraphFrame>): string;
         static Deserialize(serializationObject: any, globalState: GlobalState): void;
+        static AddFrameToMaterial(serializationObject: any, globalState: GlobalState, currentMaterial: NodeMaterial): void;
     }
 }
 declare module "babylonjs-node-editor/stringTools" {
@@ -438,7 +439,7 @@ declare module "babylonjs-node-editor/diagram/graphCanvas" {
     import { NodePort } from "babylonjs-node-editor/diagram/nodePort";
     import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
     import { GraphFrame } from "babylonjs-node-editor/diagram/graphFrame";
-    import { IEditorData } from "babylonjs-node-editor/nodeLocationInfo";
+    import { IEditorData, IFrameData } from "babylonjs-node-editor/nodeLocationInfo";
     import { FrameNodePort } from "babylonjs-node-editor/diagram/frameNodePort";
     export interface IGraphCanvasComponentProps {
         globalState: GlobalState;
@@ -524,6 +525,7 @@ declare module "babylonjs-node-editor/diagram/graphCanvas" {
         zoomToFit(): void;
         processCandidatePort(): void;
         processEditorData(editorData: IEditorData): void;
+        addFrame(frameData: IFrameData): void;
         render(): JSX.Element;
     }
 }
@@ -1194,6 +1196,7 @@ declare module "babylonjs-node-editor/sharedComponents/fileButtonLineComponent" 
         label: string;
         onClick: (file: File) => void;
         accept: string;
+        uploadName?: string;
     }
     export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
         private uploadRef;
@@ -1499,6 +1502,7 @@ declare module "babylonjs-node-editor/globalState" {
         onSelectionBoxMoved: Observable<DOMRect | ClientRect>;
         onFrameCreatedObservable: Observable<GraphFrame>;
         onCandidatePortSelectedObservable: Observable<Nullable<FrameNodePort | NodePort>>;
+        onImportFrameObservable: Observable<any>;
         onGraphNodeRemovalObservable: Observable<GraphNode>;
         onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
         onGridSizeChanged: Observable<void>;
@@ -1635,6 +1639,7 @@ declare module "babylonjs-node-editor/components/propertyTab/propertyTabComponen
         processInputBlockUpdate(ib: InputBlock): void;
         renderInputBlock(block: InputBlock): JSX.Element | null;
         load(file: File): void;
+        loadFrame(file: File): void;
         save(): void;
         customSave(): void;
         saveToSnippetServer(): void;
@@ -1793,9 +1798,10 @@ declare module "babylonjs-node-editor/graphEditor" {
         zoomToFit(): void;
         buildMaterial(): void;
         build(): void;
+        loadGraph(): void;
         showWaitScreen(): void;
         hideWaitScreen(): void;
-        reOrganize(editorData?: Nullable<IEditorData>): void;
+        reOrganize(editorData?: Nullable<IEditorData>, isImportingAFrame?: boolean): void;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;
@@ -1941,6 +1947,7 @@ declare module NODEEDITOR {
         static UpdateLocations(material: BABYLON.NodeMaterial, globalState: GlobalState, frame?: BABYLON.Nullable<GraphFrame>): void;
         static Serialize(material: BABYLON.NodeMaterial, globalState: GlobalState, frame?: BABYLON.Nullable<GraphFrame>): string;
         static Deserialize(serializationObject: any, globalState: GlobalState): void;
+        static AddFrameToMaterial(serializationObject: any, globalState: GlobalState, currentMaterial: BABYLON.NodeMaterial): void;
     }
 }
 declare module NODEEDITOR {
@@ -2253,6 +2260,7 @@ declare module NODEEDITOR {
         zoomToFit(): void;
         processCandidatePort(): void;
         processEditorData(editorData: IEditorData): void;
+        addFrame(frameData: IFrameData): void;
         render(): JSX.Element;
     }
 }
@@ -2827,6 +2835,7 @@ declare module NODEEDITOR {
         label: string;
         onClick: (file: File) => void;
         accept: string;
+        uploadName?: string;
     }
     export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
         private uploadRef;
@@ -3079,6 +3088,7 @@ declare module NODEEDITOR {
         onSelectionBoxMoved: BABYLON.Observable<DOMRect | ClientRect>;
         onFrameCreatedObservable: BABYLON.Observable<GraphFrame>;
         onCandidatePortSelectedObservable: BABYLON.Observable<BABYLON.Nullable<FrameNodePort | NodePort>>;
+        onImportFrameObservable: BABYLON.Observable<any>;
         onGraphNodeRemovalObservable: BABYLON.Observable<GraphNode>;
         onGetNodeFromBlock: (block: BABYLON.NodeMaterialBlock) => GraphNode;
         onGridSizeChanged: BABYLON.Observable<void>;
@@ -3194,6 +3204,7 @@ declare module NODEEDITOR {
         processInputBlockUpdate(ib: BABYLON.InputBlock): void;
         renderInputBlock(block: BABYLON.InputBlock): JSX.Element | null;
         load(file: File): void;
+        loadFrame(file: File): void;
         save(): void;
         customSave(): void;
         saveToSnippetServer(): void;
@@ -3335,9 +3346,10 @@ declare module NODEEDITOR {
         zoomToFit(): void;
         buildMaterial(): void;
         build(): void;
+        loadGraph(): void;
         showWaitScreen(): void;
         hideWaitScreen(): void;
-        reOrganize(editorData?: BABYLON.Nullable<IEditorData>): void;
+        reOrganize(editorData?: BABYLON.Nullable<IEditorData>, isImportingAFrame?: boolean): void;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;
