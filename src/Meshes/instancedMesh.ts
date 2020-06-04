@@ -427,7 +427,7 @@ export class InstancedMesh extends AbstractMesh {
             "sourceMesh", "isAnInstance", "facetNb", "isFacetDataEnabled",
             "isBlocked", "useBones", "hasInstances", "collider", "edgesRenderer",
             "forward", "up", "right", "absolutePosition", "absoluteScaling", "absoluteRotationQuaternion",
-            "isWorldMatrixFrozen", "nonUniformScaling", "behaviors", "worldMatrixFromCache"
+            "isWorldMatrixFrozen", "nonUniformScaling", "behaviors", "worldMatrixFromCache", "hasThinInstances"
         ], []);
 
         // Bounding info
