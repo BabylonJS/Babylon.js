@@ -149,7 +149,7 @@ describe('Babylon physicsComponents', () => {
     // now test 'applyImpulse' which is an injected property of AbstractMesh
     describe('applyImpulse should move a mesh', function() {
 
-        it('should move if an impulse is applied', function() {
+        it('if an impulse is applied', function() {
 
             scene.enablePhysics(noGravityVector, physicsPlugin);   // NO gravity
             let getGravity = scene.getPhysicsEngine().gravity;
@@ -158,28 +158,28 @@ describe('Babylon physicsComponents', () => {
             let sphere = BABYLON.MeshBuilder.CreateSphere("mySphere", { diameter: 1 }, scene);  // use MeshBuilder instead of Mesh
             sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9 }, scene);
 
-            let getPosition = sphere.position;
-            expect(getPosition).to.deep.equal(BABYLON.Vector3.Zero());
+            let getPosition = sphere.position.asArray();
+            expect(getPosition).to.deep.equal([0, 0, 0]);
 
-            let linearVelocity = sphere.physicsImpostor.getLinearVelocity();
-            expect(linearVelocity).to.deep.equal(BABYLON.Vector3.Zero());
+            let linearVelocity = sphere.physicsImpostor.getLinearVelocity().asArray();
+            expect(linearVelocity).to.deep.equal([0, 0, 0]);
 
-            let angularVelocity = sphere.physicsImpostor.getAngularVelocity();
-            expect(linearVelocity).to.deep.equal(BABYLON.Vector3.Zero());
+            let angularVelocity = sphere.physicsImpostor.getAngularVelocity().asArray();
+            expect(linearVelocity).to.deep.equal([0, 0, 0]);
 
             //////////////////////////////`/////////////////////
             // so far, so good.  let's run the physics engine.  nothing should change.
 
             scene.animate();
 
-            getPosition = sphere.position;
-            expect(getPosition).to.deep.equal(BABYLON.Vector3.Zero());
+            getPosition = sphere.position.asArray();
+            expect(getPosition).to.deep.equal([0, 0, 0]);
 
-            linearVelocity = sphere.physicsImpostor.getLinearVelocity();
-            expect(linearVelocity).to.deep.equal(BABYLON.Vector3.Zero());
+            linearVelocity = sphere.physicsImpostor.getLinearVelocity().asArray();
+            expect(linearVelocity).to.deep.equal([0, 0, 0]);
 
-            angularVelocity = sphere.physicsImpostor.getAngularVelocity();
-            expect(linearVelocity).to.deep.equal(BABYLON.Vector3.Zero());
+            angularVelocity = sphere.physicsImpostor.getAngularVelocity().asArray();
+            expect(linearVelocity).to.deep.equal([0, 0, 0]);
 
             ///////////////////////////////////////////////////
             // now give an impulse, and run the physics engine again.  the sphere should start moving.
@@ -189,20 +189,20 @@ describe('Babylon physicsComponents', () => {
             sphere.applyImpulse(force, contact);  // give the sphere its kick
             scene.animate();   // and run the physics engine
 
-            getPosition = sphere.position;
-            expect(getPosition.x).to.be.greaterThan(0);   // moved about 0.01, I'm clueless how that was calculated
-            expect(getPosition.y).to.be.equal(0);
-            expect(getPosition.z).to.be.equal(0);
+            var getPosition2 = sphere.position;
+            expect(getPosition2.x).to.be.greaterThan(0);   // moved about 0.01, I'm clueless how that was calculated
+            expect(getPosition2.y).to.be.equal(0);
+            expect(getPosition2.z).to.be.equal(0);
 
-            linearVelocity = sphere.physicsImpostor.getLinearVelocity();
-            expect(linearVelocity.x).to.be.closeTo(10, 0.001);      // mass of 1, whack of 10, sounds right
-            expect(linearVelocity.y).to.be.equal(0);
-            expect(linearVelocity.z).to.be.equal(0);
+            var linearVelocity2 = sphere.physicsImpostor.getLinearVelocity();
+            expect(linearVelocity2.x).to.be.closeTo(10, 0.001);      // mass of 1, whack of 10, sounds right
+            expect(linearVelocity2.y).to.be.equal(0);
+            expect(linearVelocity2.z).to.be.equal(0);
 
             // we whacked it right along the axis, so don't expect any angular velocity
-            angularVelocity = sphere.physicsImpostor.getAngularVelocity()
-            console.log(angularVelocity);
-            expect(angularVelocity).to.deep.equal(BABYLON.Vector3.Zero());
+            var angularVelocity2 = sphere.physicsImpostor.getAngularVelocity()
+            console.log(angularVelocity2);
+            expect(angularVelocity2.asArray()).to.deep.equal([0, 0, 0]);
 
         });
     });

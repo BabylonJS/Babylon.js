@@ -47,6 +47,7 @@ export class TransformNode extends Node {
     private _right = new Vector3(1, 0, 0);
     private _rightInverted = new Vector3(-1, 0, 0);
     private _tmpRotation = Quaternion.Zero();
+    private _tmpScaling = Vector3.Zero();
 
     // Properties
     @serializeAsVector3("position")
@@ -173,11 +174,6 @@ export class TransformNode extends Node {
         if (isPure) {
             this.getScene().addTransformNode(this);
         }
-
-        let bind = this._markAsDirty.bind(this);
-        this._position.onUpdateCallback = bind;        
-        this._rotation.onUpdateCallback = bind;
-        this._scaling.onUpdateCallback = bind;
     }
 
     /**
@@ -188,10 +184,6 @@ export class TransformNode extends Node {
         return "TransformNode";
     }
 
-    public _markAsDirty() {
-        this._isDirty = true;
-    }
-
     /**
       * Gets or set the node position (default is (0.0, 0.0, 0.0))
       */
@@ -200,12 +192,8 @@ export class TransformNode extends Node {
     }
 
     public set position(newPosition: Vector3) {
-        this._position.onUpdateCallback = null;
-
         this._position = newPosition;
         this._isDirty = true;
-
-        this._position.onUpdateCallback = this._markAsDirty.bind(this);
     }
 
     /**
@@ -216,14 +204,10 @@ export class TransformNode extends Node {
         return this._rotation;
     }
 
-    public set rotation(newRotation: Vector3) {        
-        this._rotation.onUpdateCallback = null;
-
+    public set rotation(newRotation: Vector3) {
         this._rotation = newRotation;
         this._rotationQuaternion = null;
         this._isDirty = true;
-
-        this._rotation.onUpdateCallback = this._markAsDirty.bind(this);
     }
 
     /**
@@ -234,12 +218,8 @@ export class TransformNode extends Node {
     }
 
     public set scaling(newScaling: Vector3) {
-        this._scaling.onUpdateCallback = null;
-
         this._scaling = newScaling;
         this._isDirty = true;
-        
-        this._scaling.onUpdateCallback = this._markAsDirty.bind(this);
     }
 
     /**
@@ -330,11 +310,17 @@ export class TransformNode extends Node {
             return false;
         }
 
-        // if (this._rotationQuaternion) {
-        //     if (!cache.rotationQuaternion.equals(this._rotationQuaternion)) {
-        //         return false;
-        //     }
-        // } 
+        if (this.position._isDirty) {
+            return false;
+        }
+
+        if (this.scaling._isDirty) {
+            return false;
+        }
+
+        if (this._rotationQuaternion && this._rotationQuaternion._isDirty || this.rotation._isDirty) {
+            return false;
+        }
 
         return true;
     }
@@ -345,7 +331,6 @@ export class TransformNode extends Node {
 
         let cache = this._cache;
         cache.localMatrixUpdated = false;
-       // cache.rotationQuaternion = new Quaternion(0, 0, 0, 0);
         cache.billboardMode = -1;
         cache.infiniteDistance = false;
     }
@@ -1010,19 +995,22 @@ export class TransformNode extends Node {
         }
 
         this._updateCache();
-        // let cache = this._cache;
-        // cache.pivotMatrixUpdated = false;
-        // cache.billboardMode = this.billboardMode;
-        // cache.infiniteDistance = this.infiniteDistance;
+        let cache = this._cache;
+        cache.pivotMatrixUpdated = false;
+        cache.billboardMode = this.billboardMode;
+        cache.infiniteDistance = this.infiniteDistance;
 
         this._currentRenderId = currentRenderId;
         this._childUpdateId++;
         this._isDirty = false;
+        this._position._isDirty = false;
+        this._rotation._isDirty = false;
+        this._scaling._isDirty = false;
         let parent = this._getEffectiveParent();
 
         // Scaling
-        let scaling: Vector3 = this.scaling;
-        let translation: Vector3 = this.position;
+        let scaling: Vector3 = this._tmpScaling;
+        let translation: Vector3 = this._position;
 
         // Translation
         if (this._infiniteDistance) {
@@ -1031,11 +1019,7 @@ export class TransformNode extends Node {
                 var cameraGlobalPosition = new Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
 
                 translation.copyFromFloats(this._position.x + cameraGlobalPosition.x, this._position.y + cameraGlobalPosition.y, this._position.z + cameraGlobalPosition.z);
-            } else {
-                translation.copyFrom(this._position);
             }
-        } else {
-            translation.copyFrom(this._position);
         }
 
         // Scaling
@@ -1044,6 +1028,7 @@ export class TransformNode extends Node {
         // Rotation
         let rotation: Quaternion = this._tmpRotation;
         if (this._rotationQuaternion) {
+            this._rotationQuaternion._isDirty = false;
             if (this.reIntegrateRotationIntoRotationQuaternion) {
                 var len = this.rotation.lengthSquared();
                 if (len) {
