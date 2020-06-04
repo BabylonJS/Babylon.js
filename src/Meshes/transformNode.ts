@@ -330,22 +330,11 @@ export class TransformNode extends Node {
             return false;
         }
 
-        // if (!cache.position.equals(this._position)) {
-        //     return false;
-        // }
-
         if (this._rotationQuaternion) {
             if (!cache.rotationQuaternion.equals(this._rotationQuaternion)) {
                 return false;
             }
         } 
-        // else if (!cache.rotation.equals(this._rotation)) {
-        //     return false;
-        // }
-
-        // if (!cache.scaling.equals(this._scaling)) {
-        //     return false;
-        // }
 
         return true;
     }
@@ -356,9 +345,6 @@ export class TransformNode extends Node {
 
         let cache = this._cache;
         cache.localMatrixUpdated = false;
-        cache.position = Vector3.Zero();
-        cache.scaling = Vector3.Zero();
-        cache.rotation = Vector3.Zero();
         cache.rotationQuaternion = new Quaternion(0, 0, 0, 0);
         cache.billboardMode = -1;
         cache.infiniteDistance = false;
