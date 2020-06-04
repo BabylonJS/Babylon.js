@@ -186,7 +186,7 @@ export class Plane {
      * @returns a new Plane the normal vector to this plane at the given origin point.
      * Note : the vector "normal" is updated because normalized.
      */
-    static FromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): Plane {
+    static FromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: Vector3): Plane {
         var result = new Plane(0.0, 0.0, 0.0, 0.0);
         normal.normalize();
         result.normal = normal;

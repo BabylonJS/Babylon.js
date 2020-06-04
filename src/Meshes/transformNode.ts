@@ -46,6 +46,7 @@ export class TransformNode extends Node {
     private _up = new Vector3(0, 1, 0);
     private _right = new Vector3(1, 0, 0);
     private _rightInverted = new Vector3(-1, 0, 0);
+    private _tmpRotation = Quaternion.Zero();
 
     // Properties
     @serializeAsVector3("position")
@@ -172,6 +173,11 @@ export class TransformNode extends Node {
         if (isPure) {
             this.getScene().addTransformNode(this);
         }
+
+        let bind = this._markAsDirty.bind(this);
+        this._position.onUpdateCallback = bind;        
+        this._rotation.onUpdateCallback = bind;
+        this._scaling.onUpdateCallback = bind;
     }
 
     /**
@@ -182,6 +188,10 @@ export class TransformNode extends Node {
         return "TransformNode";
     }
 
+    public _markAsDirty() {
+        this._isDirty = true;
+    }
+
     /**
       * Gets or set the node position (default is (0.0, 0.0, 0.0))
       */
@@ -190,8 +200,12 @@ export class TransformNode extends Node {
     }
 
     public set position(newPosition: Vector3) {
+        this._position.onUpdateCallback = null;
+
         this._position = newPosition;
         this._isDirty = true;
+
+        this._position.onUpdateCallback = this._markAsDirty.bind(this);
     }
 
     /**
@@ -202,10 +216,14 @@ export class TransformNode extends Node {
         return this._rotation;
     }
 
-    public set rotation(newRotation: Vector3) {
+    public set rotation(newRotation: Vector3) {        
+        this._rotation.onUpdateCallback = null;
+
         this._rotation = newRotation;
         this._rotationQuaternion = null;
         this._isDirty = true;
+
+        this._rotation.onUpdateCallback = this._markAsDirty.bind(this);
     }
 
     /**
@@ -216,8 +234,12 @@ export class TransformNode extends Node {
     }
 
     public set scaling(newScaling: Vector3) {
+        this._scaling.onUpdateCallback = null;
+
         this._scaling = newScaling;
         this._isDirty = true;
+        
+        this._scaling.onUpdateCallback = this._markAsDirty.bind(this);
     }
 
     /**
@@ -308,21 +330,22 @@ export class TransformNode extends Node {
             return false;
         }
 
-        if (!cache.position.equals(this._position)) {
-            return false;
-        }
+        // if (!cache.position.equals(this._position)) {
+        //     return false;
+        // }
 
         if (this._rotationQuaternion) {
             if (!cache.rotationQuaternion.equals(this._rotationQuaternion)) {
                 return false;
             }
-        } else if (!cache.rotation.equals(this._rotation)) {
-            return false;
-        }
+        } 
+        // else if (!cache.rotation.equals(this._rotation)) {
+        //     return false;
+        // }
 
-        if (!cache.scaling.equals(this._scaling)) {
-            return false;
-        }
+        // if (!cache.scaling.equals(this._scaling)) {
+        //     return false;
+        // }
 
         return true;
     }
@@ -1001,10 +1024,10 @@ export class TransformNode extends Node {
         }
 
         this._updateCache();
-        let cache = this._cache;
-        cache.pivotMatrixUpdated = false;
-        cache.billboardMode = this.billboardMode;
-        cache.infiniteDistance = this.infiniteDistance;
+        // let cache = this._cache;
+        // cache.pivotMatrixUpdated = false;
+        // cache.billboardMode = this.billboardMode;
+        // cache.infiniteDistance = this.infiniteDistance;
 
         this._currentRenderId = currentRenderId;
         this._childUpdateId++;
@@ -1012,8 +1035,8 @@ export class TransformNode extends Node {
         let parent = this._getEffectiveParent();
 
         // Scaling
-        let scaling: Vector3 = cache.scaling;
-        let translation: Vector3 = cache.position;
+        let scaling: Vector3 = this.scaling;
+        let translation: Vector3 = this.position;
 
         // Translation
         if (this._infiniteDistance) {
@@ -1033,7 +1056,7 @@ export class TransformNode extends Node {
         scaling.copyFromFloats(this._scaling.x * this.scalingDeterminant, this._scaling.y * this.scalingDeterminant, this._scaling.z * this.scalingDeterminant);
 
         // Rotation
-        let rotation: Quaternion = cache.rotationQuaternion;
+        let rotation: Quaternion = this._tmpRotation;
         if (this._rotationQuaternion) {
             if (this.reIntegrateRotationIntoRotationQuaternion) {
                 var len = this.rotation.lengthSquared();
@@ -1045,7 +1068,6 @@ export class TransformNode extends Node {
             rotation.copyFrom(this._rotationQuaternion);
         } else {
             Quaternion.RotationYawPitchRollToRef(this._rotation.y, this._rotation.x, this._rotation.z, rotation);
-            cache.rotation.copyFrom(this._rotation);
         }
 
         // Compose
