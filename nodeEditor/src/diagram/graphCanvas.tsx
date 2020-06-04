@@ -13,7 +13,7 @@ import { FragmentOutputBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fr
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { GraphFrame } from './graphFrame';
-import { IEditorData } from '../nodeLocationInfo';
+import { IEditorData, IFrameData } from '../nodeLocationInfo';
 import { FrameNodePort } from './frameNodePort';
 
 require("./graphCanvas.scss");
@@ -848,7 +848,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         }
 
         this._frames = [];
-
         this.x = editorData.x || 0;
         this.y = editorData.y || 0;
         this.zoom = editorData.zoom || 1;
@@ -858,8 +857,14 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             for (var frameData of editorData.frames) {
                 var frame = GraphFrame.Parse(frameData, this, editorData.map);
                 this._frames.push(frame);
-            }
+            }  
         }
+    }
+
+    addFrame(frameData: IFrameData) {
+            const frame = GraphFrame.Parse(frameData, this, this.props.globalState.nodeMaterial.editorData.map);
+            this._frames.push(frame);
+            this.globalState.onSelectionChangedObservable.notifyObservers(frame);
     }
  
     render() {

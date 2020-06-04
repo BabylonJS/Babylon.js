@@ -40,6 +40,7 @@ export class GlobalState {
     onSelectionBoxMoved = new Observable<ClientRect | DOMRect>();
     onFrameCreatedObservable = new Observable<GraphFrame>();
     onCandidatePortSelectedObservable = new Observable<Nullable<NodePort | FrameNodePort>>();
+    onImportFrameObservable = new Observable<any>();
     onGraphNodeRemovalObservable = new Observable<GraphNode>();
     onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
     onGridSizeChanged = new Observable<void>();
