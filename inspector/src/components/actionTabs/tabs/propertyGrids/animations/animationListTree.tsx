@@ -59,7 +59,7 @@ export class AnimationListTree extends React.Component<IAnimationListTreeProps, 
     }
 
     editAnimation() {
-        console.log('Edit animation');
+        console.log('Edit animation');// TODO. Implement the edit options here
     }
 
     toggleProperty(index: number) {
