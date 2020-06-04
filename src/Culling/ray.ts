@@ -491,7 +491,7 @@ export class Ray {
     * @param world a matrix to transform the ray to. Default is the identity matrix.
     * @returns the new ray
     */
-    public static CreateNewFromTo(origin: DeepImmutable<Vector3>, end: DeepImmutable<Vector3>, world: DeepImmutable<Matrix> = Matrix.IdentityReadOnly): Ray {
+    public static CreateNewFromTo(origin: Vector3, end: Vector3, world: DeepImmutable<Matrix> = Matrix.IdentityReadOnly): Ray {
         var direction = end.subtract(origin);
         var length = Math.sqrt((direction.x * direction.x) + (direction.y * direction.y) + (direction.z * direction.z));
         direction.normalize();

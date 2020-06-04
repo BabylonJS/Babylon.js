@@ -152,7 +152,8 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
         // convert to XR space (right handed) if needed
         this._populateTmpTransformation(position, rotationQuaternion);
         // the matrix that we'll use
-        const m = new XRRigidTransform({...this._tmpVector}, {...this._tmpQuaternion});
+        const m = new XRRigidTransform({x: this._tmpVector.x, y: this._tmpVector.y, z: this._tmpVector.z},
+                                       {x: this._tmpQuaternion.x, y: this._tmpQuaternion.y, z: this._tmpQuaternion.z, w: this._tmpQuaternion.w});
         if (!hitTestResult.xrHitResult.createAnchor) {
             throw new Error('Anchors not enabled in this browsed. Add "anchors" to optional features');
         } else {
@@ -181,7 +182,8 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
         // convert to XR space (right handed) if needed
         this._populateTmpTransformation(position, rotationQuaternion);
         // the matrix that we'll use
-        const xrTransformation = new XRRigidTransform({...this._tmpVector}, {...this._tmpQuaternion});
+        const xrTransformation = new XRRigidTransform({x: this._tmpVector.x, y: this._tmpVector.y, z: this._tmpVector.z},
+                                                      {x: this._tmpQuaternion.x, y: this._tmpQuaternion.y, z: this._tmpQuaternion.z, w: this._tmpQuaternion.w});
         if (forceCreateInCurrentFrame && this.attached && this._xrSessionManager.currentFrame) {
             return this._createAnchorAtTransformation(xrTransformation, this._xrSessionManager.currentFrame);
         } else {
