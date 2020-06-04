@@ -1279,7 +1279,7 @@ export class GraphFrame {
             this._ownerCanvas.globalState.onExposePortOnFrameObservable.remove(this._onExposePortOnFrameObserver);
         };
 
-        this.element.parentElement!.removeChild(this.element);
+        this.element.parentElement?.removeChild(this.element);
 
         this._ownerCanvas.frames.splice(this._ownerCanvas.frames.indexOf(this), 1);
 
