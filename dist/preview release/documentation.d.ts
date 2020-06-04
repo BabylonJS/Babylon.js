@@ -2008,7 +2008,7 @@ declare module BABYLON {
          * @returns a new Plane the normal vector to this plane at the given origin point.
          * Note : the vector "normal" is updated because normalized.
          */
-        static FromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): Plane;
+        static FromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: Vector3): Plane;
         /**
          * Calculates the distance from a plane and a point
          * @param origin origin of the plane to be constructed
@@ -2408,39 +2408,32 @@ declare module BABYLON {
      * Reminder: js uses a left handed forward facing system
      */
     export class Vector3 {
-        /**
-         * Defines the first coordinates (on X axis)
-         */
-        x: number;
-        /**
-         * Defines the second coordinates (on Y axis)
-         */
-        y: number;
-        /**
-         * Defines the third coordinates (on Z axis)
-         */
-        z: number;
         private static _UpReadOnly;
         private static _ZeroReadOnly;
+        /** @hidden */
+        _x: number;
+        /** @hidden */
+        _y: number;
+        /** @hidden */
+        _z: number;
+        /** @hidden */
+        _isDirty: boolean;
+        /** Gets or sets the x coordinate */
+        get x(): number;
+        set x(value: number);
+        /** Gets or sets the y coordinate */
+        get y(): number;
+        set y(value: number);
+        /** Gets or sets the z coordinate */
+        get z(): number;
+        set z(value: number);
         /**
          * Creates a new Vector3 object from the given x, y, z (floats) coordinates.
          * @param x defines the first coordinates (on X axis)
          * @param y defines the second coordinates (on Y axis)
          * @param z defines the third coordinates (on Z axis)
          */
-        constructor(
-        /**
-         * Defines the first coordinates (on X axis)
-         */
-        x?: number, 
-        /**
-         * Defines the second coordinates (on Y axis)
-         */
-        y?: number, 
-        /**
-         * Defines the third coordinates (on Z axis)
-         */
-        z?: number);
+        constructor(x?: number, y?: number, z?: number);
         /**
          * Creates a string representation of the Vector3
          * @returns a string with the Vector3 coordinates.
@@ -2769,7 +2762,7 @@ declare module BABYLON {
          * @param reference define the Vector3 to update
          * @returns the updated Vector3
          */
-        normalizeToRef(reference: DeepImmutable<Vector3>): Vector3;
+        normalizeToRef(reference: Vector3): Vector3;
         /**
          * Creates a new Vector3 copied from the current Vector3
          * @returns the new Vector3
@@ -3045,7 +3038,7 @@ declare module BABYLON {
          * @param right defines the right operand
          * @param result defines the Vector3 where to store the result
          */
-        static CrossToRef(left: Vector3, right: Vector3, result: Vector3): void;
+        static CrossToRef(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>, result: Vector3): void;
         /**
          * Returns a new Vector3 as the normalization of the given vector
          * @param vector defines the Vector3 to normalize
@@ -3600,14 +3593,28 @@ declare module BABYLON {
      * @see http://doc.babylonjs.com/features/position,_rotation,_scaling
      */
     export class Quaternion {
-        /** defines the first component (0 by default) */
-        x: number;
-        /** defines the second component (0 by default) */
-        y: number;
-        /** defines the third component (0 by default) */
-        z: number;
-        /** defines the fourth component (1.0 by default) */
-        w: number;
+        /** @hidden */
+        _x: number;
+        /** @hidden */
+        _y: number;
+        /** @hidden */
+        _z: number;
+        /** @hidden */
+        _w: number;
+        /** @hidden */
+        _isDirty: boolean;
+        /** Gets or sets the x coordinate */
+        get x(): number;
+        set x(value: number);
+        /** Gets or sets the y coordinate */
+        get y(): number;
+        set y(value: number);
+        /** Gets or sets the z coordinate */
+        get z(): number;
+        set z(value: number);
+        /** Gets or sets the w coordinate */
+        get w(): number;
+        set w(value: number);
         /**
          * Creates a new Quaternion from the given floats
          * @param x defines the first component (0 by default)
@@ -3615,15 +3622,7 @@ declare module BABYLON {
          * @param z defines the third component (0 by default)
          * @param w defines the fourth component (1.0 by default)
          */
-        constructor(
-        /** defines the first component (0 by default) */
-        x?: number, 
-        /** defines the second component (0 by default) */
-        y?: number, 
-        /** defines the third component (0 by default) */
-        z?: number, 
-        /** defines the fourth component (1.0 by default) */
-        w?: number);
+        constructor(x?: number, y?: number, z?: number, w?: number);
         /**
          * Gets a string representation for the current quaternion
          * @returns a string with the Quaternion coordinates
@@ -10465,7 +10464,7 @@ declare module BABYLON {
         * @param world a matrix to transform the ray to. Default is the identity matrix.
         * @returns the new ray
         */
-        static CreateNewFromTo(origin: DeepImmutable<Vector3>, end: DeepImmutable<Vector3>, world?: DeepImmutable<Matrix>): Ray;
+        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: DeepImmutable<Matrix>): Ray;
         /**
          * Transforms a ray by a matrix
          * @param ray ray to transform
@@ -14547,6 +14546,8 @@ declare module BABYLON {
         private _up;
         private _right;
         private _rightInverted;
+        private _tmpRotation;
+        private _tmpScaling;
         private _position;
         private _rotation;
         private _rotationQuaternion;
