@@ -7,9 +7,9 @@ import { Animation } from 'babylonjs/Animations/animation';
 import { IconButtonLineComponent } from '../../../lines/iconButtonLineComponent';
 import { NumericInputComponent } from '../../../lines/numericInputComponent';
 import { AddAnimation } from './addAnimation';
+import { AnimationListTree } from './animationListTree';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
-import { Nullable } from 'babylonjs/types';
 
 interface IEditorControlsProps {
    isTargetedAnimation: boolean;
@@ -25,98 +25,12 @@ export class EditorControls extends React.Component<IEditorControlsProps, {isAni
     constructor(props: IEditorControlsProps) {
         super(props);
         let count = this.props.isTargetedAnimation ? 1 : (this.props.entity as IAnimatable).animations?.length ?? 0;
-        this.state = { isAnimationTabOpen: false, isEditTabOpen: false, isSaveTabOpen: false, isLoadTabOpen: false, isLoopActive: false, animationsCount: count, framesPerSecond: 60 }
+        this.state = { isAnimationTabOpen: count === 0 ? true : false, isEditTabOpen: count === 0 ? false : true, isSaveTabOpen: false, isLoadTabOpen: false, isLoopActive: false, animationsCount: count, framesPerSecond: 60 }
     }
 
     animationsChanged(){
         let recount = (this.props.entity as IAnimatable).animations?.length ?? 0;
         this.setState( { animationsCount: recount } );
-    }
-
-    deleteAnimation() {
-        let currentSelected = this.props.selected;
-        if (this.props.entity instanceof TargetedAnimation) {
-            console.log("no animation remove allowed");
-        } else {
-            let animations = (this.props.entity as IAnimatable).animations;
-            if (animations) {
-                let updatedAnimations = animations.filter(anim => anim !== currentSelected);
-                (this.props.entity as IAnimatable).animations = updatedAnimations as Nullable<Animation[]>;
-            }
-        }
-    }
-
-    setListItem(animation: Animation, i: number) {
-        let element;
-
-        switch (animation.dataType) {
-            case Animation.ANIMATIONTYPE_FLOAT:
-                element = <li className={this.props.selected && this.props.selected.name === animation.name ? 'active' : ''} key={i} onClick={() => this.props.selectAnimation(animation)}>
-                    <p>{animation.name}&nbsp;
-                    <span>{animation.targetProperty}</span></p>
-                    {!(this.props.entity instanceof TargetedAnimation) ? this.props.selected && this.props.selected.name === animation.name ? <IconButtonLineComponent tooltip="Remove" icon="delete" onClick={() => this.deleteAnimation()} /> : null : null}
-                </li>
-                break;
-            case Animation.ANIMATIONTYPE_VECTOR2:
-                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
-                    <ul>
-                        <li key={`${i}_x`}>Property <strong>X</strong></li>
-                        <li key={`${i}_y`}>Property <strong>Y</strong></li>
-                    </ul>
-                </li>
-                break;
-            case Animation.ANIMATIONTYPE_VECTOR3:
-                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
-                    <ul>
-                        <li key={`${i}_x`}>Property <strong>X</strong></li>
-                        <li key={`${i}_y`}>Property <strong>Y</strong></li>
-                        <li key={`${i}_z`}>Property <strong>Z</strong></li>
-                    </ul>
-                </li>
-                break;
-            case Animation.ANIMATIONTYPE_QUATERNION:
-                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
-                    <ul>
-                        <li key={`${i}_x`}>Property <strong>X</strong></li>
-                        <li key={`${i}_y`}>Property <strong>Y</strong></li>
-                        <li key={`${i}_z`}>Property <strong>Z</strong></li>
-                        <li key={`${i}_w`}>Property <strong>W</strong></li>
-                    </ul>
-                </li>
-                break;
-            case Animation.ANIMATIONTYPE_COLOR3:
-                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
-                    <ul>
-                        <li key={`${i}_r`}>Property <strong>R</strong></li>
-                        <li key={`${i}_g`}>Property <strong>G</strong></li>
-                        <li key={`${i}_b`}>Property <strong>B</strong></li>
-                    </ul>
-                </li>
-                break;
-            case Animation.ANIMATIONTYPE_COLOR4:
-                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
-                    <ul>
-                        <li key={`${i}_r`}>Property <strong>R</strong></li>
-                        <li key={`${i}_g`}>Property <strong>G</strong></li>
-                        <li key={`${i}_b`}>Property <strong>B</strong></li>
-                        <li key={`${i}_a`}>Property <strong>A</strong></li>
-                    </ul>
-                </li>
-                break;
-            case Animation.ANIMATIONTYPE_SIZE:
-                element = <li className="property" key={i}><p>{animation.targetProperty}</p>
-                    <ul>
-                        <li key={`${i}_width`}>Property <strong>Width</strong></li>
-                        <li key={`${i}_height`}>Property <strong>Height</strong></li>
-                    </ul>
-                </li>
-                break;
-            default: console.log("not recognized");
-                element = null;
-                break;
-        }
-
-        return element;
     }
 
     handleTabs(tab: number){
@@ -143,6 +57,11 @@ export class EditorControls extends React.Component<IEditorControlsProps, {isAni
 
     handleChangeFps(fps: number){
         this.setState({framesPerSecond: fps});
+    }
+
+    emptyList(){
+        this.animationsChanged()
+        this.setState({isEditTabOpen: false, isAnimationTabOpen: true}); 
     }
 
     render() { 
@@ -179,17 +98,13 @@ export class EditorControls extends React.Component<IEditorControlsProps, {isAni
 
             { this.state.isSaveTabOpen ? <div>Save</div> : null }
 
-            { this.state.isEditTabOpen ?
-                <div className="object-tree">
-                    <ul>
-                        {
-                            this.props.isTargetedAnimation ? this.setListItem((this.props.entity as TargetedAnimation).animation, 0) :
-                                (this.props.entity as IAnimatable).animations && (this.props.entity as IAnimatable).animations?.map((animation, i) => {
-                                    return this.setListItem(animation, i);
-                                })}
-
-                    </ul>
-                </div>
+            { this.state.isEditTabOpen ? <AnimationListTree 
+                isTargetedAnimation={this.props.isTargetedAnimation} 
+                entity={this.props.entity} 
+                selected={this.props.selected} 
+                onPropertyChangedObservable={this.props.onPropertyChangedObservable} 
+                empty={() => this.emptyList() }
+                selectAnimation={this.props.selectAnimation}/>
             : null }
         </div>
         );
