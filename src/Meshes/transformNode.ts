@@ -330,11 +330,11 @@ export class TransformNode extends Node {
             return false;
         }
 
-        if (this._rotationQuaternion) {
-            if (!cache.rotationQuaternion.equals(this._rotationQuaternion)) {
-                return false;
-            }
-        } 
+        // if (this._rotationQuaternion) {
+        //     if (!cache.rotationQuaternion.equals(this._rotationQuaternion)) {
+        //         return false;
+        //     }
+        // } 
 
         return true;
     }
@@ -345,7 +345,7 @@ export class TransformNode extends Node {
 
         let cache = this._cache;
         cache.localMatrixUpdated = false;
-        cache.rotationQuaternion = new Quaternion(0, 0, 0, 0);
+       // cache.rotationQuaternion = new Quaternion(0, 0, 0, 0);
         cache.billboardMode = -1;
         cache.infiniteDistance = false;
     }

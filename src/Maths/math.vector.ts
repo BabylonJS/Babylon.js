@@ -677,12 +677,15 @@ export class Vector3 {
     private _y: number;
     private _z: number;
 
+    private _callback = () => {};
+
     public get x() {
         return this._x;
     }
 
     public set x(value: number) {
         this._x = value;
+        this._callback();
     }
 
     public get y() {
@@ -691,6 +694,7 @@ export class Vector3 {
 
     public set y(value: number) {
         this._y = value;
+        this._callback();
     }
 
     public get z() {
@@ -699,62 +703,64 @@ export class Vector3 {
 
     public set z(value: number) {
         this._z = value;
+        this._callback();
     }
 
     public set onUpdateCallback(callback: Nullable<() =>void>) {
-        if (!callback) {
-            Object.defineProperty(Vector3.prototype, "x", {
-                set: function(this: Vector3, value: number) {
-                    this._x = value;                    
-                },
-                enumerable: true,
-                configurable: true
-            });
+        this._callback = callback ? callback : () => {};
+        // if (!callback) {
+        //     Object.defineProperty(Vector3.prototype, "x", {
+        //         set: function(this: Vector3, value: number) {
+        //             this._x = value;                    
+        //         },
+        //         enumerable: true,
+        //         configurable: true
+        //     });
 
-            Object.defineProperty(Vector3.prototype, "y", {
-                set: function(this: Vector3, value: number) {
-                    this._y = value;                    
-                },
-                enumerable: true,
-                configurable: true
-            });
+        //     Object.defineProperty(Vector3.prototype, "y", {
+        //         set: function(this: Vector3, value: number) {
+        //             this._y = value;                    
+        //         },
+        //         enumerable: true,
+        //         configurable: true
+        //     });
 
-            Object.defineProperty(Vector3.prototype, "z", {
-                set: function(this: Vector3, value: number) {
-                    this._z = value;                    
-                },
-                enumerable: true,
-                configurable: true
-            });
-            return;
-        }
+        //     Object.defineProperty(Vector3.prototype, "z", {
+        //         set: function(this: Vector3, value: number) {
+        //             this._z = value;                    
+        //         },
+        //         enumerable: true,
+        //         configurable: true
+        //     });
+        //     return;
+        // }
 
-        Object.defineProperty(Vector3.prototype, "x", {
-            set: function(this: Vector3, value: number) {
-                this._x = value;  
-                callback();                  
-            },
-            enumerable: true,
-            configurable: true
-        });
+        // Object.defineProperty(Vector3.prototype, "x", {
+        //     set: function(this: Vector3, value: number) {
+        //         this._x = value;  
+        //         callback();                  
+        //     },
+        //     enumerable: true,
+        //     configurable: true
+        // });
 
-        Object.defineProperty(Vector3.prototype, "y", {
-            set: function(this: Vector3, value: number) {
-                this._y = value;                    
-                callback();                     
-            },
-            enumerable: true,
-            configurable: true
-        });
+        // Object.defineProperty(Vector3.prototype, "y", {
+        //     set: function(this: Vector3, value: number) {
+        //         this._y = value;                    
+        //         callback();                     
+        //     },
+        //     enumerable: true,
+        //     configurable: true
+        // });
 
-        Object.defineProperty(Vector3.prototype, "z", {
-            set: function(this: Vector3, value: number) {
-                this._z = value;                   
-                callback();                      
-            },
-            enumerable: true,
-            configurable: true
-        });        
+        // Object.defineProperty(Vector3.prototype, "z", {
+        //     set: function(this: Vector3, value: number) {
+        //         this._z = value;                   
+        //         callback();                      
+        //     },
+        //     enumerable: true,
+        //     configurable: true
+        // });        
     }
 
     /**
