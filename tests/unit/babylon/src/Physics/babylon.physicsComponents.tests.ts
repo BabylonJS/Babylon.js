@@ -201,7 +201,6 @@ describe('Babylon physicsComponents', () => {
 
             // we whacked it right along the axis, so don't expect any angular velocity
             var angularVelocity2 = sphere.physicsImpostor.getAngularVelocity()
-            console.log(angularVelocity2);
             expect(angularVelocity2.asArray()).to.deep.equal([0, 0, 0]);
 
         });
