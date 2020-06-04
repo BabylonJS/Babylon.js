@@ -1606,6 +1606,7 @@ export class NodeMaterial extends PushMaterial {
      * Clear the current graph and load a new one from a serialization object
      * @param source defines the JSON representation of the material
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @param isImportingAFrame defines whether or not the source is a single frame json
      */
     public loadFromSerialization(source: any, rootUrl: string = "", isImportingAFrame = false) {
         if (!isImportingAFrame) {
