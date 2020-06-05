@@ -52,7 +52,7 @@ export class MorphTarget implements IAnimatable {
         var previous = this._influence;
         this._influence = influence;
 
-        if (this.onInfluenceChanged.hasObservers) {
+        if (this.onInfluenceChanged.hasObservers()) {
             this.onInfluenceChanged.notifyObservers(previous === 0 || influence === 0);
         }
     }
