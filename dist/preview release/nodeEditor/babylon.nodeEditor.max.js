@@ -61748,8 +61748,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                     this.props.globalState.customSave &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: this.props.globalState.customSave.label, onClick: function () {
                                 _this.customSave();
-                            } })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "FRAME" },
+                            } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_5__["FileButtonLineComponent"], { label: "Load Frame", uploadName: 'frame-upload', onClick: function (file) { return _this.loadFrame(file); }, accept: ".json" })),
                 !this.props.globalState.customSave &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "SNIPPET" },
@@ -66995,7 +66994,15 @@ var GraphEditor = /** @class */ (function (_super) {
                     if (_this._copiedFrame.nodes.length) {
                         currentX_1 = newFrame.x + _this._copiedFrame.nodes[0].x - _this._copiedFrame.x;
                         currentY = newFrame.y + _this._copiedFrame.nodes[0].y - _this._copiedFrame.y;
-                        _this.pasteSelection(_this._copiedFrame.nodes, currentX_1, currentY);
+                        _this._graphCanvas._frameIsMoving = true;
+                        var newNodes = _this.pasteSelection(_this._copiedFrame.nodes, currentX_1, currentY);
+                        if (newNodes) {
+                            for (var _a = 0, newNodes_1 = newNodes; _a < newNodes_1.length; _a++) {
+                                var node = newNodes_1[_a];
+                                newFrame.syncNode(node);
+                            }
+                        }
+                        _this._graphCanvas._frameIsMoving = false;
                     }
                     if (_this._copiedFrame.isCollapsed) {
                         newFrame.isCollapsed = true;
@@ -67156,6 +67163,7 @@ var GraphEditor = /** @class */ (function (_super) {
         for (var index = 0; index < newNodes.length; index++) {
             this.reconnectNewNodes(index, newNodes, copiedNodes, done);
         }
+        return newNodes;
     };
     GraphEditor.prototype.zoomToFit = function () {
         this._graphCanvas.zoomToFit();

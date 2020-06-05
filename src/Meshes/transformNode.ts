@@ -41,14 +41,15 @@ export class TransformNode extends Node {
      */
     public static BILLBOARDMODE_USE_POSITION = 128;
 
+    private static _TmpRotation = Quaternion.Zero();
+    private static _TmpScaling = Vector3.Zero();
+    private static _TmpTranslation = Vector3.Zero();
+
     private _forward = new Vector3(0, 0, 1);
     private _forwardInverted = new Vector3(0, 0, -1);
     private _up = new Vector3(0, 1, 0);
     private _right = new Vector3(1, 0, 0);
     private _rightInverted = new Vector3(-1, 0, 0);
-    private _tmpRotation = Quaternion.Zero();
-    private _tmpScaling = Vector3.Zero();
-    private _tmpTranslation = Vector3.Zero();
 
     // Properties
     @serializeAsVector3("position")
@@ -1010,7 +1011,7 @@ export class TransformNode extends Node {
         let parent = this._getEffectiveParent();
 
         // Scaling
-        let scaling: Vector3 = this._tmpScaling;
+        let scaling: Vector3 = TransformNode._TmpScaling;
         let translation: Vector3 = this._position;
 
         // Translation
@@ -1019,7 +1020,7 @@ export class TransformNode extends Node {
                 var cameraWorldMatrix = camera.getWorldMatrix();
                 var cameraGlobalPosition = new Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
 
-                translation = this._tmpTranslation;
+                translation = TransformNode._TmpTranslation;
                 translation.copyFromFloats(this._position.x + cameraGlobalPosition.x, this._position.y + cameraGlobalPosition.y, this._position.z + cameraGlobalPosition.z);
             }
         }
@@ -1040,7 +1041,7 @@ export class TransformNode extends Node {
                 }
             }
         } else {
-            rotation = this._tmpRotation;
+            rotation = TransformNode._TmpRotation;
             Quaternion.RotationYawPitchRollToRef(this._rotation.y, this._rotation.x, this._rotation.z, rotation);
         }
 

@@ -14541,13 +14541,14 @@ declare module BABYLON {
          * Object will rotate to face the camera's position instead of orientation
          */
         static BILLBOARDMODE_USE_POSITION: number;
+        private static _TmpRotation;
+        private static _TmpScaling;
+        private static _TmpTranslation;
         private _forward;
         private _forwardInverted;
         private _up;
         private _right;
         private _rightInverted;
-        private _tmpRotation;
-        private _tmpScaling;
         private _position;
         private _rotation;
         private _rotationQuaternion;
@@ -18193,6 +18194,8 @@ declare module BABYLON {
         private static _RigCamTransformMatrix;
         private static _TargetTransformMatrix;
         private static _TargetFocalPoint;
+        private _tmpUpVector;
+        private _tmpTargetVector;
         /**
          * Define the current direction the camera is moving to
          */
@@ -18201,6 +18204,8 @@ declare module BABYLON {
          * Define the current rotation the camera is rotating to
          */
         cameraRotation: Vector2;
+        /** Gets or sets a boolean indicating that the scaling of the parent hierarchy will not be taken in account by the camera */
+        ignoreParentScaling: boolean;
         /**
          * When set, the up vector of the camera will be updated by the rotation of the camera
          */
