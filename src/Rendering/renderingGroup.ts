@@ -219,9 +219,9 @@ export class RenderingGroup {
         for (subIndex = 0; subIndex < sortedArray.length; subIndex++) {
             subMesh = sortedArray[subIndex];
 
-            if (transparent) {
-                let material = subMesh.getMaterial();
+            let material = subMesh.getMaterial();
 
+            if (transparent) {
                 if (material && material.needDepthPrePass) {
                     let engine = material.getScene().getEngine();
                     engine.setColorWrite(false);
@@ -229,6 +229,11 @@ export class RenderingGroup {
                     subMesh.render(false);
                     engine.setColorWrite(true);
                 }
+            }
+
+            // Render to MRT
+            if (material && material.getScene().highDefinitionPipeline) {
+                material.getScene().drawBuffers(material);
             }
 
             subMesh.render(transparent);

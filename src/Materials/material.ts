@@ -218,6 +218,20 @@ export class Material implements IAnimatable {
     public state = "";
 
     /**
+     * The state of the material
+     */
+    protected _shouldRenderToMRT = false;
+
+    public set shouldRenderToMRT(v: boolean) {
+        // By default, shader are not compatible with MRTs
+        // Base classes should override that if their shader supports MRT
+    }
+
+    public get shouldRenderToMRT() : boolean {
+        return this._shouldRenderToMRT;
+    }
+
+    /**
      * The alpha value of the material
      */
     @serialize("alpha")

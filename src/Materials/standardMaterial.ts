@@ -815,7 +815,11 @@ export class StandardMaterial extends PushMaterial {
 
         // Multiview
         MaterialHelper.PrepareDefinesForMultiview(scene, defines);
-        MaterialHelper.PrepareDefinesForDeferred(scene, defines);
+
+        // Deferred
+        if (this.shouldRenderToMRT) {
+            MaterialHelper.PrepareDefinesForDeferred(scene, defines);
+        }
 
         // Textures
         if (defines._areTexturesDirty) {
