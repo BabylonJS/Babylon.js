@@ -155,6 +155,18 @@ export class Material implements IAnimatable {
     public static readonly MATERIAL_ALPHATESTANDBLEND = 3;
 
     /**
+     * The Whiteout method is used to blend normals.
+     * Details of the algorithm can be found here: https://blog.selfshadow.com/publications/blending-in-detail/
+     */
+    public static readonly MATERIAL_NORMALBLENDMETHOD_WHITEOUT = 0;
+
+    /**
+     * The Reoriented Normal Mapping method is used to blend normals.
+     * Details of the algorithm can be found here: https://blog.selfshadow.com/publications/blending-in-detail/
+     */
+    public static readonly MATERIAL_NORMALBLENDMETHOD_RNM = 1;
+
+    /**
      * Custom callback helping to override the default shader used in the material.
      */
     public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[], options?: ICustomShaderNameResolveOptions) => string;
@@ -1084,27 +1096,15 @@ export class Material implements IAnimatable {
                 var allDone = true, lastError = null;
                 if (mesh.subMeshes) {
                     let tempSubMesh = new SubMesh(0, 0, 0, 0, 0, mesh, undefined, false, false);
-                    if (this._storeEffectOnSubMeshes) {
-                        if (tempSubMesh._materialDefines) {
-                            tempSubMesh._materialDefines._renderId = -1;
-                        }
-                        if (!this.isReadyForSubMesh(mesh, tempSubMesh, localOptions.useInstances)) {
-                            if (tempSubMesh.effect && tempSubMesh.effect.getCompilationError() && tempSubMesh.effect.allFallbacksProcessed()) {
-                                lastError = tempSubMesh.effect.getCompilationError();
-                            } else {
-                                allDone = false;
-                                setTimeout(checkReady, 16);
-                            }
-                        }
-                    } else {
-                        tempSubMesh._renderId = -1;
-                        if (!this.isReady(mesh, localOptions.useInstances)) {
-                            if (this.getEffect() && this.getEffect()!.getCompilationError() && this.getEffect()!.allFallbacksProcessed()) {
-                                lastError = this.getEffect()!.getCompilationError();
-                            } else {
-                                allDone = false;
-                                setTimeout(checkReady, 16);
-                            }
+                    if (tempSubMesh._materialDefines) {
+                        tempSubMesh._materialDefines._renderId = -1;
+                    }
+                    if (!this.isReadyForSubMesh(mesh, tempSubMesh, localOptions.useInstances)) {
+                        if (tempSubMesh.effect && tempSubMesh.effect.getCompilationError() && tempSubMesh.effect.allFallbacksProcessed()) {
+                            lastError = tempSubMesh.effect.getCompilationError();
+                        } else {
+                            allDone = false;
+                            setTimeout(checkReady, 16);
                         }
                     }
                 }

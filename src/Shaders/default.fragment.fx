@@ -220,6 +220,10 @@ void main(void) {
 	baseColor.rgb *= vColor.rgb;
 #endif
 
+#ifdef DETAIL
+    baseColor.rgb = baseColor.rgb * 2.0 * mix(0.5, detailColor.r, vDetailInfos.y);
+#endif
+
 #define CUSTOM_FRAGMENT_UPDATE_DIFFUSE
 
 	// Ambient color

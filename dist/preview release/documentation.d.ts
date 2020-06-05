@@ -1913,7 +1913,7 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Represens a plane by the equation ax + by + cz + d = 0
+     * Represents a plane by the equation ax + by + cz + d = 0
      */
     export class Plane {
         private static _TmpMatrix;
@@ -2008,7 +2008,7 @@ declare module BABYLON {
          * @returns a new Plane the normal vector to this plane at the given origin point.
          * Note : the vector "normal" is updated because normalized.
          */
-        static FromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): Plane;
+        static FromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: Vector3): Plane;
         /**
          * Calculates the distance from a plane and a point
          * @param origin origin of the plane to be constructed
@@ -2408,39 +2408,32 @@ declare module BABYLON {
      * Reminder: js uses a left handed forward facing system
      */
     export class Vector3 {
-        /**
-         * Defines the first coordinates (on X axis)
-         */
-        x: number;
-        /**
-         * Defines the second coordinates (on Y axis)
-         */
-        y: number;
-        /**
-         * Defines the third coordinates (on Z axis)
-         */
-        z: number;
         private static _UpReadOnly;
         private static _ZeroReadOnly;
+        /** @hidden */
+        _x: number;
+        /** @hidden */
+        _y: number;
+        /** @hidden */
+        _z: number;
+        /** @hidden */
+        _isDirty: boolean;
+        /** Gets or sets the x coordinate */
+        get x(): number;
+        set x(value: number);
+        /** Gets or sets the y coordinate */
+        get y(): number;
+        set y(value: number);
+        /** Gets or sets the z coordinate */
+        get z(): number;
+        set z(value: number);
         /**
          * Creates a new Vector3 object from the given x, y, z (floats) coordinates.
          * @param x defines the first coordinates (on X axis)
          * @param y defines the second coordinates (on Y axis)
          * @param z defines the third coordinates (on Z axis)
          */
-        constructor(
-        /**
-         * Defines the first coordinates (on X axis)
-         */
-        x?: number, 
-        /**
-         * Defines the second coordinates (on Y axis)
-         */
-        y?: number, 
-        /**
-         * Defines the third coordinates (on Z axis)
-         */
-        z?: number);
+        constructor(x?: number, y?: number, z?: number);
         /**
          * Creates a string representation of the Vector3
          * @returns a string with the Vector3 coordinates.
@@ -2769,7 +2762,7 @@ declare module BABYLON {
          * @param reference define the Vector3 to update
          * @returns the updated Vector3
          */
-        normalizeToRef(reference: DeepImmutable<Vector3>): Vector3;
+        normalizeToRef(reference: Vector3): Vector3;
         /**
          * Creates a new Vector3 copied from the current Vector3
          * @returns the new Vector3
@@ -3045,7 +3038,7 @@ declare module BABYLON {
          * @param right defines the right operand
          * @param result defines the Vector3 where to store the result
          */
-        static CrossToRef(left: Vector3, right: Vector3, result: Vector3): void;
+        static CrossToRef(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>, result: Vector3): void;
         /**
          * Returns a new Vector3 as the normalization of the given vector
          * @param vector defines the Vector3 to normalize
@@ -3600,14 +3593,28 @@ declare module BABYLON {
      * @see http://doc.babylonjs.com/features/position,_rotation,_scaling
      */
     export class Quaternion {
-        /** defines the first component (0 by default) */
-        x: number;
-        /** defines the second component (0 by default) */
-        y: number;
-        /** defines the third component (0 by default) */
-        z: number;
-        /** defines the fourth component (1.0 by default) */
-        w: number;
+        /** @hidden */
+        _x: number;
+        /** @hidden */
+        _y: number;
+        /** @hidden */
+        _z: number;
+        /** @hidden */
+        _w: number;
+        /** @hidden */
+        _isDirty: boolean;
+        /** Gets or sets the x coordinate */
+        get x(): number;
+        set x(value: number);
+        /** Gets or sets the y coordinate */
+        get y(): number;
+        set y(value: number);
+        /** Gets or sets the z coordinate */
+        get z(): number;
+        set z(value: number);
+        /** Gets or sets the w coordinate */
+        get w(): number;
+        set w(value: number);
         /**
          * Creates a new Quaternion from the given floats
          * @param x defines the first component (0 by default)
@@ -3615,15 +3622,7 @@ declare module BABYLON {
          * @param z defines the third component (0 by default)
          * @param w defines the fourth component (1.0 by default)
          */
-        constructor(
-        /** defines the first component (0 by default) */
-        x?: number, 
-        /** defines the second component (0 by default) */
-        y?: number, 
-        /** defines the third component (0 by default) */
-        z?: number, 
-        /** defines the fourth component (1.0 by default) */
-        w?: number);
+        constructor(x?: number, y?: number, z?: number, w?: number);
         /**
          * Gets a string representation for the current quaternion
          * @returns a string with the Quaternion coordinates
@@ -10303,6 +10302,8 @@ declare module BABYLON {
         bv: number;
         /** The index of the face on the mesh that was picked, or the index of the Line if the picked Mesh is a LinesMesh */
         faceId: number;
+        /** The index of the face on the subMesh that was picked, or the index of the Line if the picked Mesh is a LinesMesh */
+        subMeshFaceId: number;
         /** Id of the the submesh that was picked */
         subMeshId: number;
         /** If a sprite was picked, this will be the sprite the pick collided with */
@@ -10463,7 +10464,7 @@ declare module BABYLON {
         * @param world a matrix to transform the ray to. Default is the identity matrix.
         * @returns the new ray
         */
-        static CreateNewFromTo(origin: DeepImmutable<Vector3>, end: DeepImmutable<Vector3>, world?: DeepImmutable<Matrix>): Ray;
+        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: DeepImmutable<Matrix>): Ray;
         /**
          * Transforms a ray by a matrix
          * @param ray ray to transform
@@ -14545,6 +14546,8 @@ declare module BABYLON {
         private _up;
         private _right;
         private _rightInverted;
+        private _tmpRotation;
+        private _tmpScaling;
         private _position;
         private _rotation;
         private _rotationQuaternion;
@@ -18249,8 +18252,6 @@ declare module BABYLON {
         _referencePoint: Vector3;
         /** @hidden */
         _transformedReferencePoint: Vector3;
-        protected _globalCurrentTarget: Vector3;
-        protected _globalCurrentUpVector: Vector3;
         /** @hidden */
         _reset: () => void;
         private _defaultUp;
@@ -20451,6 +20452,10 @@ declare module BABYLON {
          */
         isOptional: boolean;
         /**
+         * Gets or sets a boolean indicating that this connection point is exposed on a frame
+         */
+        isExposedOnFrame: boolean;
+        /**
          * Gets or sets a string indicating that this uniform must be defined under a #ifdef
          */
         define: string;
@@ -21562,7 +21567,7 @@ declare module BABYLON {
         serialize(): any;
         /** @hidden */
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
-        private _deserializePortDisplayNames;
+        private _deserializePortDisplayNamesAndExposedOnFrame;
         /**
          * Release resources
          */
@@ -22337,8 +22342,9 @@ declare module BABYLON {
          * Clear the current graph and load a new one from a serialization object
          * @param source defines the JSON representation of the material
          * @param rootUrl defines the root URL to use to load textures and relative dependencies
+         * @param merge defines whether or not the source must be merged or replace the current content
          */
-        loadFromSerialization(source: any, rootUrl?: string): void;
+        loadFromSerialization(source: any, rootUrl?: string, merge?: boolean): void;
         /**
          * Makes a duplicate of the current material.
          * @param name - name to use for the new material.
@@ -23776,6 +23782,16 @@ declare module BABYLON {
          * They are also discarded below the alpha cutoff threshold to improve performances.
          */
         static readonly MATERIAL_ALPHATESTANDBLEND: number;
+        /**
+         * The Whiteout method is used to blend normals.
+         * Details of the algorithm can be found here: https://blog.selfshadow.com/publications/blending-in-detail/
+         */
+        static readonly MATERIAL_NORMALBLENDMETHOD_WHITEOUT: number;
+        /**
+         * The Reoriented Normal Mapping method is used to blend normals.
+         * Details of the algorithm can be found here: https://blog.selfshadow.com/publications/blending-in-detail/
+         */
+        static readonly MATERIAL_NORMALBLENDMETHOD_RNM: number;
         /**
          * Custom callback helping to override the default shader used in the material.
          */
@@ -29085,6 +29101,12 @@ declare module BABYLON {
          */
         static get DiffuseTextureEnabled(): boolean;
         static set DiffuseTextureEnabled(value: boolean);
+        private static _DetailTextureEnabled;
+        /**
+         * Are detail textures enabled in the application.
+         */
+        static get DetailTextureEnabled(): boolean;
+        static set DetailTextureEnabled(value: boolean);
         private static _AmbientTextureEnabled;
         /**
          * Are ambient textures enabled in the application.
@@ -29345,12 +29367,154 @@ declare module BABYLON {
     };
 }
 declare module BABYLON {
+    /**
+     * @hidden
+     */
+    export interface IMaterialDetailMapDefines {
+        DETAIL: boolean;
+        DETAILDIRECTUV: number;
+        DETAIL_NORMALBLENDMETHOD: number;
+        /** @hidden */
+        _areTexturesDirty: boolean;
+    }
+    /**
+     * Define the code related to the detail map parameters of a material
+     *
+     * Inspired from:
+     *   Unity: https://docs.unity3d.com/Packages/com.unity.render-pipelines.high-definition@9.0/manual/Mask-Map-and-Detail-Map.html and https://docs.unity3d.com/Manual/StandardShaderMaterialParameterDetail.html
+     *   Unreal: https://docs.unrealengine.com/en-US/Engine/Rendering/Materials/HowTo/DetailTexturing/index.html
+     *   Cryengine: https://docs.cryengine.com/display/SDKDOC2/Detail+Maps
+     */
+    export class DetailMapConfiguration {
+        private _texture;
+        /**
+         * The detail texture of the material.
+         */
+        texture: Nullable<BaseTexture>;
+        /**
+         * Defines how strongly the detail diffuse/albedo channel is blended with the regular diffuse/albedo texture
+         * Bigger values mean stronger blending
+         */
+        diffuseBlendLevel: number;
+        /**
+         * Defines how strongly the detail roughness channel is blended with the regular roughness value
+         * Bigger values mean stronger blending. Only used with PBR materials
+         */
+        roughnessBlendLevel: number;
+        /**
+         * Defines how strong the bump effect from the detail map is
+         * Bigger values mean stronger effect
+         */
+        bumpLevel: number;
+        private _normalBlendMethod;
+        /**
+         * The method used to blend the bump and detail normals together
+         */
+        normalBlendMethod: number;
+        private _isEnabled;
+        /**
+         * Enable or disable the detail map on this material
+         */
+        isEnabled: boolean;
+        /** @hidden */
+        private _internalMarkAllSubMeshesAsTexturesDirty;
+        /** @hidden */
+        _markAllSubMeshesAsTexturesDirty(): void;
+        /**
+         * Instantiate a new detail map
+         * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
+         */
+        constructor(markAllSubMeshesAsTexturesDirty: () => void);
+        /**
+         * Gets whether the submesh is ready to be used or not.
+         * @param defines the list of "defines" to update.
+         * @param scene defines the scene the material belongs to.
+         * @returns - boolean indicating that the submesh is ready or not.
+         */
+        isReadyForSubMesh(defines: IMaterialDetailMapDefines, scene: Scene): boolean;
+        /**
+         * Update the defines for detail map usage
+         * @param defines the list of "defines" to update.
+         * @param scene defines the scene the material belongs to.
+         */
+        prepareDefines(defines: IMaterialDetailMapDefines, scene: Scene): void;
+        /**
+         * Binds the material data.
+         * @param uniformBuffer defines the Uniform buffer to fill in.
+         * @param scene defines the scene the material belongs to.
+         * @param isFrozen defines whether the material is frozen or not.
+         */
+        bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean): void;
+        /**
+         * Checks to see if a texture is used in the material.
+         * @param texture - Base texture to use.
+         * @returns - Boolean specifying if a texture is used in the material.
+         */
+        hasTexture(texture: BaseTexture): boolean;
+        /**
+         * Returns an array of the actively used textures.
+         * @param activeTextures Array of BaseTextures
+         */
+        getActiveTextures(activeTextures: BaseTexture[]): void;
+        /**
+         * Returns the animatable textures.
+         * @param animatables Array of animatable textures.
+         */
+        getAnimatables(animatables: IAnimatable[]): void;
+        /**
+         * Disposes the resources of the material.
+         * @param forceDisposeTextures - Forces the disposal of all textures.
+         */
+        dispose(forceDisposeTextures?: boolean): void;
+        /**
+        * Get the current class name useful for serialization or dynamic coding.
+        * @returns "DetailMap"
+        */
+        getClassName(): string;
+        /**
+         * Add the required uniforms to the current list.
+         * @param uniforms defines the current uniform list.
+         */
+        static AddUniforms(uniforms: string[]): void;
+        /**
+         * Add the required samplers to the current list.
+         * @param samplers defines the current sampler list.
+         */
+        static AddSamplers(samplers: string[]): void;
+        /**
+         * Add the required uniforms to the current buffer.
+         * @param uniformBuffer defines the current uniform buffer.
+         */
+        static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void;
+        /**
+         * Makes a duplicate of the current instance into another one.
+         * @param detailMap define the instance where to copy the info
+         */
+        copyTo(detailMap: DetailMapConfiguration): void;
+        /**
+         * Serializes this detail map instance
+         * @returns - An object with the serialized instance.
+         */
+        serialize(): any;
+        /**
+         * Parses a detail map setting from a serialized object.
+         * @param source - Serialized object.
+         * @param scene Defines the scene we are parsing for
+         * @param rootUrl Defines the rootUrl to load from
+         */
+        parse(source: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
     /** @hidden */
-    export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
+    export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines, IMaterialDetailMapDefines {
         MAINUV1: boolean;
         MAINUV2: boolean;
         DIFFUSE: boolean;
         DIFFUSEDIRECTUV: number;
+        DETAIL: boolean;
+        DETAILDIRECTUV: number;
+        DETAIL_NORMALBLENDMETHOD: number;
         AMBIENT: boolean;
         AMBIENTDIRECTUV: number;
         OPACITY: boolean;
@@ -29776,6 +29940,10 @@ declare module BABYLON {
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
         set cameraColorCurves(value: Nullable<ColorCurves>);
+        /**
+         * Defines the detail map parameters for the material.
+         */
+        readonly detailMap: DetailMapConfiguration;
         protected _renderTargets: SmartArray<RenderTargetTexture>;
         protected _worldViewProjectionMatrix: Matrix;
         protected _globalAmbientColor: Color3;
@@ -29894,6 +30062,11 @@ declare module BABYLON {
          */
         static get DiffuseTextureEnabled(): boolean;
         static set DiffuseTextureEnabled(value: boolean);
+        /**
+         * Are detail textures enabled in the application.
+         */
+        static get DetailTextureEnabled(): boolean;
+        static set DetailTextureEnabled(value: boolean);
         /**
          * Are ambient textures enabled in the application.
          */
@@ -54766,7 +54939,7 @@ declare module BABYLON {
      * Manages the defines for the PBR Material.
      * @hidden
      */
-    export class PBRMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines, IMaterialClearCoatDefines, IMaterialAnisotropicDefines, IMaterialBRDFDefines, IMaterialSheenDefines, IMaterialSubSurfaceDefines {
+    export class PBRMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines, IMaterialClearCoatDefines, IMaterialAnisotropicDefines, IMaterialBRDFDefines, IMaterialSheenDefines, IMaterialSubSurfaceDefines, IMaterialDetailMapDefines {
         PBR: boolean;
         NUM_SAMPLES: string;
         REALTIME_FILTERING: boolean;
@@ -54778,6 +54951,9 @@ declare module BABYLON {
         GAMMAALBEDO: boolean;
         ALBEDODIRECTUV: number;
         VERTEXCOLOR: boolean;
+        DETAIL: boolean;
+        DETAILDIRECTUV: number;
+        DETAIL_NORMALBLENDMETHOD: number;
         AMBIENT: boolean;
         AMBIENTDIRECTUV: number;
         AMBIENTINGRAYSCALE: boolean;
@@ -55342,6 +55518,10 @@ declare module BABYLON {
          * Defines the SubSurface parameters for the material.
          */
         readonly subSurface: PBRSubSurfaceConfiguration;
+        /**
+         * Defines the detail map parameters for the material.
+         */
+        readonly detailMap: DetailMapConfiguration;
         protected _rebuildInParallel: boolean;
         /**
          * Instantiates a new PBRMaterial instance.

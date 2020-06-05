@@ -146,8 +146,8 @@ export class InstancesBlock extends NodeMaterialBlock {
             changed = true;
         }
 
-        if (subMesh && defines["THIN_INSTANCES"] !== subMesh?.getRenderingMesh().hasInstances) {
-            defines.setValue("THIN_INSTANCES", subMesh?.getRenderingMesh().hasInstances);
+        if (subMesh && defines["THIN_INSTANCES"] !== !!subMesh?.getRenderingMesh().hasThinInstances) {
+            defines.setValue("THIN_INSTANCES", !!subMesh?.getRenderingMesh().hasThinInstances);
             changed = true;
         }
 

@@ -61550,6 +61550,15 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         }, undefined, true);
     };
+    PropertyTabComponent.prototype.loadFrame = function (file) {
+        var _this = this;
+        babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["Tools"].ReadFile(file, function (data) {
+            // get Frame Data from file
+            var decoder = new TextDecoder("utf-8");
+            var frameData = JSON.parse(decoder.decode(data));
+            _serializationTools__WEBPACK_IMPORTED_MODULE_7__["SerializationTools"].AddFrameToMaterial(frameData, _this.props.globalState, _this.props.globalState.nodeMaterial);
+        }, undefined, true);
+    };
     PropertyTabComponent.prototype.save = function () {
         var json = _serializationTools__WEBPACK_IMPORTED_MODULE_7__["SerializationTools"].Serialize(this.props.globalState.nodeMaterial, this.props.globalState);
         _stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(this.props.globalState.hostDocument, json, "nodeMaterial.json");
@@ -61740,6 +61749,8 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: this.props.globalState.customSave.label, onClick: function () {
                                 _this.customSave();
                             } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "FRAME" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_5__["FileButtonLineComponent"], { label: "Load Frame", uploadName: 'frame-upload', onClick: function (file) { return _this.loadFrame(file); }, accept: ".json" })),
                 !this.props.globalState.customSave &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "SNIPPET" },
                         this.props.globalState.nodeMaterial.snippetId &&
@@ -62540,14 +62551,19 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             _this._ctrlKeyIsPressed = false;
         }, false);
         // Store additional data to serialization object
-        _this.props.globalState.storeEditorData = function (editorData) {
-            editorData.zoom = _this.zoom;
-            editorData.x = _this.x;
-            editorData.y = _this.y;
+        _this.props.globalState.storeEditorData = function (editorData, graphFrame) {
             editorData.frames = [];
-            for (var _i = 0, _a = _this._frames; _i < _a.length; _i++) {
-                var frame = _a[_i];
-                editorData.frames.push(frame.serialize());
+            if (graphFrame) {
+                editorData.frames.push(graphFrame.serialize());
+            }
+            else {
+                editorData.x = _this.x;
+                editorData.y = _this.y;
+                editorData.zoom = _this.zoom;
+                for (var _i = 0, _a = _this._frames; _i < _a.length; _i++) {
+                    var frame = _a[_i];
+                    editorData.frames.push(frame.serialize());
+                }
             }
         };
         return _this;
@@ -63212,6 +63228,11 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                 this._frames.push(frame);
             }
         }
+    };
+    GraphCanvasComponent.prototype.addFrame = function (frameData) {
+        var frame = _graphFrame__WEBPACK_IMPORTED_MODULE_7__["GraphFrame"].Parse(frameData, this, this.props.globalState.nodeMaterial.editorData.map);
+        this._frames.push(frame);
+        this.globalState.onSelectionChangedObservable.notifyObservers(frame);
     };
     GraphCanvasComponent.prototype.render = function () {
         var _this = this;
@@ -64401,6 +64422,7 @@ var GraphFrame = /** @class */ (function () {
         this.element.style.height = frameElementHeight + heightModification + "px";
     };
     GraphFrame.prototype.dispose = function () {
+        var _a;
         this.isCollapsed = false;
         if (this._onSelectionChangedObserver) {
             this._ownerCanvas.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
@@ -64414,7 +64436,7 @@ var GraphFrame = /** @class */ (function () {
             this._ownerCanvas.globalState.onExposePortOnFrameObservable.remove(this._onExposePortOnFrameObserver);
         }
         ;
-        this.element.parentElement.removeChild(this.element);
+        (_a = this.element.parentElement) === null || _a === void 0 ? void 0 : _a.removeChild(this.element);
         this._ownerCanvas.frames.splice(this._ownerCanvas.frames.indexOf(this), 1);
         this.onExpandStateChanged.clear();
     };
@@ -64433,7 +64455,7 @@ var GraphFrame = /** @class */ (function () {
     };
     GraphFrame.prototype.export = function () {
         var state = this._ownerCanvas.globalState;
-        var json = _serializationTools__WEBPACK_IMPORTED_MODULE_1__["SerializationTools"].Serialize(state.nodeMaterial, state, this.nodes.map(function (n) { return n.block; }));
+        var json = _serializationTools__WEBPACK_IMPORTED_MODULE_1__["SerializationTools"].Serialize(state.nodeMaterial, state, this);
         _stringTools__WEBPACK_IMPORTED_MODULE_2__["StringTools"].DownloadAsFile(state.hostDocument, json, this._name + ".json");
     };
     GraphFrame.Parse = function (serializationData, canvas, map) {
@@ -65204,7 +65226,7 @@ var NodePort = /** @class */ (function () {
     };
     Object.defineProperty(NodePort.prototype, "exposedOnFrame", {
         get: function () {
-            if (!!this._exposedOnFrame || this._isConnectedToNodeOutsideOfFrame()) {
+            if (!!this.connectionPoint.isExposedOnFrame || this._isConnectedToNodeOutsideOfFrame()) {
                 return true;
             }
             return false;
@@ -65213,7 +65235,7 @@ var NodePort = /** @class */ (function () {
             if (this.disabled) {
                 return;
             }
-            this._exposedOnFrame = value;
+            this.connectionPoint.isExposedOnFrame = value;
         },
         enumerable: true,
         configurable: true
@@ -65411,7 +65433,10 @@ var FramePropertyTabComponent = /** @class */ (function (_super) {
                     this.props.frame.isCollapsed &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Expand", onClick: function () {
                                 _this.props.frame.isCollapsed = false;
-                            } })))));
+                            } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Export", onClick: function () {
+                            _this.props.frame.export();
+                        } })))));
     };
     return FramePropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -66614,6 +66639,7 @@ var GlobalState = /** @class */ (function () {
         this.onSelectionBoxMoved = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onFrameCreatedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onCandidatePortSelectedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onImportFrameObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGraphNodeRemovalObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGridSizeChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onExposePortOnFrameObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -66888,6 +66914,15 @@ var GraphEditor = /** @class */ (function (_super) {
                 _this.buildMaterial();
             }
         });
+        _this.props.globalState.onImportFrameObservable.add(function (source) {
+            var frameData = source.editorData.frames[0];
+            // create new graph nodes for only blocks from frame (last blocks added)
+            _this.props.globalState.nodeMaterial.attachedBlocks.slice(-(frameData.blocks.length)).forEach(function (block) {
+                _this.createNodeFromObject(block);
+            });
+            _this._graphCanvas.addFrame(frameData);
+            _this.reOrganize(_this.props.globalState.nodeMaterial.editorData, true);
+        });
         _this.props.globalState.onZoomToFitRequiredObservable.add(function () {
             _this.zoomToFit();
         });
@@ -67141,7 +67176,6 @@ var GraphEditor = /** @class */ (function (_super) {
         this.props.globalState.onBuiltObservable.notifyObservers();
     };
     GraphEditor.prototype.build = function () {
-        var _this = this;
         var editorData = this.props.globalState.nodeMaterial.editorData;
         this._graphCanvas._isLoading = true; // Will help loading large graphes
         if (editorData instanceof Array) {
@@ -67154,29 +67188,33 @@ var GraphEditor = /** @class */ (function (_super) {
         this._graphCanvas.reset();
         // Load graph of nodes from the material
         if (this.props.globalState.nodeMaterial) {
-            var material = this.props.globalState.nodeMaterial;
-            material._vertexOutputNodes.forEach(function (n) {
-                _this.createNodeFromObject(n);
-            });
-            material._fragmentOutputNodes.forEach(function (n) {
-                _this.createNodeFromObject(n);
-            });
-            material.attachedBlocks.forEach(function (n) {
-                _this.createNodeFromObject(n);
-            });
-            // Links
-            material.attachedBlocks.forEach(function (n) {
-                if (n.inputs.length) {
-                    for (var _i = 0, _a = n.inputs; _i < _a.length; _i++) {
-                        var input = _a[_i];
-                        if (input.isConnected) {
-                            _this._graphCanvas.connectPorts(input.connectedPoint, input);
-                        }
-                    }
-                }
-            });
+            this.loadGraph();
         }
         this.reOrganize(editorData);
+    };
+    GraphEditor.prototype.loadGraph = function () {
+        var _this = this;
+        var material = this.props.globalState.nodeMaterial;
+        material._vertexOutputNodes.forEach(function (n) {
+            _this.createNodeFromObject(n, true);
+        });
+        material._fragmentOutputNodes.forEach(function (n) {
+            _this.createNodeFromObject(n, true);
+        });
+        material.attachedBlocks.forEach(function (n) {
+            _this.createNodeFromObject(n, true);
+        });
+        // Links
+        material.attachedBlocks.forEach(function (n) {
+            if (n.inputs.length) {
+                for (var _i = 0, _a = n.inputs; _i < _a.length; _i++) {
+                    var input = _a[_i];
+                    if (input.isConnected) {
+                        _this._graphCanvas.connectPorts(input.connectedPoint, input);
+                    }
+                }
+            }
+        });
     };
     GraphEditor.prototype.showWaitScreen = function () {
         var _a;
@@ -67186,9 +67224,10 @@ var GraphEditor = /** @class */ (function (_super) {
         var _a;
         (_a = this.props.globalState.hostDocument.querySelector(".wait-screen")) === null || _a === void 0 ? void 0 : _a.classList.add("hidden");
     };
-    GraphEditor.prototype.reOrganize = function (editorData) {
+    GraphEditor.prototype.reOrganize = function (editorData, isImportingAFrame) {
         var _this = this;
         if (editorData === void 0) { editorData = null; }
+        if (isImportingAFrame === void 0) { isImportingAFrame = false; }
         this.showWaitScreen();
         this._graphCanvas._isLoading = true; // Will help loading large graphes
         setTimeout(function () {
@@ -67209,7 +67248,9 @@ var GraphEditor = /** @class */ (function (_super) {
                         }
                     }
                 }
-                _this._graphCanvas.processEditorData(editorData);
+                if (!isImportingAFrame) {
+                    _this._graphCanvas.processEditorData(editorData);
+                }
             }
             _this._graphCanvas._isLoading = false;
             for (var _d = 0, _e = _this._graphCanvas.nodes; _d < _e.length; _d++) {
@@ -67556,13 +67597,14 @@ __webpack_require__.r(__webpack_exports__);
 var SerializationTools = /** @class */ (function () {
     function SerializationTools() {
     }
-    SerializationTools.UpdateLocations = function (material, globalState) {
+    SerializationTools.UpdateLocations = function (material, globalState, frame) {
         material.editorData = {
             locations: []
         };
         // Store node locations
-        for (var _i = 0, _a = material.attachedBlocks; _i < _a.length; _i++) {
-            var block = _a[_i];
+        var blocks = frame ? frame.nodes.map(function (n) { return n.block; }) : material.attachedBlocks;
+        for (var _i = 0, blocks_1 = blocks; _i < blocks_1.length; _i++) {
+            var block = blocks_1[_i];
             var node = globalState.onGetNodeFromBlock(block);
             material.editorData.locations.push({
                 blockId: block.uniqueId,
@@ -67570,12 +67612,13 @@ var SerializationTools = /** @class */ (function () {
                 y: node ? node.y : 0
             });
         }
-        globalState.storeEditorData(material.editorData);
+        globalState.storeEditorData(material.editorData, frame);
     };
-    SerializationTools.Serialize = function (material, globalState, selectedBlocks) {
+    SerializationTools.Serialize = function (material, globalState, frame) {
         var bufferSerializationState = babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].SerializeBuffers;
         babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].SerializeBuffers = babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("EmbedTextures", true);
-        this.UpdateLocations(material, globalState);
+        this.UpdateLocations(material, globalState, frame);
+        var selectedBlocks = frame ? frame.nodes.map(function (n) { return n.block; }) : undefined;
         var serializationObject = material.serialize(selectedBlocks);
         babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].SerializeBuffers = bufferSerializationState;
         return JSON.stringify(serializationObject, undefined, 2);
@@ -67583,6 +67626,12 @@ var SerializationTools = /** @class */ (function () {
     SerializationTools.Deserialize = function (serializationObject, globalState) {
         globalState.onIsLoadingChanged.notifyObservers(true);
         globalState.nodeMaterial.loadFromSerialization(serializationObject, "");
+    };
+    SerializationTools.AddFrameToMaterial = function (serializationObject, globalState, currentMaterial) {
+        globalState.onIsLoadingChanged.notifyObservers(true);
+        this.UpdateLocations(currentMaterial, globalState);
+        globalState.nodeMaterial.loadFromSerialization(serializationObject, "", true);
+        globalState.onImportFrameObservable.notifyObservers(serializationObject);
     };
     return SerializationTools;
 }());
@@ -68189,8 +68238,8 @@ var FileButtonLineComponent = /** @class */ (function (_super) {
     FileButtonLineComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "buttonLine" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "file-upload", className: "file-upload" }, this.props.label),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.uploadRef, id: "file-upload", type: "file", accept: this.props.accept, onChange: function (evt) { return _this.onChange(evt); } })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: this.props.uploadName ? this.props.uploadName : "file-upload", className: "file-upload" }, this.props.label),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.uploadRef, id: this.props.uploadName ? this.props.uploadName : "file-upload", type: "file", accept: this.props.accept, onChange: function (evt) { return _this.onChange(evt); } })));
     };
     return FileButtonLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));

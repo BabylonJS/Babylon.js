@@ -8,7 +8,7 @@
 - Added HDR texture filtering tools to the sandbox ([Sebavan](https://github.com/sebavan/))
 - Reflection probes can now be used to give accurate shading with PBR ([CraigFeldpsar](https://github.com/craigfeldspar) and ([Sebavan](https://github.com/sebavan/)))
 - Added editing of PBR materials, Post processes and Particle fragment shaders in the node material editor ([Popov72](https://github.com/Popov72))
-- Added Curve editor to manage entity's animations and edit animation within animation groups in Inspector ([pixelspace](https://github.com/devpixelspace))
+- Added Curve editor to manage selected entity's animations and edit animation groups in Inspector ([pixelspace](https://github.com/devpixelspace))
 - Added support in `ShadowGenerator` for fast fake soft transparent shadows ([Popov72](https://github.com/Popov72))
 - Added support for **thin instances** for faster mesh instances. [Doc](https://doc.babylonjs.com/how_to/how_to_use_thininstances) ([Popov72](https://github.com/Popov72))
 
@@ -30,11 +30,13 @@
 
 ### Engine
 
+- Improved world matrix caching engine by using dirty mechanism on vector3 and quaternion ([Deltakosh](https://github.com/deltakosh))
 - Allow logging of shader code when a compilation error occurs ([Popov72](https://github.com/Popov72))
 - Add back support for selecting textures based on engine capabilities ([bghgary](https://github.com/bghgary))
 - Fix Draco decoder when running on IE11 ([bghgary](https://github.com/bghgary))
 - Change default camera calculations to only include visible and enabled meshes ([bghgary](https://github.com/bghgary))
 - Optimized frozen instances ([Deltakosh](https://github.com/deltakosh))
+- Add support for detail maps in both the standard and PBR materials ([Popov72](https://github.com/Popov72))
 
 ### NME
 
@@ -47,6 +49,9 @@
 - Fix bug where long comments on collapsed frames broke port alignment ([belfortk](https://github.com/belfortk))
 - Add the `FragCoord` and `ScreenSize` blocks ([Popov72](https://github.com/Popov72))
 - Particle systems: add the `ParticlePositionWorld` block ([Popov72](https://github.com/Popov72))
+- Add isExposedOnFrame property to connection points ([belfortk](https://github.com/belfortk))
+- Add support for exporting frames ([belfortk](https://github.com/belfortk))
+- Add support for importing frames and their nodes (unconnected) and exposed frame ports ([belfortk](https://github.com/belfortk))
 
 ### Inspector
 
@@ -64,6 +69,7 @@
 - handle reattachment of panning button for `ArcRotateCamera` ([cedricguillemet](https://github.com/cedricguillemet))
 - Added flag to TargetCamera to invert rotation direction and multiplier to adjust speed ([Exolun](https://github.com/Exolun))
 - Added upwards and downwards keyboard input to `FreeCamera` ([Pheater](https://github.com/pheater))
+- Handle scales in camera matrices ([Popov72](https://github.com/Popov72))
 
 ### Sprites
 
@@ -131,6 +137,7 @@
 ### Animation
 
 - Added support for Additive Animation Blending. Existing animations can be converted to additive using the new MakeAnimationAdditive method for Skeletons, AnimationGroups and Animations. Animations can be played additively using the new isAdditive input parameter to the begin animation methods. ([c-morten](https://github.com/c-morten))
+- Sort events by frame in ascending order in `Animation#addEvent()` ([ycw](https://github.com/ycw))
 
 ### Maths
 
@@ -216,6 +223,7 @@
 - Fix bug when using shadows + instances + transparent meshes + `transparencyShadow = false` ([Popov72](https://github.com/Popov72))
 - Incorrect initialization when reattaching XR pointer selection  ([#8227](https://github.com/BabylonJS/Babylon.js/issues/8227)) ([RaananW](https://github.com/RaananW))
 - Fixed `DracoCompression` to not load empty data into attributes ([bghgary](https://github.com/bghgary))
+- Fixed `Mesh.subdivide` where one face could be lost depending on the number of subdivision  ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 

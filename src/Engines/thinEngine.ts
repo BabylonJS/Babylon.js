@@ -136,14 +136,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.2.0-alpha.17";
+        return "babylonjs@4.2.0-alpha.18";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.2.0-alpha.17";
+        return "4.2.0-alpha.18";
     }
 
     /**
@@ -788,7 +788,9 @@ export class ThinEngine {
         }
 
         // Constants
-        this._gl.HALF_FLOAT_OES = 0x8D61;   // Half floating-point type (16-bit).
+        if (this._gl.HALF_FLOAT_OES !== 0x8D61) {
+            this._gl.HALF_FLOAT_OES = 0x8D61;   // Half floating-point type (16-bit).
+        }
         if (this._gl.RGBA16F !== 0x881A) {
             this._gl.RGBA16F = 0x881A;      // RGBA 16-bit floating-point color-renderable internal sized format.
         }
@@ -814,7 +816,9 @@ export class ThinEngine {
 
         // Checks if some of the format renders first to allow the use of webgl inspector.
         if (this._webGLVersion > 1) {
-            this._gl.HALF_FLOAT_OES = 0x140B;
+            if (this._gl.HALF_FLOAT_OES !== 0x140B) {
+                this._gl.HALF_FLOAT_OES = 0x140B;
+            }
         }
         this._caps.textureHalfFloatRender = this._caps.textureHalfFloat && this._canRenderToHalfFloatFramebuffer();
         // Draw buffers
