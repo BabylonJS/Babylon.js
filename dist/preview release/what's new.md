@@ -30,6 +30,7 @@
 
 ### Engine
 
+- Improved world matrix caching engine by using dirty mechanism on vector3 and quaternion ([Deltakosh](https://github.com/deltakosh))
 - Allow logging of shader code when a compilation error occurs ([Popov72](https://github.com/Popov72))
 - Add back support for selecting textures based on engine capabilities ([bghgary](https://github.com/bghgary))
 - Fix Draco decoder when running on IE11 ([bghgary](https://github.com/bghgary))

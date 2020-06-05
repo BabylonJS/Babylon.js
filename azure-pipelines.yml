@@ -174,37 +174,52 @@ jobs:
       testRunner: JUnit
       testResultsFiles: '.temp/testResults/ModuleTestsWebpack.xml'
 
-- job: ViewerTests
-  displayName: '8. Viewer Tests'
-  pool:
-    vmImage: 'Ubuntu-16.04'
-    demands: npm
-  steps:
-  - task: Npm@1
-    displayName: 'npm install'
-    inputs:
-      workingDir: Tools/Gulp
-      verbose: false
-  - script: 'gulp typescript-all --max-old-space-size=8192'
-    workingDirectory: Tools/Gulp
-    displayName: 'Typescript all'
-  - script: 'gulp tests-viewer-unit --max-old-space-size=8192'
-    workingDirectory: Tools/Gulp
-    displayName: 'Unit Tests'
-  - task: PublishTestResults@2
-    condition: succeededOrFailed()
-    inputs:
-      testRunner: JUnit
-      testResultsFiles: '.temp/testResults/ViewerUnitTests.xml'
-  - script: |
-      export DISPLAY=:99
-      Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-      sleep 3 # give xvfb some time to start
-      gulp tests-viewer-validation-virtualscreen --max-old-space-size=8192
-    workingDirectory: Tools/Gulp
-    displayName: 'Visual Tests'
-  - task: PublishTestResults@2
-    condition: succeededOrFailed()
-    inputs:
-      testRunner: JUnit
-      testResultsFiles: '.temp/testResults/ViewerValidationTests.xml'
+# - job: ViewerBuild
+#   displayName: '8. Viewer Build'
+#   pool:
+#     vmImage: 'Ubuntu-16.04'
+#     demands: npm
+#   steps:
+#   - task: Npm@1
+#     displayName: 'npm install'
+#     inputs:
+#       workingDir: Tools/Gulp
+#       verbose: false
+#   - script: 'gulp typescript-viewer-libraries --max-old-space-size=8192'
+#     workingDirectory: Tools/Gulp
+#     displayName: 'Typescript all'
+
+# - job: ViewerTests
+#   displayName: '9. Viewer Tests'
+#   pool:
+#     vmImage: 'Ubuntu-16.04'
+#     demands: npm
+#   steps:
+#   - task: Npm@1
+#     displayName: 'npm install'
+#     inputs:
+#       workingDir: Tools/Gulp
+#       verbose: false
+#   - script: 'gulp typescript-viewer-libraries --max-old-space-size=8192'
+#     workingDirectory: Tools/Gulp
+#     displayName: 'Typescript all'
+#   - script: 'gulp tests-viewer-unit --max-old-space-size=8192'
+#     workingDirectory: Tools/Gulp
+#     displayName: 'Unit Tests'
+#   - task: PublishTestResults@2
+#     condition: succeededOrFailed()
+#     inputs:
+#       testRunner: JUnit
+#       testResultsFiles: '.temp/testResults/ViewerUnitTests.xml'
+#   - script: |
+#       export DISPLAY=:99
+#       Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+#       sleep 3 # give xvfb some time to start
+#       gulp tests-viewer-validation-virtualscreen --max-old-space-size=8192
+#     workingDirectory: Tools/Gulp
+#     displayName: 'Visual Tests'
+#   - task: PublishTestResults@2
+#     condition: succeededOrFailed()
+#     inputs:
+#       testRunner: JUnit
+#       testResultsFiles: '.temp/testResults/ViewerValidationTests.xml'
