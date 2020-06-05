@@ -654,7 +654,7 @@ export class ViewerModel implements IDisposable {
 
         this.rootMesh.animations = animations;
 
-        if (this.rootMesh.getScene().beginAnimation) {
+        if (this.rootMesh.getScene().beginAnimation !== undefined) {
             let animatable: Animatable = this.rootMesh.getScene().beginAnimation(this.rootMesh, 0, this._frameRate * duration, false, 1, () => {
                 if (onAnimationEnd) {
                     onAnimationEnd();

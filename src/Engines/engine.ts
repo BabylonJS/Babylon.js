@@ -1331,7 +1331,7 @@ export class Engine extends ThinEngine {
                 }
             }
 
-            if (this.onResizeObservable.hasObservers) {
+            if (this.onResizeObservable.hasObservers()) {
                 this.onResizeObservable.notifyObservers(this);
             }
         }
@@ -1852,7 +1852,7 @@ export class Engine extends ThinEngine {
 
         this._renderingCanvas.setAttribute("touch-action", "none");
         this._renderingCanvas.style.touchAction = "none";
-        this._renderingCanvas.style.msTouchAction = "none";
+        (this._renderingCanvas.style as any).msTouchAction = "none";
     }
 
     // Loading screen

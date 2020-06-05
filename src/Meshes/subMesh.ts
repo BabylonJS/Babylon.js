@@ -219,9 +219,8 @@ export class SubMesh implements ICullable {
 
         if (rootMaterial === null || rootMaterial === undefined) {
             return this._mesh.getScene().defaultMaterial;
-        } else if ((<MultiMaterial>rootMaterial).getSubMaterial) {
-            var multiMaterial = <MultiMaterial>rootMaterial;
-            var effectiveMaterial = multiMaterial.getSubMaterial(this.materialIndex);
+        } else if (this._IsMultiMaterial(rootMaterial)) {
+            var effectiveMaterial = rootMaterial.getSubMaterial(this.materialIndex);
 
             if (this._currentMaterial !== effectiveMaterial) {
                 this._currentMaterial = effectiveMaterial;
@@ -232,6 +231,10 @@ export class SubMesh implements ICullable {
         }
 
         return rootMaterial;
+    }
+
+    private _IsMultiMaterial(material: Material): material is MultiMaterial {
+        return (material as MultiMaterial).getSubMaterial !== undefined;
     }
 
     // Methods
