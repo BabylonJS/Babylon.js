@@ -48,6 +48,7 @@ export class TransformNode extends Node {
     private _rightInverted = new Vector3(-1, 0, 0);
     private _tmpRotation = Quaternion.Zero();
     private _tmpScaling = Vector3.Zero();
+    private _tmpTranslation = Vector3.Zero();
 
     // Properties
     @serializeAsVector3("position")
@@ -1018,6 +1019,7 @@ export class TransformNode extends Node {
                 var cameraWorldMatrix = camera.getWorldMatrix();
                 var cameraGlobalPosition = new Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
 
+                translation = this._tmpTranslation;
                 translation.copyFromFloats(this._position.x + cameraGlobalPosition.x, this._position.y + cameraGlobalPosition.y, this._position.z + cameraGlobalPosition.z);
             }
         }
@@ -1026,9 +1028,10 @@ export class TransformNode extends Node {
         scaling.copyFromFloats(this._scaling.x * this.scalingDeterminant, this._scaling.y * this.scalingDeterminant, this._scaling.z * this.scalingDeterminant);
 
         // Rotation
-        let rotation: Quaternion = this._tmpRotation;
+        let rotation: Quaternion;
         if (this._rotationQuaternion) {
             this._rotationQuaternion._isDirty = false;
+            rotation = this._rotationQuaternion;
             if (this.reIntegrateRotationIntoRotationQuaternion) {
                 var len = this.rotation.lengthSquared();
                 if (len) {
@@ -1036,8 +1039,8 @@ export class TransformNode extends Node {
                     this._rotation.copyFromFloats(0, 0, 0);
                 }
             }
-            rotation.copyFrom(this._rotationQuaternion);
         } else {
+            rotation = this._tmpRotation;
             Quaternion.RotationYawPitchRollToRef(this._rotation.y, this._rotation.x, this._rotation.z, rotation);
         }
 
