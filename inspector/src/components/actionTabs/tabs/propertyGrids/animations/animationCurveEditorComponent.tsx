@@ -1,6 +1,8 @@
 import * as React from "react";
 import { Animation } from 'babylonjs/Animations/animation';
-import { Vector2 } from 'babylonjs/Maths/math.vector';
+import { Vector2, Vector3, Quaternion } from 'babylonjs/Maths/math.vector';
+import { Color3, Color4 } from 'babylonjs/Maths/math.color';
+import { Size } from 'babylonjs/Maths/math.size';
 import { EasingFunction } from 'babylonjs/Animations/easing';
 import { IAnimationKey } from 'babylonjs/Animations/animationKey';
 import { IKeyframeSvgPoint } from './keyframeSvgPoint';
@@ -28,10 +30,16 @@ interface ICanvasAxis {
     label: number;
 }
 
+interface ICurveData {
+    pathData: string;
+    pathLength: number;
+    domCurve: React.RefObject<SVGPathElement>;
+    color: string;
+}
+
 export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, {
     isOpen: boolean,
     selected: Animation | null,
-    currentPathData: string | undefined,
     svgKeyframes: IKeyframeSvgPoint[] | undefined,
     currentFrame: number,
     currentValue: number,
@@ -45,9 +53,9 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     playheadOffset: number,
     notification: string,
     currentPoint: SVGPoint | undefined,
-    lastFrame: number,
     playheadPos: number,
     isPlaying: boolean,
+    selectedPathData: ICurveData[] | undefined
 }> {
 
     // Height scale *Review this functionaliy
@@ -56,7 +64,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     readonly _entityName: string;
     readonly _canvasLength: number = 20;
     private _svgKeyframes: IKeyframeSvgPoint[] = [];
-    private _frames: Vector2[] = [];
     private _isPlaying: boolean = false;
     private _graphCanvas: React.RefObject<HTMLDivElement>;
     private _selectedCurve: React.RefObject<SVGPathElement>;
@@ -78,7 +85,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         if (this.props.entity instanceof TargetedAnimation) {
             this._isTargetedAnimation = true;
             initialSelection = this.props.entity.animation;
-            initialLerpMode = initialSelection !== undefined ? this.analizeAnimation(initialSelection) : false;
+            initialLerpMode = initialSelection !== undefined ? this.analizeAnimationForLerp(initialSelection) : false;
             initialPathData = initialSelection !== undefined ? this.getPathData(initialSelection) : "";
         } else {
             this._isTargetedAnimation = false;
@@ -87,7 +94,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             initialSelection = hasAnimations !== false ? hasAnimations && hasAnimations[0] : null;
 
 
-            initialLerpMode = initialSelection !== undefined ? this.analizeAnimation(this.props.entity.animations && initialSelection) : false;
+            initialLerpMode = initialSelection !== undefined ? this.analizeAnimationForLerp(this.props.entity.animations && initialSelection) : false;
             initialPathData = initialSelection && this.getPathData(initialSelection);
             initialPathData = initialPathData === null || initialPathData === undefined ? "" : initialPathData;
         }
@@ -97,7 +104,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         this.state = {
             selected: initialSelection,
             isOpen: true,
-            currentPathData: initialPathData,
             svgKeyframes: this._svgKeyframes,
             currentFrame: 0,
             currentValue: 1,
@@ -109,11 +115,11 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             frameAxisLength: (new Array(this._canvasLength)).fill(0).map((s, i) => { return { value: i * 10, label: i * 10 } }),
             valueAxisLength: (new Array(10)).fill(0).map((s, i) => { return { value: i * 10, label: valueInd[i] } }),
             notification: "",
-            lastFrame: 0,
             currentPoint: undefined,
             scale: 1,
             playheadPos: 0,
             isPlaying: this.isAnimationPlaying(),
+            selectedPathData: []
         }
     }
 
@@ -238,6 +244,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         }
 
         keys[index].frame = newFrame; // This value comes as percentage/frame/time
+        // Calculate value for Vector3...
         keys[index].value = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2; // this value comes inverted svg from 0 = 100 to 100 = 0
 
 
@@ -425,60 +432,14 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         }
     }
 
-    updateKeyframe(keyframe: Vector2, index: number) {
-
-        let anim = this.state.selected as Animation;
-        var keys: IAnimationKey[] = [];
-
-        var svgKeyframes = this.state.svgKeyframes?.map((k, i) => {
-            if (i === index) {
-                k.keyframePoint.x = keyframe.x;
-                k.keyframePoint.y = keyframe.y;
-            }
-
-            var height = 100;
-            var middle = (height / 2);
-
-            var keyValue;
-
-            if (k.keyframePoint.y < middle) {
-                keyValue = 1 + ((100 / k.keyframePoint.y) * .1)
-            }
-
-            if (k.keyframePoint.y > middle) {
-                keyValue = 1 - ((100 / k.keyframePoint.y) * .1)
-            }
-
-            keys.push({ frame: k.keyframePoint.x, value: keyValue })
-            return k;
-        });
-
-        anim.setKeys(keys);
-
-        this.setState({ svgKeyframes: svgKeyframes });
-
-    }
-
     /**
     * Curve Rendering Functions
     * This section handles how to render curves.
     */
-    getAnimationProperties(animation: Animation) {
-        let easingType, easingMode;
-        let easingFunction: EasingFunction = animation.getEasingFunction() as EasingFunction;
-        if (easingFunction === undefined) {
-            easingType = undefined
-            easingMode = undefined;
-        } else {
-            easingType = easingFunction.constructor.name;
-            easingMode = easingFunction.getEasingMode();
-        }
-        return { easingType, easingMode }
-    }
-
     linearInterpolation(keyframes: IAnimationKey[], data: string, middle: number): string {
         keyframes.forEach((key, i) => {
 
+            // identify type of value and split...
             var point = new Vector2(0, 0);
             point.x = key.frame;
             point.y = this._heightScale - (key.value * middle);
@@ -492,82 +453,143 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     }
 
     setKeyframePointLinear(point: Vector2, index: number) {
+        // here set the ID to a unique id
         let svgKeyframe = { keyframePoint: point, rightControlPoint: null, leftControlPoint: null, id: index.toString(), selected: false, isLeftActive: false, isRightActive: false }
         this._svgKeyframes.push(svgKeyframe);
+    }
+
+    flatTangents(keyframes: IAnimationKey[], dataType: number) {
+        // Checks if Flat Tangent is active (tangents are set to zero)
+        let flattened;
+        if (this.state && this.state.isFlatTangentMode) {
+                
+            flattened = keyframes.map(kf => {
+
+                if (kf.inTangent !== undefined) {
+                    kf.inTangent = this.returnZero(dataType);
+                }
+
+                if (kf.outTangent !== undefined) {
+                    kf.outTangent = this.returnZero(dataType);
+                }
+                return kf;
+            });
+        } else {
+            flattened = keyframes;
+        }
+        return flattened;
+    }
+
+    returnZero(dataType: number) {
+        let type;
+        switch(dataType){
+            case Animation.ANIMATIONTYPE_FLOAT:
+                type = 0;
+                break;
+            case Animation.ANIMATIONTYPE_VECTOR3:
+                type = Vector3.Zero();
+                break;
+            case Animation.ANIMATIONTYPE_VECTOR2:
+                type = Vector2.Zero();
+                break;
+        }
+        return type;
+    }
+
+    getValueAsArray(valueType: number, value: number | Vector2 | Vector3 | Color3 | Color4 | Size | Quaternion ) {
+        let valueAsArray: number[] = [];
+        switch(valueType){
+            case Animation.ANIMATIONTYPE_FLOAT:
+                valueAsArray = [value as number];
+                break;
+            case Animation.ANIMATIONTYPE_VECTOR3:
+                valueAsArray = (value as Vector3).asArray();
+                break;
+            case Animation.ANIMATIONTYPE_VECTOR2:
+                valueAsArray = (value as Vector2).asArray();
+                break;
+            case Animation.ANIMATIONTYPE_QUATERNION:
+                valueAsArray = (value as Quaternion).asArray();
+                break;
+            case Animation.ANIMATIONTYPE_COLOR3:
+                valueAsArray = (value as Color3).asArray();
+                break;
+            case Animation.ANIMATIONTYPE_COLOR4:
+                valueAsArray = (value as Color4).asArray();
+                break;
+            case Animation.ANIMATIONTYPE_SIZE:
+                valueAsArray = [(value as Size).width, (value as Size).height];
+                break;
+        }
+        return valueAsArray;
     }
 
     getPathData(animation: Animation | null) {
 
         if (animation === null){
-            return "";
+            return undefined;
         }
 
-        // Check if Tangent mode is active and broken mode is active. (Only one tangent moves)
-        let keyframes = animation.getKeys();
+        var keyframes = animation.getKeys();
 
         if (keyframes === undefined) {
-            return "";
-        }
+            return undefined;
 
-        // Checks if Flat Tangent is active (tangents are set to zero)
-        if (this.state && this.state.isFlatTangentMode) {
-            keyframes = animation.getKeys().map(kf => {
-
-                if (kf.inTangent !== undefined) {
-                    kf.inTangent = 0;
-                }
-
-                if (kf.outTangent !== undefined) {
-                    kf.outTangent = 0;
-                }
-
-                return kf;
-            });
         } else {
-            keyframes = animation.getKeys();
-        }
 
-        const startKey = keyframes[0];
+            const { easingMode, easingType, usesTangents, valueType, highestFrame, name, targetProperty } = this.getAnimationData(animation);
 
-        let middle = this._heightScale / 2;
+            keyframes = this.flatTangents(keyframes, valueType);
+            const startKey = keyframes[0];
+            let middle = this._heightScale / 2;
+            let collection: ICurveData[] = [];
+            const colors = ['red', 'blue', 'green'];
+            const startValue = this.getValueAsArray(valueType, startKey.value);
 
-        // START OF LINE/CURVE
-        let data: string | undefined = `M${startKey.frame}, ${this._heightScale - (startKey.value * middle)}`;
+            for (var d = 0; d < startValue.length; d++) {
 
-        if (this.state && this.state.lerpMode) {
-            data = this.linearInterpolation(keyframes, data, middle);
-        } else {
-            if (this.getAnimationData(animation).usesTangents) {
-                data = this.curvePathWithTangents(keyframes, data, middle, animation.dataType);
-            } else {
-                const { easingMode, easingType } = this.getAnimationProperties(animation);
-                if (easingType !== undefined && easingMode !== undefined) {
-                    let easingFunction = animation.getEasingFunction();
-                    data = this.curvePath(keyframes, data, middle, easingFunction as EasingFunction)
+                // START OF LINE/CURVE
+                let data: string | undefined = `M${startKey.frame}, ${this._heightScale - (startValue[d] * middle)}`; // 
+
+                if (this.state && this.state.lerpMode) {
+                    data = this.linearInterpolation(keyframes, data, middle);
                 } else {
-                    if (this.state !== undefined) {
-                        let emptyTangents = keyframes.map((kf, i) => {
-                            if (i === 0) {
-                                kf.outTangent = 0;
-                            } else if (i === keyframes.length - 1) {
-                                kf.inTangent = 0;
-                            } else {
-                                kf.inTangent = 0;
-                                kf.outTangent = 0;
-                            }
-                            return kf;
-                        });
-                        data = this.curvePathWithTangents(emptyTangents, data, middle, animation.dataType);
+                    if (usesTangents) {
+                        data = this.curvePathWithTangents(keyframes, data, middle, valueType, d, `${name}_${targetProperty}`);
                     } else {
-                        data = this.linearInterpolation(keyframes, data, middle);
+                        if (easingType !== undefined && easingMode !== undefined) {
+                            let easingFunction = animation.getEasingFunction();
+                            data = this.curvePath(keyframes, data, middle, easingFunction as EasingFunction)
+                        } else {
+                            if (this.state !== undefined) {
+                                let emptyTangents = keyframes.map((kf, i) => {
+                                    if (i === 0) {
+                                        kf.outTangent = 0;
+                                    } else if (i === keyframes.length - 1) {
+                                        kf.inTangent = 0;
+                                    } else {
+                                        kf.inTangent = 0;
+                                        kf.outTangent = 0;
+                                    }
+                                    return kf;
+                                });
+                                data = this.curvePathWithTangents(emptyTangents, data, middle, valueType, d, `${name}_${targetProperty}`);
+                            } else {
+                                data = this.linearInterpolation(keyframes, data, middle);
+                            }
+                        }
                     }
-
                 }
-            }
-        }
 
-        return data;
-        
+                collection.push({ pathData: data, pathLength: highestFrame, domCurve: React.createRef(), color: colors[d] })
+
+            }
+
+            return collection;
+
+            
+
+        }  
     }
 
     getAnimationData(animation: Animation) {
@@ -582,84 +604,41 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         let highestFrame = animation.getHighestFrame();
         let serialized = animation.serialize();
         let usesTangents = animation.getKeys().find(kf => kf.hasOwnProperty('inTangent') || kf.hasOwnProperty('outTangent')) !== undefined ? true : false;
-
-        return { loopMode, name, blendingSpeed, targetPropertyPath, targetProperty, framesPerSecond, highestFrame, serialized, usesTangents }
-
-    }
-
-    drawAllFrames(initialKey: IAnimationKey, endKey: IAnimationKey, easingFunction: EasingFunction) {
-
-        let i = initialKey.frame;
-
-        for (i; i < endKey.frame; i++) {
-
-            (i * 100 / endKey.frame)
-
-            let dy = easingFunction.easeInCore(i);
-            let value = this._heightScale - (dy * (this._heightScale / 2));
-            this._frames.push(new Vector2(i, value));
-
+        let valueType = animation.dataType;
+        // easing properties
+        let easingType, easingMode;
+        let easingFunction: EasingFunction = animation.getEasingFunction() as EasingFunction;
+        if (easingFunction === undefined) {
+            easingType = undefined
+            easingMode = undefined;
+        } else {
+            easingType = easingFunction.constructor.name;
+            easingMode = easingFunction.getEasingMode();
         }
-    }
 
-    curvePathFlat(keyframes: IAnimationKey[], data: string, middle: number, dataType: number) {
-
-        keyframes.forEach((key, i) => {
-
-            if (dataType === Animation.ANIMATIONTYPE_FLOAT) {
-
-                var pointA = new Vector2(0, 0);
-                if (i === 0) {
-                    pointA.set(key.frame, this._heightScale - (key.value * middle));
-                    this.setKeyframePoint([pointA], i, keyframes.length);
-                } else {
-                    pointA.set(keyframes[i - 1].frame, this._heightScale - (keyframes[i - 1].value * middle));
-
-                    let defaultWeight = 10;
-
-                    let nextKeyframe = keyframes[i + 1];
-                    let prevKeyframe = keyframes[i - 1];
-                    if (nextKeyframe !== undefined) {
-                        let distance = keyframes[i + 1].frame - key.frame;
-                        defaultWeight = distance * .33;
-                    }
-
-                    if (prevKeyframe !== undefined) {
-                        let distance = key.frame - keyframes[i - 1].frame;
-                        defaultWeight = distance * .33;
-                    }
-
-                    let tangentA = new Vector2(pointA.x + defaultWeight, pointA.y);
-
-                    let pointB = new Vector2(key.frame, this._heightScale - (key.value * middle));
-
-                    let tangentB = new Vector2(pointB.x - defaultWeight, pointB.y);
-
-                    this.setKeyframePoint([pointA, tangentA, tangentB, pointB], i, keyframes.length);
-
-                    data += ` C${tangentA.x} ${tangentA.y} ${tangentB.x} ${tangentB.y} ${pointB.x} ${pointB.y} `
-
-                }
-            }
-        });
-
-        return data;
+        return { loopMode, name, blendingSpeed, targetPropertyPath, targetProperty, framesPerSecond, highestFrame, serialized, usesTangents, easingType, easingMode, valueType }
 
     }
 
-    curvePathWithTangents(keyframes: IAnimationKey[], data: string, middle: number, type: number) {
+    curvePathWithTangents(keyframes: IAnimationKey[], data: string, middle: number, type: number, coordinate: number, animationName: string) {
 
         keyframes.forEach((key, i) => {
+
+            // Create a unique id for curve
+            const curveId = animationName + "_" + coordinate
+
+            // identify type of value and split...
+            const keyframe_valueAsArray = this.getValueAsArray(type, key.value)[coordinate];
 
             let svgKeyframe;
             let outTangent;
             let inTangent;
             let defaultWeight = 5;
 
-            var inT = key.inTangent === undefined ? null : key.inTangent;
-            var outT = key.outTangent === undefined ? null : key.outTangent;
+            var inT = key.inTangent === undefined ? null : this.getValueAsArray(type, key.inTangent)[coordinate];
+            var outT = key.outTangent === undefined ? null : this.getValueAsArray(type, key.outTangent)[coordinate];
 
-            let y = this._heightScale - (key.value * middle);
+            let y = this._heightScale - (keyframe_valueAsArray * middle);
 
             let nextKeyframe = keyframes[i + 1];
             let prevKeyframe = keyframes[i - 1];
@@ -688,14 +667,14 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             }
 
             if (i === 0) {
-                svgKeyframe = { keyframePoint: new Vector2(key.frame, this._heightScale - (key.value * middle)), rightControlPoint: outTangent, leftControlPoint: null, id: i.toString(), selected: false, isLeftActive: false, isRightActive: false }
+                svgKeyframe = { keyframePoint: new Vector2(key.frame, this._heightScale - (keyframe_valueAsArray * middle)), rightControlPoint: outTangent, leftControlPoint: null, id: curveId, selected: false, isLeftActive: false, isRightActive: false }
                 if (outTangent !== null) {
                     data += ` C${outTangent.x} ${outTangent.y} `;
                 }
 
             } else {
 
-                svgKeyframe = { keyframePoint: new Vector2(key.frame, this._heightScale - (key.value * middle)), rightControlPoint: outTangent, leftControlPoint: inTangent, id: i.toString(), selected: false, isLeftActive: false, isRightActive: false }
+                svgKeyframe = { keyframePoint: new Vector2(key.frame, this._heightScale - (keyframe_valueAsArray * middle)), rightControlPoint: outTangent, leftControlPoint: inTangent, id: curveId, selected: false, isLeftActive: false, isRightActive: false }
 
                 if (outTangent !== null && inTangent !== null) {
                     data += ` ${inTangent.x} ${inTangent.y} ${svgKeyframe.keyframePoint.x} ${svgKeyframe.keyframePoint.y} C${outTangent.x} ${outTangent.y} `
@@ -706,7 +685,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             }
 
             if (this.state) {
-                let prev = this.state.svgKeyframes?.find(kf => kf.id === i.toString());
+                let prev = this.state.svgKeyframes?.find(kf => kf.id === curveId);
                 if (prev) {
                     svgKeyframe.isLeftActive = prev?.isLeftActive;
                     svgKeyframe.isRightActive = prev?.isRightActive;
@@ -729,6 +708,8 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         const v = .75;
 
         keyframes.forEach((key, i) => {
+
+             // identify type of value and split...
 
             // Gets previous initial point of curve segment
             var pointA = new Vector2(0, 0);
@@ -847,25 +828,56 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     * Core functions
     * This section handles main Curve Editor Functions.
     */
-    selectAnimation(animation: Animation, axis?: string) {
+    selectAnimation(animation: Animation, coordinate?: string) {
 
-        if (!axis){
+        this._svgKeyframes = [];
+        let updatedPath;
+
+        if (!coordinate){
             this.playStopAnimation();
 
-            this._svgKeyframes = [];
+            updatedPath = this.getPathData(animation);
 
-            const pathData = this.getPathData(animation);
-
-            let lastFrame = animation.getHighestFrame();
-
-            if (pathData === "") {
+            if (updatedPath === undefined) {
                 console.log("no keyframes in this animation");
             }
 
-            this.setState({ selected: animation, currentPathData: pathData, svgKeyframes: this._svgKeyframes, lastFrame: lastFrame });
         } else {
-            console.log(axis); // This will handle animations that are not Float type
+            updatedPath = this.getPathData(animation);
+
+            if (updatedPath === undefined) {
+                console.log("no keyframes in this animation");
+            }
         }
+
+
+        // let sin: ICurveData = {
+        //     pathData: "M2,6 C100,100 134,73 221,14",
+        //     pathLength: 100,
+        //     domCurve: React.createRef(),
+        //     color: 'red'
+        // }
+        // let sin2: ICurveData = {
+        //     pathData: "M2,6 C81,13 119,-1 221,14",
+        //     pathLength: 100,
+        //     domCurve: React.createRef(),
+        //     color: 'blue'
+        // }
+        // let sin3: ICurveData = {
+        //     pathData: "M2,6 C23,75 210,15 211,60",
+        //     pathLength: 100,
+        //     domCurve: React.createRef(),
+        //     color: 'green'
+        // }
+
+        // const updatedPath = [sin, sin2, sin3];
+
+        // check for empty svgKeyframes, lastframe, selected
+        this.setState({ selected: animation, svgKeyframes: this._svgKeyframes, selectedPathData: updatedPath });
+
+       
+
+
     }
 
     isAnimationPlaying() {
@@ -875,34 +887,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         }
 
         return this.props.scene.getAllAnimatablesByTarget(target).length > 0;
-    }
-
-    playPause(direction: number) {
-        if (this.state.selected) {
-            let target = this.props.entity;
-            if (this.props.entity instanceof TargetedAnimation) {
-                target = this.props.entity.target;
-            }
-            if (this.state.isPlaying) {
-                this.props.scene.stopAnimation(target);
-                this.setState({ isPlaying: false })
-                this._isPlaying = false;
-                this.forceUpdate();
-            } else {
-                let keys = this.state.selected.getKeys();
-                let firstFrame = keys[0].frame;
-                let LastFrame = keys[keys.length - 1].frame;
-                if (direction === 1){
-                    this.props.scene.beginAnimation(target, firstFrame, LastFrame, true);
-                } 
-                if (direction === -1){
-                    this.props.scene.beginAnimation(target, LastFrame, firstFrame, true);
-                } 
-                this._isPlaying = true;
-                this.setState({ isPlaying: true });
-                this.forceUpdate();
-            }
-        }
     }
 
     playStopAnimation() {
@@ -920,12 +904,10 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         }
     }
 
-    analizeAnimation(animation: Animation | null) {
+    analizeAnimationForLerp(animation: Animation | null) {
         if (animation !== null) {
-            const { easingMode, easingType } = this.getAnimationProperties(animation);
-            let hasDefinedTangents = this.getAnimationData(animation).usesTangents;
-
-            if (easingType === undefined && easingMode === undefined && !hasDefinedTangents) {
+            const { easingMode, easingType, usesTangents } = this.getAnimationData(animation);
+            if (easingType === undefined && easingMode === undefined && !usesTangents) {
                 return true;
             } else {
                 return false;
@@ -972,6 +954,34 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             animation.setKeys(keys);
 
             this.selectAnimation(animation);
+        }
+    }
+
+    playPause(direction: number) {
+        if (this.state.selected) {
+            let target = this.props.entity;
+            if (this.props.entity instanceof TargetedAnimation) {
+                target = this.props.entity.target;
+            }
+            if (this.state.isPlaying) {
+                this.props.scene.stopAnimation(target);
+                this.setState({ isPlaying: false })
+                this._isPlaying = false;
+                this.forceUpdate();
+            } else {
+                let keys = this.state.selected.getKeys();
+                let firstFrame = keys[0].frame;
+                let LastFrame = keys[keys.length - 1].frame;
+                if (direction === 1){
+                    this.props.scene.beginAnimation(target, firstFrame, LastFrame, true);
+                } 
+                if (direction === -1){
+                    this.props.scene.beginAnimation(target, LastFrame, firstFrame, true);
+                } 
+                this._isPlaying = true;
+                this.setState({ isPlaying: true });
+                this.forceUpdate();
+            }
         }
     }
 
@@ -1034,14 +1044,13 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
                                 })}
 
-                                { /* Single Curve -Modify this for multiple selection and view  */}
-                                <path ref={this._selectedCurve} pathLength={this.state.lastFrame} id="curve" d={this.state.currentPathData} style={{ stroke: 'red', fill: 'none', strokeWidth: '0.5' }}></path>
+                                { /* Multiple Curves  */}
+                                {
+                                    this.state.selectedPathData?.map( (curve, i) => 
+                                        <path key={i} ref={curve.domCurve} pathLength={curve.pathLength} id="curve" d={curve.pathData} style={{ stroke: curve.color, fill: 'none', strokeWidth: '0.5' }}></path>
+                                    )
+                                }
 
-                                {this._frames && this._frames.map(frame =>
-                                    <svg x={frame.x} y={frame.y} style={{ overflow: 'visible' }}>
-                                        <circle cx="0" cy="0" r="2" stroke="black" strokeWidth="1" fill="white" />
-                                    </svg>
-                                )}
 
                             </SvgDraggableArea>
 

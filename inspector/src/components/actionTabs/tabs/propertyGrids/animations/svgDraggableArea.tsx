@@ -206,8 +206,8 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
                     {this.props.children}
                     {this.props.keyframeSvgPoints.map((keyframe, i) =>
                         <KeyframeSvgPoint
-                            key={i}
-                            id={i.toString()}
+                            key={`${keyframe.id}_${i}`}
+                            id={keyframe.id}
                             keyframePoint={keyframe.keyframePoint} 
                             leftControlPoint={keyframe.leftControlPoint} 
                             rightControlPoint={keyframe.rightControlPoint}
