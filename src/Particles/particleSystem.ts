@@ -2068,11 +2068,12 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             var defines: string = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
             custom[0] = this._scene.getEngine().createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
         }
-        var result = new ParticleSystem(name, this._capacity, this._scene, custom[0]);
+
+        let serialization = this.serialize();        
+        var result = ParticleSystem.Parse(serialization, this._scene, "");
+        result.name = name;
         result.customShader = program;
         result._customEffect = custom;
-
-        DeepCopier.DeepCopy(this, result, ["particles", "customShader", "noiseTexture", "particleTexture", "onDisposeObservable", "vertexShaderName"]);
 
         if (newEmitter === undefined) {
             newEmitter = this.emitter;
@@ -2083,79 +2084,6 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
 
         result.emitter = newEmitter;
-        if (this.particleTexture) {
-            if (this.particleTexture instanceof DynamicTexture) {
-                result.particleTexture = this.particleTexture.clone();
-                const ctx = (<unknown>result.particleTexture as DynamicTexture).getContext();
-                ctx.drawImage((<unknown>this.particleTexture as DynamicTexture).getContext().canvas, 0, 0);
-                (<unknown>result.particleTexture as DynamicTexture).update();
-            } else {
-                result.particleTexture = new Texture(this.particleTexture.url || this.particleTexture.name, this._scene);
-            }
-        }
-
-        // Clone gradients
-        if (this._colorGradients) {
-            this._colorGradients.forEach((v) => {
-                result.addColorGradient(v.gradient, v.color1, v.color2);
-            });
-        }
-        if (this._dragGradients) {
-            this._dragGradients.forEach((v) => {
-                result.addDragGradient(v.gradient, v.factor1, v.factor2);
-            });
-        }
-        if (this._angularSpeedGradients) {
-            this._angularSpeedGradients.forEach((v) => {
-                result.addAngularSpeedGradient(v.gradient, v.factor1, v.factor2);
-            });
-        }
-        if (this._emitRateGradients) {
-            this._emitRateGradients.forEach((v) => {
-                result.addEmitRateGradient(v.gradient, v.factor1, v.factor2);
-            });
-        }
-        if (this._lifeTimeGradients) {
-            this._lifeTimeGradients.forEach((v) => {
-                result.addLifeTimeGradient(v.gradient, v.factor1, v.factor2);
-            });
-        }
-        if (this._limitVelocityGradients) {
-            this._limitVelocityGradients.forEach((v) => {
-                result.addLimitVelocityGradient(v.gradient, v.factor1, v.factor2);
-            });
-        }
-        if (this._sizeGradients) {
-            this._sizeGradients.forEach((v) => {
-                result.addSizeGradient(v.gradient, v.factor1, v.factor2);
-            });
-        }
-        if (this._startSizeGradients) {
-            this._startSizeGradients.forEach((v) => {
-                result.addStartSizeGradient(v.gradient, v.factor1, v.factor2);
-            });
-        }
-        if (this._velocityGradients) {
-            this._velocityGradients.forEach((v) => {
-                result.addVelocityGradient(v.gradient, v.factor1, v.factor2);
-            });
-        }
-        if (this._rampGradients) {
-            this._rampGradients.forEach((v) => {
-                result.addRampGradient(v.gradient, v.color);
-            });
-        }
-        if (this._colorRemapGradients) {
-            this._colorRemapGradients.forEach((v) => {
-                result.addColorRemapGradient(v.gradient, v.factor1, v.factor2!);
-            });
-        }
-        if (this._alphaRemapGradients) {
-            this._alphaRemapGradients.forEach((v) => {
-                result.addAlphaRemapGradient(v.gradient, v.factor1, v.factor2!);
-            });
-        }
-
         if (!this.preventAutoStart) {
             result.start();
         }
