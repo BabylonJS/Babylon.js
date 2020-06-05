@@ -258,7 +258,15 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     if (this._copiedFrame.nodes.length) {
                         currentX = newFrame.x + this._copiedFrame.nodes[0].x - this._copiedFrame.x;
                         currentY = newFrame.y + this._copiedFrame.nodes[0].y - this._copiedFrame.y;
-                        this.pasteSelection(this._copiedFrame.nodes, currentX, currentY);                  
+                        
+                        this._graphCanvas._frameIsMoving = true;
+                        let newNodes = this.pasteSelection(this._copiedFrame.nodes, currentX, currentY);       
+                        if (newNodes) {           
+                            for (var node of newNodes) {
+                                newFrame.syncNode(node);
+                            }
+                        }
+                        this._graphCanvas._frameIsMoving = false;
                     }
 
                     if (this._copiedFrame.isCollapsed) {
@@ -380,6 +388,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             this.reconnectNewNodes(index, newNodes, copiedNodes, done);
         }
 
+        return newNodes;
     }
 
     zoomToFit() {
