@@ -669,6 +669,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
+    public set shouldRenderToMRT(v: boolean) {
+        // Shader is compatible with MRT target
+        this._shouldRenderToMRT = v;
+    }
+
     /**
      * Force normal to face away from face.
      */
@@ -1296,7 +1301,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         MaterialHelper.PrepareDefinesForMultiview(scene, defines);
 
         // Deferred
-        MaterialHelper.PrepareDefinesForDeferred(scene, defines);
+        if (this.shouldRenderToMRT) {
+            MaterialHelper.PrepareDefinesForDeferred(scene, defines);
+        }
 
         // Textures
         defines.METALLICWORKFLOW = this.isMetallicWorkflow();

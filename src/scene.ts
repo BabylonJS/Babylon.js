@@ -260,6 +260,8 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     public mrtCount: number = 4;
     public highDefinitionMRT: MultiRenderTarget;
+    private multiRenderAttachments: any[];
+    private defaultAttachments: any[];
     public sceneCompositorPostProcess: SceneCompositorPostProcess;
     public subSurfaceScatteringPostProcess: SubSurfaceScatteringPostProcess;
 
@@ -1456,6 +1458,9 @@ export class Scene extends AbstractScene implements IAnimatable {
         this.highDefinitionMRT = new MultiRenderTarget("sceneHighDefinitionMRT", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, this.mrtCount, this,
             { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: types });
         this.highDefinitionMRT.samples = 1;
+        let gl = this._engine._gl;
+        this.multiRenderAttachments = [gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1, gl.COLOR_ATTACHMENT2, gl.COLOR_ATTACHMENT3];
+        this.defaultAttachments = [gl.COLOR_ATTACHMENT0, gl.NONE, gl.NONE, gl.NONE];
         this.sceneCompositorPostProcess = new SceneCompositorPostProcess("sceneCompositor", 1, null, undefined, this._engine);
         this.sceneCompositorPostProcess.inputTexture = this.highDefinitionMRT.getInternalTexture()!;
         this.subSurfaceScatteringPostProcess = new SubSurfaceScatteringPostProcess("subSurfaceScattering", this, 1, null, undefined, this._engine);
@@ -3658,6 +3663,14 @@ export class Scene extends AbstractScene implements IAnimatable {
             return;
         }
         this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(force));
+    }
+
+    public drawBuffers(material: Material) {
+        if (material.shouldRenderToMRT && this.highDefinitionPipeline) {
+            this._engine.renderToAttachments(this.multiRenderAttachments);
+        } else if (this.highDefinitionPipeline) {
+            this._engine.renderToAttachments(this.defaultAttachments);
+        }
     }
 
     private _bindFrameBuffer() {

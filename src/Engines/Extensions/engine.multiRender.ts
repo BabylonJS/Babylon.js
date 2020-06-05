@@ -43,8 +43,20 @@ declare module "../../Engines/thinEngine" {
          * @param attachments attachments to clear
          */
         clearColorAttachments(texture: InternalTexture, color?: IColor4Like) : void;
+
+        /**
+         * Select a subsets of attachments to draw to.
+         * @param attachments gl attachments
+         */
+        renderToAttachments(attachments: any[]) : void;
     }
 }
+
+ThinEngine.prototype.renderToAttachments = function(attachments: any[]): void {
+    const gl = this._gl;
+
+    gl.drawBuffers(attachments);
+};
 
 ThinEngine.prototype.clearColorAttachments = function(texture: InternalTexture, color?: IColor4Like): void {
     // Default clear everything to transparent black
