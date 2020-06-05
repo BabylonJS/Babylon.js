@@ -1316,7 +1316,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         MaterialHelper.PrepareDefinesForMultiview(scene, defines);
 
         // Deferred
-        if (this.shouldRenderToMRT) {
+        if (true || this.shouldRenderToMRT) {
             MaterialHelper.PrepareDefinesForDeferred(scene, defines);
         }
 

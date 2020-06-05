@@ -1798,6 +1798,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
+        // Render to MRT
+        if (scene.highDefinitionPipeline) {
+            scene.drawBuffers(material);
+        }
+
         // Material
         if (!instanceDataStorage.isFrozen || !this._effectiveMaterial || this._effectiveMaterial !== material) {
             if (material._storeEffectOnSubMeshes) {
