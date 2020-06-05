@@ -147,6 +147,11 @@ export class NodeMaterialConnectionPoint {
     public isOptional: boolean;
 
     /**
+     * Gets or sets a boolean indicating that this connection point is exposed on a frame
+     */
+    public isExposedOnFrame: boolean =  false;
+
+    /**
      * Gets or sets a string indicating that this uniform must be defined under a #ifdef
      */
     public define: string;
@@ -456,6 +461,10 @@ export class NodeMaterialConnectionPoint {
             serializationObject.inputName = this.name;
             serializationObject.targetBlockId = this.connectedPoint.ownerBlock.uniqueId;
             serializationObject.targetConnectionName = this.connectedPoint.name;
+        }
+
+        if (this.isExposedOnFrame) {
+            serializationObject.isExposedOnFrame = this.isExposedOnFrame;
         }
 
         return serializationObject;

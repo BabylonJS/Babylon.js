@@ -51,6 +51,8 @@ precision highp float;
     #include<reflectionFunction>
 #endif
 
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 #include<pbrBlockAlbedoOpacity>
 #include<pbrBlockReflectivity>
 #include<pbrBlockAmbientOcclusion>
@@ -60,8 +62,6 @@ precision highp float;
 #include<pbrBlockSheen>
 #include<pbrBlockClearcoat>
 #include<pbrBlockSubSurface>
-
-#define CUSTOM_FRAGMENT_DEFINITIONS
 
 // _____________________________ MAIN FUNCTION ____________________________
 void main(void) {
@@ -97,6 +97,10 @@ void main(void) {
     #ifdef OPACITY
         opacityMap,
         vOpacityInfos,
+    #endif
+    #ifdef DETAIL
+        detailColor,
+        vDetailInfos,
     #endif
         albedoOpacityOut
     );
@@ -171,6 +175,10 @@ void main(void) {
     #endif
     #ifdef MICROSURFACEMAP
         microSurfaceTexel,
+    #endif
+    #ifdef DETAIL
+        detailColor,
+        vDetailInfos,
     #endif
         reflectivityOut
     );

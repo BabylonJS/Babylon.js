@@ -553,6 +553,7 @@ export class Animation {
      */
     public addEvent(event: AnimationEvent): void {
         this._events.push(event);
+        this._events.sort((a, b) => a.frame - b.frame);
     }
 
     /**

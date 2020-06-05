@@ -46,6 +46,9 @@ export class TransformNode extends Node {
     private _up = new Vector3(0, 1, 0);
     private _right = new Vector3(1, 0, 0);
     private _rightInverted = new Vector3(-1, 0, 0);
+    private _tmpRotation = Quaternion.Zero();
+    private _tmpScaling = Vector3.Zero();
+    private _tmpTranslation = Vector3.Zero();
 
     // Properties
     @serializeAsVector3("position")
@@ -308,19 +311,15 @@ export class TransformNode extends Node {
             return false;
         }
 
-        if (!cache.position.equals(this._position)) {
+        if (this.position._isDirty) {
             return false;
         }
 
-        if (this._rotationQuaternion) {
-            if (!cache.rotationQuaternion.equals(this._rotationQuaternion)) {
-                return false;
-            }
-        } else if (!cache.rotation.equals(this._rotation)) {
+        if (this.scaling._isDirty) {
             return false;
         }
 
-        if (!cache.scaling.equals(this._scaling)) {
+        if (this._rotationQuaternion && this._rotationQuaternion._isDirty || this.rotation._isDirty) {
             return false;
         }
 
@@ -333,10 +332,6 @@ export class TransformNode extends Node {
 
         let cache = this._cache;
         cache.localMatrixUpdated = false;
-        cache.position = Vector3.Zero();
-        cache.scaling = Vector3.Zero();
-        cache.rotation = Vector3.Zero();
-        cache.rotationQuaternion = new Quaternion(0, 0, 0, 0);
         cache.billboardMode = -1;
         cache.infiniteDistance = false;
     }
@@ -1009,11 +1004,14 @@ export class TransformNode extends Node {
         this._currentRenderId = currentRenderId;
         this._childUpdateId++;
         this._isDirty = false;
+        this._position._isDirty = false;
+        this._rotation._isDirty = false;
+        this._scaling._isDirty = false;
         let parent = this._getEffectiveParent();
 
         // Scaling
-        let scaling: Vector3 = cache.scaling;
-        let translation: Vector3 = cache.position;
+        let scaling: Vector3 = this._tmpScaling;
+        let translation: Vector3 = this._position;
 
         // Translation
         if (this._infiniteDistance) {
@@ -1021,20 +1019,19 @@ export class TransformNode extends Node {
                 var cameraWorldMatrix = camera.getWorldMatrix();
                 var cameraGlobalPosition = new Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
 
+                translation = this._tmpTranslation;
                 translation.copyFromFloats(this._position.x + cameraGlobalPosition.x, this._position.y + cameraGlobalPosition.y, this._position.z + cameraGlobalPosition.z);
-            } else {
-                translation.copyFrom(this._position);
             }
-        } else {
-            translation.copyFrom(this._position);
         }
 
         // Scaling
         scaling.copyFromFloats(this._scaling.x * this.scalingDeterminant, this._scaling.y * this.scalingDeterminant, this._scaling.z * this.scalingDeterminant);
 
         // Rotation
-        let rotation: Quaternion = cache.rotationQuaternion;
+        let rotation: Quaternion;
         if (this._rotationQuaternion) {
+            this._rotationQuaternion._isDirty = false;
+            rotation = this._rotationQuaternion;
             if (this.reIntegrateRotationIntoRotationQuaternion) {
                 var len = this.rotation.lengthSquared();
                 if (len) {
@@ -1042,10 +1039,9 @@ export class TransformNode extends Node {
                     this._rotation.copyFromFloats(0, 0, 0);
                 }
             }
-            rotation.copyFrom(this._rotationQuaternion);
         } else {
+            rotation = this._tmpRotation;
             Quaternion.RotationYawPitchRollToRef(this._rotation.y, this._rotation.x, this._rotation.z, rotation);
-            cache.rotation.copyFrom(this._rotation);
         }
 
         // Compose

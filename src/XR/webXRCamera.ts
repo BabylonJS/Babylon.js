@@ -275,8 +275,8 @@ export class WebXRCamera extends FreeCamera {
             this._xrInvPositionCache.y = 0;
         }
         const transform = new XRRigidTransform(
-            { ...this._xrInvPositionCache },
-            { ...this._xrInvQuaternionCache });
+            { x: this._xrInvPositionCache.x, y: this._xrInvPositionCache.y, z: this._xrInvPositionCache.z },
+            { x: this._xrInvQuaternionCache.x, y: this._xrInvQuaternionCache.y, z: this._xrInvQuaternionCache.z, w: this._xrInvQuaternionCache.w });
         // Update offset reference to use a new originOffset with the teleported
         // player position and orientation.
         // This new offset needs to be applied to the base ref space.
@@ -297,7 +297,7 @@ export class WebXRCamera extends FreeCamera {
             pos.negateInPlace();
 
             const transform2 = new XRRigidTransform(
-                { ...pos });
+                {  x: pos.x, y: pos.y, z: pos.z  });
             // Update offset reference to use a new originOffset with the teleported
             // player position and orientation.
             // This new offset needs to be applied to the base ref space.

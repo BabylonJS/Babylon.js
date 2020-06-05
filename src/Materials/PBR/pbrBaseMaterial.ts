@@ -40,6 +40,7 @@ import "../../Shaders/pbr.fragment";
 import "../../Shaders/pbr.vertex";
 
 import { EffectFallbacks } from '../effectFallbacks';
+import { IMaterialDetailMapDefines, DetailMapConfiguration } from '../material.detailMapConfiguration';
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -53,10 +54,11 @@ export class PBRMaterialDefines extends MaterialDefines
     IMaterialAnisotropicDefines,
     IMaterialBRDFDefines,
     IMaterialSheenDefines,
-    IMaterialSubSurfaceDefines {
+    IMaterialSubSurfaceDefines,
+    IMaterialDetailMapDefines {
     public PBR = true;
 
-    public NUM_SAMPLES = "0u";
+    public NUM_SAMPLES = "0";
     public REALTIME_FILTERING = false;
 
     public MAINUV1 = false;
@@ -68,6 +70,10 @@ export class PBRMaterialDefines extends MaterialDefines
     public GAMMAALBEDO = false;
     public ALBEDODIRECTUV = 0;
     public VERTEXCOLOR = false;
+
+    public DETAIL = false;
+    public DETAILDIRECTUV = 0;
+    public DETAIL_NORMALBLENDMETHOD = 0;
 
     public AMBIENT = false;
     public AMBIENTDIRECTUV = 0;
@@ -800,6 +806,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public readonly subSurface = new PBRSubSurfaceConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
 
+    /**
+     * Defines the detail map parameters for the material.
+     */
+    public readonly detailMap = new DetailMapConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
+
     protected _rebuildInParallel = false;
 
     /**
@@ -1023,7 +1034,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         if (!this.subSurface.isReadyForSubMesh(defines, scene) ||
             !this.clearCoat.isReadyForSubMesh(defines, scene, engine, this._disableBumpMap) ||
             !this.sheen.isReadyForSubMesh(defines, scene) ||
-            !this.anisotropy.isReadyForSubMesh(defines, scene)) {
+            !this.anisotropy.isReadyForSubMesh(defines, scene) ||
+            !this.detailMap.isReadyForSubMesh(defines, scene)) {
             return false;
         }
 
@@ -1242,6 +1254,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "microSurfaceSampler", "environmentBrdfSampler", "boneSampler", "metallicReflectanceSampler"];
 
         var uniformBuffers = ["Material", "Scene"];
+
+        DetailMapConfiguration.AddUniforms(uniforms);
+        DetailMapConfiguration.AddSamplers(samplers);
 
         PBRSubSurfaceConfiguration.AddUniforms(uniforms);
         PBRSubSurfaceConfiguration.AddSamplers(samplers);
@@ -1576,6 +1591,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         // External config
+        this.detailMap.prepareDefines(defines, scene);
         this.subSurface.prepareDefines(defines, scene);
         this.clearCoat.prepareDefines(defines, scene);
         this.anisotropy.prepareDefines(defines, mesh, scene);
@@ -1666,6 +1682,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         PBRAnisotropicConfiguration.PrepareUniformBuffer(ubo);
         PBRSheenConfiguration.PrepareUniformBuffer(ubo);
         PBRSubSurfaceConfiguration.PrepareUniformBuffer(ubo);
+        DetailMapConfiguration.PrepareUniformBuffer(ubo);
 
         ubo.create();
     }
@@ -1970,6 +1987,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 }
             }
 
+            this.detailMap.bindForSubMesh(ubo, scene, this.isFrozen);
             this.subSurface.bindForSubMesh(ubo, scene, engine, this.isFrozen, defines.LODBASEDMICROSFURACE, this.realTimeFiltering);
             this.clearCoat.bindForSubMesh(ubo, scene, engine, this._disableBumpMap, this.isFrozen, this._invertNormalMapX, this._invertNormalMapY);
             this.anisotropy.bindForSubMesh(ubo, scene, this.isFrozen);
@@ -2066,6 +2084,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             results.push(this._lightmapTexture);
         }
 
+        this.detailMap.getAnimatables(results);
         this.subSurface.getAnimatables(results);
         this.clearCoat.getAnimatables(results);
         this.sheen.getAnimatables(results);
@@ -2137,6 +2156,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             activeTextures.push(this._lightmapTexture);
         }
 
+        this.detailMap.getActiveTextures(activeTextures);
         this.subSurface.getActiveTextures(activeTextures);
         this.clearCoat.getActiveTextures(activeTextures);
         this.sheen.getActiveTextures(activeTextures);
@@ -2195,7 +2215,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             return true;
         }
 
-        return this.subSurface.hasTexture(texture) ||
+        return this.detailMap.hasTexture(texture) ||
+            this.subSurface.hasTexture(texture) ||
             this.clearCoat.hasTexture(texture) ||
             this.sheen.hasTexture(texture) ||
             this.anisotropy.hasTexture(texture);
@@ -2225,6 +2246,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             this._microSurfaceTexture?.dispose();
         }
 
+        this.detailMap.dispose(forceDisposeTextures);
         this.subSurface.dispose(forceDisposeTextures);
         this.clearCoat.dispose(forceDisposeTextures);
         this.sheen.dispose(forceDisposeTextures);
