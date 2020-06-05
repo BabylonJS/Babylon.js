@@ -1691,7 +1691,6 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         result.name = name;
         result._customEffect = custom;
 
-
         if (newEmitter === undefined) {
             newEmitter = this.emitter;
         }
