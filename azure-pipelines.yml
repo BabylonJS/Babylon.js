@@ -174,8 +174,8 @@ jobs:
       testRunner: JUnit
       testResultsFiles: '.temp/testResults/ModuleTestsWebpack.xml'
 
-- job: ViewerTests
-  displayName: '8. Viewer Tests'
+- job: ViewerBuild
+  displayName: '8. Viewer Build'
   pool:
     vmImage: 'Ubuntu-16.04'
     demands: npm
@@ -185,7 +185,22 @@ jobs:
     inputs:
       workingDir: Tools/Gulp
       verbose: false
-  - script: 'gulp typescript-all --max-old-space-size=8192'
+  - script: 'gulp typescript-viewer-libraries --max-old-space-size=8192'
+    workingDirectory: Tools/Gulp
+    displayName: 'Typescript all'
+
+- job: ViewerTests
+  displayName: '9. Viewer Tests'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+    demands: npm
+  steps:
+  - task: Npm@1
+    displayName: 'npm install'
+    inputs:
+      workingDir: Tools/Gulp
+      verbose: false
+  - script: 'gulp typescript-viewer-libraries --max-old-space-size=8192'
     workingDirectory: Tools/Gulp
     displayName: 'Typescript all'
   - script: 'gulp tests-viewer-unit --max-old-space-size=8192'

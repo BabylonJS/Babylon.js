@@ -1794,7 +1794,7 @@ declare module "babylonjs-node-editor/graphEditor" {
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
         reconnectNewNodes(nodeIndex: number, newNodes: GraphNode[], sourceNodes: GraphNode[], done: boolean[]): void;
-        pasteSelection(copiedNodes: GraphNode[], currentX: number, currentY: number, selectNew?: boolean): void;
+        pasteSelection(copiedNodes: GraphNode[], currentX: number, currentY: number, selectNew?: boolean): GraphNode[] | undefined;
         zoomToFit(): void;
         buildMaterial(): void;
         build(): void;
@@ -3342,7 +3342,7 @@ declare module NODEEDITOR {
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
         reconnectNewNodes(nodeIndex: number, newNodes: GraphNode[], sourceNodes: GraphNode[], done: boolean[]): void;
-        pasteSelection(copiedNodes: GraphNode[], currentX: number, currentY: number, selectNew?: boolean): void;
+        pasteSelection(copiedNodes: GraphNode[], currentX: number, currentY: number, selectNew?: boolean): GraphNode[] | undefined;
         zoomToFit(): void;
         buildMaterial(): void;
         build(): void;

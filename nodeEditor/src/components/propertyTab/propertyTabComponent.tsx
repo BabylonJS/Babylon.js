@@ -419,9 +419,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 this.customSave();
                             }} />
                         }
-
-                    </LineContainerComponent>
-                    <LineContainerComponent title="FRAME">
                         <FileButtonLineComponent label="Load Frame" uploadName={'frame-upload'} onClick={(file) => this.loadFrame(file)} accept=".json" />
                     </LineContainerComponent>
                     {
