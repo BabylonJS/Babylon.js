@@ -1,3 +1,5 @@
+#extension GL_EXT_draw_buffers : require
+
 #if defined(BUMP) || !defined(NORMAL)
 #extension GL_OES_standard_derivatives : enable
 #endif

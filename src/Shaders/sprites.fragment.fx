@@ -9,10 +9,6 @@ uniform sampler2D diffuseSampler;
 // Fog
 #include<fogFragmentDeclaration>
 
-// Deferred
-#include<deferredDeclaration>[SCENE_MRT_COUNT]
-
-
 void main(void) {
 	vec4 color = texture2D(diffuseSampler, vUV);
 
@@ -27,7 +23,4 @@ void main(void) {
 #include<fogFragment>
 
 	gl_FragColor = color;
-
-#include<deferredDefaultOutput>
-
 }

@@ -100,9 +100,6 @@ varying vec3 vNormalW;
 // Fog
 #include<fogFragmentDeclaration>
 
-// Deferred
-#include<deferredDeclaration>[SCENE_MRT_COUNT]
-
 #ifdef REFLECTIONFRESNEL
     #define FRESNEL_MAXIMUM_ON_ROUGH 0.25
 
@@ -304,7 +301,4 @@ vec4 color = vec4(finalColor, finalAlpha);
 #endif
 
     gl_FragColor = color;
-
-#include<deferredDefaultOutput>
-
 }
