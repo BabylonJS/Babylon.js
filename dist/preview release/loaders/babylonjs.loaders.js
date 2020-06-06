@@ -7279,6 +7279,7 @@ var GLTFLoader = /** @class */ (function () {
         this._babylonScene._blockEntityCollection = this._forAssetContainer;
         var babylonCamera = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["FreeCamera"](camera.name || "camera" + camera.index, babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Zero(), this._babylonScene, false);
         this._babylonScene._blockEntityCollection = false;
+        babylonCamera.ignoreParentScaling = true;
         babylonCamera.rotation = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Vector3"](0, Math.PI, 0);
         switch (camera.type) {
             case "perspective" /* PERSPECTIVE */: {

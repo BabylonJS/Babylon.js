@@ -1479,7 +1479,7 @@ declare module NODEEDITOR {
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
         reconnectNewNodes(nodeIndex: number, newNodes: GraphNode[], sourceNodes: GraphNode[], done: boolean[]): void;
-        pasteSelection(copiedNodes: GraphNode[], currentX: number, currentY: number, selectNew?: boolean): void;
+        pasteSelection(copiedNodes: GraphNode[], currentX: number, currentY: number, selectNew?: boolean): GraphNode[] | undefined;
         zoomToFit(): void;
         buildMaterial(): void;
         build(): void;
