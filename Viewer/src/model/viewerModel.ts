@@ -497,7 +497,7 @@ export class ViewerModel implements IDisposable {
         }
 
         if (this._modelConfiguration.rotationOffsetAxis) {
-            let rotationAxis = new Vector3(0, 0, 0).copyFrom(this._modelConfiguration.rotationOffsetAxis as Vector3);
+            let rotationAxis = new Vector3(this._modelConfiguration.rotationOffsetAxis.x, this._modelConfiguration.rotationOffsetAxis.y, this._modelConfiguration.rotationOffsetAxis.z);
 
             meshesWithNoParent.forEach((m) => {
                 if (this._modelConfiguration.rotationOffsetAngle) {
