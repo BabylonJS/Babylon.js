@@ -72,9 +72,6 @@ varying vec3 vPosition;
 // Fog
 #include<fogFragmentDeclaration>
 
-// Deferred
-#include<deferredDeclaration>[SCENE_MRT_COUNT]
-
 void main(void) {
 	// Clip plane
     #include<clipPlaneFragment>
@@ -255,7 +252,4 @@ vec4 color = vec4(finalDiffuse + finalSpecular, alpha);
 #endif
 	
 	gl_FragColor = color;
-
-#include<deferredDefaultOutput>
-
 }

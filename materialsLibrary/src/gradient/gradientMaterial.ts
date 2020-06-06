@@ -31,8 +31,6 @@ class GradientMaterialDefines extends MaterialDefines {
     public DEPTHPREPASS = false;
     public POINTSIZE = false;
     public FOG = false;
-    public HIGH_DEFINITION_PIPELINE = false;
-    public SCENE_MRT_COUNT = 0;
     public NORMAL = false;
     public UV1 = false;
     public UV2 = false;
@@ -124,9 +122,6 @@ export class GradientMaterial extends PushMaterial {
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
 
         MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
-
-        // Deferred
-        MaterialHelper.PrepareDefinesForDeferred(scene, defines);
 
         defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
 

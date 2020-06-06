@@ -55,9 +55,6 @@ uniform sampler2D bump3Sampler;
 // Fog
 #include<fogFragmentDeclaration>
 
-// Deferred
-#include<deferredDeclaration>[SCENE_MRT_COUNT]
-
 // Bump
 #ifdef BUMP
 #extension GL_OES_standard_derivatives : enable
@@ -183,7 +180,4 @@ void main(void) {
 #include<fogFragment>
 
 	gl_FragColor = color;
-
-#include<deferredDefaultOutput>
-
 }

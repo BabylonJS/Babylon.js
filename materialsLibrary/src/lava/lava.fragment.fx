@@ -51,8 +51,6 @@ uniform vec2 vDiffuseInfos;
 // Fog
 #include<fogFragmentDeclaration>
 
-// Deferred
-#include<deferredDeclaration>[SCENE_MRT_COUNT]
 
 float random( vec3 scale, float seed ){
     return fract( sin( dot( gl_FragCoord.xyz + seed, scale ) ) * 43758.5453 + seed ) ;
@@ -155,7 +153,4 @@ void main(void) {
 #include<fogFragment>
 
 	gl_FragColor = color;
-
-#include<deferredDefaultOutput>
-
 }

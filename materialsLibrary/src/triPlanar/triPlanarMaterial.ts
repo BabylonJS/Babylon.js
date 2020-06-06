@@ -40,8 +40,6 @@ class TriPlanarMaterialDefines extends MaterialDefines {
     public DEPTHPREPASS = false;
     public POINTSIZE = false;
     public FOG = false;
-    public HIGH_DEFINITION_PIPELINE = false;
-    public SCENE_MRT_COUNT = 0;
     public SPECULARTERM = false;
     public NORMAL = false;
     public VERTEXCOLOR = false;

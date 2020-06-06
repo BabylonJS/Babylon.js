@@ -55,9 +55,6 @@ varying mat3 tangentSpace;
 #include<clipPlaneFragmentDeclaration>
 #include<fogFragmentDeclaration>
 
-// Deferred
-#include<deferredDeclaration>[SCENE_MRT_COUNT]
-
 void main(void) {
 	// Clip plane
 	#include<clipPlaneFragment>
@@ -150,7 +147,4 @@ void main(void) {
 #include<fogFragment>
 
 	gl_FragColor = color;
-
-#include<deferredDefaultOutput>
-
 }

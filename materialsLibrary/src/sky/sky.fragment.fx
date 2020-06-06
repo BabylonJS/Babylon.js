@@ -22,9 +22,6 @@ uniform vec3 sunPosition;
 // Fog
 #include<fogFragmentDeclaration>
 
-// Deferred
-#include<deferredDeclaration>[SCENE_MRT_COUNT]
-
 // Constants
 const float e = 2.71828182845904523536028747135266249775724709369995957;
 const float pi = 3.141592653589793238462643383279502884197169;
@@ -171,7 +168,4 @@ void main(void) {
 #include<fogFragment>
 
 	gl_FragColor = color;
-
-#include<deferredDefaultOutput>
-
 }
