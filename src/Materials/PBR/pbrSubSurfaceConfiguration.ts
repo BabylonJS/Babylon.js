@@ -64,12 +64,12 @@ export class PBRSubSurfaceConfiguration {
     public isTranslucencyEnabled = false;
 
     private _isScatteringEnabled = false;
-    // /**
-    //  * Defines if the sub surface scattering is enabled in the material.
-    //  */
-    // @serialize()
-    // @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    // public isScatteringEnabled = false;
+    /**
+     * Defines if the sub surface scattering is enabled in the material.
+     */
+    @serialize()
+    @expandToProperty("_markSceneDeferredDirty")
+    public isScatteringEnabled = false;
 
     /**
      * Defines the refraction intensity of the material.
@@ -223,18 +223,24 @@ export class PBRSubSurfaceConfiguration {
 
     /** @hidden */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
+    private _internalMarkSceneDeferredDirty: () => void;
 
     /** @hidden */
     public _markAllSubMeshesAsTexturesDirty(): void {
         this._internalMarkAllSubMeshesAsTexturesDirty();
+    }
+    /** @hidden */
+    public _markSceneDeferredDirty(): void {
+        this._internalMarkSceneDeferredDirty();
     }
 
     /**
      * Instantiate a new istance of sub surface configuration.
      * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
      */
-    constructor(markAllSubMeshesAsTexturesDirty: () => void) {
+    constructor(markAllSubMeshesAsTexturesDirty: () => void, markSceneDeferredDirty: () => void) {
         this._internalMarkAllSubMeshesAsTexturesDirty = markAllSubMeshesAsTexturesDirty;
+        this._internalMarkSceneDeferredDirty = markSceneDeferredDirty;
     }
 
     /**

@@ -28,6 +28,7 @@ import { Material } from "./Materials/material";
 import { ImageProcessingConfiguration } from "./Materials/imageProcessingConfiguration";
 import { Effect } from "./Materials/effect";
 import { UniformBuffer } from "./Materials/uniformBuffer";
+import { PBRBaseMaterial } from "./Materials/PBR/pbrBaseMaterial";
 import { MultiMaterial } from "./Materials/multiMaterial";
 import { Light } from "./Lights/light";
 import { PickingInfo } from "./Collisions/pickingInfo";
@@ -249,13 +250,41 @@ export class Scene extends AbstractScene implements IAnimatable {
         return this._imageProcessingConfiguration;
     }
 
-    private _highDefinitionPipeline: boolean = true;
+    private _highDefinitionPipeline: boolean = false;
 
     public get highDefinitionPipeline() {
         return this._highDefinitionPipeline;
     }
+
     public set highDefinitionPipeline(b: boolean) {
         this._highDefinitionPipeline = b;
+    }
+
+    private _isDeferredDirty: boolean = false;
+    public markDeferredDirty() {
+        this._isDeferredDirty = true;
+    }
+
+    private _updateDeferred() {
+        this.highDefinitionPipeline = false;
+
+        // Subsurface scattering
+        for (let i = 0; i < this.materials.length; i++) {
+            const material = this.materials[i] as PBRBaseMaterial;
+
+            if (material.subSurface && material.subSurface.isScatteringEnabled) {
+                this.highDefinitionPipeline = true;
+            }
+        }
+
+        // SSAO 2
+        // TODO
+
+        this._isDeferredDirty = false;
+
+        if (!this.highDefinitionPipeline) {
+            this._engine.renderToAttachments(this.defaultAttachments);
+        }
     }
 
     public mrtCount: number = 4;
@@ -1457,7 +1486,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         this.highDefinitionMRT = new MultiRenderTarget("sceneHighDefinitionMRT", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, this.mrtCount, this,
             { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: types });
-        this.highDefinitionMRT.samples = 1;
+        this.highDefinitionMRT.samples = 8;
         let gl = this._engine._gl;
         this.multiRenderAttachments = [gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1, gl.COLOR_ATTACHMENT2, gl.COLOR_ATTACHMENT3];
         this.defaultAttachments = [gl.COLOR_ATTACHMENT0, gl.NONE, gl.NONE, gl.NONE];
@@ -3666,10 +3695,12 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     public drawBuffers(material: Material) {
-        if (material.shouldRenderToMRT && this.highDefinitionPipeline) {
-            this._engine.renderToAttachments(this.multiRenderAttachments);
-        } else if (this.highDefinitionPipeline) {
-            this._engine.renderToAttachments(this.defaultAttachments);
+        if (this.highDefinitionPipeline) {
+            if (material.shouldRenderToMRT) {
+                this._engine.renderToAttachments(this.multiRenderAttachments);
+            } else {
+                this._engine.renderToAttachments(this.defaultAttachments);      
+            }
         }
     }
 
@@ -3790,6 +3821,10 @@ export class Scene extends AbstractScene implements IAnimatable {
             if (this.activeCamera && this.activeCamera.outputRenderTarget) {
                 needRebind = true;
             }
+        }
+
+        if (this._isDeferredDirty) {
+            this._updateDeferred();
         }
 
         // Restore framebuffer after rendering to targets

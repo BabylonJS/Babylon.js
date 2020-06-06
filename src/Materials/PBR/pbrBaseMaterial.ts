@@ -675,9 +675,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
-    public set shouldRenderToMRT(v: boolean) {
-        // Shader is compatible with MRT target
-        this._shouldRenderToMRT = v;
+    public get shouldRenderToMRT() {
+        return true;
     }
 
     /**
@@ -804,7 +803,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Defines the SubSurface parameters for the material.
      */
-    public readonly subSurface = new PBRSubSurfaceConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
+    public readonly subSurface = new PBRSubSurfaceConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this), this._markSceneDeferredDirty.bind(this));
 
     /**
      * Defines the detail map parameters for the material.
@@ -1316,7 +1315,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         MaterialHelper.PrepareDefinesForMultiview(scene, defines);
 
         // Deferred
-        if (true || this.shouldRenderToMRT) {
+        if (this.shouldRenderToMRT) {
             MaterialHelper.PrepareDefinesForDeferred(scene, defines);
         }
 
