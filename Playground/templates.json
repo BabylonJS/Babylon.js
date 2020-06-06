@@ -12,6 +12,18 @@
     "language" : "javascript"
   },
   {
+    "label" : "Load CPU Particle System from Snippet Server",
+    "documentation" : "https://doc.babylonjs.com/babylon101/particles#snippet-server",
+    "insertText" : "BABYLON.ParticleHelper.CreateFromSnippetAsync(\"${1:your_snippet_url_no_#}\", scene, false).then(system => {\n\n});",
+    "language" : "javascript"
+  },
+  {
+    "label" : "Load GPU Particle System from Snippet Server",
+    "documentation" : "https://doc.babylonjs.com/babylon101/particles#snippet-server",
+    "insertText" : "BABYLON.ParticleHelper.CreateFromSnippetAsync(\"${1:your_snippet_url_no_#}\", scene, true).then(system => {\n\n});",
+    "language" : "javascript"
+  },
+  {
     "label" : "Create a cylinder",
     "documentation" : "https://doc.babylonjs.com/how_to/set_shapes",
     "insertText" : "var cylinder = BABYLON.MeshBuilder.CreateCylinder(\"${1:cylinder}\", {height: ${2:2}, diameter: ${3:1}}, scene);",
