@@ -289,6 +289,12 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     public mrtCount: number = 4;
     public highDefinitionMRT: MultiRenderTarget;
+    private mrtTypes = [
+        Constants.TEXTURETYPE_UNSIGNED_INT, // Original color
+        Constants.TEXTURETYPE_UNSIGNED_INT, // Irradiance
+        Constants.TEXTURETYPE_FLOAT, // Depth (world units)
+        Constants.TEXTURETYPE_UNSIGNED_INT
+    ];
     private multiRenderAttachments: any[];
     private defaultAttachments: any[];
     public sceneCompositorPostProcess: SceneCompositorPostProcess;
@@ -1476,17 +1482,10 @@ export class Scene extends AbstractScene implements IAnimatable {
             this._engine.onNewSceneAddedObservable.notifyObservers(this);
         }
 
-        // TODO : TEMPORARY
-        const types = [
-            Constants.TEXTURETYPE_UNSIGNED_INT, // Original color
-            Constants.TEXTURETYPE_UNSIGNED_INT, // Irradiance
-            Constants.TEXTURETYPE_FLOAT, // Depth (world units)
-            Constants.TEXTURETYPE_UNSIGNED_INT
-        ];
-
         this.highDefinitionMRT = new MultiRenderTarget("sceneHighDefinitionMRT", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, this.mrtCount, this,
-            { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: types });
-        this.highDefinitionMRT.samples = 1;
+            { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: this.mrtTypes });
+        this.highDefinitionMRT.samples = 8;
+
         let gl = this._engine._gl;
         this.multiRenderAttachments = [gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1, gl.COLOR_ATTACHMENT2, gl.COLOR_ATTACHMENT3];
         this.defaultAttachments = [gl.COLOR_ATTACHMENT0, gl.NONE, gl.NONE, gl.NONE];
@@ -3704,8 +3703,21 @@ export class Scene extends AbstractScene implements IAnimatable {
         }
     }
 
+    private _checkRTSize() {
+        var requiredWidth = this._engine.getRenderWidth(true);
+        var requiredHeight = this._engine.getRenderHeight(true);
+        var width = this.highDefinitionMRT.getRenderWidth();
+        var height = this.highDefinitionMRT.getRenderHeight();
+
+        if (width !== requiredWidth || height !== requiredHeight) {
+            this.highDefinitionMRT.resize({ width: requiredWidth, height: requiredHeight });
+            this.sceneCompositorPostProcess.inputTexture = this.highDefinitionMRT.getInternalTexture()!;
+        }
+    }
+
     private _bindFrameBuffer() {
         if (this.highDefinitionPipeline) {
+            this._checkRTSize();
             var internalTexture = this.highDefinitionMRT.getInternalTexture();
             if (internalTexture) {
                 this.getEngine().bindFramebuffer(internalTexture);
@@ -3714,6 +3726,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             }
             return;
         }
+
         if (this.activeCamera && this.activeCamera._multiviewTexture) {
             this.activeCamera._multiviewTexture._bindFrameBuffer();
         } else if (this.activeCamera && this.activeCamera.outputRenderTarget) {

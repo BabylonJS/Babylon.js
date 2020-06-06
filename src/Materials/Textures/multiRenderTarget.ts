@@ -187,6 +187,10 @@ export class MultiRenderTarget extends RenderTargetTexture {
 
         // Keeps references to frame buffer and stencil/depth buffer
         this._texture = this._internalTextures[0];
+
+        if (this.samples !== 1) {
+            this._getEngine()!.updateMultipleRenderTargetTextureSampleCount(this.count, this._internalTextures, this.samples);
+        }
     }
 
     private _createInternalTextures(): void {
@@ -226,9 +230,8 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * @param size Define the new size
      */
     public resize(size: any) {
-        this.releaseInternalTextures();
         this._size = size;
-        this._createInternalTextures();
+        this._rebuild();
     }
 
     protected unbindFrameBuffer(engine: Engine, faceIndex: number): void {
