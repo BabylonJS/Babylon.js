@@ -21,7 +21,6 @@ import { Texture } from "../Materials/Textures/texture";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Constants } from "../Engines/constants";
 import { EngineStore } from "../Engines/engineStore";
-import { DeepCopier } from "../Misc/deepCopier";
 import { IAnimatable } from '../Animations/animatable.interface';
 import { CustomParticleEmitter } from './EmitterTypes/customParticleEmitter';
 
@@ -1685,7 +1684,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @returns the cloned particle system
      */
     public clone(name: string, newEmitter: any): GPUParticleSystem {
-        let serialization = this.serialize();        
+        let serialization = this.serialize();
         var result = GPUParticleSystem.Parse(serialization, this._scene, "");
         var custom = { ...this._customEffect };
         result.name = name;
@@ -1712,6 +1711,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         ParticleSystem._Serialize(serializationObject, this, serializeTexture);
         serializationObject.activeParticleCount = this.activeParticleCount;
+        serializationObject.randomTextureSize = this._randomTextureSize;
 
         return serializationObject;
     }

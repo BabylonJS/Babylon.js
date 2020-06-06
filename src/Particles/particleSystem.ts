@@ -11,7 +11,6 @@ import { MaterialHelper } from "../Materials/materialHelper";
 import { Effect } from "../Materials/effect";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { Texture } from "../Materials/Textures/texture";
-import { DynamicTexture } from "../Materials/Textures/dynamicTexture";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
 import { EngineStore } from "../Engines/engineStore";
@@ -23,7 +22,6 @@ import { Particle } from "./particle";
 import { SubEmitter, SubEmitterType } from "./subEmitter";
 import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators";
-import { DeepCopier } from "../Misc/deepCopier";
 import { _TypeStore } from '../Misc/typeStore';
 import { IAnimatable } from '../Animations/animatable.interface';
 
@@ -2069,7 +2067,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             custom[0] = this._scene.getEngine().createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
         }
 
-        let serialization = this.serialize();        
+        let serialization = this.serialize();
         var result = ParticleSystem.Parse(serialization, this._scene, "");
         result.name = name;
         result.customShader = program;
