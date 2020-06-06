@@ -229,18 +229,14 @@ export class Material implements IAnimatable {
     @serialize()
     public state = "";
 
-    /**
-     * The state of the material
-     */
-    protected _shouldRenderToMRT = false;
 
-    public set shouldRenderToMRT(v: boolean) {
+    /**
+     * If the material should be rendered to several textures with MRT extension
+     */
+    public get shouldRenderToMRT() : boolean {
         // By default, shader are not compatible with MRTs
         // Base classes should override that if their shader supports MRT
-    }
-
-    public get shouldRenderToMRT() : boolean {
-        return this._shouldRenderToMRT;
+        return false;
     }
 
     /**
@@ -1244,6 +1240,14 @@ export class Material implements IAnimatable {
                 func(subMesh._materialDefines);
             }
         }
+    }
+
+    protected _markSceneDeferredDirty() {
+        if (this.getScene().blockMaterialDirtyMechanism) {
+            return;
+        }
+        
+        this.getScene().markDeferredDirty();
     }
 
     /**
