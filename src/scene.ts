@@ -1486,7 +1486,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         this.highDefinitionMRT = new MultiRenderTarget("sceneHighDefinitionMRT", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, this.mrtCount, this,
             { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: types });
-        this.highDefinitionMRT.samples = 8;
+        this.highDefinitionMRT.samples = 1;
         let gl = this._engine._gl;
         this.multiRenderAttachments = [gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1, gl.COLOR_ATTACHMENT2, gl.COLOR_ATTACHMENT3];
         this.defaultAttachments = [gl.COLOR_ATTACHMENT0, gl.NONE, gl.NONE, gl.NONE];
