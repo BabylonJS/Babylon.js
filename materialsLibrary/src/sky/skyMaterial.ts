@@ -27,8 +27,6 @@ class SkyMaterialDefines extends MaterialDefines {
     public CLIPPLANE6 = false;
     public POINTSIZE = false;
     public FOG = false;
-    public HIGH_DEFINITION_PIPELINE = false;
-    public SCENE_MRT_COUNT = 0;
     public VERTEXCOLOR = false;
     public VERTEXALPHA = false;
 
@@ -180,9 +178,6 @@ export class SkyMaterial extends PushMaterial {
         }
 
         MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, false, defines);
-
-        // Deferred
-        MaterialHelper.PrepareDefinesForDeferred(scene, defines);
 
         // Attribs
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, false);

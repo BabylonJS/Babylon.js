@@ -16,9 +16,6 @@ varying vec3 vNormal;
 
 #include<fogFragmentDeclaration>
 
-// Deferred
-#include<deferredDeclaration>[SCENE_MRT_COUNT]
-
 // Samplers
 #ifdef OPACITY
 varying vec2 vOpacityUV;
@@ -119,7 +116,4 @@ void main(void) {
     #endif
 #else    
 #endif
-
-#include<deferredDefaultOutput>
-
 }
