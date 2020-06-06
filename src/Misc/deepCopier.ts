@@ -44,7 +44,8 @@ export class DeepCopier {
      * @param mustCopyList defines a list of properties to copy (even if they start with _)
      */
     public static DeepCopy(source: any, destination: any, doNotCopyList?: string[], mustCopyList?: string[]): void {
-        for (var prop in getAllPropertyNames(source)) {
+        const proerties = getAllPropertyNames(source);
+        for (var prop of proerties) {
 
             if (prop[0] === "_" && (!mustCopyList || mustCopyList.indexOf(prop) === -1)) {
                 continue;
