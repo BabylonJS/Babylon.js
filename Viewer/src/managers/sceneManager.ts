@@ -372,7 +372,7 @@ export class SceneManager {
      * initialize the scene. Calling this function again will dispose the old scene, if exists.
      */
     public initScene(sceneConfiguration: ISceneConfiguration = {}, optimizerConfiguration?: boolean | ISceneOptimizerConfiguration): Promise<Scene> {
-        
+
         // if the scen exists, dispose it.
         if (this.scene) {
             this.scene.dispose();
@@ -485,7 +485,7 @@ export class SceneManager {
             }
 
             if (this.environmentHelper && newConfiguration.lab.environmentMainColor) {
-                let mainColor = new Color3().copyFrom(newConfiguration.lab.environmentMainColor as Color3);
+                let mainColor = new Color3(newConfiguration.lab.environmentMainColor.r, newConfiguration.lab.environmentMainColor.g, newConfiguration.lab.environmentMainColor.b);
                 this.environmentHelper.setMainColor(mainColor);
             }
 
@@ -594,8 +594,8 @@ export class SceneManager {
         }
     }
 
-    public setDefaultMaterial(sceneConfig: ISceneConfiguration){
-        
+    public setDefaultMaterial(sceneConfig: ISceneConfiguration) {
+
     }
 
     /**
@@ -927,7 +927,7 @@ export class SceneManager {
             if (canvas) {
                 this.scene.activeCamera.attachControl(canvas);
             }
-            
+
             this.camera = <ArcRotateCamera>this.scene.activeCamera!;
             this.camera.setTarget(Vector3.Zero());
         }
@@ -1275,11 +1275,11 @@ export class SceneManager {
 
                     if (lightConfig.target) {
                         if (light.setDirectionToTarget) {
-                            let target = Vector3.Zero().copyFrom(lightConfig.target as Vector3);
+                            let target = Vector3.Zero().copyFromFloats(lightConfig.target.x, lightConfig.target.y, lightConfig.target.z);
                             light.setDirectionToTarget(target);
                         }
                     } else if (lightConfig.direction) {
-                        let direction = Vector3.Zero().copyFrom(lightConfig.direction as Vector3);
+                        let direction = Vector3.Zero().copyFromFloats(lightConfig.direction.x, lightConfig.direction.y, lightConfig.direction.z);
                         light.direction = direction;
                     }
 

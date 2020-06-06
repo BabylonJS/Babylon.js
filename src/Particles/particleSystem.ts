@@ -2090,7 +2090,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                 ctx.drawImage((<unknown>this.particleTexture as DynamicTexture).getContext().canvas, 0, 0);
                 (<unknown>result.particleTexture as DynamicTexture).update();
             } else {
-                result.particleTexture = new Texture(this.particleTexture.url, this._scene);
+                result.particleTexture = new Texture(this.particleTexture.url || this.particleTexture.name, this._scene);
             }
         }
 

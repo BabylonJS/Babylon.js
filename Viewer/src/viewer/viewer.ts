@@ -174,7 +174,7 @@ export abstract class AbstractViewer {
         return this._configurationContainer;
     }
 
-    protected getConfigurationLoader(){
+    protected getConfigurationLoader() {
         return new RenderOnlyConfigurationLoader();
     }
 
@@ -298,7 +298,7 @@ export abstract class AbstractViewer {
             // position the vr camera to be in front of the object or wherever the user has configured it to be
             if (this.sceneManager.vrHelper.currentVRCamera && this.sceneManager.vrHelper.currentVRCamera !== this.sceneManager.camera) {
                 if (this.configuration.vr && this.configuration.vr.cameraPosition !== undefined) {
-                    this.sceneManager.vrHelper.currentVRCamera.position.copyFrom(this.configuration.vr.cameraPosition as Vector3);
+                    this.sceneManager.vrHelper.currentVRCamera.position.copyFromFloats(this.configuration.vr.cameraPosition.x, this.configuration.vr.cameraPosition.y, this.configuration.vr.cameraPosition.z);
                 } else {
                     this.sceneManager.vrHelper.currentVRCamera.position.copyFromFloats(0, this.sceneManager.vrHelper.currentVRCamera.position.y, -1);
                 }
@@ -750,7 +750,7 @@ export abstract class AbstractViewer {
             // We can decide here whether or not to cancel the lst load, but the developer can do that.
             return Promise.reject("another model is curently being loaded.");
         }
-        
+
         return Promise.resolve(this.sceneManager.scene).then((scene) => {
             if (!scene) { return this.sceneManager.initScene(this.configuration.scene, this.configuration.optimizer); }
             return scene;
