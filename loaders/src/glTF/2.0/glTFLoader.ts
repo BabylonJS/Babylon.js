@@ -1181,6 +1181,8 @@ export class GLTFLoader implements IGLTFLoader {
         this._parent.onCameraLoadedObservable.notifyObservers(babylonCamera);
         assign(babylonCamera);
 
+        this.logClose();
+
         return Promise.all(promises).then(() => {
             return babylonCamera;
         });
