@@ -25,6 +25,7 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
 
     constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT) {
         super(name, "subSurfaceScattering", ["texelSize", "filterRadius", "viewportSize"], ["inputSampler", "irradianceSampler", "depthSampler", "albedoSampler"], options, camera, samplingMode || Texture.BILINEAR_SAMPLINGMODE, engine, reusable, null, textureType, "postprocess", undefined, true);
+        this._scene = scene;
 
         const defines = this._getDefines();
         this.updateEffect(defines);
@@ -51,7 +52,14 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
             return null;
         }
 
-        return "";
+        let defines = "";
+
+        if (this._scene.imageProcessingConfiguration.applyByPostProcess) {
+            // We must output linear color for post process
+            defines = defines + "#define LINEAR_OUTPUT\n";
+        }
+
+        return defines;
     }
 
     private _getDiffusionProfileParameters()

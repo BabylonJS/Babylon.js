@@ -1,5 +1,6 @@
 // Samplers
 #include<fibonacci>
+#include<helperFunctions>
 
 varying vec2 vUV;
 uniform vec2 texelSize;
@@ -12,7 +13,6 @@ uniform float filterRadius;
 uniform vec2 viewportSize;
 
 const float LOG2_E = 1.4426950408889634;
-const float PI = 3.1415926535897932;
 const float SSS_PIXELS_PER_SAMPLE = 4.;
 const int _SssSampleBudget = 40;
 
@@ -188,7 +188,7 @@ void main(void)
 	float  distScale     = 1.; //sssData.subsurfaceMask;
 	vec3 S             = vec3(0.7568628, 0.32156864, 0.20000002); //_ShapeParamsAndMaxScatterDists[profileIndex].rgb diffusion color
 	float  d             = 0.7568628; //_ShapeParamsAndMaxScatterDists[profileIndex].a max scatter dist
-	float  metersPerUnit = 0.15; //_WorldScalesAndFilterRadiiAndThicknessRemaps[profileIndex].x;
+	float  metersPerUnit = 0.07; //_WorldScalesAndFilterRadiiAndThicknessRemaps[profileIndex].x;
 
 	// Reconstruct the view-space position corresponding to the central sample.
 	vec2 centerPosNDC = vUV;
@@ -222,7 +222,12 @@ void main(void)
             gl_FragColor = vec4(green, 1.0);
             return;
         #endif
+
 	    gl_FragColor = vec4(inputColor.rgb + albedo * centerIrradiance, 1.0);
+        #ifndef LINEAR_OUTPUT
+            gl_FragColor.rgb = toGammaSpace(gl_FragColor.rgb);
+            gl_FragColor.rgb = saturate(gl_FragColor.rgb);
+        #endif
         return;
 	}
 
@@ -253,6 +258,9 @@ void main(void)
     totalWeight = max(totalWeight, 1e-12);
 
     gl_FragColor = vec4(inputColor.rgb + albedo * (totalIrradiance / totalWeight), 1.);
-
+    #ifndef LINEAR_OUTPUT
+        gl_FragColor.rgb = toGammaSpace(gl_FragColor.rgb);
+        gl_FragColor.rgb = saturate(gl_FragColor.rgb);
+    #endif
 	// gl_FragColor = mix(texture2D(textureSampler, vUV), centerIrradiance, 0.5);
 }

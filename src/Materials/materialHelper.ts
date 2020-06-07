@@ -312,6 +312,7 @@ export class MaterialHelper {
 
         if (defines.HIGH_DEFINITION_PIPELINE != previousDeferred) {
             defines.markAsUnprocessed();
+            defines.markAsImageProcessingDirty();
         }
     }
 

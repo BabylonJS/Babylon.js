@@ -137,7 +137,7 @@ export class PostProcess {
     public adaptScaleToCurrentViewport = false;
 
     private _camera: Camera;
-    private _scene: Scene;
+    protected _scene: Scene;
     private _engine: Engine;
 
     private _options: number | PostProcessOptions;
