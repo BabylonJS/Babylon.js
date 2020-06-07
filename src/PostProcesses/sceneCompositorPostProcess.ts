@@ -35,7 +35,7 @@ export class SceneCompositorPostProcess extends PostProcess {
         if (!engine) {
             return null;
         }
-
-        return "";
+        let defines = "";
+        return defines;
     }
 }
