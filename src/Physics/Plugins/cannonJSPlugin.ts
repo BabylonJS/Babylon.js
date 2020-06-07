@@ -43,7 +43,8 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
     }
 
     public setGravity(gravity: Vector3): void {
-        this.world.gravity.copy(gravity);
+        const vec = gravity;
+        this.world.gravity.set(vec.x, vec.y, vec.z);
     }
 
     public setTimeStep(timeStep: number) {
@@ -141,7 +142,8 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
             //Should be tested!
             if (oldBody) {
                 ['force', 'torque', 'velocity', 'angularVelocity'].forEach(function(param) {
-                    impostor.physicsBody[param].copy(oldBody[param]);
+                    const vec = oldBody[param];
+                    impostor.physicsBody[param].set(vec.x, vec.y, vec.z);
                 });
             }
             this._processChildMeshes(impostor);
@@ -206,10 +208,10 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         var jointData = impostorJoint.joint.jointData;
         //TODO - https://github.com/schteppe/this.BJSCANNON.js/blob/gh-pages/demos/collisionFilter.html
         var constraintData = {
-            pivotA: jointData.mainPivot ? new this.BJSCANNON.Vec3().copy(jointData.mainPivot) : null,
-            pivotB: jointData.connectedPivot ? new this.BJSCANNON.Vec3().copy(jointData.connectedPivot) : null,
-            axisA: jointData.mainAxis ? new this.BJSCANNON.Vec3().copy(jointData.mainAxis) : null,
-            axisB: jointData.connectedAxis ? new this.BJSCANNON.Vec3().copy(jointData.connectedAxis) : null,
+            pivotA: jointData.mainPivot ? new this.BJSCANNON.Vec3().set(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z) : null,
+            pivotB: jointData.connectedPivot ? new this.BJSCANNON.Vec3().set(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z) : null,
+            axisA: jointData.mainAxis ? new this.BJSCANNON.Vec3().set(jointData.mainAxis.x, jointData.mainAxis.y, jointData.mainAxis.z) : null,
+            axisB: jointData.connectedAxis ? new this.BJSCANNON.Vec3().set(jointData.connectedAxis.x, jointData.connectedAxis.y, jointData.connectedAxis.z) : null,
             maxForce: jointData.nativeParams.maxForce,
             collideConnected: !!jointData.collision
         };
@@ -524,25 +526,25 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
             mesh.computeWorldMatrix(true);
         } else if (impostor.type === PhysicsImpostor.MeshImpostor) {
             this._tmpDeltaPosition.copyFromFloats(0, 0, 0);
-            //this._tmpPosition.copyFrom(object.position);
         }
 
         impostor.setDeltaPosition(this._tmpDeltaPosition);
         //Now update the impostor object
-        impostor.physicsBody.position.copy(this._tmpPosition);
-        impostor.physicsBody.quaternion.copy(quaternion);
+        impostor.physicsBody.position.set(this._tmpPosition.x, this._tmpPosition.y, this._tmpPosition.z);
+        impostor.physicsBody.quaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
     }
 
     public setTransformationFromPhysicsBody(impostor: PhysicsImpostor) {
-        impostor.object.position.copyFrom(impostor.physicsBody.position);
+        impostor.object.position.set(impostor.physicsBody.position.x, impostor.physicsBody.position.y, impostor.physicsBody.position.z);
         if (impostor.object.rotationQuaternion) {
-            impostor.object.rotationQuaternion.copyFrom(impostor.physicsBody.quaternion);
+            const q = impostor.object.rotationQuaternion;
+            impostor.object.rotationQuaternion.set(q.x, q.y, q.z, q.w);
         }
     }
 
     public setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion) {
-        impostor.physicsBody.position.copy(newPosition);
-        impostor.physicsBody.quaternion.copy(newRotation);
+        impostor.physicsBody.position.set(newPosition.x, newPosition.y, newPosition.z);
+        impostor.physicsBody.quaternion.set(newRotation.x, newRotation.y, newRotation.z, newRotation.w);
     }
 
     public isSupported(): boolean {
@@ -550,11 +552,11 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
     }
 
     public setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
-        impostor.physicsBody.velocity.copy(velocity);
+        impostor.physicsBody.velocity.set(velocity.x, velocity.y, velocity.z);
     }
 
     public setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
-        impostor.physicsBody.angularVelocity.copy(velocity);
+        impostor.physicsBody.angularVelocity.set(velocity.x, velocity.y, velocity.z);
     }
 
     public getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3> {
@@ -688,8 +690,8 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                         interpvelo.scale(h_div_dt, interpvelo);
                         b.position.vadd(interpvelo, b.interpolatedPosition);
                     } else {
-                        b.interpolatedPosition.copy(b.position);
-                        b.interpolatedQuaternion.copy(b.quaternion);
+                        b.interpolatedPosition.set(b.position.x, b.position.y, b.position.z);
+                        b.interpolatedQuaternion.set(b.quaternion.x, b.quaternion.y, b.quaternion.z, b.quaternion.w);
                     }
                 }
             }
