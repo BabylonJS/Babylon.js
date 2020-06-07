@@ -323,8 +323,8 @@ export class GLTFLoader implements IGLTFLoader {
                     this._rootBabylonMesh.setEnabled(true);
                 }
 
-                this._setState(GLTFLoaderState.READY);
                 this._extensionsOnReady();
+                this._setState(GLTFLoaderState.READY);
 
                 this._startAnimations();
 

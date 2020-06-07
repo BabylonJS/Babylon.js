@@ -104,9 +104,9 @@ export class MSFT_lod implements IGLTFLoaderExtension {
             const promise = Promise.all(this._nodePromiseLODs[indexLOD]).then(() => {
                 if (indexLOD !== 0) {
                     this._loader.endPerformanceCounter(`Node LOD ${indexLOD}`);
+                    this._loader.log(`Loaded node LOD ${indexLOD}`);
                 }
 
-                this._loader.log(`Loaded node LOD ${indexLOD}`);
                 this.onNodeLODsLoadedObservable.notifyObservers(indexLOD);
 
                 if (indexLOD !== this._nodePromiseLODs.length - 1) {
@@ -125,9 +125,9 @@ export class MSFT_lod implements IGLTFLoaderExtension {
             const promise = Promise.all(this._materialPromiseLODs[indexLOD]).then(() => {
                 if (indexLOD !== 0) {
                     this._loader.endPerformanceCounter(`Material LOD ${indexLOD}`);
+                    this._loader.log(`Loaded material LOD ${indexLOD}`);
                 }
 
-                this._loader.log(`Loaded material LOD ${indexLOD}`);
                 this.onMaterialLODsLoadedObservable.notifyObservers(indexLOD);
 
                 if (indexLOD !== this._materialPromiseLODs.length - 1) {
@@ -319,6 +319,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
     private _loadBufferLOD(bufferLODs: Array<IBufferInfo>, indexLOD: number): void {
         const bufferLOD = bufferLODs[indexLOD];
         if (bufferLOD) {
+            this._loader.log(`Loading buffer range [${bufferLOD.start}-${bufferLOD.end}]`);
             this._loader.bin!.readAsync(bufferLOD.start, bufferLOD.end - bufferLOD.start + 1).then((data) => {
                 bufferLOD.loaded.resolve(data);
             }, (error) => {
