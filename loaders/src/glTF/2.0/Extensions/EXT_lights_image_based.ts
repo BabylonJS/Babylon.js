@@ -117,6 +117,7 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
 
             light._loaded = Promise.all(promises).then(() => {
                 const babylonTexture = new RawCubeTexture(this._loader.babylonScene, null, light.specularImageSize);
+                babylonTexture.name = light.name || "environment";
                 light._babylonTexture = babylonTexture;
 
                 if (light.intensity != undefined) {
