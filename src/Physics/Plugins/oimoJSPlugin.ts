@@ -29,7 +29,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
     }
 
     public setGravity(gravity: Vector3) {
-        this.world.gravity.copy(gravity);
+        this.world.gravity.set(gravity.x, gravity.y, gravity.z);
     }
 
     public setTimeStep(timeStep: number) {
@@ -340,14 +340,16 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                 while (parent.next) {
                     parent = parent.next;
                 }
-                impostor.object.position.copyFrom(parent.position);
+                impostor.object.position.set(parent.position.x, parent.position.y, parent.position.z);
             } else {
-                impostor.object.position.copyFrom(impostor.physicsBody.getPosition());
+                const pos = impostor.physicsBody.getPosition();
+                impostor.object.position.set(pos.x, pos.y, pos.z);
             }
             //}
 
             if (impostor.object.rotationQuaternion) {
-                impostor.object.rotationQuaternion.copyFrom(impostor.physicsBody.getQuaternion());
+                const quat = impostor.physicsBody.getQuaternion();
+                impostor.object.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w);
             }
         }
     }
@@ -358,8 +360,8 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
         if (impostor.physicsBody.shapes.next) {
             return;
         }
-        body.position.copy(newPosition);
-        body.orientation.copy(newRotation);
+        body.position.set(newPosition.x, newPosition.y, newPosition.z);
+        body.orientation.set(newRotation.x, newRotation.y, newRotation.z, newRotation.w);
         body.syncShapes();
         body.awake();
     }
@@ -373,11 +375,11 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
     }*/
 
     public setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
-        impostor.physicsBody.linearVelocity.copy(velocity);
+        impostor.physicsBody.linearVelocity.set(velocity.x, velocity.y, velocity.z);
     }
 
     public setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
-        impostor.physicsBody.angularVelocity.copy(velocity);
+        impostor.physicsBody.angularVelocity.set(velocity.x, velocity.y, velocity.z);
     }
 
     public getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3> {

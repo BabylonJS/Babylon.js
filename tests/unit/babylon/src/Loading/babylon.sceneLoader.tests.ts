@@ -427,13 +427,22 @@ describe('Babylon Scene Loader', function() {
 
             BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader: BABYLON.GLTFFileLoader) => {
                 loader.useRangeRequests = true;
-                promises.push(loader.whenCompleteAsync());
+                loader.onExtensionLoadedObservable.add((extension) => {
+                    if (extension instanceof BABYLON.GLTF2.Loader.Extensions.MSFT_lod) {
+                        extension.onMaterialLODsLoadedObservable.add((indexLOD) => {
+                            expect(setRequestHeaderCalls, "setRequestHeaderCalls").to.have.ordered.members(expectedSetRequestHeaderCalls.slice(0, 3 + indexLOD));
+                        });
+                    }
+                });
+                promises.push(loader.whenCompleteAsync().then(() => {
+                    expect(setRequestHeaderCalls, "setRequestHeaderCalls").to.have.ordered.members(expectedSetRequestHeaderCalls);
+                    setRequestHeaderStub.restore();
+                    getResponseHeaderStub.restore();
+                }));
             });
 
             promises.push(BABYLON.SceneLoader.AppendAsync("/Playground/scenes/", "LevelOfDetail.glb", scene).then(() => {
-                expect(setRequestHeaderCalls, "setRequestHeaderCalls").to.have.ordered.members(expectedSetRequestHeaderCalls);
-                setRequestHeaderStub.restore();
-                getResponseHeaderStub.restore();
+                expect(setRequestHeaderCalls, "setRequestHeaderCalls").to.have.ordered.members(expectedSetRequestHeaderCalls.slice(0, 3));
             }));
 
             return Promise.all(promises);
