@@ -412,7 +412,7 @@ export class SceneLoader {
         const registeredPlugin = pluginExtension ? SceneLoader._getPluginForExtension(pluginExtension) : (directLoad ? SceneLoader._getPluginForDirectLoad(fileInfo.name) : SceneLoader._getPluginForFilename(fileInfo.name));
 
         let plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync;
-        if ((registeredPlugin.plugin as ISceneLoaderPluginFactory).createPlugin) {
+        if ((registeredPlugin.plugin as ISceneLoaderPluginFactory).createPlugin !== undefined) {
             plugin = (registeredPlugin.plugin as ISceneLoaderPluginFactory).createPlugin();
         }
         else {

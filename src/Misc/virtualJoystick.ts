@@ -123,7 +123,7 @@ export class VirtualJoystick {
             VirtualJoystick.Canvas.style.top = "0px";
             VirtualJoystick.Canvas.style.left = "0px";
             VirtualJoystick.Canvas.style.zIndex = "5";
-            VirtualJoystick.Canvas.style.msTouchAction = "none";
+            (VirtualJoystick.Canvas.style as any).msTouchAction = "none";
             VirtualJoystick.Canvas.style.touchAction = "none";  // fix https://forum.babylonjs.com/t/virtualjoystick-needs-to-set-style-touch-action-none-explicitly/9562
             // Support for jQuery PEP polyfill
             VirtualJoystick.Canvas.setAttribute("touch-action", "none");
