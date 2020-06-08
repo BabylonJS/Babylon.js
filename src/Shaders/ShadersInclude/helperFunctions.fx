@@ -1,11 +1,11 @@
 ﻿const float PI = 3.1415926535897932384626433832795;
+const float HALF_MIN = 5.96046448e-08; // Smallest positive half.
 
 const float LinearEncodePowerApprox = 2.2;
 const float GammaEncodePowerApprox = 1.0 / LinearEncodePowerApprox;
 const vec3 LuminanceEncodeApprox = vec3(0.2126, 0.7152, 0.0722);
 
 const float Epsilon = 0.0000001;
-
 #define saturate(x)         clamp(x, 0.0, 1.0)
 
 #define absEps(x)           abs(x) + Epsilon
@@ -86,6 +86,17 @@ float pow5(float value) {
 float getLuminance(vec3 color)
 {
     return clamp(dot(color, LuminanceEncodeApprox), 0., 1.);
+}
+
+vec3 tagLightingForSSS(vec3 color) {
+    color.b = max(color.b, HALF_MIN);
+
+    return color;
+}
+
+bool testLightingForSSS(vec3 color)
+{
+    return color.b > 0.;
 }
 
 // https://stackoverflow.com/questions/4200224/random-noise-functions-for-glsl

@@ -20,11 +20,8 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
     /** @hidden */
     public texelHeight: number;
 
-    private _diffusionColor: Color3 = new Color3(0.7568628, 0.32156864, 0.20000002);
-    private _filterRadius: number;
-
     constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT) {
-        super(name, "subSurfaceScattering", ["texelSize", "filterRadius", "viewportSize"], ["inputSampler", "irradianceSampler", "depthSampler", "albedoSampler"], options, camera, samplingMode || Texture.BILINEAR_SAMPLINGMODE, engine, reusable, null, textureType, "postprocess", undefined, true);
+        super(name, "subSurfaceScattering", ["texelSize", "viewportSize", "metersPerUnit"], ["inputSampler", "irradianceSampler", "depthSampler", "albedoSampler"], options, camera, samplingMode || Texture.BILINEAR_SAMPLINGMODE, engine, reusable, null, textureType, "postprocess", undefined, true);
         this._scene = scene;
 
         const defines = this._getDefines();
@@ -32,18 +29,17 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
 
         this.onApplyObservable.add((effect: Effect) => {
             var texelSize = this.texelSize;
+            effect.setFloat("metersPerUnit", scene.metersPerUnit);
             effect.setFloat2("texelSize", texelSize.x, texelSize.y);
             effect.setTexture("inputSampler", scene.highDefinitionMRT.textures[4]);
             effect.setTexture("irradianceSampler", scene.highDefinitionMRT.textures[1]);
             effect.setTexture("depthSampler", scene.highDefinitionMRT.textures[2]);
             effect.setTexture("albedoSampler", scene.highDefinitionMRT.textures[3]);
-            effect.setFloat("filterRadius", this._filterRadius);
             effect.setFloat2("viewportSize",
                 Math.tan(scene.activeCamera!.fov / 2) * scene.getEngine().getAspectRatio(scene.activeCamera!, true),
                 Math.tan(scene.activeCamera!.fov / 2));
         });
 
-        this._filterRadius = this._getDiffusionProfileParameters();
     }
 
     private _getDefines(): Nullable<string> {
@@ -62,7 +58,7 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
         return defines;
     }
 
-    private _getDiffusionProfileParameters()
+    public getDiffusionProfileParameters(color: Color3)
     {
         const cdf = 0.997;
         // Importance sample the normalized diffuse reflectance profile for the computed value of 's'.
@@ -72,7 +68,7 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
         // CDF[r, s]      = 1 - 1/4 * Exp[-r * s] - 3/4 * Exp[-r * s / 3]
         // ------------------------------------------------------------------------------------
         // We importance sample the color channel with the widest scattering distance.
-        const maxScatteringDistance = Math.max(this._diffusionColor.r, this._diffusionColor.g, this._diffusionColor.b);
+        const maxScatteringDistance = Math.max(color.r, color.g, color.b);
 
         return this._sampleBurleyDiffusionProfile(cdf, maxScatteringDistance);
     }

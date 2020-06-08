@@ -817,9 +817,6 @@ export class BackgroundMaterial extends PushMaterial {
         // Values that need to be evaluated on every frame
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
 
-        // Deferred
-        MaterialHelper.PrepareDefinesForDeferred(scene, defines);
-
         // Attribs
         if (MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true, false)) {
             if (mesh) {

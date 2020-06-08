@@ -675,8 +675,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
+    /**
+     * Should this material render to several textures at once
+     */
+    public forceRenderToMRT: boolean = false;
     public get shouldRenderToMRT() {
-        return true;
+        return this.subSurface.isScatteringEnabled || this.forceRenderToMRT;
     }
 
     /**
@@ -1300,6 +1304,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             onError: onError,
             indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS },
             processFinalCode: csnrOptions.processFinalCode,
+            multiTarget: this.shouldRenderToMRT
         }, engine);
     }
 
@@ -1315,9 +1320,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         MaterialHelper.PrepareDefinesForMultiview(scene, defines);
 
         // Deferred
-        if (this.shouldRenderToMRT) {
-            MaterialHelper.PrepareDefinesForDeferred(scene, defines);
-        }
+        MaterialHelper.PrepareDefinesForDeferred(scene, defines, this.shouldRenderToMRT);
 
         // Textures
         defines.METALLICWORKFLOW = this.isMetallicWorkflow();
