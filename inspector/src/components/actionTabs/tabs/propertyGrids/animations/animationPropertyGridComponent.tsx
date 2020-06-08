@@ -200,7 +200,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
                                     id="curve-editor"
                                     title="Curve Animation Editor"
                                     size={{ width: 1024, height: 490 }}
-                                    onOpen={(window: Window) => { window.console.log("Window opened!!") }}
+                                    onOpen={(window: Window) => {  }}
                                     onClose={(window: Window) => this.onCloseAnimationCurveEditor(window)}>
 
                                     <AnimationCurveEditorComponent 

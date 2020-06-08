@@ -484,7 +484,7 @@ export class ThinEngine {
 
         options = options || {};
 
-        if ((<HTMLCanvasElement>canvasOrContext).getContext) {
+        if ((canvasOrContext as any).getContext) {
             canvas = <HTMLCanvasElement>canvasOrContext;
             this._renderingCanvas = canvas;
 
