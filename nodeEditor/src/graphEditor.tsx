@@ -619,7 +619,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     createPopUp = () => {
         const userOptions = {
             original: true,
-            popup: false,
+            popup: true,
             overlay: false,
             embedMode: false,
             enableClose: true,
@@ -629,7 +629,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         };
         const options = {
             embedHostWidth: "100%",
-            popup: true,
             ...userOptions
         };
         const popUpWindow = this.createPopupWindow("PREVIEW AREA", "_PreviewHostWindow");

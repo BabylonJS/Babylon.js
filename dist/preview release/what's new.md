@@ -61,7 +61,7 @@
 - Added right click options to create PBR and Standard Materials ([Deltakosh](https://github.com/deltakosh))
 - Added support for recording GIF ([Deltakosh](https://github.com/deltakosh))
 - Popup Window available (To be used in Curve Editor) ([pixelspace](https://github.com/devpixelspace))
-- Add support to update inspector when switching to new scene ([belfortk](https://github.com/belfortk))
+- Add support to update inspector when switching to a new scene ([belfortk](https://github.com/belfortk))
 
 ### Cameras
 
@@ -94,6 +94,7 @@
 - Added support for KHR_xmp for glTF loader. ([Sebavan](https://github.com/sebavan/))
 - Added support for KHR_materials_variants for glTF loader. ([MiiBond](https://github.com/MiiBond/))
 - Added support for KHR_materials_transmission for glTF loader. ([MiiBond](https://github.com/MiiBond/))
+- Improved progress handling in glTF loader. ([bghgary](https://github.com/bghgary))
 
 ### Navigation
 
@@ -128,7 +129,7 @@
 - Added support for (experimental) haptic actuators ([#8068](https://github.com/BabylonJS/Babylon.js/issues/8068)) ([RaananW](https://github.com/RaananW))
 - It is now possible to enable experimental (AR) features using the options of the default xr helper ([RaananW](https://github.com/RaananW))
 - Full support for right handed systems ([#8132](https://github.com/BabylonJS/Babylon.js/issues/8132)) ([RaananW](https://github.com/RaananW))
-- WebXR anchors feature ([#7917](https://github.com/BabylonJS/Babylon.js/issues/7917)) ([RaananW](https://github.com/RaananW))
+- WebXR anchors feature implemented ([#7917](https://github.com/BabylonJS/Babylon.js/issues/7917)) ([RaananW](https://github.com/RaananW))
 
 ### Collisions
 
@@ -231,3 +232,4 @@
 - Sound's `updateOptions` takes `options.length` and `options.offset` as seconds and not milliseconds ([RaananW](https://github.com/RaananW))
 - HDRCubeTexture default rotation is now similar to the industry one. You might need to add a rotation on y of 90 degrees if you scene changes ([Sebavan](https://github.com/sebavan/))
 - PBRMaterial index of refraction is now defined as index of refraction and not the inverse of it ([Sebavan](https://github.com/sebavan/))
+- `SceneLoaderProgress` class is now `ISceneLoaderProgress` interface ([bghgary](https://github.com/bghgary))

@@ -66759,14 +66759,14 @@ var GraphEditor = /** @class */ (function (_super) {
         _this.createPopUp = function () {
             var userOptions = {
                 original: true,
-                popup: false,
+                popup: true,
                 overlay: false,
                 embedMode: false,
                 enableClose: true,
                 handleResize: true,
                 enablePopup: true,
             };
-            var options = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({ embedHostWidth: "100%", popup: true }, userOptions);
+            var options = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({ embedHostWidth: "100%" }, userOptions);
             var popUpWindow = _this.createPopupWindow("PREVIEW AREA", "_PreviewHostWindow");
             if (popUpWindow) {
                 popUpWindow.addEventListener('beforeunload', _this.handleClosingPopUp);
