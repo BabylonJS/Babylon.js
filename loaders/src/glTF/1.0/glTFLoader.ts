@@ -26,7 +26,7 @@ import { HemisphericLight } from "babylonjs/Lights/hemisphericLight";
 import { DirectionalLight } from "babylonjs/Lights/directionalLight";
 import { PointLight } from "babylonjs/Lights/pointLight";
 import { SpotLight } from "babylonjs/Lights/spotLight";
-import { SceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
+import { ISceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
 import { Scene } from "babylonjs/scene";
 
 import { GLTFUtils } from "./glTFLoaderUtils";
@@ -1621,7 +1621,7 @@ export class GLTFLoader implements IGLTFLoader {
         // do nothing
     }
 
-    private _importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, forAssetContainer: boolean, onSuccess: (meshes: AbstractMesh[], skeletons: Skeleton[]) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string) => void): boolean {
+    private _importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, forAssetContainer: boolean, onSuccess: (meshes: AbstractMesh[], skeletons: Skeleton[]) => void, onProgress?: (event: ISceneLoaderProgressEvent) => void, onError?: (message: string) => void): boolean {
         scene.useRightHandedSystem = true;
 
         GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, (gltfRuntime) => {
@@ -1695,7 +1695,7 @@ export class GLTFLoader implements IGLTFLoader {
     * @param onProgress event that fires when loading progress has occured
     * @returns a promise containg the loaded meshes, particles, skeletons and animations
     */
-    public importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<IImportMeshAsyncOutput> {
+    public importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void): Promise<IImportMeshAsyncOutput> {
         return new Promise((resolve, reject) => {
             this._importMeshAsync(meshesNames, scene, data, rootUrl, forAssetContainer, (meshes, skeletons) => {
                 resolve({
@@ -1712,7 +1712,7 @@ export class GLTFLoader implements IGLTFLoader {
         });
     }
 
-    private _loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, forAssetContainer: boolean, onSuccess: () => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string) => void): void {
+    private _loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, forAssetContainer: boolean, onSuccess: () => void, onProgress?: (event: ISceneLoaderProgressEvent) => void, onError?: (message: string) => void): void {
         scene.useRightHandedSystem = true;
 
         GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, (gltfRuntime) => {
@@ -1748,7 +1748,7 @@ export class GLTFLoader implements IGLTFLoader {
     * @param onProgress event that fires when loading progress has occured
     * @returns a promise which completes when objects have been loaded to the scene
     */
-    public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void> {
+    public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void): Promise<void> {
         return new Promise((resolve, reject) => {
             this._loadAsync(scene, data, rootUrl, false, () => {
                 resolve();
@@ -1798,7 +1798,7 @@ export class GLTFLoader implements IGLTFLoader {
         }
     }
 
-    private _loadBuffersAsync(gltfRuntime: IGLTFRuntime, onLoad: () => void, onProgress?: (event: SceneLoaderProgressEvent) => void): void {
+    private _loadBuffersAsync(gltfRuntime: IGLTFRuntime, onLoad: () => void, onProgress?: (event: ISceneLoaderProgressEvent) => void): void {
         var hasBuffers = false;
 
         var processBuffer = (buf: string, buffer: IGLTFBuffer) => {

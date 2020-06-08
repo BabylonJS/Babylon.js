@@ -1,5 +1,5 @@
 import { Engine } from 'babylonjs/Engines/engine';
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, SceneLoaderProgressEvent } from 'babylonjs/Loading/sceneLoader';
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent } from 'babylonjs/Loading/sceneLoader';
 import { Observable } from 'babylonjs/Misc/observable';
 import { Scene } from 'babylonjs/scene';
 import { RenderingManager } from 'babylonjs/Rendering/renderingManager';
@@ -85,7 +85,7 @@ export abstract class AbstractViewer {
     /**
      * will notify when any model notify of progress
      */
-    public get onModelLoadProgressObservable(): Observable<SceneLoaderProgressEvent> {
+    public get onModelLoadProgressObservable(): Observable<ISceneLoaderProgressEvent> {
         return this.observablesManager.onModelLoadProgressObservable;
     }
     /**
