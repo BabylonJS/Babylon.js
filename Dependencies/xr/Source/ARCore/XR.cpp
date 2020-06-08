@@ -409,7 +409,7 @@ namespace xr
             isInitialized = true;
         }
 
-        std::unique_ptr<Session::Frame> GetNextFrame(bool& shouldEndSession, bool& shouldRestartSession)
+        std::unique_ptr<Session::Frame> GetNextFrame(bool& shouldEndSession, bool& shouldRestartSession, std::function<void(void* texturePointer)> deletedTextureCallback)
         {
             if (!isInitialized)
             {
@@ -451,9 +451,9 @@ namespace xr
             }
 
             // Check whether the dimensions have changed
-            if (ActiveFrameViews[0].ColorTextureSize.Width != width || ActiveFrameViews[0].ColorTextureSize.Height != height)
+            if ((ActiveFrameViews[0].ColorTextureSize.Width != width || ActiveFrameViews[0].ColorTextureSize.Height != height) && width && height)
             {
-                DestroyDisplayResources();
+                DestroyDisplayResources(deletedTextureCallback);
 
                 int rotation = GetAppContext().getSystemService<android::view::WindowManager>().getDefaultDisplay().getRotation();
 
@@ -731,12 +731,13 @@ namespace xr
             }
         }
 
-        void DestroyDisplayResources()
+        void DestroyDisplayResources(std::function<void(void* texturePointer)> deletedTextureCallback = [](void*){})
         {
             if (ActiveFrameViews[0].ColorTexturePointer)
             {
                 auto colorTextureId = static_cast<GLuint>(reinterpret_cast<uintptr_t>(ActiveFrameViews[0].ColorTexturePointer));
                 glDeleteTextures(1, &colorTextureId);
+                deletedTextureCallback(ActiveFrameViews[0].ColorTexturePointer);
             }
 
             if (ActiveFrameViews[0].DepthTexturePointer)
@@ -863,9 +864,9 @@ namespace xr
     {
     }
 
-    std::unique_ptr<System::Session::Frame> System::Session::GetNextFrame(bool& shouldEndSession, bool& shouldRestartSession)
+    std::unique_ptr<System::Session::Frame> System::Session::GetNextFrame(bool& shouldEndSession, bool& shouldRestartSession, std::function<void(void* texturePointer)> deletedTextureCallback)
     {
-        return m_impl->GetNextFrame(shouldEndSession, shouldRestartSession);
+        return m_impl->GetNextFrame(shouldEndSession, shouldRestartSession, deletedTextureCallback);
     }
 
     void System::Session::RequestEndSession()

@@ -277,7 +277,14 @@ namespace Babylon
 
         bool shouldEndSession{};
         bool shouldRestartSession{};
-        m_frame = m_session->GetNextFrame(shouldEndSession, shouldRestartSession);
+        m_frame = m_session->GetNextFrame(shouldEndSession, shouldRestartSession, [this](void* texturePointer){
+                auto texPtr = reinterpret_cast<uintptr_t>(texturePointer);
+                auto it = m_texturesToFrameBuffers.find(texPtr);
+                if (it != m_texturesToFrameBuffers.end())
+                {
+                    m_texturesToFrameBuffers.erase(it);
+                }
+            });
 
         // Ending a session outside of calls to EndSession() is currently not supported.
         assert(!shouldEndSession);
@@ -291,6 +298,9 @@ namespace Babylon
             auto it = m_texturesToFrameBuffers.find(colorTexPtr);
             if (it == m_texturesToFrameBuffers.end() || it->second.get()->Width != view.ColorTextureSize.Width || it->second.get()->Height != view.ColorTextureSize.Height)
             {
+                // if a texture width or height is 0, bgfx will assert (can't create 0 sized texture). Asserting here instead of deeper in bgfx rendering
+                assert(view.ColorTextureSize.Width); 
+                assert(view.ColorTextureSize.Height);
                 assert(view.ColorTextureSize.Width == view.DepthTextureSize.Width);
                 assert(view.ColorTextureSize.Height == view.DepthTextureSize.Height);
 
