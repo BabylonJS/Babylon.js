@@ -1823,6 +1823,10 @@ export class ThinEngine {
                 ai.index = this._currentEffect!.getAttributeLocationByName(ai.attributeName);
             }
 
+            if (ai.index < 0) {
+                continue;
+            }
+
             if (!this._vertexAttribArraysEnabled[ai.index]) {
                 this._gl.enableVertexAttribArray(ai.index);
                 this._vertexAttribArraysEnabled[ai.index] = true;
