@@ -1,5 +1,5 @@
 #include "LibNativeBridge.h"
-
+/*
 #import <Babylon/AppRuntime.h>
 #import <Babylon/ScriptLoader.h>
 #import <Babylon/Plugins/NativeEngine.h>
@@ -10,7 +10,7 @@
 
 std::unique_ptr<Babylon::AppRuntime> runtime{};
 std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
-
+*/
 @implementation LibNativeBridge
 
 - (instancetype)init
@@ -25,6 +25,7 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
 
 - (void)init:(void*)CALayerPtr width:(int)inWidth height:(int)inHeight
 {
+    /*
     runtime.reset();
     inputBuffer.reset();
 
@@ -58,10 +59,12 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
     loader.LoadScript("app:///babylon.glTF2FileLoader.js");
     loader.LoadScript("app:///babylonjs.materials.js");
     loader.LoadScript("app:///experience.js");
+    */
 }
 
 - (void)resize:(int)inWidth height:(int)inHeight
 {
+    /*
     if (runtime) 
     {
         runtime->Dispatch([inWidth, inHeight](Napi::Env env)
@@ -69,15 +72,17 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
             Babylon::Plugins::NativeWindow::UpdateSize(env, static_cast<size_t>(inWidth), static_cast<size_t>(inHeight));
         });
     }
+    */
 }
 
 - (void)setInputs:(int)x y:(int)y tap:(bool)tap
 {
+    /*
     if (inputBuffer)
     {
         inputBuffer->SetPointerPosition(x, y);
         inputBuffer->SetPointerDown(tap);
-    }
+    }*/
 }
 
 @end
