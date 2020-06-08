@@ -177,6 +177,12 @@ export class Scene extends AbstractScene implements IAnimatable {
     public ambientColor = new Color3(0, 0, 0);
 
     /**
+     * Defines the ratio real world => scene units.
+     * Used for subsurface scattering
+     */
+    public metersPerUnit: number = 1;
+
+    /**
      * This is use to store the default BRDF lookup for PBR materials in your scene.
      * It should only be one of the following (if not the default embedded one):
      * * For uncorrelated BRDF (pbr.brdf.useEnergyConservation = false and pbr.brdf.useSmithVisibilityHeightCorrelated = false) : https://assets.babylonjs.com/environments/uncorrelatedBRDF.dds
@@ -3693,9 +3699,9 @@ export class Scene extends AbstractScene implements IAnimatable {
         this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(force));
     }
 
-    public drawBuffers(material: Material) {
+    public drawBuffers(effect: Effect) {
         if (this.highDefinitionPipeline) {
-            if (material.shouldRenderToMRT) {
+            if (effect._multiTarget) {
                 this._engine.renderToAttachments(this.multiRenderAttachments);
             } else {
                 this._engine.renderToAttachments(this.defaultAttachments);      

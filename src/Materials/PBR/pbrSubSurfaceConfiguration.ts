@@ -43,6 +43,12 @@ export interface IMaterialSubSurfaceDefines {
     _areTexturesDirty: boolean;
 }
 
+export enum SubsurfaceDiffusionProfile {
+    NEUTRAL = 0,
+    SKIN = 1,
+    FOLIAGE = 2,
+};
+
 /**
  * Define the code related to the sub surface parameters of the pbr material.
  */
@@ -70,6 +76,12 @@ export class PBRSubSurfaceConfiguration {
     @serialize()
     @expandToProperty("_markSceneDeferredDirty")
     public isScatteringEnabled = false;
+
+    /**
+     * Diffusion profile for subsurface scattering.
+     * Useful for better scattering in the skins or foliages.
+     */
+    public scatteringDiffusionProfile = SubsurfaceDiffusionProfile.NEUTRAL;
 
     /**
      * Defines the refraction intensity of the material.
@@ -369,6 +381,10 @@ export class PBRSubSurfaceConfiguration {
                 }
             }
 
+
+            if (this.isScatteringEnabled) {
+                uniformBuffer.updateFloat("scatteringDiffusionProfile", this.scatteringDiffusionProfile);
+            }
             uniformBuffer.updateColor3("vDiffusionDistance", this.diffusionDistance);
 
             uniformBuffer.updateFloat4("vTintColor", this.tintColor.r,
@@ -554,7 +570,7 @@ export class PBRSubSurfaceConfiguration {
             "vDiffusionDistance", "vTintColor", "vSubSurfaceIntensity",
             "vRefractionMicrosurfaceInfos", "vRefractionFilteringInfo",
             "vRefractionInfos", "vThicknessInfos", "vThicknessParam",
-            "refractionMatrix", "thicknessMatrix");
+            "refractionMatrix", "thicknessMatrix", "scatteringDiffusionProfile");
     }
 
     /**
@@ -581,6 +597,7 @@ export class PBRSubSurfaceConfiguration {
         uniformBuffer.addUniform("vDiffusionDistance", 3);
         uniformBuffer.addUniform("vTintColor", 4);
         uniformBuffer.addUniform("vSubSurfaceIntensity", 3);
+        uniformBuffer.addUniform("scatteringDiffusionProfile", 1);
     }
 
     /**

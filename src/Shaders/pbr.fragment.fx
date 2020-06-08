@@ -506,51 +506,16 @@ void main(void) {
         #endif
     #endif
 
-    // BJS
-    // vec3 finalDiffuse = diffuseBase; // shadows, lightmap and stuff
-    // finalDiffuse *= surfaceAlbedo.rgb;
-    // finalDiffuse = max(finalDiffuse, 0.0);
-    // finalDiffuse *= vLightingIntensity.x;
-    // finalDiffuse *= ambientOcclusionForDirectDiffuse;
-    
-    // #ifdef REFLECTION
-    //     vec3 finalIrradiance = reflectionOut.environmentIrradiance;
-
-    //     #if defined(CLEARCOAT)
-    //         finalIrradiance *= clearcoatOut.conservationFactor;
-    //         #if defined(CLEARCOAT_TINT)
-    //             finalIrradiance *= clearcoatOut.absorption;
-    //         #endif
-    //     #endif
-
-    //     #if defined(SS_REFRACTION)
-    //         finalIrradiance *= subSurfaceOut.refractionFactorForIrradiance;
-    //     #endif
-
-    //     #if defined(SS_TRANSLUCENCY)
-    //         finalIrradiance += subSurfaceOut.refractionIrradiance;
-    //     #endif
-
-    //     finalIrradiance *= surfaceAlbedo.rgb;
-    //     finalIrradiance *= vLightingIntensity.z;
-    //     finalIrradiance *= aoOut.ambientOcclusionColor;
-    // #endif 
-
-    // UNITY
-    // float3 modifiedDiffuseColor = GetModifiedDiffuseColorForSSS(bsdfData);
-    // diffuseLighting = modifiedDiffuseColor * lighting.direct.diffuse + builtinData.bakeDiffuseLighting + builtinData.emissiveColor;
-    // diffuseLighting = lerp(diffuseLighting, lighting.indirect.specularTransmitted, bsdfData.transmittanceMask * _EnableSSRefraction);
-
-    // finalDiffuse and finalIrradiance are already multiplied by surfaceAlbedo
-    // What about :
-    // Lightmaps ? (can we consider them as pure diffuse ?)
-    // AO and shadows, should they dim the diffuseLight ? (right now they are)
     vec3 sqAlbedo = sqrt(surfaceAlbedo); // for pre and post scatter
 
     // Irradiance is diffuse * surfaceAlbedo
-    gl_FragData[0] = vec4(finalColor.rgb - irradiance, 1.0); // Lit without irradiance
+    gl_FragData[0] = vec4(finalColor.rgb - irradiance, finalColor.a); // Lit without irradiance
     irradiance /= sqAlbedo;
-    gl_FragData[1] = vec4(irradiance, 1.0); // irradiance, for pre and post scatter
+    #ifdef SS_SCATTERING
+    gl_FragData[1] = vec4(tagLightingForSSS(irradiance), scatteringDiffusionProfile / 255.); // Irradiance + SS diffusion profile
+    #else
+    gl_FragData[1] = vec4(irradiance, 1.0); // Irradiance
+    #endif
     gl_FragData[2] = vec4(vViewPos.z, 0.0, 0.0, 1.0); // Linear depth
     gl_FragData[3] = vec4(sqAlbedo, 1.0); // albedo, for pre and post scatter
 #endif

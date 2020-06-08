@@ -1798,9 +1798,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        // Render to MRT
-        scene.drawBuffers(material);
-
         // Material
         if (!instanceDataStorage.isFrozen || !this._effectiveMaterial || this._effectiveMaterial !== material) {
             if (material._storeEffectOnSubMeshes) {
@@ -1833,6 +1830,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (!effect) {
             return this;
         }
+
+        // Render to MRT
+        scene.drawBuffers(effect);
 
         const effectiveMesh = effectiveMeshReplacement || this._effectiveMesh;
 

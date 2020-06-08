@@ -1,6 +1,7 @@
 // Samplers
 #include<fibonacci>
 #include<helperFunctions>
+#include<diffusionProfile>
 
 varying vec2 vUV;
 uniform vec2 texelSize;
@@ -9,8 +10,8 @@ uniform sampler2D irradianceSampler;
 uniform sampler2D depthSampler;
 uniform sampler2D albedoSampler;
 
-uniform float filterRadius;
 uniform vec2 viewportSize;
+uniform float metersPerUnit;
 
 const float LOG2_E = 1.4426950408889634;
 const float SSS_PIXELS_PER_SAMPLE = 4.;
@@ -82,11 +83,6 @@ vec3 ComputeBilateralWeight(float xy2, float z, float mmPerUnit, vec3 S, float r
     #endif
 }
 
-bool IsSSSMaterial(vec3 irradiance) {
-    return irradiance.b > 0.;
-}
-
-// TODO : inout vec3 totalIrradiance, inout vec3 totalWeight
 void EvaluateSample(int i, int n, vec3 S, float d, vec3 centerPosVS, float mmPerUnit, float pixelsPerMm,
                     float phase, inout vec3 totalIrradiance, inout vec3 totalWeight)
 {
@@ -117,12 +113,6 @@ void EvaluateSample(int i, int n, vec3 S, float d, vec3 centerPosVS, float mmPer
     vec2 position; 
     float xy2;
 
-    // TODO : TANGENT PLANE
-    // floor((vUV + 0.5) + vec * pixelsPerMm)
-    // position = vUV + floor(0.5 + vec * pixelsPerMm);
-    // position = vUV + round(vec * pixelsPerMm);
-    // Note that (int) truncates towards 0, while floor() truncates towards -Inf!
-
     position = vUV + round((pixelsPerMm * r) * vec2(cosPsi, sinPsi)) * texelSize;
     xy2      = r * r;
 
@@ -130,16 +120,12 @@ void EvaluateSample(int i, int n, vec3 S, float d, vec3 centerPosVS, float mmPer
     float viewZ = texture2D(depthSampler, position).r;
     vec3 irradiance    = textureSample.rgb;
 
-    // Check the results of the stencil test.
-    // TODO
-    if (IsSSSMaterial(irradiance))
+    if (testLightingForSSS(irradiance))
     {
         // Apply bilateral weighting.
         float relZ = viewZ - centerPosVS.z;
         vec3 weight = ComputeBilateralWeight(xy2, relZ, mmPerUnit, S, rcpPdf);
 
-        // Note: if the texture sample if off-screen, (z = 0) -> (viewZ = far) -> (weight ≈ 0).
-        // TODO : HANDLE OFFSCREN
         totalIrradiance += weight * irradiance;
         totalWeight     += weight;
     }
@@ -156,10 +142,13 @@ void EvaluateSample(int i, int n, vec3 S, float d, vec3 centerPosVS, float mmPer
 
 void main(void) 
 {
-	vec3 centerIrradiance  = texture2D(irradianceSampler, vUV).rgb;
+	vec4 irradianceAndDiffusionProfile  = texture2D(irradianceSampler, vUV);
+    vec3 centerIrradiance = irradianceAndDiffusionProfile.rgb;
+    int diffusionProfileIndex = int(irradianceAndDiffusionProfile.a * 255.);
+
 	float  centerDepth       = 0.;
     vec4 inputColor = texture2D(textureSampler, vUV);
-	bool passedStencilTest = IsSSSMaterial(centerIrradiance);
+	bool passedStencilTest = testLightingForSSS(centerIrradiance);
 
 	if (passedStencilTest)
 	{
@@ -171,24 +160,10 @@ void main(void)
         return;
     }
 
-
-    // SKIN DIFFUSION PROFILE
-    // profile:
-    //   name: Skin
-    //   scatteringDistance: {r: 0.7568628, g: 0.32156864, b: 0.20000002, a: 1}
-    //   transmissionTint: {r: 0.7568628, g: 0.32156864, b: 0.20000002, a: 1}
-    //   texturingMode: 0
-    //   transmissionMode: 0
-    //   thicknessRemap: {x: 0, y: 8.152544}
-    //   worldScale: 1
-    //   ior: 1.4
-    //   hash: 1075477546
-
-    // TODO : uniforms
 	float  distScale     = 1.; //sssData.subsurfaceMask;
-	vec3 S             = vec3(0.7568628, 0.32156864, 0.20000002); //_ShapeParamsAndMaxScatterDists[profileIndex].rgb diffusion color
-	float  d             = 0.7568628; //_ShapeParamsAndMaxScatterDists[profileIndex].a max scatter dist
-	float  metersPerUnit = 0.07; //_WorldScalesAndFilterRadiiAndThicknessRemaps[profileIndex].x;
+	vec3 S             = diffusionProfiles[diffusionProfileIndex].S;
+	float  d             = diffusionProfiles[diffusionProfileIndex].d;
+    float filterRadius = diffusionProfiles[diffusionProfileIndex].filterRadius;
 
 	// Reconstruct the view-space position corresponding to the central sample.
 	vec2 centerPosNDC = vUV;
