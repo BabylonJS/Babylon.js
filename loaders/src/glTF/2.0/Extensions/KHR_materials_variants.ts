@@ -128,13 +128,13 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
                 extension.mapping.forEach((mapping: IKHRMaterialVariantsMapping) => {
                     mapping.tags.forEach((tag: string, index: number) => {
                         const tagMapping = this._tagsToMap[tag] || [];
-                        const material = ArrayItem.Get(`#/materials/`, this._loader.gltf.materials, mapping.material);
+                        const material = ArrayItem.Get(`/materials/`, this._loader.gltf.materials, mapping.material);
                         const meshEntry: VariantMapping = {
                             mesh: babylonMesh,
                             materialPromise: Promise.resolve(null)
                         };
                         if (babylonMesh instanceof Mesh) {
-                            meshEntry.materialPromise = this._loader._loadMaterialAsync(`#/materials/${mapping.material}`, material, babylonMesh!, babylonDrawMode, (material) => {
+                            meshEntry.materialPromise = this._loader._loadMaterialAsync(`/materials/${mapping.material}`, material, babylonMesh!, babylonDrawMode, (material) => {
                                 meshEntry.material = material;
                             });
                         }
