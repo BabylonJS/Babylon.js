@@ -11305,6 +11305,7 @@ declare module BABYLON {
          * @returns a serialized dynamic texture object
          */
         serialize(): any;
+        private _IsCanvasElement;
         /** @hidden */
         _rebuild(): void;
     }
@@ -24579,6 +24580,7 @@ declare module BABYLON {
          * @returns null or the current material
          */
         getMaterial(): Nullable<Material>;
+        private _IsMultiMaterial;
         /**
          * Sets a new updated BoundingInfo object to the submesh
          * @param data defines an optional position array to use to determine the bounding info
@@ -51446,23 +51448,6 @@ declare module BABYLON {
         static UploadEnvSpherical(texture: InternalTexture, info: EnvironmentTextureInfo): void;
         /** @hidden */
         static _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void>;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export class NativeShaderProcessor extends WebGL2ShaderProcessor {
-        private _genericAttributeLocation;
-        private _varyingLocationCount;
-        private _varyingLocationMap;
-        private _replacements;
-        private _textureCount;
-        private _uniforms;
-        lineProcessor(line: string): string;
-        attributeProcessor(attribute: string): string;
-        varyingProcessor(varying: string, isFragment: boolean): string;
-        uniformProcessor(uniform: string): string;
-        preProcessor(code: string, defines: string[], isFragment: boolean): string;
-        postProcessor(code: string, defines: string[], isFragment: boolean): string;
     }
 }
 declare module BABYLON {
