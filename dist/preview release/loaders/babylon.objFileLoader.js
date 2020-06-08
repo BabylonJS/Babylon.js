@@ -471,7 +471,7 @@ var OBJFileLoader = /** @class */ (function () {
         set: function (value) {
             _mtlFileLoader__WEBPACK_IMPORTED_MODULE_1__["MTLFileLoader"].INVERT_TEXTURE_Y = value;
         },
-        enumerable: false,
+        enumerable: true,
         configurable: true
     });
     Object.defineProperty(OBJFileLoader, "currentMeshLoadOptions", {
@@ -487,7 +487,7 @@ var OBJFileLoader = /** @class */ (function () {
                 SkipMaterials: OBJFileLoader.SKIP_MATERIALS
             };
         },
-        enumerable: false,
+        enumerable: true,
         configurable: true
     });
     /**
