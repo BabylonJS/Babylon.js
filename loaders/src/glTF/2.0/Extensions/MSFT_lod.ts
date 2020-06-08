@@ -167,7 +167,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
                 }
 
                 const assign = (babylonTransformNode: TransformNode) => { babylonTransformNode.setEnabled(false); };
-                const promise = this._loader.loadNodeAsync(`#/nodes/${nodeLOD.index}`, nodeLOD, assign).then((babylonMesh) => {
+                const promise = this._loader.loadNodeAsync(`/nodes/${nodeLOD.index}`, nodeLOD, assign).then((babylonMesh) => {
                     if (indexLOD !== 0) {
                         // TODO: should not rely on _babylonTransformNode
                         const previousNodeLOD = nodeLODs[indexLOD - 1];
@@ -217,7 +217,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
                     this._materialIndexLOD = indexLOD;
                 }
 
-                const promise = this._loader._loadMaterialAsync(`#/materials/${materialLOD.index}`, materialLOD, babylonMesh, babylonDrawMode, (babylonMaterial) => {
+                const promise = this._loader._loadMaterialAsync(`/materials/${materialLOD.index}`, materialLOD, babylonMesh, babylonDrawMode, (babylonMaterial) => {
                     if (indexLOD === 0) {
                         assign(babylonMaterial);
                     }
