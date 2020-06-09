@@ -37,6 +37,7 @@
 - Change default camera calculations to only include visible and enabled meshes ([bghgary](https://github.com/bghgary))
 - Optimized frozen instances ([Deltakosh](https://github.com/deltakosh))
 - Add support for detail maps in both the standard and PBR materials ([Popov72](https://github.com/Popov72))
+- Added abstractMesh method to get all particle systems that use the mesh as an emitter ([PirateJC](https://github.com/PirateJC))
 
 ### NME
 
