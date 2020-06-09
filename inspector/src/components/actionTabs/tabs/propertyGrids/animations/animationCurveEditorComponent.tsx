@@ -15,6 +15,7 @@ import { Scene } from "babylonjs/scene";
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
 import { EditorControls } from './editorControls';
+import { SelectedCoordinate } from './animationListTree';
 
 require("./curveEditor.scss");
 
@@ -35,6 +36,7 @@ interface ICurveData {
     pathLength: number;
     domCurve: React.RefObject<SVGPathElement>;
     color: string;
+    id: string;
 }
 
 export class AnimationCurveEditorComponent extends React.Component<IAnimationCurveEditorComponentProps, {
@@ -155,7 +157,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     }
 
     setAxesLength() {
-        
+
         let length = Math.round(this._canvasLength * this.state.scale);// Check Undefined, or NaN
         let highestFrame = 100;
         if (this.state.selected !== null) {
@@ -227,10 +229,108 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         this.setState({ svgKeyframes: updatedKeyframes });
     }
 
-    renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number) {
+    updateValuePerCoordinate(dataType: number, value: number | Vector2 | Vector3 | Color3 | Color4 | Size | Quaternion, newValue: number, coordinate?: number) {
+
+
+        if (dataType === Animation.ANIMATIONTYPE_FLOAT) {
+            value = newValue;
+        }
+
+        if (dataType === Animation.ANIMATIONTYPE_VECTOR2) {
+            switch (coordinate) {
+                case SelectedCoordinate.x:
+                    (value as Vector2).x = newValue
+                    break;
+                case SelectedCoordinate.y:
+                    (value as Vector2).y = newValue
+                    break;
+            }
+        }
+
+        if (dataType === Animation.ANIMATIONTYPE_VECTOR3) {
+            switch (coordinate) {
+                case SelectedCoordinate.x:
+                    (value as Vector3).x = newValue
+                    break;
+                case SelectedCoordinate.y:
+                    (value as Vector3).y = newValue
+                    break;
+                case SelectedCoordinate.z:
+                    (value as Vector3).z = newValue
+                    break;
+            }
+        }
+
+        if (dataType === Animation.ANIMATIONTYPE_QUATERNION) {
+            switch (coordinate) {
+                case SelectedCoordinate.x:
+                    (value as Quaternion).x = newValue
+                    break;
+                case SelectedCoordinate.y:
+                    (value as Quaternion).y = newValue
+                    break;
+                case SelectedCoordinate.z:
+                    (value as Quaternion).z = newValue
+                    break;
+                case SelectedCoordinate.w:
+                    (value as Quaternion).w = newValue
+                    break;
+            }
+        }
+
+        if (dataType === Animation.ANIMATIONTYPE_COLOR3) {
+            switch (coordinate) {
+                case SelectedCoordinate.r:
+                    (value as Color3).r = newValue
+                    break;
+                case SelectedCoordinate.g:
+                    (value as Color3).g = newValue
+                    break;
+                case SelectedCoordinate.b:
+                    (value as Color3).b = newValue
+                    break;
+            }
+        }
+
+        if (dataType === Animation.ANIMATIONTYPE_COLOR4) {
+            switch (coordinate) {
+                case SelectedCoordinate.r:
+                    (value as Color4).r = newValue
+                    break;
+                case SelectedCoordinate.g:
+                    (value as Color4).g = newValue
+                    break;
+                case SelectedCoordinate.b:
+                    (value as Color4).b = newValue
+                    break;
+                case SelectedCoordinate.a:
+                    (value as Color4).a = newValue
+                    break;
+            }
+        }
+
+        if (dataType === Animation.ANIMATIONTYPE_SIZE) {
+            switch (coordinate) {
+                case SelectedCoordinate.width:
+                    (value as Size).width = newValue
+                    break;
+                case SelectedCoordinate.g:
+                    (value as Size).height = newValue
+                    break;
+            }
+        }
+
+
+        return value;
+    }
+
+    renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, id: string) {
 
         let animation = this.state.selected as Animation;
         // Bug: After play/stop we get an extra keyframe at 0
+        let index = parseInt(id.split('_')[3]);
+
+        let coordinate = parseInt(id.split('_')[2]);
 
         let keys = [...animation.getKeys()];
 
@@ -244,25 +344,30 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         }
 
         keys[index].frame = newFrame; // This value comes as percentage/frame/time
-        // Calculate value for Vector3...
-        keys[index].value = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2; // this value comes inverted svg from 0 = 100 to 100 = 0
 
+        // Calculate value for Vector3...
+
+        let updatedValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2; // this value comes inverted svg from 0 = 100 to 100 = 0
+
+        keys[index].value = this.updateValuePerCoordinate(animation.dataType, keys[index].value, updatedValue, coordinate);
 
         if (updatedSvgKeyFrame.isLeftActive) {
 
             if (updatedSvgKeyFrame.leftControlPoint !== null) {
                 // Rotate 
-                let updatedValue = ((this._heightScale - updatedSvgKeyFrame.leftControlPoint.y) / this._heightScale) * 2;
+                let newValue = ((this._heightScale - updatedSvgKeyFrame.leftControlPoint.y) / this._heightScale) * 2;
 
                 let keyframeValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2;
 
-                keys[index].inTangent = keyframeValue - updatedValue;
+                let updatedValue = keyframeValue - newValue;
+
+                keys[index].inTangent = this.updateValuePerCoordinate(animation.dataType, keys[index].inTangent, updatedValue, coordinate);
 
                 if (!this.state.isBrokenMode) {
                     // Right control point if exists
                     if (updatedSvgKeyFrame.rightControlPoint !== null) {
                         // Sets opposite value
-                        keys[index].outTangent = keys[index].inTangent * -1
+                        keys[index].outTangent = keys[index].inTangent * -1;
                     }
                 }
             }
@@ -272,11 +377,13 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
             if (updatedSvgKeyFrame.rightControlPoint !== null) {
                 // Rotate 
-                let updatedValue = ((this._heightScale - updatedSvgKeyFrame.rightControlPoint.y) / this._heightScale) * 2;
+                let newValue = ((this._heightScale - updatedSvgKeyFrame.rightControlPoint.y) / this._heightScale) * 2;
 
                 let keyframeValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2;
 
-                keys[index].outTangent = keyframeValue - updatedValue;
+                let updatedValue = keyframeValue - newValue;
+
+                keys[index].outTangent = this.updateValuePerCoordinate(animation.dataType, keys[index].outTangent, updatedValue, coordinate);
 
                 if (!this.state.isBrokenMode) {
                     if (updatedSvgKeyFrame.leftControlPoint !== null) {   // Sets opposite value
@@ -289,7 +396,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
         animation.setKeys(keys);
 
-        this.selectAnimation(animation);
+        this.selectAnimation(animation, coordinate);
 
     }
 
@@ -462,7 +569,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         // Checks if Flat Tangent is active (tangents are set to zero)
         let flattened;
         if (this.state && this.state.isFlatTangentMode) {
-                
+
             flattened = keyframes.map(kf => {
 
                 if (kf.inTangent !== undefined) {
@@ -482,7 +589,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
     returnZero(dataType: number) {
         let type;
-        switch(dataType){
+        switch (dataType) {
             case Animation.ANIMATIONTYPE_FLOAT:
                 type = 0;
                 break;
@@ -496,9 +603,9 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         return type;
     }
 
-    getValueAsArray(valueType: number, value: number | Vector2 | Vector3 | Color3 | Color4 | Size | Quaternion ) {
+    getValueAsArray(valueType: number, value: number | Vector2 | Vector3 | Color3 | Color4 | Size | Quaternion) {
         let valueAsArray: number[] = [];
-        switch(valueType){
+        switch (valueType) {
             case Animation.ANIMATIONTYPE_FLOAT:
                 valueAsArray = [value as number];
                 break;
@@ -526,7 +633,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
     getPathData(animation: Animation | null) {
 
-        if (animation === null){
+        if (animation === null) {
             return undefined;
         }
 
@@ -543,11 +650,15 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             const startKey = keyframes[0];
             let middle = this._heightScale / 2;
             let collection: ICurveData[] = [];
-            const colors = ['red', 'blue', 'green'];
+            const colors = ['red', 'green', 'blue', 'white', '#7a4ece'];
             const startValue = this.getValueAsArray(valueType, startKey.value);
+
 
             for (var d = 0; d < startValue.length; d++) {
 
+                const id = `${name}_${targetProperty}_${d}`;
+
+                const curveColor = valueType === Animation.ANIMATIONTYPE_FLOAT ? colors[4] : colors[d];
                 // START OF LINE/CURVE
                 let data: string | undefined = `M${startKey.frame}, ${this._heightScale - (startValue[d] * middle)}`; // 
 
@@ -555,7 +666,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                     data = this.linearInterpolation(keyframes, data, middle);
                 } else {
                     if (usesTangents) {
-                        data = this.curvePathWithTangents(keyframes, data, middle, valueType, d, `${name}_${targetProperty}`);
+                        data = this.curvePathWithTangents(keyframes, data, middle, valueType, d, id);
                     } else {
                         if (easingType !== undefined && easingMode !== undefined) {
                             let easingFunction = animation.getEasingFunction();
@@ -573,7 +684,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                                     }
                                     return kf;
                                 });
-                                data = this.curvePathWithTangents(emptyTangents, data, middle, valueType, d, `${name}_${targetProperty}`);
+                                data = this.curvePathWithTangents(emptyTangents, data, middle, valueType, d, id);
                             } else {
                                 data = this.linearInterpolation(keyframes, data, middle);
                             }
@@ -581,15 +692,13 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                     }
                 }
 
-                collection.push({ pathData: data, pathLength: highestFrame, domCurve: React.createRef(), color: colors[d] })
+                collection.push({ pathData: data, pathLength: highestFrame, domCurve: React.createRef(), color: curveColor, id: id })
 
             }
 
             return collection;
 
-            
-
-        }  
+        }
     }
 
     getAnimationData(animation: Animation) {
@@ -602,7 +711,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         let targetPropertyPath = animation.targetPropertyPath;
         let framesPerSecond = animation.framePerSecond;
         let highestFrame = animation.getHighestFrame();
-        let serialized = animation.serialize();
+        //let serialized = animation.serialize();
         let usesTangents = animation.getKeys().find(kf => kf.hasOwnProperty('inTangent') || kf.hasOwnProperty('outTangent')) !== undefined ? true : false;
         let valueType = animation.dataType;
         // easing properties
@@ -616,7 +725,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             easingMode = easingFunction.getEasingMode();
         }
 
-        return { loopMode, name, blendingSpeed, targetPropertyPath, targetProperty, framesPerSecond, highestFrame, serialized, usesTangents, easingType, easingMode, valueType }
+        return { loopMode, name, blendingSpeed, targetPropertyPath, targetProperty, framesPerSecond, highestFrame, usesTangents, easingType, easingMode, valueType }
 
     }
 
@@ -625,7 +734,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         keyframes.forEach((key, i) => {
 
             // Create a unique id for curve
-            const curveId = animationName + "_" + coordinate
+            const curveId = animationName + "_" + i
 
             // identify type of value and split...
             const keyframe_valueAsArray = this.getValueAsArray(type, key.value)[coordinate];
@@ -709,7 +818,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
         keyframes.forEach((key, i) => {
 
-             // identify type of value and split...
+            // identify type of value and split...
 
             // Gets previous initial point of curve segment
             var pointA = new Vector2(0, 0);
@@ -828,12 +937,13 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     * Core functions
     * This section handles main Curve Editor Functions.
     */
-    selectAnimation(animation: Animation, coordinate?: string) {
+    selectAnimation(animation: Animation, coordinate?: SelectedCoordinate) {
 
         this._svgKeyframes = [];
         let updatedPath;
+        let filteredSvgKeys;
 
-        if (!coordinate){
+        if (coordinate === undefined) {
             this.playStopAnimation();
 
             updatedPath = this.getPathData(animation);
@@ -843,40 +953,33 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
             }
 
         } else {
-            updatedPath = this.getPathData(animation);
-
-            if (updatedPath === undefined) {
+            let curves = this.getPathData(animation);
+            if (curves === undefined) {
                 console.log("no keyframes in this animation");
             }
+
+            updatedPath = [];
+
+            filteredSvgKeys = this._svgKeyframes?.filter(curve => {
+                let id = parseInt(curve.id.split('_')[2]);
+                if (id === coordinate) {
+                    return true
+                } else {
+                    return false
+                }
+            })
+
+
+            curves?.map(curve => {
+                let id = parseInt(curve.id.split('_')[2]);
+                if (id === coordinate) {
+                    updatedPath.push(curve);
+                }
+            })
         }
 
-
-        // let sin: ICurveData = {
-        //     pathData: "M2,6 C100,100 134,73 221,14",
-        //     pathLength: 100,
-        //     domCurve: React.createRef(),
-        //     color: 'red'
-        // }
-        // let sin2: ICurveData = {
-        //     pathData: "M2,6 C81,13 119,-1 221,14",
-        //     pathLength: 100,
-        //     domCurve: React.createRef(),
-        //     color: 'blue'
-        // }
-        // let sin3: ICurveData = {
-        //     pathData: "M2,6 C23,75 210,15 211,60",
-        //     pathLength: 100,
-        //     domCurve: React.createRef(),
-        //     color: 'green'
-        // }
-
-        // const updatedPath = [sin, sin2, sin3];
-
         // check for empty svgKeyframes, lastframe, selected
-        this.setState({ selected: animation, svgKeyframes: this._svgKeyframes, selectedPathData: updatedPath });
-
-       
-
+        this.setState({ selected: animation, svgKeyframes: coordinate !== undefined ? filteredSvgKeys : this._svgKeyframes, selectedPathData: updatedPath });
 
     }
 
@@ -972,12 +1075,12 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                 let keys = this.state.selected.getKeys();
                 let firstFrame = keys[0].frame;
                 let LastFrame = keys[keys.length - 1].frame;
-                if (direction === 1){
+                if (direction === 1) {
                     this.props.scene.beginAnimation(target, firstFrame, LastFrame, true);
-                } 
-                if (direction === -1){
+                }
+                if (direction === -1) {
                     this.props.scene.beginAnimation(target, LastFrame, firstFrame, true);
-                } 
+                }
                 this._isPlaying = true;
                 this.setState({ isPlaying: true });
                 this.forceUpdate();
@@ -1006,16 +1109,16 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                     lerpMode={this.state.lerpMode}
                     setLerpMode={() => this.setLerpMode()}
                     flatTangent={() => this.setFlatTangent()} />
-                    
+
                 <div className="content">
                     <div className="row">
-                        <EditorControls selectAnimation={(animation: Animation, axis?: string) => this.selectAnimation(animation, axis)} 
-                        isTargetedAnimation={this._isTargetedAnimation} 
-                        entity={this.props.entity} 
-                        selected={this.state.selected} 
-                        setNotificationMessage={(message: string) => { this.setState({notification: message})}}
+                        <EditorControls selectAnimation={(animation: Animation, axis?: SelectedCoordinate) => this.selectAnimation(animation, axis)}
+                            isTargetedAnimation={this._isTargetedAnimation}
+                            entity={this.props.entity}
+                            selected={this.state.selected}
+                            setNotificationMessage={(message: string) => { this.setState({ notification: message }) }}
                         />
-                        
+
                         <div ref={this._graphCanvas} className="graph-chart" onWheel={(e) => this.zoom(e)} >
 
                             <Playhead frame={this.state.currentFrame} offset={this.state.playheadOffset} />
@@ -1025,7 +1128,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                                 viewBoxScale={this.state.frameAxisLength.length} scale={this.state.scale}
                                 keyframeSvgPoints={this.state.svgKeyframes}
                                 selectedControlPoint={(type: string, id: string) => this.selectedControlPoint(type, id)}
-                                updatePosition={(updatedSvgKeyFrame: IKeyframeSvgPoint, index: number) => this.renderPoints(updatedSvgKeyFrame, index)}>
+                                updatePosition={(updatedSvgKeyFrame: IKeyframeSvgPoint, id: string) => this.renderPoints(updatedSvgKeyFrame, id)}>
 
                                 {/* Frame Labels  */}
                                 { /* Vertical Grid  */}
@@ -1046,7 +1149,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
                                 { /* Multiple Curves  */}
                                 {
-                                    this.state.selectedPathData?.map( (curve, i) => 
+                                    this.state.selectedPathData?.map((curve, i) =>
                                         <path key={i} ref={curve.domCurve} pathLength={curve.pathLength} id="curve" d={curve.pathData} style={{ stroke: curve.color, fill: 'none', strokeWidth: '0.5' }}></path>
                                     )
                                 }

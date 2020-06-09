@@ -4,7 +4,7 @@ import { KeyframeSvgPoint, IKeyframeSvgPoint } from './keyframeSvgPoint';
 
 interface ISvgDraggableAreaProps {
     keyframeSvgPoints: IKeyframeSvgPoint[];
-    updatePosition: (updatedKeyframe: IKeyframeSvgPoint, index: number) => void;
+    updatePosition: (updatedKeyframe: IKeyframeSvgPoint, id: string) => void;
     scale: number;
     viewBoxScale: number;
     selectKeyframe: (id: string) => void;
@@ -15,7 +15,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
 
     private _active: boolean;
     private _isCurrentPointControl: string;
-    private _currentPointIndex: number;
+    private _currentPointId: string;
     private _draggableArea: React.RefObject<SVGSVGElement>;
     private _panStart: Vector2;
     private _panStop: Vector2;
@@ -23,7 +23,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
 
     constructor(props: ISvgDraggableAreaProps) {
         super(props);
-        this._currentPointIndex = -1;
+        this._currentPointId = "";
         this._isCurrentPointControl = "";
         this._draggableArea = React.createRef();
         this._panStart = new Vector2(0, 0);
@@ -45,7 +45,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
         e.preventDefault();
         if (e.target.classList.contains("draggable")) {
             this._active = true;
-            this._currentPointIndex = parseInt(e.target.getAttribute('data-id'));
+            this._currentPointId = e.target.getAttribute('data-id');
 
             if (e.target.classList.contains("control-point")) {
                 this._isCurrentPointControl = e.target.getAttribute("type");
@@ -71,17 +71,19 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
             if (coord !== undefined) {
 
                 var newPoints = [...this.props.keyframeSvgPoints];
-                // Check for NaN values here. 
-                if (this._isCurrentPointControl === "left") {
-                    newPoints[this._currentPointIndex].leftControlPoint = coord;
-                } else if (this._isCurrentPointControl === "right") {
-                    newPoints[this._currentPointIndex].rightControlPoint = coord;
-                } else {
-                    newPoints[this._currentPointIndex].keyframePoint = coord;
+
+                let point = newPoints.find(kf => kf.id === this._currentPointId);
+                if (point) {
+                    // Check for NaN values here. 
+                    if (this._isCurrentPointControl === "left") {
+                        point.leftControlPoint = coord;
+                    } else if (this._isCurrentPointControl === "right") {
+                        point.rightControlPoint = coord;
+                    } else {
+                        point.keyframePoint = coord;
+                    }
+                    this.props.updatePosition(point, this._currentPointId);
                 }
-
-                this.props.updatePosition(newPoints[this._currentPointIndex], this._currentPointIndex);
-
             }
         }
     }
@@ -91,7 +93,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
     dragEnd(e: any): void {
         e.preventDefault();
         this._active = false;
-        this._currentPointIndex = -1;
+        this._currentPointId = "";
         this._isCurrentPointControl = "";
 
         if (e.target.classList.contains("pannable")) {
@@ -208,12 +210,12 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps>{
                         <KeyframeSvgPoint
                             key={`${keyframe.id}_${i}`}
                             id={keyframe.id}
-                            keyframePoint={keyframe.keyframePoint} 
-                            leftControlPoint={keyframe.leftControlPoint} 
+                            keyframePoint={keyframe.keyframePoint}
+                            leftControlPoint={keyframe.leftControlPoint}
                             rightControlPoint={keyframe.rightControlPoint}
                             isLeftActive={keyframe.isLeftActive}
                             isRightActive={keyframe.isRightActive}
-                            selected={keyframe.selected} 
+                            selected={keyframe.selected}
                             selectedControlPoint={(type: string, id: string) => this.props.selectedControlPoint(type, id)}
                             selectKeyframe={(id: string) => this.props.selectKeyframe(id)} />
                     )}
