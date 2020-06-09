@@ -640,6 +640,21 @@
 
                         .handle-indicator{
                             width: 30px;
+
+                            &.show {
+                                display: block;
+                                background-image: url('./assets/keySelectedIcon.svg');
+                                background-repeat: no-repeat;
+                                background-color: transparent;
+                                background-size: 10px;
+                                color: white;
+                                background-position-x: 9px;
+                                background-position-y: 5px;
+                            }
+
+                            &.hide {
+                                display: none;
+                            }
                         }
 
                         ul.sub-list {
