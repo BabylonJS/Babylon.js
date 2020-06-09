@@ -160,7 +160,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
         let length = Math.round(this._canvasLength * this.state.scale);// Check Undefined, or NaN
         let highestFrame = 100;
-        if (this.state.selected !== null) {
+        if (this.state.selected !== null && this.state.selected !== undefined) {
             highestFrame = this.state.selected.getHighestFrame();
         }
 
@@ -1161,7 +1161,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
                         </div>
                     </div>
-                    <div className="row">
+                    <div className="row-bottom">
                         <Timeline currentFrame={this.state.currentFrame} playPause={(direction: number) => this.playPause(direction)} isPlaying={this.state.isPlaying} dragKeyframe={(frame: number, index: number) => this.updateFrameInKeyFrame(frame, index)} onCurrentFrameChange={(frame: number) => this.changeCurrentFrame(frame)} keyframes={this.state.selected && this.state.selected.getKeys()} selected={this.state.selected && this.state.selected.getKeys()[0]}></Timeline>
                     </div>
                 </div>
