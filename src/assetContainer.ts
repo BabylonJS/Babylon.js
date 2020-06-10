@@ -156,6 +156,8 @@ export class AssetContainer extends AbstractScene {
                                             convertionMap[material.uniqueId] = swap.uniqueId;
                                             storeMap[swap.uniqueId] = swap;
                                         }
+
+                                        multi.subMaterials = multi.subMaterials.map(m => storeMap[convertionMap[m.uniqueId]]);
                                     }
                                 }
 
