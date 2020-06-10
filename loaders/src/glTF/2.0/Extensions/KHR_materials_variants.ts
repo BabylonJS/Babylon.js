@@ -20,6 +20,7 @@ interface IKHRMaterialVariants {
 
 interface IExtensionMetadata {
     lastSelected: Nullable<string | Array<string>>;
+    original: Array<{ mesh: AbstractMesh, material: Nullable<Material> }>;
     variants: IVariantsMap;
 }
 
@@ -70,14 +71,9 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     }
 
     /**
-     * The default variant. Use with SelectVariant to reset the model to the original.
-     */
-    public static readonly DEFAULT = "__default__";
-
-    /**
      * Select a variant given a variant tag name or a list of variant tag names.
      * @param rootMesh The glTF root mesh
-     * @param variantName The variant name(s) to select. Use the `DEFAULT` property to reset back to original.
+     * @param variantName The variant name(s) to select.
      */
     public static SelectVariant(rootMesh: Mesh, variantName: string | string[]): void {
         const extensionMetadata = this._GetExtensionMetadata(rootMesh);
@@ -106,7 +102,22 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     }
 
     /**
-     * Gets the last selected variant tag name(s).
+     * Reset back to the original before selecting a variant.
+     * @param rootMesh The glTF root mesh
+     */
+    public static Reset(rootMesh: Mesh): void {
+        const extensionMetadata = this._GetExtensionMetadata(rootMesh);
+        if (!extensionMetadata) {
+            throw new Error(`Cannot reset on a glTF mesh that does not have the ${NAME} extension`);
+        }
+
+        for (const entry of extensionMetadata.original) {
+            entry.mesh.material = entry.material;
+        }
+    }
+
+    /**
+     * Gets the last selected variant tag name(s) or null if original.
      * @param rootMesh The glTF root mesh
      * @returns The selected variant tag name(s).
      */
@@ -136,13 +147,13 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
                     const root = this._loader.rootBabylonMesh;
                     const metadata = (root.metadata = root.metadata || {});
                     const gltf = (metadata.gltf = metadata.gltf || {});
-                    const extensionMetadata: IExtensionMetadata = (gltf[NAME] = gltf[NAME] || {
-                        lastSelected: null,
-                        variants: { [KHR_materials_variants.DEFAULT]: [{ mesh: babylonMesh, material: babylonMesh.material }] }
-                    });
-                    const variants = extensionMetadata.variants;
+                    const extensionMetadata: IExtensionMetadata = (gltf[NAME] = gltf[NAME] || { lastSelected: null, original: [], variants: {} });
 
-                    // For each mapping, look at the tags and make a new entry for them
+                    // Store the original material.
+                    extensionMetadata.original.push({ mesh: babylonMesh, material: babylonMesh.material });
+
+                    // For each mapping, look at the tags and make a new entry for them.
+                    const variants = extensionMetadata.variants;
                     for (const mapping of extension.mapping) {
                         for (const tag of mapping.tags) {
                             const material = ArrayItem.Get(`#/materials/`, this._loader.gltf.materials, mapping.material);
