@@ -2760,7 +2760,7 @@ var EXT_lights_image_based = /** @class */ (function () {
             promises.push(_this._loader.loadSceneAsync(context, scene));
             _this._loader.logOpen("" + extensionContext);
             var light = _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["ArrayItem"].Get(extensionContext + "/light", _this._lights, extension.light);
-            promises.push(_this._loadLightAsync("#/extensions/" + _this.name + "/lights/" + extension.light, light).then(function (texture) {
+            promises.push(_this._loadLightAsync("/extensions/" + _this.name + "/lights/" + extension.light, light).then(function (texture) {
                 _this._loader.babylonScene.environmentTexture = texture;
             }));
             _this._loader.logClose();
@@ -2781,7 +2781,7 @@ var EXT_lights_image_based = /** @class */ (function () {
                     this_1._loader.logOpen("" + specularImageContext);
                     var index = faces[face];
                     var image = _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["ArrayItem"].Get(specularImageContext, this_1._loader.gltf.images, index);
-                    promises.push(this_1._loader.loadImageAsync("#/images/" + index, image).then(function (data) {
+                    promises.push(this_1._loader.loadImageAsync("/images/" + index, image).then(function (data) {
                         imageData_1[mipmap][face] = data;
                     }));
                     this_1._loader.logClose();
@@ -2872,7 +2872,7 @@ var EXT_mesh_gpu_instancing = /** @class */ (function () {
         var _this = this;
         return _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].LoadExtensionAsync(context, node, this.name, function (extensionContext, extension) {
             _this._loader._disableInstancedMesh++;
-            var promise = _this._loader.loadNodeAsync("#/nodes/" + node.index, node, assign);
+            var promise = _this._loader.loadNodeAsync("/nodes/" + node.index, node, assign);
             _this._loader._disableInstancedMesh--;
             if (!node._primitiveBabylonMeshes) {
                 return promise;
@@ -3069,7 +3069,7 @@ var KHR_draco_mesh_compression = /** @class */ (function () {
             loadAttribute("COLOR_0", babylonjs_Meshes_Compression_dracoCompression__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].ColorKind);
             var bufferView = _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["ArrayItem"].Get(extensionContext, _this._loader.gltf.bufferViews, extension.bufferView);
             if (!bufferView._dracoBabylonGeometry) {
-                bufferView._dracoBabylonGeometry = _this._loader.loadBufferViewAsync("#/bufferViews/" + bufferView.index, bufferView).then(function (data) {
+                bufferView._dracoBabylonGeometry = _this._loader.loadBufferViewAsync("/bufferViews/" + bufferView.index, bufferView).then(function (data) {
                     var dracoCompression = _this.dracoCompression || babylonjs_Meshes_Compression_dracoCompression__WEBPACK_IMPORTED_MODULE_0__["DracoCompression"].Default;
                     return dracoCompression.decodeMeshAsync(data, attributes).then(function (babylonVertexData) {
                         var babylonGeometry = new babylonjs_Meshes_Compression_dracoCompression__WEBPACK_IMPORTED_MODULE_0__["Geometry"](babylonMesh.name, _this._loader.babylonScene);
@@ -3886,13 +3886,13 @@ var KHR_materials_variants = /** @class */ (function () {
                 extension.mapping.forEach(function (mapping) {
                     mapping.tags.forEach(function (tag, index) {
                         var tagMapping = _this._tagsToMap[tag] || [];
-                        var material = _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["ArrayItem"].Get("#/materials/", _this._loader.gltf.materials, mapping.material);
+                        var material = _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["ArrayItem"].Get("/materials/", _this._loader.gltf.materials, mapping.material);
                         var meshEntry = {
                             mesh: babylonMesh,
                             materialPromise: Promise.resolve(null)
                         };
                         if (babylonMesh instanceof babylonjs_Meshes_mesh__WEBPACK_IMPORTED_MODULE_1__["Mesh"]) {
-                            meshEntry.materialPromise = _this._loader._loadMaterialAsync("#/materials/" + mapping.material, material, babylonMesh, babylonDrawMode, function (material) {
+                            meshEntry.materialPromise = _this._loader._loadMaterialAsync("/materials/" + mapping.material, material, babylonMesh, babylonDrawMode, function (material) {
                                 meshEntry.material = material;
                             });
                         }
@@ -4254,7 +4254,7 @@ var MSFT_audio_emitter = /** @class */ (function () {
         }
         else {
             var bufferView = _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["ArrayItem"].Get(context + "/bufferView", this._loader.gltf.bufferViews, clip.bufferView);
-            promise = this._loader.loadBufferViewAsync("#/bufferViews/" + bufferView.index, bufferView);
+            promise = this._loader.loadBufferViewAsync("/bufferViews/" + bufferView.index, bufferView);
         }
         clip._objectURL = promise.then(function (data) {
             return URL.createObjectURL(new Blob([data], { type: clip.mimeType }));
@@ -4273,7 +4273,7 @@ var MSFT_audio_emitter = /** @class */ (function () {
                 volume: emitter.volume == undefined ? 1 : emitter.volume,
             };
             var _loop_2 = function (i) {
-                var clipContext = "#/extensions/" + this_1.name + "/clips";
+                var clipContext = "/extensions/" + this_1.name + "/clips";
                 var clip = _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["ArrayItem"].Get(clipContext, this_1._clips, emitter.clips[i].clip);
                 clipPromises.push(this_1._loadClipAsync(clipContext + "/" + emitter.clips[i].clip, clip).then(function (objectURL) {
                     var sound = emitter._babylonSounds[i] = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Sound"](name_1, objectURL, _this._loader.babylonScene, null, options_1);
@@ -4338,7 +4338,7 @@ var MSFT_audio_emitter = /** @class */ (function () {
         }
         var babylonAnimation = babylonAnimationGroup.targetedAnimations[0];
         var emitterIndex = event.emitter;
-        var emitter = _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["ArrayItem"].Get("#/extensions/" + this.name + "/emitters", this._emitters, emitterIndex);
+        var emitter = _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["ArrayItem"].Get("/extensions/" + this.name + "/emitters", this._emitters, emitterIndex);
         return this._loadEmitterAsync(context, emitter).then(function () {
             var sound = emitter._babylonData.sound;
             if (sound) {
@@ -4501,7 +4501,7 @@ var MSFT_lod = /** @class */ (function () {
                     _this._nodeSignalLODs[indexLOD] = _this._nodeSignalLODs[indexLOD] || new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Deferred"]();
                 }
                 var assign_1 = function (babylonTransformNode) { babylonTransformNode.setEnabled(false); };
-                var promise = _this._loader.loadNodeAsync("#/nodes/" + nodeLOD.index, nodeLOD, assign_1).then(function (babylonMesh) {
+                var promise = _this._loader.loadNodeAsync("/nodes/" + nodeLOD.index, nodeLOD, assign_1).then(function (babylonMesh) {
                     if (indexLOD !== 0) {
                         // TODO: should not rely on _babylonTransformNode
                         var previousNodeLOD = nodeLODs[indexLOD - 1];
@@ -4545,7 +4545,7 @@ var MSFT_lod = /** @class */ (function () {
                 if (indexLOD !== 0) {
                     _this._materialIndexLOD = indexLOD;
                 }
-                var promise = _this._loader._loadMaterialAsync("#/materials/" + materialLOD.index, materialLOD, babylonMesh, babylonDrawMode, function (babylonMaterial) {
+                var promise = _this._loader._loadMaterialAsync("/materials/" + materialLOD.index, materialLOD, babylonMesh, babylonDrawMode, function (babylonMaterial) {
                     if (indexLOD === 0) {
                         assign(babylonMaterial);
                     }
