@@ -72,7 +72,7 @@ a:visited {
     font-size: 0;
     display: grid;
     grid-template-rows: 100%;
-    grid-template-columns: 201px 1fr 210px
+    grid-template-columns: 201px auto 1fr 210px
 }
 
 #logoImg {
@@ -92,7 +92,7 @@ a:visited {
 .footerRight {
     display: flex;
     flex-direction: row-reverse;
-    grid-column: 3;
+    grid-column: 4;
     grid-row: 1;
 }
 
@@ -224,6 +224,23 @@ a:visited {
     font-size: 1.8em;
 }
 
+/* variants bar */
+#variantBar {
+    margin-left: 10px;
+    display: none;
+    align-items: center;
+    color: white;
+    min-height: 30px;
+    height: var(--footer-height);
+    background-color: var(--footer-background);    
+    grid-column: 2;
+    grid-row: 1;
+}
+
+#variantBar * {
+    padding: 0px;
+    margin: 0px;
+}
 
 /* animation bar */
 #animationBar {
@@ -234,7 +251,7 @@ a:visited {
     min-height: 30px;
     height: var(--footer-height);
     background-color: var(--footer-background);    
-    grid-column: 2;
+    grid-column: 3;
     grid-row: 1;
 }
 
@@ -269,7 +286,7 @@ a:visited {
     width: var(--footer-height);
 }
 
-#dropdownBtn {
+.dropdownBtn {
     display: flex;
     height: var(--footer-height);
     width: 200px;
@@ -332,7 +349,7 @@ a:visited {
     background-color:var(--button-hover-color); 
 }
 
-#dropdownLabel {
+.dropdownLabel {
     align-self: center;
     justify-self: center;
     overflow: hidden;
@@ -340,24 +357,24 @@ a:visited {
     white-space: nowrap;
 }
 
-#dropdownContent a  {
+.dropdownContent a  {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     padding: 10px 15px 10px 46px;
 }
 
-#dropdownBtn:hover {
+.dropdownBtn:hover {
     cursor: pointer;
     background-color:var(--button-hover-color); 
     transition: all 0.3s ease;
 }
 
-#dropdownBtn.open {
+.dropdownBtn.open {
     background-color:var(--button-hover-color); 
 }
 
-#dropdownContent a {
+.dropdownContent a {
     max-width: 1000px;
     transition: color 0.5s;
     height: 40px;
@@ -369,16 +386,16 @@ a:visited {
     align-content: center;
     justify-content: center;
 }
-#dropdownContent a:hover {
+.dropdownContent a:hover {
     background-color: var(--button-hover-hover); 
     transition: all 0.3s ease;
 }
-#dropdownContent a:active {
+.dropdownContent a:active {
     background-color: var(--button-hover-background);
     transition: all 0.3s ease;
 }
 
-#dropdownContent {    
+.dropdownContent {    
     background-color: var(--button-hover-color);
     display: none;
     position: absolute;      
@@ -392,18 +409,18 @@ a:visited {
     transition: all 0.3s ease; /* Add transition for hover effects */
 }
 
-#dropdownContent a,
+.dropdownContent a,
 #playBtn {
     cursor: pointer;
 }
 
-#chevronUp {
+.chevronUp {
     margin-right: 0px;
     margin-left: 0px;
     height: var(--footer-height);
     width: var(--footer-height);
 }
-#chevronDown {
+.chevronDown {
     display: none;
     margin-right: 0px;
     margin-left: 0px;
@@ -411,7 +428,7 @@ a:visited {
     width: var(--footer-height);
 }
 
-#dropdownLabel {
+.dropdownLabel {
     cursor: pointer;
     width: 200px;
     padding: 0px 15px 2px 5px;
