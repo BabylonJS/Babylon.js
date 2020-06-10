@@ -53,15 +53,6 @@
         </div>
         <div id="footer" class="footer">
             <div id="animationBar">
-                <div class="dropdown">
-                    <div id="dropdownBtn">
-                        <img src="Assets/Icon_Up.svg" id="chevronUp">
-                        <img src="Assets/Icon_Down.svg" id="chevronDown">
-                        <span id="dropdownLabel"></span>
-                    </div>
-                    <div id="dropdownContent">
-                    </div>
-                </div>
                 <div class="row">
                     <button id="playBtn" class="pause">
                         <img id="playImg" src="Assets/Icon_Play.svg">
@@ -69,7 +60,27 @@
                     </button>
                     <input id="slider" type="range" min="0" max="100" value="0" step="any">
                 </div>
+                <div class="dropdown">
+                    <div id="dropdownBtn" class="dropdownBtn">
+                        <img src="Assets/Icon_Up.svg" id="chevronUp" class="chevronUp">
+                        <img src="Assets/Icon_Down.svg" id="chevronDown" class="chevronDown">
+                        <div id="dropdownLabel" class="dropdownLabel"></div>
+                    </div>
+                    <div id="dropdownContent" class="dropdownContent">
+                    </div>
+                </div>
             </div>
+            <div id="variantBar">
+                <div class="dropdown">
+                    <div id="dropdownBtn-variants" class="dropdownBtn">
+                        <img src="Assets/Icon_Up.svg" id="chevronUp-variants" class="chevronUp">
+                        <img src="Assets/Icon_Down.svg" id="chevronDown-variants" class="chevronDown">
+                        <div id="dropdownLabel-variants" class="dropdownLabel"></div>
+                    </div>
+                    <div id="dropdownContent-variants" class="dropdownContent">
+                    </div>
+                </div>
+            </div> 
             <div class="footerRight">
                 <a href="javascript:void(null);" id="btnInspector" class="hidden"><img src="./Assets/Icon_EditModel.svg"
                         alt="Display inspector" title="Display inspector" /></a>
