@@ -43,16 +43,12 @@ export interface IMaterialSubSurfaceDefines {
     _areTexturesDirty: boolean;
 }
 
-export enum SubsurfaceDiffusionProfile {
-    NEUTRAL = 0,
-    SKIN = 1,
-    FOLIAGE = 2,
-};
 
 /**
  * Define the code related to the sub surface parameters of the pbr material.
  */
 export class PBRSubSurfaceConfiguration {
+
     private _isRefractionEnabled = false;
     /**
      * Defines if the refraction is enabled in the material.
@@ -81,7 +77,7 @@ export class PBRSubSurfaceConfiguration {
      * Diffusion profile for subsurface scattering.
      * Useful for better scattering in the skins or foliages.
      */
-    public scatteringDiffusionProfile = SubsurfaceDiffusionProfile.NEUTRAL;
+    public scatteringDiffusionProfileIndex = 0;
 
     /**
      * Defines the refraction intensity of the material.
@@ -383,7 +379,7 @@ export class PBRSubSurfaceConfiguration {
 
 
             if (this.isScatteringEnabled) {
-                uniformBuffer.updateFloat("scatteringDiffusionProfile", this.scatteringDiffusionProfile);
+                uniformBuffer.updateFloat("scatteringDiffusionProfile", this.scatteringDiffusionProfileIndex);
             }
             uniformBuffer.updateColor3("vDiffusionDistance", this.diffusionDistance);
 
