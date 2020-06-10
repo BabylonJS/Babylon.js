@@ -6,6 +6,7 @@ import { Material } from 'babylonjs/Materials/material';
 import { Mesh } from 'babylonjs/Meshes/mesh';
 import { AbstractMesh } from 'babylonjs/Meshes/abstractMesh';
 import { INode, IMeshPrimitive, IMesh } from '../glTFLoaderInterfaces';
+import { Logger } from 'babylonjs';
 
 const NAME = "KHR_materials_variants";
 
@@ -18,14 +19,13 @@ interface IKHRMaterialVariants {
     mapping: IKHRMaterialVariantsMapping[];
 }
 
-/**
- * Interface for the mapping from variant tag name to a mesh and material.
- */
+interface IExtensionMetadata {
+    lastSelected: Nullable<string | Array<string>>;
+    variants: IVariantsMap;
+}
+
 interface IVariantsMap {
-    [key: string]: Array<{
-        mesh: AbstractMesh;
-        material: Material;
-    }>;
+    [key: string]: Array<{ mesh: AbstractMesh, material: Nullable<Material> }>;
 }
 
 /**
@@ -60,19 +60,32 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
      * Gets the list of available variant tag names for this asset.
      */
     public static GetAvailableVariants(rootMesh: Mesh): string[] {
-        return Object.keys(this._GetVariantsMap(rootMesh));
+        const extensionMetadata = this._GetExtensionMetadata(rootMesh);
+        if (!extensionMetadata) {
+            return [];
+        }
+
+        return Object.keys(extensionMetadata.variants);
     }
+
+    /**
+     * The default variant. Use with SelectVariant to reset the model to the original.
+     */
+    public static readonly DEFAULT = "__default__";
 
     /**
      * Select a variant given a variant tag name or a list of variant tag names.
      * @param rootMesh The glTF root mesh
-     * @param variantName The variant name(s) to select
+     * @param variantName The variant name(s) to select. Use the `DEFAULT` property to reset back to original.
      */
     public static SelectVariant(rootMesh: Mesh, variantName: string | string[]): void {
-        const variantsMap = this._GetVariantsMap(rootMesh);
+        const extensionMetadata = this._GetExtensionMetadata(rootMesh);
+        if (!extensionMetadata) {
+            throw new Error(`Cannot select variant on a glTF mesh that does not have the ${NAME} extension`);
+        }
 
         const select = (variantName: string): void => {
-            const entries = variantsMap[variantName];
+            const entries = extensionMetadata.variants[variantName];
             if (entries) {
                 for (const entry of entries) {
                     entry.mesh.material = entry.material;
@@ -87,10 +100,25 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
         } else {
             select(variantName);
         }
+
+        extensionMetadata.lastSelected = variantName;
     }
 
-    private static _GetVariantsMap(rootMesh: Mesh): IVariantsMap {
-        return rootMesh?.metadata?.gltf?.[NAME];
+    /**
+     * Gets the last selected variant tag name(s).
+     * @returns The selected variant tag name(s).
+     */
+    public static GetLastSelectedVariant(rootMesh: Mesh): Nullable<string | string[]> {
+        const extensionMetadata = this._GetExtensionMetadata(rootMesh);
+        if (!extensionMetadata) {
+            throw new Error(`Cannot get the last selected variant on a glTF mesh that does not have the ${NAME} extension`);
+        }
+
+        return extensionMetadata.lastSelected;
+    }
+
+    private static _GetExtensionMetadata(rootMesh: Mesh): Nullable<IExtensionMetadata> {
+        return rootMesh?.metadata?.gltf?.[NAME] || null;
     }
 
     /** @hidden */
@@ -103,17 +131,22 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
                 if (babylonMesh instanceof Mesh) {
                     const babylonDrawMode = GLTFLoader._GetDrawMode(context, primitive.mode);
 
+                    const root = this._loader.rootBabylonMesh;
+                    const metadata = (root.metadata = root.metadata || {});
+                    const gltf = (metadata.gltf = metadata.gltf || {});
+                    const extensionMetadata: IExtensionMetadata = (gltf[NAME] = gltf[NAME] || {
+                        lastSelected: null,
+                        variants: { [KHR_materials_variants.DEFAULT]: [{ mesh: babylonMesh, material: babylonMesh.material }] }
+                    });
+                    const variants = extensionMetadata.variants;
+
                     // For each mapping, look at the tags and make a new entry for them
                     for (const mapping of extension.mapping) {
                         for (const tag of mapping.tags) {
                             const material = ArrayItem.Get(`#/materials/`, this._loader.gltf.materials, mapping.material);
                             promises.push(this._loader._loadMaterialAsync(`#/materials/${mapping.material}`, material, babylonMesh, babylonDrawMode, (babylonMaterial) => {
-                                const root = this._loader.rootBabylonMesh;
-                                const metadata = (root.metadata = root.metadata || {});
-                                const gltf = (metadata.gltf = metadata.gltf || {});
-                                const map: IVariantsMap = (gltf[NAME] = gltf[NAME] || {});
-                                map[tag] = map[tag] || [];
-                                map[tag].push({
+                                variants[tag] = variants[tag] || [];
+                                variants[tag].push({
                                     mesh: babylonMesh,
                                     material: babylonMaterial
                                 });
