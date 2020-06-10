@@ -35,15 +35,26 @@
                     <input id="slider" type="range" min="0" max="100" value="0" step="any">
                 </div>
                 <div class="dropdown">
-                    <div id="dropdownBtn">
-                        <img src="Assets/Icon_Up.svg" id="chevronUp">
-                        <img src="Assets/Icon_Down.svg" id="chevronDown">
-                        <div id="dropdownLabel"></div>
+                    <div id="dropdownBtn" class="dropdownBtn">
+                        <img src="Assets/Icon_Up.svg" id="chevronUp" class="chevronUp">
+                        <img src="Assets/Icon_Down.svg" id="chevronDown" class="chevronDown">
+                        <div id="dropdownLabel" class="dropdownLabel"></div>
                     </div>
-                    <div id="dropdownContent">
+                    <div id="dropdownContent" class="dropdownContent">
                     </div>
                 </div>
             </div>
+            <div id="variantBar">
+                <div class="dropdown">
+                    <div id="dropdownBtn-variants" class="dropdownBtn">
+                        <img src="Assets/Icon_Up.svg" id="chevronUp-variants" class="chevronUp">
+                        <img src="Assets/Icon_Down.svg" id="chevronDown-variants" class="chevronDown">
+                        <div id="dropdownLabel-variants" class="dropdownLabel"></div>
+                    </div>
+                    <div id="dropdownContent-variants" class="dropdownContent">
+                    </div>
+                </div>
+            </div>            
             <div class="footerRight">
                 <a href="javascript:void(null);">
                     <div class="custom-upload"
@@ -76,6 +87,7 @@
         BABYLONDEVTOOLS.Loader
             .require('environment.js')
             .require('animation.js')
+            .require('variants.js')
             .require('index.js')
             .load(function() {
                 BABYLON.DracoCompression.Configuration.decoder = {

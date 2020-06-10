@@ -434,7 +434,9 @@ export class TargetCamera extends Camera {
                 const parentWorldMatrix = this.parent.getWorldMatrix();
                 Vector3.TransformCoordinatesToRef(position, parentWorldMatrix, this._globalPosition);
                 Vector3.TransformCoordinatesToRef(target, parentWorldMatrix, this._tmpTargetVector);
-                Vector3.TransformNormalToRef(up, parentWorldMatrix, this._tmpUpVector);
+                if (this.updateUpVectorFromRotation) {
+                    Vector3.TransformNormalToRef(up, parentWorldMatrix, this._tmpUpVector);
+                }
                 this._markSyncedWithParent();
             } else {
                 this._globalPosition.copyFrom(position);
