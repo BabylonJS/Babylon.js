@@ -2081,22 +2081,13 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_variants" {
         dispose(): void;
         /**
          * Gets the list of available variant tag names for this asset.
-<<<<<<< HEAD
-=======
          * @param rootMesh The glTF root mesh
          * @returns the list of all the variant names for this model
->>>>>>> eed1cab37fd382f46ffdd6ed91c732acd8c85b76
          */
         static GetAvailableVariants(rootMesh: Mesh): string[];
         /**
          * Select a variant given a variant tag name or a list of variant tag names.
          * @param rootMesh The glTF root mesh
-<<<<<<< HEAD
-         * @param variantName The variant name(s) to select
-         */
-        static SelectVariant(rootMesh: Mesh, variantName: string | string[]): void;
-        private static _GetVariantsMap;
-=======
          * @param variantName The variant name(s) to select.
          */
         static SelectVariant(rootMesh: Mesh, variantName: string | string[]): void;
@@ -2112,7 +2103,6 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_variants" {
          */
         static GetLastSelectedVariant(rootMesh: Mesh): Nullable<string | string[]>;
         private static _GetExtensionMetadata;
->>>>>>> eed1cab37fd382f46ffdd6ed91c732acd8c85b76
         /** @hidden */
         _loadMeshPrimitiveAsync(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Nullable<Promise<AbstractMesh>>;
     }
@@ -4773,22 +4763,13 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         dispose(): void;
         /**
          * Gets the list of available variant tag names for this asset.
-<<<<<<< HEAD
-=======
          * @param rootMesh The glTF root mesh
          * @returns the list of all the variant names for this model
->>>>>>> eed1cab37fd382f46ffdd6ed91c732acd8c85b76
          */
         static GetAvailableVariants(rootMesh: Mesh): string[];
         /**
          * Select a variant given a variant tag name or a list of variant tag names.
          * @param rootMesh The glTF root mesh
-<<<<<<< HEAD
-         * @param variantName The variant name(s) to select
-         */
-        static SelectVariant(rootMesh: Mesh, variantName: string | string[]): void;
-        private static _GetVariantsMap;
-=======
          * @param variantName The variant name(s) to select.
          */
         static SelectVariant(rootMesh: Mesh, variantName: string | string[]): void;
@@ -4804,7 +4785,6 @@ declare module BABYLON.GLTF2.Loader.Extensions {
          */
         static GetLastSelectedVariant(rootMesh: Mesh): Nullable<string | string[]>;
         private static _GetExtensionMetadata;
->>>>>>> eed1cab37fd382f46ffdd6ed91c732acd8c85b76
         /** @hidden */
         _loadMeshPrimitiveAsync(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Nullable<Promise<AbstractMesh>>;
     }

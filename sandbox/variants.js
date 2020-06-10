@@ -34,21 +34,6 @@ variantDropdownBtn.addEventListener("click", function() {
 
 function createVariantDropdownLink(variantName, target) {
     var variant = document.createElement("a");
-<<<<<<< HEAD
-    var displayName = variantName;
-
-    if (displayName === BABYLON.GLTF2.Loader.Extensions.KHR_materials_variants.DEFAULT) {
-        displayName = "Default";
-    }
-
-    variant.innerHTML = displayName;
-    variant.title = displayName;
-    variant.addEventListener("click", function() {
-        BABYLON.GLTF2.Loader.Extensions.KHR_materials_variants.SelectVariant(target, variantName);
-
-        variantDropdownLabel.innerHTML = displayName;
-        variantDropdownLabel.title = displayName;
-=======
     variant.innerHTML = variantName;
     variant.title = variantName;
     variant.addEventListener("click", function() {
@@ -60,7 +45,6 @@ function createVariantDropdownLink(variantName, target) {
 
         variantDropdownLabel.innerHTML = variantName;
         variantDropdownLabel.title = variantName;
->>>>>>> eed1cab37fd382f46ffdd6ed91c732acd8c85b76
     });
     variantDropdownContent.appendChild(variant);
 }

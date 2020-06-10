@@ -1246,11 +1246,6 @@ var KHR_materials_variants = /** @class */ (function () {
     };
     /**
      * Gets the list of available variant tag names for this asset.
-<<<<<<< HEAD
-     */
-    KHR_materials_variants.GetAvailableVariants = function (rootMesh) {
-        return Object.keys(this._GetVariantsMap(rootMesh));
-=======
      * @param rootMesh The glTF root mesh
      * @returns the list of all the variant names for this model
      */
@@ -1260,19 +1255,10 @@ var KHR_materials_variants = /** @class */ (function () {
             return [];
         }
         return Object.keys(extensionMetadata.variants);
->>>>>>> eed1cab37fd382f46ffdd6ed91c732acd8c85b76
     };
     /**
      * Select a variant given a variant tag name or a list of variant tag names.
      * @param rootMesh The glTF root mesh
-<<<<<<< HEAD
-     * @param variantName The variant name(s) to select
-     */
-    KHR_materials_variants.SelectVariant = function (rootMesh, variantName) {
-        var variantsMap = this._GetVariantsMap(rootMesh);
-        var select = function (variantName) {
-            var entries = variantsMap[variantName];
-=======
      * @param variantName The variant name(s) to select.
      */
     KHR_materials_variants.SelectVariant = function (rootMesh, variantName) {
@@ -1282,7 +1268,6 @@ var KHR_materials_variants = /** @class */ (function () {
         }
         var select = function (variantName) {
             var entries = extensionMetadata.variants[variantName];
->>>>>>> eed1cab37fd382f46ffdd6ed91c732acd8c85b76
             if (entries) {
                 for (var _i = 0, entries_1 = entries; _i < entries_1.length; _i++) {
                     var entry = entries_1[_i];
@@ -1298,13 +1283,6 @@ var KHR_materials_variants = /** @class */ (function () {
         }
         else {
             select(variantName);
-<<<<<<< HEAD
-        }
-    };
-    KHR_materials_variants._GetVariantsMap = function (rootMesh) {
-        var _a, _b;
-        return (_b = (_a = rootMesh === null || rootMesh === void 0 ? void 0 : rootMesh.metadata) === null || _a === void 0 ? void 0 : _a.gltf) === null || _b === void 0 ? void 0 : _b[NAME];
-=======
         }
         extensionMetadata.lastSelected = variantName;
     };
@@ -1338,7 +1316,6 @@ var KHR_materials_variants = /** @class */ (function () {
     KHR_materials_variants._GetExtensionMetadata = function (rootMesh) {
         var _a, _b;
         return ((_b = (_a = rootMesh === null || rootMesh === void 0 ? void 0 : rootMesh.metadata) === null || _a === void 0 ? void 0 : _a.gltf) === null || _b === void 0 ? void 0 : _b[NAME]) || null;
->>>>>>> eed1cab37fd382f46ffdd6ed91c732acd8c85b76
     };
     /** @hidden */
     KHR_materials_variants.prototype._loadMeshPrimitiveAsync = function (context, name, node, mesh, primitive, assign) {
@@ -1349,9 +1326,6 @@ var KHR_materials_variants = /** @class */ (function () {
                 assign(babylonMesh);
                 if (babylonMesh instanceof babylonjs_Meshes_mesh__WEBPACK_IMPORTED_MODULE_1__["Mesh"]) {
                     var babylonDrawMode = _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["GLTFLoader"]._GetDrawMode(context, primitive.mode);
-<<<<<<< HEAD
-                    // For each mapping, look at the tags and make a new entry for them
-=======
                     var root = _this._loader.rootBabylonMesh;
                     var metadata = (root.metadata = root.metadata || {});
                     var gltf = (metadata.gltf = metadata.gltf || {});
@@ -1360,23 +1334,13 @@ var KHR_materials_variants = /** @class */ (function () {
                     extensionMetadata.original.push({ mesh: babylonMesh, material: babylonMesh.material });
                     // For each mapping, look at the tags and make a new entry for them.
                     var variants_1 = extensionMetadata.variants;
->>>>>>> eed1cab37fd382f46ffdd6ed91c732acd8c85b76
                     for (var _i = 0, _a = extension.mapping; _i < _a.length; _i++) {
                         var mapping = _a[_i];
                         var _loop_1 = function (tag) {
                             var material = _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["ArrayItem"].Get("#/materials/", _this._loader.gltf.materials, mapping.material);
                             promises.push(_this._loader._loadMaterialAsync("#/materials/" + mapping.material, material, babylonMesh, babylonDrawMode, function (babylonMaterial) {
-<<<<<<< HEAD
-                                var root = _this._loader.rootBabylonMesh;
-                                var metadata = (root.metadata = root.metadata || {});
-                                var gltf = (metadata.gltf = metadata.gltf || {});
-                                var map = (gltf[NAME] = gltf[NAME] || {});
-                                map[tag] = map[tag] || [];
-                                map[tag].push({
-=======
                                 variants_1[tag] = variants_1[tag] || [];
                                 variants_1[tag].push({
->>>>>>> eed1cab37fd382f46ffdd6ed91c732acd8c85b76
                                     mesh: babylonMesh,
                                     material: babylonMaterial
                                 });
