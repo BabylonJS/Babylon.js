@@ -119,7 +119,7 @@ export class PrePassRenderer {
         }
     }
 
-    public markDeferredDirty() {
+    public markAsDirty() {
         this._isDirty = true;
     }
 
