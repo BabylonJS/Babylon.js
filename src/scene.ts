@@ -297,8 +297,8 @@ export class Scene extends AbstractScene implements IAnimatable {
     public highDefinitionMRT: MultiRenderTarget;
     private mrtTypes = [
         Constants.TEXTURETYPE_UNSIGNED_INT, // Original color
-        Constants.TEXTURETYPE_FLOAT, // Irradiance
-        Constants.TEXTURETYPE_FLOAT, // Depth (world units)
+        Constants.TEXTURETYPE_HALF_FLOAT, // Irradiance
+        Constants.TEXTURETYPE_HALF_FLOAT, // Depth (world units)
         Constants.TEXTURETYPE_UNSIGNED_INT
     ];
     private multiRenderAttachments: any[];
