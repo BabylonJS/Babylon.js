@@ -270,14 +270,13 @@ export class AudioEngine implements IAudioEngine {
                 if (this._muteButton) {
                     this._hideMuteButton();
                 }
+                // Notify users that the audio stack is unlocked/unmuted
+                this.unlocked = true;
+                this.onAudioUnlockedObservable.notifyObservers(this);
             }).catch(() => {
                 this._tryToRun = false;
                 this.unlocked = false;
             });
-
-        // Notify users that the audio stack is unlocked/unmuted
-        this.unlocked = true;
-        this.onAudioUnlockedObservable.notifyObservers(this);
     }
 
     private _triggerSuspendedState() {
