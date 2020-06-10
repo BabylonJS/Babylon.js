@@ -48,7 +48,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
         return GLTFLoader.LoadExtensionAsync<IEXTMeshGpuInstancing, TransformNode>(context, node, this.name, (extensionContext, extension) => {
             this._loader._disableInstancedMesh++;
 
-            const promise = this._loader.loadNodeAsync(`#/nodes/${node.index}`, node, assign);
+            const promise = this._loader.loadNodeAsync(`/nodes/${node.index}`, node, assign);
 
             this._loader._disableInstancedMesh--;
 

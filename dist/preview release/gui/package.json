@@ -4,7 +4,7 @@
     },
     "name": "babylonjs-gui",
     "description": "The Babylon.js GUI library is an extension you can use to generate interactive user interface. It is build on top of the DynamicTexture.",
-    "version": "4.2.0-alpha.17",
+    "version": "4.2.0-alpha.19",
     "repository": {
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
@@ -28,7 +28,7 @@
     ],
     "license": "Apache-2.0",
     "dependencies": {
-        "babylonjs": "4.2.0-alpha.17"
+        "babylonjs": "4.2.0-alpha.19"
     },
     "engines": {
         "node": "*"

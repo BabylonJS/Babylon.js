@@ -1,6 +1,323 @@
 
 #animation-curve-editor {
 
+    font-family: acumin-pro-condensed;
+
+    .last {
+        margin-left: 3px;
+    }
+
+    .icon {
+        width: 40px;
+        height: 40px;
+        &.medium {
+            width: 30px;
+            height: 30px;
+        }
+        &.small {
+            width: 20px;
+            height: 20px;
+        }
+        &.babylon-logo {
+            background-image: url('./assets/babylonLogo.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+        }
+
+        &.close {
+            background-image: url('./assets/closeWindowIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+            cursor: pointer;
+        }
+
+        &.auto-tangent {
+            background-image: url('./assets/autoTangentIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+            cursor: pointer;
+        }
+
+        &.break-tangent {
+            background-image: url('./assets/breakTangentIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+            cursor: pointer;
+        }
+
+        &.flat-tangent {
+            background-image: url('./assets/flatTangentIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+            cursor: pointer;
+        }
+
+        &.frame {
+            background-image: url('./assets/frameIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+            cursor: pointer;
+        }
+
+        &.linear-tangent {
+            background-image: url('./assets/linearTangentIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+            cursor: pointer;
+        }
+
+        &.unify-tangent {
+            background-image: url('./assets/unifyTangentIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+            cursor: pointer;
+        }
+
+        &.add-animation {
+            background-image: url('./assets/addAnimationIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+            cursor: pointer;
+        }
+
+        &.animation-bullet {
+            background-image: url('./assets/animationBulletIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.animation-delete {
+            background-image: url('./assets/animationDeleteIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+            cursor: pointer;
+        }
+
+        &.animation-edit {
+            background-image: url('./assets/editIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.animation-end {
+            background-image: url('./assets/animationEndIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.animation-lastkey {
+            background-image: url('./assets/animationLastKeyIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+
+            &:hover{
+                background-image: url('./assets/animationLastKeyHoverIcon.svg');
+            }
+        }
+
+        &.animation-nextkey {
+            background-image: url('./assets/animationNextKeyIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+
+            &:hover{
+                background-image: url('./assets/animationNextKeyHoverIcon.svg');
+            }
+        }
+
+        &.animation-options {
+            background-image: url('./assets/animationOptionsIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+            &:hover{
+                background-color: #888888 !important;
+            }
+        }
+
+        &.animation-playfwd {
+            background-image: url('./assets/animationPlayFwdIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.animation-playrev {
+            background-image: url('./assets/animationPlayRevIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.animation-start {
+            background-image: url('./assets/animationStartIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.animation-stop {
+            background-image: url('./assets/animationStopIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.animation-triangle {
+            background-image: url('./assets/animationTriangleIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.key-active {
+            background-image: url('./assets/keyActiveIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.key-inactive {
+            background-image: url('./assets/keyInactiveIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.key-selected {
+            background-image: url('./assets/keySelectedIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.loop-active {
+            background-image: url('./assets/loopActiveIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+            cursor: pointer;
+        }
+
+        &.loop-inactive {
+            background-image: url('./assets/loopInactiveIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+            cursor: pointer;
+        }
+
+        &.move {
+            background-image: url('./assets/moveIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.save {
+            background-image: url('./assets/saveIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+            cursor: pointer;
+        }
+
+        &.load {
+            background-image: url('./assets/loadIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+            cursor: pointer;
+        }
+
+        &.checked {
+            background-image: url('./assets/checkboxCheckedIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.unchecked {
+            background-image: url('./assets/checkboxDefaultIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+
+        &.new-key {
+            background-image: url('./assets/newKeyIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.scale {
+            background-image: url('./assets/scaleIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+        &.scrollbar-handle {
+            background-image: url('./assets/scrollbarHandleIcon.svg');
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: contain;
+            color: white;
+        }
+
+    }
+
+    .hidden {
+        display: none;
+    }
+
     .notification-area{
         position: absolute;
         width: auto;
@@ -11,7 +328,7 @@
         border-radius: 5px;
         color: white;
         right: 2em;
-        z-index: 10;
+        z-index: 1000;
 
         button{
             position: absolute;
@@ -32,7 +349,7 @@
     .header{
         display: flex;
         padding: 9px;
-        background: black;
+        background: #333333;
         color: white;
         height: 1.3em;
         justify-content: space-between;
@@ -53,19 +370,46 @@
     .actions-wrapper {
         display: flex;
         flex-direction: row;
-        justify-content: flex-end;
-        align-items: flex-end;
-        padding: 6px;
+        justify-content: flex-start;
+        align-items: center;
+        background: #333333;
+
+        .close {
+            position: absolute;
+            right: 1px;
+        }
+
+        .title-container {
+            display: flex;
+            justify-content: stretch;
+            align-items: center;
+            color: white;
+            width: 220px;
+
+            .title {
+                font-size: 15pt;
+            }
+        }
+
+        .buttons-container{
+            display: flex;
+        }
 
         .action-input{
             display: flex;
             justify-content: center;
             flex-direction: row;
             align-items: center;
-            label { margin-right: 0.5em }
+            margin-right: 8px;
             input {
-                width: 4em;
-                height: 2em;
+                width: 75px;
+                height: 24px;
+                color: white;
+                font-size: 12px;
+                background: none;
+                border: none;
+                background-color: black;
+                padding: 6px;
             }
         }
     }
@@ -82,11 +426,12 @@
             justify-content: flex-start;
             flex-direction: row;
             width: 100vw;
-            height: 78.5vh;
+            height: 84vh;
+            background-color: #333333;
 
             .timeline{
                 width: 100vw;
-                background: gray;
+                background: #333333;
                 display: flex;
                 align-items: center;
                 justify-content: stretch;
@@ -136,61 +481,232 @@
         }
 
         .animation-list{
-            padding: 1.5rem;
-            background: rgb(87, 86, 86);
+            margin: 10px;
+            margin-top: 0;
+            margin-bottom: 0;
+            background: #111111;
             color: white;
-            ul {
-                list-style:none;
-                padding-left: 0px;
-                li.property {
-                    &:before {
-                        content: '';
-                        background: none;
+            width: 210px;
+
+            .controls-header {
+                display: flex;
+                background-color: #252525;
+
+               .input-fps{
+                display: flex;
+                align-items: center;
+                width: 52px;
+                padding-left: 4px;
+                    .numeric{
+                        input{
+                            width: 52px;
+                            font-size: 12px;
+                            height: 22px;
+                            background-color: black;
+                            border: none;
+                            color: white;
+                            text-align: center;
+                            &::-webkit-inner-spin-button, &::-webkit-outer-spin-button {
+                                appearance: none;
+                                -webkit-appearance: none; 
+                                margin: 0;
+                            }
+                            font-family: acumin-pro-condensed;
+                        }
                     }
-                }
-                li {
                     p {
-                        font-weight: bolder;
-                        font-variant: all-small-caps;
-                        display: inline;
+                        color: white;
+                        font-size: 12px;
+                        margin: 0px;
+                        position: relative;
+                        right: 17px;
+                        line-height: 20px;
+                        height: 20px;
+                        margin-top: -2px;
                     }
-                    cursor: pointer;
-                    &:before {
-                        content: '';
-                        display: inline-block;
-                        height: 0.7em;
-                        width: 0.7em;
-                        background-size: contain;
-                        background-repeat: no-repeat;
-                        margin-right:0.5em; 
-                        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" data-prefix="far" data-icon="circle" class="svg-inline--fa fa-circle fa-w-16" role="img" viewBox="0 0 512 512"><path fill="currentColor" d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200z"/></svg>'); 
+               } 
+            }
+
+            .new-animation{
+                display: block;
+                position: absolute;
+                background-color: #111111;
+                height: 367px;
+                z-index: 10;
+
+                .sub-header {
+                    display: flex;
+                    align-items: start;
+                    width: 250px;
+                    justify-content: space-between;
+                    .title {
+                    margin: 0px;
+                    font-size: 15pt;
                     }
-                   
-                   }
                 }
-                li.active {
-                    cursor: pointer;
-                    &:before{
-                        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="check-circle" class="svg-inline--fa fa-check-circle fa-w-16" role="img" viewBox="0 0 512 512"><path fill="currentColor" d="M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zM227.314 387.314l184-184c6.248-6.248 6.248-16.379 0-22.627l-22.627-22.627c-6.248-6.249-16.379-6.249-22.628 0L216 308.118l-70.059-70.059c-6.248-6.248-16.379-6.248-22.628 0l-22.627 22.627c-6.248 6.248-6.248 16.379 0 22.627l104 104c6.249 6.249 16.379 6.249 22.628.001z"/></svg>'); 
+
+                .sub-content{
+                    background-color: #111111;
+                    padding: 10px;
+                    display: inline-grid;
+                    grid-template-columns: 63px 127px;
+                    grid-template-rows: repeat(6, 30px);
+                    font-size: 12px;
+
+                    .confirm-buttons {
+                        grid-column-start: 2;
+
+                        .buttonLine {
+                            button {
+                                width: 60px;
+                                height: 20px;
+                                background-color: rgb(68, 68, 68);
+                                color: white;
+                                font-size: 12px;
+                                line-height: 11px;
+                                margin: 5px;
+                                font-size: 10px;
+                                font-family: acumin-pro-condensed;
+                                border: none;
+                            }
+                        }
                     }
-                
-                
+                }
             }
 
             .object-tree{
-                background-color: rgba(0, 0, 0, 0.3);
-                padding: 10px;
-                margin-top: 19px;
-                height: 11em;
-                overflow: scroll;
-                overflow-x: hidden;
+                background-color:#111111;
+                ul {
+                    list-style:none;
+                    padding-left: 0px;
+                    padding: 0px;
+                    margin: 0px;
+                    li.property {
+                        &.sub {
+                            height: auto;
+                        }
+                        &:before {
+                            content: '';
+                            background: none;
+                        }
+                        height: 20px;
+                        display: flex;
+                        flex-wrap: wrap;
+                        font-size: 12px;
+                        p {
+                            display: inline;
+                            font-size: 12px;
+                            margin: 0px;
+                            flex: 8;
+                            cursor: pointer;
+                        }
+
+                        .spacer{
+                            width: 20px;
+                            height: 20px;
+                        }
+
+                        .animation-bullet {
+                            background-image: url('./assets/animationBulletIcon.svg');
+                            background-repeat: no-repeat;
+                            background-color: transparent;
+                            background-size: contain;
+                            color: #7a4ece;
+                            width: 10px;
+                            margin-left: 18px;
+                            margin-right: 2px;
+                            height: 20px;
+                            background-position-y: 5px;
+                        }
+
+                        .animation-arrow {
+                            width: 30px;
+                            background-image: url('./assets/animationTriangleIcon.svg');
+                            background-repeat: no-repeat;
+                            background-color: transparent;
+                            background-size: 10px;
+                            background-position-y: center;
+                            background-position-x: 18px;
+                            cursor: pointer;
+                            &.flip {
+                                transform: rotate(180deg);
+                                background-position: 2px 50%;
+                            }
+                        }
+
+                        &.active {
+                            background-color: #444444;
+                        }
+
+                        .handle-indicator{
+                            width: 30px;
+
+                            &.show {
+                                display: block;
+                                background-image: url('./assets/keySelectedIcon.svg');
+                                background-repeat: no-repeat;
+                                background-color: transparent;
+                                background-size: 10px;
+                                color: white;
+                                background-position-x: 9px;
+                                background-position-y: 5px;
+                            }
+
+                            &.hide {
+                                display: none;
+                            }
+                        }
+
+                        ul.sub-list {
+                            flex-grow: 1;
+                            flex-shrink: 1;
+                            flex-basis: 100%;
+
+                            .property{
+                                cursor: pointer;
+                            }
+                        }
+                    }
+                }
             }
 
             .label-input{
-                display: grid;
-                height: 54px;
-                place-items: center stretch;
-                color:white;
+                display: contents;
+
+                label {
+                    text-align: right;
+                }
+
+                input {
+                    margin-left: 5px;
+                    height: 20px;
+                    background-color: #444444;
+                    border: none;
+                    color: white;
+                    padding-left: 3px;
+                    font-size: 10px;
+                    &:focus{
+                        border-radius: 0px;
+                        outline-style: auto;
+                        outline-color: lightgrey;
+                    }
+                    font-family: acumin-pro-condensed;
+                }
+
+                select {
+                    height: 20px;
+                    margin-left: 5px;
+                    font-size: 10px;
+                    background-color: #444444;
+                    border: none;
+                    color: white;
+                    &:focus{
+                        border-radius: 0px;
+                        outline-style: auto;
+                        outline-color: lightgrey;
+                    }
+                    font-family: acumin-pro-condensed;
+                }
             }
         }
 
@@ -208,7 +724,7 @@
             padding-left: 32px;
             overflow-y: scroll;
             scroll-behavior: smooth;
-            background-color: #444444;
+            background-color: #111111;
             height: 100%;
 
             .linear{

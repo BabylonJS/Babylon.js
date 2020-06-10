@@ -15,6 +15,10 @@ void albedoOpacityBlock(
     const in vec4 opacityMap,
     const in vec2 vOpacityInfos,
 #endif
+#ifdef DETAIL
+    const in vec4 detailColor,
+    const in vec4 vDetailInfos,
+#endif
     out albedoOpacityOutParams outParams
 )
 {
@@ -38,6 +42,11 @@ void albedoOpacityBlock(
 
     #ifdef VERTEXCOLOR
         surfaceAlbedo *= vColor.rgb;
+    #endif
+
+    #ifdef DETAIL
+        float detailAlbedo = 2.0 * mix(0.5, detailColor.r, vDetailInfos.y);
+        surfaceAlbedo.rgb = surfaceAlbedo.rgb * detailAlbedo * detailAlbedo; // should be pow(detailAlbedo, 2.2) but detailAlbedo² is close enough and cheaper to compute
     #endif
 
     #define CUSTOM_FRAGMENT_UPDATE_ALBEDO

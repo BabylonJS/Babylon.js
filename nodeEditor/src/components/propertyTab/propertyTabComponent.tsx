@@ -163,6 +163,15 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         }, undefined, true);
     }
 
+    loadFrame(file: File) {
+        Tools.ReadFile(file, (data) => {
+            // get Frame Data from file
+            let decoder = new TextDecoder("utf-8");
+            const frameData = JSON.parse(decoder.decode(data));
+            SerializationTools.AddFrameToMaterial(frameData, this.props.globalState, this.props.globalState.nodeMaterial);
+        }, undefined, true);
+    }
+
     save() {
         let json = SerializationTools.Serialize(this.props.globalState.nodeMaterial, this.props.globalState);
         StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "nodeMaterial.json");
@@ -410,7 +419,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 this.customSave();
                             }} />
                         }
-
+                        <FileButtonLineComponent label="Load Frame" uploadName={'frame-upload'} onClick={(file) => this.loadFrame(file)} accept=".json" />
                     </LineContainerComponent>
                     {
                         !this.props.globalState.customSave &&

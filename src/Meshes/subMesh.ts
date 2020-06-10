@@ -117,6 +117,7 @@ export class SubMesh implements ICullable {
      * @param mesh defines the parent mesh
      * @param renderingMesh defines an optional rendering mesh
      * @param createBoundingBox defines if bounding box should be created for this submesh
+     * @param addToMesh defines a boolean indicating that the submesh must be added to the mesh.subMeshes array (true by default)
      */
     constructor(
         /** the material index to use */
@@ -128,10 +129,12 @@ export class SubMesh implements ICullable {
         /** index start */
         public indexStart: number,
         /** indices count */
-        public indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true) {
+        public indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true, addToMesh = true) {
         this._mesh = mesh;
         this._renderingMesh = renderingMesh || <Mesh>mesh;
-        mesh.subMeshes.push(this);
+        if (addToMesh) {
+            mesh.subMeshes.push(this);
+        }
 
         this._trianglePlanes = [];
 
@@ -216,9 +219,8 @@ export class SubMesh implements ICullable {
 
         if (rootMaterial === null || rootMaterial === undefined) {
             return this._mesh.getScene().defaultMaterial;
-        } else if ((<MultiMaterial>rootMaterial).getSubMaterial) {
-            var multiMaterial = <MultiMaterial>rootMaterial;
-            var effectiveMaterial = multiMaterial.getSubMaterial(this.materialIndex);
+        } else if (this._IsMultiMaterial(rootMaterial)) {
+            var effectiveMaterial = rootMaterial.getSubMaterial(this.materialIndex);
 
             if (this._currentMaterial !== effectiveMaterial) {
                 this._currentMaterial = effectiveMaterial;
@@ -229,6 +231,10 @@ export class SubMesh implements ICullable {
         }
 
         return rootMaterial;
+    }
+
+    private _IsMultiMaterial(material: Material): material is MultiMaterial {
+        return (material as MultiMaterial).getSubMaterial !== undefined;
     }
 
     // Methods

@@ -29,6 +29,7 @@ import { Color3, Color4 } from '../Maths/math.color';
 import { Epsilon } from '../Maths/math.constants';
 import { Plane } from '../Maths/math.plane';
 import { Axis } from '../Maths/math.axis';
+import { IParticleSystem } from '../Particles/IParticleSystem';
 
 declare type Ray = import("../Culling/ray").Ray;
 declare type Collider = import("../Collisions/collider").Collider;
@@ -1552,7 +1553,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             pickingInfo.pickedMesh = this;
             pickingInfo.bu = intersectInfo.bu || 0;
             pickingInfo.bv = intersectInfo.bv || 0;
-            pickingInfo.faceId = intersectInfo.faceId;
+            pickingInfo.subMeshFaceId = intersectInfo.faceId;
+            pickingInfo.faceId = intersectInfo.faceId + subMeshes.data[intersectInfo.subMeshId].indexStart / (this.getClassName().indexOf("LinesMesh") !== -1 ? 2 : 3);
             pickingInfo.subMeshId = intersectInfo.subMeshId;
             return pickingInfo;
         }
@@ -2173,6 +2175,14 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      */
     enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh {
         throw _DevTools.WarnImport("EdgesRenderer");
+    }
+
+    /**
+     * This function returns all of the particle systems in the scene that use the mesh as an emitter.
+     * @returns an array of particle systems in the scene that use the mesh as an emitter
+     */
+    public getConnectedParticleSystems(): IParticleSystem[] {
+        return this._scene.particleSystems.filter((particleSystem) => particleSystem.emitter === this);
     }
 
 }

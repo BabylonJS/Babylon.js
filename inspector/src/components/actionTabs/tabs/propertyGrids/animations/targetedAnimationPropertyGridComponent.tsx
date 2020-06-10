@@ -42,9 +42,7 @@ export class TargetedAnimationGridComponent extends React.Component<ITargetedAni
 
     onCloseAnimationCurveEditor(window: Window | null) {
         this._isCurveEditorOpen = false;
-        if (window === null) {
-            console.log("Window already closed");
-        } else {
+        if (window !== null) {
             window.close();
         }
     }
@@ -93,12 +91,11 @@ export class TargetedAnimationGridComponent extends React.Component<ITargetedAni
                         this._isCurveEditorOpen && <PopupComponent
                             id="curve-editor"
                             title="Curve Animation Editor"
-                            size={{ width: 950, height: 540 }}
-                            onOpen={(window: Window) => { window.console.log("Window opened!!") }}
+                            size={{ width: 1024, height: 512 }}
+                            onOpen={(window: Window) => {  }}
                             onClose={(window: Window) => this.onCloseAnimationCurveEditor(window)}>
 
-                            <AnimationCurveEditorComponent 
-                                title="Animations Curve Editor" 
+                            <AnimationCurveEditorComponent
                                 scene={this.props.scene} 
                                 entity={targetedAnimation as any} 
                                 playOrPause={() => this.playOrPause()}

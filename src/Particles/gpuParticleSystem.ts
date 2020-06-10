@@ -21,7 +21,6 @@ import { Texture } from "../Materials/Textures/texture";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Constants } from "../Engines/constants";
 import { EngineStore } from "../Engines/engineStore";
-import { DeepCopier } from "../Misc/deepCopier";
 import { IAnimatable } from '../Animations/animatable.interface';
 import { CustomParticleEmitter } from './EmitterTypes/customParticleEmitter';
 
@@ -1685,84 +1684,19 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @returns the cloned particle system
      */
     public clone(name: string, newEmitter: any): GPUParticleSystem {
+        let serialization = this.serialize();
+        var result = GPUParticleSystem.Parse(serialization, this._scene, "");
         var custom = { ...this._customEffect };
-        var result = new GPUParticleSystem(name, { capacity: this._capacity, randomTextureSize: this._randomTextureSize }, this._scene);
+        result.name = name;
         result._customEffect = custom;
-
-        DeepCopier.DeepCopy(this, result, ["particles", "customShader", "noiseTexture", "particleTexture", "onDisposeObservable", "vertexShaderName"]);
 
         if (newEmitter === undefined) {
             newEmitter = this.emitter;
         }
 
         result.emitter = newEmitter;
-        if (this.particleTexture) {
-            result.particleTexture = new Texture(this.particleTexture.url, this._scene);
-        }
 
         result.noiseTexture = this.noiseTexture;
-
-        // Clone gradients
-        if (this._colorGradients) {
-            this._colorGradients.forEach((v) => {
-                result.addColorGradient(v.gradient, v.color1, v.color2);
-            });
-        }
-        if (this._dragGradients) {
-            this._dragGradients.forEach((v) => {
-                result.addDragGradient(v.gradient, v.factor1);
-            });
-        }
-        if (this._angularSpeedGradients) {
-            this._angularSpeedGradients.forEach((v) => {
-                result.addAngularSpeedGradient(v.gradient, v.factor1);
-            });
-        }
-        if (this._emitRateGradients) {
-            this._emitRateGradients.forEach((v) => {
-                result.addEmitRateGradient(v.gradient, v.factor1, v.factor2);
-            });
-        }
-        if (this._lifeTimeGradients) {
-            this._lifeTimeGradients.forEach((v) => {
-                result.addLifeTimeGradient(v.gradient, v.factor1, v.factor2);
-            });
-        }
-        if (this._limitVelocityGradients) {
-            this._limitVelocityGradients.forEach((v) => {
-                result.addLimitVelocityGradient(v.gradient, v.factor1);
-            });
-        }
-        if (this._sizeGradients) {
-            this._sizeGradients.forEach((v) => {
-                result.addSizeGradient(v.gradient, v.factor1);
-            });
-        }
-        if (this._startSizeGradients) {
-            this._startSizeGradients.forEach((v) => {
-                result.addStartSizeGradient(v.gradient, v.factor1, v.factor2);
-            });
-        }
-        if (this._velocityGradients) {
-            this._velocityGradients.forEach((v) => {
-                result.addVelocityGradient(v.gradient, v.factor1);
-            });
-        }
-        if (this._rampGradients) {
-            this._rampGradients.forEach((v) => {
-                result.addRampGradient(v.gradient, v.color);
-            });
-        }
-        if (this._colorRemapGradients) {
-            this._colorRemapGradients.forEach((v) => {
-                result.addColorRemapGradient(v.gradient, v.factor1, v.factor2!);
-            });
-        }
-        if (this._alphaRemapGradients) {
-            this._alphaRemapGradients.forEach((v) => {
-                result.addAlphaRemapGradient(v.gradient, v.factor1, v.factor2!);
-            });
-        }
 
         return result;
     }
@@ -1777,6 +1711,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         ParticleSystem._Serialize(serializationObject, this, serializeTexture);
         serializationObject.activeParticleCount = this.activeParticleCount;
+        serializationObject.randomTextureSize = this._randomTextureSize;
 
         return serializationObject;
     }

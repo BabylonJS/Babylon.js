@@ -126,8 +126,11 @@ export class WebXRCamera extends FreeCamera {
         }
 
         if (pose.transform) {
-            this._referencedPosition.copyFrom(<any>(pose.transform.position));
-            this._referenceQuaternion.copyFrom(<any>(pose.transform.orientation));
+            const pos = pose.transform.position;
+            this._referencedPosition.set(pos.x, pos.y, pos.z);
+            const orientation = pose.transform.orientation;
+
+            this._referenceQuaternion.set(orientation.x, orientation.y, orientation.z, orientation.w);
             if (!this._scene.useRightHandedSystem) {
                 this._referencedPosition.z *= -1;
                 this._referenceQuaternion.z *= -1;
@@ -275,8 +278,8 @@ export class WebXRCamera extends FreeCamera {
             this._xrInvPositionCache.y = 0;
         }
         const transform = new XRRigidTransform(
-            { ...this._xrInvPositionCache },
-            { ...this._xrInvQuaternionCache });
+            { x: this._xrInvPositionCache.x, y: this._xrInvPositionCache.y, z: this._xrInvPositionCache.z },
+            { x: this._xrInvQuaternionCache.x, y: this._xrInvQuaternionCache.y, z: this._xrInvQuaternionCache.z, w: this._xrInvQuaternionCache.w });
         // Update offset reference to use a new originOffset with the teleported
         // player position and orientation.
         // This new offset needs to be applied to the base ref space.
@@ -285,8 +288,7 @@ export class WebXRCamera extends FreeCamera {
         const pose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(referenceSpace);
 
         if (pose) {
-            const pos = new Vector3();
-            pos.copyFrom(<any>(pose.transform.position));
+            const pos = new Vector3(pose.transform.position.x, pose.transform.position.y, pose.transform.position.z);
             if (!this._scene.useRightHandedSystem) {
                 pos.z *= -1;
             }
@@ -297,7 +299,7 @@ export class WebXRCamera extends FreeCamera {
             pos.negateInPlace();
 
             const transform2 = new XRRigidTransform(
-                { ...pos });
+                {  x: pos.x, y: pos.y, z: pos.z  });
             // Update offset reference to use a new originOffset with the teleported
             // player position and orientation.
             // This new offset needs to be applied to the base ref space.
