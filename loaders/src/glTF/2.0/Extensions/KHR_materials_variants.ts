@@ -6,6 +6,7 @@ import { Material } from 'babylonjs/Materials/material';
 import { Mesh } from 'babylonjs/Meshes/mesh';
 import { AbstractMesh } from 'babylonjs/Meshes/abstractMesh';
 import { INode, IMeshPrimitive, IMesh } from '../glTFLoaderInterfaces';
+import { Logger } from 'babylonjs';
 
 const NAME = "KHR_materials_variants";
 
