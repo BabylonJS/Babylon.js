@@ -34,19 +34,17 @@ variantDropdownBtn.addEventListener("click", function() {
 
 function createVariantDropdownLink(variantName, target) {
     var variant = document.createElement("a");
-    var displayName = variantName;
-
-    if (displayName === BABYLON.GLTF2.Loader.Extensions.KHR_materials_variants.DEFAULT) {
-        displayName = "Default";
-    }
-
-    variant.innerHTML = displayName;
-    variant.title = displayName;
+    variant.innerHTML = variantName;
+    variant.title = variantName;
     variant.addEventListener("click", function() {
-        BABYLON.GLTF2.Loader.Extensions.KHR_materials_variants.SelectVariant(target, variantName);
+        if (variantName === "Original") {
+            BABYLON.GLTF2.Loader.Extensions.KHR_materials_variants.Reset(target);
+        } else {
+            BABYLON.GLTF2.Loader.Extensions.KHR_materials_variants.SelectVariant(target, variantName);
+        }
 
-        variantDropdownLabel.innerHTML = displayName;
-        variantDropdownLabel.title = displayName;
+        variantDropdownLabel.innerHTML = variantName;
+        variantDropdownLabel.title = variantName;
     });
     variantDropdownContent.appendChild(variant);
 }

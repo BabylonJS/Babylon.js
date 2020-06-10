@@ -112,8 +112,9 @@ if (BABYLON.Engine.isSupported()) {
             if (variants && variants.length > 0) {
                 variantBar.style.display = "flex";
                 variantDropdownContent.innerHTML = "";
-                variantDropdownLabel.innerHTML = "Default";
-                variantDropdownLabel.title = "Default";
+                variantDropdownLabel.innerHTML = "Original";
+                variantDropdownLabel.title = "Original";                
+                createVariantDropdownLink("Original", root);
                 for (var index = 0; index < variants.length; index++) {
                     createVariantDropdownLink(variants[index], root);
                 }

@@ -114,6 +114,8 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
         for (const entry of extensionMetadata.original) {
             entry.mesh.material = entry.material;
         }
+
+        extensionMetadata.lastSelected = null;
     }
 
     /**

@@ -67331,13 +67331,14 @@ var VariantsPropertyGridComponent = /** @class */ (function (_super) {
     }
     VariantsPropertyGridComponent.prototype.render = function () {
         var _this = this;
-        var variants = BABYLON.GLTF2.Loader.Extensions.KHR_materials_variants.GetAvailableVariants(this.props.host);
+        var root = BABYLON.GLTF2.Loader.Extensions;
+        var variants = root.KHR_materials_variants.GetAvailableVariants(this.props.host);
         if (!variants || variants.length === 0) {
             return null;
         }
         var options = variants.map(function (v, i) {
             var displayName = v;
-            if (displayName === BABYLON.GLTF2.Loader.Extensions.KHR_materials_variants.DEFAULT) {
+            if (displayName === root.KHR_materials_variants.DEFAULT) {
                 displayName = "Default";
             }
             return { label: displayName, value: i };
@@ -67345,11 +67346,11 @@ var VariantsPropertyGridComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "VARIANTS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__["OptionsLineComponent"], { label: "Active variant", options: options, noDirectUpdate: true, target: this.props.host, propertyName: "", onSelect: function (value) {
-                        BABYLON.GLTF2.Loader.Extensions.KHR_materials_variants.SelectVariant(_this.props.host, variants[value]);
+                        root.KHR_materials_variants.SelectVariant(_this.props.host, variants[value]);
                         _this._lastOne = value;
                         _this.forceUpdate();
                     }, extractValue: function () {
-                        var lastPickedVariant = BABYLON.GLTF2.Loader.Extensions.KHR_materials_variants.GetLastSelectedVariant(_this.props.host) || 0;
+                        var lastPickedVariant = root.KHR_materials_variants.GetLastSelectedVariant(_this.props.host) || 0;
                         if (lastPickedVariant && Object.prototype.toString.call(lastPickedVariant) === '[object String]') {
                             var index = variants.indexOf(lastPickedVariant);
                             if (index > -1) {
