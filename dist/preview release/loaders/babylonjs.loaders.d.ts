@@ -1939,17 +1939,18 @@ declare module BABYLON.GLTF2.Loader.Extensions {
          */
         static GetAvailableVariants(rootMesh: Mesh): string[];
         /**
-         * The default variant. Use with SelectVariant to reset the model to the original.
-         */
-        static readonly DEFAULT: string;
-        /**
          * Select a variant given a variant tag name or a list of variant tag names.
          * @param rootMesh The glTF root mesh
-         * @param variantName The variant name(s) to select. Use the `DEFAULT` property to reset back to original.
+         * @param variantName The variant name(s) to select.
          */
         static SelectVariant(rootMesh: Mesh, variantName: string | string[]): void;
         /**
-         * Gets the last selected variant tag name(s).
+         * Reset back to the original before selecting a variant.
+         * @param rootMesh The glTF root mesh
+         */
+        static Reset(rootMesh: Mesh): void;
+        /**
+         * Gets the last selected variant tag name(s) or null if original.
          * @param rootMesh The glTF root mesh
          * @returns The selected variant tag name(s).
          */

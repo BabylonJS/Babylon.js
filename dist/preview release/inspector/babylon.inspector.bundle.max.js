@@ -67318,6 +67318,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
+/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+
 
 
 
@@ -67337,16 +67339,18 @@ var VariantsPropertyGridComponent = /** @class */ (function (_super) {
             return null;
         }
         var options = variants.map(function (v, i) {
-            var displayName = v;
-            if (displayName === root.KHR_materials_variants.DEFAULT) {
-                displayName = "Default";
-            }
-            return { label: displayName, value: i };
+            return { label: v, value: i + 1 };
         });
+        options.splice(0, 0, { label: "Original", value: 0 });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "VARIANTS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__["OptionsLineComponent"], { label: "Active variant", options: options, noDirectUpdate: true, target: this.props.host, propertyName: "", onSelect: function (value) {
-                        root.KHR_materials_variants.SelectVariant(_this.props.host, variants[value]);
+                        if (value === 0) {
+                            root.KHR_materials_variants.Reset(_this.props.host);
+                        }
+                        else {
+                            root.KHR_materials_variants.SelectVariant(_this.props.host, variants[value - 1]);
+                        }
                         _this._lastOne = value;
                         _this.forceUpdate();
                     }, extractValue: function () {
@@ -67354,10 +67358,15 @@ var VariantsPropertyGridComponent = /** @class */ (function (_super) {
                         if (lastPickedVariant && Object.prototype.toString.call(lastPickedVariant) === '[object String]') {
                             var index = variants.indexOf(lastPickedVariant);
                             if (index > -1) {
-                                _this._lastOne = index;
+                                _this._lastOne = index + 1;
                             }
                         }
                         return _this._lastOne;
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Reset", onClick: function () {
+                        root.KHR_materials_variants.Reset(_this.props.host);
+                        _this._lastOne = 0;
+                        _this.forceUpdate();
                     } }))));
     };
     return VariantsPropertyGridComponent;
