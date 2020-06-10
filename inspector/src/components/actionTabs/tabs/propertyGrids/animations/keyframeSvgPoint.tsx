@@ -10,6 +10,13 @@ export interface IKeyframeSvgPoint {
     selected: boolean;
     isLeftActive: boolean;
     isRightActive: boolean;
+    curveId?: ICurveMetaData;
+}
+
+export interface ICurveMetaData {
+    id: number;
+    animationName: string;
+    property: string;
 }
 
 interface IKeyframeSvgPointProps {
