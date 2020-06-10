@@ -1657,7 +1657,8 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoader" {
         private static _GetTypedArray;
         private static _GetNumComponents;
         private static _ValidateUri;
-        private static _GetDrawMode;
+        /** @hidden */
+        static _GetDrawMode(context: string, mode: number | undefined): number;
         private _compileMaterialsAsync;
         private _compileShadowGeneratorsAsync;
         private _forEachExtensions;
@@ -2057,6 +2058,7 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_variants" {
     import { Nullable } from "babylonjs/types";
     import { IGLTFLoaderExtension } from "babylonjs-loaders/glTF/2.0/glTFLoaderExtension";
     import { GLTFLoader } from "babylonjs-loaders/glTF/2.0/glTFLoader";
+    import { Mesh } from 'babylonjs/Meshes/mesh';
     import { AbstractMesh } from 'babylonjs/Meshes/abstractMesh';
     import { INode, IMeshPrimitive, IMesh } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
     /**
@@ -2073,34 +2075,33 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_variants" {
          */
         enabled: boolean;
         private _loader;
-        /**
-         * The default variant name.
-         */
-        defaultVariant: string | undefined;
-        private _tagsToMap;
         /** @hidden */
         constructor(loader: GLTFLoader);
         /** @hidden */
         dispose(): void;
         /**
-         * Return a list of available variants for this asset.
-         * @returns {string[]}
+         * Gets the list of available variant tag names for this asset.
+         * @param rootMesh The glTF root mesh
+         * @returns the list of all the variant names for this model
          */
-        getVariants(): string[];
+        static GetAvailableVariants(rootMesh: Mesh): string[];
         /**
-         * Select a variant by providing a list of variant tag names.
-         *
-         * @param {(string | string[])} variantName
+         * The default variant. Use with SelectVariant to reset the model to the original.
          */
-        selectVariant(variantName: string | string[]): void;
+        static readonly DEFAULT: string;
         /**
-         * Select a variant by providing a single variant tag.
-         *
-         * @param {string} variantName
+         * Select a variant given a variant tag name or a list of variant tag names.
+         * @param rootMesh The glTF root mesh
+         * @param variantName The variant name(s) to select. Use the `DEFAULT` property to reset back to original.
          */
-        selectVariantTag(variantName: string): void;
-        /** @hidden */
-        onLoading(): void;
+        static SelectVariant(rootMesh: Mesh, variantName: string | string[]): void;
+        /**
+         * Gets the last selected variant tag name(s).
+         * @param rootMesh The glTF root mesh
+         * @returns The selected variant tag name(s).
+         */
+        static GetLastSelectedVariant(rootMesh: Mesh): Nullable<string | string[]>;
+        private static _GetExtensionMetadata;
         /** @hidden */
         _loadMeshPrimitiveAsync(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Nullable<Promise<AbstractMesh>>;
     }
@@ -4394,7 +4395,8 @@ declare module BABYLON.GLTF2 {
         private static _GetTypedArray;
         private static _GetNumComponents;
         private static _ValidateUri;
-        private static _GetDrawMode;
+        /** @hidden */
+        static _GetDrawMode(context: string, mode: number | undefined): number;
         private _compileMaterialsAsync;
         private _compileShadowGeneratorsAsync;
         private _forEachExtensions;
@@ -4754,34 +4756,33 @@ declare module BABYLON.GLTF2.Loader.Extensions {
          */
         enabled: boolean;
         private _loader;
-        /**
-         * The default variant name.
-         */
-        defaultVariant: string | undefined;
-        private _tagsToMap;
         /** @hidden */
         constructor(loader: GLTFLoader);
         /** @hidden */
         dispose(): void;
         /**
-         * Return a list of available variants for this asset.
-         * @returns {string[]}
+         * Gets the list of available variant tag names for this asset.
+         * @param rootMesh The glTF root mesh
+         * @returns the list of all the variant names for this model
          */
-        getVariants(): string[];
+        static GetAvailableVariants(rootMesh: Mesh): string[];
         /**
-         * Select a variant by providing a list of variant tag names.
-         *
-         * @param {(string | string[])} variantName
+         * The default variant. Use with SelectVariant to reset the model to the original.
          */
-        selectVariant(variantName: string | string[]): void;
+        static readonly DEFAULT: string;
         /**
-         * Select a variant by providing a single variant tag.
-         *
-         * @param {string} variantName
+         * Select a variant given a variant tag name or a list of variant tag names.
+         * @param rootMesh The glTF root mesh
+         * @param variantName The variant name(s) to select. Use the `DEFAULT` property to reset back to original.
          */
-        selectVariantTag(variantName: string): void;
-        /** @hidden */
-        onLoading(): void;
+        static SelectVariant(rootMesh: Mesh, variantName: string | string[]): void;
+        /**
+         * Gets the last selected variant tag name(s).
+         * @param rootMesh The glTF root mesh
+         * @returns The selected variant tag name(s).
+         */
+        static GetLastSelectedVariant(rootMesh: Mesh): Nullable<string | string[]>;
+        private static _GetExtensionMetadata;
         /** @hidden */
         _loadMeshPrimitiveAsync(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Nullable<Promise<AbstractMesh>>;
     }

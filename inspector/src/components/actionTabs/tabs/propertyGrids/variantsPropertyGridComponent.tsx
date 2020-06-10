@@ -7,7 +7,6 @@ import { LineContainerComponent } from "../../lineContainerComponent";
 import { LockObject } from "./lockObject";
 import { GlobalState } from "../../../globalState";
 import { OptionsLineComponent } from '../../lines/optionsLineComponent';
-import { ButtonLineComponent } from '../../lines/buttonLineComponent';
 
 interface IVariantsPropertyGridComponentProps {
     globalState: GlobalState;
@@ -17,6 +16,8 @@ interface IVariantsPropertyGridComponentProps {
 }
 
 export class VariantsPropertyGridComponent extends React.Component<IVariantsPropertyGridComponentProps> {
+    private _lastOne = 0;
+
     constructor(props: IVariantsPropertyGridComponentProps) {
         super(props);
     }
@@ -46,14 +47,21 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
                         propertyName=""
                         onSelect={(value: number) => {
                             BABYLON.GLTF2.Loader.Extensions.KHR_materials_variants.SelectVariant(this.props.host, variants[value]);
+                            this._lastOne = value;
 
                             this.forceUpdate();
                         }}
                         extractValue={() => {
-                            let lastOne = BABYLON.GLTF2.Loader.Extensions.KHR_materials_variants.GetLastSelectedVariant(this.props.host) || 0;
-                            let index = variants.indexOf(lastOne) ;
+                            let lastPickedVariant = BABYLON.GLTF2.Loader.Extensions.KHR_materials_variants.GetLastSelectedVariant(this.props.host) || 0;
 
-                            return index < -1 ? 0 : index;
+                            if (lastPickedVariant && Object.prototype.toString.call(lastPickedVariant) === '[object String]') {
+                                let index = variants.indexOf(lastPickedVariant as string);
+                                if (index > -1) {
+                                    this._lastOne = index;
+                                }
+                            }
+
+                            return this._lastOne;
                         }}
                     />
                 </LineContainerComponent>

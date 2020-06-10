@@ -1322,6 +1322,19 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IVariantsPropertyGridComponentProps {
+        globalState: GlobalState;
+        host: any;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class VariantsPropertyGridComponent extends React.Component<IVariantsPropertyGridComponentProps> {
+        private _lastOne;
+        constructor(props: IVariantsPropertyGridComponentProps);
+        render(): JSX.Element | null;
+    }
+}
+declare module INSPECTOR {
     interface IMeshPropertyGridComponentProps {
         globalState: GlobalState;
         mesh: BABYLON.Mesh;

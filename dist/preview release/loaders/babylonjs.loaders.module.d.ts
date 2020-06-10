@@ -2081,15 +2081,27 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_variants" {
         dispose(): void;
         /**
          * Gets the list of available variant tag names for this asset.
+         * @param rootMesh The glTF root mesh
+         * @returns the list of all the variant names for this model
          */
         static GetAvailableVariants(rootMesh: Mesh): string[];
         /**
+         * The default variant. Use with SelectVariant to reset the model to the original.
+         */
+        static readonly DEFAULT: string;
+        /**
          * Select a variant given a variant tag name or a list of variant tag names.
          * @param rootMesh The glTF root mesh
-         * @param variantName The variant name(s) to select
+         * @param variantName The variant name(s) to select. Use the `DEFAULT` property to reset back to original.
          */
         static SelectVariant(rootMesh: Mesh, variantName: string | string[]): void;
-        private static _GetVariantsMap;
+        /**
+         * Gets the last selected variant tag name(s).
+         * @param rootMesh The glTF root mesh
+         * @returns The selected variant tag name(s).
+         */
+        static GetLastSelectedVariant(rootMesh: Mesh): Nullable<string | string[]>;
+        private static _GetExtensionMetadata;
         /** @hidden */
         _loadMeshPrimitiveAsync(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Nullable<Promise<AbstractMesh>>;
     }
@@ -4750,15 +4762,27 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         dispose(): void;
         /**
          * Gets the list of available variant tag names for this asset.
+         * @param rootMesh The glTF root mesh
+         * @returns the list of all the variant names for this model
          */
         static GetAvailableVariants(rootMesh: Mesh): string[];
         /**
+         * The default variant. Use with SelectVariant to reset the model to the original.
+         */
+        static readonly DEFAULT: string;
+        /**
          * Select a variant given a variant tag name or a list of variant tag names.
          * @param rootMesh The glTF root mesh
-         * @param variantName The variant name(s) to select
+         * @param variantName The variant name(s) to select. Use the `DEFAULT` property to reset back to original.
          */
         static SelectVariant(rootMesh: Mesh, variantName: string | string[]): void;
-        private static _GetVariantsMap;
+        /**
+         * Gets the last selected variant tag name(s).
+         * @param rootMesh The glTF root mesh
+         * @returns The selected variant tag name(s).
+         */
+        static GetLastSelectedVariant(rootMesh: Mesh): Nullable<string | string[]>;
+        private static _GetExtensionMetadata;
         /** @hidden */
         _loadMeshPrimitiveAsync(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Nullable<Promise<AbstractMesh>>;
     }

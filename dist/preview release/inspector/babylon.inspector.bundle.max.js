@@ -67317,8 +67317,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
-/* harmony import */ var babylonjs_loaders_glTF_2_0_Extensions_KHR_materials_variants__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_variants */ "babylonjs-loaders/glTF/index");
-/* harmony import */ var babylonjs_loaders_glTF_2_0_Extensions_KHR_materials_variants__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_loaders_glTF_2_0_Extensions_KHR_materials_variants__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
 
 
 
@@ -67326,15 +67325,39 @@ __webpack_require__.r(__webpack_exports__);
 var VariantsPropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(VariantsPropertyGridComponent, _super);
     function VariantsPropertyGridComponent(props) {
-        return _super.call(this, props) || this;
+        var _this = _super.call(this, props) || this;
+        _this._lastOne = 0;
+        return _this;
     }
     VariantsPropertyGridComponent.prototype.render = function () {
-        var variants = babylonjs_loaders_glTF_2_0_Extensions_KHR_materials_variants__WEBPACK_IMPORTED_MODULE_3__["KHR_materials_variants"].GetAvailableVariants(this.props.host);
+        var _this = this;
+        var variants = BABYLON.GLTF2.Loader.Extensions.KHR_materials_variants.GetAvailableVariants(this.props.host);
         if (!variants || variants.length === 0) {
             return null;
         }
+        var options = variants.map(function (v, i) {
+            var displayName = v;
+            if (displayName === BABYLON.GLTF2.Loader.Extensions.KHR_materials_variants.DEFAULT) {
+                displayName = "Default";
+            }
+            return { label: displayName, value: i };
+        });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "VARIANTS" })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "VARIANTS" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__["OptionsLineComponent"], { label: "Active variant", options: options, noDirectUpdate: true, target: this.props.host, propertyName: "", onSelect: function (value) {
+                        BABYLON.GLTF2.Loader.Extensions.KHR_materials_variants.SelectVariant(_this.props.host, variants[value]);
+                        _this._lastOne = value;
+                        _this.forceUpdate();
+                    }, extractValue: function () {
+                        var lastPickedVariant = BABYLON.GLTF2.Loader.Extensions.KHR_materials_variants.GetLastSelectedVariant(_this.props.host) || 0;
+                        if (lastPickedVariant && Object.prototype.toString.call(lastPickedVariant) === '[object String]') {
+                            var index = variants.indexOf(lastPickedVariant);
+                            if (index > -1) {
+                                _this._lastOne = index;
+                            }
+                        }
+                        return _this._lastOne;
+                    } }))));
     };
     return VariantsPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
