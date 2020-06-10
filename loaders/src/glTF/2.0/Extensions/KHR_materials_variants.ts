@@ -6,7 +6,6 @@ import { Material } from 'babylonjs/Materials/material';
 import { Mesh } from 'babylonjs/Meshes/mesh';
 import { AbstractMesh } from 'babylonjs/Meshes/abstractMesh';
 import { INode, IMeshPrimitive, IMesh } from '../glTFLoaderInterfaces';
-import { Logger } from 'babylonjs';
 
 const NAME = "KHR_materials_variants";
 
@@ -58,6 +57,8 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
 
     /**
      * Gets the list of available variant tag names for this asset.
+     * @param rootMesh The glTF root mesh
+     * @returns the list of all the variant names for this model
      */
     public static GetAvailableVariants(rootMesh: Mesh): string[] {
         const extensionMetadata = this._GetExtensionMetadata(rootMesh);
@@ -106,6 +107,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
 
     /**
      * Gets the last selected variant tag name(s).
+     * @param rootMesh The glTF root mesh
      * @returns The selected variant tag name(s).
      */
     public static GetLastSelectedVariant(rootMesh: Mesh): Nullable<string | string[]> {
