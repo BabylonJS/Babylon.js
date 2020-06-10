@@ -112,8 +112,14 @@ if (BABYLON.Engine.isSupported()) {
             if (variants && variants.length > 0) {
                 variantBar.style.display = "flex";
                 variantDropdownContent.innerHTML = "";
+<<<<<<< HEAD
                 variantDropdownLabel.innerHTML = "Default";
                 variantDropdownLabel.title = "Default";
+=======
+                variantDropdownLabel.innerHTML = "Original";
+                variantDropdownLabel.title = "Original";                
+                createVariantDropdownLink("Original", root);
+>>>>>>> eed1cab37fd382f46ffdd6ed91c732acd8c85b76
                 for (var index = 0; index < variants.length; index++) {
                     createVariantDropdownLink(variants[index], root);
                 }
