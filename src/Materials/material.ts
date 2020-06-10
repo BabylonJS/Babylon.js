@@ -1246,8 +1246,12 @@ export class Material implements IAnimatable {
         if (this.getScene().blockMaterialDirtyMechanism) {
             return;
         }
+
+        const prePassRenderer = this.getScene().enablePrepassRenderer();
         
-        this.getScene().markDeferredDirty();
+        if (prePassRenderer) {
+            prePassRenderer.markAsDirty();
+        }
     }
 
     /**
