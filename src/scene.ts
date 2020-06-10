@@ -21,14 +21,10 @@ import { AbstractScene } from "./abstractScene";
 import { BaseTexture } from "./Materials/Textures/baseTexture";
 import { Texture } from "./Materials/Textures/texture";
 import { RenderTargetTexture } from "./Materials/Textures/renderTargetTexture";
-import { MultiRenderTarget } from "./Materials/Textures/multiRenderTarget";
-import { SceneCompositorPostProcess } from "./PostProcesses/sceneCompositorPostProcess";
-import { SubSurfaceScatteringPostProcess } from "./PostProcesses/subSurfaceScatteringPostProcess";
 import { Material } from "./Materials/material";
 import { ImageProcessingConfiguration } from "./Materials/imageProcessingConfiguration";
 import { Effect } from "./Materials/effect";
 import { UniformBuffer } from "./Materials/uniformBuffer";
-import { PBRBaseMaterial } from "./Materials/PBR/pbrBaseMaterial";
 import { MultiMaterial } from "./Materials/multiMaterial";
 import { Light } from "./Lights/light";
 import { PickingInfo } from "./Collisions/pickingInfo";
@@ -255,56 +251,6 @@ export class Scene extends AbstractScene implements IAnimatable {
     public get imageProcessingConfiguration(): ImageProcessingConfiguration {
         return this._imageProcessingConfiguration;
     }
-
-    private _highDefinitionPipeline: boolean = false;
-
-    public get highDefinitionPipeline() {
-        return this._highDefinitionPipeline;
-    }
-
-    public set highDefinitionPipeline(b: boolean) {
-        this._highDefinitionPipeline = b;
-    }
-
-    private _isDeferredDirty: boolean = false;
-    public markDeferredDirty() {
-        this._isDeferredDirty = true;
-    }
-
-    private _updateDeferred() {
-        this.highDefinitionPipeline = false;
-
-        // Subsurface scattering
-        for (let i = 0; i < this.materials.length; i++) {
-            const material = this.materials[i] as PBRBaseMaterial;
-
-            if (material.subSurface && material.subSurface.isScatteringEnabled) {
-                this.highDefinitionPipeline = true;
-            }
-        }
-
-        // SSAO 2
-        // TODO
-
-        this._isDeferredDirty = false;
-
-        if (!this.highDefinitionPipeline) {
-            this._engine.renderToAttachments(this.defaultAttachments);
-        }
-    }
-
-    public mrtCount: number = 4;
-    public highDefinitionMRT: MultiRenderTarget;
-    private mrtTypes = [
-        Constants.TEXTURETYPE_UNSIGNED_INT, // Original color
-        Constants.TEXTURETYPE_HALF_FLOAT, // Irradiance
-        Constants.TEXTURETYPE_HALF_FLOAT, // Depth (world units)
-        Constants.TEXTURETYPE_UNSIGNED_INT
-    ];
-    private multiRenderAttachments: any[];
-    private defaultAttachments: any[];
-    public sceneCompositorPostProcess: SceneCompositorPostProcess;
-    public subSurfaceScatteringPostProcess: SubSurfaceScatteringPostProcess;
 
     private _forceWireframe = false;
     /**
@@ -944,6 +890,11 @@ export class Scene extends AbstractScene implements IAnimatable {
     */
     public fogEnd = 1000.0;
 
+    /**
+    * Flag indicating that the frame buffer binding is handled by another component
+    */
+    public doNotBindFrameBuffer : boolean = false;
+
     // Lights
     private _shadowsEnabled = true;
     /**
@@ -1487,17 +1438,6 @@ export class Scene extends AbstractScene implements IAnimatable {
         if (!options || !options.virtual) {
             this._engine.onNewSceneAddedObservable.notifyObservers(this);
         }
-
-        this.highDefinitionMRT = new MultiRenderTarget("sceneHighDefinitionMRT", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, this.mrtCount, this,
-            { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: this.mrtTypes });
-        this.highDefinitionMRT.samples = 1;
-
-        let gl = this._engine._gl;
-        this.multiRenderAttachments = [gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1, gl.COLOR_ATTACHMENT2, gl.COLOR_ATTACHMENT3];
-        this.defaultAttachments = [gl.COLOR_ATTACHMENT0, gl.NONE, gl.NONE, gl.NONE];
-        this.sceneCompositorPostProcess = new SceneCompositorPostProcess("sceneCompositor", 1, null, undefined, this._engine);
-        this.sceneCompositorPostProcess.inputTexture = this.highDefinitionMRT.getInternalTexture()!;
-        this.subSurfaceScatteringPostProcess = new SubSurfaceScatteringPostProcess("subSurfaceScattering", this, 1, null, undefined, this._engine);
     }
 
     /**
@@ -3699,40 +3639,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(force));
     }
 
-    public drawBuffers(effect: Effect) {
-        if (this.highDefinitionPipeline) {
-            if (effect._multiTarget) {
-                this._engine.renderToAttachments(this.multiRenderAttachments);
-            } else {
-                this._engine.renderToAttachments(this.defaultAttachments);      
-            }
-        }
-    }
-
-    private _checkRTSize() {
-        var requiredWidth = this._engine.getRenderWidth(true);
-        var requiredHeight = this._engine.getRenderHeight(true);
-        var width = this.highDefinitionMRT.getRenderWidth();
-        var height = this.highDefinitionMRT.getRenderHeight();
-
-        if (width !== requiredWidth || height !== requiredHeight) {
-            this.highDefinitionMRT.resize({ width: requiredWidth, height: requiredHeight });
-            this.sceneCompositorPostProcess.inputTexture = this.highDefinitionMRT.getInternalTexture()!;
-        }
-    }
-
     private _bindFrameBuffer() {
-        if (this.highDefinitionPipeline) {
-            this._checkRTSize();
-            var internalTexture = this.highDefinitionMRT.getInternalTexture();
-            if (internalTexture) {
-                this.getEngine().bindFramebuffer(internalTexture);
-            } else {
-                Logger.Error("High Definition pipeline error.");
-            }
-            return;
-        }
-
         if (this.activeCamera && this.activeCamera._multiviewTexture) {
             this.activeCamera._multiviewTexture._bindFrameBuffer();
         } else if (this.activeCamera && this.activeCamera.outputRenderTarget) {
@@ -3842,19 +3749,15 @@ export class Scene extends AbstractScene implements IAnimatable {
             }
         }
 
-        if (this._isDeferredDirty) {
-            this._updateDeferred();
-        }
-
         // Restore framebuffer after rendering to targets
-        if (needRebind || this.highDefinitionPipeline) {
+        if (needRebind && !this.doNotBindFrameBuffer) {
             this._bindFrameBuffer();
         }
 
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
 
         // Prepare Frame
-        if (this.postProcessManager && !camera._multiviewTexture) {
+        if (this.postProcessManager && !camera._multiviewTexture && !this.doNotBindFrameBuffer) {
             this.postProcessManager._prepareFrame();
         }
 
@@ -3871,16 +3774,6 @@ export class Scene extends AbstractScene implements IAnimatable {
         // After Camera Draw
         for (let step of this._afterCameraDrawStage) {
             step.action(this.activeCamera);
-        }
-
-        if (this.highDefinitionPipeline) {
-            // this.sceneCompositorPostProcess.activate(this.activeCamera);
-            this.sceneCompositorPostProcess.autoClear = false;
-            this.sceneCompositorPostProcess.activate(this.activeCamera);
-            this.subSurfaceScatteringPostProcess.activate(this.activeCamera);
-            this.postProcessManager.directRender([this.sceneCompositorPostProcess], this.subSurfaceScatteringPostProcess.inputTexture);
-            // this.getEngine().restoreDefaultFramebuffer(); // Restore back buffer if needed
-            this.postProcessManager.directRender([this.subSurfaceScatteringPostProcess]);
         }
 
         // Finalize frame

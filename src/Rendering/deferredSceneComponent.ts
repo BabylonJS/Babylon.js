@@ -1,78 +1,75 @@
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { ISceneComponent, SceneComponentConstants } from "../sceneComponent";
-import { SmartArrayNoDuplicate } from "../Misc/smartArray";
-import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { GeometryBufferRenderer } from "./geometryBufferRenderer";
+import { PrePassRenderer } from "./prePassRenderer";
 
 declare module "../scene" {
     export interface Scene {
         /** @hidden (Backing field) */
-        _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
+        _prePassRenderer: Nullable<PrePassRenderer>;
 
         /**
          * Gets or Sets the current geometry buffer associated to the scene.
          */
-        geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
+        prePassRenderer: Nullable<PrePassRenderer>;
 
         /**
-         * Enables a GeometryBufferRender and associates it with the scene
-         * @param ratio defines the scaling ratio to apply to the renderer (1 by default which means same resolution)
-         * @returns the GeometryBufferRenderer
+         * Enables the prepass and associates it with the scene
+         * @returns the PrePassRenderer
          */
-        enableGeometryBufferRenderer(ratio?: number): Nullable<GeometryBufferRenderer>;
+        enablePrepassRenderer(ratio?: number): Nullable<PrePassRenderer>;
 
         /**
-         * Disables the GeometryBufferRender associated with the scene
+         * Disables the prepass associated with the scene
          */
-        disableGeometryBufferRenderer(): void;
+        disablePrepassRenderer(): void;
     }
 }
 
-Object.defineProperty(Scene.prototype, "geometryBufferRenderer", {
+Object.defineProperty(Scene.prototype, "PrePassRenderer", {
     get: function(this: Scene) {
-        this._geometryBufferRenderer;
+        this._prePassRenderer;
     },
-    set: function(this: Scene, value: Nullable<GeometryBufferRenderer>) {
+    set: function(this: Scene, value: Nullable<PrePassRenderer>) {
         if (value && value.isSupported) {
-            this._geometryBufferRenderer = value;
+            this._prePassRenderer = value;
         }
     },
     enumerable: true,
     configurable: true
 });
 
-Scene.prototype.enableGeometryBufferRenderer = function(ratio: number = 1): Nullable<GeometryBufferRenderer> {
-    if (this._geometryBufferRenderer) {
-        return this._geometryBufferRenderer;
+Scene.prototype.enablePrepassRenderer = function(ratio: number = 1): Nullable<PrePassRenderer> {
+    if (this._prePassRenderer) {
+        return this._prePassRenderer;
     }
 
-    this._geometryBufferRenderer = new GeometryBufferRenderer(this, ratio);
-    if (!this._geometryBufferRenderer.isSupported) {
-        this._geometryBufferRenderer = null;
+    this._prePassRenderer = new PrePassRenderer(this);
+    if (!this._prePassRenderer.isSupported) {
+        this._prePassRenderer = null;
     }
 
-    return this._geometryBufferRenderer;
+    return this._prePassRenderer;
 };
 
-Scene.prototype.disableGeometryBufferRenderer = function(): void {
-    if (!this._geometryBufferRenderer) {
+Scene.prototype.disablePrepassRenderer = function(): void {
+    if (!this._prePassRenderer) {
         return;
     }
 
-    this._geometryBufferRenderer.dispose();
-    this._geometryBufferRenderer = null;
+    this._prePassRenderer.dispose();
+    this._prePassRenderer = null;
 };
 
 /**
  * Defines the Geometry Buffer scene component responsible to manage a G-Buffer useful
  * in several rendering techniques.
  */
-export class GeometryBufferRendererSceneComponent implements ISceneComponent {
+export class PrePassSceneComponent implements ISceneComponent {
     /**
      * The component name helpful to identify the component in the list of scene components.
      */
-    public readonly name = SceneComponentConstants.NAME_GEOMETRYBUFFERRENDERER;
+    public readonly name = SceneComponentConstants.NAME_PREPASSRENDERER;
 
     /**
      * The scene the component belongs to.
@@ -91,7 +88,8 @@ export class GeometryBufferRendererSceneComponent implements ISceneComponent {
      * Registers the component in a given scene
      */
     public register(): void {
-        this.scene._gatherRenderTargetsStage.registerStep(SceneComponentConstants.STEP_GATHERRENDERTARGETS_GEOMETRYBUFFERRENDERER, this, this._gatherRenderTargets);
+        this.scene._beforeCameraDrawStage.registerStep(SceneComponentConstants.STEP_BEFORECAMERADRAW_PREPASS, this, this.scene._prePassRenderer._beforeCameraDraw);
+        this.scene._afterCameraDrawStage.registerStep(SceneComponentConstants.STEP_AFTERCAMERADRAW_PREPASS, this, this.scene._prePassRenderer._afterCameraDraw);
     }
 
     /**
@@ -109,18 +107,13 @@ export class GeometryBufferRendererSceneComponent implements ISceneComponent {
         // Nothing to do for this component
     }
 
-    private _gatherRenderTargets(renderTargets: SmartArrayNoDuplicate<RenderTargetTexture>): void {
-        if (this.scene._geometryBufferRenderer) {
-            renderTargets.push(this.scene._geometryBufferRenderer.getGBuffer());
-        }
-    }
 }
 
-GeometryBufferRenderer._SceneComponentInitialization = (scene: Scene) => {
+PrePassRenderer._SceneComponentInitialization = (scene: Scene) => {
     // Register the G Buffer component to the scene.
-    let component = scene._getComponent(SceneComponentConstants.NAME_GEOMETRYBUFFERRENDERER) as GeometryBufferRendererSceneComponent;
+    let component = scene._getComponent(SceneComponentConstants.NAME_PREPASSRENDERER) as PrePassSceneComponent;
     if (!component) {
-        component = new GeometryBufferRendererSceneComponent(scene);
+        component = new PrePassSceneComponent(scene);
         scene._addComponent(component);
     }
 };

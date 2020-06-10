@@ -7,6 +7,7 @@ import { Engine } from "../Engines/engine";
 import { Scene } from "../scene";
 import { Color3 } from "../Maths/math.color";
 import { Constants } from "../Engines/constants";
+import { Logger } from "../Misc/logger";
 
 import "../Shaders/sceneCompositor.fragment";
 import "../Shaders/postprocess.vertex";
@@ -20,24 +21,33 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
     /** @hidden */
     public texelHeight: number;
 
+    private _diffusionS: number[] = [];
+    private _filterRadii: number[] = [];
+    private _diffusionD: number[] = [];
+
     constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT) {
-        super(name, "subSurfaceScattering", ["texelSize", "viewportSize", "metersPerUnit"], ["inputSampler", "irradianceSampler", "depthSampler", "albedoSampler"], options, camera, samplingMode || Texture.BILINEAR_SAMPLINGMODE, engine, reusable, null, textureType, "postprocess", undefined, true);
+        super(name, "subSurfaceScattering", ["texelSize", "viewportSize", "metersPerUnit"], ["diffusionS", "diffusionD", "filterRadii", "irradianceSampler", "depthSampler", "albedoSampler"], options, camera, samplingMode || Texture.BILINEAR_SAMPLINGMODE, engine, reusable, null, textureType, "postprocess", undefined, true);
         this._scene = scene;
 
         const defines = this._getDefines();
         this.updateEffect(defines);
 
+        // Adding default diffusion profile
+        this.addDiffusionProfile(new Color3(1, 1, 1));
+
         this.onApplyObservable.add((effect: Effect) => {
             var texelSize = this.texelSize;
             effect.setFloat("metersPerUnit", scene.metersPerUnit);
             effect.setFloat2("texelSize", texelSize.x, texelSize.y);
-            effect.setTexture("inputSampler", scene.highDefinitionMRT.textures[4]);
             effect.setTexture("irradianceSampler", scene.highDefinitionMRT.textures[1]);
             effect.setTexture("depthSampler", scene.highDefinitionMRT.textures[2]);
             effect.setTexture("albedoSampler", scene.highDefinitionMRT.textures[3]);
             effect.setFloat2("viewportSize",
                 Math.tan(scene.activeCamera!.fov / 2) * scene.getEngine().getAspectRatio(scene.activeCamera!, true),
                 Math.tan(scene.activeCamera!.fov / 2));
+            effect.setArray3("diffusionS", this._diffusionS);
+            effect.setArray("diffusionD", this._diffusionD);
+            effect.setArray("filterRadii", this._filterRadii);
         });
 
     }
@@ -56,6 +66,29 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
         }
 
         return defines;
+    }
+
+    public addDiffusionProfile(color: Color3) : number {
+        if (this._diffusionD.length >= 5) {
+            // We only suppport 5 diffusion profiles
+            Logger.Error("You already reached the maximum number of diffusion profiles.");
+            return -1;
+        }
+
+        // Do not add doubles
+        for (let i = 0; i < this._diffusionS.length / 3; i++) {
+            if (this._diffusionS[i * 3] === color.r && 
+                this._diffusionS[i * 3 + 1] === color.g && 
+                this._diffusionS[i * 3 + 2] === color.b) {
+                return i;
+            }
+        }
+
+        this._diffusionS.push(color.r, color.b, color.g);
+        this._diffusionD.push(Math.max(Math.max(color.r, color.b), color.g));
+        this._filterRadii.push(this.getDiffusionProfileParameters(color));
+
+        return this._diffusionD.length - 1;
     }
 
     public getDiffusionProfileParameters(color: Color3)

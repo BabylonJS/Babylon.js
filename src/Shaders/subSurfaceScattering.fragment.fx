@@ -160,10 +160,10 @@ void main(void)
         return;
     }
 
-	float  distScale     = 1.; //sssData.subsurfaceMask;
-	vec3 S             = diffusionProfiles[diffusionProfileIndex].S;
-	float  d             = diffusionProfiles[diffusionProfileIndex].d;
-    float filterRadius = diffusionProfiles[diffusionProfileIndex].filterRadius;
+	float  distScale   = 1.;
+	vec3 S             = diffusionS[diffusionProfileIndex];
+	float  d           = diffusionD[diffusionProfileIndex];
+    float filterRadius = filterRadii[diffusionProfileIndex];
 
 	// Reconstruct the view-space position corresponding to the central sample.
 	vec2 centerPosNDC = vUV;
