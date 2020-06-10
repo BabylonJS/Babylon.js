@@ -21,10 +21,11 @@ interface IKHRMaterialVariants {
 /**
  * Interface for the mapping from variant tag name to a mesh and material.
  */
-interface IVariantMapping {
-    mesh: AbstractMesh;
-    materialPromise: Promise<Nullable<Material>>;
-    material?: Material;
+interface IVariantsMap {
+    [key: string]: Array<{
+        mesh: AbstractMesh;
+        material: Material;
+    }>;
 }
 
 /**
@@ -44,8 +45,6 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
 
     private _loader: GLTFLoader;
 
-    private _tagsToMap: { [key: string]: IVariantMapping[]; } = {};
-
     /** @hidden */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
@@ -58,74 +57,73 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     }
 
     /**
-     * A list of available variants for this asset.
+     * Gets the list of available variant tag names for this asset.
      */
-    public get availableVariants(): string[] {
-        return Object.keys(this._tagsToMap);
+    public static GetAvailableVariants(rootMesh: Mesh): string[] {
+        return Object.keys(this._GetVariantsMap(rootMesh));
     }
 
     /**
-     * Select a variant by providing a list of variant tag names.
-     *
-     * @param {(string | string[])} variantName
+     * Select a variant given a variant tag name or a list of variant tag names.
+     * @param rootMesh The glTF root mesh
+     * @param variantName The variant name(s) to select
      */
-    public selectVariant(variantName: string | string[]): void {
+    public static SelectVariant(rootMesh: Mesh, variantName: string | string[]): void {
+        const variantsMap = this._GetVariantsMap(rootMesh);
+
+        const select = (variantName: string): void => {
+            const entries = variantsMap[variantName];
+            if (entries) {
+                for (const entry of entries) {
+                    entry.mesh.material = entry.material;
+                }
+            }
+        };
+
         if (variantName instanceof Array) {
-            for (const name in variantName) {
-                this._selectVariant(name);
+            for (const name of variantName) {
+                select(name);
             }
         } else {
-            this._selectVariant(variantName);
+            select(variantName);
         }
     }
 
-    /**
-     * Select a variant by providing a single variant tag.
-     *
-     * @param {string} variantName
-     */
-    private _selectVariant(variantName: string): void {
-        // If the name is valid, switch all meshes to use materials defined by the tags
-        const variantMappings = this._tagsToMap[variantName];
-        if (!variantMappings) {
-            return;
-        }
-        for (const mapping of variantMappings) {
-            if (mapping.material) {
-                mapping.mesh.material = mapping.material;
-                return;
-            }
-            mapping.materialPromise.then((material) => {
-                mapping.mesh.material = material;
-            });
-        }
+    private static _GetVariantsMap(rootMesh: Mesh): IVariantsMap {
+        return rootMesh?.metadata?.gltf?.[NAME];
     }
 
     /** @hidden */
     public _loadMeshPrimitiveAsync(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Nullable<Promise<AbstractMesh>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialVariants, AbstractMesh>(context, primitive, this.name, (extensionContext, extension) => {
-            return this._loader._loadMeshPrimitiveAsync(context, name, node, mesh, primitive, (babylonMesh) => {
+            const promises = new Array<Promise<any>>();
+            promises.push(this._loader._loadMeshPrimitiveAsync(context, name, node, mesh, primitive, (babylonMesh) => {
                 assign(babylonMesh);
 
                 if (babylonMesh instanceof Mesh) {
                     const babylonDrawMode = GLTFLoader._GetDrawMode(context, primitive.mode);
+
                     // For each mapping, look at the tags and make a new entry for them
                     for (const mapping of extension.mapping) {
                         for (const tag of mapping.tags) {
-                            const tagMapping = this._tagsToMap[tag] || [];
                             const material = ArrayItem.Get(`#/materials/`, this._loader.gltf.materials, mapping.material);
-                            const meshEntry: IVariantMapping = {
-                                mesh: babylonMesh,
-                                materialPromise: Promise.resolve(null)
-                            };
-                            meshEntry.materialPromise = this._loader._loadMaterialAsync(`#/materials/${mapping.material}`, material, babylonMesh, babylonDrawMode, (babylonMaterial) => {
-                                meshEntry.material = babylonMaterial;
-                            });
-                            tagMapping.push(meshEntry);
-                            this._tagsToMap[tag] = tagMapping;
+                            promises.push(this._loader._loadMaterialAsync(`#/materials/${mapping.material}`, material, babylonMesh, babylonDrawMode, (babylonMaterial) => {
+                                const root = this._loader.rootBabylonMesh;
+                                const metadata = (root.metadata = root.metadata || {});
+                                const gltf = (metadata.gltf = metadata.gltf || {});
+                                const map: IVariantsMap = (gltf[NAME] = gltf[NAME] || {});
+                                map[tag] = map[tag] || [];
+                                map[tag].push({
+                                    mesh: babylonMesh,
+                                    material: babylonMaterial
+                                });
+                            }));
                         }
                     }
                 }
+            }));
+            return Promise.all(promises).then(([babylonMesh]) => {
+                return babylonMesh;
             });
         });
     }
