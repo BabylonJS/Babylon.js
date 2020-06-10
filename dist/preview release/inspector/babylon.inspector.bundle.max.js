@@ -7,7 +7,7 @@
 		exports["babylonjs-inspector"] = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-materials"), require("babylonjs-serializers"), require("babylonjs"));
 	else
 		root["INSPECTOR"] = factory(root["BABYLON"]["GUI"], root["BABYLON"], root["BABYLON"], root["BABYLON"], root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_control__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -6153,7 +6153,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../../../../node_mod
 
 
 // module
-exports.push([module.i, "#animation-curve-editor {\n  font-family: acumin-pro-condensed; }\n  #animation-curve-editor .last {\n    margin-left: 3px; }\n  #animation-curve-editor .icon {\n    width: 40px;\n    height: 40px; }\n    #animation-curve-editor .icon.medium {\n      width: 30px;\n      height: 30px; }\n    #animation-curve-editor .icon.small {\n      width: 20px;\n      height: 20px; }\n    #animation-curve-editor .icon.babylon-logo {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/babylonLogo.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/babylonLogo.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain; }\n    #animation-curve-editor .icon.close {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/closeWindowIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/closeWindowIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.auto-tangent {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/autoTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/autoTangentIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.break-tangent {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/breakTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/breakTangentIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.flat-tangent {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/flatTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/flatTangentIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.frame {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/frameIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/frameIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.linear-tangent {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/linearTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/linearTangentIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.unify-tangent {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/unifyTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/unifyTangentIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.add-animation {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/addAnimationIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/addAnimationIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.animation-bullet {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationBulletIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationBulletIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.animation-delete {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationDeleteIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationDeleteIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.animation-edit {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/editIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/editIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.animation-end {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationEndIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationEndIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.animation-lastkey {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationLastKeyIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationLastKeyIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain; }\n      #animation-curve-editor .icon.animation-lastkey:hover {\n        background-image: url(" + escape(__webpack_require__(/*! ./assets/animationLastKeyHoverIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationLastKeyHoverIcon.svg")) + "); }\n    #animation-curve-editor .icon.animation-nextkey {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationNextKeyIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationNextKeyIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain; }\n      #animation-curve-editor .icon.animation-nextkey:hover {\n        background-image: url(" + escape(__webpack_require__(/*! ./assets/animationNextKeyHoverIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationNextKeyHoverIcon.svg")) + "); }\n    #animation-curve-editor .icon.animation-options {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationOptionsIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationOptionsIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n      #animation-curve-editor .icon.animation-options:hover {\n        background-color: #888888 !important; }\n    #animation-curve-editor .icon.animation-playfwd {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationPlayFwdIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationPlayFwdIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.animation-playrev {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationPlayRevIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationPlayRevIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.animation-start {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationStartIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationStartIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.animation-stop {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationStopIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationStopIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.animation-triangle {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationTriangleIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationTriangleIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.key-active {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/keyActiveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/keyActiveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.key-inactive {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/keyInactiveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/keyInactiveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.key-selected {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/keySelectedIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/keySelectedIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.loop-active {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/loopActiveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/loopActiveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.loop-inactive {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/loopInactiveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/loopInactiveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.move {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/moveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/moveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.save {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/saveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/saveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.load {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/loadIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/loadIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.checked {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/checkboxCheckedIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/checkboxCheckedIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.unchecked {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/checkboxDefaultIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/checkboxDefaultIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.new-key {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/newKeyIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/newKeyIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.scale {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/scaleIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/scaleIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.scrollbar-handle {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/scrollbarHandleIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/scrollbarHandleIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n  #animation-curve-editor .hidden {\n    display: none; }\n  #animation-curve-editor .notification-area {\n    position: absolute;\n    width: auto;\n    left: 0.53em;\n    bottom: 60px;\n    background-color: #c73228;\n    padding: 16px;\n    border-radius: 5px;\n    color: white;\n    right: 2em;\n    z-index: 1000; }\n    #animation-curve-editor .notification-area button {\n      position: absolute;\n      top: 3px;\n      right: 10px;\n      padding: 0;\n      cursor: pointer;\n      background: transparent;\n      border: 0;\n      -webkit-appearance: none;\n      color: #000;\n      text-shadow: 0 1px 0 #fff;\n      opacity: .4;\n      font-size: 1.8em; }\n  #animation-curve-editor .header {\n    display: flex;\n    padding: 9px;\n    background: #333333;\n    color: white;\n    height: 1.3em;\n    justify-content: space-between;\n    align-items: center;\n    padding-left: 12px;\n    padding-right: 12px; }\n    #animation-curve-editor .header .title {\n      text-transform: uppercase; }\n    #animation-curve-editor .header .close {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      justify-items: center;\n      cursor: pointer; }\n  #animation-curve-editor .actions-wrapper {\n    display: flex;\n    flex-direction: row;\n    justify-content: flex-start;\n    align-items: center;\n    background: #333333; }\n    #animation-curve-editor .actions-wrapper .close {\n      position: absolute;\n      right: 1px; }\n    #animation-curve-editor .actions-wrapper .title-container {\n      display: flex;\n      justify-content: stretch;\n      align-items: center;\n      color: white;\n      width: 220px; }\n      #animation-curve-editor .actions-wrapper .title-container .title {\n        font-size: 15pt; }\n    #animation-curve-editor .actions-wrapper .buttons-container {\n      display: flex; }\n    #animation-curve-editor .actions-wrapper .action-input {\n      display: flex;\n      justify-content: center;\n      flex-direction: row;\n      align-items: center;\n      margin-right: 8px; }\n      #animation-curve-editor .actions-wrapper .action-input input {\n        width: 75px;\n        height: 24px;\n        color: white;\n        font-size: 12px;\n        background: none;\n        border: none;\n        background-color: black;\n        padding: 6px; }\n  #animation-curve-editor .content {\n    display: flex;\n    align-items: flex-start;\n    justify-content: flex-start;\n    flex-direction: column; }\n    #animation-curve-editor .content .row {\n      display: flex;\n      align-items: stretch;\n      justify-content: flex-start;\n      flex-direction: row;\n      width: 100vw;\n      height: 84vh;\n      background-color: #333333; }\n      #animation-curve-editor .content .row .timeline {\n        width: 100vw;\n        background: #333333;\n        display: flex;\n        align-items: center;\n        justify-content: stretch;\n        height: 2.5rem; }\n        #animation-curve-editor .content .row .timeline .display-line {\n          width: 80vw;\n          height: 2em;\n          overflow: hidden;\n          overflow-x: scroll;\n          scrollbar-color: cornflowerblue slategrey;\n          scrollbar-width: thin;\n          margin-right: 1.3em;\n          padding-left: 1em;\n          padding-right: 1em; }\n          #animation-curve-editor .content .row .timeline .display-line::-webkit-scrollbar {\n            height: 0.4em; }\n          #animation-curve-editor .content .row .timeline .display-line::-webkit-scrollbar-track {\n            box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3); }\n          #animation-curve-editor .content .row .timeline .display-line::-webkit-scrollbar-thumb {\n            background-color: cornflowerblue;\n            outline: 1px solid slategrey; }\n        #animation-curve-editor .content .row .timeline .controls {\n          display: flex;\n          justify-content: center;\n          align-items: center;\n          width: 15em; }\n          #animation-curve-editor .content .row .timeline .controls .input-frame input {\n            width: 3em; }\n          #animation-curve-editor .content .row .timeline .controls .button {\n            margin-left: 0.5em;\n            margin-right: 0.5em; }\n    #animation-curve-editor .content .animation-list {\n      margin: 10px;\n      margin-top: 0;\n      margin-bottom: 0;\n      background: #111111;\n      color: white;\n      width: 210px; }\n      #animation-curve-editor .content .animation-list .controls-header {\n        display: flex;\n        background-color: #252525; }\n        #animation-curve-editor .content .animation-list .controls-header .input-fps {\n          display: flex;\n          align-items: center;\n          width: 52px;\n          padding-left: 4px; }\n          #animation-curve-editor .content .animation-list .controls-header .input-fps .numeric input {\n            width: 52px;\n            font-size: 12px;\n            height: 22px;\n            background-color: black;\n            border: none;\n            color: white;\n            text-align: center;\n            font-family: acumin-pro-condensed; }\n            #animation-curve-editor .content .animation-list .controls-header .input-fps .numeric input::-webkit-inner-spin-button, #animation-curve-editor .content .animation-list .controls-header .input-fps .numeric input::-webkit-outer-spin-button {\n              appearance: none;\n              -webkit-appearance: none;\n              margin: 0; }\n          #animation-curve-editor .content .animation-list .controls-header .input-fps p {\n            color: white;\n            font-size: 12px;\n            margin: 0px;\n            position: relative;\n            right: 17px;\n            line-height: 20px;\n            height: 20px;\n            margin-top: -2px; }\n      #animation-curve-editor .content .animation-list .new-animation {\n        display: block;\n        position: absolute;\n        background-color: #111111;\n        height: 367px;\n        z-index: 10; }\n        #animation-curve-editor .content .animation-list .new-animation .sub-header {\n          display: flex;\n          align-items: start;\n          width: 250px;\n          justify-content: space-between; }\n          #animation-curve-editor .content .animation-list .new-animation .sub-header .title {\n            margin: 0px;\n            font-size: 15pt; }\n        #animation-curve-editor .content .animation-list .new-animation .sub-content {\n          background-color: #111111;\n          padding: 10px;\n          display: inline-grid;\n          grid-template-columns: 63px 127px;\n          grid-template-rows: repeat(6, 30px);\n          font-size: 12px; }\n          #animation-curve-editor .content .animation-list .new-animation .sub-content .confirm-buttons {\n            grid-column-start: 2; }\n            #animation-curve-editor .content .animation-list .new-animation .sub-content .confirm-buttons .buttonLine button {\n              width: 60px;\n              height: 20px;\n              background-color: #444444;\n              color: white;\n              font-size: 12px;\n              line-height: 11px;\n              margin: 5px;\n              font-size: 10px;\n              font-family: acumin-pro-condensed;\n              border: none; }\n      #animation-curve-editor .content .animation-list .object-tree {\n        background-color: #111111; }\n        #animation-curve-editor .content .animation-list .object-tree ul {\n          list-style: none;\n          padding-left: 0px;\n          padding: 0px;\n          margin: 0px; }\n          #animation-curve-editor .content .animation-list .object-tree ul li.property {\n            height: 20px;\n            display: flex;\n            flex-wrap: wrap;\n            font-size: 12px; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property.sub {\n              height: auto; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property:before {\n              content: '';\n              background: none; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property p {\n              display: inline;\n              font-size: 12px;\n              margin: 0px;\n              flex: 8;\n              cursor: pointer; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property .spacer {\n              width: 20px;\n              height: 20px; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property .animation-bullet {\n              background-image: url(" + escape(__webpack_require__(/*! ./assets/animationBulletIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationBulletIcon.svg")) + ");\n              background-repeat: no-repeat;\n              background-color: transparent;\n              background-size: contain;\n              color: #7a4ece;\n              width: 10px;\n              margin-left: 18px;\n              margin-right: 2px;\n              height: 20px;\n              background-position-y: 5px; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property .animation-arrow {\n              width: 30px;\n              background-image: url(" + escape(__webpack_require__(/*! ./assets/animationTriangleIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationTriangleIcon.svg")) + ");\n              background-repeat: no-repeat;\n              background-color: transparent;\n              background-size: 10px;\n              background-position-y: center;\n              background-position-x: 18px;\n              cursor: pointer; }\n              #animation-curve-editor .content .animation-list .object-tree ul li.property .animation-arrow.flip {\n                transform: rotate(180deg);\n                background-position: 2px 50%; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property.active {\n              background-color: #444444; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property .handle-indicator {\n              width: 30px; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property ul.sub-list {\n              flex-grow: 1;\n              flex-shrink: 1;\n              flex-basis: 100%; }\n              #animation-curve-editor .content .animation-list .object-tree ul li.property ul.sub-list .property {\n                cursor: pointer; }\n      #animation-curve-editor .content .animation-list .label-input {\n        display: contents; }\n        #animation-curve-editor .content .animation-list .label-input label {\n          text-align: right; }\n        #animation-curve-editor .content .animation-list .label-input input {\n          margin-left: 5px;\n          height: 20px;\n          background-color: #444444;\n          border: none;\n          color: white;\n          padding-left: 3px;\n          font-size: 10px;\n          font-family: acumin-pro-condensed; }\n          #animation-curve-editor .content .animation-list .label-input input:focus {\n            border-radius: 0px;\n            outline-style: auto;\n            outline-color: lightgrey; }\n        #animation-curve-editor .content .animation-list .label-input select {\n          height: 20px;\n          margin-left: 5px;\n          font-size: 10px;\n          background-color: #444444;\n          border: none;\n          color: white;\n          font-family: acumin-pro-condensed; }\n          #animation-curve-editor .content .animation-list .label-input select:focus {\n            border-radius: 0px;\n            outline-style: auto;\n            outline-color: lightgrey; }\n    #animation-curve-editor .content .sample-chart .linear .draggable {\n      cursor: move; }\n    #animation-curve-editor .content .graph-chart {\n      flex: 1 1 0%;\n      overflow-x: scroll;\n      padding-left: 32px;\n      overflow-y: scroll;\n      scroll-behavior: smooth;\n      background-color: #111111;\n      height: 100%; }\n      #animation-curve-editor .content .graph-chart .linear {\n        overflow: visible;\n        border: 1px solid lightgrey;\n        height: 100%; }\n        #animation-curve-editor .content .graph-chart .linear svg {\n          overflow: visible; }\n        #animation-curve-editor .content .graph-chart .linear:focus {\n          outline-color: transparent; }\n        #animation-curve-editor .content .graph-chart .linear line {\n          stroke: #cecece;\n          stroke-width: 0.2; }\n        #animation-curve-editor .content .graph-chart .linear text {\n          fill: #cecece; }\n        #animation-curve-editor .content .graph-chart .linear .control-point {\n          display: none; }\n        #animation-curve-editor .content .graph-chart .linear .control-point.active {\n          display: inline; }\n      #animation-curve-editor .content .graph-chart .playhead-wrapper {\n        position: relative;\n        left: -13px; }\n      #animation-curve-editor .content .graph-chart .playhead {\n        width: fit-content;\n        background-color: #ffc60e;\n        color: black;\n        text-align: center;\n        min-width: 2em;\n        justify-content: center;\n        display: flex;\n        padding: 0.1em;\n        font-size: 0.75em; }\n      #animation-curve-editor .content .graph-chart .playhead-triangle {\n        background-color: transparent;\n        width: 0px;\n        height: 0px;\n        border-left: 13.5px solid transparent;\n        border-right: 13.5px solid transparent;\n        border-top: 12px solid #ffc60e; }\n      #animation-curve-editor .content .graph-chart .playhead-line {\n        width: 2px;\n        height: calc(90vh - 100px);\n        background-color: #ffc60e;\n        position: absolute;\n        margin-left: 12.5px; }\n  #animation-curve-editor .buttonLine {\n    height: 30px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch; }\n    #animation-curve-editor .buttonLine input[type=\"file\"] {\n      display: none; }\n    #animation-curve-editor .buttonLine .file-upload {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center; }\n    #animation-curve-editor .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    #animation-curve-editor .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #animation-curve-editor .buttonLine button {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      cursor: pointer; }\n    #animation-curve-editor .buttonLine button:hover {\n      opacity: 1.0; }\n    #animation-curve-editor .buttonLine button:active {\n      background: #282828; }\n    #animation-curve-editor .buttonLine button:focus {\n      border: 1px solid #337ab7;\n      outline: 0px; }\n", ""]);
+exports.push([module.i, "#animation-curve-editor {\n  font-family: acumin-pro-condensed; }\n  #animation-curve-editor .last {\n    margin-left: 3px; }\n  #animation-curve-editor .icon {\n    width: 40px;\n    height: 40px; }\n    #animation-curve-editor .icon.medium {\n      width: 30px;\n      height: 30px; }\n    #animation-curve-editor .icon.small {\n      width: 20px;\n      height: 20px; }\n    #animation-curve-editor .icon.babylon-logo {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/babylonLogo.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/babylonLogo.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain; }\n    #animation-curve-editor .icon.close {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/closeWindowIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/closeWindowIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.auto-tangent {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/autoTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/autoTangentIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.break-tangent {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/breakTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/breakTangentIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.flat-tangent {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/flatTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/flatTangentIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.frame {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/frameIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/frameIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.linear-tangent {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/linearTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/linearTangentIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.unify-tangent {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/unifyTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/unifyTangentIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.add-animation {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/addAnimationIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/addAnimationIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.animation-bullet {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationBulletIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationBulletIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.animation-delete {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationDeleteIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationDeleteIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.animation-edit {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/editIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/editIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.animation-end {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationEndIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationEndIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.animation-lastkey {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationLastKeyIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationLastKeyIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain; }\n      #animation-curve-editor .icon.animation-lastkey:hover {\n        background-image: url(" + escape(__webpack_require__(/*! ./assets/animationLastKeyHoverIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationLastKeyHoverIcon.svg")) + "); }\n    #animation-curve-editor .icon.animation-nextkey {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationNextKeyIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationNextKeyIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain; }\n      #animation-curve-editor .icon.animation-nextkey:hover {\n        background-image: url(" + escape(__webpack_require__(/*! ./assets/animationNextKeyHoverIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationNextKeyHoverIcon.svg")) + "); }\n    #animation-curve-editor .icon.animation-options {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationOptionsIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationOptionsIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n      #animation-curve-editor .icon.animation-options:hover {\n        background-color: #888888 !important; }\n    #animation-curve-editor .icon.animation-playfwd {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationPlayFwdIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationPlayFwdIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.animation-playrev {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationPlayRevIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationPlayRevIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.animation-start {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationStartIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationStartIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.animation-stop {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationStopIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationStopIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.animation-triangle {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationTriangleIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationTriangleIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.key-active {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/keyActiveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/keyActiveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.key-inactive {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/keyInactiveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/keyInactiveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.key-selected {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/keySelectedIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/keySelectedIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.loop-active {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/loopActiveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/loopActiveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.loop-inactive {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/loopInactiveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/loopInactiveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.move {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/moveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/moveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.save {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/saveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/saveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.load {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/loadIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/loadIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.checked {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/checkboxCheckedIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/checkboxCheckedIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.unchecked {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/checkboxDefaultIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/checkboxDefaultIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.new-key {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/newKeyIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/newKeyIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.scale {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/scaleIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/scaleIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.scrollbar-handle {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/scrollbarHandleIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/scrollbarHandleIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n  #animation-curve-editor .hidden {\n    display: none; }\n  #animation-curve-editor .notification-area {\n    position: absolute;\n    width: auto;\n    left: 0.53em;\n    bottom: 60px;\n    background-color: #c73228;\n    padding: 16px;\n    border-radius: 5px;\n    color: white;\n    right: 2em;\n    z-index: 1000; }\n    #animation-curve-editor .notification-area button {\n      position: absolute;\n      top: 3px;\n      right: 10px;\n      padding: 0;\n      cursor: pointer;\n      background: transparent;\n      border: 0;\n      -webkit-appearance: none;\n      color: #000;\n      text-shadow: 0 1px 0 #fff;\n      opacity: .4;\n      font-size: 1.8em; }\n  #animation-curve-editor .header {\n    display: flex;\n    padding: 9px;\n    background: #333333;\n    color: white;\n    height: 1.3em;\n    justify-content: space-between;\n    align-items: center;\n    padding-left: 12px;\n    padding-right: 12px; }\n    #animation-curve-editor .header .title {\n      text-transform: uppercase; }\n    #animation-curve-editor .header .close {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      justify-items: center;\n      cursor: pointer; }\n  #animation-curve-editor .actions-wrapper {\n    display: flex;\n    flex-direction: row;\n    justify-content: flex-start;\n    align-items: center;\n    background: #333333; }\n    #animation-curve-editor .actions-wrapper .close {\n      position: absolute;\n      right: 1px; }\n    #animation-curve-editor .actions-wrapper .title-container {\n      display: flex;\n      justify-content: stretch;\n      align-items: center;\n      color: white;\n      width: 220px; }\n      #animation-curve-editor .actions-wrapper .title-container .title {\n        font-size: 15pt; }\n    #animation-curve-editor .actions-wrapper .buttons-container {\n      display: flex; }\n    #animation-curve-editor .actions-wrapper .action-input {\n      display: flex;\n      justify-content: center;\n      flex-direction: row;\n      align-items: center;\n      margin-right: 8px; }\n      #animation-curve-editor .actions-wrapper .action-input input {\n        width: 75px;\n        height: 24px;\n        color: white;\n        font-size: 12px;\n        background: none;\n        border: none;\n        background-color: black;\n        padding: 6px; }\n  #animation-curve-editor .content {\n    display: flex;\n    align-items: flex-start;\n    justify-content: flex-start;\n    flex-direction: column; }\n    #animation-curve-editor .content .row {\n      display: flex;\n      align-items: stretch;\n      justify-content: flex-start;\n      flex-direction: row;\n      width: 100vw;\n      height: 84vh;\n      background-color: #333333; }\n      #animation-curve-editor .content .row .timeline {\n        width: 100vw;\n        background: #333333;\n        display: flex;\n        align-items: center;\n        justify-content: stretch;\n        height: 2.5rem; }\n        #animation-curve-editor .content .row .timeline .display-line {\n          width: 80vw;\n          height: 2em;\n          overflow: hidden;\n          overflow-x: scroll;\n          scrollbar-color: cornflowerblue slategrey;\n          scrollbar-width: thin;\n          margin-right: 1.3em;\n          padding-left: 1em;\n          padding-right: 1em; }\n          #animation-curve-editor .content .row .timeline .display-line::-webkit-scrollbar {\n            height: 0.4em; }\n          #animation-curve-editor .content .row .timeline .display-line::-webkit-scrollbar-track {\n            box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3); }\n          #animation-curve-editor .content .row .timeline .display-line::-webkit-scrollbar-thumb {\n            background-color: cornflowerblue;\n            outline: 1px solid slategrey; }\n        #animation-curve-editor .content .row .timeline .controls {\n          display: flex;\n          justify-content: center;\n          align-items: center;\n          width: 15em; }\n          #animation-curve-editor .content .row .timeline .controls .input-frame input {\n            width: 3em; }\n          #animation-curve-editor .content .row .timeline .controls .button {\n            margin-left: 0.5em;\n            margin-right: 0.5em; }\n    #animation-curve-editor .content .animation-list {\n      margin: 10px;\n      margin-top: 0;\n      margin-bottom: 0;\n      background: #111111;\n      color: white;\n      width: 210px; }\n      #animation-curve-editor .content .animation-list .controls-header {\n        display: flex;\n        background-color: #252525; }\n        #animation-curve-editor .content .animation-list .controls-header .input-fps {\n          display: flex;\n          align-items: center;\n          width: 52px;\n          padding-left: 4px; }\n          #animation-curve-editor .content .animation-list .controls-header .input-fps .numeric input {\n            width: 52px;\n            font-size: 12px;\n            height: 22px;\n            background-color: black;\n            border: none;\n            color: white;\n            text-align: center;\n            font-family: acumin-pro-condensed; }\n            #animation-curve-editor .content .animation-list .controls-header .input-fps .numeric input::-webkit-inner-spin-button, #animation-curve-editor .content .animation-list .controls-header .input-fps .numeric input::-webkit-outer-spin-button {\n              appearance: none;\n              -webkit-appearance: none;\n              margin: 0; }\n          #animation-curve-editor .content .animation-list .controls-header .input-fps p {\n            color: white;\n            font-size: 12px;\n            margin: 0px;\n            position: relative;\n            right: 17px;\n            line-height: 20px;\n            height: 20px;\n            margin-top: -2px; }\n      #animation-curve-editor .content .animation-list .new-animation {\n        display: block;\n        position: absolute;\n        background-color: #111111;\n        height: 367px;\n        z-index: 10; }\n        #animation-curve-editor .content .animation-list .new-animation .sub-header {\n          display: flex;\n          align-items: start;\n          width: 250px;\n          justify-content: space-between; }\n          #animation-curve-editor .content .animation-list .new-animation .sub-header .title {\n            margin: 0px;\n            font-size: 15pt; }\n        #animation-curve-editor .content .animation-list .new-animation .sub-content {\n          background-color: #111111;\n          padding: 10px;\n          display: inline-grid;\n          grid-template-columns: 63px 127px;\n          grid-template-rows: repeat(6, 30px);\n          font-size: 12px; }\n          #animation-curve-editor .content .animation-list .new-animation .sub-content .confirm-buttons {\n            grid-column-start: 2; }\n            #animation-curve-editor .content .animation-list .new-animation .sub-content .confirm-buttons .buttonLine button {\n              width: 60px;\n              height: 20px;\n              background-color: #444444;\n              color: white;\n              font-size: 12px;\n              line-height: 11px;\n              margin: 5px;\n              font-size: 10px;\n              font-family: acumin-pro-condensed;\n              border: none; }\n      #animation-curve-editor .content .animation-list .object-tree {\n        background-color: #111111; }\n        #animation-curve-editor .content .animation-list .object-tree ul {\n          list-style: none;\n          padding-left: 0px;\n          padding: 0px;\n          margin: 0px; }\n          #animation-curve-editor .content .animation-list .object-tree ul li.property {\n            height: 20px;\n            display: flex;\n            flex-wrap: wrap;\n            font-size: 12px; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property.sub {\n              height: auto; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property:before {\n              content: '';\n              background: none; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property p {\n              display: inline;\n              font-size: 12px;\n              margin: 0px;\n              flex: 8;\n              cursor: pointer; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property .spacer {\n              width: 20px;\n              height: 20px; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property .animation-bullet {\n              background-image: url(" + escape(__webpack_require__(/*! ./assets/animationBulletIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationBulletIcon.svg")) + ");\n              background-repeat: no-repeat;\n              background-color: transparent;\n              background-size: contain;\n              color: #7a4ece;\n              width: 10px;\n              margin-left: 18px;\n              margin-right: 2px;\n              height: 20px;\n              background-position-y: 5px; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property .animation-arrow {\n              width: 30px;\n              background-image: url(" + escape(__webpack_require__(/*! ./assets/animationTriangleIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationTriangleIcon.svg")) + ");\n              background-repeat: no-repeat;\n              background-color: transparent;\n              background-size: 10px;\n              background-position-y: center;\n              background-position-x: 18px;\n              cursor: pointer; }\n              #animation-curve-editor .content .animation-list .object-tree ul li.property .animation-arrow.flip {\n                transform: rotate(180deg);\n                background-position: 2px 50%; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property.active {\n              background-color: #444444; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property .handle-indicator {\n              width: 30px; }\n              #animation-curve-editor .content .animation-list .object-tree ul li.property .handle-indicator.show {\n                display: block;\n                background-image: url(" + escape(__webpack_require__(/*! ./assets/keySelectedIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/keySelectedIcon.svg")) + ");\n                background-repeat: no-repeat;\n                background-color: transparent;\n                background-size: 10px;\n                color: white;\n                background-position-x: 9px;\n                background-position-y: 5px; }\n              #animation-curve-editor .content .animation-list .object-tree ul li.property .handle-indicator.hide {\n                display: none; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property ul.sub-list {\n              flex-grow: 1;\n              flex-shrink: 1;\n              flex-basis: 100%; }\n              #animation-curve-editor .content .animation-list .object-tree ul li.property ul.sub-list .property {\n                cursor: pointer; }\n      #animation-curve-editor .content .animation-list .label-input {\n        display: contents; }\n        #animation-curve-editor .content .animation-list .label-input label {\n          text-align: right; }\n        #animation-curve-editor .content .animation-list .label-input input {\n          margin-left: 5px;\n          height: 20px;\n          background-color: #444444;\n          border: none;\n          color: white;\n          padding-left: 3px;\n          font-size: 10px;\n          font-family: acumin-pro-condensed; }\n          #animation-curve-editor .content .animation-list .label-input input:focus {\n            border-radius: 0px;\n            outline-style: auto;\n            outline-color: lightgrey; }\n        #animation-curve-editor .content .animation-list .label-input select {\n          height: 20px;\n          margin-left: 5px;\n          font-size: 10px;\n          background-color: #444444;\n          border: none;\n          color: white;\n          font-family: acumin-pro-condensed; }\n          #animation-curve-editor .content .animation-list .label-input select:focus {\n            border-radius: 0px;\n            outline-style: auto;\n            outline-color: lightgrey; }\n    #animation-curve-editor .content .sample-chart .linear .draggable {\n      cursor: move; }\n    #animation-curve-editor .content .graph-chart {\n      flex: 1 1 0%;\n      overflow-x: scroll;\n      padding-left: 32px;\n      overflow-y: scroll;\n      scroll-behavior: smooth;\n      background-color: #111111;\n      height: 100%; }\n      #animation-curve-editor .content .graph-chart .linear {\n        overflow: visible;\n        border: 1px solid lightgrey;\n        height: 100%; }\n        #animation-curve-editor .content .graph-chart .linear svg {\n          overflow: visible; }\n        #animation-curve-editor .content .graph-chart .linear:focus {\n          outline-color: transparent; }\n        #animation-curve-editor .content .graph-chart .linear line {\n          stroke: #cecece;\n          stroke-width: 0.2; }\n        #animation-curve-editor .content .graph-chart .linear text {\n          fill: #cecece; }\n        #animation-curve-editor .content .graph-chart .linear .control-point {\n          display: none; }\n        #animation-curve-editor .content .graph-chart .linear .control-point.active {\n          display: inline; }\n      #animation-curve-editor .content .graph-chart .playhead-wrapper {\n        position: relative;\n        left: -13px; }\n      #animation-curve-editor .content .graph-chart .playhead {\n        width: fit-content;\n        background-color: #ffc60e;\n        color: black;\n        text-align: center;\n        min-width: 2em;\n        justify-content: center;\n        display: flex;\n        padding: 0.1em;\n        font-size: 0.75em; }\n      #animation-curve-editor .content .graph-chart .playhead-triangle {\n        background-color: transparent;\n        width: 0px;\n        height: 0px;\n        border-left: 13.5px solid transparent;\n        border-right: 13.5px solid transparent;\n        border-top: 12px solid #ffc60e; }\n      #animation-curve-editor .content .graph-chart .playhead-line {\n        width: 2px;\n        height: calc(90vh - 100px);\n        background-color: #ffc60e;\n        position: absolute;\n        margin-left: 12.5px; }\n  #animation-curve-editor .buttonLine {\n    height: 30px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch; }\n    #animation-curve-editor .buttonLine input[type=\"file\"] {\n      display: none; }\n    #animation-curve-editor .buttonLine .file-upload {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center; }\n    #animation-curve-editor .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    #animation-curve-editor .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #animation-curve-editor .buttonLine button {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      cursor: pointer; }\n    #animation-curve-editor .buttonLine button:hover {\n      opacity: 1.0; }\n    #animation-curve-editor .buttonLine button:active {\n      background: #282828; }\n    #animation-curve-editor .buttonLine button:focus {\n      border: 1px solid #337ab7;\n      outline: 0px; }\n", ""]);
 
 // exports
 
@@ -58904,6 +58904,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _notification__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./notification */ "./components/actionTabs/tabs/propertyGrids/animations/notification.tsx");
 /* harmony import */ var _graphActionsBar__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./graphActionsBar */ "./components/actionTabs/tabs/propertyGrids/animations/graphActionsBar.tsx");
 /* harmony import */ var _editorControls__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./editorControls */ "./components/actionTabs/tabs/propertyGrids/animations/editorControls.tsx");
+/* harmony import */ var _animationListTree__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./animationListTree */ "./components/actionTabs/tabs/propertyGrids/animations/animationListTree.tsx");
+
 
 
 
@@ -58924,7 +58926,6 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         _this._heightScale = 100;
         _this._canvasLength = 20;
         _this._svgKeyframes = [];
-        _this._frames = [];
         _this._isPlaying = false;
         _this._entityName = _this.props.entity.id;
         // Review is we really need this refs
@@ -58938,14 +58939,14 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         if (_this.props.entity instanceof babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["TargetedAnimation"]) {
             _this._isTargetedAnimation = true;
             initialSelection = _this.props.entity.animation;
-            initialLerpMode = initialSelection !== undefined ? _this.analizeAnimation(initialSelection) : false;
+            initialLerpMode = initialSelection !== undefined ? _this.analizeAnimationForLerp(initialSelection) : false;
             initialPathData = initialSelection !== undefined ? _this.getPathData(initialSelection) : "";
         }
         else {
             _this._isTargetedAnimation = false;
             var hasAnimations = _this.props.entity.animations !== undefined || _this.props.entity.animations !== null ? _this.props.entity.animations : false;
             initialSelection = hasAnimations !== false ? hasAnimations && hasAnimations[0] : null;
-            initialLerpMode = initialSelection !== undefined ? _this.analizeAnimation(_this.props.entity.animations && initialSelection) : false;
+            initialLerpMode = initialSelection !== undefined ? _this.analizeAnimationForLerp(_this.props.entity.animations && initialSelection) : false;
             initialPathData = initialSelection && _this.getPathData(initialSelection);
             initialPathData = initialPathData === null || initialPathData === undefined ? "" : initialPathData;
         }
@@ -58954,7 +58955,6 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         _this.state = {
             selected: initialSelection,
             isOpen: true,
-            currentPathData: initialPathData,
             svgKeyframes: _this._svgKeyframes,
             currentFrame: 0,
             currentValue: 1,
@@ -58966,11 +58966,11 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
             frameAxisLength: (new Array(_this._canvasLength)).fill(0).map(function (s, i) { return { value: i * 10, label: i * 10 }; }),
             valueAxisLength: (new Array(10)).fill(0).map(function (s, i) { return { value: i * 10, label: valueInd[i] }; }),
             notification: "",
-            lastFrame: 0,
             currentPoint: undefined,
             scale: 1,
             playheadPos: 0,
             isPlaying: _this.isAnimationPlaying(),
+            selectedPathData: []
         };
         return _this;
     }
@@ -59070,9 +59070,95 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         });
         this.setState({ svgKeyframes: updatedKeyframes });
     };
-    AnimationCurveEditorComponent.prototype.renderPoints = function (updatedSvgKeyFrame, index) {
+    AnimationCurveEditorComponent.prototype.updateValuePerCoordinate = function (dataType, value, newValue, coordinate) {
+        if (dataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT) {
+            value = newValue;
+        }
+        if (dataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2) {
+            switch (coordinate) {
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].x:
+                    value.x = newValue;
+                    break;
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].y:
+                    value.y = newValue;
+                    break;
+            }
+        }
+        if (dataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3) {
+            switch (coordinate) {
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].x:
+                    value.x = newValue;
+                    break;
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].y:
+                    value.y = newValue;
+                    break;
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].z:
+                    value.z = newValue;
+                    break;
+            }
+        }
+        if (dataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION) {
+            switch (coordinate) {
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].x:
+                    value.x = newValue;
+                    break;
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].y:
+                    value.y = newValue;
+                    break;
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].z:
+                    value.z = newValue;
+                    break;
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].w:
+                    value.w = newValue;
+                    break;
+            }
+        }
+        if (dataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3) {
+            switch (coordinate) {
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].r:
+                    value.r = newValue;
+                    break;
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].g:
+                    value.g = newValue;
+                    break;
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].b:
+                    value.b = newValue;
+                    break;
+            }
+        }
+        if (dataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4) {
+            switch (coordinate) {
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].r:
+                    value.r = newValue;
+                    break;
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].g:
+                    value.g = newValue;
+                    break;
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].b:
+                    value.b = newValue;
+                    break;
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].a:
+                    value.a = newValue;
+                    break;
+            }
+        }
+        if (dataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_SIZE) {
+            switch (coordinate) {
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].width:
+                    value.width = newValue;
+                    break;
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].g:
+                    value.height = newValue;
+                    break;
+            }
+        }
+        return value;
+    };
+    AnimationCurveEditorComponent.prototype.renderPoints = function (updatedSvgKeyFrame, id) {
         var animation = this.state.selected;
         // Bug: After play/stop we get an extra keyframe at 0
+        var index = parseInt(id.split('_')[3]);
+        var coordinate = parseInt(id.split('_')[2]);
         var keys = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArrays"])(animation.getKeys());
         var newFrame = 0;
         if (updatedSvgKeyFrame.keyframePoint.x !== 0) {
@@ -59084,13 +59170,16 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
             }
         }
         keys[index].frame = newFrame; // This value comes as percentage/frame/time
-        keys[index].value = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2; // this value comes inverted svg from 0 = 100 to 100 = 0
+        // Calculate value for Vector3...
+        var updatedValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2; // this value comes inverted svg from 0 = 100 to 100 = 0
+        keys[index].value = this.updateValuePerCoordinate(animation.dataType, keys[index].value, updatedValue, coordinate);
         if (updatedSvgKeyFrame.isLeftActive) {
             if (updatedSvgKeyFrame.leftControlPoint !== null) {
                 // Rotate 
-                var updatedValue = ((this._heightScale - updatedSvgKeyFrame.leftControlPoint.y) / this._heightScale) * 2;
+                var newValue = ((this._heightScale - updatedSvgKeyFrame.leftControlPoint.y) / this._heightScale) * 2;
                 var keyframeValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2;
-                keys[index].inTangent = keyframeValue - updatedValue;
+                var updatedValue_1 = keyframeValue - newValue;
+                keys[index].inTangent = this.updateValuePerCoordinate(animation.dataType, keys[index].inTangent, updatedValue_1, coordinate);
                 if (!this.state.isBrokenMode) {
                     // Right control point if exists
                     if (updatedSvgKeyFrame.rightControlPoint !== null) {
@@ -59103,9 +59192,10 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         if (updatedSvgKeyFrame.isRightActive) {
             if (updatedSvgKeyFrame.rightControlPoint !== null) {
                 // Rotate 
-                var updatedValue = ((this._heightScale - updatedSvgKeyFrame.rightControlPoint.y) / this._heightScale) * 2;
+                var newValue = ((this._heightScale - updatedSvgKeyFrame.rightControlPoint.y) / this._heightScale) * 2;
                 var keyframeValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2;
-                keys[index].outTangent = keyframeValue - updatedValue;
+                var updatedValue_2 = keyframeValue - newValue;
+                keys[index].outTangent = this.updateValuePerCoordinate(animation.dataType, keys[index].outTangent, updatedValue_2, coordinate);
                 if (!this.state.isBrokenMode) {
                     if (updatedSvgKeyFrame.leftControlPoint !== null) { // Sets opposite value
                         keys[index].inTangent = keys[index].outTangent * -1;
@@ -59114,7 +59204,7 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
             }
         }
         animation.setKeys(keys);
-        this.selectAnimation(animation);
+        this.selectAnimation(animation, coordinate);
     };
     /**
     * Actions
@@ -59226,50 +59316,14 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
             this.selectAnimation(currentAnimation);
         }
     };
-    AnimationCurveEditorComponent.prototype.updateKeyframe = function (keyframe, index) {
-        var _a;
-        var anim = this.state.selected;
-        var keys = [];
-        var svgKeyframes = (_a = this.state.svgKeyframes) === null || _a === void 0 ? void 0 : _a.map(function (k, i) {
-            if (i === index) {
-                k.keyframePoint.x = keyframe.x;
-                k.keyframePoint.y = keyframe.y;
-            }
-            var height = 100;
-            var middle = (height / 2);
-            var keyValue;
-            if (k.keyframePoint.y < middle) {
-                keyValue = 1 + ((100 / k.keyframePoint.y) * .1);
-            }
-            if (k.keyframePoint.y > middle) {
-                keyValue = 1 - ((100 / k.keyframePoint.y) * .1);
-            }
-            keys.push({ frame: k.keyframePoint.x, value: keyValue });
-            return k;
-        });
-        anim.setKeys(keys);
-        this.setState({ svgKeyframes: svgKeyframes });
-    };
     /**
     * Curve Rendering Functions
     * This section handles how to render curves.
     */
-    AnimationCurveEditorComponent.prototype.getAnimationProperties = function (animation) {
-        var easingType, easingMode;
-        var easingFunction = animation.getEasingFunction();
-        if (easingFunction === undefined) {
-            easingType = undefined;
-            easingMode = undefined;
-        }
-        else {
-            easingType = easingFunction.constructor.name;
-            easingMode = easingFunction.getEasingMode();
-        }
-        return { easingType: easingType, easingMode: easingMode };
-    };
     AnimationCurveEditorComponent.prototype.linearInterpolation = function (keyframes, data, middle) {
         var _this = this;
         keyframes.forEach(function (key, i) {
+            // identify type of value and split...
             var point = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](0, 0);
             point.x = key.frame;
             point.y = _this._heightScale - (key.value * middle);
@@ -59281,74 +59335,132 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         return data;
     };
     AnimationCurveEditorComponent.prototype.setKeyframePointLinear = function (point, index) {
+        // here set the ID to a unique id
         var svgKeyframe = { keyframePoint: point, rightControlPoint: null, leftControlPoint: null, id: index.toString(), selected: false, isLeftActive: false, isRightActive: false };
         this._svgKeyframes.push(svgKeyframe);
     };
-    AnimationCurveEditorComponent.prototype.getPathData = function (animation) {
-        if (animation === null) {
-            return "";
-        }
-        // Check if Tangent mode is active and broken mode is active. (Only one tangent moves)
-        var keyframes = animation.getKeys();
-        if (keyframes === undefined) {
-            return "";
-        }
+    AnimationCurveEditorComponent.prototype.flatTangents = function (keyframes, dataType) {
+        var _this = this;
         // Checks if Flat Tangent is active (tangents are set to zero)
+        var flattened;
         if (this.state && this.state.isFlatTangentMode) {
-            keyframes = animation.getKeys().map(function (kf) {
+            flattened = keyframes.map(function (kf) {
                 if (kf.inTangent !== undefined) {
-                    kf.inTangent = 0;
+                    kf.inTangent = _this.returnZero(dataType);
                 }
                 if (kf.outTangent !== undefined) {
-                    kf.outTangent = 0;
+                    kf.outTangent = _this.returnZero(dataType);
                 }
                 return kf;
             });
         }
         else {
-            keyframes = animation.getKeys();
+            flattened = keyframes;
         }
-        var startKey = keyframes[0];
-        var middle = this._heightScale / 2;
-        // START OF LINE/CURVE
-        var data = "M" + startKey.frame + ", " + (this._heightScale - (startKey.value * middle));
-        if (this.state && this.state.lerpMode) {
-            data = this.linearInterpolation(keyframes, data, middle);
+        return flattened;
+    };
+    AnimationCurveEditorComponent.prototype.returnZero = function (dataType) {
+        var type;
+        switch (dataType) {
+            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT:
+                type = 0;
+                break;
+            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3:
+                type = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero();
+                break;
+            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2:
+                type = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Zero();
+                break;
+        }
+        return type;
+    };
+    AnimationCurveEditorComponent.prototype.getValueAsArray = function (valueType, value) {
+        var valueAsArray = [];
+        switch (valueType) {
+            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT:
+                valueAsArray = [value];
+                break;
+            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3:
+                valueAsArray = value.asArray();
+                break;
+            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2:
+                valueAsArray = value.asArray();
+                break;
+            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION:
+                valueAsArray = value.asArray();
+                break;
+            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3:
+                valueAsArray = value.asArray();
+                break;
+            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4:
+                valueAsArray = value.asArray();
+                break;
+            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_SIZE:
+                valueAsArray = [value.width, value.height];
+                break;
+        }
+        return valueAsArray;
+    };
+    AnimationCurveEditorComponent.prototype.getPathData = function (animation) {
+        if (animation === null) {
+            return undefined;
+        }
+        var keyframes = animation.getKeys();
+        if (keyframes === undefined) {
+            return undefined;
         }
         else {
-            if (this.getAnimationData(animation).usesTangents) {
-                data = this.curvePathWithTangents(keyframes, data, middle, animation.dataType);
-            }
-            else {
-                var _a = this.getAnimationProperties(animation), easingMode = _a.easingMode, easingType = _a.easingType;
-                if (easingType !== undefined && easingMode !== undefined) {
-                    var easingFunction = animation.getEasingFunction();
-                    data = this.curvePath(keyframes, data, middle, easingFunction);
+            var _a = this.getAnimationData(animation), easingMode = _a.easingMode, easingType = _a.easingType, usesTangents = _a.usesTangents, valueType = _a.valueType, highestFrame = _a.highestFrame, name_1 = _a.name, targetProperty = _a.targetProperty;
+            keyframes = this.flatTangents(keyframes, valueType);
+            var startKey = keyframes[0];
+            var middle = this._heightScale / 2;
+            var collection = [];
+            var colors = ['red', 'green', 'blue', 'white', '#7a4ece'];
+            var startValue = this.getValueAsArray(valueType, startKey.value);
+            for (var d = 0; d < startValue.length; d++) {
+                var id = name_1 + "_" + targetProperty + "_" + d;
+                var curveColor = valueType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT ? colors[4] : colors[d];
+                // START OF LINE/CURVE
+                var data = "M" + startKey.frame + ", " + (this._heightScale - (startValue[d] * middle)); // 
+                if (this.state && this.state.lerpMode) {
+                    data = this.linearInterpolation(keyframes, data, middle);
                 }
                 else {
-                    if (this.state !== undefined) {
-                        var emptyTangents = keyframes.map(function (kf, i) {
-                            if (i === 0) {
-                                kf.outTangent = 0;
-                            }
-                            else if (i === keyframes.length - 1) {
-                                kf.inTangent = 0;
-                            }
-                            else {
-                                kf.inTangent = 0;
-                                kf.outTangent = 0;
-                            }
-                            return kf;
-                        });
-                        data = this.curvePathWithTangents(emptyTangents, data, middle, animation.dataType);
+                    if (usesTangents) {
+                        data = this.curvePathWithTangents(keyframes, data, middle, valueType, d, id);
                     }
                     else {
-                        data = this.linearInterpolation(keyframes, data, middle);
+                        if (easingType !== undefined && easingMode !== undefined) {
+                            var easingFunction = animation.getEasingFunction();
+                            data = this.curvePath(keyframes, data, middle, easingFunction);
+                        }
+                        else {
+                            if (this.state !== undefined) {
+                                var emptyTangents = keyframes.map(function (kf, i) {
+                                    if (i === 0) {
+                                        kf.outTangent = 0;
+                                    }
+                                    else if (i === keyframes.length - 1) {
+                                        kf.inTangent = 0;
+                                    }
+                                    else {
+                                        kf.inTangent = 0;
+                                        kf.outTangent = 0;
+                                    }
+                                    return kf;
+                                });
+                                data = this.curvePathWithTangents(emptyTangents, data, middle, valueType, d, id);
+                            }
+                            else {
+                                data = this.linearInterpolation(keyframes, data, middle);
+                            }
+                        }
                     }
                 }
+                collection.push({ pathData: data, pathLength: highestFrame, domCurve: react__WEBPACK_IMPORTED_MODULE_1__["createRef"](), color: curveColor, id: id });
             }
+            return collection;
         }
-        return data;
     };
     AnimationCurveEditorComponent.prototype.getAnimationData = function (animation) {
         // General Props
@@ -59359,62 +59471,37 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         var targetPropertyPath = animation.targetPropertyPath;
         var framesPerSecond = animation.framePerSecond;
         var highestFrame = animation.getHighestFrame();
-        var serialized = animation.serialize();
+        //let serialized = animation.serialize();
         var usesTangents = animation.getKeys().find(function (kf) { return kf.hasOwnProperty('inTangent') || kf.hasOwnProperty('outTangent'); }) !== undefined ? true : false;
-        return { loopMode: loopMode, name: name, blendingSpeed: blendingSpeed, targetPropertyPath: targetPropertyPath, targetProperty: targetProperty, framesPerSecond: framesPerSecond, highestFrame: highestFrame, serialized: serialized, usesTangents: usesTangents };
-    };
-    AnimationCurveEditorComponent.prototype.drawAllFrames = function (initialKey, endKey, easingFunction) {
-        var i = initialKey.frame;
-        for (i; i < endKey.frame; i++) {
-            (i * 100 / endKey.frame);
-            var dy = easingFunction.easeInCore(i);
-            var value = this._heightScale - (dy * (this._heightScale / 2));
-            this._frames.push(new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](i, value));
+        var valueType = animation.dataType;
+        // easing properties
+        var easingType, easingMode;
+        var easingFunction = animation.getEasingFunction();
+        if (easingFunction === undefined) {
+            easingType = undefined;
+            easingMode = undefined;
         }
+        else {
+            easingType = easingFunction.constructor.name;
+            easingMode = easingFunction.getEasingMode();
+        }
+        return { loopMode: loopMode, name: name, blendingSpeed: blendingSpeed, targetPropertyPath: targetPropertyPath, targetProperty: targetProperty, framesPerSecond: framesPerSecond, highestFrame: highestFrame, usesTangents: usesTangents, easingType: easingType, easingMode: easingMode, valueType: valueType };
     };
-    AnimationCurveEditorComponent.prototype.curvePathFlat = function (keyframes, data, middle, dataType) {
-        var _this = this;
-        keyframes.forEach(function (key, i) {
-            if (dataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT) {
-                var pointA = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](0, 0);
-                if (i === 0) {
-                    pointA.set(key.frame, _this._heightScale - (key.value * middle));
-                    _this.setKeyframePoint([pointA], i, keyframes.length);
-                }
-                else {
-                    pointA.set(keyframes[i - 1].frame, _this._heightScale - (keyframes[i - 1].value * middle));
-                    var defaultWeight = 10;
-                    var nextKeyframe = keyframes[i + 1];
-                    var prevKeyframe = keyframes[i - 1];
-                    if (nextKeyframe !== undefined) {
-                        var distance = keyframes[i + 1].frame - key.frame;
-                        defaultWeight = distance * .33;
-                    }
-                    if (prevKeyframe !== undefined) {
-                        var distance = key.frame - keyframes[i - 1].frame;
-                        defaultWeight = distance * .33;
-                    }
-                    var tangentA = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](pointA.x + defaultWeight, pointA.y);
-                    var pointB = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, _this._heightScale - (key.value * middle));
-                    var tangentB = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](pointB.x - defaultWeight, pointB.y);
-                    _this.setKeyframePoint([pointA, tangentA, tangentB, pointB], i, keyframes.length);
-                    data += " C" + tangentA.x + " " + tangentA.y + " " + tangentB.x + " " + tangentB.y + " " + pointB.x + " " + pointB.y + " ";
-                }
-            }
-        });
-        return data;
-    };
-    AnimationCurveEditorComponent.prototype.curvePathWithTangents = function (keyframes, data, middle, type) {
+    AnimationCurveEditorComponent.prototype.curvePathWithTangents = function (keyframes, data, middle, type, coordinate, animationName) {
         var _this = this;
         keyframes.forEach(function (key, i) {
             var _a;
+            // Create a unique id for curve
+            var curveId = animationName + "_" + i;
+            // identify type of value and split...
+            var keyframe_valueAsArray = _this.getValueAsArray(type, key.value)[coordinate];
             var svgKeyframe;
             var outTangent;
             var inTangent;
             var defaultWeight = 5;
-            var inT = key.inTangent === undefined ? null : key.inTangent;
-            var outT = key.outTangent === undefined ? null : key.outTangent;
-            var y = _this._heightScale - (key.value * middle);
+            var inT = key.inTangent === undefined ? null : _this.getValueAsArray(type, key.inTangent)[coordinate];
+            var outT = key.outTangent === undefined ? null : _this.getValueAsArray(type, key.outTangent)[coordinate];
+            var y = _this._heightScale - (keyframe_valueAsArray * middle);
             var nextKeyframe = keyframes[i + 1];
             var prevKeyframe = keyframes[i - 1];
             if (nextKeyframe !== undefined) {
@@ -59440,13 +59527,13 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
                 outTangent = null;
             }
             if (i === 0) {
-                svgKeyframe = { keyframePoint: new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, _this._heightScale - (key.value * middle)), rightControlPoint: outTangent, leftControlPoint: null, id: i.toString(), selected: false, isLeftActive: false, isRightActive: false };
+                svgKeyframe = { keyframePoint: new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, _this._heightScale - (keyframe_valueAsArray * middle)), rightControlPoint: outTangent, leftControlPoint: null, id: curveId, selected: false, isLeftActive: false, isRightActive: false };
                 if (outTangent !== null) {
                     data += " C" + outTangent.x + " " + outTangent.y + " ";
                 }
             }
             else {
-                svgKeyframe = { keyframePoint: new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, _this._heightScale - (key.value * middle)), rightControlPoint: outTangent, leftControlPoint: inTangent, id: i.toString(), selected: false, isLeftActive: false, isRightActive: false };
+                svgKeyframe = { keyframePoint: new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, _this._heightScale - (keyframe_valueAsArray * middle)), rightControlPoint: outTangent, leftControlPoint: inTangent, id: curveId, selected: false, isLeftActive: false, isRightActive: false };
                 if (outTangent !== null && inTangent !== null) {
                     data += " " + inTangent.x + " " + inTangent.y + " " + svgKeyframe.keyframePoint.x + " " + svgKeyframe.keyframePoint.y + " C" + outTangent.x + " " + outTangent.y + " ";
                 }
@@ -59455,7 +59542,7 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
                 }
             }
             if (_this.state) {
-                var prev = (_a = _this.state.svgKeyframes) === null || _a === void 0 ? void 0 : _a.find(function (kf) { return kf.id === i.toString(); });
+                var prev = (_a = _this.state.svgKeyframes) === null || _a === void 0 ? void 0 : _a.find(function (kf) { return kf.id === curveId; });
                 if (prev) {
                     svgKeyframe.isLeftActive = prev === null || prev === void 0 ? void 0 : prev.isLeftActive;
                     svgKeyframe.isRightActive = prev === null || prev === void 0 ? void 0 : prev.isRightActive;
@@ -59472,6 +59559,7 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         var u = .25;
         var v = .75;
         keyframes.forEach(function (key, i) {
+            // identify type of value and split...
             // Gets previous initial point of curve segment
             var pointA = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](0, 0);
             if (i === 0) {
@@ -59565,20 +59653,42 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
     * Core functions
     * This section handles main Curve Editor Functions.
     */
-    AnimationCurveEditorComponent.prototype.selectAnimation = function (animation, axis) {
-        if (!axis) {
+    AnimationCurveEditorComponent.prototype.selectAnimation = function (animation, coordinate) {
+        var _a;
+        this._svgKeyframes = [];
+        var updatedPath;
+        var filteredSvgKeys;
+        if (coordinate === undefined) {
             this.playStopAnimation();
-            this._svgKeyframes = [];
-            var pathData = this.getPathData(animation);
-            var lastFrame = animation.getHighestFrame();
-            if (pathData === "") {
+            updatedPath = this.getPathData(animation);
+            if (updatedPath === undefined) {
                 console.log("no keyframes in this animation");
             }
-            this.setState({ selected: animation, currentPathData: pathData, svgKeyframes: this._svgKeyframes, lastFrame: lastFrame });
         }
         else {
-            console.log(axis); // This will handle animations that are not Float type
+            var curves = this.getPathData(animation);
+            if (curves === undefined) {
+                console.log("no keyframes in this animation");
+            }
+            updatedPath = [];
+            filteredSvgKeys = (_a = this._svgKeyframes) === null || _a === void 0 ? void 0 : _a.filter(function (curve) {
+                var id = parseInt(curve.id.split('_')[2]);
+                if (id === coordinate) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            });
+            curves === null || curves === void 0 ? void 0 : curves.map(function (curve) {
+                var id = parseInt(curve.id.split('_')[2]);
+                if (id === coordinate) {
+                    updatedPath.push(curve);
+                }
+            });
         }
+        // check for empty svgKeyframes, lastframe, selected
+        this.setState({ selected: animation, svgKeyframes: coordinate !== undefined ? filteredSvgKeys : this._svgKeyframes, selectedPathData: updatedPath });
     };
     AnimationCurveEditorComponent.prototype.isAnimationPlaying = function () {
         var target = this.props.entity;
@@ -59586,34 +59696,6 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
             target = this.props.entity.target;
         }
         return this.props.scene.getAllAnimatablesByTarget(target).length > 0;
-    };
-    AnimationCurveEditorComponent.prototype.playPause = function (direction) {
-        if (this.state.selected) {
-            var target = this.props.entity;
-            if (this.props.entity instanceof babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["TargetedAnimation"]) {
-                target = this.props.entity.target;
-            }
-            if (this.state.isPlaying) {
-                this.props.scene.stopAnimation(target);
-                this.setState({ isPlaying: false });
-                this._isPlaying = false;
-                this.forceUpdate();
-            }
-            else {
-                var keys = this.state.selected.getKeys();
-                var firstFrame = keys[0].frame;
-                var LastFrame = keys[keys.length - 1].frame;
-                if (direction === 1) {
-                    this.props.scene.beginAnimation(target, firstFrame, LastFrame, true);
-                }
-                if (direction === -1) {
-                    this.props.scene.beginAnimation(target, LastFrame, firstFrame, true);
-                }
-                this._isPlaying = true;
-                this.setState({ isPlaying: true });
-                this.forceUpdate();
-            }
-        }
     };
     AnimationCurveEditorComponent.prototype.playStopAnimation = function () {
         var target = this.props.entity;
@@ -59630,11 +59712,10 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
             return false;
         }
     };
-    AnimationCurveEditorComponent.prototype.analizeAnimation = function (animation) {
+    AnimationCurveEditorComponent.prototype.analizeAnimationForLerp = function (animation) {
         if (animation !== null) {
-            var _a = this.getAnimationProperties(animation), easingMode = _a.easingMode, easingType = _a.easingType;
-            var hasDefinedTangents = this.getAnimationData(animation).usesTangents;
-            if (easingType === undefined && easingMode === undefined && !hasDefinedTangents) {
+            var _a = this.getAnimationData(animation), easingMode = _a.easingMode, easingType = _a.easingType, usesTangents = _a.usesTangents;
+            if (easingType === undefined && easingMode === undefined && !usesTangents) {
                 return true;
             }
             else {
@@ -59672,8 +59753,37 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
             this.selectAnimation(animation);
         }
     };
+    AnimationCurveEditorComponent.prototype.playPause = function (direction) {
+        if (this.state.selected) {
+            var target = this.props.entity;
+            if (this.props.entity instanceof babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["TargetedAnimation"]) {
+                target = this.props.entity.target;
+            }
+            if (this.state.isPlaying) {
+                this.props.scene.stopAnimation(target);
+                this.setState({ isPlaying: false });
+                this._isPlaying = false;
+                this.forceUpdate();
+            }
+            else {
+                var keys = this.state.selected.getKeys();
+                var firstFrame = keys[0].frame;
+                var LastFrame = keys[keys.length - 1].frame;
+                if (direction === 1) {
+                    this.props.scene.beginAnimation(target, firstFrame, LastFrame, true);
+                }
+                if (direction === -1) {
+                    this.props.scene.beginAnimation(target, LastFrame, firstFrame, true);
+                }
+                this._isPlaying = true;
+                this.setState({ isPlaying: true });
+                this.forceUpdate();
+            }
+        }
+    };
     AnimationCurveEditorComponent.prototype.render = function () {
         var _this = this;
+        var _a;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "animation-curve-editor" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_notification__WEBPACK_IMPORTED_MODULE_6__["Notification"], { message: this.state.notification, open: this.state.notification !== "" ? true : false, close: function () { return _this.clearNotification(); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_graphActionsBar__WEBPACK_IMPORTED_MODULE_7__["GraphActionsBar"], { enabled: this.state.selected === null || this.state.selected === undefined ? false : true, title: this._entityName, close: this.props.close, currentValue: this.state.currentValue, currentFrame: this.state.currentFrame, handleFrameChange: function (e) { return _this.handleFrameChange(e); }, handleValueChange: function (e) { return _this.handleValueChange(e); }, addKeyframe: function () { return _this.addKeyframeClick(); }, removeKeyframe: function () { return _this.removeKeyframeClick(); }, brokenMode: this.state.isBrokenMode, brokeTangents: function () { return _this.setBrokenMode(); }, lerpMode: this.state.lerpMode, setLerpMode: function () { return _this.setLerpMode(); }, flatTangent: function () { return _this.setFlatTangent(); } }),
@@ -59682,7 +59792,7 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_editorControls__WEBPACK_IMPORTED_MODULE_8__["EditorControls"], { selectAnimation: function (animation, axis) { return _this.selectAnimation(animation, axis); }, isTargetedAnimation: this._isTargetedAnimation, entity: this.props.entity, selected: this.state.selected, setNotificationMessage: function (message) { _this.setState({ notification: message }); } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { ref: this._graphCanvas, className: "graph-chart", onWheel: function (e) { return _this.zoom(e); } },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_playhead__WEBPACK_IMPORTED_MODULE_5__["Playhead"], { frame: this.state.currentFrame, offset: this.state.playheadOffset }),
-                        this.state.svgKeyframes && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_svgDraggableArea__WEBPACK_IMPORTED_MODULE_3__["SvgDraggableArea"], { ref: this._svgCanvas, selectKeyframe: function (id) { return _this.selectKeyframe(id); }, viewBoxScale: this.state.frameAxisLength.length, scale: this.state.scale, keyframeSvgPoints: this.state.svgKeyframes, selectedControlPoint: function (type, id) { return _this.selectedControlPoint(type, id); }, updatePosition: function (updatedSvgKeyFrame, index) { return _this.renderPoints(updatedSvgKeyFrame, index); } },
+                        this.state.svgKeyframes && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_svgDraggableArea__WEBPACK_IMPORTED_MODULE_3__["SvgDraggableArea"], { ref: this._svgCanvas, selectKeyframe: function (id) { return _this.selectKeyframe(id); }, viewBoxScale: this.state.frameAxisLength.length, scale: this.state.scale, keyframeSvgPoints: this.state.svgKeyframes, selectedControlPoint: function (type, id) { return _this.selectedControlPoint(type, id); }, updatePosition: function (updatedSvgKeyFrame, id) { return _this.renderPoints(updatedSvgKeyFrame, id); } },
                             this.state.frameAxisLength.map(function (f, i) {
                                 return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { key: i },
                                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { x: f.value, y: "-2", dx: "-1em", style: { font: 'italic 0.2em sans-serif', fontSize: 0.2 * _this.state.scale + "em" } }, f.value),
@@ -59692,11 +59802,9 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
                                 return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { key: i },
                                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { x: "-3", y: f.value, dx: "-1em", style: { font: 'italic 0.2em sans-serif', fontSize: 0.2 * _this.state.scale + "em" } }, f.label.toFixed(1)),
                                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: "0", y1: f.value, x2: "100%", y2: f.value }));
-                            }),
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("path", { ref: this._selectedCurve, pathLength: this.state.lastFrame, id: "curve", d: this.state.currentPathData, style: { stroke: 'red', fill: 'none', strokeWidth: '0.5' } }),
-                            this._frames && this._frames.map(function (frame) {
-                                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { x: frame.x, y: frame.y, style: { overflow: 'visible' } },
-                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("circle", { cx: "0", cy: "0", r: "2", stroke: "black", strokeWidth: "1", fill: "white" }));
+                            }), (_a = this.state.selectedPathData) === null || _a === void 0 ? void 0 :
+                            _a.map(function (curve, i) {
+                                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("path", { key: i, ref: curve.domCurve, pathLength: curve.pathLength, id: "curve", d: curve.pathData, style: { stroke: curve.color, fill: 'none', strokeWidth: '0.5' } });
                             })))),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "row" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_timeline__WEBPACK_IMPORTED_MODULE_4__["Timeline"], { currentFrame: this.state.currentFrame, playPause: function (direction) { return _this.playPause(direction); }, isPlaying: this.state.isPlaying, dragKeyframe: function (frame, index) { return _this.updateFrameInKeyFrame(frame, index); }, onCurrentFrameChange: function (frame) { return _this.changeCurrentFrame(frame); }, keyframes: this.state.selected && this.state.selected.getKeys(), selected: this.state.selected && this.state.selected.getKeys()[0] })))));
@@ -59845,11 +59953,12 @@ var AnimationGroupGridComponent = /** @class */ (function (_super) {
 /*!***********************************************************************************!*\
   !*** ./components/actionTabs/tabs/propertyGrids/animations/animationListTree.tsx ***!
   \***********************************************************************************/
-/*! exports provided: AnimationListTree */
+/*! exports provided: SelectedCoordinate, AnimationListTree */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SelectedCoordinate", function() { return SelectedCoordinate; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AnimationListTree", function() { return AnimationListTree; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
@@ -59862,6 +59971,19 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+var SelectedCoordinate;
+(function (SelectedCoordinate) {
+    SelectedCoordinate[SelectedCoordinate["x"] = 0] = "x";
+    SelectedCoordinate[SelectedCoordinate["y"] = 1] = "y";
+    SelectedCoordinate[SelectedCoordinate["z"] = 2] = "z";
+    SelectedCoordinate[SelectedCoordinate["w"] = 3] = "w";
+    SelectedCoordinate[SelectedCoordinate["r"] = 0] = "r";
+    SelectedCoordinate[SelectedCoordinate["g"] = 1] = "g";
+    SelectedCoordinate[SelectedCoordinate["b"] = 2] = "b";
+    SelectedCoordinate[SelectedCoordinate["a"] = 3] = "a";
+    SelectedCoordinate[SelectedCoordinate["width"] = 0] = "width";
+    SelectedCoordinate[SelectedCoordinate["height"] = 1] = "height";
+})(SelectedCoordinate || (SelectedCoordinate = {}));
 var AnimationListTree = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AnimationListTree, _super);
     function AnimationListTree(props) {
@@ -59870,7 +59992,7 @@ var AnimationListTree = /** @class */ (function (_super) {
         var animationList = _this.props.entity.animations && ((_a = _this.props.entity.animations) === null || _a === void 0 ? void 0 : _a.map(function (animation, i) {
             return { index: i, name: animation.name, property: animation.targetProperty, selected: false, open: false };
         }));
-        _this.state = { list: animationList !== null && animationList !== void 0 ? animationList : [] };
+        _this.state = { list: animationList !== null && animationList !== void 0 ? animationList : [], selectedCoordinate: 0, selectedAnimation: 0 };
         return _this;
     }
     AnimationListTree.prototype.deleteAnimation = function () {
@@ -59904,6 +60026,10 @@ var AnimationListTree = /** @class */ (function (_super) {
         var item = this.state.list[index];
         item.open = !item.open;
     };
+    AnimationListTree.prototype.setSelectedCoordinate = function (animation, coordinate, index) {
+        this.setState({ selectedCoordinate: coordinate, selectedAnimation: index });
+        this.props.selectAnimation(animation, SelectedCoordinate.x);
+    };
     AnimationListTree.prototype.setListItem = function (animation, i) {
         var _this = this;
         var element;
@@ -59927,22 +60053,22 @@ var AnimationListTree = /** @class */ (function (_super) {
                             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "Y"))));
                 break;
             case babylonjs_Animations_animationGroup__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3:
-                element = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { className: this.props.selected && this.props.selected.name === animation.name ? 'property sub active' : 'property sub', key: i, onClick: function () { return _this.props.selectAnimation(animation, 'Vector3'); } },
+                element = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { className: this.props.selected && this.props.selected.name === animation.name ? 'property sub active' : 'property sub', key: i },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "animation-arrow " + (this.state.list[i].open ? '' : 'flip'), onClick: function () { return _this.toggleProperty(i); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null, animation.targetProperty),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", { onClick: function () { return _this.props.selectAnimation(animation); } }, animation.targetProperty),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__["IconButtonLineComponent"], { tooltip: "Options", icon: "small animation-options", onClick: function () { return _this.editAnimation(); } }),
                     !(this.props.entity instanceof babylonjs_Animations_animationGroup__WEBPACK_IMPORTED_MODULE_2__["TargetedAnimation"]) ? this.props.selected && this.props.selected.name === animation.name ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__["IconButtonLineComponent"], { tooltip: "Remove", icon: "small animation-delete", onClick: function () { return _this.deleteAnimation(); } }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "spacer" }) : null,
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("ul", { className: "sub-list " + (this.state.list[i].open ? '' : 'hidden') },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_x", className: "property", style: { color: '#db3e3e' }, onClick: function () { return _this.props.selectAnimation(animation, 'x'); } },
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "handle-indicator " + '' }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_x", id: i + "_x", className: "property", style: { color: '#db3e3e' }, onClick: function () { return _this.setSelectedCoordinate(animation, SelectedCoordinate.x, i); } },
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "handle-indicator " + (this.state.selectedCoordinate === SelectedCoordinate.x && this.state.selectedAnimation === i ? 'show' : 'hide') }),
                             animation.targetProperty,
                             " X"),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_y", className: "property", style: { color: '#51e22d' }, onClick: function () { return _this.props.selectAnimation(animation, 'y'); } },
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "handle-indicator " + '' }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_y", id: i + "_y", className: "property", style: { color: '#51e22d' }, onClick: function () { return _this.setSelectedCoordinate(animation, SelectedCoordinate.y, i); } },
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "handle-indicator " + (this.state.selectedCoordinate === SelectedCoordinate.y && this.state.selectedAnimation === i ? 'show' : 'hide') }),
                             animation.targetProperty,
                             " Y"),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_z", className: "property", style: { color: '#00a3ff' }, onClick: function () { return _this.props.selectAnimation(animation, 'z'); } },
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "handle-indicator " + '' }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_z", id: i + "_z", className: "property", style: { color: '#00a3ff' }, onClick: function () { return _this.setSelectedCoordinate(animation, SelectedCoordinate.z, i); } },
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "handle-indicator " + (this.state.selectedCoordinate === SelectedCoordinate.z && this.state.selectedAnimation === i ? 'show' : 'hide') }),
                             animation.targetProperty,
                             " Z")));
                 break;
@@ -60996,7 +61122,7 @@ var SvgDraggableArea = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SvgDraggableArea, _super);
     function SvgDraggableArea(props) {
         var _this = _super.call(this, props) || this;
-        _this._currentPointIndex = -1;
+        _this._currentPointId = "";
         _this._isCurrentPointControl = "";
         _this._draggableArea = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         _this._panStart = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Vector2"](0, 0);
@@ -61018,7 +61144,7 @@ var SvgDraggableArea = /** @class */ (function (_super) {
         e.preventDefault();
         if (e.target.classList.contains("draggable")) {
             this._active = true;
-            this._currentPointIndex = parseInt(e.target.getAttribute('data-id'));
+            this._currentPointId = e.target.getAttribute('data-id');
             if (e.target.classList.contains("control-point")) {
                 this._isCurrentPointControl = e.target.getAttribute("type");
             }
@@ -61030,29 +61156,33 @@ var SvgDraggableArea = /** @class */ (function (_super) {
         }
     };
     SvgDraggableArea.prototype.drag = function (e) {
+        var _this = this;
         if (this._active) {
             e.preventDefault();
             var coord = this.getMousePosition(e);
             if (coord !== undefined) {
                 var newPoints = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArrays"])(this.props.keyframeSvgPoints);
-                // Check for NaN values here. 
-                if (this._isCurrentPointControl === "left") {
-                    newPoints[this._currentPointIndex].leftControlPoint = coord;
+                var point = newPoints.find(function (kf) { return kf.id === _this._currentPointId; });
+                if (point) {
+                    // Check for NaN values here. 
+                    if (this._isCurrentPointControl === "left") {
+                        point.leftControlPoint = coord;
+                    }
+                    else if (this._isCurrentPointControl === "right") {
+                        point.rightControlPoint = coord;
+                    }
+                    else {
+                        point.keyframePoint = coord;
+                    }
+                    this.props.updatePosition(point, this._currentPointId);
                 }
-                else if (this._isCurrentPointControl === "right") {
-                    newPoints[this._currentPointIndex].rightControlPoint = coord;
-                }
-                else {
-                    newPoints[this._currentPointIndex].keyframePoint = coord;
-                }
-                this.props.updatePosition(newPoints[this._currentPointIndex], this._currentPointIndex);
             }
         }
     };
     SvgDraggableArea.prototype.dragEnd = function (e) {
         e.preventDefault();
         this._active = false;
-        this._currentPointIndex = -1;
+        this._currentPointId = "";
         this._isCurrentPointControl = "";
         if (e.target.classList.contains("pannable")) {
             if (this._panStart.x !== 0 && this._panStart.y !== 0) {
@@ -61143,7 +61273,7 @@ var SvgDraggableArea = /** @class */ (function (_super) {
                 onClick: function (e) { return _this.focus(e); }, viewBox: "0 0 " + Math.round(this.props.scale * 200) + " " + Math.round(this.props.scale * 100) },
                 this.props.children,
                 this.props.keyframeSvgPoints.map(function (keyframe, i) {
-                    return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_keyframeSvgPoint__WEBPACK_IMPORTED_MODULE_3__["KeyframeSvgPoint"], { key: i, id: i.toString(), keyframePoint: keyframe.keyframePoint, leftControlPoint: keyframe.leftControlPoint, rightControlPoint: keyframe.rightControlPoint, isLeftActive: keyframe.isLeftActive, isRightActive: keyframe.isRightActive, selected: keyframe.selected, selectedControlPoint: function (type, id) { return _this.props.selectedControlPoint(type, id); }, selectKeyframe: function (id) { return _this.props.selectKeyframe(id); } });
+                    return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_keyframeSvgPoint__WEBPACK_IMPORTED_MODULE_3__["KeyframeSvgPoint"], { key: keyframe.id + "_" + i, id: keyframe.id, keyframePoint: keyframe.keyframePoint, leftControlPoint: keyframe.leftControlPoint, rightControlPoint: keyframe.rightControlPoint, isLeftActive: keyframe.isLeftActive, isRightActive: keyframe.isRightActive, selected: keyframe.selected, selectedControlPoint: function (type, id) { return _this.props.selectedControlPoint(type, id); }, selectKeyframe: function (id) { return _this.props.selectKeyframe(id); } });
                 }))));
     };
     return SvgDraggableArea;
@@ -61918,7 +62048,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/control");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
@@ -62224,7 +62354,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonControlPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/controls/control");
+/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
@@ -62638,7 +62768,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonControlPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/controls/control");
+/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
@@ -64106,7 +64236,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
 /* harmony import */ var _lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../lines/fileButtonLineComponent */ "./components/actionTabs/lines/fileButtonLineComponent.tsx");
 /* harmony import */ var _lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../lines/valueLineComponent */ "./components/actionTabs/lines/valueLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/controls/control");
+/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/adtInstrumentation");
 /* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__);
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
 /* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
@@ -71146,14 +71276,14 @@ var Tools = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "babylonjs-gui/2D/controls/control":
+/***/ "babylonjs-gui/2D/adtInstrumentation":
 /*!************************************************************************************************************************!*\
   !*** external {"root":["BABYLON","GUI"],"commonjs":"babylonjs-gui","commonjs2":"babylonjs-gui","amd":"babylonjs-gui"} ***!
   \************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_control__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__;
 
 /***/ }),
 

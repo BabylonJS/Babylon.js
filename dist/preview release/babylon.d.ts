@@ -51438,6 +51438,23 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    export class NativeShaderProcessor extends WebGL2ShaderProcessor {
+        private _genericAttributeLocation;
+        private _varyingLocationCount;
+        private _varyingLocationMap;
+        private _replacements;
+        private _textureCount;
+        private _uniforms;
+        lineProcessor(line: string): string;
+        attributeProcessor(attribute: string): string;
+        varyingProcessor(varying: string, isFragment: boolean): string;
+        uniformProcessor(uniform: string): string;
+        preProcessor(code: string, defines: string[], isFragment: boolean): string;
+        postProcessor(code: string, defines: string[], isFragment: boolean): string;
+    }
+}
+declare module BABYLON {
     /**
      * Class used to inline functions in shader code
     */
