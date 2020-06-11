@@ -128,6 +128,9 @@
             background-color: transparent;
             background-size: contain;
             color: white;
+            width: 20px;
+            cursor: pointer;
+            background-position: center;
         }
 
         &.animation-lastkey {
@@ -135,7 +138,9 @@
             background-repeat: no-repeat;
             background-color: transparent;
             background-size: contain;
-
+            width: 20px;
+            cursor: pointer;
+            background-position: center;
             &:hover{
                 background-image: url('./assets/animationLastKeyHoverIcon.svg');
             }
@@ -146,7 +151,9 @@
             background-repeat: no-repeat;
             background-color: transparent;
             background-size: contain;
-
+            width: 20px;
+            cursor: pointer;
+            background-position: center;
             &:hover{
                 background-image: url('./assets/animationNextKeyHoverIcon.svg');
             }
@@ -158,6 +165,8 @@
             background-color: transparent;
             background-size: contain;
             color: white;
+            cursor: pointer;
+            background-position: center;
             &:hover{
                 background-color: #888888 !important;
             }
@@ -169,6 +178,13 @@
             background-color: transparent;
             background-size: contain;
             color: white;
+            background-position: center;
+            width: 20px;
+            cursor: pointer;
+            background-position: center;
+            &:hover {
+                background-image: url('./assets/animationPlayFwdHoverIcon.svg');
+            }
         }
 
         &.animation-playrev {
@@ -177,6 +193,13 @@
             background-color: transparent;
             background-size: contain;
             color: white;
+            background-position: center;
+            width: 20px;
+            cursor: pointer;
+            background-position: center;
+            &:hover {
+                background-image: url('./assets/animationPlayRevHoverIcon.svg');
+            }
         }
 
         &.animation-start {
@@ -185,6 +208,10 @@
             background-color: transparent;
             background-size: contain;
             color: white;
+            background-position: center;
+            cursor: pointer;
+            background-position: center;
+            width: 20px;
         }
 
         &.animation-stop {
@@ -193,6 +220,10 @@
             background-color: transparent;
             background-size: contain;
             color: white;
+            background-position: center;
+            cursor: pointer;
+            background-position: center;
+            width: 20px;
         }
 
         &.animation-triangle {
@@ -373,6 +404,7 @@
         justify-content: flex-start;
         align-items: center;
         background: #333333;
+        height: 40px;
 
         .close {
             position: absolute;
@@ -419,14 +451,23 @@
         align-items: flex-start;
         justify-content: flex-start;
         flex-direction: column;
+        height: 462px;
 
         .row {
+            width: 1024px;
+            height: 427px;
+            display: flex;
+            flex-flow: row;
+            background-color: #333333;
+        }
+
+        .row-bottom {
             display: flex;
             align-items: stretch;
             justify-content: flex-start;
             flex-direction: row;
-            width: 100vw;
-            height: 84vh;
+            width: 1024px;
+            height: 45px;
             background-color: #333333;
 
             .timeline{
@@ -438,15 +479,12 @@
                 height: 2.5rem;
 
                 .display-line {
-                    width: 80vw;
-                    height: 2em;
+                    width: 75vw;
+                    height: 40px;
                     overflow: hidden;
-                    overflow-x: scroll;
-                    scrollbar-color: cornflowerblue slategrey;
-                    scrollbar-width: thin;
-                    margin-right: 1.3em;
-                    padding-left: 1em;
-                    padding-right: 1em;
+                    margin-right: 0px;
+                    padding-left: 10px;
+                    padding-right: 10px;
 
                     &::-webkit-scrollbar{
                         height: 0.4em;
@@ -462,19 +500,100 @@
                       }
                 }
 
+                .input-frame{
+                    width: 60px;
+                    margin-left: 10px;
+                    margin-right: 10px;
+
+                    input {
+                        text-align: center;
+                        width: 60px;
+                        border: none;
+                        background: #222222;
+                        color: white;
+                        height: 25px;
+                        font-size: 15px;
+                        font-family: acumin-pro-condensed;
+                        &::-webkit-inner-spin-button, &::-webkit-outer-spin-button {
+                            appearance: none;
+                            -webkit-appearance: none; 
+                            margin: 0;
+                        }
+                    }
+                }
+
+                .timeline-scroll-handle{
+                    display: flex;
+                    flex-direction: row;
+                    height: 25px;
+                    margin: 10px;
+                    
+                    .scroll-handle {
+                        width: 703px;
+                        background-color: #222222;
+                        height: 25px;
+                        display: flex;
+                        align-items: center;
+                        .handle {
+                            display: flex;
+                            flex-direction: row;
+                            height: 20px;
+                            background-color: #666666;
+                            justify-content: space-between;
+
+                            .left-grabber, .right-grabber {
+                                display: flex;
+                                align-items: center;
+                                cursor: pointer;
+                            }
+
+                            .left-grabber {
+                                padding-left: 3px;
+                            }
+                            .right-grabber {
+                                padding-right: 3px;
+                            }
+                            .grabber{
+                                background-color: #333333;
+                                width:2px;
+                                height: 16px;
+                                margin-right:2px
+                            }
+
+                            .text{
+                                margin-left:10px;
+                                margin-right: 10px;
+                                font-size: 12px;
+                                font-family: acumin-pro-condensed;
+                                color: #222222;
+                            }
+                        }
+                    }
+                }
+
+                .timeline-wrapper {
+                    margin-top: -40px;
+                    margin-left: -2px;
+                }
+
                 .controls {
                     display: flex;
                     justify-content: center;
                     align-items: center;
-                    width: 15em;
+                    padding-left: 46px;
+                    padding-right: 46px;
+                    margin-left: 10px;
+
+                    .stop-container{
+                        width: 40px;
+                        display: flex;
+                        flex-direction: row;
+                        justify-content: space-between;
+                        align-items: center;
+                    }
 
                     .input-frame input {
                         width: 3em;
-                    }
-
-                    .button {
-                        margin-left: 0.5em;
-                        margin-right: 0.5em;
                     }
                 }
             }
@@ -719,18 +838,18 @@
         }
 
         .graph-chart{
-            flex: 1 1 0%;
-            overflow-x: scroll;
-            padding-left: 32px;
-            overflow-y: scroll;
+            overflow: hidden;
             scroll-behavior: smooth;
-            background-color: #111111;
-            height: 100%;
+            background-color: rgb(17, 17, 17);
+            height: 364px;
+            width: 782px;
 
             .linear{
                 overflow: visible;
-                border: 1px solid lightgrey;
-                height: 100%;
+                border: 0px solid white;
+                height: 362px;
+                width: 780px;
+                outline: none;
 
                 svg {
                     overflow: visible;
@@ -741,11 +860,12 @@
                 }
 
                 line {
-                    stroke: #cecece;
+                    stroke: #555555;
                     stroke-width: 0.2;
                 }
                 text {
-                    fill: #cecece;
+                    fill: #555555;
+                    font-family: 'acumin-pro-condensed';
                 }
 
                 .control-point {
@@ -754,41 +874,46 @@
 
                 .control-point.active {
                     display: inline;
+                    stroke: #e9db1e;
+                    stroke-width: 0.2;
                 }
             }
 
             .playhead-wrapper {
                 position: relative;
                 left: -13px;
+                bottom: 366px;
             }
 
-            .playhead {
-                width: fit-content;
-                background-color: #ffc60e;
-                color: black;
-                text-align: center;
-                min-width: 2em;
-                justify-content: center;
-                display: flex;
-                padding: 0.1em;
-                font-size: 0.75em;
-            }
-
-            .playhead-triangle {
-                background-color: transparent;
-                width: 0px;
-                height: 0px;
-                border-left: 13.5px solid transparent;
-                border-right: 13.5px solid transparent;
-                border-top: 12px solid #ffc60e;
+            .playhead-handle {
+                position: relative;
+                top: 340px;
+                .playhead {
+                    width: 22px;
+                    background-color: transparent;
+                    color: #555555;
+                    text-align: center;
+                    font-size: 12px;
+                    position: absolute;
+                    top: 1px;
+                }
+    
+                .playhead-circle {
+                    background-color: #ffffff;
+                    width: 22px;
+                    height: 22px;
+                    border-radius: 50%;
+                    position: absolute;
+                    top: 0;
+                }
             }
 
             .playhead-line {
-                width: 2px;
-                height: calc(90vh - 100px);
-                background-color: rgb(255, 198, 14);
+                width: 1px;
+                height: 341px;
+                background-color: #ffffff;
                 position: absolute;
-                margin-left: 12.5px;
+                margin-left: 9.5px;
             }
         }
     }
