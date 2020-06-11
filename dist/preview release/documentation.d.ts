@@ -9431,7 +9431,7 @@ declare module BABYLON {
          * Internal only
          * @hidden
          */
-        static _GetTargetProperty: (target: Scene | Node) => {
+        static _GetTargetProperty: (target: Node | Scene) => {
             name: string;
             targetType: string;
             value: string;
@@ -31775,6 +31775,11 @@ declare module BABYLON {
          * @see https://www.babylonjs-playground.com/#19O9TU#0
          */
         enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh;
+        /**
+         * This function returns all of the particle systems in the scene that use the mesh as an emitter.
+         * @returns an array of particle systems in the scene that use the mesh as an emitter
+         */
+        getConnectedParticleSystems(): IParticleSystem[];
     }
 }
 declare module BABYLON {
@@ -51435,6 +51440,23 @@ declare module BABYLON {
         static UploadEnvSpherical(texture: InternalTexture, info: EnvironmentTextureInfo): void;
         /** @hidden */
         static _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void>;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class NativeShaderProcessor extends WebGL2ShaderProcessor {
+        private _genericAttributeLocation;
+        private _varyingLocationCount;
+        private _varyingLocationMap;
+        private _replacements;
+        private _textureCount;
+        private _uniforms;
+        lineProcessor(line: string): string;
+        attributeProcessor(attribute: string): string;
+        varyingProcessor(varying: string, isFragment: boolean): string;
+        uniformProcessor(uniform: string): string;
+        preProcessor(code: string, defines: string[], isFragment: boolean): string;
+        postProcessor(code: string, defines: string[], isFragment: boolean): string;
     }
 }
 declare module BABYLON {
@@ -79930,7 +79952,8 @@ declare module BABYLON.GLTF2 {
         private static _GetTypedArray;
         private static _GetNumComponents;
         private static _ValidateUri;
-        private static _GetDrawMode;
+        /** @hidden */
+        static _GetDrawMode(context: string, mode: number | undefined): number;
         private _compileMaterialsAsync;
         private _compileShadowGeneratorsAsync;
         private _forEachExtensions;
@@ -80290,34 +80313,34 @@ declare module BABYLON.GLTF2.Loader.Extensions {
          */
         enabled: boolean;
         private _loader;
-        /**
-         * The default variant name.
-         */
-        defaultVariant: string | undefined;
-        private _tagsToMap;
         /** @hidden */
         constructor(loader: GLTFLoader);
         /** @hidden */
         dispose(): void;
         /**
-         * Return a list of available variants for this asset.
-         * @returns {string[]}
+         * Gets the list of available variant tag names for this asset.
+         * @param rootMesh The glTF root mesh
+         * @returns the list of all the variant names for this model
          */
-        getVariants(): string[];
+        static GetAvailableVariants(rootMesh: Mesh): string[];
         /**
-         * Select a variant by providing a list of variant tag names.
-         *
-         * @param {(string | string[])} variantName
+         * Select a variant given a variant tag name or a list of variant tag names.
+         * @param rootMesh The glTF root mesh
+         * @param variantName The variant name(s) to select.
          */
-        selectVariant(variantName: string | string[]): void;
+        static SelectVariant(rootMesh: Mesh, variantName: string | string[]): void;
         /**
-         * Select a variant by providing a single variant tag.
-         *
-         * @param {string} variantName
+         * Reset back to the original before selecting a variant.
+         * @param rootMesh The glTF root mesh
          */
-        selectVariantTag(variantName: string): void;
-        /** @hidden */
-        onLoading(): void;
+        static Reset(rootMesh: Mesh): void;
+        /**
+         * Gets the last selected variant tag name(s) or null if original.
+         * @param rootMesh The glTF root mesh
+         * @returns The selected variant tag name(s).
+         */
+        static GetLastSelectedVariant(rootMesh: Mesh): Nullable<string | string[]>;
+        private static _GetExtensionMetadata;
         /** @hidden */
         _loadMeshPrimitiveAsync(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Nullable<Promise<AbstractMesh>>;
     }

@@ -9431,7 +9431,7 @@ declare module BABYLON {
          * Internal only
          * @hidden
          */
-        static _GetTargetProperty: (target: Scene | Node) => {
+        static _GetTargetProperty: (target: Node | Scene) => {
             name: string;
             targetType: string;
             value: string;
@@ -31775,6 +31775,11 @@ declare module BABYLON {
          * @see https://www.babylonjs-playground.com/#19O9TU#0
          */
         enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh;
+        /**
+         * This function returns all of the particle systems in the scene that use the mesh as an emitter.
+         * @returns an array of particle systems in the scene that use the mesh as an emitter
+         */
+        getConnectedParticleSystems(): IParticleSystem[];
     }
 }
 declare module BABYLON {
@@ -51435,6 +51440,23 @@ declare module BABYLON {
         static UploadEnvSpherical(texture: InternalTexture, info: EnvironmentTextureInfo): void;
         /** @hidden */
         static _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void>;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class NativeShaderProcessor extends WebGL2ShaderProcessor {
+        private _genericAttributeLocation;
+        private _varyingLocationCount;
+        private _varyingLocationMap;
+        private _replacements;
+        private _textureCount;
+        private _uniforms;
+        lineProcessor(line: string): string;
+        attributeProcessor(attribute: string): string;
+        varyingProcessor(varying: string, isFragment: boolean): string;
+        uniformProcessor(uniform: string): string;
+        preProcessor(code: string, defines: string[], isFragment: boolean): string;
+        postProcessor(code: string, defines: string[], isFragment: boolean): string;
     }
 }
 declare module BABYLON {

@@ -407,16 +407,19 @@ class Main {
             }.bind(this));
         }
         // Safe mode
+        this.parent.settingsPG.restoreSafeMode();
         this.parent.utils.setToMultipleID("safemodeToggle", 'click', function () {
             document.getElementById("safemodeToggle1280").classList.toggle('checked');
-            if (document.getElementById("safemodeToggle1280").classList.contains('checked')) {
-                this.parent.utils.setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
-            } else {
-                this.parent.utils.setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="fa fa-square" aria-hidden="true"></i>');
-            }
+            this.parent.settingsPG.setSafeMode(document.getElementById("safemodeToggle1280").classList.contains('checked'));
         }.bind(this));
         // Editor
         this.parent.utils.setToMultipleID("editorButton", "click", this.toggleEditor.bind(this));
+        // CTRL + S        
+        this.parent.settingsPG.restoreCTRLS();
+        this.parent.utils.setToMultipleID("ctrlsToggle", 'click', function () {
+            document.getElementById("ctrlsToggle1280").classList.toggle('checked');            
+            this.parent.settingsPG.setCTRLS(document.getElementById("ctrlsToggle1280").classList.contains('checked'));
+        }.bind(this));        
         // FullScreen
         this.parent.utils.setToMultipleID("fullscreenButton", "click", function () {
             this.parent.menuPG.removeAllOptions();
@@ -457,7 +460,7 @@ class Main {
         this.parent.menuPG.resizeBigCanvas();
 
         // HotKeys
-        document.onkeydown = function (e) {
+        document.onkeydown = (e) => {
             // Alt+Enter to Run
             if (e.altKey && (e.key === 'Enter' || event.which === 13)) {
                 handleRun();
@@ -476,6 +479,9 @@ class Main {
                 (e.key === 'S' || event.which === 83)
             ) {
                 e.preventDefault();
+                if (!this.checkCTRLSMode()) {
+                    return;
+                }
                 handleSave();
             }
         };
@@ -761,6 +767,14 @@ class Main {
         } else {
             return true;
         }
+    };
+
+    checkCTRLSMode() {
+        if (document.getElementById("ctrlsToggle" + this.parent.utils.getCurrentSize()) &&
+            document.getElementById("ctrlsToggle" + this.parent.utils.getCurrentSize()).classList.contains('checked')) {
+            return true;
+        }
+        return false;
     };
 
     /**

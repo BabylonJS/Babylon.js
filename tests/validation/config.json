@@ -840,7 +840,7 @@
         },
         {
             "title": "GLTF Extension EXT_mesh_gpu_instancing",
-            "playgroundId": "#QFIGLW#9",            
+            "playgroundId": "#QFIGLW#9",
             "renderCount": 10,
             "referenceImage": "gltfExtensionExtMeshGpuInstancingTest.png"
         },
@@ -848,6 +848,11 @@
             "title": "Realtime Filtering",
             "playgroundId": "#FEEK7G#118",
             "referenceImage": "realtimeFiltering.png"
+        },
+        {
+            "title": "GLTF Extension KHR_materials_variants",
+            "playgroundId": "#BKGTKL#2",
+            "referenceImage": "gltfExtensionKhrMaterialsVariants.png"
         }
     ]
 }
