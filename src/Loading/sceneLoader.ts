@@ -780,7 +780,9 @@ export class SceneLoader {
 
         var disposeHandler = () => {
             scene._removePendingData(loadingToken);
-            scene.getEngine().hideLoadingUI();
+            if (SceneLoader.ShowLoadingScreen) {
+                scene.getEngine().hideLoadingUI();
+            }
         };
 
         var errorHandler = (message: Nullable<string>, exception?: any) => {
