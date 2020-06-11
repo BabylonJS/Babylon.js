@@ -12,7 +12,6 @@ var clickInterceptor = document.getElementById("click-interceptor");
 clickInterceptor.addEventListener("mousedown", function() {
     displayDropdownContent(false);
     displayDropdownContentEnv(false);
-    displayVariantDropdownContent(false);
 });
 
 // event on the dropdown
