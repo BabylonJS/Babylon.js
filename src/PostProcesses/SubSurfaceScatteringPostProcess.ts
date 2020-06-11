@@ -36,12 +36,16 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
         this.addDiffusionProfile(new Color3(1, 1, 1));
 
         this.onApplyObservable.add((effect: Effect) => {
+            if (!scene.prePassRenderer) {
+                Logger.Error("PrePass needs to be enabled for subsurface scattering.");
+                return;
+            }
             var texelSize = this.texelSize;
             effect.setFloat("metersPerUnit", scene.metersPerUnit);
             effect.setFloat2("texelSize", texelSize.x, texelSize.y);
-            effect.setTexture("irradianceSampler", scene.highDefinitionMRT.textures[1]);
-            effect.setTexture("depthSampler", scene.highDefinitionMRT.textures[2]);
-            effect.setTexture("albedoSampler", scene.highDefinitionMRT.textures[3]);
+            effect.setTexture("irradianceSampler", scene.prePassRenderer.prePassRT.textures[1]);
+            effect.setTexture("depthSampler", scene.prePassRenderer.prePassRT.textures[2]);
+            effect.setTexture("albedoSampler", scene.prePassRenderer.prePassRT.textures[3]);
             effect.setFloat2("viewportSize",
                 Math.tan(scene.activeCamera!.fov / 2) * scene.getEngine().getAspectRatio(scene.activeCamera!, true),
                 Math.tan(scene.activeCamera!.fov / 2));

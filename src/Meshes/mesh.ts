@@ -1832,7 +1832,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Render to MRT
-        scene.drawBuffers(effect);
+        if (scene.prePassRenderer) {
+            scene.prePassRenderer.drawBuffers(effect);
+        }
 
         const effectiveMesh = effectiveMeshReplacement || this._effectiveMesh;
 

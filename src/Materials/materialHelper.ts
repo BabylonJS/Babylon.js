@@ -300,12 +300,12 @@ export class MaterialHelper {
      * @param scene The scene we are intending to draw
      * @param defines The defines to update
      */
-    public static PrepareDefinesForDeferred(scene: Scene, defines: any, shouldRenderToMRT: boolean) {
+    public static PrepareDefinesForPrePass(scene: Scene, defines: any, shouldRenderToMRT: boolean) {
         var previousDeferred = defines.HIGH_DEFINITION_PIPELINE;
 
-        if (scene.highDefinitionPipeline && shouldRenderToMRT) {
+        if (scene.prePassRenderer && shouldRenderToMRT) {
             defines.HIGH_DEFINITION_PIPELINE = true;
-            defines.SCENE_MRT_COUNT = scene.mrtCount;
+            defines.SCENE_MRT_COUNT = scene.prePassRenderer.mrtCount;
         } else {
             defines.HIGH_DEFINITION_PIPELINE = false;
         }
