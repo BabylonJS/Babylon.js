@@ -9,6 +9,8 @@ import { GlobalState } from "../../../globalState";
 import { OptionsLineComponent } from '../../lines/optionsLineComponent';
 import { ButtonLineComponent } from '../../lines/buttonLineComponent';
 
+import { GLTF2 } from 'babylonjs-loaders/glTF/index';
+
 interface IVariantsPropertyGridComponentProps {
     globalState: GlobalState;
     host: any;
@@ -24,8 +26,8 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
     }
 
     render() {
-        let root = (BABYLON as any).GLTF2.Loader.Extensions;
-        let variants = root.KHR_materials_variants.GetAvailableVariants(this.props.host);
+        const KHR_materials_variants = GLTF2.KHR_materials_variants;
+        let variants = KHR_materials_variants.GetAvailableVariants(this.props.host);
 
         if (!variants || variants.length === 0) {
             return null;
@@ -45,17 +47,17 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
                         target={this.props.host}
                         propertyName=""
                         onSelect={(value: number) => {
-                            if (value === 0) {                                
-                                root.KHR_materials_variants.Reset(this.props.host);
+                            if (value === 0) {
+                                KHR_materials_variants.Reset(this.props.host);
                             } else {
-                                root.KHR_materials_variants.SelectVariant(this.props.host, variants[value - 1]);
+                                KHR_materials_variants.SelectVariant(this.props.host, variants[value - 1]);
                             }
                             this._lastOne = value;
 
                             this.forceUpdate();
                         }}
                         extractValue={() => {
-                            let lastPickedVariant = root.KHR_materials_variants.GetLastSelectedVariant(this.props.host) || 0;
+                            let lastPickedVariant = KHR_materials_variants.GetLastSelectedVariant(this.props.host) || 0;
 
                             if (lastPickedVariant && Object.prototype.toString.call(lastPickedVariant) === '[object String]') {
                                 let index = variants.indexOf(lastPickedVariant as string);
@@ -68,7 +70,7 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
                         }}
                     />
                     <ButtonLineComponent label="Reset" onClick={() => {
-                        root.KHR_materials_variants.Reset(this.props.host);
+                        KHR_materials_variants.Reset(this.props.host);
                         this._lastOne = 0;
                         this.forceUpdate();
                     }} />
