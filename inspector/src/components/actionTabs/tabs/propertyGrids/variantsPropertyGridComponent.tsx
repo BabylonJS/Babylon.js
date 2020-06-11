@@ -9,8 +9,7 @@ import { GlobalState } from "../../../globalState";
 // import { OptionsLineComponent } from '../../lines/optionsLineComponent';
 import { ButtonLineComponent } from '../../lines/buttonLineComponent';
 import { CheckBoxLineComponent } from '../../lines/checkBoxLineComponent';
-
-import { GLTF2 } from 'babylonjs-loaders/glTF/index';
+import { GLTF2 } from 'babylonjs-loaders/glTF/index'
 
 interface IVariantsPropertyGridComponentProps {
     globalState: GlobalState;
@@ -28,14 +27,14 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
     }
 
     render() {
-        let root = (BABYLON as any).GLTF2.Loader.Extensions;
-        let variants: string[] = root.KHR_materials_variants.GetAvailableVariants(this.props.host);
+        const KHR_materials_variants = GLTF2.KHR_materials_variants;
+        let variants: string[] = KHR_materials_variants.GetAvailableVariants(this.props.host);
 
         if (!variants || variants.length === 0) {
             return null;
         }
 
-        let lastPickedVariants = root.KHR_materials_variants.GetLastSelectedVariant(this.props.host);
+        let lastPickedVariants = KHR_materials_variants.GetLastSelectedVariant(this.props.host);
 
         variants.sort((a, b) => {
             let aIsActive = lastPickedVariants && lastPickedVariants.indexOf ? lastPickedVariants.indexOf(a) > -1 : lastPickedVariants === a;
@@ -70,9 +69,9 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
             <div>
                 <LineContainerComponent globalState={this.props.globalState} title="VARIANTS">
                     {
-                        variants.map((v: string) => {
+                        variants.map((v: string, i: number) => {
                             return (
-                                <CheckBoxLineComponent label={v} 
+                                <CheckBoxLineComponent key={i} label={v} 
                                         isSelected={() => {
                                             if (lastPickedVariants) {
                                                 if (Object.prototype.toString.call(lastPickedVariants) === '[object String]') {
@@ -95,7 +94,7 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
                                         onSelect={(value) => {
                                             if (value) {
                                                 this._selectedTags.push(v);
-                                                root.KHR_materials_variants.SelectVariant(this.props.host, v);
+                                                KHR_materials_variants.SelectVariant(this.props.host, v);
                                             } else {
                                                 // Do something on extension?
                                                 let index = this._selectedTags.indexOf(v);
@@ -137,7 +136,7 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
                         }}
                     /> */}
                     <ButtonLineComponent label="Reset" onClick={() => {
-                        root.KHR_materials_variants.Reset(this.props.host);
+                        KHR_materials_variants.Reset(this.props.host);
                         this._selectedTags = [];
                         this.forceUpdate();
                     }} />
