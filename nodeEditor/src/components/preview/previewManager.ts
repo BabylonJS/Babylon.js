@@ -407,7 +407,10 @@ export class PreviewManager {
 
     private _updatePreview(serializationObject: any) {
         try {
+            let store = NodeMaterial.IgnoreTexturesAtLoadTime;
+            NodeMaterial.IgnoreTexturesAtLoadTime = false;
             let tempMaterial = NodeMaterial.Parse(serializationObject, this._scene);
+            NodeMaterial.IgnoreTexturesAtLoadTime = store;
 
             tempMaterial.backFaceCulling = this._globalState.backFaceCulling;
             tempMaterial.needDepthPrePass = this._globalState.depthPrePass;

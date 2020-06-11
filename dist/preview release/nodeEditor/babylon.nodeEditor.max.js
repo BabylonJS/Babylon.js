@@ -60749,7 +60749,10 @@ var PreviewManager = /** @class */ (function () {
     PreviewManager.prototype._updatePreview = function (serializationObject) {
         var _this = this;
         try {
+            var store = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterial"].IgnoreTexturesAtLoadTime;
+            babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterial"].IgnoreTexturesAtLoadTime = false;
             var tempMaterial_1 = babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterial"].Parse(serializationObject, this._scene);
+            babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterial"].IgnoreTexturesAtLoadTime = store;
             tempMaterial_1.backFaceCulling = this._globalState.backFaceCulling;
             tempMaterial_1.needDepthPrePass = this._globalState.depthPrePass;
             if (this._postprocess) {

@@ -144,7 +144,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     */
     zoom(e: React.WheelEvent<HTMLDivElement>) {
         e.nativeEvent.stopImmediatePropagation();
-        console.log(e.deltaY);
+        //console.log(e.deltaY);
         let scaleX = 1;
         if (Math.sign(e.deltaY) === -1) {
             scaleX = (this.state.scale - 0.01);
@@ -158,10 +158,15 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
     setAxesLength() {
 
-        let length = Math.round(this._canvasLength * this.state.scale);// Check Undefined, or NaN
+        let length = 20;
+        let newlength = Math.round(this._canvasLength * this.state.scale);// Check Undefined, or NaN
+        if (!isNaN(newlength) || newlength !== undefined) {
+            length = newlength;
+        }
         let highestFrame = 100;
-        if (this.state.selected !== null) {
+        if (this.state.selected !== null && this.state.selected !== undefined) {
             highestFrame = this.state.selected.getHighestFrame();
+
         }
 
         if (length < (highestFrame * 2) / 10) {
@@ -169,6 +174,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         }
 
         let valueLines = Math.round((this.state.scale * this._heightScale) / 10);
+        console.log(highestFrame);
         let newFrameLength = (new Array(length)).fill(0).map((s, i) => { return { value: i * 10, label: i * 10 } });
         let newValueLength = (new Array(valueLines)).fill(0).map((s, i) => { return { value: i * 10, label: this.getValueLabel(i * 10) } });
         this.setState({ frameAxisLength: newFrameLength, valueAxisLength: newValueLength });
@@ -1121,7 +1127,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
                         <div ref={this._graphCanvas} className="graph-chart" onWheel={(e) => this.zoom(e)} >
 
-                            <Playhead frame={this.state.currentFrame} offset={this.state.playheadOffset} />
+
 
                             {this.state.svgKeyframes && <SvgDraggableArea ref={this._svgCanvas}
                                 selectKeyframe={(id: string) => this.selectKeyframe(id)}
@@ -1130,23 +1136,6 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                                 selectedControlPoint={(type: string, id: string) => this.selectedControlPoint(type, id)}
                                 updatePosition={(updatedSvgKeyFrame: IKeyframeSvgPoint, id: string) => this.renderPoints(updatedSvgKeyFrame, id)}>
 
-                                {/* Frame Labels  */}
-                                { /* Vertical Grid  */}
-                                {this.state.frameAxisLength.map((f, i) =>
-                                    <svg key={i}>
-                                        <text x={f.value} y="-2" dx="-1em" style={{ font: 'italic 0.2em sans-serif', fontSize: `${0.2 * this.state.scale}em` }}>{f.value}</text>
-                                        <line x1={f.value} y1="0" x2={f.value} y2="100%"></line>
-                                    </svg>
-                                )}
-
-                                {this.state.valueAxisLength.map((f, i) => {
-                                    return <svg key={i}>
-                                        <text x="-3" y={f.value} dx="-1em" style={{ font: 'italic 0.2em sans-serif', fontSize: `${0.2 * this.state.scale}em` }}>{f.label.toFixed(1)}</text>
-                                        <line x1="0" y1={f.value} x2="100%" y2={f.value}></line>
-                                    </svg>
-
-                                })}
-
                                 { /* Multiple Curves  */}
                                 {
                                     this.state.selectedPathData?.map((curve, i) =>
@@ -1154,14 +1143,39 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                                     )
                                 }
 
+                                <svg>
+                                    <rect x="-4%" y="0%" width="5%" height="101%" fill="#222"></rect>
+                                </svg>
+
+                                {this.state.valueAxisLength.map((f, i) => {
+                                    return <svg key={i}>
+                                        <text x="-4" y={f.value} dx="0" dy="1" style={{ fontSize: `${0.2 * this.state.scale}em` }}>{f.label.toFixed(1)}</text>
+                                        <line x1="0" y1={f.value} x2="105%" y2={f.value}></line>
+                                    </svg>
+
+                                })}
+
+                                <svg>
+                                    <rect x="0%" y="91%" width="105%" height="10%" fill="#222"></rect>
+                                </svg>
+
+                                {this.state.frameAxisLength.map((f, i) =>
+                                    <svg key={i} x="0" y="96%">
+                                        <text x={f.value} y="0" dx="2px" style={{ fontSize: `${0.2 * this.state.scale}em` }}>{f.value}</text>
+                                        <line x1={f.value} y1="0" x2={f.value} y2="5%"></line>
+                                    </svg>
+                                )}
+
 
                             </SvgDraggableArea>
 
                             }
 
+                            <Playhead frame={this.state.currentFrame} offset={this.state.playheadOffset} />
+
                         </div>
                     </div>
-                    <div className="row">
+                    <div className="row-bottom">
                         <Timeline currentFrame={this.state.currentFrame} playPause={(direction: number) => this.playPause(direction)} isPlaying={this.state.isPlaying} dragKeyframe={(frame: number, index: number) => this.updateFrameInKeyFrame(frame, index)} onCurrentFrameChange={(frame: number) => this.changeCurrentFrame(frame)} keyframes={this.state.selected && this.state.selected.getKeys()} selected={this.state.selected && this.state.selected.getKeys()[0]}></Timeline>
                     </div>
                 </div>
