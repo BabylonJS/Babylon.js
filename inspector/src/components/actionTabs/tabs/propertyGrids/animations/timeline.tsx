@@ -13,7 +13,6 @@ interface ITimelineProps {
     isPlaying: boolean;
 }
 
-
 export class Timeline extends React.Component<ITimelineProps, { selected: IAnimationKey, activeKeyframe: number | null }>{
     readonly _frames: object[] = Array(300).fill({});
     private _scrollable: React.RefObject<HTMLDivElement>;
@@ -208,10 +207,7 @@ export class Timeline extends React.Component<ITimelineProps, { selected: IAnima
                                 <input type="number" value={this.props.currentFrame} onChange={(e) => this.handleInputChange(e)}></input>
                             </div>
                         </div>
-
                     </div>
-
-
                 </div>
             </>
         )
