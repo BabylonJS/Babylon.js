@@ -38,6 +38,7 @@
 - Optimized frozen instances ([Deltakosh](https://github.com/deltakosh))
 - Add support for detail maps in both the standard and PBR materials ([Popov72](https://github.com/Popov72))
 - Added abstractMesh method to get all particle systems that use the mesh as an emitter ([PirateJC](https://github.com/PirateJC))
+- Added customization options to VirtualJoystick ([#7398](https://github.com/BabylonJS/Babylon.js/issues/7398)) ([Rockwell15](https://github.com/Rockwell15))
 
 ### NME
 

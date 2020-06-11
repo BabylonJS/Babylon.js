@@ -20,7 +20,7 @@ export enum JoystickAxis {
 
 /**
  * Represents the different customization options available
- * for VirtualJoystick 
+ * for VirtualJoystick
  */
 interface VirtualJoystickCustomizations {
     /**
