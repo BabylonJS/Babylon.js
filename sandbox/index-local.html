@@ -44,17 +44,6 @@
                     </div>
                 </div>
             </div>
-            <div id="variantBar">
-                <div class="dropdown">
-                    <div id="dropdownBtn-variants" class="dropdownBtn">
-                        <img src="Assets/Icon_Up.svg" id="chevronUp-variants" class="chevronUp">
-                        <img src="Assets/Icon_Down.svg" id="chevronDown-variants" class="chevronDown">
-                        <div id="dropdownLabel-variants" class="dropdownLabel"></div>
-                    </div>
-                    <div id="dropdownContent-variants" class="dropdownContent">
-                    </div>
-                </div>
-            </div>            
             <div class="footerRight">
                 <a href="javascript:void(null);">
                     <div class="custom-upload"
@@ -87,7 +76,6 @@
         BABYLONDEVTOOLS.Loader
             .require('environment.js')
             .require('animation.js')
-            .require('variants.js')
             .require('index.js')
             .load(function() {
                 BABYLON.DracoCompression.Configuration.decoder = {
