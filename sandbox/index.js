@@ -90,6 +90,7 @@ if (BABYLON.Engine.isSupported()) {
         // Clear dropdown that contains animation names
         dropdownContent.innerHTML = "";
         animationBar.style.display = "none";
+        variantBar.style.display = "none";
         currentGroup = null;
         babylonScene.skipFrustumClipping = true;
 
@@ -102,6 +103,22 @@ if (BABYLON.Engine.isSupported()) {
             currentGroupIndex = playFirstAnimationGroup ? 0 : babylonScene.animationGroups.length - 1;
             currentGroup = babylonScene.animationGroups[currentGroupIndex];
             currentGroup.play(true);
+        }
+
+        if (babylonScene.meshes.length > 0) {
+            let root = babylonScene.meshes[0];
+            let variants = BABYLON.GLTF2.Loader.Extensions.KHR_materials_variants.GetAvailableVariants(root);
+
+            if (variants && variants.length > 0) {
+                variantBar.style.display = "flex";
+                variantDropdownContent.innerHTML = "";
+                variantDropdownLabel.innerHTML = "Original";
+                variantDropdownLabel.title = "Original";                
+                createVariantDropdownLink("Original", root);
+                for (var index = 0; index < variants.length; index++) {
+                    createVariantDropdownLink(variants[index], root);
+                }
+            }
         }
 
         // Sync the slider with the current frame

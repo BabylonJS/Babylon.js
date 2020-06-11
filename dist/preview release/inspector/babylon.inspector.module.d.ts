@@ -1551,6 +1551,24 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/com
         render(): JSX.Element | null;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/variantsPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    interface IVariantsPropertyGridComponentProps {
+        globalState: GlobalState;
+        host: any;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class VariantsPropertyGridComponent extends React.Component<IVariantsPropertyGridComponentProps> {
+        private _lastOne;
+        constructor(props: IVariantsPropertyGridComponentProps);
+        render(): JSX.Element | null;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
@@ -4743,6 +4761,19 @@ declare module INSPECTOR {
     export class CommonPropertyGridComponent extends React.Component<ICommonPropertyGridComponentProps> {
         constructor(props: ICommonPropertyGridComponentProps);
         renderLevel(jsonObject: any): JSX.Element[];
+        render(): JSX.Element | null;
+    }
+}
+declare module INSPECTOR {
+    interface IVariantsPropertyGridComponentProps {
+        globalState: GlobalState;
+        host: any;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class VariantsPropertyGridComponent extends React.Component<IVariantsPropertyGridComponentProps> {
+        private _lastOne;
+        constructor(props: IVariantsPropertyGridComponentProps);
         render(): JSX.Element | null;
     }
 }
