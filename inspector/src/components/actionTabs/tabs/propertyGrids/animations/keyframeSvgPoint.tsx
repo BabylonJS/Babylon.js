@@ -3,7 +3,7 @@ import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { AnchorSvgPoint } from './anchorSvgPoint';
 
 const keyInactive = require("./assets/keyInactiveIcon.svg") as string;
-const keyActive = require("./assets/keyActiveIcon.svg") as string;
+//const keyActive = require("./assets/keyActiveIcon.svg") as string; uncomment when setting active multiselect
 const keySelected = require("./assets/keySelectedIcon.svg") as string;
 
 export interface IKeyframeSvgPoint {
