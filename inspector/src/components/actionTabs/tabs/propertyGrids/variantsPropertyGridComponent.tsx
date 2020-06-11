@@ -10,6 +10,8 @@ import { GlobalState } from "../../../globalState";
 import { ButtonLineComponent } from '../../lines/buttonLineComponent';
 import { CheckBoxLineComponent } from '../../lines/checkBoxLineComponent';
 
+import { GLTF2 } from 'babylonjs-loaders/glTF/index';
+
 interface IVariantsPropertyGridComponentProps {
     globalState: GlobalState;
     host: any;
@@ -112,17 +114,17 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
                         target={this.props.host}
                         propertyName=""
                         onSelect={(value: number) => {
-                            if (value === 0) {                                
-                                root.KHR_materials_variants.Reset(this.props.host);
+                            if (value === 0) {
+                                KHR_materials_variants.Reset(this.props.host);
                             } else {
-                                root.KHR_materials_variants.SelectVariant(this.props.host, variants[value - 1]);
+                                KHR_materials_variants.SelectVariant(this.props.host, variants[value - 1]);
                             }
                             this._lastOne = value;
 
                             this.forceUpdate();
                         }}
                         extractValue={() => {
-                            let lastPickedVariant = root.KHR_materials_variants.GetLastSelectedVariant(this.props.host) || 0;
+                            let lastPickedVariant = KHR_materials_variants.GetLastSelectedVariant(this.props.host) || 0;
 
                             if (lastPickedVariant && Object.prototype.toString.call(lastPickedVariant) === '[object String]') {
                                 let index = variants.indexOf(lastPickedVariant as string);

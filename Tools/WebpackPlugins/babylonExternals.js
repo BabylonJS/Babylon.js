@@ -13,7 +13,7 @@ module.exports = function nodeExternals(options) {
         }
         else if (/^babylonjs-loaders.*$/i.test(request)) {
             callback(null, {
-                root: "BABYLON",
+                root: "LOADERS",
                 commonjs: "babylonjs-loaders",
                 commonjs2: "babylonjs-loaders",
                 amd: "babylonjs-loaders"

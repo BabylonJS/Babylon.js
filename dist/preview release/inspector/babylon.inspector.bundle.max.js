@@ -6,7 +6,7 @@
 	else if(typeof exports === 'object')
 		exports["babylonjs-inspector"] = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-materials"), require("babylonjs-serializers"), require("babylonjs"));
 	else
-		root["INSPECTOR"] = factory(root["BABYLON"]["GUI"], root["BABYLON"], root["BABYLON"], root["BABYLON"], root["BABYLON"]);
+		root["INSPECTOR"] = factory(root["BABYLON"]["GUI"], root["LOADERS"], root["BABYLON"], root["BABYLON"], root["BABYLON"]);
 })((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
@@ -67445,6 +67445,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
 /* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var babylonjs_loaders_glTF_index__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs-loaders/glTF/index */ "babylonjs-loaders/glTF/index");
+/* harmony import */ var babylonjs_loaders_glTF_index__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_loaders_glTF_index__WEBPACK_IMPORTED_MODULE_5__);
+
 
 
 
@@ -67459,8 +67462,8 @@ var VariantsPropertyGridComponent = /** @class */ (function (_super) {
     }
     VariantsPropertyGridComponent.prototype.render = function () {
         var _this = this;
-        var root = BABYLON.GLTF2.Loader.Extensions;
-        var variants = root.KHR_materials_variants.GetAvailableVariants(this.props.host);
+        var KHR_materials_variants = babylonjs_loaders_glTF_index__WEBPACK_IMPORTED_MODULE_5__["GLTF2"].KHR_materials_variants;
+        var variants = KHR_materials_variants.GetAvailableVariants(this.props.host);
         if (!variants || variants.length === 0) {
             return null;
         }
@@ -67472,15 +67475,15 @@ var VariantsPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "VARIANTS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__["OptionsLineComponent"], { label: "Active variant", options: options, noDirectUpdate: true, target: this.props.host, propertyName: "", onSelect: function (value) {
                         if (value === 0) {
-                            root.KHR_materials_variants.Reset(_this.props.host);
+                            KHR_materials_variants.Reset(_this.props.host);
                         }
                         else {
-                            root.KHR_materials_variants.SelectVariant(_this.props.host, variants[value - 1]);
+                            KHR_materials_variants.SelectVariant(_this.props.host, variants[value - 1]);
                         }
                         _this._lastOne = value;
                         _this.forceUpdate();
                     }, extractValue: function () {
-                        var lastPickedVariant = root.KHR_materials_variants.GetLastSelectedVariant(_this.props.host) || 0;
+                        var lastPickedVariant = KHR_materials_variants.GetLastSelectedVariant(_this.props.host) || 0;
                         if (lastPickedVariant && Object.prototype.toString.call(lastPickedVariant) === '[object String]') {
                             var index = variants.indexOf(lastPickedVariant);
                             if (index > -1) {
@@ -67490,7 +67493,7 @@ var VariantsPropertyGridComponent = /** @class */ (function (_super) {
                         return _this._lastOne;
                     } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Reset", onClick: function () {
-                        root.KHR_materials_variants.Reset(_this.props.host);
+                        KHR_materials_variants.Reset(_this.props.host);
                         _this._lastOne = 0;
                         _this.forceUpdate();
                     } }))));
@@ -71508,7 +71511,7 @@ module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__
 
 /***/ "babylonjs-loaders/glTF/index":
 /*!****************************************************************************************************************************!*\
-  !*** external {"root":"BABYLON","commonjs":"babylonjs-loaders","commonjs2":"babylonjs-loaders","amd":"babylonjs-loaders"} ***!
+  !*** external {"root":"LOADERS","commonjs":"babylonjs-loaders","commonjs2":"babylonjs-loaders","amd":"babylonjs-loaders"} ***!
   \****************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
