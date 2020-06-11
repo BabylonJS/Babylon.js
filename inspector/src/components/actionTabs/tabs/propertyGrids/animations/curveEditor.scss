@@ -576,6 +576,7 @@
 
                 .timeline-wrapper {
                     margin-top: -40px;
+                    margin-left: -2px;
                 }
 
                 .controls {
@@ -843,17 +844,18 @@
         }
 
         .graph-chart{
-            flex: 1 1 0%;
             overflow: hidden;
-            padding-left: 32px;
             scroll-behavior: smooth;
             background-color: rgb(17, 17, 17);
-            height: 347px;
+            height: 364px;
+            width: 782px;
 
             .linear{
                 overflow: visible;
-                border: 1px solid lightgrey;
-                height: 100%;
+                border: 0px solid white;
+                height: 362px;
+                width: 780px;
+                outline: none;
 
                 svg {
                     overflow: visible;
@@ -864,11 +866,12 @@
                 }
 
                 line {
-                    stroke: #cecece;
+                    stroke: #555555;
                     stroke-width: 0.2;
                 }
                 text {
-                    fill: #cecece;
+                    fill: #555555;
+                    font-family: 'acumin-pro-condensed';
                 }
 
                 .control-point {
@@ -877,41 +880,46 @@
 
                 .control-point.active {
                     display: inline;
+                    stroke: #e9db1e;
+                    stroke-width: 0.2;
                 }
             }
 
             .playhead-wrapper {
                 position: relative;
                 left: -13px;
+                bottom: 366px;
             }
 
-            .playhead {
-                width: fit-content;
-                background-color: #ffc60e;
-                color: black;
-                text-align: center;
-                min-width: 2em;
-                justify-content: center;
-                display: flex;
-                padding: 0.1em;
-                font-size: 0.75em;
-            }
-
-            .playhead-triangle {
-                background-color: transparent;
-                width: 0px;
-                height: 0px;
-                border-left: 13.5px solid transparent;
-                border-right: 13.5px solid transparent;
-                border-top: 12px solid #ffc60e;
+            .playhead-handle {
+                position: relative;
+                top: 340px;
+                .playhead {
+                    width: 22px;
+                    background-color: transparent;
+                    color: #555555;
+                    text-align: center;
+                    font-size: 12px;
+                    position: absolute;
+                    top: 1px;
+                }
+    
+                .playhead-circle {
+                    background-color: #ffffff;
+                    width: 22px;
+                    height: 22px;
+                    border-radius: 50%;
+                    position: absolute;
+                    top: 0;
+                }
             }
 
             .playhead-line {
-                width: 2px;
-                height: calc(90vh - 100px);
-                background-color: rgb(255, 198, 14);
+                width: 1px;
+                height: 341px;
+                background-color: #ffffff;
                 position: absolute;
-                margin-left: 12.5px;
+                margin-left: 9.5px;
             }
         }
     }

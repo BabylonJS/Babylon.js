@@ -160,12 +160,12 @@ export class Timeline extends React.Component<ITimelineProps, { selected: IAnima
                                 onMouseUp={(e) => this.dragEnd(e)}
                                 onMouseLeave={(e) => this.dragEnd(e)}>
 
-                                <line x1={this.props.currentFrame * 10} y1="10" x2={this.props.currentFrame * 10} y2="20" style={{ stroke: '#12506b', strokeWidth: 6 }} />
+                                <line x1={this.props.currentFrame * 10} y1="0" x2={this.props.currentFrame * 10} y2="40" style={{ stroke: '#12506b', strokeWidth: 6 }} />
                                 {
                                     this.props.keyframes && this.props.keyframes.map((kf, i) => {
 
                                         return <svg key={`kf_${i}`} style={{ cursor: 'pointer' }} tabIndex={i + 40} >
-                                            <line id={`kf_${i.toString()}`} x1={kf.frame * 10} y1="10" x2={kf.frame * 10} y2="20" style={{ stroke: 'red', strokeWidth: 6 }} />
+                                            <line id={`kf_${i.toString()}`} x1={kf.frame * 10} y1="0" x2={kf.frame * 10} y2="40" style={{ stroke: 'red', strokeWidth: 6 }} />
                                         </svg>
                                     })
                                 }
