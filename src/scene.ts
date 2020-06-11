@@ -893,7 +893,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     /**
     * Flag indicating that the frame buffer binding is handled by another component
     */
-    public doNotBindFrameBuffer : boolean = false;
+    public prePass : boolean = false;
 
     // Lights
     private _shadowsEnabled = true;
@@ -3750,14 +3750,14 @@ export class Scene extends AbstractScene implements IAnimatable {
         }
 
         // Restore framebuffer after rendering to targets
-        if (needRebind && !this.doNotBindFrameBuffer) {
+        if (needRebind && !this.prePass) {
             this._bindFrameBuffer();
         }
 
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
 
         // Prepare Frame
-        if (this.postProcessManager && !camera._multiviewTexture && !this.doNotBindFrameBuffer) {
+        if (this.postProcessManager && !camera._multiviewTexture && !this.prePass) {
             this.postProcessManager._prepareFrame();
         }
 
@@ -4029,7 +4029,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         // Restore back buffer
         this.activeCamera = currentActiveCamera;
-        if (this._activeCamera && this._activeCamera.cameraRigMode !== Camera.RIG_MODE_CUSTOM) {
+        if (this._activeCamera && this._activeCamera.cameraRigMode !== Camera.RIG_MODE_CUSTOM && !this.prePass) {
             this._bindFrameBuffer();
         }
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
@@ -4039,12 +4039,11 @@ export class Scene extends AbstractScene implements IAnimatable {
         }
 
         // Clear
-        if (this.autoClearDepthAndStencil || this.autoClear) {
+        if ((this.autoClearDepthAndStencil || this.autoClear) && !this.prePass) {
             this._engine.clear(this.clearColor,
                 this.autoClear || this.forceWireframe || this.forcePointsCloud,
                 this.autoClearDepthAndStencil,
-                this.autoClearDepthAndStencil,
-                this.highDefinitionPipeline ? this.highDefinitionMRT._texture! : undefined);
+                this.autoClearDepthAndStencil);
         }
 
         // Collects render targets from external components.

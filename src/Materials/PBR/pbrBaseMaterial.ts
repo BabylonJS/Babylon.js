@@ -1319,8 +1319,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         // Multiview
         MaterialHelper.PrepareDefinesForMultiview(scene, defines);
 
-        // Deferred
-        MaterialHelper.PrepareDefinesForDeferred(scene, defines, this.shouldRenderToMRT);
+        // PrePass
+        MaterialHelper.PrepareDefinesForPrePass(scene, defines, this.shouldRenderToMRT);
 
         // Textures
         defines.METALLICWORKFLOW = this.isMetallicWorkflow();
@@ -1576,7 +1576,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
-            this._imageProcessingConfiguration.prepareDefines(defines, false, this.getScene().highDefinitionPipeline);
+            const prePassRenderer = this.getScene()._prePassRenderer;
+            this._imageProcessingConfiguration.prepareDefines(defines, false, prePassRenderer ? prePassRenderer.enabled : false);
         }
 
         defines.FORCENORMALFORWARD = this._forceNormalForward;

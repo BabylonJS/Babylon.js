@@ -27,8 +27,9 @@ export class PrePassRenderer {
         Constants.TEXTURETYPE_HALF_FLOAT, // Depth (world units)
         Constants.TEXTURETYPE_UNSIGNED_INT
     ];
-    private _multiRenderAttachments: any[];
-    private _defaultAttachments: any[];
+    private _multiRenderAttachments: number[];
+    private _defaultAttachments: number[];
+    private _clearAttachments: number[];
 
     public sceneCompositorPostProcess: SceneCompositorPostProcess;
     public subSurfaceScatteringPostProcess: SubSurfaceScatteringPostProcess;
@@ -36,10 +37,6 @@ export class PrePassRenderer {
 
     public get enabled() {
         return this._enabled;
-    }
-
-    public set enabled(b: boolean) {
-        this._enabled = b;
     }
 
     constructor(scene: Scene) {
@@ -51,11 +48,14 @@ export class PrePassRenderer {
         this.prePassRT.samples = 1;
 
         let gl = this._engine._gl;
+        this._clearAttachments = [gl.NONE, gl.COLOR_ATTACHMENT1, gl.COLOR_ATTACHMENT2, gl.COLOR_ATTACHMENT3];
         this._multiRenderAttachments = [gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1, gl.COLOR_ATTACHMENT2, gl.COLOR_ATTACHMENT3];
         this._defaultAttachments = [gl.COLOR_ATTACHMENT0, gl.NONE, gl.NONE, gl.NONE];
         this.sceneCompositorPostProcess = new SceneCompositorPostProcess("sceneCompositor", 1, null, undefined, this._engine);
         this.sceneCompositorPostProcess.inputTexture = this.prePassRT.getInternalTexture()!;
         this.subSurfaceScatteringPostProcess = new SubSurfaceScatteringPostProcess("subSurfaceScattering", this._scene, 1, null, undefined, this._engine);
+
+        PrePassRenderer._SceneComponentInitialization(this._scene);
     }
 
     public get isSupported() {
@@ -89,8 +89,8 @@ export class PrePassRenderer {
             this.subSurfaceScatteringPostProcess.activate(this._scene.activeCamera);
             this._scene.postProcessManager.directRender([this.sceneCompositorPostProcess], this.subSurfaceScatteringPostProcess.inputTexture);
             // this.getEngine().restoreDefaultFramebuffer(); // Restore back buffer if needed
-            this._scene.postProcessManager._prepareFrame();
-            this._scene.postProcessManager.directRender([this.subSurfaceScatteringPostProcess], null, false, 0, 0, true);
+            // this._scene.postProcessManager._prepareFrame();
+            this._scene.postProcessManager.directRender([this.subSurfaceScatteringPostProcess], null, false, 0, 0, false);
         }
     }
 
@@ -119,19 +119,40 @@ export class PrePassRenderer {
         }
     }
 
+    public clear() {
+        if (this._enabled) {
+            this._bindFrameBuffer();
+            this._engine.clear(this._scene.clearColor,
+                this._scene.autoClear || this._scene.forceWireframe || this._scene.forcePointsCloud,
+                this._scene.autoClearDepthAndStencil,
+                this._scene.autoClearDepthAndStencil);
+            this._engine.clearColorAttachments(this.prePassRT.getInternalTexture()!, this._clearAttachments);
+        }
+    }
+
+    private _enable() {
+        this._enabled = true;
+        this._scene.prePass = true;
+    }
+
+    private _disable() {
+        this._enabled = false;
+        this._scene.prePass = false;
+    }
+
     public markAsDirty() {
         this._isDirty = true;
     }
 
     private _update() {
-        this.enabled = false;
+        this._disable();
 
         // Subsurface scattering
         for (let i = 0; i < this._scene.materials.length; i++) {
             const material = this._scene.materials[i] as PBRBaseMaterial;
 
             if (material.subSurface && material.subSurface.isScatteringEnabled) {
-                this.enabled = true;
+                this._enable();
             }
         }
 

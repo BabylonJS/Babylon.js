@@ -38,11 +38,12 @@ declare module "../../Engines/thinEngine" {
         updateMultipleRenderTargetTextureSampleCount(count: number, textures: Nullable<InternalTexture[]>, samples: number): number;
 
         /**
-         * Clears attachments from index 1 to last index.
-         * @param color Clear color
+         * Clears attachments
+         * @param texture texture to clear
          * @param attachments attachments to clear
+         * @param color Clear color
          */
-        clearColorAttachments(texture: InternalTexture, color?: IColor4Like) : void;
+        clearColorAttachments(texture: InternalTexture, attachments: number[], color?: IColor4Like) : void;
 
         /**
          * Select a subsets of attachments to draw to.
@@ -58,13 +59,9 @@ ThinEngine.prototype.renderToAttachments = function(attachments: any[]): void {
     gl.drawBuffers(attachments);
 };
 
-ThinEngine.prototype.clearColorAttachments = function(texture: InternalTexture, color?: IColor4Like): void {
+ThinEngine.prototype.clearColorAttachments = function(texture: InternalTexture, attachments: number[], color?: IColor4Like): void {
     // Default clear everything to transparent black
     const gl = this._gl;
-
-    // Texture created with createMultipleRenderTarget should have its attachments
-    const attachments = texture._attachments!.slice(0);
-    attachments[0] = gl.NONE;
 
     // We don't clear the first attachments which is cleared with the user clear color
     gl.drawBuffers(attachments);
@@ -76,6 +73,7 @@ ThinEngine.prototype.clearColorAttachments = function(texture: InternalTexture, 
 
     gl.clear(gl.COLOR_BUFFER_BIT);
 
+    // Restore default attachments
     gl.drawBuffers(texture._attachments!);
 };
 
