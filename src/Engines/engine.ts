@@ -1312,13 +1312,16 @@ export class Engine extends ThinEngine {
      * Force a specific size of the canvas
      * @param width defines the new canvas' width
      * @param height defines the new canvas' height
+     * @returns true if the size was changed
      */
-    public setSize(width: number, height: number): void {
+    public setSize(width: number, height: number): boolean {
         if (!this._renderingCanvas) {
-            return;
+            return false;
         }
 
-        super.setSize(width, height);
+        if (!super.setSize(width, height)) {
+            return false;
+        }
 
         if (this.scenes) {
             for (var index = 0; index < this.scenes.length; index++) {
@@ -1335,6 +1338,8 @@ export class Engine extends ThinEngine {
                 this.onResizeObservable.notifyObservers(this);
             }
         }
+
+        return true;
     }
 
     /**
