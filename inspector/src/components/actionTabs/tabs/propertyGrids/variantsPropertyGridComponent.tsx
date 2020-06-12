@@ -9,7 +9,6 @@ import { GlobalState } from "../../../globalState";
 // import { OptionsLineComponent } from '../../lines/optionsLineComponent';
 import { ButtonLineComponent } from '../../lines/buttonLineComponent';
 import { CheckBoxLineComponent } from '../../lines/checkBoxLineComponent';
-import { GLTF2 } from 'babylonjs-loaders/glTF/index';
 
 interface IVariantsPropertyGridComponentProps {
     globalState: GlobalState;
@@ -22,25 +21,12 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
     // private _lastOne = 0;
     private _selectedTags: string[] = [];
 
-    public disabled = true;
-
     constructor(props: IVariantsPropertyGridComponentProps) {
         super(props);
     }
 
     render() {
-        if (this.disabled) {
-            return null;
-        }
-
-        let KHR_materials_variants: any;
-        if (GLTF2 && GLTF2.KHR_materials_variants) {
-            KHR_materials_variants = GLTF2.KHR_materials_variants;
-        }
-        else {
-            KHR_materials_variants = BABYLON.GLTF2.Loader.Extensions.KHR_materials_variants as any;
-        }
-
+        const KHR_materials_variants = (BABYLON as any)?.GLTF2?.Loader?.Extensions?.KHR_materials_variants;
         if (!KHR_materials_variants) {
             return null;
         }
