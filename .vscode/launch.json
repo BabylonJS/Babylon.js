@@ -55,6 +55,20 @@
             ]
         },
         {
+            "name": "Launch sandbox (Edge)",
+            "type": "edge",
+            "version": "dev",
+            "request": "launch",
+            "url": "http://localhost:1338/sandbox/index-local.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "preLaunchTask": "run",
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },
+        {
             "name": "Launch playground (Chrome)",
             "type": "chrome",
             "request": "launch",

@@ -19,6 +19,45 @@ export enum JoystickAxis {
 }
 
 /**
+ * Represents the different customization options available
+ * for VirtualJoystick
+ */
+interface VirtualJoystickCustomizations {
+    /**
+     * Size of the joystick's puck
+     */
+    puckSize: number;
+    /**
+     * Size of the joystick's container
+     */
+    containerSize: number;
+    /**
+     * Color of the joystick && puck
+     */
+    color: string;
+    /**
+     * Image URL for the joystick's puck
+     */
+    puckImage?: string;
+    /**
+     * Image URL for the joystick's container
+     */
+    containerImage?: string;
+    /**
+     * Defines the unmoving position of the joystick container
+     */
+    position?: { x: number, y: number };
+    /**
+     * Defines whether or not the joystick container is always visible
+     */
+    alwaysVisible: boolean;
+    /**
+     * Defines whether or not to limit the movement of the puck to the joystick's container
+     */
+    limitToContainer: boolean;
+}
+
+/**
  * Class used to define virtual joystick (used in touch mode)
  */
 export class VirtualJoystick {
@@ -43,12 +82,30 @@ export class VirtualJoystick {
      */
     public static Canvas: Nullable<HTMLCanvasElement>;
 
+    /**
+     * boolean indicating whether or not the joystick's puck's movement should be limited to the joystick's container area
+     */
+    public limitToContainer: boolean;
+
     // Used to draw the virtual joystick inside a 2D canvas on top of the WebGL rendering canvas
     private static _globalJoystickIndex: number = 0;
+    private static _alwaysVisibleSticks: number = 0;
     private static vjCanvasContext: CanvasRenderingContext2D;
     private static vjCanvasWidth: number;
     private static vjCanvasHeight: number;
     private static halfWidth: number;
+    private static _GetDefaultOptions(): VirtualJoystickCustomizations {
+        return {
+            puckSize: 40,
+            containerSize: 60,
+            color: "cyan",
+            puckImage: undefined,
+            containerImage: undefined,
+            position: undefined,
+            alwaysVisible: false,
+            limitToContainer: false,
+        };
+    }
 
     private _action: () => any;
     private _axisTargetedByLeftAndRight: JoystickAxis;
@@ -63,6 +120,18 @@ export class VirtualJoystick {
     private _deltaJoystickVector: Vector2;
     private _leftJoystick: boolean;
     private _touches: StringDictionary<{ x: number, y: number, prevX: number, prevY: number } | PointerEvent>;
+    private _joystickPosition: Vector2;
+    private _alwaysVisible: boolean;
+    private _puckImage: HTMLImageElement;
+    private _containerImage: HTMLImageElement;
+
+    // size properties
+    private _joystickPuckSize: number;
+    private _joystickContainerSize: number;
+    private _clearPuckSize: number;
+    private _clearContainerSize: number;
+    private _clearPuckSizeOffset: number;
+    private _clearContainerSizeOffset: number;
 
     private _onPointerDownHandlerRef: (e: PointerEvent) => any;
     private _onPointerMoveHandlerRef: (e: PointerEvent) => any;
@@ -72,8 +141,14 @@ export class VirtualJoystick {
     /**
      * Creates a new virtual joystick
      * @param leftJoystick defines that the joystick is for left hand (false by default)
+     * @param customizations Defines the options we want to customize the VirtualJoystick
      */
-    constructor(leftJoystick?: boolean) {
+    constructor(leftJoystick?: boolean, customizations?: Partial<VirtualJoystickCustomizations>) {
+        const options = {
+            ...VirtualJoystick._GetDefaultOptions(),
+            ...customizations
+        };
+
         if (leftJoystick) {
             this._leftJoystick = true;
         }
@@ -140,8 +215,30 @@ export class VirtualJoystick {
         }
         VirtualJoystick.halfWidth = VirtualJoystick.Canvas.width / 2;
         this.pressed = false;
+        this.limitToContainer = options.limitToContainer;
+
         // default joystick color
-        this._joystickColor = "cyan";
+        this._joystickColor = options.color;
+
+        // default joystick size
+        this.containerSize = options.containerSize;
+        this.puckSize = options.puckSize;
+
+        if (options.position) {
+            this.setPosition(options.position.x, options.position.y);
+        }
+        if (options.puckImage) {
+            this.setPuckImage(options.puckImage);
+        }
+        if (options.containerImage) {
+            this.setContainerImage(options.containerImage);
+        }
+        if (options.alwaysVisible) {
+            VirtualJoystick._alwaysVisibleSticks++;
+        }
+
+        // must come after position potentially set
+        this.alwaysVisible = options.alwaysVisible;
 
         this._joystickPointerID = -1;
         // current joystick position
@@ -195,10 +292,22 @@ export class VirtualJoystick {
         if (positionOnScreenCondition && this._joystickPointerID < 0) {
             // First contact will be dedicated to the virtual joystick
             this._joystickPointerID = e.pointerId;
-            this._joystickPointerStartPos.x = e.clientX;
-            this._joystickPointerStartPos.y = e.clientY;
-            this._joystickPointerPos = this._joystickPointerStartPos.clone();
-            this._joystickPreviousPointerPos = this._joystickPointerStartPos.clone();
+
+            if (this._joystickPosition) {
+                this._joystickPointerStartPos = this._joystickPosition.clone();
+                this._joystickPointerPos = this._joystickPosition.clone();
+                this._joystickPreviousPointerPos = this._joystickPosition.clone();
+
+                // in case the user only clicks down && doesn't move:
+                // this ensures the delta is properly set
+                this._onPointerMove(e);
+            } else {
+                this._joystickPointerStartPos.x = e.clientX;
+                this._joystickPointerStartPos.y = e.clientY;
+                this._joystickPointerPos = this._joystickPointerStartPos.clone();
+                this._joystickPreviousPointerPos = this._joystickPointerStartPos.clone();
+            }
+
             this._deltaJoystickVector.x = 0;
             this._deltaJoystickVector.y = 0;
             this.pressed = true;
@@ -216,10 +325,35 @@ export class VirtualJoystick {
     private _onPointerMove(e: PointerEvent) {
         // If the current pointer is the one associated to the joystick (first touch contact)
         if (this._joystickPointerID == e.pointerId) {
-            this._joystickPointerPos.x = e.clientX;
-            this._joystickPointerPos.y = e.clientY;
+            // limit to container if need be
+            if (this.limitToContainer) {
+                let vector = new Vector2(e.clientX - this._joystickPointerStartPos.x, e.clientY - this._joystickPointerStartPos.y);
+                let distance = vector.length();
+
+                if (distance > this.containerSize) {
+                    vector.scaleInPlace(this.containerSize / distance);
+                }
+
+                this._joystickPointerPos.x = this._joystickPointerStartPos.x + vector.x;
+                this._joystickPointerPos.y = this._joystickPointerStartPos.y + vector.y;
+            } else {
+                this._joystickPointerPos.x = e.clientX;
+                this._joystickPointerPos.y = e.clientY;
+            }
+
+            // create delta vector
             this._deltaJoystickVector = this._joystickPointerPos.clone();
             this._deltaJoystickVector = this._deltaJoystickVector.subtract(this._joystickPointerStartPos);
+
+            // if a joystick is always visible, there will be clipping issues if
+            // you drag the puck from one over the container of the other
+            if (0 < VirtualJoystick._alwaysVisibleSticks) {
+                if (this._leftJoystick) {
+                    this._joystickPointerPos.x = Math.min(VirtualJoystick.halfWidth, this._joystickPointerPos.x);
+                } else {
+                    this._joystickPointerPos.x = Math.max(VirtualJoystick.halfWidth, this._joystickPointerPos.x);
+                }
+            }
 
             var directionLeftRight = this.reverseLeftRight ? -1 : 1;
             var deltaJoystickX = directionLeftRight * this._deltaJoystickVector.x / this._inversedSensibility;
@@ -259,8 +393,8 @@ export class VirtualJoystick {
 
     private _onPointerUp(e: PointerEvent) {
         if (this._joystickPointerID == e.pointerId) {
-            VirtualJoystick.vjCanvasContext.clearRect(this._joystickPointerStartPos.x - 64, this._joystickPointerStartPos.y - 64, 128, 128);
-            VirtualJoystick.vjCanvasContext.clearRect(this._joystickPreviousPointerPos.x - 42, this._joystickPreviousPointerPos.y - 42, 84, 84);
+            this._clearPreviousDraw();
+
             this._joystickPointerID = -1;
             this.pressed = false;
         }
@@ -277,11 +411,80 @@ export class VirtualJoystick {
     }
 
     /**
-    * Change the color of the virtual joystick
-    * @param newColor a string that must be a CSS color value (like "red") or the hexa value (like "#FF0000")
-    */
+     * Change the color of the virtual joystick
+     * @param newColor a string that must be a CSS color value (like "red") or the hexa value (like "#FF0000")
+     */
     public setJoystickColor(newColor: string) {
         this._joystickColor = newColor;
+    }
+
+    /**
+     * Size of the joystick's container
+     */
+    public set containerSize(newSize: number) {
+        this._joystickContainerSize = newSize;
+        this._clearContainerSize = ~~(this._joystickContainerSize * 2.1);
+        this._clearContainerSizeOffset = ~~(this._clearContainerSize / 2);
+    }
+    public get containerSize() {
+        return this._joystickContainerSize;
+    }
+
+    /**
+     * Size of the joystick's puck
+     */
+    public set puckSize(newSize: number) {
+        this._joystickPuckSize = newSize;
+        this._clearPuckSize = ~~(this._joystickPuckSize * 2.1);
+        this._clearPuckSizeOffset = ~~(this._clearPuckSize / 2);
+    }
+    public get puckSize() {
+        return this._joystickPuckSize;
+    }
+
+    /**
+     * Clears the set position of the joystick
+     */
+    public clearPosition() {
+        this.alwaysVisible = false;
+
+        delete this._joystickPosition;
+    }
+
+    /**
+     * Defines whether or not the joystick container is always visible
+     */
+    public set alwaysVisible(value: boolean) {
+        if (this._alwaysVisible === value) {
+            return;
+        }
+
+        if (value && this._joystickPosition) {
+            VirtualJoystick._alwaysVisibleSticks++;
+
+            this._alwaysVisible = true;
+        } else {
+            VirtualJoystick._alwaysVisibleSticks--;
+
+            this._alwaysVisible = false;
+        }
+    }
+    public get alwaysVisible() {
+        return this._alwaysVisible;
+    }
+
+    /**
+    * Sets the constant position of the Joystick container
+    * @param x X axis coordinate
+    * @param y Y axis coordinate
+    */
+    public setPosition(x: number, y: number) {
+        // just in case position is moved while the container is visible
+        if (this._joystickPointerStartPos) {
+            this._clearPreviousDraw();
+        }
+
+        this._joystickPosition = new Vector2(x, y);
     }
 
     /**
@@ -326,29 +529,123 @@ export class VirtualJoystick {
         }
     }
 
+    /**
+     * Clears the canvas from the previous puck / container draw
+     */
+    private _clearPreviousDraw() {
+        var jp = this._joystickPosition || this._joystickPointerStartPos;
+
+        // clear container pixels
+        VirtualJoystick.vjCanvasContext.clearRect(
+            jp.x - this._clearContainerSizeOffset,
+            jp.y - this._clearContainerSizeOffset,
+            this._clearContainerSize,
+            this._clearContainerSize
+        );
+
+        // clear puck pixels
+        VirtualJoystick.vjCanvasContext.clearRect(
+            this._joystickPreviousPointerPos.x - this._clearPuckSizeOffset,
+            this._joystickPreviousPointerPos.y - this._clearPuckSizeOffset,
+            this._clearPuckSize,
+            this._clearPuckSize
+        );
+    }
+
+    /**
+     * Loads `urlPath` to be used for the container's image
+     * @param urlPath defines the urlPath of an image to use
+     */
+    public setContainerImage(urlPath: string) {
+        var image = new Image();
+        image.src = urlPath;
+
+        image.onload = () => this._containerImage = image;
+    }
+
+    /**
+     * Loads `urlPath` to be used for the puck's image
+     * @param urlPath defines the urlPath of an image to use
+     */
+    public setPuckImage(urlPath: string) {
+        var image = new Image();
+        image.src = urlPath;
+
+        image.onload = () => this._puckImage = image;
+    }
+
+    /**
+     * Draws the Virtual Joystick's container
+     */
+    private _drawContainer() {
+        var jp = this._joystickPosition || this._joystickPointerStartPos;
+
+        this._clearPreviousDraw();
+
+        if (this._containerImage) {
+            VirtualJoystick.vjCanvasContext.drawImage(
+                this._containerImage,
+                jp.x - this.containerSize,
+                jp.y - this.containerSize,
+                this.containerSize * 2,
+                this.containerSize * 2
+            );
+        } else {
+            // outer container
+            VirtualJoystick.vjCanvasContext.beginPath();
+            VirtualJoystick.vjCanvasContext.strokeStyle = this._joystickColor;
+            VirtualJoystick.vjCanvasContext.lineWidth = 2;
+            VirtualJoystick.vjCanvasContext.arc(jp.x, jp.y, this.containerSize, 0, Math.PI * 2, true);
+            VirtualJoystick.vjCanvasContext.stroke();
+            VirtualJoystick.vjCanvasContext.closePath();
+
+            // inner container
+            VirtualJoystick.vjCanvasContext.beginPath();
+            VirtualJoystick.vjCanvasContext.lineWidth = 6;
+            VirtualJoystick.vjCanvasContext.strokeStyle = this._joystickColor;
+            VirtualJoystick.vjCanvasContext.arc(jp.x, jp.y, this.puckSize, 0, Math.PI * 2, true);
+            VirtualJoystick.vjCanvasContext.stroke();
+            VirtualJoystick.vjCanvasContext.closePath();
+        }
+    }
+
+    /**
+     * Draws the Virtual Joystick's puck
+     */
+    private _drawPuck() {
+        if (this._puckImage) {
+            VirtualJoystick.vjCanvasContext.drawImage(
+                this._puckImage,
+                this._joystickPointerPos.x - this.puckSize,
+                this._joystickPointerPos.y - this.puckSize,
+                this.puckSize * 2,
+                this.puckSize * 2
+            );
+        } else {
+            VirtualJoystick.vjCanvasContext.beginPath();
+            VirtualJoystick.vjCanvasContext.strokeStyle = this._joystickColor;
+            VirtualJoystick.vjCanvasContext.lineWidth = 2;
+            VirtualJoystick.vjCanvasContext.arc(this._joystickPointerPos.x, this._joystickPointerPos.y, this.puckSize, 0, Math.PI * 2, true);
+            VirtualJoystick.vjCanvasContext.stroke();
+            VirtualJoystick.vjCanvasContext.closePath();
+        }
+    }
+
     private _drawVirtualJoystick() {
+        if (this.alwaysVisible) {
+            this._drawContainer();
+        }
+
         if (this.pressed) {
             this._touches.forEach((key, touch) => {
                 if ((<PointerEvent>touch).pointerId === this._joystickPointerID) {
-                    VirtualJoystick.vjCanvasContext.clearRect(this._joystickPointerStartPos.x - 64, this._joystickPointerStartPos.y - 64, 128, 128);
-                    VirtualJoystick.vjCanvasContext.clearRect(this._joystickPreviousPointerPos.x - 42, this._joystickPreviousPointerPos.y - 42, 84, 84);
-                    VirtualJoystick.vjCanvasContext.beginPath();
-                    VirtualJoystick.vjCanvasContext.lineWidth = 6;
-                    VirtualJoystick.vjCanvasContext.strokeStyle = this._joystickColor;
-                    VirtualJoystick.vjCanvasContext.arc(this._joystickPointerStartPos.x, this._joystickPointerStartPos.y, 40, 0, Math.PI * 2, true);
-                    VirtualJoystick.vjCanvasContext.stroke();
-                    VirtualJoystick.vjCanvasContext.closePath();
-                    VirtualJoystick.vjCanvasContext.beginPath();
-                    VirtualJoystick.vjCanvasContext.strokeStyle = this._joystickColor;
-                    VirtualJoystick.vjCanvasContext.lineWidth = 2;
-                    VirtualJoystick.vjCanvasContext.arc(this._joystickPointerStartPos.x, this._joystickPointerStartPos.y, 60, 0, Math.PI * 2, true);
-                    VirtualJoystick.vjCanvasContext.stroke();
-                    VirtualJoystick.vjCanvasContext.closePath();
-                    VirtualJoystick.vjCanvasContext.beginPath();
-                    VirtualJoystick.vjCanvasContext.strokeStyle = this._joystickColor;
-                    VirtualJoystick.vjCanvasContext.arc(this._joystickPointerPos.x, this._joystickPointerPos.y, 40, 0, Math.PI * 2, true);
-                    VirtualJoystick.vjCanvasContext.stroke();
-                    VirtualJoystick.vjCanvasContext.closePath();
+                    if (! this.alwaysVisible) {
+                        this._drawContainer();
+                    }
+
+                    this._drawPuck();
+
+                    // store current pointer for next clear
                     this._joystickPreviousPointerPos = this._joystickPointerPos.clone();
                 }
                 else {
