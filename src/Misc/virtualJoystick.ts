@@ -94,7 +94,7 @@ export class VirtualJoystick {
     private static vjCanvasWidth: number;
     private static vjCanvasHeight: number;
     private static halfWidth: number;
-    private static _getDefaultOptions(): VirtualJoystickCustomizations {
+    private static _GetDefaultOptions(): VirtualJoystickCustomizations {
         return {
             puckSize: 40,
             containerSize: 60,
@@ -145,7 +145,7 @@ export class VirtualJoystick {
      */
     constructor(leftJoystick?: boolean, customizations?: Partial<VirtualJoystickCustomizations>) {
         const options = {
-            ...VirtualJoystick._getDefaultOptions(),
+            ...VirtualJoystick._GetDefaultOptions(),
             ...customizations
         };
 
@@ -455,7 +455,7 @@ export class VirtualJoystick {
      * Defines whether or not the joystick container is always visible
      */
     public set alwaysVisible(value: boolean) {
-        if (this._alwaysVisible == value) {
+        if (this._alwaysVisible === value) {
             return;
         }
 
