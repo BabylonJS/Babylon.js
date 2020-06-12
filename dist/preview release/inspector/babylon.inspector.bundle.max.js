@@ -55967,7 +55967,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
         else {
             currentState = nextProps.target[nextProps.propertyName] == true;
         }
-        if (currentState !== nextState.isSelected || this._localChange) {
+        if (currentState !== nextState.isSelected || this._localChange || this.props.label !== nextProps.label) {
             nextState.isSelected = currentState;
             this._localChange = false;
             return true;
@@ -67443,13 +67443,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
-/* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
-/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
 /* harmony import */ var babylonjs_loaders_glTF_index__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs-loaders/glTF/index */ "babylonjs-loaders/glTF/index");
 /* harmony import */ var babylonjs_loaders_glTF_index__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_loaders_glTF_index__WEBPACK_IMPORTED_MODULE_5__);
 
 
 
+// import { OptionsLineComponent } from '../../lines/optionsLineComponent';
 
 
 
@@ -67457,7 +67458,8 @@ var VariantsPropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(VariantsPropertyGridComponent, _super);
     function VariantsPropertyGridComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this._lastOne = 0;
+        // private _lastOne = 0;
+        _this._selectedTags = [];
         return _this;
     }
     VariantsPropertyGridComponent.prototype.render = function () {
@@ -67467,34 +67469,66 @@ var VariantsPropertyGridComponent = /** @class */ (function (_super) {
         if (!variants || variants.length === 0) {
             return null;
         }
-        var options = variants.map(function (v, i) {
-            return { label: v, value: i + 1 };
+        var lastPickedVariants = KHR_materials_variants.GetLastSelectedVariant(this.props.host);
+        variants.sort(function (a, b) {
+            var aIsActive = lastPickedVariants && lastPickedVariants.indexOf ? lastPickedVariants.indexOf(a) > -1 : lastPickedVariants === a;
+            var bIsActive = lastPickedVariants && lastPickedVariants.indexOf ? lastPickedVariants.indexOf(b) > -1 : lastPickedVariants === b;
+            if (!aIsActive && _this._selectedTags.indexOf(a) > -1) {
+                aIsActive = true;
+            }
+            if (!bIsActive && _this._selectedTags.indexOf(b) > -1) {
+                bIsActive = true;
+            }
+            if (aIsActive && bIsActive || !aIsActive && !bIsActive) {
+                return a.localeCompare(b);
+            }
+            if (aIsActive) {
+                return -1;
+            }
+            return 1;
         });
-        options.splice(0, 0, { label: "Original", value: 0 });
+        // let options = variants.map((v: string, i: number) =>  {
+        //     return {label: v, value: i + 1}
+        // });
+        // options.splice(0, 0, {label: "Original", value: 0})
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "VARIANTS" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__["OptionsLineComponent"], { label: "Active variant", options: options, noDirectUpdate: true, target: this.props.host, propertyName: "", onSelect: function (value) {
-                        if (value === 0) {
-                            KHR_materials_variants.Reset(_this.props.host);
-                        }
-                        else {
-                            KHR_materials_variants.SelectVariant(_this.props.host, variants[value - 1]);
-                        }
-                        _this._lastOne = value;
-                        _this.forceUpdate();
-                    }, extractValue: function () {
-                        var lastPickedVariant = KHR_materials_variants.GetLastSelectedVariant(_this.props.host) || 0;
-                        if (lastPickedVariant && Object.prototype.toString.call(lastPickedVariant) === '[object String]') {
-                            var index = variants.indexOf(lastPickedVariant);
-                            if (index > -1) {
-                                _this._lastOne = index + 1;
+                variants.map(function (v, i) {
+                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { key: i, label: v, isSelected: function () {
+                            if (lastPickedVariants) {
+                                if (Object.prototype.toString.call(lastPickedVariants) === '[object String]') {
+                                    if (lastPickedVariants === v) {
+                                        if (_this._selectedTags.indexOf(v) === -1) {
+                                            _this._selectedTags.push(v);
+                                        }
+                                        return true;
+                                    }
+                                }
+                                else {
+                                    var index = lastPickedVariants.indexOf(v);
+                                    if (index > -1) {
+                                        return true;
+                                    }
+                                }
                             }
-                        }
-                        return _this._lastOne;
-                    } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Reset", onClick: function () {
+                            return _this._selectedTags.indexOf(v) > -1;
+                        }, onSelect: function (value) {
+                            if (value) {
+                                _this._selectedTags.push(v);
+                                KHR_materials_variants.SelectVariant(_this.props.host, v);
+                            }
+                            else {
+                                // Do something on extension?
+                                var index = _this._selectedTags.indexOf(v);
+                                if (index > -1) {
+                                    _this._selectedTags.splice(index, 1);
+                                }
+                            }
+                        } }));
+                }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_3__["ButtonLineComponent"], { label: "Reset", onClick: function () {
                         KHR_materials_variants.Reset(_this.props.host);
-                        _this._lastOne = 0;
+                        _this._selectedTags = [];
                         _this.forceUpdate();
                     } }))));
     };
