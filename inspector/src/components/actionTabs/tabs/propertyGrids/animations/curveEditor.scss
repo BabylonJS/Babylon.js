@@ -666,11 +666,12 @@
 
         .load-browse {
           margin-top: 10px;
+          display: flex;
           p {
             height: 20px;
             margin: 0px;
             font-size: 12px;
-            width: 75px;
+            width: 65px;
             text-align: right;
             margin-right: 10px;
           }
@@ -679,6 +680,8 @@
             margin-top: 0px;
             button {
               margin-top: 0px;
+              font-family: acumin-pro-condensed;
+              padding-top: 1px;
             }
           }
         }
@@ -697,6 +700,8 @@
             width: 60px;
             background-color: #444;
             height: 20px;
+            font-family: acumin-pro-condensed;
+            padding-top: 1px;
           }
         }
 
@@ -706,6 +711,7 @@
             font-size: 12px;
             width: 75px;
             text-align: center;
+            font-family: acumin-pro-condensed;
           }
           .value {
             input {
@@ -713,6 +719,108 @@
               background-color: #444444;
               border: none;
               height: 20px;
+              font-family: acumin-pro-condensed;
+              padding-bottom: 6px;
+              padding-left: 6px;
+            }
+          }
+        }
+      }
+
+      .save-container {
+        flex-direction: column;
+        height: 387px;
+        padding-top: 10px;
+
+        .item-list {
+          height: 327px;
+          ul {
+            list-style: none;
+            padding-left: 10px;
+            margin: 0px;
+            label {
+              font-size: 12px;
+              font-family: acumin-pro-condensed;
+              display: flex;
+              align-content: center;
+              align-items: center;
+              input {
+                margin: 0px;
+                margin-right: 5px;
+              }
+            }
+          }
+        }
+
+        .save-server {
+          font-size: 12px;
+          display: flex;
+          background-color: #222222;
+          padding-left: 10px;
+          height: 20px;
+          p {
+            margin: 0px;
+          }
+        }
+
+        .save-buttons {
+          margin-top: 10px;
+          display: flex;
+          justify-content: space-evenly;
+          margin-bottom: 10px;
+          p {
+            height: 20px;
+            margin: 0px;
+            font-size: 12px;
+            width: 65px;
+            text-align: right;
+            margin-right: 10px;
+          }
+          .buttonLine {
+            margin-left: 0px;
+            margin-top: 0px;
+            button {
+              margin-top: 0px;
+              font-family: acumin-pro-condensed;
+              padding-top: 1px;
+            }
+          }
+        }
+
+        .buttonLine {
+          width: 80px;
+          padding: 0px;
+          display: block;
+          margin-left: 75px;
+          height: 20px;
+          margin-top: 10px;
+          button {
+            border: none;
+            font-size: 12px;
+            margin: 0px;
+            width: 80px;
+            background-color: #444444;
+            height: 20px;
+            font-family: acumin-pro-condensed;
+            padding-top: 1px;
+          }
+        }
+
+        .textInputLine {
+          display: flex;
+          .label {
+            font-size: 12px;
+            width: 75px;
+            text-align: center;
+            font-family: acumin-pro-condensed;
+          }
+          .value {
+            input {
+              width: 127px;
+              background-color: #444444;
+              border: none;
+              height: 20px;
+              font-family: acumin-pro-condensed;
             }
           }
         }
