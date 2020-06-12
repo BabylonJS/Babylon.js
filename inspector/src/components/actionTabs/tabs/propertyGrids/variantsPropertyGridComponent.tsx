@@ -27,10 +27,14 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
     }
 
     render() {
-        let KHR_materials_variants = GLTF2.KHR_materials_variants;
-        if (!KHR_materials_variants) {
+        let KHR_materials_variants: any;
+        if (GLTF2 && GLTF2.KHR_materials_variants) {
+            KHR_materials_variants = GLTF2.KHR_materials_variants;
+        }
+        else {
             KHR_materials_variants = BABYLON.GLTF2.Loader.Extensions.KHR_materials_variants as any;
         }
+
         if (!KHR_materials_variants) {
             return;
         }
