@@ -71802,10 +71802,14 @@ var VariantsPropertyGridComponent = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         // private _lastOne = 0;
         _this._selectedTags = [];
+        _this.disabled = true;
         return _this;
     }
     VariantsPropertyGridComponent.prototype.render = function () {
         var _this = this;
+        if (this.disabled) {
+            return null;
+        }
         var KHR_materials_variants;
         if (babylonjs_loaders_glTF_index__WEBPACK_IMPORTED_MODULE_5__["GLTF2"] && babylonjs_loaders_glTF_index__WEBPACK_IMPORTED_MODULE_5__["GLTF2"].KHR_materials_variants) {
             KHR_materials_variants = babylonjs_loaders_glTF_index__WEBPACK_IMPORTED_MODULE_5__["GLTF2"].KHR_materials_variants;
@@ -71814,7 +71818,7 @@ var VariantsPropertyGridComponent = /** @class */ (function (_super) {
             KHR_materials_variants = BABYLON.GLTF2.Loader.Extensions.KHR_materials_variants;
         }
         if (!KHR_materials_variants) {
-            return;
+            return null;
         }
         var variants = KHR_materials_variants.GetAvailableVariants(this.props.host);
         if (!variants || variants.length === 0) {
