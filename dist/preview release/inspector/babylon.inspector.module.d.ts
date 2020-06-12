@@ -1592,7 +1592,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/var
     export class VariantsPropertyGridComponent extends React.Component<IVariantsPropertyGridComponentProps> {
         private _selectedTags;
         constructor(props: IVariantsPropertyGridComponentProps);
-        render(): JSX.Element | null;
+        render(): JSX.Element | null | undefined;
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent" {
@@ -4824,7 +4824,7 @@ declare module INSPECTOR {
     export class VariantsPropertyGridComponent extends React.Component<IVariantsPropertyGridComponentProps> {
         private _selectedTags;
         constructor(props: IVariantsPropertyGridComponentProps);
-        render(): JSX.Element | null;
+        render(): JSX.Element | null | undefined;
     }
 }
 declare module INSPECTOR {
