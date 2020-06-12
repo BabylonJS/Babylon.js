@@ -38,45 +38,6 @@ jobs:
     env:
       AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
       NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
-# playground
-#  - script: 'npx netlify unlink'
-#    displayName: 'netlify unlink'
-#  - script: 'npx netlify link --id=9161d5f0-b208-4b86-a281-9300386f6c94'
-#    displayName: 'netlify link babylonjs-playground'
-#    env:
-#      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
-#      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
-#  - script: 'npx netlify deploy --prod --dir=Playground/'
-#    displayName: 'netlify deploy babylonjs-playground'
-#    env:
-#      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
-#      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
-# babylonjs-preview
-#  - script: 'npx netlify unlink'
-#    displayName: 'netlify unlink'
-#  - script: 'npx netlify link --id=e1c1c520-e3a4-4d5b-91e6-254f1bea1b6b'
-#    displayName: 'netlify link babylonjs-preview'
-#    env:
-#      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
-#      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
-#  - script: 'npx netlify deploy --prod --dir="dist/preview release"'
-#    displayName: 'netlify deploy babylonjs-preview'
-#    env:
-#      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
-#      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
-# assets-babylonjs
-  - script: 'npx netlify unlink'
-    displayName: 'netlify unlink'
-  - script: 'npx netlify link --id=bd58224a-5f56-42de-afd2-ffa72b85fd71'
-    displayName: 'netlify link assets-babylonjs'
-    env:
-      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
-      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
-  - script: 'npx netlify deploy --prod --dir=assets/'
-    displayName: 'netlify deploy assets-babylonjs'
-    env:
-      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
-      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
 # nodeeditor
   - script: 'npm install --prefix Tools/Gulp && npx gulp nodeEditor --gulpfile ./Tools/Gulp/gulpfile.js'
     displayName: 'gulp build nodeeditor'
