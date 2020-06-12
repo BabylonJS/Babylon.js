@@ -22,11 +22,17 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
     // private _lastOne = 0;
     private _selectedTags: string[] = [];
 
+    public disabled = true;
+
     constructor(props: IVariantsPropertyGridComponentProps) {
         super(props);
     }
 
     render() {
+        if (this.disabled) {
+            return null;
+        }
+
         let KHR_materials_variants: any;
         if (GLTF2 && GLTF2.KHR_materials_variants) {
             KHR_materials_variants = GLTF2.KHR_materials_variants;
@@ -36,7 +42,7 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
         }
 
         if (!KHR_materials_variants) {
-            return;
+            return null;
         }
 
         let variants: string[] = KHR_materials_variants.GetAvailableVariants(this.props.host);
