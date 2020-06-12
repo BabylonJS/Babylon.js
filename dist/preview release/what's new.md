@@ -53,6 +53,7 @@
 - Add isExposedOnFrame property to connection points ([belfortk](https://github.com/belfortk))
 - Add support for exporting frames ([belfortk](https://github.com/belfortk))
 - Add support for importing frames and their nodes (unconnected) and exposed frame ports ([belfortk](https://github.com/belfortk))
+- Add the `rgba` and `a` outputs to the `ReflectionTexture` block ([Popov72](https://github.com/Popov72))
 
 ### Inspector
 
