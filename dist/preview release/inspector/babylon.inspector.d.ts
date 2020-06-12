@@ -782,10 +782,47 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface ILoadSnippetProps {
+        animations: BABYLON.Animation[];
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        lockObject: LockObject;
+    }
+    export class LoadSnippet extends React.Component<ILoadSnippetProps, {
+        server: string;
+    }> {
+        private _serverAddress;
+        constructor(props: ILoadSnippetProps);
+        change(value: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface ISaveSnippetProps {
+        animations: any[];
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        lockObject: LockObject;
+    }
+    interface SelectedAnimation {
+        id: string;
+        name: string;
+        index: number;
+        selected: boolean;
+    }
+    export class SaveSnippet extends React.Component<ISaveSnippetProps, {
+        selectedAnimations: SelectedAnimation[];
+    }> {
+        private _serverAddress;
+        constructor(props: ISaveSnippetProps);
+        handleCheckboxChange(e: React.ChangeEvent<HTMLInputElement>): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface IEditorControlsProps {
         isTargetedAnimation: boolean;
         entity: BABYLON.IAnimatable | BABYLON.TargetedAnimation;
         selected: BABYLON.Animation | null;
+        lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         setNotificationMessage: (message: string) => void;
         selectAnimation: (selected: BABYLON.Animation, axis?: SelectedCoordinate) => void;
@@ -814,6 +851,7 @@ declare module INSPECTOR {
         playOrPause?: () => void;
         scene: BABYLON.Scene;
         entity: BABYLON.IAnimatable | BABYLON.TargetedAnimation;
+        lockObject: LockObject;
     }
     interface ICanvasAxis {
         value: number;
@@ -2175,6 +2213,7 @@ declare module INSPECTOR {
         disposeSprite(): void;
         componentDidMount(): void;
         componentDidUpdate(): void;
+        shouldComponentUpdate(nextProps: ISpritePropertyGridComponentProps): boolean;
         updatePreview(): void;
         render(): JSX.Element;
     }

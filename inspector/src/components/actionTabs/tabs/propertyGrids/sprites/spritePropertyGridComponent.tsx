@@ -16,6 +16,7 @@ import { FloatLineComponent } from '../../../lines/floatLineComponent';
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
 import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 import { TextureHelper, TextureChannelToDisplay } from '../../../../../textureHelper';
+import { Nullable } from 'babylonjs/types';
 
 interface ISpritePropertyGridComponentProps {
     globalState: GlobalState;
@@ -27,7 +28,7 @@ interface ISpritePropertyGridComponentProps {
 
 export class SpritePropertyGridComponent extends React.Component<ISpritePropertyGridComponentProps> {
     private canvasRef: React.RefObject<HTMLCanvasElement>;
-    private imageData: Uint8Array;
+    private imageData: Nullable<Uint8Array> = null;
     private cachedCellIndex = -1;
 
     constructor(props: ISpritePropertyGridComponentProps) {
@@ -76,6 +77,14 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
 
     componentDidUpdate() {
         this.updatePreview();
+    }
+
+    shouldComponentUpdate(nextProps: ISpritePropertyGridComponentProps) {
+        if (nextProps.sprite !== this.props.sprite) {
+            this.imageData = null;
+        }
+
+        return true;
     }
 
     updatePreview() {        

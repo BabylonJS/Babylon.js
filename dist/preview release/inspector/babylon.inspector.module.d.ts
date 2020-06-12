@@ -876,18 +876,65 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/loadsnippet" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { Animation } from "babylonjs/Animations/animation";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    interface ILoadSnippetProps {
+        animations: Animation[];
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        lockObject: LockObject;
+    }
+    export class LoadSnippet extends React.Component<ILoadSnippetProps, {
+        server: string;
+    }> {
+        private _serverAddress;
+        constructor(props: ILoadSnippetProps);
+        change(value: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/saveSnippet" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    interface ISaveSnippetProps {
+        animations: any[];
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        lockObject: LockObject;
+    }
+    interface SelectedAnimation {
+        id: string;
+        name: string;
+        index: number;
+        selected: boolean;
+    }
+    export class SaveSnippet extends React.Component<ISaveSnippetProps, {
+        selectedAnimations: SelectedAnimation[];
+    }> {
+        private _serverAddress;
+        constructor(props: ISaveSnippetProps);
+        handleCheckboxChange(e: React.ChangeEvent<HTMLInputElement>): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/editorControls" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
-    import { Animation } from 'babylonjs/Animations/animation';
+    import { Animation } from "babylonjs/Animations/animation";
     import { SelectedCoordinate } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/animationListTree";
-    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
+    import { IAnimatable } from "babylonjs/Animations/animatable.interface";
     import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
     interface IEditorControlsProps {
         isTargetedAnimation: boolean;
         entity: IAnimatable | TargetedAnimation;
         selected: Animation | null;
+        lockObject: LockObject;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
         setNotificationMessage: (message: string) => void;
         selectAnimation: (selected: Animation, axis?: SelectedCoordinate) => void;
@@ -923,11 +970,13 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
     import { SelectedCoordinate } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/animationListTree";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
     interface IAnimationCurveEditorComponentProps {
         close: (event: any) => void;
         playOrPause?: () => void;
         scene: Scene;
         entity: IAnimatable | TargetedAnimation;
+        lockObject: LockObject;
     }
     interface ICanvasAxis {
         value: number;
@@ -2720,6 +2769,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/spr
         disposeSprite(): void;
         componentDidMount(): void;
         componentDidUpdate(): void;
+        shouldComponentUpdate(nextProps: ISpritePropertyGridComponentProps): boolean;
         updatePreview(): void;
         render(): JSX.Element;
     }
@@ -4251,10 +4301,47 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface ILoadSnippetProps {
+        animations: BABYLON.Animation[];
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        lockObject: LockObject;
+    }
+    export class LoadSnippet extends React.Component<ILoadSnippetProps, {
+        server: string;
+    }> {
+        private _serverAddress;
+        constructor(props: ILoadSnippetProps);
+        change(value: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface ISaveSnippetProps {
+        animations: any[];
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        lockObject: LockObject;
+    }
+    interface SelectedAnimation {
+        id: string;
+        name: string;
+        index: number;
+        selected: boolean;
+    }
+    export class SaveSnippet extends React.Component<ISaveSnippetProps, {
+        selectedAnimations: SelectedAnimation[];
+    }> {
+        private _serverAddress;
+        constructor(props: ISaveSnippetProps);
+        handleCheckboxChange(e: React.ChangeEvent<HTMLInputElement>): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface IEditorControlsProps {
         isTargetedAnimation: boolean;
         entity: BABYLON.IAnimatable | BABYLON.TargetedAnimation;
         selected: BABYLON.Animation | null;
+        lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         setNotificationMessage: (message: string) => void;
         selectAnimation: (selected: BABYLON.Animation, axis?: SelectedCoordinate) => void;
@@ -4283,6 +4370,7 @@ declare module INSPECTOR {
         playOrPause?: () => void;
         scene: BABYLON.Scene;
         entity: BABYLON.IAnimatable | BABYLON.TargetedAnimation;
+        lockObject: LockObject;
     }
     interface ICanvasAxis {
         value: number;
@@ -5644,6 +5732,7 @@ declare module INSPECTOR {
         disposeSprite(): void;
         componentDidMount(): void;
         componentDidUpdate(): void;
+        shouldComponentUpdate(nextProps: ISpritePropertyGridComponentProps): boolean;
         updatePreview(): void;
         render(): JSX.Element;
     }
