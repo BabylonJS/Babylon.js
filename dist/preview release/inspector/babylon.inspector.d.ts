@@ -1355,7 +1355,7 @@ declare module INSPECTOR {
     export class VariantsPropertyGridComponent extends React.Component<IVariantsPropertyGridComponentProps> {
         private _selectedTags;
         constructor(props: IVariantsPropertyGridComponentProps);
-        render(): JSX.Element | null;
+        render(): JSX.Element | null | undefined;
     }
 }
 declare module INSPECTOR {
