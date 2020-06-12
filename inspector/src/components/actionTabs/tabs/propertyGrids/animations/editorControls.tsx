@@ -10,12 +10,16 @@ import { AddAnimation } from './addAnimation';
 import { AnimationListTree, SelectedCoordinate } from './animationListTree';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
+import { LoadSnippet } from "./loadsnippet";
+import { SaveSnippet } from "./saveSnippet";
+import { LockObject } from '../lockObject';
 
 
 interface IEditorControlsProps {
     isTargetedAnimation: boolean;
     entity: IAnimatable | TargetedAnimation;
-    selected: Animation | null
+    selected: Animation | null;
+    lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     setNotificationMessage: (message: string) => void;
     selectAnimation: (selected: Animation, axis?: SelectedCoordinate) => void;
@@ -97,9 +101,9 @@ export class EditorControls extends React.Component<IEditorControlsProps, { isAn
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 }
 
-                {this.state.isLoadTabOpen ? <div>Load</div> : null}
+                {this.state.isLoadTabOpen ? <LoadSnippet lockObject={this.props.lockObject} animations={[]} /> : null}
 
-                {this.state.isSaveTabOpen ? <div>Save</div> : null}
+                {this.state.isSaveTabOpen ? <SaveSnippet lockObject={this.props.lockObject} animations={[]} /> : null}
 
                 {this.state.isEditTabOpen ? <AnimationListTree
                     isTargetedAnimation={this.props.isTargetedAnimation}
