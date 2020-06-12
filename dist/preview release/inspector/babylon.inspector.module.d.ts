@@ -1590,7 +1590,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/var
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class VariantsPropertyGridComponent extends React.Component<IVariantsPropertyGridComponentProps> {
-        private _lastOne;
+        private _selectedTags;
         constructor(props: IVariantsPropertyGridComponentProps);
         render(): JSX.Element | null;
     }
@@ -4822,7 +4822,7 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class VariantsPropertyGridComponent extends React.Component<IVariantsPropertyGridComponentProps> {
-        private _lastOne;
+        private _selectedTags;
         constructor(props: IVariantsPropertyGridComponentProps);
         render(): JSX.Element | null;
     }
