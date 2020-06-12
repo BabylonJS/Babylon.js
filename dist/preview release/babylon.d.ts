@@ -9431,7 +9431,7 @@ declare module BABYLON {
          * Internal only
          * @hidden
          */
-        static _GetTargetProperty: (target: Node | Scene) => {
+        static _GetTargetProperty: (target: Scene | Node) => {
             name: string;
             targetType: string;
             value: string;
