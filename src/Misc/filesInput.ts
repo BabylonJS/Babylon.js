@@ -264,6 +264,8 @@ export class FilesInput {
                 this._engine.stopRenderLoop();
             }
 
+            SceneLoader.ShowLoadingScreen = false;
+            this._engine.displayLoadingUI();
             SceneLoader.LoadAsync("file:", this._sceneFileToLoad, this._engine, (progress) => {
                 if (this._progressCallback) {
                     this._progressCallback(progress);
@@ -281,6 +283,7 @@ export class FilesInput {
 
                 // Wait for textures and shaders to be ready
                 this._currentScene.executeWhenReady(() => {
+                    this._engine.hideLoadingUI();
                     this._engine.runRenderLoop(() => {
                         this.renderFunction();
                     });

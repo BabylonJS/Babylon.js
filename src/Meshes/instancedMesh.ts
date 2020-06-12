@@ -53,7 +53,7 @@ export class InstancedMesh extends AbstractMesh {
             this.rotationQuaternion = source.rotationQuaternion.clone();
         }
 
-        this.animations = source.animations;
+        this.animations = Array.from(source.animations);
         for (var range of source.getAnimationRanges()) {
             if (range != null) {
                 this.createAnimationRange(range.name, range.from, range.to);

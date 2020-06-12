@@ -1,8 +1,7 @@
 
 import * as React from "react";
 import { IAnimationKey } from 'babylonjs/Animations/animationKey';
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCaretRight, faCaretLeft, faStepBackward, faStepForward, faPlay, faPause } from "@fortawesome/free-solid-svg-icons";
+import { Controls } from './controls';
 
 interface ITimelineProps {
     keyframes: IAnimationKey[] | null;
@@ -13,7 +12,6 @@ interface ITimelineProps {
     playPause: (direction: number) => void;
     isPlaying: boolean;
 }
-
 
 export class Timeline extends React.Component<ITimelineProps, { selected: IAnimationKey, activeKeyframe: number | null }>{
     readonly _frames: object[] = Array(300).fill({});
@@ -144,59 +142,70 @@ export class Timeline extends React.Component<ITimelineProps, { selected: IAnima
         return (
             <>
                 <div className="timeline">
-                    <div ref={this._scrollable} className="display-line" >
-                        <svg viewBox="0 0 2010 100" style={{ width: 2000 }} onMouseMove={(e) => this.drag(e)}
-                            onTouchMove={(e) => this.drag(e)}
-                            onTouchStart={(e) => this.dragStart(e)}
-                            onTouchEnd={(e) => this.dragEnd(e)}
-                            onMouseDown={(e) => this.dragStart(e)}
-                            onMouseUp={(e) => this.dragEnd(e)}
-                            onMouseLeave={(e) => this.dragEnd(e)}>
+                    <Controls keyframes={this.props.keyframes}
+                        selected={this.props.selected}
+                        currentFrame={this.props.currentFrame}
+                        onCurrentFrameChange={this.props.onCurrentFrameChange}
+                        playPause={this.props.playPause}
+                        isPlaying={this.props.isPlaying}
+                        scrollable={this._scrollable} />
+                    <div className="timeline-wrapper">
+                        <div ref={this._scrollable} className="display-line" >
+                            <svg viewBox="0 0 2010 40" style={{ width: 2000, height: 40, backgroundColor: '#222222' }} onMouseMove={(e) => this.drag(e)}
+                                onTouchMove={(e) => this.drag(e)}
+                                onTouchStart={(e) => this.dragStart(e)}
+                                onTouchEnd={(e) => this.dragEnd(e)}
+                                onMouseDown={(e) => this.dragStart(e)}
+                                onMouseUp={(e) => this.dragEnd(e)}
+                                onMouseLeave={(e) => this.dragEnd(e)}>
 
-                            <line x1={this.props.currentFrame * 10} y1="10" x2={this.props.currentFrame * 10} y2="20" style={{ stroke: '#12506b', strokeWidth: 6 }} />
-                            {
-                                this.props.keyframes && this.props.keyframes.map((kf, i) => {
+                                <line x1={this.props.currentFrame * 10} y1="0" x2={this.props.currentFrame * 10} y2="40" style={{ stroke: '#12506b', strokeWidth: 6 }} />
+                                {
+                                    this.props.keyframes && this.props.keyframes.map((kf, i) => {
 
-                                    return <svg key={`kf_${i}`} style={{ cursor: 'pointer' }} tabIndex={i + 40} >
-                                        <line id={`kf_${i.toString()}`} x1={kf.frame * 10} y1="10" x2={kf.frame * 10} y2="20" style={{ stroke: 'red', strokeWidth: 6 }} />
-                                    </svg>
-                                })
-                            }
-                            {
-                                this._frames.map((frame, i) => {
+                                        return <svg key={`kf_${i}`} style={{ cursor: 'pointer' }} tabIndex={i + 40} >
+                                            <line id={`kf_${i.toString()}`} x1={kf.frame * 10} y1="0" x2={kf.frame * 10} y2="40" style={{ stroke: 'red', strokeWidth: 6 }} />
+                                        </svg>
+                                    })
+                                }
+                                {
+                                    this._frames.map((frame, i) => {
 
-                                    return <svg key={`tl_${i}`}>
-                                        {i % 10 === 0 ? <text x={(i * 10) - 3} y="8" style={{ fontSize: 10 }}>{i}</text> : null}
-                                        <line x1={i * 10} y1="10" x2={i * 10} y2="20" style={{ stroke: 'black', strokeWidth: 0.5 }} />
-                                    </svg>
-                                })
-                            }
-                        </svg>
-                    </div>
-                    <div className="controls">
-                        <div className="input-frame">
-                            <input type="number" value={this.props.currentFrame} onChange={(e) => this.handleInputChange(e)}></input>
+                                        return <svg key={`tl_${i}`}>
+                                            {i % 5 === 0 ?
+                                                <>
+                                                    <text x={(i * 5) - 3} y="18" style={{ fontSize: 10, fill: '#555555' }}>{i}</text>
+                                                    <line x1={i * 5} y1="22" x2={i * 5} y2="40" style={{ stroke: '#555555', strokeWidth: 0.5 }} />
+                                                </> : null}
+
+                                        </svg>
+                                    })
+                                }
+                            </svg>
                         </div>
-                        <div className="previous-frame button" onClick={(e) => this.previousFrame(e)}>
-                            <FontAwesomeIcon icon={faCaretLeft} />
-                        </div>
-                        <div className="previous-key-frame button" onClick={(e) => this.previousKeyframe(e)}>
-                            <FontAwesomeIcon icon={faStepBackward} />
-                        </div>
-                        <div className="previous-key-frame button" onClick={(e) => this.playBackwards(e)}>
-                            <FontAwesomeIcon icon={faPlay} style={{ transform: 'rotate(180deg)' }} />
-                        </div>
-                        <div className="previous-key-frame button" onClick={(e) => this.pause(e)}>
-                            <FontAwesomeIcon icon={faPause} />
-                        </div>
-                        <div className="previous-key-frame button" onClick={(e) => this.play(e)}>
-                            <FontAwesomeIcon icon={faPlay} />
-                        </div>
-                        <div className="next-key-frame button" onClick={(e) => this.nextKeyframe(e)}>
-                            <FontAwesomeIcon icon={faStepForward} />
-                        </div>
-                        <div className="next-frame button" onClick={(e) => this.nextFrame(e)}>
-                            <FontAwesomeIcon icon={faCaretRight} />
+
+                        <div className="timeline-scroll-handle">
+                            <div className="scroll-handle">
+                                <div className="handle" style={{ width: 300, marginLeft: 20 }}>
+                                    <div className="left-grabber">
+                                        <div className="grabber"></div>
+                                        <div className="grabber"></div>
+                                        <div className="grabber"></div>
+                                        <div className="text">20</div>
+                                    </div>
+
+
+                                    <div className="right-grabber">
+                                        <div className="text">100</div>
+                                        <div className="grabber"></div>
+                                        <div className="grabber"></div>
+                                        <div className="grabber"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="input-frame">
+                                <input type="number" value={this.props.currentFrame} onChange={(e) => this.handleInputChange(e)}></input>
+                            </div>
                         </div>
                     </div>
                 </div>

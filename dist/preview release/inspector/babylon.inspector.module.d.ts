@@ -671,6 +671,45 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/lines/iconButtonLineComponent" {
+    import * as React from "react";
+    export interface IIconButtonLineComponentProps {
+        icon: string;
+        onClick: () => void;
+        tooltip: string;
+        active?: boolean;
+    }
+    export class IconButtonLineComponent extends React.Component<IIconButtonLineComponentProps> {
+        constructor(props: IIconButtonLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/controls" {
+    import * as React from "react";
+    import { IAnimationKey } from 'babylonjs/Animations/animationKey';
+    interface IControlsProps {
+        keyframes: IAnimationKey[] | null;
+        selected: IAnimationKey | null;
+        currentFrame: number;
+        onCurrentFrameChange: (frame: number) => void;
+        playPause: (direction: number) => void;
+        isPlaying: boolean;
+        scrollable: React.RefObject<HTMLDivElement>;
+    }
+    export class Controls extends React.Component<IControlsProps, {
+        selected: IAnimationKey;
+    }> {
+        constructor(props: IControlsProps);
+        playBackwards(): void;
+        play(): void;
+        pause(): void;
+        nextFrame(): void;
+        previousFrame(): void;
+        nextKeyframe(): void;
+        previousKeyframe(): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/timeline" {
     import * as React from "react";
     import { IAnimationKey } from 'babylonjs/Animations/animationKey';
@@ -729,19 +768,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     }
     export class Notification extends React.Component<IPlayheadProps> {
         constructor(props: IPlayheadProps);
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-inspector/components/actionTabs/lines/iconButtonLineComponent" {
-    import * as React from "react";
-    export interface IIconButtonLineComponentProps {
-        icon: string;
-        onClick: () => void;
-        tooltip: string;
-        active?: boolean;
-    }
-    export class IconButtonLineComponent extends React.Component<IIconButtonLineComponentProps> {
-        constructor(props: IIconButtonLineComponentProps);
         render(): JSX.Element;
     }
 }
@@ -1564,7 +1590,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/var
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class VariantsPropertyGridComponent extends React.Component<IVariantsPropertyGridComponentProps> {
-        private _lastOne;
+        private _selectedTags;
         constructor(props: IVariantsPropertyGridComponentProps);
         render(): JSX.Element | null;
     }
@@ -4039,6 +4065,42 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export interface IIconButtonLineComponentProps {
+        icon: string;
+        onClick: () => void;
+        tooltip: string;
+        active?: boolean;
+    }
+    export class IconButtonLineComponent extends React.Component<IIconButtonLineComponentProps> {
+        constructor(props: IIconButtonLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IControlsProps {
+        keyframes: BABYLON.IAnimationKey[] | null;
+        selected: BABYLON.IAnimationKey | null;
+        currentFrame: number;
+        onCurrentFrameChange: (frame: number) => void;
+        playPause: (direction: number) => void;
+        isPlaying: boolean;
+        scrollable: React.RefObject<HTMLDivElement>;
+    }
+    export class Controls extends React.Component<IControlsProps, {
+        selected: BABYLON.IAnimationKey;
+    }> {
+        constructor(props: IControlsProps);
+        playBackwards(): void;
+        play(): void;
+        pause(): void;
+        nextFrame(): void;
+        previousFrame(): void;
+        nextKeyframe(): void;
+        previousKeyframe(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface ITimelineProps {
         keyframes: BABYLON.IAnimationKey[] | null;
         selected: BABYLON.IAnimationKey | null;
@@ -4092,18 +4154,6 @@ declare module INSPECTOR {
     }
     export class Notification extends React.Component<IPlayheadProps> {
         constructor(props: IPlayheadProps);
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    export interface IIconButtonLineComponentProps {
-        icon: string;
-        onClick: () => void;
-        tooltip: string;
-        active?: boolean;
-    }
-    export class IconButtonLineComponent extends React.Component<IIconButtonLineComponentProps> {
-        constructor(props: IIconButtonLineComponentProps);
         render(): JSX.Element;
     }
 }
@@ -4772,7 +4822,7 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class VariantsPropertyGridComponent extends React.Component<IVariantsPropertyGridComponentProps> {
-        private _lastOne;
+        private _selectedTags;
         constructor(props: IVariantsPropertyGridComponentProps);
         render(): JSX.Element | null;
     }
