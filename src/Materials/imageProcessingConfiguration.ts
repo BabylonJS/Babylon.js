@@ -438,8 +438,8 @@ export class ImageProcessingConfiguration {
      * @param defines the list of defines to complete
      * @param forPostProcess Define if we are currently in post process mode or not
      */
-    public prepareDefines(defines: IImageProcessingConfigurationDefines, forPostProcess: boolean = false, prePassEnabled: boolean = false): void {
-        if (forPostProcess !== this.applyByPostProcess || !this._isEnabled || prePassEnabled) {
+    public prepareDefines(defines: IImageProcessingConfigurationDefines, forPostProcess: boolean = false): void {
+        if (forPostProcess !== this.applyByPostProcess || !this._isEnabled) {
             defines.VIGNETTE = false;
             defines.TONEMAPPING = false;
             defines.TONEMAPPING_ACES = false;
@@ -449,7 +449,7 @@ export class ImageProcessingConfiguration {
             defines.COLORGRADING = false;
             defines.COLORGRADING3D = false;
             defines.IMAGEPROCESSING = false;
-            defines.IMAGEPROCESSINGPOSTPROCESS = prePassEnabled || (this.applyByPostProcess && this._isEnabled);
+            defines.IMAGEPROCESSINGPOSTPROCESS = (this.applyByPostProcess && this._isEnabled);
             return;
         }
 

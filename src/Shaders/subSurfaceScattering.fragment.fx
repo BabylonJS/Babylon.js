@@ -199,10 +199,6 @@ void main(void)
         #endif
 
 	    gl_FragColor = vec4(inputColor.rgb + albedo * centerIrradiance, 1.0);
-        #ifndef LINEAR_OUTPUT
-            gl_FragColor.rgb = toGammaSpace(gl_FragColor.rgb);
-            gl_FragColor.rgb = saturate(gl_FragColor.rgb);
-        #endif
         return;
 	}
 
@@ -233,9 +229,5 @@ void main(void)
     totalWeight = max(totalWeight, 1e-12);
 
     gl_FragColor = vec4(inputColor.rgb + albedo * (totalIrradiance / totalWeight), 1.);
-    #ifndef LINEAR_OUTPUT
-        gl_FragColor.rgb = toGammaSpace(gl_FragColor.rgb);
-        gl_FragColor.rgb = saturate(gl_FragColor.rgb);
-    #endif
 	// gl_FragColor = mix(texture2D(textureSampler, vUV), centerIrradiance, 0.5);
 }

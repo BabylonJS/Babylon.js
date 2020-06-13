@@ -1576,8 +1576,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
-            const prePassRenderer = this.getScene()._prePassRenderer;
-            this._imageProcessingConfiguration.prepareDefines(defines, false, prePassRenderer ? prePassRenderer.enabled : false);
+            this._imageProcessingConfiguration.prepareDefines(defines);
         }
 
         defines.FORCENORMALFORWARD = this._forceNormalForward;

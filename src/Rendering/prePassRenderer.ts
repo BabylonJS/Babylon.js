@@ -3,7 +3,7 @@ import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
 import { Scene } from "../scene";
 import { Engine } from "../Engines/Engine";
 import { Constants } from "../Engines/constants";
-import { SceneCompositorPostProcess } from "../PostProcesses/sceneCompositorPostProcess";
+import { ImageProcessingPostProcess } from "../PostProcesses/imageProcessingPostProcess";
 import { SubSurfaceScatteringPostProcess } from "../PostProcesses/subSurfaceScatteringPostProcess";
 import { Effect } from "../Materials/effect";
 import { Logger } from "../Misc/logger";
@@ -36,7 +36,7 @@ export class PrePassRenderer {
     public ssFilterRadii: number[] = [];
     public ssDiffusionD: number[] = [];
 
-    public sceneCompositorPostProcess: SceneCompositorPostProcess;
+    public imageProcessingPostProcess: ImageProcessingPostProcess;
     public subSurfaceScatteringPostProcess: SubSurfaceScatteringPostProcess;
     private _enabled: boolean = false;
 
@@ -65,9 +65,9 @@ export class PrePassRenderer {
 
         // Adding default diffusion profile
         this.addDiffusionProfile(new Color3(1, 1, 1));
-        this.sceneCompositorPostProcess = new SceneCompositorPostProcess("sceneCompositor", 1, null, undefined, this._engine);
-        this.sceneCompositorPostProcess.inputTexture = this.prePassRT.getInternalTexture()!;
+        this.imageProcessingPostProcess = new ImageProcessingPostProcess("sceneCompositionPass", 1, null, undefined, this._engine);
         this.subSurfaceScatteringPostProcess = new SubSurfaceScatteringPostProcess("subSurfaceScattering", this._scene, 1, null, undefined, this._engine);
+        this.subSurfaceScatteringPostProcess.inputTexture = this.prePassRT.getInternalTexture()!;
     }
 
     private _initializeAttachments() {
@@ -112,14 +112,14 @@ export class PrePassRenderer {
 
     public _afterCameraDraw() {
         if (this._enabled) {
-            // this.sceneCompositorPostProcess.activate(this._scene.activeCamera);
-            this.sceneCompositorPostProcess.autoClear = false;
-            this.sceneCompositorPostProcess.activate(this._scene.activeCamera);
+            // this.imageProcessingPostProcess.activate(this._scene.activeCamera);
+            this.subSurfaceScatteringPostProcess.autoClear = false;
             this.subSurfaceScatteringPostProcess.activate(this._scene.activeCamera);
-            this._scene.postProcessManager.directRender([this.sceneCompositorPostProcess], this.subSurfaceScatteringPostProcess.inputTexture);
+            this.imageProcessingPostProcess.activate(this._scene.activeCamera);
+            this._scene.postProcessManager.directRender([this.subSurfaceScatteringPostProcess], this.imageProcessingPostProcess.inputTexture);
+            this._scene.postProcessManager.directRender([this.imageProcessingPostProcess], null, false, 0, 0, false);
             // this.getEngine().restoreDefaultFramebuffer(); // Restore back buffer if needed
             // this._scene.postProcessManager._prepareFrame();
-            this._scene.postProcessManager.directRender([this.subSurfaceScatteringPostProcess], null, false, 0, 0, false);
         }
     }
 
@@ -131,7 +131,7 @@ export class PrePassRenderer {
 
         if (width !== requiredWidth || height !== requiredHeight) {
             this.prePassRT.resize({ width: requiredWidth, height: requiredHeight });
-            this.sceneCompositorPostProcess.inputTexture = this.prePassRT.getInternalTexture()!;
+            this.subSurfaceScatteringPostProcess.inputTexture = this.prePassRT.getInternalTexture()!;
         }
     }
 
@@ -162,11 +162,13 @@ export class PrePassRenderer {
     private _enable() {
         this._enabled = true;
         this._scene.prePass = true;
+        this.imageProcessingPostProcess.imageProcessingConfiguration.applyByPostProcess = true;
     }
 
     private _disable() {
         this._enabled = false;
         this._scene.prePass = false;
+        this.imageProcessingPostProcess.imageProcessingConfiguration.applyByPostProcess = false;
     }
 
     public markAsDirty() {
@@ -260,7 +262,7 @@ export class PrePassRenderer {
     }
 
     public dispose() {
-        this.sceneCompositorPostProcess.dispose();
+        this.imageProcessingPostProcess.dispose();
         this.subSurfaceScatteringPostProcess.dispose();
         this.prePassRT.dispose();
     }

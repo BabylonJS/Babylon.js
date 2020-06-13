@@ -8,7 +8,8 @@ import { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 
-import "../Shaders/sceneCompositor.fragment";
+import "../Shaders/imageProcessing.fragment";
+import "../Shaders/subSurfaceScattering.fragment";
 import "../Shaders/postprocess.vertex";
 
 /**
@@ -56,10 +57,10 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
 
         let defines = "";
 
-        if (this._scene.imageProcessingConfiguration.applyByPostProcess) {
-            // We must output linear color for post process
-            defines = defines + "#define LINEAR_OUTPUT\n";
-        }
+        // if (this._scene.imageProcessingConfiguration.applyByPostProcess) {
+        //     // We must output linear color for post process
+        //     defines = defines + "#define LINEAR_OUTPUT\n";
+        // }
 
         return defines;
     }
