@@ -77,6 +77,7 @@ export class PBRSubSurfaceConfiguration {
      * Diffusion profile for subsurface scattering.
      * Useful for better scattering in the skins or foliages.
      */
+    @serialize()
     public scatteringDiffusionProfileIndex = 0;
 
     /**

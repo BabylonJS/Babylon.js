@@ -1,10 +1,12 @@
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { ISceneComponent, SceneComponentConstants } from "../sceneComponent";
+import { ISceneSerializableComponent, SceneComponentConstants } from "../sceneComponent";
 import { PrePassRenderer } from "./prePassRenderer";
+import { AbstractScene } from "../abstractScene";
+import { Color3 } from "../Maths/math.color";
 
-declare module "../scene" {
-    export interface Scene {
+declare module "../abstractScene" {
+    export interface AbstractScene {
         /** @hidden (Backing field) */
         _prePassRenderer: Nullable<PrePassRenderer>;
 
@@ -23,6 +25,8 @@ declare module "../scene" {
          * Disables the prepass associated with the scene
          */
         disablePrepassRenderer(): void;
+
+        ssDiffusionProfileColors: Color3[];
     }
 }
 
@@ -65,7 +69,7 @@ Scene.prototype.disablePrepassRenderer = function(): void {
  * Defines the Geometry Buffer scene component responsible to manage a G-Buffer useful
  * in several rendering techniques.
  */
-export class PrePassRendererSceneComponent implements ISceneComponent {
+export class PrePassRendererSceneComponent implements ISceneSerializableComponent {
     /**
      * The component name helpful to identify the component in the list of scene components.
      */
@@ -82,6 +86,8 @@ export class PrePassRendererSceneComponent implements ISceneComponent {
      */
     constructor(scene: Scene) {
         this.scene = scene;
+
+        scene.ssDiffusionProfileColors = [];
     }
 
     /**
@@ -108,6 +114,52 @@ export class PrePassRendererSceneComponent implements ISceneComponent {
     private _beforeClearStage() {
         if (this.scene.prePassRenderer) {
             this.scene.prePassRenderer.clear();
+        }
+    }
+
+    /**
+     * Serializes the component data to the specified json object
+     * @param serializationObject The object to serialize to
+     */
+    public serialize(serializationObject: any): void {
+        const ssDiffusionProfileColors = this.scene.ssDiffusionProfileColors;
+        serializationObject.ssDiffusionProfileColors = [];
+
+        for (let i = 0; i < ssDiffusionProfileColors.length; i++) {
+            serializationObject.ssDiffusionProfileColors.push(ssDiffusionProfileColors[i].r,
+                                                              ssDiffusionProfileColors[i].g,
+                                                              ssDiffusionProfileColors[i].b);
+        }
+    }
+
+    /**
+     * Adds all the elements from the container to the scene
+     * @param container the container holding the elements
+     */
+    public addFromContainer(container: AbstractScene): void {
+        if (!container.ssDiffusionProfileColors) {
+            return;
+        }
+
+        if (this.scene.prePassRenderer) {
+            container.ssDiffusionProfileColors.forEach((color) => {
+                this.scene.prePassRenderer!.addDiffusionProfile(color);
+            });
+        }
+    }
+
+    /**
+     * Removes all the elements in the container from the scene
+     * @param container contains the elements to remove
+     * @param dispose if the removed element should be disposed (default: false)
+     */
+    public removeFromContainer(container: AbstractScene, dispose?: boolean): void {
+        if (!container.ssDiffusionProfileColors) {
+            return;
+        }
+
+        if (this.scene.prePassRenderer) {
+            this.scene.prePassRenderer.clearAllDiffusionProfiles();
         }
     }
 
