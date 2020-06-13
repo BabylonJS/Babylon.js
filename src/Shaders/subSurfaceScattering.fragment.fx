@@ -144,7 +144,7 @@ void main(void)
 {
 	vec4 irradianceAndDiffusionProfile  = texture2D(irradianceSampler, vUV);
     vec3 centerIrradiance = irradianceAndDiffusionProfile.rgb;
-    int diffusionProfileIndex = int(irradianceAndDiffusionProfile.a * 255.);
+    int diffusionProfileIndex = int(round(irradianceAndDiffusionProfile.a * 255.));
 
 	float  centerDepth       = 0.;
     vec4 inputColor = texture2D(textureSampler, vUV);
