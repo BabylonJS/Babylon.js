@@ -418,7 +418,7 @@ body {
     -ms-user-select: none;
     user-select: none;
     position: relative;
-    z-index: 5;
+    z-index: 11;
 }
 
 .navbar a {

@@ -94,7 +94,7 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
 
             var bufferView = ArrayItem.Get(extensionContext, this._loader.gltf.bufferViews, extension.bufferView) as IBufferViewDraco;
             if (!bufferView._dracoBabylonGeometry) {
-                bufferView._dracoBabylonGeometry = this._loader.loadBufferViewAsync(`#/bufferViews/${bufferView.index}`, bufferView).then((data) => {
+                bufferView._dracoBabylonGeometry = this._loader.loadBufferViewAsync(`/bufferViews/${bufferView.index}`, bufferView).then((data) => {
                     const dracoCompression = this.dracoCompression || DracoCompression.Default;
                     return dracoCompression.decodeMeshAsync(data, attributes).then((babylonVertexData) => {
                         const babylonGeometry = new Geometry(babylonMesh.name, this._loader.babylonScene);

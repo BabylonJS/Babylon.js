@@ -173,8 +173,10 @@ export class WebXRInputSource {
 
         // Update the pointer mesh
         if (pose) {
-            this.pointer.position.copyFrom(<any>(pose.transform.position));
-            this.pointer.rotationQuaternion!.copyFrom(<any>(pose.transform.orientation));
+            const pos = pose.transform.position;
+            this.pointer.position.set(pos.x, pos.y, pos.z);
+            const orientation = pose.transform.orientation;
+            this.pointer.rotationQuaternion!.set(orientation.x, orientation.y, orientation.z, orientation.w);
             if (!this._scene.useRightHandedSystem) {
                 this.pointer.position.z *= -1;
                 this.pointer.rotationQuaternion!.z *= -1;
@@ -186,8 +188,10 @@ export class WebXRInputSource {
         if (this.inputSource.gripSpace && this.grip) {
             let pose = xrFrame.getPose(this.inputSource.gripSpace, referenceSpace);
             if (pose) {
-                this.grip.position.copyFrom(<any>(pose.transform.position));
-                this.grip.rotationQuaternion!.copyFrom(<any>(pose.transform.orientation));
+                const pos = pose.transform.position;
+                const orientation = pose.transform.orientation;
+                this.grip.position.set(pos.x, pos.y, pos.z);
+                this.grip.rotationQuaternion!.set(orientation.x, orientation.y, orientation.z, orientation.w);
                 if (!this._scene.useRightHandedSystem) {
                     this.grip.position.z *= -1;
                     this.grip.rotationQuaternion!.z *= -1;

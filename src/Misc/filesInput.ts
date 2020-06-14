@@ -1,6 +1,6 @@
 import { Engine } from "../Engines/engine";
 import { Scene } from "../scene";
-import { SceneLoaderProgressEvent, SceneLoader } from "../Loading/sceneLoader";
+import { ISceneLoaderProgressEvent, SceneLoader } from "../Loading/sceneLoader";
 import { Logger } from "../Misc/logger";
 import { FilesInputStore } from "./filesInputStore";
 
@@ -23,7 +23,7 @@ export class FilesInput {
     private _engine: Engine;
     private _currentScene: Scene;
     private _sceneLoadedCallback: (sceneFile: File, scene: Scene) => void;
-    private _progressCallback: (progress: SceneLoaderProgressEvent) => void;
+    private _progressCallback: (progress: ISceneLoaderProgressEvent) => void;
     private _additionalRenderLoopLogicCallback: () => void;
     private _textureLoadingCallback: (remaining: number) => void;
     private _startingProcessingFilesCallback: (files?: File[]) => void;
@@ -46,7 +46,7 @@ export class FilesInput {
      * @param onReloadCallback callback called when a reload is requested
      * @param errorCallback callback call if an error occurs
      */
-    constructor(engine: Engine, scene: Scene, sceneLoadedCallback: (sceneFile: File, scene: Scene) => void, progressCallback: (progress: SceneLoaderProgressEvent) => void, additionalRenderLoopLogicCallback: () => void,
+    constructor(engine: Engine, scene: Scene, sceneLoadedCallback: (sceneFile: File, scene: Scene) => void, progressCallback: (progress: ISceneLoaderProgressEvent) => void, additionalRenderLoopLogicCallback: () => void,
         textureLoadingCallback: (remaining: number) => void, startingProcessingFilesCallback: (files?: File[]) => void, onReloadCallback: (sceneFile: File) => void, errorCallback: (sceneFile: File, scene: Scene, message: string) => void) {
         this._engine = engine;
         this._currentScene = scene;
@@ -264,6 +264,8 @@ export class FilesInput {
                 this._engine.stopRenderLoop();
             }
 
+            SceneLoader.ShowLoadingScreen = false;
+            this._engine.displayLoadingUI();
             SceneLoader.LoadAsync("file:", this._sceneFileToLoad, this._engine, (progress) => {
                 if (this._progressCallback) {
                     this._progressCallback(progress);
@@ -281,6 +283,7 @@ export class FilesInput {
 
                 // Wait for textures and shaders to be ready
                 this._currentScene.executeWhenReady(() => {
+                    this._engine.hideLoadingUI();
                     this._engine.runRenderLoop(() => {
                         this.renderFunction();
                     });
