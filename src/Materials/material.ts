@@ -229,7 +229,6 @@ export class Material implements IAnimatable {
     @serialize()
     public state = "";
 
-
     /**
      * If the material should be rendered to several textures with MRT extension
      */
@@ -1248,15 +1247,14 @@ export class Material implements IAnimatable {
         }
 
         const prePassRenderer = this.getScene().enablePrePassRenderer();
-        
         if (prePassRenderer) {
             prePassRenderer.markAsDirty();
         }
     }
 
     /**
- * Indicates that we need to re-calculated for all submeshes
- */
+     * Indicates that we need to re-calculated for all submeshes
+     */
     protected _markAllSubMeshesAsAllDirty() {
         this._markAllSubMeshesAsDirty(Material._AllDirtyCallBack);
     }
