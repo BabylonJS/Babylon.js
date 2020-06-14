@@ -87,8 +87,8 @@ export class PrePassRenderer {
             this._multiRenderAttachments.push((<any>gl)["COLOR_ATTACHMENT" + i]);
 
             if (i > 0) {
-                this._clearAttachments.push((<any>gl)["COLOR_ATTACHMENT" + i])
-                this._defaultAttachments.push(gl.NONE)
+                this._clearAttachments.push((<any>gl)["COLOR_ATTACHMENT" + i]);
+                this._defaultAttachments.push(gl.NONE);
             }
         }
     }
@@ -103,7 +103,7 @@ export class PrePassRenderer {
             if (effect._multiTarget) {
                 this._engine.renderToAttachments(this._multiRenderAttachments);
             } else {
-                this._engine.renderToAttachments(this._defaultAttachments);      
+                this._engine.renderToAttachments(this._defaultAttachments);
             }
         }
     }
@@ -203,7 +203,6 @@ export class PrePassRenderer {
         }
     }
 
-
     public addDiffusionProfile(color: Color3) : number {
         if (this.ssDiffusionD.length >= 5) {
             // We only suppport 5 diffusion profiles
@@ -213,8 +212,8 @@ export class PrePassRenderer {
 
         // Do not add doubles
         for (let i = 0; i < this.ssDiffusionS.length / 3; i++) {
-            if (this.ssDiffusionS[i * 3] === color.r && 
-                this.ssDiffusionS[i * 3 + 1] === color.g && 
+            if (this.ssDiffusionS[i * 3] === color.r &&
+                this.ssDiffusionS[i * 3 + 1] === color.g &&
                 this.ssDiffusionS[i * 3 + 2] === color.b) {
                 return i;
             }

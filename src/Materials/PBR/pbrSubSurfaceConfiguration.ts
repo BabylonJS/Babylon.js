@@ -43,7 +43,6 @@ export interface IMaterialSubSurfaceDefines {
     _areTexturesDirty: boolean;
 }
 
-
 /**
  * Define the code related to the sub surface parameters of the pbr material.
  */
@@ -377,7 +376,6 @@ export class PBRSubSurfaceConfiguration {
                     uniformBuffer.updateFloat2("vRefractionFilteringInfo", width, Scalar.Log2(width));
                 }
             }
-
 
             if (this.isScatteringEnabled) {
                 uniformBuffer.updateFloat("scatteringDiffusionProfile", this.scatteringDiffusionProfileIndex);
