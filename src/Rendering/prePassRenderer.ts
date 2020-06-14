@@ -1,7 +1,7 @@
-import { PBRBaseMaterial } from "../Materials/PBR/PBRBaseMaterial";
+import { PBRBaseMaterial } from "../Materials/PBR/pbrBaseMaterial";
 import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
 import { Scene } from "../scene";
-import { Engine } from "../Engines/Engine";
+import { Engine } from "../Engines/engine";
 import { Constants } from "../Engines/constants";
 import { ImageProcessingPostProcess } from "../PostProcesses/imageProcessingPostProcess";
 import { SubSurfaceScatteringPostProcess } from "../PostProcesses/subSurfaceScatteringPostProcess";
