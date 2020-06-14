@@ -16,6 +16,8 @@ import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
 import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
 import { CommonPropertyGridComponent } from '../commonPropertyGridComponent';
+import { VariantsPropertyGridComponent } from '../variantsPropertyGridComponent';
+import { Mesh } from 'babylonjs/Meshes/mesh';
 
 interface ITransformNodePropertyGridComponentProps {
     globalState: GlobalState;
@@ -52,7 +54,8 @@ export class TransformNodePropertyGridComponent extends React.Component<ITransfo
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     }} />              
                 </LineContainerComponent>                
-                <CommonPropertyGridComponent host={transformNode} lockObject={this.props.lockObject} globalState={this.props.globalState} />
+                <CommonPropertyGridComponent host={transformNode} lockObject={this.props.lockObject} globalState={this.props.globalState} />                
+                <VariantsPropertyGridComponent host={transformNode as Mesh} lockObject={this.props.lockObject} globalState={this.props.globalState} />
                 <LineContainerComponent globalState={this.props.globalState} title="TRANSFORMATIONS">
                     <Vector3LineComponent label="Position" target={transformNode} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {

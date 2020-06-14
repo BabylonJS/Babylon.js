@@ -26,7 +26,10 @@ class SettingsPG {
         this.elementToTheme = [
             '.wrapper #jsEditor',
             '.wrapper .gutter'
-        ];
+        ];        
+        // Editor font size
+        this.safeMode = localStorage.getItem("bjs-playground-safeMode") || false;
+        this.ctrlS = localStorage.getItem("bjs-playground-ctrlS") || true;
         // Editor font size
         this.fontSize = localStorage.getItem("bjs-playground-font") || 14;
         // Editor theme
@@ -54,6 +57,37 @@ class SettingsPG {
         return this.defaultScene;
     };
 
+    /**
+     * Change safe mode
+     */
+    setSafeMode(value) {
+        localStorage.setItem("bjs-playground-safeMode", value);
+        this.safeMode = value;
+        if (value) {
+            this.parent.utils.setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
+        } else {
+            this.parent.utils.setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="fa fa-square" aria-hidden="true"></i>');
+        }
+    };
+    restoreSafeMode() {
+        this.setSafeMode(this.safeMode);
+    };    
+
+    /**
+     * Change CTRL+S
+     */
+    setCTRLS(value) {
+        localStorage.setItem("bjs-playground-ctrlS", value);
+        this.ctrlS = value;
+        if (value) {
+            this.parent.utils.setToMultipleID("ctrlsToggle", "innerHTML", 'CTRL+S to save <i class="fa fa-check-square" aria-hidden="true"></i>');
+        } else {
+            this.parent.utils.setToMultipleID("ctrlsToggle", "innerHTML", 'CTRL+S to save <i class="fa fa-square" aria-hidden="true"></i>');
+        }
+    };
+    restoreCTRLS() {
+        this.setSafeMode(this.ctrlS);
+    };   
 
     /**
      * Change font size

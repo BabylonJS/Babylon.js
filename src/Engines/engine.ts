@@ -1312,13 +1312,16 @@ export class Engine extends ThinEngine {
      * Force a specific size of the canvas
      * @param width defines the new canvas' width
      * @param height defines the new canvas' height
+     * @returns true if the size was changed
      */
-    public setSize(width: number, height: number): void {
+    public setSize(width: number, height: number): boolean {
         if (!this._renderingCanvas) {
-            return;
+            return false;
         }
 
-        super.setSize(width, height);
+        if (!super.setSize(width, height)) {
+            return false;
+        }
 
         if (this.scenes) {
             for (var index = 0; index < this.scenes.length; index++) {
@@ -1331,10 +1334,12 @@ export class Engine extends ThinEngine {
                 }
             }
 
-            if (this.onResizeObservable.hasObservers) {
+            if (this.onResizeObservable.hasObservers()) {
                 this.onResizeObservable.notifyObservers(this);
             }
         }
+
+        return true;
     }
 
     /**
@@ -1852,7 +1857,7 @@ export class Engine extends ThinEngine {
 
         this._renderingCanvas.setAttribute("touch-action", "none");
         this._renderingCanvas.style.touchAction = "none";
-        this._renderingCanvas.style.msTouchAction = "none";
+        (this._renderingCanvas.style as any).msTouchAction = "none";
     }
 
     // Loading screen

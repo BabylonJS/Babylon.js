@@ -8,7 +8,7 @@
 - Added HDR texture filtering tools to the sandbox ([Sebavan](https://github.com/sebavan/))
 - Reflection probes can now be used to give accurate shading with PBR ([CraigFeldpsar](https://github.com/craigfeldspar) and ([Sebavan](https://github.com/sebavan/)))
 - Added editing of PBR materials, Post processes and Particle fragment shaders in the node material editor ([Popov72](https://github.com/Popov72))
-- Added Curve editor to manage selected entity's animations and edit animation groups in Inspector ([pixelspace](https://github.com/devpixelspace))
+- Added Curve editor to manage entity's animations and edit animation groups in Inspector ([pixelspace](https://github.com/devpixelspace))
 - Added support in `ShadowGenerator` for fast fake soft transparent shadows ([Popov72](https://github.com/Popov72))
 - Added support for **thin instances** for faster mesh instances. [Doc](https://doc.babylonjs.com/how_to/how_to_use_thininstances) ([Popov72](https://github.com/Popov72))
 
@@ -37,6 +37,8 @@
 - Change default camera calculations to only include visible and enabled meshes ([bghgary](https://github.com/bghgary))
 - Optimized frozen instances ([Deltakosh](https://github.com/deltakosh))
 - Add support for detail maps in both the standard and PBR materials ([Popov72](https://github.com/Popov72))
+- Added abstractMesh method to get all particle systems that use the mesh as an emitter ([PirateJC](https://github.com/PirateJC))
+- Added customization options to VirtualJoystick ([#7398](https://github.com/BabylonJS/Babylon.js/issues/7398)) ([Rockwell15](https://github.com/Rockwell15))
 
 ### NME
 
@@ -52,6 +54,7 @@
 - Add isExposedOnFrame property to connection points ([belfortk](https://github.com/belfortk))
 - Add support for exporting frames ([belfortk](https://github.com/belfortk))
 - Add support for importing frames and their nodes (unconnected) and exposed frame ports ([belfortk](https://github.com/belfortk))
+- Add the `rgba` and `a` outputs to the `ReflectionTexture` block ([Popov72](https://github.com/Popov72))
 
 ### Inspector
 
@@ -61,7 +64,7 @@
 - Added right click options to create PBR and Standard Materials ([Deltakosh](https://github.com/deltakosh))
 - Added support for recording GIF ([Deltakosh](https://github.com/deltakosh))
 - Popup Window available (To be used in Curve Editor) ([pixelspace](https://github.com/devpixelspace))
-- Add support to update inspector when switching to new scene ([belfortk](https://github.com/belfortk))
+- Add support to update inspector when switching to a new scene ([belfortk](https://github.com/belfortk))
 
 ### Cameras
 
@@ -94,6 +97,7 @@
 - Added support for KHR_xmp for glTF loader. ([Sebavan](https://github.com/sebavan/))
 - Added support for KHR_materials_variants for glTF loader. ([MiiBond](https://github.com/MiiBond/))
 - Added support for KHR_materials_transmission for glTF loader. ([MiiBond](https://github.com/MiiBond/))
+- Improved progress handling in glTF loader. ([bghgary](https://github.com/bghgary))
 
 ### Navigation
 
@@ -128,7 +132,7 @@
 - Added support for (experimental) haptic actuators ([#8068](https://github.com/BabylonJS/Babylon.js/issues/8068)) ([RaananW](https://github.com/RaananW))
 - It is now possible to enable experimental (AR) features using the options of the default xr helper ([RaananW](https://github.com/RaananW))
 - Full support for right handed systems ([#8132](https://github.com/BabylonJS/Babylon.js/issues/8132)) ([RaananW](https://github.com/RaananW))
-- WebXR anchors feature ([#7917](https://github.com/BabylonJS/Babylon.js/issues/7917)) ([RaananW](https://github.com/RaananW))
+- WebXR anchors feature implemented ([#7917](https://github.com/BabylonJS/Babylon.js/issues/7917)) ([RaananW](https://github.com/RaananW))
 
 ### Collisions
 
@@ -221,9 +225,10 @@
 - Fix bug when using `ShadowOnlyMaterial` with Cascaded Shadow Map and `autoCalcDepthBounds` is `true` ([Popov72](https://github.com/Popov72))
 - Fix OBJ serializer default scene scene handedness causing [OBJ Mirror export](https://forum.babylonjs.com/t/obj-export-mirrored/10835/10)
 - Fix bug when using shadows + instances + transparent meshes + `transparencyShadow = false` ([Popov72](https://github.com/Popov72))
-- Incorrect initialization when reattaching XR pointer selection  ([#8227](https://github.com/BabylonJS/Babylon.js/issues/8227)) ([RaananW](https://github.com/RaananW))
+- Incorrect initialization when reattaching XR pointer selection ([#8227](https://github.com/BabylonJS/Babylon.js/issues/8227)) ([RaananW](https://github.com/RaananW))
 - Fixed `DracoCompression` to not load empty data into attributes ([bghgary](https://github.com/bghgary))
-- Fixed `Mesh.subdivide` where one face could be lost depending on the number of subdivision  ([Popov72](https://github.com/Popov72))
+- Fixed `Mesh.subdivide` where one face could be lost depending on the number of subdivision ([Popov72](https://github.com/Popov72))
+- Fixed `AssetContainer.instantiateModelsToScene` with cloneMaterials=true and MultiMaterials to properly set the cloned submaterials ([ghempton](https://github.com/ghempton))
 
 ## Breaking changes
 
@@ -231,3 +236,4 @@
 - Sound's `updateOptions` takes `options.length` and `options.offset` as seconds and not milliseconds ([RaananW](https://github.com/RaananW))
 - HDRCubeTexture default rotation is now similar to the industry one. You might need to add a rotation on y of 90 degrees if you scene changes ([Sebavan](https://github.com/sebavan/))
 - PBRMaterial index of refraction is now defined as index of refraction and not the inverse of it ([Sebavan](https://github.com/sebavan/))
+- `SceneLoaderProgress` class is now `ISceneLoaderProgress` interface ([bghgary](https://github.com/bghgary))

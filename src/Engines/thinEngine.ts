@@ -136,14 +136,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.2.0-alpha.18";
+        return "babylonjs@4.2.0-alpha.20";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.2.0-alpha.18";
+        return "4.2.0-alpha.20";
     }
 
     /**
@@ -484,7 +484,7 @@ export class ThinEngine {
 
         options = options || {};
 
-        if ((<HTMLCanvasElement>canvasOrContext).getContext) {
+        if ((canvasOrContext as any).getContext) {
             canvas = <HTMLCanvasElement>canvasOrContext;
             this._renderingCanvas = canvas;
 
@@ -1242,21 +1242,24 @@ export class ThinEngine {
      * Force a specific size of the canvas
      * @param width defines the new canvas' width
      * @param height defines the new canvas' height
+     * @returns true if the size was changed
      */
-    public setSize(width: number, height: number): void {
+    public setSize(width: number, height: number): boolean {
         if (!this._renderingCanvas) {
-            return;
+            return false;
         }
 
         width = width | 0;
         height = height | 0;
 
         if (this._renderingCanvas.width === width && this._renderingCanvas.height === height) {
-            return;
+            return false;
         }
 
         this._renderingCanvas.width = width;
         this._renderingCanvas.height = height;
+
+        return true;
     }
 
     /**
@@ -1826,6 +1829,10 @@ export class ThinEngine {
             let ai = attributesInfo[i];
             if (ai.index === undefined) {
                 ai.index = this._currentEffect!.getAttributeLocationByName(ai.attributeName);
+            }
+
+            if (ai.index < 0) {
+                continue;
             }
 
             if (!this._vertexAttribArraysEnabled[ai.index]) {

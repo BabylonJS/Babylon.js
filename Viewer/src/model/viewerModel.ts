@@ -4,7 +4,7 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
 import { Skeleton } from "babylonjs/Bones/skeleton";
 import { Observable } from "babylonjs/Misc/observable";
-import { SceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
+import { ISceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
 import { AnimationGroup } from "babylonjs/Animations/animationGroup";
 import { Animation, Animatable, CircleEase, BackEase, BounceEase, CubicEase, ElasticEase, ExponentialEase, PowerEase, QuadraticEase, QuarticEase, QuinticEase, SineEase } from "babylonjs/Animations/index";
 import { Nullable } from "babylonjs/types";
@@ -81,7 +81,7 @@ export class ViewerModel implements IDisposable {
     /**
      * Observers registered here will be executed when the loader notified of a progress event
      */
-    public onLoadProgressObservable: Observable<SceneLoaderProgressEvent>;
+    public onLoadProgressObservable: Observable<ISceneLoaderProgressEvent>;
     /**
      * Observers registered here will be executed when the loader notified of an error.
      */
@@ -654,7 +654,7 @@ export class ViewerModel implements IDisposable {
 
         this.rootMesh.animations = animations;
 
-        if (this.rootMesh.getScene().beginAnimation) {
+        if (this.rootMesh.getScene().beginAnimation !== undefined) {
             let animatable: Animatable = this.rootMesh.getScene().beginAnimation(this.rootMesh, 0, this._frameRate * duration, false, 1, () => {
                 if (onAnimationEnd) {
                     onAnimationEnd();

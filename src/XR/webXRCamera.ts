@@ -126,8 +126,11 @@ export class WebXRCamera extends FreeCamera {
         }
 
         if (pose.transform) {
-            this._referencedPosition.copyFrom(<any>(pose.transform.position));
-            this._referenceQuaternion.copyFrom(<any>(pose.transform.orientation));
+            const pos = pose.transform.position;
+            this._referencedPosition.set(pos.x, pos.y, pos.z);
+            const orientation = pose.transform.orientation;
+
+            this._referenceQuaternion.set(orientation.x, orientation.y, orientation.z, orientation.w);
             if (!this._scene.useRightHandedSystem) {
                 this._referencedPosition.z *= -1;
                 this._referenceQuaternion.z *= -1;
@@ -285,8 +288,7 @@ export class WebXRCamera extends FreeCamera {
         const pose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(referenceSpace);
 
         if (pose) {
-            const pos = new Vector3();
-            pos.copyFrom(<any>(pose.transform.position));
+            const pos = new Vector3(pose.transform.position.x, pose.transform.position.y, pose.transform.position.z);
             if (!this._scene.useRightHandedSystem) {
                 pos.z *= -1;
             }

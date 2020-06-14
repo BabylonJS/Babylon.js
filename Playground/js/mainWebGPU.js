@@ -437,6 +437,9 @@ class Main {
               (e.key === 'S' || event.which === 83)
             ) {
                 e.preventDefault();
+                if (!this.checkCTRLSMode()) {
+                    return;
+                }
                 handleSave();
             }
         };
@@ -708,6 +711,14 @@ class Main {
             return true;
         }
     };
+
+    checkCTRLSMode() {
+        if (document.getElementById("ctrlsToggle" + this.parent.utils.getCurrentSize()) &&
+            document.getElementById("ctrlsToggle" + this.parent.utils.getCurrentSize()).classList.contains('checked')) {
+            return true;
+        }
+        return false;
+    };    
 
     /**
      * Metadatas form

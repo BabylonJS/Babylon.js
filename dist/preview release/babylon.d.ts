@@ -11194,124 +11194,6 @@ declare module BABYLON {
 declare module BABYLON {
         interface ThinEngine {
             /**
-             * Creates a dynamic texture
-             * @param width defines the width of the texture
-             * @param height defines the height of the texture
-             * @param generateMipMaps defines if the engine should generate the mip levels
-             * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
-             * @returns the dynamic texture inside an InternalTexture
-             */
-            createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture;
-            /**
-             * Update the content of a dynamic texture
-             * @param texture defines the texture to update
-             * @param canvas defines the canvas containing the source
-             * @param invertY defines if data must be stored with Y axis inverted
-             * @param premulAlpha defines if alpha is stored as premultiplied
-             * @param format defines the format of the data
-             * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
-             */
-            updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement | OffscreenCanvas, invertY: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean): void;
-        }
-}
-declare module BABYLON {
-    /**
-     * Helper class used to generate a canvas to manipulate images
-     */
-    export class CanvasGenerator {
-        /**
-         * Create a new canvas (or offscreen canvas depending on the context)
-         * @param width defines the expected width
-         * @param height defines the expected height
-         * @return a new canvas or offscreen canvas
-         */
-        static CreateCanvas(width: number, height: number): HTMLCanvasElement | OffscreenCanvas;
-    }
-}
-declare module BABYLON {
-    /**
-     * A class extending Texture allowing drawing on a texture
-     * @see http://doc.babylonjs.com/how_to/dynamictexture
-     */
-    export class DynamicTexture extends Texture {
-        private _generateMipMaps;
-        private _canvas;
-        private _context;
-        /**
-         * Creates a DynamicTexture
-         * @param name defines the name of the texture
-         * @param options provides 3 alternatives for width and height of texture, a canvas, object with width and height properties, number for both width and height
-         * @param scene defines the scene where you want the texture
-         * @param generateMipMaps defines the use of MinMaps or not (default is false)
-         * @param samplingMode defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
-         * @param format defines the texture format to use (default is Engine.TEXTUREFORMAT_RGBA)
-         */
-        constructor(name: string, options: any, scene: Scene | null | undefined, generateMipMaps: boolean, samplingMode?: number, format?: number);
-        /**
-         * Get the current class name of the texture useful for serialization or dynamic coding.
-         * @returns "DynamicTexture"
-         */
-        getClassName(): string;
-        /**
-         * Gets the current state of canRescale
-         */
-        get canRescale(): boolean;
-        private _recreate;
-        /**
-         * Scales the texture
-         * @param ratio the scale factor to apply to both width and height
-         */
-        scale(ratio: number): void;
-        /**
-         * Resizes the texture
-         * @param width the new width
-         * @param height the new height
-         */
-        scaleTo(width: number, height: number): void;
-        /**
-         * Gets the context of the canvas used by the texture
-         * @returns the canvas context of the dynamic texture
-         */
-        getContext(): CanvasRenderingContext2D;
-        /**
-         * Clears the texture
-         */
-        clear(): void;
-        /**
-         * Updates the texture
-         * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
-         * @param premulAlpha defines if alpha is stored as premultiplied (default is false)
-         */
-        update(invertY?: boolean, premulAlpha?: boolean): void;
-        /**
-         * Draws text onto the texture
-         * @param text defines the text to be drawn
-         * @param x defines the placement of the text from the left
-         * @param y defines the placement of the text from the top when invertY is true and from the bottom when false
-         * @param font defines the font to be used with font-style, font-size, font-name
-         * @param color defines the color used for the text
-         * @param clearColor defines the color for the canvas, use null to not overwrite canvas
-         * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
-         * @param update defines whether texture is immediately update (default is true)
-         */
-        drawText(text: string, x: number | null | undefined, y: number | null | undefined, font: string, color: string | null, clearColor: string, invertY?: boolean, update?: boolean): void;
-        /**
-         * Clones the texture
-         * @returns the clone of the texture.
-         */
-        clone(): DynamicTexture;
-        /**
-         * Serializes the dynamic texture.  The scene should be ready before the dynamic texture is serialized
-         * @returns a serialized dynamic texture object
-         */
-        serialize(): any;
-        /** @hidden */
-        _rebuild(): void;
-    }
-}
-declare module BABYLON {
-        interface ThinEngine {
-            /**
              * Creates a raw texture
              * @param data defines the data to store in the texture
              * @param width defines the width of the texture
@@ -24579,6 +24461,7 @@ declare module BABYLON {
          * @returns null or the current material
          */
         getMaterial(): Nullable<Material>;
+        private _IsMultiMaterial;
         /**
          * Sets a new updated BoundingInfo object to the submesh
          * @param data defines an optional position array to use to determine the bounding info
@@ -25955,6 +25838,20 @@ declare module BABYLON {
         distance: number, 
         /** Defines the mesh to use to render this level */
         mesh: Nullable<Mesh>);
+    }
+}
+declare module BABYLON {
+    /**
+     * Helper class used to generate a canvas to manipulate images
+     */
+    export class CanvasGenerator {
+        /**
+         * Create a new canvas (or offscreen canvas depending on the context)
+         * @param width defines the expected width
+         * @param height defines the expected height
+         * @return a new canvas or offscreen canvas
+         */
+        static CreateCanvas(width: number, height: number): HTMLCanvasElement | OffscreenCanvas;
     }
 }
 declare module BABYLON {
@@ -31878,6 +31775,11 @@ declare module BABYLON {
          * @see https://www.babylonjs-playground.com/#19O9TU#0
          */
         enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh;
+        /**
+         * This function returns all of the particle systems in the scene that use the mesh as an emitter.
+         * @returns an array of particle systems in the scene that use the mesh as an emitter
+         */
+        getConnectedParticleSystems(): IParticleSystem[];
     }
 }
 declare module BABYLON {
@@ -34109,6 +34011,29 @@ declare module BABYLON {
         }
 }
 declare module BABYLON {
+        interface ThinEngine {
+            /**
+             * Creates a dynamic texture
+             * @param width defines the width of the texture
+             * @param height defines the height of the texture
+             * @param generateMipMaps defines if the engine should generate the mip levels
+             * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+             * @returns the dynamic texture inside an InternalTexture
+             */
+            createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture;
+            /**
+             * Update the content of a dynamic texture
+             * @param texture defines the texture to update
+             * @param canvas defines the canvas containing the source
+             * @param invertY defines if data must be stored with Y axis inverted
+             * @param premulAlpha defines if alpha is stored as premultiplied
+             * @param format defines the format of the data
+             * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
+             */
+            updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement | OffscreenCanvas, invertY: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean): void;
+        }
+}
+declare module BABYLON {
     /**
      * Settings for finer control over video usage
      */
@@ -34682,8 +34607,9 @@ declare module BABYLON {
          * Force a specific size of the canvas
          * @param width defines the new canvas' width
          * @param height defines the new canvas' height
+         * @returns true if the size was changed
          */
-        setSize(width: number, height: number): void;
+        setSize(width: number, height: number): boolean;
         /**
          * Binds the frame buffer to the specified texture.
          * @param texture The texture to render to or null for the default canvas
@@ -37074,8 +37000,9 @@ declare module BABYLON {
          * Force a specific size of the canvas
          * @param width defines the new canvas' width
          * @param height defines the new canvas' height
+         * @returns true if the size was changed
          */
-        setSize(width: number, height: number): void;
+        setSize(width: number, height: number): boolean;
         /**
          * Updates a dynamic vertex buffer.
          * @param vertexBuffer the vertex buffer to update
@@ -44083,6 +44010,47 @@ declare module BABYLON {
         Z = 2
     }
     /**
+     * Represents the different customization options available
+     * for VirtualJoystick
+     */
+    interface VirtualJoystickCustomizations {
+        /**
+         * Size of the joystick's puck
+         */
+        puckSize: number;
+        /**
+         * Size of the joystick's container
+         */
+        containerSize: number;
+        /**
+         * Color of the joystick && puck
+         */
+        color: string;
+        /**
+         * Image URL for the joystick's puck
+         */
+        puckImage?: string;
+        /**
+         * Image URL for the joystick's container
+         */
+        containerImage?: string;
+        /**
+         * Defines the unmoving position of the joystick container
+         */
+        position?: {
+            x: number;
+            y: number;
+        };
+        /**
+         * Defines whether or not the joystick container is always visible
+         */
+        alwaysVisible: boolean;
+        /**
+         * Defines whether or not to limit the movement of the puck to the joystick's container
+         */
+        limitToContainer: boolean;
+    }
+    /**
      * Class used to define virtual joystick (used in touch mode)
      */
     export class VirtualJoystick {
@@ -44106,11 +44074,17 @@ declare module BABYLON {
          * Canvas the virtual joystick will render onto, default z-index of this is 5
          */
         static Canvas: Nullable<HTMLCanvasElement>;
+        /**
+         * boolean indicating whether or not the joystick's puck's movement should be limited to the joystick's container area
+         */
+        limitToContainer: boolean;
         private static _globalJoystickIndex;
+        private static _alwaysVisibleSticks;
         private static vjCanvasContext;
         private static vjCanvasWidth;
         private static vjCanvasHeight;
         private static halfWidth;
+        private static _GetDefaultOptions;
         private _action;
         private _axisTargetedByLeftAndRight;
         private _axisTargetedByUpAndDown;
@@ -44124,6 +44098,16 @@ declare module BABYLON {
         private _deltaJoystickVector;
         private _leftJoystick;
         private _touches;
+        private _joystickPosition;
+        private _alwaysVisible;
+        private _puckImage;
+        private _containerImage;
+        private _joystickPuckSize;
+        private _joystickContainerSize;
+        private _clearPuckSize;
+        private _clearContainerSize;
+        private _clearPuckSizeOffset;
+        private _clearContainerSizeOffset;
         private _onPointerDownHandlerRef;
         private _onPointerMoveHandlerRef;
         private _onPointerUpHandlerRef;
@@ -44131,8 +44115,9 @@ declare module BABYLON {
         /**
          * Creates a new virtual joystick
          * @param leftJoystick defines that the joystick is for left hand (false by default)
+         * @param customizations Defines the options we want to customize the VirtualJoystick
          */
-        constructor(leftJoystick?: boolean);
+        constructor(leftJoystick?: boolean, customizations?: Partial<VirtualJoystickCustomizations>);
         /**
          * Defines joystick sensibility (ie. the ratio beteen a physical move and virtual joystick position change)
          * @param newJoystickSensibility defines the new sensibility
@@ -44142,10 +44127,35 @@ declare module BABYLON {
         private _onPointerMove;
         private _onPointerUp;
         /**
-        * Change the color of the virtual joystick
-        * @param newColor a string that must be a CSS color value (like "red") or the hexa value (like "#FF0000")
-        */
+         * Change the color of the virtual joystick
+         * @param newColor a string that must be a CSS color value (like "red") or the hexa value (like "#FF0000")
+         */
         setJoystickColor(newColor: string): void;
+        /**
+         * Size of the joystick's container
+         */
+        set containerSize(newSize: number);
+        get containerSize(): number;
+        /**
+         * Size of the joystick's puck
+         */
+        set puckSize(newSize: number);
+        get puckSize(): number;
+        /**
+         * Clears the set position of the joystick
+         */
+        clearPosition(): void;
+        /**
+         * Defines whether or not the joystick container is always visible
+         */
+        set alwaysVisible(value: boolean);
+        get alwaysVisible(): boolean;
+        /**
+        * Sets the constant position of the Joystick container
+        * @param x X axis coordinate
+        * @param y Y axis coordinate
+        */
+        setPosition(x: number, y: number): void;
         /**
          * Defines a callback to call when the joystick is touched
          * @param action defines the callback
@@ -44161,6 +44171,28 @@ declare module BABYLON {
          * @param axis defines the axis to use
          */
         setAxisForUpDown(axis: JoystickAxis): void;
+        /**
+         * Clears the canvas from the previous puck / container draw
+         */
+        private _clearPreviousDraw;
+        /**
+         * Loads `urlPath` to be used for the container's image
+         * @param urlPath defines the urlPath of an image to use
+         */
+        setContainerImage(urlPath: string): void;
+        /**
+         * Loads `urlPath` to be used for the puck's image
+         * @param urlPath defines the urlPath of an image to use
+         */
+        setPuckImage(urlPath: string): void;
+        /**
+         * Draws the Virtual Joystick's container
+         */
+        private _drawContainer;
+        /**
+         * Draws the Virtual Joystick's puck
+         */
+        private _drawPuck;
         private _drawVirtualJoystick;
         /**
          * Release internal HTML canvas
@@ -45462,6 +45494,88 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * A class extending Texture allowing drawing on a texture
+     * @see http://doc.babylonjs.com/how_to/dynamictexture
+     */
+    export class DynamicTexture extends Texture {
+        private _generateMipMaps;
+        private _canvas;
+        private _context;
+        /**
+         * Creates a DynamicTexture
+         * @param name defines the name of the texture
+         * @param options provides 3 alternatives for width and height of texture, a canvas, object with width and height properties, number for both width and height
+         * @param scene defines the scene where you want the texture
+         * @param generateMipMaps defines the use of MinMaps or not (default is false)
+         * @param samplingMode defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
+         * @param format defines the texture format to use (default is Engine.TEXTUREFORMAT_RGBA)
+         */
+        constructor(name: string, options: any, scene: Scene | null | undefined, generateMipMaps: boolean, samplingMode?: number, format?: number);
+        /**
+         * Get the current class name of the texture useful for serialization or dynamic coding.
+         * @returns "DynamicTexture"
+         */
+        getClassName(): string;
+        /**
+         * Gets the current state of canRescale
+         */
+        get canRescale(): boolean;
+        private _recreate;
+        /**
+         * Scales the texture
+         * @param ratio the scale factor to apply to both width and height
+         */
+        scale(ratio: number): void;
+        /**
+         * Resizes the texture
+         * @param width the new width
+         * @param height the new height
+         */
+        scaleTo(width: number, height: number): void;
+        /**
+         * Gets the context of the canvas used by the texture
+         * @returns the canvas context of the dynamic texture
+         */
+        getContext(): CanvasRenderingContext2D;
+        /**
+         * Clears the texture
+         */
+        clear(): void;
+        /**
+         * Updates the texture
+         * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
+         * @param premulAlpha defines if alpha is stored as premultiplied (default is false)
+         */
+        update(invertY?: boolean, premulAlpha?: boolean): void;
+        /**
+         * Draws text onto the texture
+         * @param text defines the text to be drawn
+         * @param x defines the placement of the text from the left
+         * @param y defines the placement of the text from the top when invertY is true and from the bottom when false
+         * @param font defines the font to be used with font-style, font-size, font-name
+         * @param color defines the color used for the text
+         * @param clearColor defines the color for the canvas, use null to not overwrite canvas
+         * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
+         * @param update defines whether texture is immediately update (default is true)
+         */
+        drawText(text: string, x: number | null | undefined, y: number | null | undefined, font: string, color: string | null, clearColor: string, invertY?: boolean, update?: boolean): void;
+        /**
+         * Clones the texture
+         * @returns the clone of the texture.
+         */
+        clone(): DynamicTexture;
+        /**
+         * Serializes the dynamic texture.  The scene should be ready before the dynamic texture is serialized
+         * @returns a serialized dynamic texture object
+         */
+        serialize(): any;
+        private _IsCanvasElement;
+        /** @hidden */
+        _rebuild(): void;
+    }
+}
+declare module BABYLON {
     /** @hidden */
     export var imageProcessingPixelShader: {
         name: string;
@@ -46520,34 +46634,21 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Class used to represent data loading progression
+     * Interface used to represent data loading progression
      */
-    export class SceneLoaderProgressEvent {
-        /** defines if data length to load can be evaluated */
+    export interface ISceneLoaderProgressEvent {
+        /**
+         * Defines if data length to load can be evaluated
+         */
         readonly lengthComputable: boolean;
-        /** defines the loaded data length */
+        /**
+         * Defines the loaded data length
+         */
         readonly loaded: number;
-        /** defines the data length to load */
+        /**
+         * Defines the data length to load
+         */
         readonly total: number;
-        /**
-         * Create a new progress event
-         * @param lengthComputable defines if data length to load can be evaluated
-         * @param loaded defines the loaded data length
-         * @param total defines the data length to load
-         */
-        constructor(
-        /** defines if data length to load can be evaluated */
-        lengthComputable: boolean, 
-        /** defines the loaded data length */
-        loaded: number, 
-        /** defines the data length to load */
-        total: number);
-        /**
-         * Creates a new SceneLoaderProgressEvent from a ProgressEvent
-         * @param event defines the source event
-         * @returns a new SceneLoaderProgressEvent
-         */
-        static FromProgressEvent(event: ProgressEvent): SceneLoaderProgressEvent;
     }
     /**
      * Interface used by SceneLoader plugins to define supported file extensions
@@ -46602,7 +46703,7 @@ declare module BABYLON {
          * @param onError callback called when the file fails to load
          * @returns a file request object
          */
-        requestFile?(scene: Scene, url: string, onSuccess: (data: any, request?: WebRequest) => void, onProgress?: (ev: ProgressEvent) => void, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest;
+        requestFile?(scene: Scene, url: string, onSuccess: (data: any, request?: WebRequest) => void, onProgress?: (ev: ISceneLoaderProgressEvent) => void, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest;
         /**
          * The callback called when loading from a file object.
          * @param scene scene loading this file
@@ -46613,7 +46714,7 @@ declare module BABYLON {
          * @param onError defines the callback to call when an error occurs
          * @returns a file request object
          */
-        readFile?(scene: Scene, file: File, onSuccess: (data: any) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest;
+        readFile?(scene: Scene, file: File, onSuccess: (data: any) => void, onProgress?: (ev: ISceneLoaderProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest;
         /**
          * The callback that returns true if the data can be directly loaded.
          * @param data string containing the file data
@@ -46685,7 +46786,7 @@ declare module BABYLON {
          * @param fileName Defines the name of the file to load
          * @returns The loaded meshes, particle systems, skeletons, and animation groups
          */
-        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<{
+        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<{
             meshes: AbstractMesh[];
             particleSystems: IParticleSystem[];
             skeletons: Skeleton[];
@@ -46700,7 +46801,7 @@ declare module BABYLON {
          * @param fileName Defines the name of the file to load
          * @returns Nothing
          */
-        loadAsync(scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
+        loadAsync(scene: Scene, data: any, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
         /**
          * Load into an asset container.
          * @param scene The scene to load into
@@ -46710,7 +46811,7 @@ declare module BABYLON {
          * @param fileName Defines the name of the file to load
          * @returns The loaded asset container
          */
-        loadAssetContainerAsync(scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
+        loadAssetContainerAsync(scene: Scene, data: any, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
     }
     /**
      * Mode that determines how to handle old animation groups before loading new ones.
@@ -46816,7 +46917,7 @@ declare module BABYLON {
          * @param pluginExtension the extension used to determine the plugin
          * @returns The loaded plugin
          */
-        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onSuccess?: Nullable<(meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onSuccess?: Nullable<(meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => void>, onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
         /**
          * Import meshes into a scene
          * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
@@ -46827,7 +46928,7 @@ declare module BABYLON {
          * @param pluginExtension the extension used to determine the plugin
          * @returns The loaded list of imported meshes, particle systems, skeletons, and animation groups
          */
-        static ImportMeshAsync(meshNames: any, rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<{
+        static ImportMeshAsync(meshNames: any, rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<{
             meshes: AbstractMesh[];
             particleSystems: IParticleSystem[];
             skeletons: Skeleton[];
@@ -46844,7 +46945,7 @@ declare module BABYLON {
          * @param pluginExtension the extension used to determine the plugin
          * @returns The loaded plugin
          */
-        static Load(rootUrl: string, sceneFilename?: string | File, engine?: Nullable<Engine>, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        static Load(rootUrl: string, sceneFilename?: string | File, engine?: Nullable<Engine>, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
         /**
          * Load a scene
          * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
@@ -46854,7 +46955,7 @@ declare module BABYLON {
          * @param pluginExtension the extension used to determine the plugin
          * @returns The loaded scene
          */
-        static LoadAsync(rootUrl: string, sceneFilename?: string | File, engine?: Nullable<Engine>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
+        static LoadAsync(rootUrl: string, sceneFilename?: string | File, engine?: Nullable<Engine>, onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
         /**
          * Append a scene
          * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
@@ -46866,7 +46967,7 @@ declare module BABYLON {
          * @param pluginExtension the extension used to determine the plugin
          * @returns The loaded plugin
          */
-        static Append(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        static Append(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
         /**
          * Append a scene
          * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
@@ -46876,7 +46977,7 @@ declare module BABYLON {
          * @param pluginExtension the extension used to determine the plugin
          * @returns The given scene
          */
-        static AppendAsync(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
+        static AppendAsync(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
         /**
          * Load a scene into an asset container
          * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
@@ -46888,7 +46989,7 @@ declare module BABYLON {
          * @param pluginExtension the extension used to determine the plugin
          * @returns The loaded plugin
          */
-        static LoadAssetContainer(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onSuccess?: Nullable<(assets: AssetContainer) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        static LoadAssetContainer(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, onSuccess?: Nullable<(assets: AssetContainer) => void>, onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
         /**
          * Load a scene into an asset container
          * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
@@ -46898,7 +46999,7 @@ declare module BABYLON {
          * @param pluginExtension the extension used to determine the plugin
          * @returns The loaded asset container
          */
-        static LoadAssetContainerAsync(rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<AssetContainer>;
+        static LoadAssetContainerAsync(rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<AssetContainer>;
         /**
          * Import animations from a file into a scene
          * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
@@ -46911,7 +47012,7 @@ declare module BABYLON {
          * @param onProgress a callback with a progress event for each file being loaded
          * @param onError a callback with the scene, a message, and possibly an exception when import fails
          */
-        static ImportAnimations(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, overwriteAnimations?: boolean, animationGroupLoadingMode?: SceneLoaderAnimationGroupLoadingMode, targetConverter?: Nullable<(target: any) => any>, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>): void;
+        static ImportAnimations(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, overwriteAnimations?: boolean, animationGroupLoadingMode?: SceneLoaderAnimationGroupLoadingMode, targetConverter?: Nullable<(target: any) => any>, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>): void;
         /**
          * Import animations from a file into a scene
          * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
@@ -46925,7 +47026,7 @@ declare module BABYLON {
          * @param onError a callback with the scene, a message, and possibly an exception when import fails
          * @returns the updated scene with imported animations
          */
-        static ImportAnimationsAsync(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, overwriteAnimations?: boolean, animationGroupLoadingMode?: SceneLoaderAnimationGroupLoadingMode, targetConverter?: Nullable<(target: any) => any>, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>): Promise<Scene>;
+        static ImportAnimationsAsync(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, overwriteAnimations?: boolean, animationGroupLoadingMode?: SceneLoaderAnimationGroupLoadingMode, targetConverter?: Nullable<(target: any) => any>, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>): Promise<Scene>;
     }
 }
 declare module BABYLON {
@@ -61671,6 +61772,10 @@ declare module BABYLON {
          */
         get rgb(): NodeMaterialConnectionPoint;
         /**
+         * Gets the rgba output component
+         */
+        get rgba(): NodeMaterialConnectionPoint;
+        /**
          * Gets the r output component
          */
         get r(): NodeMaterialConnectionPoint;
@@ -61682,6 +61787,10 @@ declare module BABYLON {
          * Gets the b output component
          */
         get b(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the a output component
+         */
+        get a(): NodeMaterialConnectionPoint;
         autoConfigure(material: NodeMaterial): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
@@ -71841,7 +71950,7 @@ declare module BABYLON {
          * @param onReloadCallback callback called when a reload is requested
          * @param errorCallback callback call if an error occurs
          */
-        constructor(engine: Engine, scene: Scene, sceneLoadedCallback: (sceneFile: File, scene: Scene) => void, progressCallback: (progress: SceneLoaderProgressEvent) => void, additionalRenderLoopLogicCallback: () => void, textureLoadingCallback: (remaining: number) => void, startingProcessingFilesCallback: (files?: File[]) => void, onReloadCallback: (sceneFile: File) => void, errorCallback: (sceneFile: File, scene: Scene, message: string) => void);
+        constructor(engine: Engine, scene: Scene, sceneLoadedCallback: (sceneFile: File, scene: Scene) => void, progressCallback: (progress: ISceneLoaderProgressEvent) => void, additionalRenderLoopLogicCallback: () => void, textureLoadingCallback: (remaining: number) => void, startingProcessingFilesCallback: (files?: File[]) => void, onReloadCallback: (sceneFile: File) => void, errorCallback: (sceneFile: File, scene: Scene, message: string) => void);
         private _dragEnterHandler;
         private _dragOverHandler;
         private _dropHandler;
