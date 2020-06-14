@@ -10,6 +10,12 @@ import { Logger } from "../Misc/logger";
 import { _DevTools } from '../Misc/devTools';
 import { Color3 } from "../Maths/math.color";
 
+/**
+ * Renders a pre pass of the scene
+ * This means every mesh in the scene will be rendered to a render target texture
+ * And then this texture will be composited to the rendering canvas with post processes
+ * It is necessary for effects like subsurface scattering or deferred shading
+ */
 export class PrePassRenderer {
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
@@ -20,7 +26,14 @@ export class PrePassRenderer {
     private _engine: Engine;
     private _isDirty: boolean = false;
 
-    public mrtCount: number = 4;
+    /**
+     * Number of textures in the multi render target texture where the scene is directly rendered
+     */
+    public readonly mrtCount: number = 4;
+
+    /**
+     * The render target where the scene is directly rendered
+     */
     public prePassRT: MultiRenderTarget;
     private _mrtTypes = [
         Constants.TEXTURETYPE_UNSIGNED_INT, // Original color
@@ -32,9 +45,30 @@ export class PrePassRenderer {
     private _defaultAttachments: number[];
     private _clearAttachments: number[];
 
-    public ssDiffusionS: number[] = [];
-    public ssFilterRadii: number[] = [];
-    public ssDiffusionD: number[] = [];
+    private _ssDiffusionS: number[] = [];
+    private _ssFilterRadii: number[] = [];
+    private _ssDiffusionD: number[] = [];
+
+    /**
+     * Diffusion profile color for subsurface scattering
+     */
+    public get ssDiffusionS() {
+        return this._ssDiffusionS;
+    }
+
+    /**
+     * Diffusion profile max color channel value for subsurface scattering
+     */
+    public get ssDiffusionD() {
+        return this._ssDiffusionD;
+    }
+
+    /**
+     * Diffusion profile filter radius for subsurface scattering
+     */
+    public get ssFilterRadii() {
+        return this._ssFilterRadii;
+    }
 
     /**
      * Defines the ratio real world => scene units.
@@ -42,14 +76,27 @@ export class PrePassRenderer {
      */
     public metersPerUnit: number = 1;
 
+    /**
+     * Image processing post process for composition
+     */
     public imageProcessingPostProcess: ImageProcessingPostProcess;
+
+    /**
+     * Post process for subsurface scattering
+     */
     public subSurfaceScatteringPostProcess: SubSurfaceScatteringPostProcess;
     private _enabled: boolean = false;
 
+    /**
+     * Indicates if the prepass is enabled
+     */
     public get enabled() {
         return this._enabled;
     }
 
+    /**
+     * How many samples are used for MSAA of the scene render target
+     */
     public get samples() {
         return this.prePassRT.samples;
     }
@@ -58,6 +105,10 @@ export class PrePassRenderer {
         this.prePassRT.samples = n;
     }
 
+    /**
+     * Instanciates a prepass renderer
+     * @param scene The scene
+     */
     constructor(scene: Scene) {
         this._scene = scene;
         this._engine = scene.getEngine();
@@ -93,11 +144,18 @@ export class PrePassRenderer {
         }
     }
 
+    /**
+     * Indicates if rendering a prepass is supported
+     */
     public get isSupported() {
         // TODO
         return true;
     }
 
+    /**
+     * Sets the proper output textures to draw in the engine.
+     * @param effect The effect that is drawn. It can be or not be compatible with drawing to several output textures.
+     */
     public drawBuffers(effect: Effect) {
         if (this.enabled) {
             if (effect._multiTarget) {
@@ -108,6 +166,9 @@ export class PrePassRenderer {
         }
     }
 
+    /**
+     * @hidden
+     */
     public _beforeCameraDraw() {
         if (this._isDirty) {
             this._update();
@@ -116,6 +177,9 @@ export class PrePassRenderer {
         this._bindFrameBuffer();
     }
 
+    /**
+     * @hidden
+     */
     public _afterCameraDraw() {
         if (this._enabled) {
             // this.imageProcessingPostProcess.activate(this._scene.activeCamera);
@@ -154,6 +218,9 @@ export class PrePassRenderer {
         }
     }
 
+    /**
+     * Clears the scene render target (in the sense of settings pixels to the scene clear color value)
+     */
     public clear() {
         if (this._enabled) {
             this._bindFrameBuffer();
@@ -177,6 +244,9 @@ export class PrePassRenderer {
         this.imageProcessingPostProcess.imageProcessingConfiguration.applyByPostProcess = false;
     }
 
+    /**
+     * Marks the prepass renderer as dirty, triggering a check if the prepass is necessary for the next rendering.
+     */
     public markAsDirty() {
         this._isDirty = true;
     }
@@ -203,6 +273,12 @@ export class PrePassRenderer {
         }
     }
 
+    /**
+     * Adds a new diffusion profile.
+     * Useful for more realistic subsurface scattering on diverse materials.
+     * @param color The color of the diffusion profile. Should be the average color of the material.
+     * @return The index of the diffusion profile for the material subsurface configuration
+     */
     public addDiffusionProfile(color: Color3) : number {
         if (this.ssDiffusionD.length >= 5) {
             // We only suppport 5 diffusion profiles
@@ -211,29 +287,36 @@ export class PrePassRenderer {
         }
 
         // Do not add doubles
-        for (let i = 0; i < this.ssDiffusionS.length / 3; i++) {
-            if (this.ssDiffusionS[i * 3] === color.r &&
-                this.ssDiffusionS[i * 3 + 1] === color.g &&
-                this.ssDiffusionS[i * 3 + 2] === color.b) {
+        for (let i = 0; i < this._ssDiffusionS.length / 3; i++) {
+            if (this._ssDiffusionS[i * 3] === color.r &&
+                this._ssDiffusionS[i * 3 + 1] === color.g &&
+                this._ssDiffusionS[i * 3 + 2] === color.b) {
                 return i;
             }
         }
 
-        this.ssDiffusionS.push(color.r, color.b, color.g);
-        this.ssDiffusionD.push(Math.max(Math.max(color.r, color.b), color.g));
-        this.ssFilterRadii.push(this.getDiffusionProfileParameters(color));
+        this._ssDiffusionS.push(color.r, color.b, color.g);
+        this._ssDiffusionD.push(Math.max(Math.max(color.r, color.b), color.g));
+        this._ssFilterRadii.push(this.getDiffusionProfileParameters(color));
         this._scene.ssDiffusionProfileColors.push(color);
 
-        return this.ssDiffusionD.length - 1;
+        return this._ssDiffusionD.length - 1;
     }
 
+    /**
+     * Deletes all diffusion profiles.
+     * Note that in order to render subsurface scattering, you should have at least 1 diffusion profile.
+     */
     public clearAllDiffusionProfiles() {
-        this.ssDiffusionD = [];
-        this.ssDiffusionS = [];
-        this.ssFilterRadii = [];
+        this._ssDiffusionD = [];
+        this._ssDiffusionS = [];
+        this._ssFilterRadii = [];
         this._scene.ssDiffusionProfileColors = [];
     }
 
+    /**
+     * @hidden
+     */
     public getDiffusionProfileParameters(color: Color3)
     {
         const cdf = 0.997;
@@ -248,6 +331,7 @@ export class PrePassRenderer {
 
         return this._sampleBurleyDiffusionProfile(cdf, maxScatteringDistance);
     }
+
     // https://zero-radiance.github.io/post/sampling-diffusion/
     // Performs sampling of a Normalized Burley diffusion profile in polar coordinates.
     // 'u' is the random number (the value of the CDF): [0, 1).
@@ -266,6 +350,9 @@ export class PrePassRenderer {
         return x * rcpS;
     }
 
+    /**
+     * Disposes the prepass renderer.
+     */
     public dispose() {
         this.imageProcessingPostProcess.dispose();
         this.subSurfaceScatteringPostProcess.dispose();

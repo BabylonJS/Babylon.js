@@ -11,7 +11,7 @@ declare module "../abstractScene" {
         _prePassRenderer: Nullable<PrePassRenderer>;
 
         /**
-         * Gets or Sets the current geometry buffer associated to the scene.
+         * Gets or Sets the current prepass renderer associated to the scene.
          */
         prePassRenderer: Nullable<PrePassRenderer>;
 
@@ -19,13 +19,19 @@ declare module "../abstractScene" {
          * Enables the prepass and associates it with the scene
          * @returns the PrePassRenderer
          */
-        enablePrePassRenderer(ratio?: number): Nullable<PrePassRenderer>;
+        enablePrePassRenderer(): Nullable<PrePassRenderer>;
 
         /**
          * Disables the prepass associated with the scene
          */
         disablePrePassRenderer(): void;
 
+        /**
+         * Diffusion profile colors for subsurface scattering
+         * You can add one diffusion color using `addDiffusionProfile` on `scene.prePassRenderer`
+         * See ...
+         * Note that you can only store up to 5 of them
+         */
         ssDiffusionProfileColors: Color3[];
     }
 }
@@ -43,7 +49,7 @@ Object.defineProperty(Scene.prototype, "prePassRenderer", {
     configurable: true
 });
 
-Scene.prototype.enablePrePassRenderer = function(ratio: number = 1): Nullable<PrePassRenderer> {
+Scene.prototype.enablePrePassRenderer = function(): Nullable<PrePassRenderer> {
     if (this._prePassRenderer) {
         return this._prePassRenderer;
     }

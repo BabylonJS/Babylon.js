@@ -302,7 +302,7 @@ export class MaterialHelper {
      * @param shouldRenderToMRT Indicates if this material renders to several textures in the prepass
      */
     public static PrepareDefinesForPrePass(scene: Scene, defines: any, shouldRenderToMRT: boolean) {
-        var previousDeferred = defines.PREPASS;
+        var previousPrePass = defines.PREPASS;
 
         if (scene.prePassRenderer && shouldRenderToMRT) {
             defines.PREPASS = true;
@@ -311,7 +311,7 @@ export class MaterialHelper {
             defines.PREPASS = false;
         }
 
-        if (defines.PREPASS != previousDeferred) {
+        if (defines.PREPASS != previousPrePass) {
             defines.markAsUnprocessed();
             defines.markAsImageProcessingDirty();
         }

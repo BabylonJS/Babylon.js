@@ -13,7 +13,7 @@ import "../Shaders/subSurfaceScattering.fragment";
 import "../Shaders/postprocess.vertex";
 
 /**
- * Scene compositor post process
+ * Sub surface scattering post process
  */
 export class SubSurfaceScatteringPostProcess extends PostProcess {
     /** @hidden */
