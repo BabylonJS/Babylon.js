@@ -69,7 +69,7 @@ export class PBRSubSurfaceConfiguration {
      * Defines if the sub surface scattering is enabled in the material.
      */
     @serialize()
-    @expandToProperty("_markSceneDeferredDirty")
+    @expandToProperty("_markScenePrePassDirty")
     public isScatteringEnabled = false;
 
     /**
@@ -231,24 +231,25 @@ export class PBRSubSurfaceConfiguration {
 
     /** @hidden */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
-    private _internalMarkSceneDeferredDirty: () => void;
+    private _internalMarkScenePrePassDirty: () => void;
 
     /** @hidden */
     public _markAllSubMeshesAsTexturesDirty(): void {
         this._internalMarkAllSubMeshesAsTexturesDirty();
     }
     /** @hidden */
-    public _markSceneDeferredDirty(): void {
-        this._internalMarkSceneDeferredDirty();
+    public _markScenePrePassDirty(): void {
+        this._internalMarkScenePrePassDirty();
     }
 
     /**
      * Instantiate a new istance of sub surface configuration.
      * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
+     * @param markScenePrePassDirty Callback to flag the scene as prepass dirty
      */
-    constructor(markAllSubMeshesAsTexturesDirty: () => void, markSceneDeferredDirty: () => void) {
+    constructor(markAllSubMeshesAsTexturesDirty: () => void, markScenePrePassDirty: () => void) {
         this._internalMarkAllSubMeshesAsTexturesDirty = markAllSubMeshesAsTexturesDirty;
-        this._internalMarkSceneDeferredDirty = markSceneDeferredDirty;
+        this._internalMarkScenePrePassDirty = markScenePrePassDirty;
     }
 
     /**

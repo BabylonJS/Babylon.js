@@ -1241,7 +1241,10 @@ export class Material implements IAnimatable {
         }
     }
 
-    protected _markSceneDeferredDirty() {
+    /**
+     * Indicates that the scene should check if the rendering now needs a prepass
+     */
+    protected _markScenePrePassDirty() {
         if (this.getScene().blockMaterialDirtyMechanism) {
             return;
         }
