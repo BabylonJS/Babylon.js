@@ -88,17 +88,6 @@ float getLuminance(vec3 color)
     return clamp(dot(color, LuminanceEncodeApprox), 0., 1.);
 }
 
-vec3 tagLightingForSSS(vec3 color) {
-    color.b = max(color.b, HALF_MIN);
-
-    return color;
-}
-
-bool testLightingForSSS(vec3 color)
-{
-    return color.b > 0.;
-}
-
 // https://stackoverflow.com/questions/4200224/random-noise-functions-for-glsl
 float getRand(vec2 seed) {
     return fract(sin(dot(seed.xy ,vec2(12.9898,78.233))) * 43758.5453);

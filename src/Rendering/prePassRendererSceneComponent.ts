@@ -19,12 +19,12 @@ declare module "../abstractScene" {
          * Enables the prepass and associates it with the scene
          * @returns the PrePassRenderer
          */
-        enablePrepassRenderer(ratio?: number): Nullable<PrePassRenderer>;
+        enablePrePassRenderer(ratio?: number): Nullable<PrePassRenderer>;
 
         /**
          * Disables the prepass associated with the scene
          */
-        disablePrepassRenderer(): void;
+        disablePrePassRenderer(): void;
 
         ssDiffusionProfileColors: Color3[];
     }
@@ -43,7 +43,7 @@ Object.defineProperty(Scene.prototype, "prePassRenderer", {
     configurable: true
 });
 
-Scene.prototype.enablePrepassRenderer = function(ratio: number = 1): Nullable<PrePassRenderer> {
+Scene.prototype.enablePrePassRenderer = function(ratio: number = 1): Nullable<PrePassRenderer> {
     if (this._prePassRenderer) {
         return this._prePassRenderer;
     }
@@ -56,7 +56,7 @@ Scene.prototype.enablePrepassRenderer = function(ratio: number = 1): Nullable<Pr
     return this._prePassRenderer;
 };
 
-Scene.prototype.disablePrepassRenderer = function(): void {
+Scene.prototype.disablePrePassRenderer = function(): void {
     if (!this._prePassRenderer) {
         return;
     }

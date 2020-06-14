@@ -36,6 +36,12 @@ export class PrePassRenderer {
     public ssFilterRadii: number[] = [];
     public ssDiffusionD: number[] = [];
 
+    /**
+     * Defines the ratio real world => scene units.
+     * Used for subsurface scattering
+     */
+    public metersPerUnit: number = 1;
+
     public imageProcessingPostProcess: ImageProcessingPostProcess;
     public subSurfaceScatteringPostProcess: SubSurfaceScatteringPostProcess;
     private _enabled: boolean = false;

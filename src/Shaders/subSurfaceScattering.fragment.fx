@@ -1,6 +1,7 @@
 // Samplers
 #include<fibonacci>
 #include<helperFunctions>
+#include<subSurfaceScatteringFunctions>
 #include<diffusionProfile>
 
 varying vec2 vUV;

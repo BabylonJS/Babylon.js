@@ -34,7 +34,7 @@ attribute vec4 color;
 // Uniforms
 #include<instancesDeclaration>
 
-#ifdef HIGH_DEFINITION_PIPELINE
+#ifdef PREPASS
 varying vec3 vViewPos;
 #endif
 
@@ -177,7 +177,7 @@ void main(void) {
 
     vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
     vPositionW = vec3(worldPos);
-#ifdef HIGH_DEFINITION_PIPELINE
+#ifdef PREPASS
     vViewPos = (view * worldPos).rgb;
 #endif
 

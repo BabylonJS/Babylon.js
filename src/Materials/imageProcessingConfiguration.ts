@@ -449,7 +449,7 @@ export class ImageProcessingConfiguration {
             defines.COLORGRADING = false;
             defines.COLORGRADING3D = false;
             defines.IMAGEPROCESSING = false;
-            defines.IMAGEPROCESSINGPOSTPROCESS = (this.applyByPostProcess && this._isEnabled);
+            defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess && this._isEnabled;
             return;
         }
 
