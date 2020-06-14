@@ -6,6 +6,7 @@
     // Alway run to ensure we are going back to gamma space.
     finalColor = applyImageProcessing(finalColor);
 #endif
+
     finalColor.a *= visibility;
 
 #ifdef PREMULTIPLYALPHA

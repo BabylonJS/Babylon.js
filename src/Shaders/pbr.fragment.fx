@@ -14,7 +14,7 @@
 
 precision highp float;
 
-#include<deferredDeclaration>[SCENE_MRT_COUNT]
+#include<prePassDeclaration>[SCENE_MRT_COUNT]
 
 // Forces linear space for image processing
 #ifndef FROMLINEARSPACE
@@ -33,6 +33,7 @@ precision highp float;
 
 // Helper Functions
 #include<helperFunctions>
+#include<subSurfaceScatteringFunctions>
 #include<importanceSampling>
 #include<pbrHelperFunctions>
 #include<imageProcessingFunctions>
@@ -498,7 +499,7 @@ void main(void) {
 
     #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 
-#ifdef HIGH_DEFINITION_PIPELINE
+#ifdef PREPASS
     vec3 irradiance = finalDiffuse;
     #ifndef UNLIT
         #ifdef REFLECTION

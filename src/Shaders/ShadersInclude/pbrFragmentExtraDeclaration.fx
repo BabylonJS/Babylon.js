@@ -29,6 +29,6 @@ varying vec3 vPositionW;
     varying vec4 vColor;
 #endif
 
-#ifdef HIGH_DEFINITION_PIPELINE
+#ifdef PREPASS
 	varying vec3 vViewPos;
 #endif

@@ -161,7 +161,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public INSTANCES = false;
     public THIN_INSTANCES = false;
 
-    public HIGH_DEFINITION_PIPELINE = false;
+    public PREPASS = false;
     public SCENE_MRT_COUNT = 0;
 
     public NUM_BONE_INFLUENCERS = 0;

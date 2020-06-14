@@ -296,21 +296,22 @@ export class MaterialHelper {
     }
 
     /**
-     * Prepares the defines related to deferred shading
+     * Prepares the defines related to the prepass
      * @param scene The scene we are intending to draw
      * @param defines The defines to update
+     * @param shouldRenderToMRT Indicates if this material renders to several textures in the prepass
      */
     public static PrepareDefinesForPrePass(scene: Scene, defines: any, shouldRenderToMRT: boolean) {
-        var previousDeferred = defines.HIGH_DEFINITION_PIPELINE;
+        var previousDeferred = defines.PREPASS;
 
         if (scene.prePassRenderer && shouldRenderToMRT) {
-            defines.HIGH_DEFINITION_PIPELINE = true;
+            defines.PREPASS = true;
             defines.SCENE_MRT_COUNT = scene.prePassRenderer.mrtCount;
         } else {
-            defines.HIGH_DEFINITION_PIPELINE = false;
+            defines.PREPASS = false;
         }
 
-        if (defines.HIGH_DEFINITION_PIPELINE != previousDeferred) {
+        if (defines.PREPASS != previousDeferred) {
             defines.markAsUnprocessed();
             defines.markAsImageProcessingDirty();
         }

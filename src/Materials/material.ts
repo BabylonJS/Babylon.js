@@ -234,7 +234,7 @@ export class Material implements IAnimatable {
      * If the material should be rendered to several textures with MRT extension
      */
     public get shouldRenderToMRT() : boolean {
-        // By default, shader are not compatible with MRTs
+        // By default, shaders are not compatible with MRTs
         // Base classes should override that if their shader supports MRT
         return false;
     }
@@ -1247,7 +1247,7 @@ export class Material implements IAnimatable {
             return;
         }
 
-        const prePassRenderer = this.getScene().enablePrepassRenderer();
+        const prePassRenderer = this.getScene().enablePrePassRenderer();
         
         if (prePassRenderer) {
             prePassRenderer.markAsDirty();
