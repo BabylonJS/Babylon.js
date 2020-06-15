@@ -73,7 +73,7 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
             babylonMaterial.sheen.intensity = properties.intensityFactor;
         }
         else {
-            babylonMaterial.sheen.intensity = 0;
+            babylonMaterial.sheen.intensity = 1;
         }
 
         if (properties.colorFactor != undefined) {
