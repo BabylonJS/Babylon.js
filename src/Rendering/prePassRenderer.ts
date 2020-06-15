@@ -102,6 +102,10 @@ export class PrePassRenderer {
     }
 
     public set samples(n: number) {
+        if (!this.subSurfaceScatteringPostProcess) {
+            this._createEffects();
+        }
+        
         this.prePassRT.samples = n;
     }
 
@@ -112,19 +116,11 @@ export class PrePassRenderer {
     constructor(scene: Scene) {
         this._scene = scene;
         this._engine = scene.getEngine();
+
         PrePassRenderer._SceneComponentInitialization(this._scene);
-
-        this.prePassRT = new MultiRenderTarget("sceneprePassRT", { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, this.mrtCount, this._scene,
-            { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: this._mrtTypes });
-        this.prePassRT.samples = 1;
-
-        this._initializeAttachments();
 
         // Adding default diffusion profile
         this.addDiffusionProfile(new Color3(1, 1, 1));
-        this.imageProcessingPostProcess = new ImageProcessingPostProcess("sceneCompositionPass", 1, null, undefined, this._engine);
-        this.subSurfaceScatteringPostProcess = new SubSurfaceScatteringPostProcess("subSurfaceScattering", this._scene, 1, null, undefined, this._engine);
-        this.subSurfaceScatteringPostProcess.inputTexture = this.prePassRT.getInternalTexture()!;
     }
 
     private _initializeAttachments() {
@@ -144,12 +140,23 @@ export class PrePassRenderer {
         }
     }
 
+    private _createEffects() {
+        this.prePassRT = new MultiRenderTarget("sceneprePassRT", { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, this.mrtCount, this._scene,
+            { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: this._mrtTypes });
+        this.prePassRT.samples = 1;
+
+        this._initializeAttachments();
+
+        this.imageProcessingPostProcess = new ImageProcessingPostProcess("sceneCompositionPass", 1, null, undefined, this._engine);
+        this.subSurfaceScatteringPostProcess = new SubSurfaceScatteringPostProcess("subSurfaceScattering", this._scene, 1, null, undefined, this._engine);
+        this.subSurfaceScatteringPostProcess.inputTexture = this.prePassRT.getInternalTexture()!;
+    }
+
     /**
      * Indicates if rendering a prepass is supported
      */
     public get isSupported() {
-        // TODO
-        return true;
+        return this._engine.webGLVersion > 1;
     }
 
     /**
@@ -233,6 +240,9 @@ export class PrePassRenderer {
     }
 
     private _enable() {
+        if (!this.subSurfaceScatteringPostProcess) {
+            this._createEffects();
+        }
         this._enabled = true;
         this._scene.prePass = true;
         this.imageProcessingPostProcess.imageProcessingConfiguration.applyByPostProcess = true;
@@ -263,8 +273,7 @@ export class PrePassRenderer {
             }
         }
 
-        // SSAO 2
-        // TODO
+        // add SSAO 2 etc..
 
         this._isDirty = false;
 

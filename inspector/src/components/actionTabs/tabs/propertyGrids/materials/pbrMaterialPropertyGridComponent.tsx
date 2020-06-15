@@ -246,7 +246,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     <CheckBoxLineComponent label="Scattering Enabled" target={material.subSurface} propertyName="isScatteringEnabled"
                         onValueChanged={() => this.forceUpdate()}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    { (material.subSurface as any).isScatteringEnabled &&
+                    { (material.subSurface as any).isScatteringEnabled && material.getScene().prePassRenderer &&
                         <SliderLineComponent label="Meters per unit" target={ material.getScene().prePassRenderer } propertyName="metersPerUnit" minimum={0.01} maximum={2} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
                     <CheckBoxLineComponent label="Refraction Enabled" target={material.subSurface} propertyName="isRefractionEnabled"
