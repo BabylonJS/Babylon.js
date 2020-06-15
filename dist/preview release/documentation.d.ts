@@ -9431,7 +9431,7 @@ declare module BABYLON {
          * Internal only
          * @hidden
          */
-        static _GetTargetProperty: (target: Node | Scene) => {
+        static _GetTargetProperty: (target: Scene | Node) => {
             name: string;
             targetType: string;
             value: string;
@@ -53330,6 +53330,11 @@ declare module BABYLON {
          * Number of Simultaneous lights allowed on the material.
          */
         maxSimultaneousLights: int;
+        private _shadowOnly;
+        /**
+         * Make the material only render shadows
+         */
+        shadowOnly: boolean;
         /**
          * Default configuration related to image processing available in the Background Material.
          */
