@@ -239,3 +239,4 @@
 - HDRCubeTexture default rotation is now similar to the industry one. You might need to add a rotation on y of 90 degrees if you scene changes ([Sebavan](https://github.com/sebavan/))
 - PBRMaterial index of refraction is now defined as index of refraction and not the inverse of it ([Sebavan](https://github.com/sebavan/))
 - `SceneLoaderProgress` class is now `ISceneLoaderProgress` interface ([bghgary](https://github.com/bghgary))
+- Rendering of transparent meshes: stencil state is now set to the value registered in the engine instead of being set to `false` unconditionally ([Popov72](https://github.com/Popov72))
