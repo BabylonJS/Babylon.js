@@ -75,7 +75,6 @@
         float sheenIntensity = vSheenColor.a;
 
         #ifdef SHEEN_TEXTURE
-            sheenIntensity *= sheenMapData.a;
             #if DEBUGMODE > 0
                 outParams.sheenMapData = sheenMapData;
             #endif
@@ -86,6 +85,10 @@
             vec3 sheenColor = baseColor.rgb*(1.0-sheenFactor);
             float sheenRoughness = sheenIntensity;
             outParams.surfaceAlbedo = surfaceAlbedo * sheenFactor;
+
+            #ifdef SHEEN_TEXTURE
+                sheenIntensity *= sheenMapData.a;
+            #endif
         #else
             vec3 sheenColor = vSheenColor.rgb;
             #ifdef SHEEN_TEXTURE
@@ -94,8 +97,14 @@
             
             #ifdef SHEEN_ROUGHNESS
                 float sheenRoughness = vSheenRoughness;
+                #ifdef SHEEN_TEXTURE
+                    sheenRoughness *= sheenMapData.a;
+                #endif
             #else
                 float sheenRoughness = roughness;
+                #ifdef SHEEN_TEXTURE
+                    sheenIntensity *= sheenMapData.a;
+                #endif
             #endif
 
             // Sheen Lobe Layering.
