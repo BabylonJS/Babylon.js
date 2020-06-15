@@ -63,7 +63,7 @@ var dep = function(settings) {
     for (let pathName in tsconfig.compilerOptions.paths) {
         let paths = tsconfig.compilerOptions.paths[pathName];
         for (let dep of paths) {
-            if (dep.indexOf("@babylonjs") === -1) {
+            if (pathName.indexOf("@babylonjs") !== -1) {
                 continue;
             }
             const fullPath = path.resolve(settings.computed.mainDirectory, 
