@@ -7,7 +7,7 @@ var colorConsole = require("../../NodeHelpers/colorConsole");
 
 var config = require("../../Config/config");
 
-const indexExlclusion = ["States", "EmitterTypes", "glTF"];
+const indexExlclusion = ["States", "EmitterTypes"];
 const forbiddenImports = ["meshBuilder"];
 
 const mapping = {};
