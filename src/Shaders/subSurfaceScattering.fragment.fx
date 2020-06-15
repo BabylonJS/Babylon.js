@@ -157,7 +157,7 @@ void main(void)
 	}
 
     if (!passedStencilTest) { 
-        gl_FragColor = texture2D(textureSampler, vUV);
+        gl_FragColor = inputColor;
         return;
     }
 
@@ -227,8 +227,9 @@ void main(void)
                        phase, totalIrradiance, totalWeight);
     }
     // Total weight is 0 for color channels without scattering.
-    totalWeight = max(totalWeight, 1e-12);
+    totalWeight = max(totalWeight, HALF_MIN);
 
-    gl_FragColor = vec4(inputColor.rgb + albedo * (totalIrradiance / totalWeight), 1.);
+    // gl_FragColor = vec4(totalIrradiance / totalWeight, 1.);
+    gl_FragColor = vec4(inputColor.rgb + albedo * max(totalIrradiance / totalWeight, vec3(0.0)), 1.);
 	// gl_FragColor = mix(texture2D(textureSampler, vUV), centerIrradiance, 0.5);
 }
