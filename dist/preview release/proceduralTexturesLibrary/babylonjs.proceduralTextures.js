@@ -97,10 +97,10 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
-/*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*****************************************************************/
+/*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -113,6 +113,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__metadata", function() { return __metadata; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__awaiter", function() { return __awaiter; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__generator", function() { return __generator; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__createBinding", function() { return __createBinding; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__exportStar", function() { return __exportStar; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__values", function() { return __values; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__read", function() { return __read; });
@@ -125,19 +126,21 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__makeTemplateObject", function() { return __makeTemplateObject; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__importStar", function() { return __importStar; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__importDefault", function() { return __importDefault; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__classPrivateFieldGet", function() { return __classPrivateFieldGet; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__classPrivateFieldSet", function() { return __classPrivateFieldSet; });
 /*! *****************************************************************************
-Copyright (c) Microsoft Corporation. All rights reserved.
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-this file except in compliance with the License. You may obtain a copy of the
-License at http://www.apache.org/licenses/LICENSE-2.0
+Copyright (c) Microsoft Corporation.
 
-THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
-WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
-MERCHANTABLITY OR NON-INFRINGEMENT.
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
 
-See the Apache Version 2.0 License for specific language governing permissions
-and limitations under the License.
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
 ***************************************************************************** */
 /* global Reflect, Promise */
 
@@ -193,10 +196,11 @@ function __metadata(metadataKey, metadataValue) {
 }
 
 function __awaiter(thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 }
@@ -229,19 +233,28 @@ function __generator(thisArg, body) {
     }
 }
 
+var __createBinding = Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+
 function __exportStar(m, exports) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
 }
 
 function __values(o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 }
 
 function __read(o, n) {
@@ -310,16 +323,37 @@ function __makeTemplateObject(cooked, raw) {
     return cooked;
 };
 
+var __setModuleDefault = Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+};
+
 function __importStar(mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result.default = mod;
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
     return result;
 }
 
 function __importDefault(mod) {
     return (mod && mod.__esModule) ? mod : { default: mod };
+}
+
+function __classPrivateFieldGet(receiver, privateMap) {
+    if (!privateMap.has(receiver)) {
+        throw new TypeError("attempted to get private field on non-instance");
+    }
+    return privateMap.get(receiver);
+}
+
+function __classPrivateFieldSet(receiver, privateMap, value) {
+    if (!privateMap.has(receiver)) {
+        throw new TypeError("attempted to set private field on non-instance");
+    }
+    privateMap.set(receiver, value);
+    return value;
 }
 
 
@@ -423,7 +457,7 @@ var BrickProceduralTexture = /** @class */ (function (_super) {
             this._numberOfBricksHeight = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(BrickProceduralTexture.prototype, "numberOfBricksWidth", {
@@ -434,7 +468,7 @@ var BrickProceduralTexture = /** @class */ (function (_super) {
             this._numberOfBricksWidth = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(BrickProceduralTexture.prototype, "jointColor", {
@@ -445,7 +479,7 @@ var BrickProceduralTexture = /** @class */ (function (_super) {
             this._jointColor = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(BrickProceduralTexture.prototype, "brickColor", {
@@ -456,7 +490,7 @@ var BrickProceduralTexture = /** @class */ (function (_super) {
             this._brickColor = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -579,7 +613,7 @@ var CloudProceduralTexture = /** @class */ (function (_super) {
             this._skyColor = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(CloudProceduralTexture.prototype, "cloudColor", {
@@ -590,7 +624,7 @@ var CloudProceduralTexture = /** @class */ (function (_super) {
             this._cloudColor = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -729,7 +763,7 @@ var FireProceduralTexture = /** @class */ (function (_super) {
                 new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.9, 0.9, 1.0)
             ];
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(FireProceduralTexture, "GreenFireColors", {
@@ -743,7 +777,7 @@ var FireProceduralTexture = /** @class */ (function (_super) {
                 new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.5, 1.0, 0.0)
             ];
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(FireProceduralTexture, "RedFireColors", {
@@ -757,7 +791,7 @@ var FireProceduralTexture = /** @class */ (function (_super) {
                 new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.9, 0.9, 0.9)
             ];
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(FireProceduralTexture, "BlueFireColors", {
@@ -771,7 +805,7 @@ var FireProceduralTexture = /** @class */ (function (_super) {
                 new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.0, 0.2, 0.9)
             ];
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(FireProceduralTexture.prototype, "autoGenerateTime", {
@@ -781,7 +815,7 @@ var FireProceduralTexture = /** @class */ (function (_super) {
         set: function (value) {
             this._autoGenerateTime = value;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(FireProceduralTexture.prototype, "fireColors", {
@@ -792,7 +826,7 @@ var FireProceduralTexture = /** @class */ (function (_super) {
             this._fireColors = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(FireProceduralTexture.prototype, "time", {
@@ -803,7 +837,7 @@ var FireProceduralTexture = /** @class */ (function (_super) {
             this._time = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(FireProceduralTexture.prototype, "speed", {
@@ -814,7 +848,7 @@ var FireProceduralTexture = /** @class */ (function (_super) {
             this._speed = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(FireProceduralTexture.prototype, "alphaThreshold", {
@@ -825,7 +859,7 @@ var FireProceduralTexture = /** @class */ (function (_super) {
             this._alphaThreshold = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -963,7 +997,7 @@ var GrassProceduralTexture = /** @class */ (function (_super) {
             this._grassColors = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(GrassProceduralTexture.prototype, "groundColor", {
@@ -974,7 +1008,7 @@ var GrassProceduralTexture = /** @class */ (function (_super) {
             this._groundColor = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -1221,7 +1255,7 @@ var MarbleProceduralTexture = /** @class */ (function (_super) {
             this._numberOfTilesHeight = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MarbleProceduralTexture.prototype, "amplitude", {
@@ -1232,7 +1266,7 @@ var MarbleProceduralTexture = /** @class */ (function (_super) {
             this._amplitude = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MarbleProceduralTexture.prototype, "numberOfTilesWidth", {
@@ -1243,7 +1277,7 @@ var MarbleProceduralTexture = /** @class */ (function (_super) {
             this._numberOfTilesWidth = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MarbleProceduralTexture.prototype, "jointColor", {
@@ -1254,7 +1288,7 @@ var MarbleProceduralTexture = /** @class */ (function (_super) {
             this._jointColor = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -1382,7 +1416,7 @@ var NormalMapProceduralTexture = /** @class */ (function (_super) {
             this._baseTexture = texture;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -1619,7 +1653,7 @@ var RoadProceduralTexture = /** @class */ (function (_super) {
             this._roadColor = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -1750,7 +1784,7 @@ var StarfieldProceduralTexture = /** @class */ (function (_super) {
             this._time = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(StarfieldProceduralTexture.prototype, "alpha", {
@@ -1761,7 +1795,7 @@ var StarfieldProceduralTexture = /** @class */ (function (_super) {
             this._alpha = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(StarfieldProceduralTexture.prototype, "beta", {
@@ -1772,7 +1806,7 @@ var StarfieldProceduralTexture = /** @class */ (function (_super) {
             this._beta = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(StarfieldProceduralTexture.prototype, "formuparam", {
@@ -1783,7 +1817,7 @@ var StarfieldProceduralTexture = /** @class */ (function (_super) {
             this._formuparam = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(StarfieldProceduralTexture.prototype, "stepsize", {
@@ -1794,7 +1828,7 @@ var StarfieldProceduralTexture = /** @class */ (function (_super) {
             this._stepsize = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(StarfieldProceduralTexture.prototype, "zoom", {
@@ -1805,7 +1839,7 @@ var StarfieldProceduralTexture = /** @class */ (function (_super) {
             this._zoom = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(StarfieldProceduralTexture.prototype, "tile", {
@@ -1816,7 +1850,7 @@ var StarfieldProceduralTexture = /** @class */ (function (_super) {
             this._tile = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(StarfieldProceduralTexture.prototype, "brightness", {
@@ -1827,7 +1861,7 @@ var StarfieldProceduralTexture = /** @class */ (function (_super) {
             this._brightness = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(StarfieldProceduralTexture.prototype, "darkmatter", {
@@ -1838,7 +1872,7 @@ var StarfieldProceduralTexture = /** @class */ (function (_super) {
             this._darkmatter = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(StarfieldProceduralTexture.prototype, "distfading", {
@@ -1849,7 +1883,7 @@ var StarfieldProceduralTexture = /** @class */ (function (_super) {
             this._distfading = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(StarfieldProceduralTexture.prototype, "saturation", {
@@ -1860,7 +1894,7 @@ var StarfieldProceduralTexture = /** @class */ (function (_super) {
             this._saturation = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -2004,7 +2038,7 @@ var WoodProceduralTexture = /** @class */ (function (_super) {
             this._ampScale = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(WoodProceduralTexture.prototype, "woodColor", {
@@ -2015,7 +2049,7 @@ var WoodProceduralTexture = /** @class */ (function (_super) {
             this._woodColor = value;
             this.updateShaderUniforms();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**

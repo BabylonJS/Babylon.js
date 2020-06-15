@@ -7,7 +7,7 @@
 		exports["babylonjs-gui"] = factory(require("babylonjs"));
 	else
 		root["BABYLON"] = root["BABYLON"] || {}, root["BABYLON"]["GUI"] = factory(root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_perfCounter__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -97,10 +97,10 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
-/*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*****************************************************************/
+/*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -113,6 +113,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__metadata", function() { return __metadata; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__awaiter", function() { return __awaiter; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__generator", function() { return __generator; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__createBinding", function() { return __createBinding; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__exportStar", function() { return __exportStar; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__values", function() { return __values; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__read", function() { return __read; });
@@ -125,19 +126,21 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__makeTemplateObject", function() { return __makeTemplateObject; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__importStar", function() { return __importStar; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__importDefault", function() { return __importDefault; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__classPrivateFieldGet", function() { return __classPrivateFieldGet; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__classPrivateFieldSet", function() { return __classPrivateFieldSet; });
 /*! *****************************************************************************
-Copyright (c) Microsoft Corporation. All rights reserved.
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-this file except in compliance with the License. You may obtain a copy of the
-License at http://www.apache.org/licenses/LICENSE-2.0
+Copyright (c) Microsoft Corporation.
 
-THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
-WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
-MERCHANTABLITY OR NON-INFRINGEMENT.
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
 
-See the Apache Version 2.0 License for specific language governing permissions
-and limitations under the License.
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
 ***************************************************************************** */
 /* global Reflect, Promise */
 
@@ -193,10 +196,11 @@ function __metadata(metadataKey, metadataValue) {
 }
 
 function __awaiter(thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 }
@@ -229,19 +233,28 @@ function __generator(thisArg, body) {
     }
 }
 
+var __createBinding = Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+
 function __exportStar(m, exports) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
 }
 
 function __values(o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 }
 
 function __read(o, n) {
@@ -310,16 +323,37 @@ function __makeTemplateObject(cooked, raw) {
     return cooked;
 };
 
+var __setModuleDefault = Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+};
+
 function __importStar(mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result.default = mod;
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
     return result;
 }
 
 function __importDefault(mod) {
     return (mod && mod.__esModule) ? mod : { default: mod };
+}
+
+function __classPrivateFieldGet(receiver, privateMap) {
+    if (!privateMap.has(receiver)) {
+        throw new TypeError("attempted to get private field on non-instance");
+    }
+    return privateMap.get(receiver);
+}
+
+function __classPrivateFieldSet(receiver, privateMap, value) {
+    if (!privateMap.has(receiver)) {
+        throw new TypeError("attempted to set private field on non-instance");
+    }
+    privateMap.set(receiver, value);
+    return value;
 }
 
 
@@ -366,7 +400,7 @@ module.exports = g;
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AdvancedDynamicTextureInstrumentation", function() { return AdvancedDynamicTextureInstrumentation; });
-/* harmony import */ var babylonjs_Misc_perfCounter__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/perfCounter */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_perfCounter__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/perfCounter */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_perfCounter__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_perfCounter__WEBPACK_IMPORTED_MODULE_0__);
 
 /**
@@ -402,7 +436,7 @@ var AdvancedDynamicTextureInstrumentation = /** @class */ (function () {
         get: function () {
             return this._renderTime;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AdvancedDynamicTextureInstrumentation.prototype, "layoutTimeCounter", {
@@ -412,7 +446,7 @@ var AdvancedDynamicTextureInstrumentation = /** @class */ (function () {
         get: function () {
             return this._layoutTime;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AdvancedDynamicTextureInstrumentation.prototype, "captureRenderTime", {
@@ -443,7 +477,7 @@ var AdvancedDynamicTextureInstrumentation = /** @class */ (function () {
                 this._onEndRenderObserver = null;
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AdvancedDynamicTextureInstrumentation.prototype, "captureLayoutTime", {
@@ -474,7 +508,7 @@ var AdvancedDynamicTextureInstrumentation = /** @class */ (function () {
                 this._onEndLayoutObserver = null;
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -509,7 +543,7 @@ var AdvancedDynamicTextureInstrumentation = /** @class */ (function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AdvancedDynamicTexture", function() { return AdvancedDynamicTexture; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _controls_container__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./controls/container */ "./2D/controls/container.ts");
 /* harmony import */ var _style__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./style */ "./2D/style.ts");
@@ -664,7 +698,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         get: function () {
             return this._numLayoutCalls;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AdvancedDynamicTexture.prototype, "numRenderCalls", {
@@ -672,7 +706,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         get: function () {
             return this._numRenderCalls;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AdvancedDynamicTexture.prototype, "renderScale", {
@@ -690,7 +724,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             this._renderScale = value;
             this._onResize();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AdvancedDynamicTexture.prototype, "background", {
@@ -705,7 +739,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             this._background = value;
             this.markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AdvancedDynamicTexture.prototype, "idealWidth", {
@@ -725,7 +759,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             this.markAsDirty();
             this._rootContainer._markAllAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AdvancedDynamicTexture.prototype, "idealHeight", {
@@ -745,7 +779,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             this.markAsDirty();
             this._rootContainer._markAllAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AdvancedDynamicTexture.prototype, "useSmallestIdeal", {
@@ -764,7 +798,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             this.markAsDirty();
             this._rootContainer._markAllAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AdvancedDynamicTexture.prototype, "renderAtIdealSize", {
@@ -782,7 +816,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             this._renderAtIdealSize = value;
             this._onResize();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AdvancedDynamicTexture.prototype, "idealRatio", {
@@ -810,7 +844,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             }
             return 1;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AdvancedDynamicTexture.prototype, "layer", {
@@ -820,7 +854,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         get: function () {
             return this._layerToDispose;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AdvancedDynamicTexture.prototype, "rootContainer", {
@@ -830,7 +864,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         get: function () {
             return this._rootContainer;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -869,7 +903,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             }
             this._focusedControl = control;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AdvancedDynamicTexture.prototype, "isForeground", {
@@ -891,7 +925,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             }
             this.layer.isBackground = !value;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AdvancedDynamicTexture.prototype, "clipboardData", {
@@ -904,7 +938,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         set: function (value) {
             this._clipboardData = value;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -943,7 +977,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         set: function (value) {
             this._useInvalidateRectOptimization = value;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -1481,7 +1515,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./textBlock */ "./2D/controls/textBlock.ts");
 /* harmony import */ var _image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./image */ "./2D/controls/image.ts");
-/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_5__);
 
 
@@ -1534,7 +1568,7 @@ var Button = /** @class */ (function (_super) {
         get: function () {
             return this._image;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Button.prototype, "textBlock", {
@@ -1544,7 +1578,7 @@ var Button = /** @class */ (function (_super) {
         get: function () {
             return this._textBlock;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Button.prototype._getTypeName = function () {
@@ -1713,7 +1747,7 @@ babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_5__["_TypeStore"].RegisteredTy
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Checkbox", function() { return Checkbox; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _stackPanel__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./stackPanel */ "./2D/controls/stackPanel.ts");
@@ -1759,7 +1793,7 @@ var Checkbox = /** @class */ (function (_super) {
             this._thickness = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Checkbox.prototype, "checkSizeRatio", {
@@ -1775,7 +1809,7 @@ var Checkbox = /** @class */ (function (_super) {
             this._checkSizeRatio = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Checkbox.prototype, "background", {
@@ -1790,7 +1824,7 @@ var Checkbox = /** @class */ (function (_super) {
             this._background = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Checkbox.prototype, "isChecked", {
@@ -1806,7 +1840,7 @@ var Checkbox = /** @class */ (function (_super) {
             this._markAsDirty();
             this.onIsCheckedChangedObservable.notifyObservers(value);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Checkbox.prototype._getTypeName = function () {
@@ -1896,7 +1930,7 @@ babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredT
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ColorPicker", function() { return ColorPicker; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _inputText__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./inputText */ "./2D/controls/inputText.ts");
@@ -1981,7 +2015,7 @@ var ColorPicker = /** @class */ (function (_super) {
             }
             this.onValueChangedObservable.notifyObservers(this._value);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ColorPicker.prototype, "width", {
@@ -2001,7 +2035,7 @@ var ColorPicker = /** @class */ (function (_super) {
                 this._markAsDirty();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ColorPicker.prototype, "height", {
@@ -2022,7 +2056,7 @@ var ColorPicker = /** @class */ (function (_super) {
                 this._markAsDirty();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ColorPicker.prototype, "size", {
@@ -2033,7 +2067,7 @@ var ColorPicker = /** @class */ (function (_super) {
         set: function (value) {
             this.width = value;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     ColorPicker.prototype._getTypeName = function () {
@@ -3285,7 +3319,7 @@ babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredT
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Container", function() { return Container; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/logger */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/logger */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _measure__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../measure */ "./2D/measure.ts");
@@ -3342,7 +3376,7 @@ var Container = /** @class */ (function (_super) {
             }
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Container.prototype, "adaptWidthToChildren", {
@@ -3360,7 +3394,7 @@ var Container = /** @class */ (function (_super) {
             }
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Container.prototype, "background", {
@@ -3375,7 +3409,7 @@ var Container = /** @class */ (function (_super) {
             this._background = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Container.prototype, "children", {
@@ -3383,7 +3417,7 @@ var Container = /** @class */ (function (_super) {
         get: function () {
             return this._children;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Container.prototype._getTypeName = function () {
@@ -3700,7 +3734,7 @@ babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Control", function() { return Control; });
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../valueAndUnit */ "./2D/valueAndUnit.ts");
 /* harmony import */ var _measure__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../measure */ "./2D/measure.ts");
@@ -3888,7 +3922,7 @@ var Control = /** @class */ (function () {
             this._shadowOffsetX = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "shadowOffsetY", {
@@ -3903,7 +3937,7 @@ var Control = /** @class */ (function () {
             this._shadowOffsetY = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "shadowBlur", {
@@ -3918,7 +3952,7 @@ var Control = /** @class */ (function () {
             this._shadowBlur = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "shadowColor", {
@@ -3933,7 +3967,7 @@ var Control = /** @class */ (function () {
             this._shadowColor = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "typeName", {
@@ -3942,7 +3976,7 @@ var Control = /** @class */ (function () {
         get: function () {
             return this._getTypeName();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -3959,7 +3993,7 @@ var Control = /** @class */ (function () {
         get: function () {
             return this._host;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "fontOffset", {
@@ -3970,7 +4004,7 @@ var Control = /** @class */ (function () {
         set: function (offset) {
             this._fontOffset = offset;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "alpha", {
@@ -3986,7 +4020,7 @@ var Control = /** @class */ (function () {
             this._alpha = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "isHighlighted", {
@@ -4003,7 +4037,7 @@ var Control = /** @class */ (function () {
             this._isHighlighted = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "scaleX", {
@@ -4021,7 +4055,7 @@ var Control = /** @class */ (function () {
             this._markAsDirty();
             this._markMatrixAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "scaleY", {
@@ -4039,7 +4073,7 @@ var Control = /** @class */ (function () {
             this._markAsDirty();
             this._markMatrixAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "rotation", {
@@ -4057,7 +4091,7 @@ var Control = /** @class */ (function () {
             this._markAsDirty();
             this._markMatrixAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "transformCenterY", {
@@ -4075,7 +4109,7 @@ var Control = /** @class */ (function () {
             this._markAsDirty();
             this._markMatrixAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "transformCenterX", {
@@ -4093,7 +4127,7 @@ var Control = /** @class */ (function () {
             this._markAsDirty();
             this._markMatrixAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "horizontalAlignment", {
@@ -4111,7 +4145,7 @@ var Control = /** @class */ (function () {
             this._horizontalAlignment = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "verticalAlignment", {
@@ -4129,7 +4163,7 @@ var Control = /** @class */ (function () {
             this._verticalAlignment = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "width", {
@@ -4148,7 +4182,7 @@ var Control = /** @class */ (function () {
                 this._markAsDirty();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "widthInPixels", {
@@ -4165,7 +4199,7 @@ var Control = /** @class */ (function () {
             }
             this.width = value + "px";
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "height", {
@@ -4184,7 +4218,7 @@ var Control = /** @class */ (function () {
                 this._markAsDirty();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "heightInPixels", {
@@ -4201,7 +4235,7 @@ var Control = /** @class */ (function () {
             }
             this.height = value + "px";
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "fontFamily", {
@@ -4219,7 +4253,7 @@ var Control = /** @class */ (function () {
             this._fontFamily = value;
             this._resetFontCache();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "fontStyle", {
@@ -4234,7 +4268,7 @@ var Control = /** @class */ (function () {
             this._fontStyle = value;
             this._resetFontCache();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "fontWeight", {
@@ -4249,7 +4283,7 @@ var Control = /** @class */ (function () {
             this._fontWeight = value;
             this._resetFontCache();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "style", {
@@ -4276,7 +4310,7 @@ var Control = /** @class */ (function () {
             this._markAsDirty();
             this._resetFontCache();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "_isFontSizeInPercentage", {
@@ -4284,7 +4318,7 @@ var Control = /** @class */ (function () {
         get: function () {
             return this._fontSize.isPercentage;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "fontSizeInPixels", {
@@ -4302,7 +4336,7 @@ var Control = /** @class */ (function () {
             }
             this.fontSize = value + "px";
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "fontSize", {
@@ -4319,7 +4353,7 @@ var Control = /** @class */ (function () {
                 this._resetFontCache();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "color", {
@@ -4334,7 +4368,7 @@ var Control = /** @class */ (function () {
             this._color = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "zIndex", {
@@ -4351,7 +4385,7 @@ var Control = /** @class */ (function () {
                 this.parent._reOrderControl(this);
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "notRenderable", {
@@ -4366,7 +4400,7 @@ var Control = /** @class */ (function () {
             this._doNotRender = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "isVisible", {
@@ -4381,7 +4415,7 @@ var Control = /** @class */ (function () {
             this._isVisible = value;
             this._markAsDirty(true);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "isDirty", {
@@ -4389,7 +4423,7 @@ var Control = /** @class */ (function () {
         get: function () {
             return this._isDirty;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "linkedMesh", {
@@ -4399,7 +4433,7 @@ var Control = /** @class */ (function () {
         get: function () {
             return this._linkedMesh;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "paddingLeft", {
@@ -4415,7 +4449,7 @@ var Control = /** @class */ (function () {
                 this._markAsDirty();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "paddingLeftInPixels", {
@@ -4432,7 +4466,7 @@ var Control = /** @class */ (function () {
             }
             this.paddingLeft = value + "px";
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "paddingRight", {
@@ -4448,7 +4482,7 @@ var Control = /** @class */ (function () {
                 this._markAsDirty();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "paddingRightInPixels", {
@@ -4465,7 +4499,7 @@ var Control = /** @class */ (function () {
             }
             this.paddingRight = value + "px";
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "paddingTop", {
@@ -4481,7 +4515,7 @@ var Control = /** @class */ (function () {
                 this._markAsDirty();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "paddingTopInPixels", {
@@ -4498,7 +4532,7 @@ var Control = /** @class */ (function () {
             }
             this.paddingTop = value + "px";
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "paddingBottom", {
@@ -4514,7 +4548,7 @@ var Control = /** @class */ (function () {
                 this._markAsDirty();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "paddingBottomInPixels", {
@@ -4531,7 +4565,7 @@ var Control = /** @class */ (function () {
             }
             this.paddingBottom = value + "px";
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "left", {
@@ -4547,7 +4581,7 @@ var Control = /** @class */ (function () {
                 this._markAsDirty();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "leftInPixels", {
@@ -4564,7 +4598,7 @@ var Control = /** @class */ (function () {
             }
             this.left = value + "px";
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "top", {
@@ -4580,7 +4614,7 @@ var Control = /** @class */ (function () {
                 this._markAsDirty();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "topInPixels", {
@@ -4597,7 +4631,7 @@ var Control = /** @class */ (function () {
             }
             this.top = value + "px";
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "linkOffsetX", {
@@ -4613,7 +4647,7 @@ var Control = /** @class */ (function () {
                 this._markAsDirty();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "linkOffsetXInPixels", {
@@ -4630,7 +4664,7 @@ var Control = /** @class */ (function () {
             }
             this.linkOffsetX = value + "px";
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "linkOffsetY", {
@@ -4646,7 +4680,7 @@ var Control = /** @class */ (function () {
                 this._markAsDirty();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "linkOffsetYInPixels", {
@@ -4663,7 +4697,7 @@ var Control = /** @class */ (function () {
             }
             this.linkOffsetY = value + "px";
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "centerX", {
@@ -4671,7 +4705,7 @@ var Control = /** @class */ (function () {
         get: function () {
             return this._currentMeasure.left + this._currentMeasure.width / 2;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "centerY", {
@@ -4679,7 +4713,7 @@ var Control = /** @class */ (function () {
         get: function () {
             return this._currentMeasure.top + this._currentMeasure.height / 2;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "isEnabled", {
@@ -4694,7 +4728,7 @@ var Control = /** @class */ (function () {
             this._isEnabled = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "disabledColor", {
@@ -4709,7 +4743,7 @@ var Control = /** @class */ (function () {
             this._disabledColor = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control.prototype, "disabledColorItem", {
@@ -4724,7 +4758,7 @@ var Control = /** @class */ (function () {
             this._disabledColorItem = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /** @hidden */
@@ -5498,7 +5532,7 @@ var Control = /** @class */ (function () {
         get: function () {
             return Control._HORIZONTAL_ALIGNMENT_LEFT;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control, "HORIZONTAL_ALIGNMENT_RIGHT", {
@@ -5506,7 +5540,7 @@ var Control = /** @class */ (function () {
         get: function () {
             return Control._HORIZONTAL_ALIGNMENT_RIGHT;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control, "HORIZONTAL_ALIGNMENT_CENTER", {
@@ -5514,7 +5548,7 @@ var Control = /** @class */ (function () {
         get: function () {
             return Control._HORIZONTAL_ALIGNMENT_CENTER;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control, "VERTICAL_ALIGNMENT_TOP", {
@@ -5522,7 +5556,7 @@ var Control = /** @class */ (function () {
         get: function () {
             return Control._VERTICAL_ALIGNMENT_TOP;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control, "VERTICAL_ALIGNMENT_BOTTOM", {
@@ -5530,7 +5564,7 @@ var Control = /** @class */ (function () {
         get: function () {
             return Control._VERTICAL_ALIGNMENT_BOTTOM;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control, "VERTICAL_ALIGNMENT_CENTER", {
@@ -5538,7 +5572,7 @@ var Control = /** @class */ (function () {
         get: function () {
             return Control._VERTICAL_ALIGNMENT_CENTER;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /** @hidden */
@@ -5626,7 +5660,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DisplayGrid", function() { return DisplayGrid; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
-/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__);
 
 
@@ -5665,7 +5699,7 @@ var DisplayGrid = /** @class */ (function (_super) {
             this._displayMinorLines = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(DisplayGrid.prototype, "displayMajorLines", {
@@ -5680,7 +5714,7 @@ var DisplayGrid = /** @class */ (function (_super) {
             this._displayMajorLines = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(DisplayGrid.prototype, "background", {
@@ -5695,7 +5729,7 @@ var DisplayGrid = /** @class */ (function (_super) {
             this._background = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(DisplayGrid.prototype, "cellWidth", {
@@ -5707,7 +5741,7 @@ var DisplayGrid = /** @class */ (function (_super) {
             this._cellWidth = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(DisplayGrid.prototype, "cellHeight", {
@@ -5719,7 +5753,7 @@ var DisplayGrid = /** @class */ (function (_super) {
             this._cellHeight = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(DisplayGrid.prototype, "minorLineTickness", {
@@ -5731,7 +5765,7 @@ var DisplayGrid = /** @class */ (function (_super) {
             this._minorLineTickness = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(DisplayGrid.prototype, "minorLineColor", {
@@ -5743,7 +5777,7 @@ var DisplayGrid = /** @class */ (function (_super) {
             this._minorLineColor = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(DisplayGrid.prototype, "majorLineTickness", {
@@ -5755,7 +5789,7 @@ var DisplayGrid = /** @class */ (function (_super) {
             this._majorLineTickness = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(DisplayGrid.prototype, "majorLineColor", {
@@ -5767,7 +5801,7 @@ var DisplayGrid = /** @class */ (function (_super) {
             this._majorLineColor = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(DisplayGrid.prototype, "majorLineFrequency", {
@@ -5779,7 +5813,7 @@ var DisplayGrid = /** @class */ (function (_super) {
             this._majorLineFrequency = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     DisplayGrid.prototype._draw = function (context, invalidatedRectangle) {
@@ -5859,7 +5893,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _container__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./container */ "./2D/controls/container.ts");
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
-/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3__);
 
 
@@ -5890,7 +5924,7 @@ var Ellipse = /** @class */ (function (_super) {
             this._thickness = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Ellipse.prototype._getTypeName = function () {
@@ -5956,7 +5990,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _container__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./container */ "./2D/controls/container.ts");
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../valueAndUnit */ "./2D/valueAndUnit.ts");
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__);
 
 
@@ -5989,7 +6023,7 @@ var Grid = /** @class */ (function (_super) {
         get: function () {
             return this._columnDefinitions.length;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Grid.prototype, "rowCount", {
@@ -5999,7 +6033,7 @@ var Grid = /** @class */ (function (_super) {
         get: function () {
             return this._rowDefinitions.length;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Grid.prototype, "children", {
@@ -6007,7 +6041,7 @@ var Grid = /** @class */ (function (_super) {
         get: function () {
             return this._childControls;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Grid.prototype, "cells", {
@@ -6015,7 +6049,7 @@ var Grid = /** @class */ (function (_super) {
         get: function () {
             return this._cells;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -6414,7 +6448,7 @@ babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["_TypeStore"].RegisteredTypes[
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Image", function() { return Image; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 
@@ -6468,7 +6502,7 @@ var Image = /** @class */ (function (_super) {
         get: function () {
             return this._loaded;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Image.prototype, "populateNinePatchSlicesFromImage", {
@@ -6487,7 +6521,7 @@ var Image = /** @class */ (function (_super) {
                 this._extractNinePatchSliceDataFromImage();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Image.prototype, "detectPointerOnOpaqueOnly", {
@@ -6504,7 +6538,7 @@ var Image = /** @class */ (function (_super) {
             }
             this._detectPointerOnOpaqueOnly = value;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Image.prototype, "sliceLeft", {
@@ -6521,7 +6555,7 @@ var Image = /** @class */ (function (_super) {
             this._sliceLeft = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Image.prototype, "sliceRight", {
@@ -6538,7 +6572,7 @@ var Image = /** @class */ (function (_super) {
             this._sliceRight = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Image.prototype, "sliceTop", {
@@ -6555,7 +6589,7 @@ var Image = /** @class */ (function (_super) {
             this._sliceTop = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Image.prototype, "sliceBottom", {
@@ -6572,7 +6606,7 @@ var Image = /** @class */ (function (_super) {
             this._sliceBottom = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Image.prototype, "sourceLeft", {
@@ -6589,7 +6623,7 @@ var Image = /** @class */ (function (_super) {
             this._sourceLeft = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Image.prototype, "sourceTop", {
@@ -6606,7 +6640,7 @@ var Image = /** @class */ (function (_super) {
             this._sourceTop = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Image.prototype, "sourceWidth", {
@@ -6623,7 +6657,7 @@ var Image = /** @class */ (function (_super) {
             this._sourceWidth = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Image.prototype, "sourceHeight", {
@@ -6640,7 +6674,7 @@ var Image = /** @class */ (function (_super) {
             this._sourceHeight = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Image.prototype, "isSVG", {
@@ -6648,7 +6682,7 @@ var Image = /** @class */ (function (_super) {
         get: function () {
             return this._isSVG;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Image.prototype, "svgAttributesComputationCompleted", {
@@ -6656,7 +6690,7 @@ var Image = /** @class */ (function (_super) {
         get: function () {
             return this._svgAttributesComputationCompleted;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Image.prototype, "autoScale", {
@@ -6676,7 +6710,7 @@ var Image = /** @class */ (function (_super) {
                 this.synchronizeSizeWithContent();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Image.prototype, "stretch", {
@@ -6691,7 +6725,7 @@ var Image = /** @class */ (function (_super) {
             this._stretch = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /** @hidden */
@@ -6781,7 +6815,7 @@ var Image = /** @class */ (function (_super) {
                 };
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Image.prototype._onImageLoaded = function () {
@@ -6861,7 +6895,7 @@ var Image = /** @class */ (function (_super) {
                 this._domImage.src = value;
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -6967,7 +7001,7 @@ var Image = /** @class */ (function (_super) {
             this._cellWidth = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Image.prototype, "cellHeight", {
@@ -6985,7 +7019,7 @@ var Image = /** @class */ (function (_super) {
             this._cellHeight = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Image.prototype, "cellId", {
@@ -7003,7 +7037,7 @@ var Image = /** @class */ (function (_super) {
             this._cellId = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -7341,7 +7375,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "InputPassword", function() { return InputPassword; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _inputText__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./inputText */ "./2D/controls/inputText.ts");
-/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__);
 
 
@@ -7380,7 +7414,7 @@ babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["_TypeStore"].RegisteredTy
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "InputText", function() { return InputText; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../valueAndUnit */ "./2D/valueAndUnit.ts");
@@ -7469,7 +7503,7 @@ var InputText = /** @class */ (function (_super) {
                 this._markAsDirty();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(InputText.prototype, "maxWidthInPixels", {
@@ -7477,7 +7511,7 @@ var InputText = /** @class */ (function (_super) {
         get: function () {
             return this._maxWidth.getValueInPixel(this._host, this._cachedParentMeasure.width);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(InputText.prototype, "highligherOpacity", {
@@ -7492,7 +7526,7 @@ var InputText = /** @class */ (function (_super) {
             this._highligherOpacity = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(InputText.prototype, "onFocusSelectAll", {
@@ -7507,7 +7541,7 @@ var InputText = /** @class */ (function (_super) {
             this._onFocusSelectAll = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(InputText.prototype, "textHighlightColor", {
@@ -7522,7 +7556,7 @@ var InputText = /** @class */ (function (_super) {
             this._textHighlightColor = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(InputText.prototype, "margin", {
@@ -7538,7 +7572,7 @@ var InputText = /** @class */ (function (_super) {
                 this._markAsDirty();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(InputText.prototype, "marginInPixels", {
@@ -7546,7 +7580,7 @@ var InputText = /** @class */ (function (_super) {
         get: function () {
             return this._margin.getValueInPixel(this._host, this._cachedParentMeasure.width);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(InputText.prototype, "autoStretchWidth", {
@@ -7561,7 +7595,7 @@ var InputText = /** @class */ (function (_super) {
             this._autoStretchWidth = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(InputText.prototype, "thickness", {
@@ -7576,7 +7610,7 @@ var InputText = /** @class */ (function (_super) {
             this._thickness = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(InputText.prototype, "focusedBackground", {
@@ -7591,7 +7625,7 @@ var InputText = /** @class */ (function (_super) {
             this._focusedBackground = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(InputText.prototype, "focusedColor", {
@@ -7606,7 +7640,7 @@ var InputText = /** @class */ (function (_super) {
             this._focusedColor = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(InputText.prototype, "background", {
@@ -7621,7 +7655,7 @@ var InputText = /** @class */ (function (_super) {
             this._background = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(InputText.prototype, "placeholderColor", {
@@ -7636,7 +7670,7 @@ var InputText = /** @class */ (function (_super) {
             this._placeholderColor = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(InputText.prototype, "placeholderText", {
@@ -7651,7 +7685,7 @@ var InputText = /** @class */ (function (_super) {
             this._placeholderText = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(InputText.prototype, "deadKey", {
@@ -7662,7 +7696,7 @@ var InputText = /** @class */ (function (_super) {
         set: function (flag) {
             this._deadKey = flag;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(InputText.prototype, "highlightedText", {
@@ -7677,7 +7711,7 @@ var InputText = /** @class */ (function (_super) {
             this._highlightedText = text;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(InputText.prototype, "addKey", {
@@ -7688,7 +7722,7 @@ var InputText = /** @class */ (function (_super) {
         set: function (flag) {
             this._addKey = flag;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(InputText.prototype, "currentKey", {
@@ -7699,7 +7733,7 @@ var InputText = /** @class */ (function (_super) {
         set: function (key) {
             this._currentKey = key;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(InputText.prototype, "text", {
@@ -7716,7 +7750,7 @@ var InputText = /** @class */ (function (_super) {
             this._markAsDirty();
             this.onTextChangedObservable.notifyObservers(this);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(InputText.prototype, "width", {
@@ -7733,7 +7767,7 @@ var InputText = /** @class */ (function (_super) {
             }
             this.autoStretchWidth = false;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /** @hidden */
@@ -8393,7 +8427,7 @@ babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredT
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Line", function() { return Line; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../valueAndUnit */ "./2D/valueAndUnit.ts");
@@ -8437,7 +8471,7 @@ var Line = /** @class */ (function (_super) {
             this._dash = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Line.prototype, "connectedControl", {
@@ -8460,7 +8494,7 @@ var Line = /** @class */ (function (_super) {
             this._connectedControl = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Line.prototype, "x1", {
@@ -8476,7 +8510,7 @@ var Line = /** @class */ (function (_super) {
                 this._markAsDirty();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Line.prototype, "y1", {
@@ -8492,7 +8526,7 @@ var Line = /** @class */ (function (_super) {
                 this._markAsDirty();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Line.prototype, "x2", {
@@ -8508,7 +8542,7 @@ var Line = /** @class */ (function (_super) {
                 this._markAsDirty();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Line.prototype, "y2", {
@@ -8524,7 +8558,7 @@ var Line = /** @class */ (function (_super) {
                 this._markAsDirty();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Line.prototype, "lineWidth", {
@@ -8539,7 +8573,7 @@ var Line = /** @class */ (function (_super) {
             this._lineWidth = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Line.prototype, "horizontalAlignment", {
@@ -8547,7 +8581,7 @@ var Line = /** @class */ (function (_super) {
         set: function (value) {
             return;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Line.prototype, "verticalAlignment", {
@@ -8555,21 +8589,21 @@ var Line = /** @class */ (function (_super) {
         set: function (value) {
             return;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Line.prototype, "_effectiveX2", {
         get: function () {
             return (this._connectedControl ? this._connectedControl.centerX : 0) + this._x2.getValue(this._host);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Line.prototype, "_effectiveY2", {
         get: function () {
             return (this._connectedControl ? this._connectedControl.centerY : 0) + this._y2.getValue(this._host);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Line.prototype._getTypeName = function () {
@@ -8664,7 +8698,7 @@ babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].Registere
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MultiLine", function() { return MultiLine; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Meshes_abstractMesh__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Meshes/abstractMesh */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Meshes_abstractMesh__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Meshes/abstractMesh */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Meshes_abstractMesh__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Meshes_abstractMesh__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _multiLinePoint__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../multiLinePoint */ "./2D/multiLinePoint.ts");
@@ -8710,7 +8744,7 @@ var MultiLine = /** @class */ (function (_super) {
             this._dash = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -8811,21 +8845,21 @@ var MultiLine = /** @class */ (function (_super) {
             this._lineWidth = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MultiLine.prototype, "horizontalAlignment", {
         set: function (value) {
             return;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MultiLine.prototype, "verticalAlignment", {
         set: function (value) {
             return;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     MultiLine.prototype._getTypeName = function () {
@@ -8934,7 +8968,7 @@ babylonjs_Meshes_abstractMesh__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].Registe
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RadioButton", function() { return RadioButton; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _stackPanel__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./stackPanel */ "./2D/controls/stackPanel.ts");
@@ -8980,7 +9014,7 @@ var RadioButton = /** @class */ (function (_super) {
             this._thickness = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(RadioButton.prototype, "checkSizeRatio", {
@@ -8996,7 +9030,7 @@ var RadioButton = /** @class */ (function (_super) {
             this._checkSizeRatio = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(RadioButton.prototype, "background", {
@@ -9011,7 +9045,7 @@ var RadioButton = /** @class */ (function (_super) {
             this._background = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(RadioButton.prototype, "isChecked", {
@@ -9043,7 +9077,7 @@ var RadioButton = /** @class */ (function (_super) {
                 });
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     RadioButton.prototype._getTypeName = function () {
@@ -9141,7 +9175,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Rectangle", function() { return Rectangle; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _container__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./container */ "./2D/controls/container.ts");
-/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__);
 
 
@@ -9172,7 +9206,7 @@ var Rectangle = /** @class */ (function (_super) {
             this._thickness = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Rectangle.prototype, "cornerRadius", {
@@ -9190,7 +9224,7 @@ var Rectangle = /** @class */ (function (_super) {
             this._cornerRadius = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Rectangle.prototype._getTypeName = function () {
@@ -9291,7 +9325,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _scrollViewerWindow__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./scrollViewerWindow */ "./2D/controls/scrollViewers/scrollViewerWindow.ts");
 /* harmony import */ var _sliders_scrollBar__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../sliders/scrollBar */ "./2D/controls/sliders/scrollBar.ts");
 /* harmony import */ var _sliders_imageScrollBar__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../sliders/imageScrollBar */ "./2D/controls/sliders/imageScrollBar.ts");
-/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_7__);
 
 
@@ -9383,7 +9417,7 @@ var ScrollViewer = /** @class */ (function (_super) {
         get: function () {
             return this._horizontalBar;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ScrollViewer.prototype, "verticalBar", {
@@ -9393,7 +9427,7 @@ var ScrollViewer = /** @class */ (function (_super) {
         get: function () {
             return this._verticalBar;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -9422,7 +9456,7 @@ var ScrollViewer = /** @class */ (function (_super) {
         get: function () {
             return this._window.children;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     ScrollViewer.prototype._flagDescendantsAsMatrixDirty = function () {
@@ -9443,7 +9477,7 @@ var ScrollViewer = /** @class */ (function (_super) {
         set: function (value) {
             this._window.freezeControls = value;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ScrollViewer.prototype, "bucketWidth", {
@@ -9451,7 +9485,7 @@ var ScrollViewer = /** @class */ (function (_super) {
         get: function () {
             return this._window.bucketWidth;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ScrollViewer.prototype, "bucketHeight", {
@@ -9459,7 +9493,7 @@ var ScrollViewer = /** @class */ (function (_super) {
         get: function () {
             return this._window.bucketHeight;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -9488,7 +9522,7 @@ var ScrollViewer = /** @class */ (function (_super) {
             this._horizontalBar.isVisible = value;
             this._forceHorizontalBar = value;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ScrollViewer.prototype, "forceVerticalBar", {
@@ -9503,7 +9537,7 @@ var ScrollViewer = /** @class */ (function (_super) {
             this._verticalBar.isVisible = value;
             this._forceVerticalBar = value;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /** Reset the scroll viewer window to initial size */
@@ -9550,7 +9584,7 @@ var ScrollViewer = /** @class */ (function (_super) {
             }
             this._wheelPrecision = value;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ScrollViewer.prototype, "scrollBackground", {
@@ -9565,7 +9599,7 @@ var ScrollViewer = /** @class */ (function (_super) {
             this._horizontalBarSpace.background = color;
             this._verticalBarSpace.background = color;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ScrollViewer.prototype, "barColor", {
@@ -9581,7 +9615,7 @@ var ScrollViewer = /** @class */ (function (_super) {
             this._horizontalBar.color = color;
             this._verticalBar.color = color;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ScrollViewer.prototype, "thumbImage", {
@@ -9599,7 +9633,7 @@ var ScrollViewer = /** @class */ (function (_super) {
             hb.thumbImage = value;
             vb.thumbImage = value;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ScrollViewer.prototype, "horizontalThumbImage", {
@@ -9615,7 +9649,7 @@ var ScrollViewer = /** @class */ (function (_super) {
             var hb = this._horizontalBar;
             hb.thumbImage = value;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ScrollViewer.prototype, "verticalThumbImage", {
@@ -9631,7 +9665,7 @@ var ScrollViewer = /** @class */ (function (_super) {
             var vb = this._verticalBar;
             vb.thumbImage = value;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ScrollViewer.prototype, "barSize", {
@@ -9652,7 +9686,7 @@ var ScrollViewer = /** @class */ (function (_super) {
                 this._grid.setColumnDefinition(1, this._barSize, true);
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ScrollViewer.prototype, "thumbLength", {
@@ -9677,7 +9711,7 @@ var ScrollViewer = /** @class */ (function (_super) {
             vb.thumbLength = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ScrollViewer.prototype, "thumbHeight", {
@@ -9702,7 +9736,7 @@ var ScrollViewer = /** @class */ (function (_super) {
             vb.thumbHeight = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ScrollViewer.prototype, "barImageHeight", {
@@ -9727,7 +9761,7 @@ var ScrollViewer = /** @class */ (function (_super) {
             vb.barImageHeight = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ScrollViewer.prototype, "horizontalBarImageHeight", {
@@ -9750,7 +9784,7 @@ var ScrollViewer = /** @class */ (function (_super) {
             hb.barImageHeight = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ScrollViewer.prototype, "verticalBarImageHeight", {
@@ -9773,7 +9807,7 @@ var ScrollViewer = /** @class */ (function (_super) {
             vb.barImageHeight = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ScrollViewer.prototype, "barBackground", {
@@ -9792,7 +9826,7 @@ var ScrollViewer = /** @class */ (function (_super) {
             vb.background = color;
             this._dragSpace.background = color;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ScrollViewer.prototype, "barImage", {
@@ -9809,7 +9843,7 @@ var ScrollViewer = /** @class */ (function (_super) {
             hb.backgroundImage = value;
             vb.backgroundImage = value;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ScrollViewer.prototype, "horizontalBarImage", {
@@ -9824,7 +9858,7 @@ var ScrollViewer = /** @class */ (function (_super) {
             var hb = this._horizontalBar;
             hb.backgroundImage = value;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ScrollViewer.prototype, "verticalBarImage", {
@@ -9839,7 +9873,7 @@ var ScrollViewer = /** @class */ (function (_super) {
             var vb = this._verticalBar;
             vb.backgroundImage = value;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     ScrollViewer.prototype._setWindowPosition = function (force) {
@@ -10041,21 +10075,21 @@ var _ScrollViewerWindow = /** @class */ (function (_super) {
             this._freezeControls = value;
             this.host.markAsDirty(); // redraw with the (new) current settings
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(_ScrollViewerWindow.prototype, "bucketWidth", {
         get: function () {
             return this._bucketWidth;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(_ScrollViewerWindow.prototype, "bucketHeight", {
         get: function () {
             return this._bucketHeight;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     _ScrollViewerWindow.prototype.setBucketSizes = function (width, height) {
@@ -10310,7 +10344,7 @@ var SelectorGroup = /** @class */ (function () {
         get: function () {
             return this._groupPanel;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(SelectorGroup.prototype, "selectors", {
@@ -10318,7 +10352,7 @@ var SelectorGroup = /** @class */ (function () {
         get: function () {
             return this._selectors;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(SelectorGroup.prototype, "header", {
@@ -10332,7 +10366,7 @@ var SelectorGroup = /** @class */ (function () {
             }
             this._groupHeader.text = label;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /** @hidden */
@@ -10621,7 +10655,7 @@ var SelectionPanel = /** @class */ (function (_super) {
             this._headerColor = color;
             this._setHeaderColor();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     SelectionPanel.prototype._setHeaderColor = function () {
@@ -10641,7 +10675,7 @@ var SelectionPanel = /** @class */ (function (_super) {
             this._buttonColor = color;
             this._setbuttonColor();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     SelectionPanel.prototype._setbuttonColor = function () {
@@ -10663,7 +10697,7 @@ var SelectionPanel = /** @class */ (function (_super) {
             this._labelColor = color;
             this._setLabelColor();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     SelectionPanel.prototype._setLabelColor = function () {
@@ -10685,7 +10719,7 @@ var SelectionPanel = /** @class */ (function (_super) {
             this._buttonBackground = color;
             this._setButtonBackground();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     SelectionPanel.prototype._setButtonBackground = function () {
@@ -10707,7 +10741,7 @@ var SelectionPanel = /** @class */ (function (_super) {
             this._barColor = color;
             this._setBarColor();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     SelectionPanel.prototype._setBarColor = function () {
@@ -10727,7 +10761,7 @@ var SelectionPanel = /** @class */ (function (_super) {
             this._barHeight = value;
             this._setBarHeight();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     SelectionPanel.prototype._setBarHeight = function () {
@@ -10747,7 +10781,7 @@ var SelectionPanel = /** @class */ (function (_super) {
             this._spacerHeight = value;
             this._setSpacerHeight();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     SelectionPanel.prototype._setSpacerHeight = function () {
@@ -10914,7 +10948,7 @@ var SelectionPanel = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BaseSlider", function() { return BaseSlider; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../control */ "./2D/controls/control.ts");
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../valueAndUnit */ "./2D/valueAndUnit.ts");
@@ -10965,7 +10999,7 @@ var BaseSlider = /** @class */ (function (_super) {
             this._displayThumb = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(BaseSlider.prototype, "step", {
@@ -10980,7 +11014,7 @@ var BaseSlider = /** @class */ (function (_super) {
             this._step = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(BaseSlider.prototype, "barOffset", {
@@ -10996,7 +11030,7 @@ var BaseSlider = /** @class */ (function (_super) {
                 this._markAsDirty();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(BaseSlider.prototype, "barOffsetInPixels", {
@@ -11004,7 +11038,7 @@ var BaseSlider = /** @class */ (function (_super) {
         get: function () {
             return this._barOffset.getValueInPixel(this._host, this._cachedParentMeasure.width);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(BaseSlider.prototype, "thumbWidth", {
@@ -11020,7 +11054,7 @@ var BaseSlider = /** @class */ (function (_super) {
                 this._markAsDirty();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(BaseSlider.prototype, "thumbWidthInPixels", {
@@ -11028,7 +11062,7 @@ var BaseSlider = /** @class */ (function (_super) {
         get: function () {
             return this._thumbWidth.getValueInPixel(this._host, this._cachedParentMeasure.width);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(BaseSlider.prototype, "minimum", {
@@ -11044,7 +11078,7 @@ var BaseSlider = /** @class */ (function (_super) {
             this._markAsDirty();
             this.value = Math.max(Math.min(this.value, this._maximum), this._minimum);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(BaseSlider.prototype, "maximum", {
@@ -11060,7 +11094,7 @@ var BaseSlider = /** @class */ (function (_super) {
             this._markAsDirty();
             this.value = Math.max(Math.min(this.value, this._maximum), this._minimum);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(BaseSlider.prototype, "value", {
@@ -11077,7 +11111,7 @@ var BaseSlider = /** @class */ (function (_super) {
             this._markAsDirty();
             this.onValueChangedObservable.notifyObservers(this._value);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(BaseSlider.prototype, "isVertical", {
@@ -11092,7 +11126,7 @@ var BaseSlider = /** @class */ (function (_super) {
             this._isVertical = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(BaseSlider.prototype, "isThumbClamped", {
@@ -11107,7 +11141,7 @@ var BaseSlider = /** @class */ (function (_super) {
             this._isThumbClamped = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     BaseSlider.prototype._getTypeName = function () {
@@ -11244,7 +11278,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _baseSlider__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./baseSlider */ "./2D/controls/sliders/baseSlider.ts");
 /* harmony import */ var _measure__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../measure */ "./2D/measure.ts");
-/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3__);
 
 
@@ -11276,7 +11310,7 @@ var ImageBasedSlider = /** @class */ (function (_super) {
             this._displayThumb = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ImageBasedSlider.prototype, "backgroundImage", {
@@ -11297,7 +11331,7 @@ var ImageBasedSlider = /** @class */ (function (_super) {
             }
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ImageBasedSlider.prototype, "valueBarImage", {
@@ -11318,7 +11352,7 @@ var ImageBasedSlider = /** @class */ (function (_super) {
             }
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ImageBasedSlider.prototype, "thumbImage", {
@@ -11339,7 +11373,7 @@ var ImageBasedSlider = /** @class */ (function (_super) {
             }
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     ImageBasedSlider.prototype._getTypeName = function () {
@@ -11487,7 +11521,7 @@ var ImageScrollBar = /** @class */ (function (_super) {
                 this._markAsDirty();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ImageScrollBar.prototype, "thumbImage", {
@@ -11531,7 +11565,7 @@ var ImageScrollBar = /** @class */ (function (_super) {
                 this._markAsDirty();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ImageScrollBar.prototype, "thumbLength", {
@@ -11548,7 +11582,7 @@ var ImageScrollBar = /** @class */ (function (_super) {
             this._thumbLength = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ImageScrollBar.prototype, "thumbHeight", {
@@ -11565,7 +11599,7 @@ var ImageScrollBar = /** @class */ (function (_super) {
             this._thumbHeight = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ImageScrollBar.prototype, "barImageHeight", {
@@ -11582,7 +11616,7 @@ var ImageScrollBar = /** @class */ (function (_super) {
             this._barImageHeight = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     ImageScrollBar.prototype._getTypeName = function () {
@@ -11724,7 +11758,7 @@ var ScrollBar = /** @class */ (function (_super) {
             this._borderColor = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ScrollBar.prototype, "background", {
@@ -11739,7 +11773,7 @@ var ScrollBar = /** @class */ (function (_super) {
             this._background = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     ScrollBar.prototype._getTypeName = function () {
@@ -11837,7 +11871,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Slider", function() { return Slider; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _baseSlider__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./baseSlider */ "./2D/controls/sliders/baseSlider.ts");
-/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__);
 
 
@@ -11872,7 +11906,7 @@ var Slider = /** @class */ (function (_super) {
             this._displayValueBar = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Slider.prototype, "borderColor", {
@@ -11887,7 +11921,7 @@ var Slider = /** @class */ (function (_super) {
             this._borderColor = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Slider.prototype, "background", {
@@ -11902,7 +11936,7 @@ var Slider = /** @class */ (function (_super) {
             this._background = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Slider.prototype, "isThumbCircle", {
@@ -11917,7 +11951,7 @@ var Slider = /** @class */ (function (_super) {
             this._isThumbCircle = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Slider.prototype._getTypeName = function () {
@@ -12092,7 +12126,7 @@ babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["_TypeStore"].RegisteredTy
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "StackPanel", function() { return StackPanel; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _container__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./container */ "./2D/controls/container.ts");
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
@@ -12135,7 +12169,7 @@ var StackPanel = /** @class */ (function (_super) {
             this._isVertical = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(StackPanel.prototype, "width", {
@@ -12157,7 +12191,7 @@ var StackPanel = /** @class */ (function (_super) {
                 this._markAsDirty();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(StackPanel.prototype, "height", {
@@ -12179,7 +12213,7 @@ var StackPanel = /** @class */ (function (_super) {
                 this._markAsDirty();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     StackPanel.prototype._getTypeName = function () {
@@ -12360,7 +12394,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TextWrapping", function() { return TextWrapping; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TextBlock", function() { return TextBlock; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../valueAndUnit */ "./2D/valueAndUnit.ts");
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
@@ -12431,7 +12465,7 @@ var TextBlock = /** @class */ (function (_super) {
         get: function () {
             return this._lines;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(TextBlock.prototype, "resizeToFit", {
@@ -12455,7 +12489,7 @@ var TextBlock = /** @class */ (function (_super) {
             }
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(TextBlock.prototype, "textWrapping", {
@@ -12475,7 +12509,7 @@ var TextBlock = /** @class */ (function (_super) {
             this._textWrapping = +value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(TextBlock.prototype, "text", {
@@ -12496,7 +12530,7 @@ var TextBlock = /** @class */ (function (_super) {
             this._markAsDirty();
             this.onTextChangedObservable.notifyObservers(this);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(TextBlock.prototype, "textHorizontalAlignment", {
@@ -12516,7 +12550,7 @@ var TextBlock = /** @class */ (function (_super) {
             this._textHorizontalAlignment = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(TextBlock.prototype, "textVerticalAlignment", {
@@ -12536,7 +12570,7 @@ var TextBlock = /** @class */ (function (_super) {
             this._textVerticalAlignment = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(TextBlock.prototype, "lineSpacing", {
@@ -12554,7 +12588,7 @@ var TextBlock = /** @class */ (function (_super) {
                 this._markAsDirty();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(TextBlock.prototype, "outlineWidth", {
@@ -12574,7 +12608,7 @@ var TextBlock = /** @class */ (function (_super) {
             this._outlineWidth = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(TextBlock.prototype, "outlineColor", {
@@ -12594,7 +12628,7 @@ var TextBlock = /** @class */ (function (_super) {
             this._outlineColor = value;
             this._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     TextBlock.prototype._getTypeName = function () {
@@ -12823,7 +12857,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "KeyPropertySet", function() { return KeyPropertySet; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "VirtualKeyboard", function() { return VirtualKeyboard; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _stackPanel__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./stackPanel */ "./2D/controls/stackPanel.ts");
 /* harmony import */ var _button__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./button */ "./2D/controls/button.ts");
@@ -12959,7 +12993,7 @@ var VirtualKeyboard = /** @class */ (function (_super) {
         get: function () {
             return this._currentlyConnectedInputText;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -13212,7 +13246,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Vector2WithInfo", function() { return Vector2WithInfo; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Matrix2D", function() { return Matrix2D; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__);
 
 
@@ -13437,7 +13471,7 @@ var Matrix2D = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Measure", function() { return Measure; });
-/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__);
 
 var tmpRect = [
@@ -13586,7 +13620,7 @@ var Measure = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MultiLinePoint", function() { return MultiLinePoint; });
-/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./valueAndUnit */ "./2D/valueAndUnit.ts");
 
@@ -13619,7 +13653,7 @@ var MultiLinePoint = /** @class */ (function () {
                 this._multiLine._markAsDirty();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MultiLinePoint.prototype, "y", {
@@ -13635,7 +13669,7 @@ var MultiLinePoint = /** @class */ (function () {
                 this._multiLine._markAsDirty();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MultiLinePoint.prototype, "control", {
@@ -13657,7 +13691,7 @@ var MultiLinePoint = /** @class */ (function () {
             }
             this._multiLine._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MultiLinePoint.prototype, "mesh", {
@@ -13678,7 +13712,7 @@ var MultiLinePoint = /** @class */ (function () {
             }
             this._multiLine._markAsDirty();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /** Resets links */
@@ -13729,7 +13763,7 @@ var MultiLinePoint = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Style", function() { return Style; });
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./valueAndUnit */ "./2D/valueAndUnit.ts");
 
@@ -13770,7 +13804,7 @@ var Style = /** @class */ (function () {
                 this.onChangedObservable.notifyObservers(this);
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Style.prototype, "fontFamily", {
@@ -13787,7 +13821,7 @@ var Style = /** @class */ (function () {
             this._fontFamily = value;
             this.onChangedObservable.notifyObservers(this);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Style.prototype, "fontStyle", {
@@ -13804,7 +13838,7 @@ var Style = /** @class */ (function () {
             this._fontStyle = value;
             this.onChangedObservable.notifyObservers(this);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Style.prototype, "fontWeight", {
@@ -13819,7 +13853,7 @@ var Style = /** @class */ (function () {
             this._fontWeight = value;
             this.onChangedObservable.notifyObservers(this);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /** Dispose all associated resources */
@@ -13876,7 +13910,7 @@ var ValueAndUnit = /** @class */ (function () {
         get: function () {
             return this.unit === ValueAndUnit.UNITMODE_PERCENTAGE;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ValueAndUnit.prototype, "isPixel", {
@@ -13884,7 +13918,7 @@ var ValueAndUnit = /** @class */ (function () {
         get: function () {
             return this.unit === ValueAndUnit.UNITMODE_PIXEL;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ValueAndUnit.prototype, "internalValue", {
@@ -13892,7 +13926,7 @@ var ValueAndUnit = /** @class */ (function () {
         get: function () {
             return this._value;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -14003,7 +14037,7 @@ var ValueAndUnit = /** @class */ (function () {
         get: function () {
             return ValueAndUnit._UNITMODE_PERCENTAGE;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ValueAndUnit, "UNITMODE_PIXEL", {
@@ -14011,7 +14045,7 @@ var ValueAndUnit = /** @class */ (function () {
         get: function () {
             return ValueAndUnit._UNITMODE_PIXEL;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     // Static
@@ -14035,7 +14069,7 @@ var ValueAndUnit = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "XmlLoader", function() { return XmlLoader; });
-/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_0__);
 
 /**
@@ -14354,7 +14388,7 @@ var XmlLoader = /** @class */ (function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AbstractButton3D", function() { return AbstractButton3D; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Meshes/transformNode */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Meshes/transformNode */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control3D__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control3D */ "./3D/controls/control3D.ts");
 
@@ -14397,7 +14431,7 @@ var AbstractButton3D = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Button3D", function() { return Button3D; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _abstractButton3D__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./abstractButton3D */ "./3D/controls/abstractButton3D.ts");
 /* harmony import */ var _2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../2D/advancedDynamicTexture */ "./2D/advancedDynamicTexture.ts");
@@ -14460,7 +14494,7 @@ var Button3D = /** @class */ (function (_super) {
             this._contentResolution = value;
             this._resetContent();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Button3D.prototype, "contentScaleRatio", {
@@ -14477,7 +14511,7 @@ var Button3D = /** @class */ (function (_super) {
             this._contentScaleRatio = value;
             this._resetContent();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Button3D.prototype._disposeFacadeTexture = function () {
@@ -14514,7 +14548,7 @@ var Button3D = /** @class */ (function (_super) {
             this._facadeTexture.addControl(value);
             this._applyFacade(this._facadeTexture);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -14578,7 +14612,7 @@ var Button3D = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Container3D", function() { return Container3D; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Meshes/transformNode */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Meshes/transformNode */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control3D__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control3D */ "./3D/controls/control3D.ts");
 
@@ -14609,7 +14643,7 @@ var Container3D = /** @class */ (function (_super) {
         get: function () {
             return this._children;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Container3D.prototype, "blockLayout", {
@@ -14629,7 +14663,7 @@ var Container3D = /** @class */ (function (_super) {
                 this._arrangeChildren();
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -14735,7 +14769,7 @@ var Container3D = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Control3D", function() { return Control3D; });
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _vector3WithInfo__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../vector3WithInfo */ "./3D/vector3WithInfo.ts");
 
@@ -14800,7 +14834,7 @@ var Control3D = /** @class */ (function () {
             }
             this._node.position = value;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control3D.prototype, "scaling", {
@@ -14817,7 +14851,7 @@ var Control3D = /** @class */ (function () {
             }
             this._node.scaling = value;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control3D.prototype, "behaviors", {
@@ -14828,7 +14862,7 @@ var Control3D = /** @class */ (function () {
         get: function () {
             return this._behaviors;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -14902,7 +14936,7 @@ var Control3D = /** @class */ (function () {
                 mesh.setEnabled(value);
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control3D.prototype, "typeName", {
@@ -14912,7 +14946,7 @@ var Control3D = /** @class */ (function () {
         get: function () {
             return this._getTypeName();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -14932,7 +14966,7 @@ var Control3D = /** @class */ (function () {
         get: function () {
             return this._node;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Control3D.prototype, "mesh", {
@@ -14945,7 +14979,7 @@ var Control3D = /** @class */ (function () {
             }
             return null;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -15141,7 +15175,7 @@ var Control3D = /** @class */ (function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CylinderPanel", function() { return CylinderPanel; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./volumeBasedPanel */ "./3D/controls/volumeBasedPanel.ts");
 /* harmony import */ var _container3D__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./container3D */ "./3D/controls/container3D.ts");
@@ -15178,7 +15212,7 @@ var CylinderPanel = /** @class */ (function (_super) {
                 _this._arrangeChildren();
             });
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     CylinderPanel.prototype._mapGridNode = function (control, nodePosition) {
@@ -15227,7 +15261,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HolographicButton", function() { return HolographicButton; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _button3D__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./button3D */ "./3D/controls/button3D.ts");
-/* harmony import */ var babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Materials/standardMaterial */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Materials/standardMaterial */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _materials_fluentMaterial__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../materials/fluentMaterial */ "./3D/materials/fluentMaterial.ts");
 /* harmony import */ var _2D_controls_stackPanel__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../2D/controls/stackPanel */ "./2D/controls/stackPanel.ts");
@@ -15305,7 +15339,7 @@ var HolographicButton = /** @class */ (function (_super) {
                 this._tooltipMesh.renderingGroupId = id;
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(HolographicButton.prototype, "tooltipText", {
@@ -15365,7 +15399,7 @@ var HolographicButton = /** @class */ (function (_super) {
                 this._tooltipTextBlock.text = text;
             }
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(HolographicButton.prototype, "text", {
@@ -15382,7 +15416,7 @@ var HolographicButton = /** @class */ (function (_super) {
             this._text = value;
             this._rebuildContent();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(HolographicButton.prototype, "imageUrl", {
@@ -15399,7 +15433,7 @@ var HolographicButton = /** @class */ (function (_super) {
             this._imageUrl = value;
             this._rebuildContent();
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(HolographicButton.prototype, "backMaterial", {
@@ -15409,7 +15443,7 @@ var HolographicButton = /** @class */ (function (_super) {
         get: function () {
             return this._backMaterial;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(HolographicButton.prototype, "frontMaterial", {
@@ -15419,7 +15453,7 @@ var HolographicButton = /** @class */ (function (_super) {
         get: function () {
             return this._frontMaterial;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(HolographicButton.prototype, "plateMaterial", {
@@ -15429,7 +15463,7 @@ var HolographicButton = /** @class */ (function (_super) {
         get: function () {
             return this._plateMaterial;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(HolographicButton.prototype, "shareMaterials", {
@@ -15439,7 +15473,7 @@ var HolographicButton = /** @class */ (function (_super) {
         get: function () {
             return this._shareMaterials;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     HolographicButton.prototype._getTypeName = function () {
@@ -15721,7 +15755,7 @@ var MeshButton3D = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PlanePanel", function() { return PlanePanel; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _container3D__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./container3D */ "./3D/controls/container3D.ts");
 /* harmony import */ var _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./volumeBasedPanel */ "./3D/controls/volumeBasedPanel.ts");
@@ -15776,7 +15810,7 @@ var PlanePanel = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ScatterPanel", function() { return ScatterPanel; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./volumeBasedPanel */ "./3D/controls/volumeBasedPanel.ts");
 /* harmony import */ var _container3D__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./container3D */ "./3D/controls/container3D.ts");
@@ -15812,7 +15846,7 @@ var ScatterPanel = /** @class */ (function (_super) {
                 _this._arrangeChildren();
             });
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     ScatterPanel.prototype._mapGridNode = function (control, nodePosition) {
@@ -15903,7 +15937,7 @@ var ScatterPanel = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SpherePanel", function() { return SpherePanel; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./volumeBasedPanel */ "./3D/controls/volumeBasedPanel.ts");
 /* harmony import */ var _container3D__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./container3D */ "./3D/controls/container3D.ts");
@@ -15940,7 +15974,7 @@ var SpherePanel = /** @class */ (function (_super) {
                 _this._arrangeChildren();
             });
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     SpherePanel.prototype._mapGridNode = function (control, nodePosition) {
@@ -15989,7 +16023,7 @@ var SpherePanel = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "StackPanel3D", function() { return StackPanel3D; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _container3D__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./container3D */ "./3D/controls/container3D.ts");
 
@@ -16033,7 +16067,7 @@ var StackPanel3D = /** @class */ (function (_super) {
                 _this._arrangeChildren();
             });
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     StackPanel3D.prototype._arrangeChildren = function () {
@@ -16114,7 +16148,7 @@ var StackPanel3D = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "VolumeBasedPanel", function() { return VolumeBasedPanel; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _container3D__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./container3D */ "./3D/controls/container3D.ts");
 
@@ -16165,7 +16199,7 @@ var VolumeBasedPanel = /** @class */ (function (_super) {
                 _this._arrangeChildren();
             });
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(VolumeBasedPanel.prototype, "columns", {
@@ -16187,7 +16221,7 @@ var VolumeBasedPanel = /** @class */ (function (_super) {
                 _this._arrangeChildren();
             });
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(VolumeBasedPanel.prototype, "rows", {
@@ -16209,7 +16243,7 @@ var VolumeBasedPanel = /** @class */ (function (_super) {
                 _this._arrangeChildren();
             });
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     VolumeBasedPanel.prototype._arrangeChildren = function () {
@@ -16305,7 +16339,7 @@ var VolumeBasedPanel = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GUI3DManager", function() { return GUI3DManager; });
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _controls_container3D__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./controls/container3D */ "./3D/controls/container3D.ts");
 
@@ -16370,7 +16404,7 @@ var GUI3DManager = /** @class */ (function () {
         get: function () {
             return this._scene;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(GUI3DManager.prototype, "utilityLayer", {
@@ -16378,7 +16412,7 @@ var GUI3DManager = /** @class */ (function () {
         get: function () {
             return this._utilityLayer;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     GUI3DManager.prototype._handlePointerOut = function (pointerId, isPointerUp) {
@@ -16437,7 +16471,7 @@ var GUI3DManager = /** @class */ (function () {
         get: function () {
             return this._rootContainer;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -16572,7 +16606,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FluentMaterialDefines", function() { return FluentMaterialDefines; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FluentMaterial", function() { return FluentMaterial; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/decorators */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/decorators */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _shaders_fluent_vertex__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./shaders/fluent.vertex */ "./3D/materials/shaders/fluent.vertex.ts");
 /* harmony import */ var _shaders_fluent_fragment__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./shaders/fluent.fragment */ "./3D/materials/shaders/fluent.fragment.ts");
@@ -16895,7 +16929,7 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "fluentPixelShader", function() { return fluentPixelShader; });
-/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__);
 
 var name = 'fluentPixelShader';
@@ -16917,7 +16951,7 @@ var fluentPixelShader = { name: name, shader: shader };
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "fluentVertexShader", function() { return fluentVertexShader; });
-/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__);
 
 var name = 'fluentVertexShader';
@@ -16940,7 +16974,7 @@ var fluentVertexShader = { name: name, shader: shader };
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Vector3WithInfo", function() { return Vector3WithInfo; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__);
 
 
@@ -17242,14 +17276,14 @@ if (typeof globalObject !== "undefined") {
 
 /***/ }),
 
-/***/ "babylonjs/Misc/observable":
+/***/ "babylonjs/Misc/perfCounter":
 /*!****************************************************************************************************!*\
   !*** external {"root":"BABYLON","commonjs":"babylonjs","commonjs2":"babylonjs","amd":"babylonjs"} ***!
   \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_perfCounter__;
 
 /***/ })
 
