@@ -113,6 +113,7 @@
 - Added to `StandardMaterial` RGBD ReflectionTexture, RefractionTexture and LightmapTexture support. ([MackeyK24](https://github.com/MackeyK24))
 - Allow using the single comment syntax `// comment` in a `#if` construct in shader code ([Popov72](https://github.com/Popov72))
 - Added the possibility to update the shader code before being compiled ([Popov72](https://github.com/Popov72))
+- Added the `shadowOnly` property to the `BackgroundMaterial` class ([Popov72](https://github.com/Popov72))
 
 ### WebXR
 
