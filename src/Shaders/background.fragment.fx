@@ -136,148 +136,153 @@ void main(void) {
     globalShadow = 1.0;
 #endif
 
-// _____________________________ REFLECTION ______________________________________
-vec4 reflectionColor = vec4(1., 1., 1., 1.);
-#ifdef REFLECTION
-    vec3 reflectionVector = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
-    #ifdef REFLECTIONMAP_OPPOSITEZ
-        reflectionVector.z *= -1.0;
-    #endif
-
-    // _____________________________ 2D vs 3D Maps ________________________________
-    #ifdef REFLECTIONMAP_3D
-        vec3 reflectionCoords = reflectionVector;
-    #else
-        vec2 reflectionCoords = reflectionVector.xy;
-        #ifdef REFLECTIONMAP_PROJECTION
-            reflectionCoords /= reflectionVector.z;
+#ifndef BACKMAT_SHADOWONLY
+    // _____________________________ REFLECTION ______________________________________
+    vec4 reflectionColor = vec4(1., 1., 1., 1.);
+    #ifdef REFLECTION
+        vec3 reflectionVector = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
+        #ifdef REFLECTIONMAP_OPPOSITEZ
+            reflectionVector.z *= -1.0;
         #endif
-        reflectionCoords.y = 1.0 - reflectionCoords.y;
-    #endif
 
-    #ifdef REFLECTIONBLUR
-        float reflectionLOD = vReflectionInfos.y;
-
-        #ifdef TEXTURELODSUPPORT
-            // Apply environment convolution scale/offset filter tuning parameters to the mipmap LOD selection
-            reflectionLOD = reflectionLOD * log2(vReflectionMicrosurfaceInfos.x) * vReflectionMicrosurfaceInfos.y + vReflectionMicrosurfaceInfos.z;
-            reflectionColor = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD);
+        // _____________________________ 2D vs 3D Maps ________________________________
+        #ifdef REFLECTIONMAP_3D
+            vec3 reflectionCoords = reflectionVector;
         #else
-            float lodReflectionNormalized = saturate(reflectionLOD);
-            float lodReflectionNormalizedDoubled = lodReflectionNormalized * 2.0;
-
-            vec4 reflectionSpecularMid = sampleReflection(reflectionSampler, reflectionCoords);
-            if(lodReflectionNormalizedDoubled < 1.0){
-                reflectionColor = mix(
-                    sampleReflection(reflectionSamplerHigh, reflectionCoords),
-                    reflectionSpecularMid,
-                    lodReflectionNormalizedDoubled
-                );
-            } else {
-                reflectionColor = mix(
-                    reflectionSpecularMid,
-                    sampleReflection(reflectionSamplerLow, reflectionCoords),
-                    lodReflectionNormalizedDoubled - 1.0
-                );
-            }
+            vec2 reflectionCoords = reflectionVector.xy;
+            #ifdef REFLECTIONMAP_PROJECTION
+                reflectionCoords /= reflectionVector.z;
+            #endif
+            reflectionCoords.y = 1.0 - reflectionCoords.y;
         #endif
-    #else
-        vec4 reflectionSample = sampleReflection(reflectionSampler, reflectionCoords);
-        reflectionColor = reflectionSample;
+
+        #ifdef REFLECTIONBLUR
+            float reflectionLOD = vReflectionInfos.y;
+
+            #ifdef TEXTURELODSUPPORT
+                // Apply environment convolution scale/offset filter tuning parameters to the mipmap LOD selection
+                reflectionLOD = reflectionLOD * log2(vReflectionMicrosurfaceInfos.x) * vReflectionMicrosurfaceInfos.y + vReflectionMicrosurfaceInfos.z;
+                reflectionColor = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD);
+            #else
+                float lodReflectionNormalized = saturate(reflectionLOD);
+                float lodReflectionNormalizedDoubled = lodReflectionNormalized * 2.0;
+
+                vec4 reflectionSpecularMid = sampleReflection(reflectionSampler, reflectionCoords);
+                if(lodReflectionNormalizedDoubled < 1.0){
+                    reflectionColor = mix(
+                        sampleReflection(reflectionSamplerHigh, reflectionCoords),
+                        reflectionSpecularMid,
+                        lodReflectionNormalizedDoubled
+                    );
+                } else {
+                    reflectionColor = mix(
+                        reflectionSpecularMid,
+                        sampleReflection(reflectionSamplerLow, reflectionCoords),
+                        lodReflectionNormalizedDoubled - 1.0
+                    );
+                }
+            #endif
+        #else
+            vec4 reflectionSample = sampleReflection(reflectionSampler, reflectionCoords);
+            reflectionColor = reflectionSample;
+        #endif
+
+        #ifdef RGBDREFLECTION
+            reflectionColor.rgb = fromRGBD(reflectionColor);
+        #endif
+
+        #ifdef GAMMAREFLECTION
+            reflectionColor.rgb = toLinearSpace(reflectionColor.rgb);
+        #endif
+
+        #ifdef REFLECTIONBGR
+            reflectionColor.rgb = reflectionColor.bgr;
+        #endif
+
+        // _____________________________ Levels _____________________________________
+        reflectionColor.rgb *= vReflectionInfos.x;
     #endif
 
-    #ifdef RGBDREFLECTION
-        reflectionColor.rgb = fromRGBD(reflectionColor);
-    #endif
-
-    #ifdef GAMMAREFLECTION
-        reflectionColor.rgb = toLinearSpace(reflectionColor.rgb);
-    #endif
-
-    #ifdef REFLECTIONBGR
-        reflectionColor.rgb = reflectionColor.bgr;
-    #endif
+    // _____________________________ Diffuse Information _______________________________
+    vec3 diffuseColor = vec3(1., 1., 1.);
+    float finalAlpha = alpha;
+    #ifdef DIFFUSE
+        vec4 diffuseMap = texture2D(diffuseSampler, vDiffuseUV);
+        #ifdef GAMMADIFFUSE
+            diffuseMap.rgb = toLinearSpace(diffuseMap.rgb);
+        #endif
 
     // _____________________________ Levels _____________________________________
-    reflectionColor.rgb *= vReflectionInfos.x;
-#endif
+        diffuseMap.rgb *= vDiffuseInfos.y;
 
-// _____________________________ Diffuse Information _______________________________
-vec3 diffuseColor = vec3(1., 1., 1.);
-float finalAlpha = alpha;
-#ifdef DIFFUSE
-    vec4 diffuseMap = texture2D(diffuseSampler, vDiffuseUV);
-    #ifdef GAMMADIFFUSE
-        diffuseMap.rgb = toLinearSpace(diffuseMap.rgb);
+        #ifdef DIFFUSEHASALPHA
+            finalAlpha *= diffuseMap.a;
+        #endif
+
+        diffuseColor = diffuseMap.rgb;
     #endif
 
-// _____________________________ Levels _____________________________________
-    diffuseMap.rgb *= vDiffuseInfos.y;
-
-    #ifdef DIFFUSEHASALPHA
-        finalAlpha *= diffuseMap.a;
-    #endif
-
-    diffuseColor = diffuseMap.rgb;
-#endif
-
-// _____________________________ MIX ________________________________________
-#ifdef REFLECTIONFRESNEL
-    vec3 colorBase = diffuseColor;
-#else
-    vec3 colorBase = reflectionColor.rgb * diffuseColor;
-#endif
-    colorBase = max(colorBase, 0.0);
-
-// ___________________________ COMPOSE _______________________________________
-#ifdef USERGBCOLOR
-    vec3 finalColor = colorBase;
-#else
-    #ifdef USEHIGHLIGHTANDSHADOWCOLORS
-        vec3 mainColor = mix(vPrimaryColorShadow.rgb, vPrimaryColor.rgb, colorBase);
+    // _____________________________ MIX ________________________________________
+    #ifdef REFLECTIONFRESNEL
+        vec3 colorBase = diffuseColor;
     #else
-        vec3 mainColor = vPrimaryColor.rgb;
+        vec3 colorBase = reflectionColor.rgb * diffuseColor;
+    #endif
+        colorBase = max(colorBase, 0.0);
+
+    // ___________________________ COMPOSE _______________________________________
+    #ifdef USERGBCOLOR
+        vec3 finalColor = colorBase;
+    #else
+        #ifdef USEHIGHLIGHTANDSHADOWCOLORS
+            vec3 mainColor = mix(vPrimaryColorShadow.rgb, vPrimaryColor.rgb, colorBase);
+        #else
+            vec3 mainColor = vPrimaryColor.rgb;
+        #endif
+
+        vec3 finalColor = colorBase * mainColor;
     #endif
 
-    vec3 finalColor = colorBase * mainColor;
-#endif
+    // ___________________________ FRESNELS _______________________________________
+    #ifdef REFLECTIONFRESNEL
+        vec3 reflectionAmount = vReflectionControl.xxx;
+        vec3 reflectionReflectance0 = vReflectionControl.yyy;
+        vec3 reflectionReflectance90 = vReflectionControl.zzz;
+        float VdotN = dot(normalize(vEyePosition), normalW);
 
-// ___________________________ FRESNELS _______________________________________
-#ifdef REFLECTIONFRESNEL
-    vec3 reflectionAmount = vReflectionControl.xxx;
-    vec3 reflectionReflectance0 = vReflectionControl.yyy;
-    vec3 reflectionReflectance90 = vReflectionControl.zzz;
-    float VdotN = dot(normalize(vEyePosition), normalW);
+        vec3 planarReflectionFresnel = fresnelSchlickEnvironmentGGX(saturate(VdotN), reflectionReflectance0, reflectionReflectance90, 1.0);
+        reflectionAmount *= planarReflectionFresnel;
 
-    vec3 planarReflectionFresnel = fresnelSchlickEnvironmentGGX(saturate(VdotN), reflectionReflectance0, reflectionReflectance90, 1.0);
-    reflectionAmount *= planarReflectionFresnel;
+        #ifdef REFLECTIONFALLOFF
+            float reflectionDistanceFalloff = 1.0 - saturate(length(vPositionW.xyz - vBackgroundCenter) * vReflectionControl.w);
+            reflectionDistanceFalloff *= reflectionDistanceFalloff;
+            reflectionAmount *= reflectionDistanceFalloff;
+        #endif
 
-    #ifdef REFLECTIONFALLOFF
-        float reflectionDistanceFalloff = 1.0 - saturate(length(vPositionW.xyz - vBackgroundCenter) * vReflectionControl.w);
-        reflectionDistanceFalloff *= reflectionDistanceFalloff;
-        reflectionAmount *= reflectionDistanceFalloff;
+        finalColor = mix(finalColor, reflectionColor.rgb, saturate(reflectionAmount));
     #endif
 
-    finalColor = mix(finalColor, reflectionColor.rgb, saturate(reflectionAmount));
+    #ifdef OPACITYFRESNEL
+        float viewAngleToFloor = dot(normalW, normalize(vEyePosition - vBackgroundCenter));
+
+        // Fade out the floor plane as the angle between the floor and the camera tends to 0 (starting from startAngle)
+        const float startAngle = 0.1;
+        float fadeFactor = saturate(viewAngleToFloor/startAngle);
+
+        finalAlpha *= fadeFactor * fadeFactor;
+    #endif
+
+    // ___________________________ SHADOWS _______________________________________
+    #ifdef SHADOWINUSE
+        finalColor = mix(finalColor * shadowLevel, finalColor, globalShadow);
+    #endif
+
+    // ___________________________ FINALIZE _______________________________________
+    vec4 color = vec4(finalColor, finalAlpha);
+
+#else
+    vec4 color = vec4(vPrimaryColor.rgb, (1.0 - clamp(globalShadow, 0., 1.)) * alpha);
 #endif
-
-#ifdef OPACITYFRESNEL
-    float viewAngleToFloor = dot(normalW, normalize(vEyePosition - vBackgroundCenter));
-
-    // Fade out the floor plane as the angle between the floor and the camera tends to 0 (starting from startAngle)
-    const float startAngle = 0.1;
-    float fadeFactor = saturate(viewAngleToFloor/startAngle);
-
-    finalAlpha *= fadeFactor * fadeFactor;
-#endif
-
-// ___________________________ SHADOWS _______________________________________
-#ifdef SHADOWINUSE
-    finalColor = mix(finalColor * shadowLevel, finalColor, globalShadow);
-#endif
-
-// ___________________________ FINALIZE _______________________________________
-vec4 color = vec4(finalColor, finalAlpha);
 
 #include<fogFragment>
 
