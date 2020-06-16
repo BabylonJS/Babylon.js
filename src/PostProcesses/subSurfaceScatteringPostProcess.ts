@@ -57,11 +57,6 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
 
         let defines = "";
 
-        // if (this._scene.imageProcessingConfiguration.applyByPostProcess) {
-        //     // We must output linear color for post process
-        //     defines = defines + "#define LINEAR_OUTPUT\n";
-        // }
-
         return defines;
     }
 }
