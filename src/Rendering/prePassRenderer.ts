@@ -36,10 +36,10 @@ export class PrePassRenderer {
      */
     public prePassRT: MultiRenderTarget;
     private _mrtTypes = [
-        Constants.TEXTURETYPE_UNSIGNED_INT, // Original color
+        Constants.TEXTURETYPE_HALF_FLOAT, // Original color
         Constants.TEXTURETYPE_HALF_FLOAT, // Irradiance
         Constants.TEXTURETYPE_HALF_FLOAT, // Depth (world units)
-        Constants.TEXTURETYPE_UNSIGNED_INT
+        Constants.TEXTURETYPE_UNSIGNED_INT // Albedo
     ];
     private _multiRenderAttachments: number[];
     private _defaultAttachments: number[];
@@ -217,10 +217,7 @@ export class PrePassRenderer {
             var internalTexture = this.prePassRT.getInternalTexture();
             if (internalTexture) {
                 this._engine.bindFramebuffer(internalTexture);
-            } else {
-                Logger.Error("High Definition pipeline error.");
             }
-            return;
         }
     }
 
