@@ -53330,6 +53330,11 @@ declare module BABYLON {
          * Number of Simultaneous lights allowed on the material.
          */
         maxSimultaneousLights: int;
+        private _shadowOnly;
+        /**
+         * Make the material only render shadows
+         */
+        shadowOnly: boolean;
         /**
          * Default configuration related to image processing available in the Background Material.
          */
@@ -57693,6 +57698,13 @@ declare module BABYLON {
          * @returns true if it should render otherwise false
          */
         protected _shouldRenderMesh(mesh: Mesh): boolean;
+        /**
+         * Returns true if the mesh can be rendered, otherwise false.
+         * @param mesh The mesh to render
+         * @param material The material used on the mesh
+         * @returns true if it can be rendered otherwise false
+         */
+        protected _canRenderMesh(mesh: AbstractMesh, material: Material): boolean;
         /**
          * Adds specific effects defines.
          * @param defines The defines to add specifics to.
