@@ -231,7 +231,6 @@ ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: I
         texture._generateStencilBuffer = generateStencilBuffer;
         texture._attachments = attachments;
         texture._textureArray = textures;
-        texture._textureCount = textureCount;
 
         this._internalTexturesCache.push(texture);
     }

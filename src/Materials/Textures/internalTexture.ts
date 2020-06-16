@@ -197,8 +197,6 @@ export class InternalTexture {
     /** @hidden */
     public _textureArray: Nullable<InternalTexture[]> = null;
     /** @hidden */
-    public _textureCount: Nullable<number> = null;
-    /** @hidden */
     public _cachedCoordinatesMode: Nullable<number> = null;
     /** @hidden */
     public _cachedWrapU: Nullable<number> = null;
