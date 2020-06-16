@@ -168,9 +168,9 @@ export class PrePassRenderer {
     public drawBuffers(effect: Effect) {
         if (this.enabled) {
             if (effect._multiTarget) {
-                this._engine.renderToAttachments(this._multiRenderAttachments);
+                this._engine.bindAttachments(this._multiRenderAttachments);
             } else {
-                this._engine.renderToAttachments(this._defaultAttachments);
+                this._engine.bindAttachments(this._defaultAttachments);
             }
         }
     }
@@ -241,9 +241,9 @@ export class PrePassRenderer {
                 this._scene.autoClearDepthAndStencil);
 
             // Clearing other attachment with 0 on all other attachments
-            this._engine.renderToAttachments(this._clearAttachments);
+            this._engine.bindAttachments(this._clearAttachments);
             this._engine.clear(this._clearColor, true, false, false);
-            this._engine.renderToAttachments(this._multiRenderAttachments);
+            this._engine.bindAttachments(this._multiRenderAttachments);
         }
     }
 
@@ -286,7 +286,7 @@ export class PrePassRenderer {
         this._isDirty = false;
 
         if (!this.enabled) {
-            this._engine.renderToAttachments(this._defaultAttachments);
+            this._engine.bindAttachments(this._defaultAttachments);
         }
     }
 
