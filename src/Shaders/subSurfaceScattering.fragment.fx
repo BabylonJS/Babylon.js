@@ -229,7 +229,5 @@ void main(void)
     // Total weight is 0 for color channels without scattering.
     totalWeight = max(totalWeight, HALF_MIN);
 
-    // gl_FragColor = vec4(totalIrradiance / totalWeight, 1.);
     gl_FragColor = vec4(inputColor.rgb + albedo * max(totalIrradiance / totalWeight, vec3(0.0)), 1.);
-	// gl_FragColor = mix(texture2D(textureSampler, vUV), centerIrradiance, 0.5);
 }
