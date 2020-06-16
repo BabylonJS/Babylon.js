@@ -189,7 +189,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
         this._texture = this._internalTextures[0];
 
         if (this.samples !== 1) {
-            this._getEngine()!.updateMultipleRenderTargetTextureSampleCount(this.count, this._internalTextures, this.samples);
+            this._getEngine()!.updateMultipleRenderTargetTextureSampleCount(this._internalTextures, this.samples);
         }
     }
 
@@ -221,7 +221,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
             return;
         }
 
-        this._samples = this._getEngine()!.updateMultipleRenderTargetTextureSampleCount(this.count, this._internalTextures, value);
+        this._samples = this._getEngine()!.updateMultipleRenderTargetTextureSampleCount(this._internalTextures, value);
     }
 
     /**
@@ -235,7 +235,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
     }
 
     protected unbindFrameBuffer(engine: Engine, faceIndex: number): void {
-        engine.unBindMultiColorAttachmentFramebuffer(this.count, this._internalTextures, this.isCube, () => {
+        engine.unBindMultiColorAttachmentFramebuffer(this._internalTextures, this.isCube, () => {
             this.onAfterRenderObservable.notifyObservers(faceIndex);
         });
     }
