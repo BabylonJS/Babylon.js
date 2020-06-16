@@ -2797,7 +2797,7 @@ export class ThinEngine {
         let loader: Nullable<IInternalTextureLoader> = null;
 
         for (const availableLoader of ThinEngine._TextureLoaders) {
-            if (availableLoader.canLoad(extension)) {
+            if (availableLoader.canLoad(extension, mimeType)) {
                 loader = availableLoader;
                 break;
             }
