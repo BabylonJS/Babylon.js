@@ -9,8 +9,6 @@ import { Vector3 } from 'babylonjs/Maths/math.vector';
 import { ArcRotateCamera } from 'babylonjs/Cameras/arcRotateCamera';
 import { FramingBehavior } from 'babylonjs/Behaviors/Cameras/framingBehavior';
 import { EnvironmentTools } from '../tools/environmentTools';
-import { Nullable } from 'babylonjs/types';
-import { Mesh } from 'babylonjs/Meshes/mesh';
 import { Tools } from 'babylonjs/Misc/tools';
 
 require("./renderingZone.scss");
@@ -26,7 +24,6 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     private _engine: Engine;
     private _scene: Scene;
     private _canvas: HTMLCanvasElement;
-    private _currentSkybox: Nullable<Mesh>;
 
     public constructor(props: IRenderingZoneProps) {
         super(props);
@@ -127,7 +124,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 this._scene.environmentTexture = EnvironmentTools.LoadSkyboxPathTexture(this._scene);
             }
 
-            this._currentSkybox = this._scene.createDefaultSkybox(this._scene.environmentTexture, true, (this._scene.activeCamera!.maxZ - this._scene.activeCamera!.minZ) / 2, 0.3, false);
+            this._scene.createDefaultSkybox(this._scene.environmentTexture, true, (this._scene.activeCamera!.maxZ - this._scene.activeCamera!.minZ) / 2, 0.3, false);
         }
         else {
             var pbrPresent = false;

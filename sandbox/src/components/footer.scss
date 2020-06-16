@@ -1,0 +1,25 @@
+.footer {
+    position: relative;
+    width: 100%;
+    height: var(--footer-height);
+    margin: 0;
+    padding: 0;
+    background-color:var(--footer-background);
+    font-size: 0;
+    display: grid;
+    grid-template-rows: 100%;
+    grid-template-columns: 201px 1fr 210px;
+    
+    .footerLeft {
+        display: grid;
+        grid-column: 1;
+        grid-row: 1;
+        padding-left: 40px;
+        align-content: center; 
+        overflow: hidden;
+        #logoImg {
+            height: var(--footer-height);
+            width: 161px;
+        }
+    }
+}

@@ -2,9 +2,10 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { GlobalState } from './globalState';
 import { RenderingZone } from './components/renderingZone';
+import { Footer } from './components/footer';
 
 require("./main.scss");
-var fullScreenLogo = require("./img/logo-fullscreen.svg")
+var fullScreenLogo = require("./img/logo-fullscreen.svg");
 
 interface ISandboxProps {
 }
@@ -73,6 +74,7 @@ export class Sandbox extends React.Component<ISandboxProps> {
             <div id="root">
                 <p id="droptext" ref={this._dropTextRef}>Drag and drop gltf, glb, obj or babylon files to view them</p>
                 <RenderingZone globalState={this._globalState} assetUrl={this._assetUrl}/>
+                <Footer globalState={this._globalState} />
                 <div id="logoContainer">
                     <img id="logo" src={fullScreenLogo} ref={this._logoRef}/>
                 </div>                
