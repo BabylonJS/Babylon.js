@@ -241,19 +241,22 @@ export class PrePassRenderer {
         }
     }
 
+    private _setState(enabled: boolean) {
+        this._enabled = enabled;
+        this._scene.prePass = enabled;
+        this.imageProcessingPostProcess.imageProcessingConfiguration.applyByPostProcess = enabled;
+    }
+
     private _enable() {
         if (!this.subSurfaceScatteringPostProcess) {
             this._createEffects();
         }
-        this._enabled = true;
-        this._scene.prePass = true;
-        this.imageProcessingPostProcess.imageProcessingConfiguration.applyByPostProcess = true;
+
+        this._setState(true);
     }
 
     private _disable() {
-        this._enabled = false;
-        this._scene.prePass = false;
-        this.imageProcessingPostProcess.imageProcessingConfiguration.applyByPostProcess = false;
+        this._setState(false);
     }
 
     /**
