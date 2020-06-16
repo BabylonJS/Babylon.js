@@ -13,10 +13,13 @@ import { Notification } from './notification';
 import { GraphActionsBar } from './graphActionsBar';
 import { Scene } from 'babylonjs/scene';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
+import { Animatable } from 'babylonjs/Animations/animatable';
 import { TargetedAnimation } from 'babylonjs/Animations/animationGroup';
 import { EditorControls } from './editorControls';
 import { SelectedCoordinate } from './animationListTree';
 import { LockObject } from '../lockObject';
+import { Nullable } from 'babylonjs/types';
+import { Observer } from 'babylonjs/Misc/observable';
 
 require('./curveEditor.scss');
 
@@ -76,6 +79,9 @@ export class AnimationCurveEditorComponent extends React.Component<
   //private _selectedCurve: React.RefObject<SVGPathElement>;
   private _svgCanvas: React.RefObject<SvgDraggableArea>;
   private _isTargetedAnimation: boolean;
+
+  private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
+  private _mainAnimatable: Nullable<Animatable>;
   constructor(props: IAnimationCurveEditorComponentProps) {
     super(props);
     this._entityName = (this.props.entity as any).id;
@@ -137,7 +143,7 @@ export class AnimationCurveEditorComponent extends React.Component<
       isBrokenMode: false,
       lerpMode: initialLerpMode,
       playheadOffset: this._graphCanvas.current
-        ? this._graphCanvas.current.children[1].clientWidth /
+        ? this._graphCanvas.current.children[0].clientWidth /
           (this._canvasLength * 10)
         : 0,
       frameAxisLength: new Array(this._canvasLength).fill(0).map((s, i) => {
@@ -234,7 +240,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     if (this._graphCanvas && this._graphCanvas.current) {
       this.setState({
         playheadOffset:
-          this._graphCanvas.current.children[1].clientWidth /
+          this._graphCanvas.current.children[0].clientWidth /
           (this._canvasLength * 10 * this.state.scale),
       });
     }
@@ -1287,6 +1293,7 @@ export class AnimationCurveEditorComponent extends React.Component<
   }
 
   playPause(direction: number) {
+    this.registerObs();
     if (this.state.selected) {
       let target = this.props.entity;
       if (this.props.entity instanceof TargetedAnimation) {
@@ -1302,15 +1309,61 @@ export class AnimationCurveEditorComponent extends React.Component<
         let firstFrame = keys[0].frame;
         let LastFrame = keys[keys.length - 1].frame;
         if (direction === 1) {
-          this.props.scene.beginAnimation(target, firstFrame, LastFrame, true);
+          this._mainAnimatable = this.props.scene.beginAnimation(
+            target,
+            firstFrame,
+            LastFrame,
+            true
+          );
         }
         if (direction === -1) {
-          this.props.scene.beginAnimation(target, LastFrame, firstFrame, true);
+          this._mainAnimatable = this.props.scene.beginAnimation(
+            target,
+            LastFrame,
+            firstFrame,
+            true
+          );
         }
         this._isPlaying = true;
         this.setState({ isPlaying: true });
         this.forceUpdate();
       }
+    }
+  }
+
+  moveFrameTo(e: React.MouseEvent<SVGRectElement, MouseEvent>) {
+    var svg = e.currentTarget as SVGRectElement;
+    var CTM = svg.getScreenCTM();
+    let position;
+    if (CTM) {
+      position = new Vector2(
+        (e.clientX - CTM.e) / CTM.a,
+        (e.clientY - CTM.f) / CTM.d
+      );
+      let selectedFrame = Math.round(position.x);
+      this.setState({ currentFrame: selectedFrame });
+    }
+  }
+
+  registerObs() {
+    this._onBeforeRenderObserver = this.props.scene.onBeforeRenderObservable.add(
+      () => {
+        if (!this._isPlaying || !this._mainAnimatable) {
+          return;
+        }
+        this.setState({
+          currentFrame: Math.round(this._mainAnimatable.masterFrame),
+        });
+      }
+    );
+  }
+
+  componentWillUnmount() {
+    if (this._onBeforeRenderObserver) {
+      this.props.scene.onBeforeRenderObservable.remove(
+        this._onBeforeRenderObserver
+      );
+      this._onBeforeRenderObserver = null;
     }
   }
 
@@ -1322,7 +1375,6 @@ export class AnimationCurveEditorComponent extends React.Component<
           open={this.state.notification !== '' ? true : false}
           close={() => this.clearNotification()}
         />
-
         <GraphActionsBar
           enabled={
             this.state.selected === null || this.state.selected === undefined
@@ -1425,11 +1477,13 @@ export class AnimationCurveEditorComponent extends React.Component<
 
                   <svg>
                     <rect
+                      onClick={(e) => this.moveFrameTo(e)}
                       x='0%'
                       y='91%'
                       width='105%'
                       height='10%'
                       fill='#222'
+                      style={{ cursor: 'pointer' }}
                     ></rect>
                   </svg>
 
@@ -1449,13 +1503,16 @@ export class AnimationCurveEditorComponent extends React.Component<
                 </SvgDraggableArea>
               )}
 
-              <Playhead
-                frame={this.state.currentFrame}
-                offset={this.state.playheadOffset}
-                onCurrentFrameChange={(frame: number) =>
-                  this.changeCurrentFrame(frame)
-                }
-              />
+              {this.state.selected === null ||
+              this.state.selected === undefined ? null : (
+                <Playhead
+                  frame={this.state.currentFrame}
+                  offset={this.state.playheadOffset}
+                  onCurrentFrameChange={(frame: number) =>
+                    this.changeCurrentFrame(frame)
+                  }
+                />
+              )}
             </div>
           </div>
           <div className='row-bottom'>

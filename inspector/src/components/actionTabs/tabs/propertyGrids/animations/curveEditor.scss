@@ -1126,9 +1126,9 @@ body {
       }
 
       .playhead-wrapper {
-        position: absolute;
         left: -13px;
         bottom: 366px;
+        position: relative;
       }
 
       .playhead-scrollable {
@@ -1141,11 +1141,9 @@ body {
 
       .playhead-handle {
         position: relative;
-        top: 364px;
-        width: 100px;
-        height: 26px;
-        padding-left: 28px;
-        margin-left: -28px;
+        top: 340px;
+        width: 22px;
+        height: 30px;
         .playhead {
           width: 22px;
           background-color: transparent;
@@ -1169,7 +1167,7 @@ body {
 
       .playhead-line {
         width: 1px;
-        height: 367px;
+        height: 341px;
         background-color: #ffffff;
         position: absolute;
         margin-left: 9.5px;
