@@ -1,3 +1,7 @@
+body {
+  background-color: rgb(51, 51, 51);
+}
+
 #animation-curve-editor {
   font-family: acumin-pro-condensed;
 
@@ -17,14 +21,14 @@
       height: 20px;
     }
     &.babylon-logo {
-      background-image: url("./assets/babylonLogo.svg");
+      background-image: url('./assets/babylonLogo.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
     }
 
     &.close {
-      background-image: url("./assets/closeWindowIcon.svg");
+      background-image: url('./assets/closeWindowIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -33,61 +37,103 @@
     }
 
     &.auto-tangent {
-      background-image: url("./assets/autoTangentIcon.svg");
+      background-image: url('./assets/autoTangentIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
       color: white;
       cursor: pointer;
+      &:hover {
+        background-color: #888888;
+      }
+
+      &:active {
+        background-color: #555555;
+      }
     }
 
     &.break-tangent {
-      background-image: url("./assets/breakTangentIcon.svg");
+      background-image: url('./assets/breakTangentIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
       color: white;
       cursor: pointer;
+      &:hover {
+        background-color: #888888;
+      }
+
+      &:active {
+        background-color: #555555;
+      }
     }
 
     &.flat-tangent {
-      background-image: url("./assets/flatTangentIcon.svg");
+      background-image: url('./assets/flatTangentIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
       color: white;
       cursor: pointer;
+      &:hover {
+        background-color: #888888;
+      }
+
+      &:active {
+        background-color: #555555;
+      }
     }
 
     &.frame {
-      background-image: url("./assets/frameIcon.svg");
+      background-image: url('./assets/frameIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
       color: white;
       cursor: pointer;
+      &:hover {
+        background-color: #888888;
+      }
+
+      &:active {
+        background-color: #555555;
+      }
     }
 
     &.linear-tangent {
-      background-image: url("./assets/linearTangentIcon.svg");
+      background-image: url('./assets/linearTangentIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
       color: white;
       cursor: pointer;
+      &:hover {
+        background-color: #888888;
+      }
+
+      &:active {
+        background-color: #555555;
+      }
     }
 
     &.unify-tangent {
-      background-image: url("./assets/unifyTangentIcon.svg");
+      background-image: url('./assets/unifyTangentIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
       color: white;
       cursor: pointer;
+      &:hover {
+        background-color: #888888;
+      }
+
+      &:active {
+        background-color: #555555;
+      }
     }
 
     &.add-animation {
-      background-image: url("./assets/addAnimationIcon.svg");
+      background-image: url('./assets/addAnimationIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -96,7 +142,7 @@
     }
 
     &.animation-bullet {
-      background-image: url("./assets/animationBulletIcon.svg");
+      background-image: url('./assets/animationBulletIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -104,7 +150,7 @@
     }
 
     &.animation-delete {
-      background-image: url("./assets/animationDeleteIcon.svg");
+      background-image: url('./assets/animationDeleteIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -113,7 +159,7 @@
     }
 
     &.animation-edit {
-      background-image: url("./assets/editIcon.svg");
+      background-image: url('./assets/editIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -121,7 +167,7 @@
     }
 
     &.animation-end {
-      background-image: url("./assets/animationEndIcon.svg");
+      background-image: url('./assets/animationEndIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -132,7 +178,7 @@
     }
 
     &.animation-lastkey {
-      background-image: url("./assets/animationLastKeyIcon.svg");
+      background-image: url('./assets/animationLastKeyIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -140,12 +186,12 @@
       cursor: pointer;
       background-position: center;
       &:hover {
-        background-image: url("./assets/animationLastKeyHoverIcon.svg");
+        background-image: url('./assets/animationLastKeyHoverIcon.svg');
       }
     }
 
     &.animation-nextkey {
-      background-image: url("./assets/animationNextKeyIcon.svg");
+      background-image: url('./assets/animationNextKeyIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -153,12 +199,12 @@
       cursor: pointer;
       background-position: center;
       &:hover {
-        background-image: url("./assets/animationNextKeyHoverIcon.svg");
+        background-image: url('./assets/animationNextKeyHoverIcon.svg');
       }
     }
 
     &.animation-options {
-      background-image: url("./assets/animationOptionsIcon.svg");
+      background-image: url('./assets/animationOptionsIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -171,7 +217,7 @@
     }
 
     &.animation-playfwd {
-      background-image: url("./assets/animationPlayFwdIcon.svg");
+      background-image: url('./assets/animationPlayFwdIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -181,12 +227,12 @@
       cursor: pointer;
       background-position: center;
       &:hover {
-        background-image: url("./assets/animationPlayFwdHoverIcon.svg");
+        background-image: url('./assets/animationPlayFwdHoverIcon.svg');
       }
     }
 
     &.animation-playrev {
-      background-image: url("./assets/animationPlayRevIcon.svg");
+      background-image: url('./assets/animationPlayRevIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -196,12 +242,12 @@
       cursor: pointer;
       background-position: center;
       &:hover {
-        background-image: url("./assets/animationPlayRevHoverIcon.svg");
+        background-image: url('./assets/animationPlayRevHoverIcon.svg');
       }
     }
 
     &.animation-start {
-      background-image: url("./assets/animationStartIcon.svg");
+      background-image: url('./assets/animationStartIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -213,7 +259,7 @@
     }
 
     &.animation-stop {
-      background-image: url("./assets/animationStopIcon.svg");
+      background-image: url('./assets/animationStopIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -222,10 +268,11 @@
       cursor: pointer;
       background-position: center;
       width: 20px;
+      margin-left: 10px;
     }
 
     &.animation-triangle {
-      background-image: url("./assets/animationTriangleIcon.svg");
+      background-image: url('./assets/animationTriangleIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -233,7 +280,7 @@
     }
 
     &.key-active {
-      background-image: url("./assets/keyActiveIcon.svg");
+      background-image: url('./assets/keyActiveIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -241,7 +288,7 @@
     }
 
     &.key-inactive {
-      background-image: url("./assets/keyInactiveIcon.svg");
+      background-image: url('./assets/keyInactiveIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -249,7 +296,7 @@
     }
 
     &.key-selected {
-      background-image: url("./assets/keySelectedIcon.svg");
+      background-image: url('./assets/keySelectedIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -257,7 +304,7 @@
     }
 
     &.loop-active {
-      background-image: url("./assets/loopActiveIcon.svg");
+      background-image: url('./assets/loopActiveIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -266,7 +313,7 @@
     }
 
     &.loop-inactive {
-      background-image: url("./assets/loopInactiveIcon.svg");
+      background-image: url('./assets/loopInactiveIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -275,7 +322,7 @@
     }
 
     &.move {
-      background-image: url("./assets/moveIcon.svg");
+      background-image: url('./assets/moveIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -283,7 +330,7 @@
     }
 
     &.save {
-      background-image: url("./assets/saveIcon.svg");
+      background-image: url('./assets/saveIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -292,7 +339,7 @@
     }
 
     &.load {
-      background-image: url("./assets/loadIcon.svg");
+      background-image: url('./assets/loadIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -301,7 +348,7 @@
     }
 
     &.checked {
-      background-image: url("./assets/checkboxCheckedIcon.svg");
+      background-image: url('./assets/checkboxCheckedIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -309,7 +356,7 @@
     }
 
     &.unchecked {
-      background-image: url("./assets/checkboxDefaultIcon.svg");
+      background-image: url('./assets/checkboxDefaultIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -317,15 +364,22 @@
     }
 
     &.new-key {
-      background-image: url("./assets/newKeyIcon.svg");
+      background-image: url('./assets/newKeyIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
       color: white;
+      &:hover {
+        background-color: #888888;
+      }
+
+      &:active {
+        background-color: #555555;
+      }
     }
 
     &.scale {
-      background-image: url("./assets/scaleIcon.svg");
+      background-image: url('./assets/scaleIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -333,7 +387,7 @@
     }
 
     &.scrollbar-handle {
-      background-image: url("./assets/scrollbarHandleIcon.svg");
+      background-image: url('./assets/scrollbarHandleIcon.svg');
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -423,6 +477,7 @@
 
     .buttons-container {
       display: flex;
+      padding-left: 10px;
     }
 
     .action-input {
@@ -440,6 +495,9 @@
         border: none;
         background-color: black;
         padding: 6px;
+        &:focus {
+          outline: solid 1px #ccc;
+        }
       }
     }
   }
@@ -539,6 +597,12 @@
               height: 20px;
               background-color: #666666;
               justify-content: space-between;
+              position: absolute;
+
+              .scrollbar {
+                cursor: pointer;
+                width: 100%;
+              }
 
               .left-grabber,
               .right-grabber {
@@ -649,7 +713,7 @@
 
       .load-container {
         flex-direction: column;
-        height: 387px;
+        height: 377px;
         padding-top: 10px;
 
         .load-server {
@@ -658,7 +722,7 @@
           background-color: #222222;
           padding-left: 10px;
           height: 20px;
-          margin-top: 287px;
+          margin-top: 277px;
           p {
             margin: 0px;
           }
@@ -729,11 +793,11 @@
 
       .save-container {
         flex-direction: column;
-        height: 387px;
+        height: 377px;
         padding-top: 10px;
 
         .item-list {
-          height: 327px;
+          height: 317px;
           ul {
             list-style: none;
             padding-left: 10px;
@@ -830,7 +894,7 @@
         display: block;
         position: absolute;
         background-color: #111111;
-        height: 367px;
+        height: 377px;
         z-index: 10;
 
         .sub-header {
@@ -885,7 +949,7 @@
               height: auto;
             }
             &:before {
-              content: "";
+              content: '';
               background: none;
             }
             height: 20px;
@@ -906,7 +970,7 @@
             }
 
             .animation-bullet {
-              background-image: url("./assets/animationBulletIcon.svg");
+              background-image: url('./assets/animationBulletIcon.svg');
               background-repeat: no-repeat;
               background-color: transparent;
               background-size: contain;
@@ -920,7 +984,7 @@
 
             .animation-arrow {
               width: 30px;
-              background-image: url("./assets/animationTriangleIcon.svg");
+              background-image: url('./assets/animationTriangleIcon.svg');
               background-repeat: no-repeat;
               background-color: transparent;
               background-size: 10px;
@@ -942,7 +1006,7 @@
 
               &.show {
                 display: block;
-                background-image: url("./assets/keySelectedIcon.svg");
+                background-image: url('./assets/keySelectedIcon.svg');
                 background-repeat: no-repeat;
                 background-color: transparent;
                 background-size: 10px;
@@ -952,7 +1016,7 @@
               }
 
               &.hide {
-                display: none;
+                display: block;
               }
             }
 
@@ -986,8 +1050,7 @@
           font-size: 10px;
           &:focus {
             border-radius: 0px;
-            outline-style: auto;
-            outline-color: lightgrey;
+            outline: 1px solid #ccc;
           }
           font-family: acumin-pro-condensed;
         }
@@ -1001,8 +1064,7 @@
           color: white;
           &:focus {
             border-radius: 0px;
-            outline-style: auto;
-            outline-color: lightgrey;
+            outline: 1px solid #ccc;
           }
           font-family: acumin-pro-condensed;
         }
@@ -1045,7 +1107,7 @@
         }
         text {
           fill: #555555;
-          font-family: "acumin-pro-condensed";
+          font-family: 'acumin-pro-condensed';
         }
 
         .control-point {
@@ -1059,15 +1121,31 @@
         }
       }
 
-      .playhead-wrapper {
+      .playhead-container {
         position: relative;
+      }
+
+      .playhead-wrapper {
+        position: absolute;
         left: -13px;
         bottom: 366px;
       }
 
+      .playhead-scrollable {
+        width: 100px;
+        height: 33px;
+        position: absolute;
+        top: 335px;
+        left: -39px;
+      }
+
       .playhead-handle {
         position: relative;
-        top: 340px;
+        top: 364px;
+        width: 100px;
+        height: 26px;
+        padding-left: 28px;
+        margin-left: -28px;
         .playhead {
           width: 22px;
           background-color: transparent;
@@ -1076,6 +1154,7 @@
           font-size: 12px;
           position: absolute;
           top: 1px;
+          cursor: pointer;
         }
 
         .playhead-circle {
@@ -1090,7 +1169,7 @@
 
       .playhead-line {
         width: 1px;
-        height: 341px;
+        height: 367px;
         background-color: #ffffff;
         position: absolute;
         margin-left: 9.5px;
@@ -1104,7 +1183,7 @@
     align-items: center;
     justify-items: stretch;
 
-    input[type="file"] {
+    input[type='file'] {
       display: none;
     }
 

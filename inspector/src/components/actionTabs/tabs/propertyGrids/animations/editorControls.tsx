@@ -1,17 +1,17 @@
-import * as React from "react";
+import * as React from 'react';
 
-import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../../../../components/propertyChangedEvent";
-import { Animation } from "babylonjs/Animations/animation";
-import { IconButtonLineComponent } from "../../../lines/iconButtonLineComponent";
-import { NumericInputComponent } from "../../../lines/numericInputComponent";
-import { AddAnimation } from "./addAnimation";
-import { AnimationListTree, SelectedCoordinate } from "./animationListTree";
-import { IAnimatable } from "babylonjs/Animations/animatable.interface";
-import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
-import { LoadSnippet } from "./loadsnippet";
-import { SaveSnippet } from "./saveSnippet";
-import { LockObject } from "../lockObject";
+import { Observable } from 'babylonjs/Misc/observable';
+import { PropertyChangedEvent } from '../../../../../components/propertyChangedEvent';
+import { Animation } from 'babylonjs/Animations/animation';
+import { IconButtonLineComponent } from '../../../lines/iconButtonLineComponent';
+import { NumericInputComponent } from '../../../lines/numericInputComponent';
+import { AddAnimation } from './addAnimation';
+import { AnimationListTree, SelectedCoordinate } from './animationListTree';
+import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
+import { TargetedAnimation } from 'babylonjs/Animations/animationGroup';
+import { LoadSnippet } from './loadsnippet';
+import { SaveSnippet } from './saveSnippet';
+import { LockObject } from '../lockObject';
 
 interface IEditorControlsProps {
   isTargetedAnimation: boolean;
@@ -52,6 +52,7 @@ export class EditorControls extends React.Component<
   }
 
   animationAdded() {
+    // select recently created animation/first coordinate...
     this.setState({
       animationsCount: this.recountAnimations(),
       isEditTabOpen: true,
@@ -123,40 +124,40 @@ export class EditorControls extends React.Component<
 
   render() {
     return (
-      <div className="animation-list">
-        <div className="controls-header">
+      <div className='animation-list'>
+        <div className='controls-header'>
           {this.props.isTargetedAnimation ? null : (
             <IconButtonLineComponent
               active={this.state.isAnimationTabOpen}
-              tooltip="Add Animation"
-              icon="medium add-animation"
+              tooltip='Add Animation'
+              icon='medium add-animation'
               onClick={() => this.handleTabs(0)}
             ></IconButtonLineComponent>
           )}
           <IconButtonLineComponent
             active={this.state.isLoadTabOpen}
-            tooltip="Load Animation"
-            icon="medium load"
+            tooltip='Load Animation'
+            icon='medium load'
             onClick={() => this.handleTabs(1)}
           ></IconButtonLineComponent>
           <IconButtonLineComponent
             active={this.state.isSaveTabOpen}
-            tooltip="Save Animation"
-            icon="medium save"
+            tooltip='Save Animation'
+            icon='medium save'
             onClick={() => this.handleTabs(2)}
           ></IconButtonLineComponent>
           {this.state.animationsCount === 0 ? null : (
             <IconButtonLineComponent
               active={this.state.isEditTabOpen}
-              tooltip="Edit Animations"
-              icon="medium animation-edit"
+              tooltip='Edit Animations'
+              icon='medium animation-edit'
               onClick={() => this.handleTabs(3)}
             ></IconButtonLineComponent>
           )}
           {this.state.isEditTabOpen ? (
-            <div className="input-fps">
+            <div className='input-fps'>
               <NumericInputComponent
-                label={""}
+                label={''}
                 precision={0}
                 value={this.state.framesPerSecond}
                 onChange={(framesPerSecond: number) =>
@@ -168,11 +169,11 @@ export class EditorControls extends React.Component<
           ) : null}
           {this.state.isEditTabOpen ? (
             <IconButtonLineComponent
-              tooltip="Loop/Unloop"
+              tooltip='Loop/Unloop'
               icon={`medium ${
                 this.state.isLoopActive
-                  ? "loop-active last"
-                  : "loop-inactive last"
+                  ? 'loop-active last'
+                  : 'loop-inactive last'
               }`}
               onClick={() => {
                 this.setState({ isLoopActive: !this.state.isLoopActive });
