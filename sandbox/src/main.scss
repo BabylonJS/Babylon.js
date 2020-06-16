@@ -17,5 +17,36 @@ html, body, #root {
     font-size: var(--font-size);
     background: var(--background);
     font-family: "acumin-pro-condensed";
-    font-weight: normal;
+    font-weight: normal;    
+}
+
+.hidden {
+    display: none !important;
+}
+
+#droptext {
+    position: absolute;
+    text-align: center;
+    color: #fff;
+    height: 50px;
+    width: 100%;
+    bottom: 50px;    
+}
+
+#logoContainer {
+    position: absolute;
+    top:0;
+    left:0;
+    width: 100%;   
+    height: calc(100% - 70px);
+    pointer-events: none;
+}
+
+#logo {
+    position: absolute;
+    width: 20%;
+    height: 20%;
+    top: 40%;
+    left: 40%;
+    pointer-events: none;
 }

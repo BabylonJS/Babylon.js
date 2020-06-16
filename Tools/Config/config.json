@@ -664,18 +664,16 @@
                         "babylonjs": "BABYLON",
                         "react": "React",
                         "@babylonjs/core": "BABYLON",
-                        "@fortawesome": false,
-                        "react-contextmenu": false
+                        "@fortawesome": false
                     }
                 }
             },
             "es6": {
                 "webpackBuild": true,
                 "buildDependencies": [
-                    "node_modules/re-resizable/lib/index.es5.js",
                     "Tools/**/*"
                 ],
-                "packageName": "@babylonjs/node-editor",
+                "packageName": "@babylonjs/sandbox",
                 "readme": "dist/preview release/sandbox/readme-es6.md",
                 "packagesFiles": [
                     "babylon.sandbox.max.js",

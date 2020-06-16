@@ -53330,6 +53330,11 @@ declare module BABYLON {
          * Number of Simultaneous lights allowed on the material.
          */
         maxSimultaneousLights: int;
+        private _shadowOnly;
+        /**
+         * Make the material only render shadows
+         */
+        shadowOnly: boolean;
         /**
          * Default configuration related to image processing available in the Background Material.
          */
