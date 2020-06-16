@@ -165,7 +165,7 @@ export class PrePassRenderer {
      * Sets the proper output textures to draw in the engine.
      * @param effect The effect that is drawn. It can be or not be compatible with drawing to several output textures.
      */
-    public drawBuffers(effect: Effect) {
+    public bindAttachmentsForEffect(effect: Effect) {
         if (this.enabled) {
             if (effect._multiTarget) {
                 this._engine.bindAttachments(this._multiRenderAttachments);
