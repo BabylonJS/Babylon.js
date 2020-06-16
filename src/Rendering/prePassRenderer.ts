@@ -152,6 +152,7 @@ export class PrePassRenderer {
         this.imageProcessingPostProcess = new ImageProcessingPostProcess("sceneCompositionPass", 1, null, undefined, this._engine);
         this.subSurfaceScatteringPostProcess = new SubSurfaceScatteringPostProcess("subSurfaceScattering", this._scene, 1, null, undefined, this._engine);
         this.subSurfaceScatteringPostProcess.inputTexture = this.prePassRT.getInternalTexture()!;
+        this.subSurfaceScatteringPostProcess.autoClear = false;
     }
 
     /**
@@ -191,14 +192,10 @@ export class PrePassRenderer {
      */
     public _afterCameraDraw() {
         if (this._enabled) {
-            // this.imageProcessingPostProcess.activate(this._scene.activeCamera);
-            this.subSurfaceScatteringPostProcess.autoClear = false;
             this.subSurfaceScatteringPostProcess.activate(this._scene.activeCamera);
             this.imageProcessingPostProcess.activate(this._scene.activeCamera);
             this._scene.postProcessManager.directRender([this.subSurfaceScatteringPostProcess], this.imageProcessingPostProcess.inputTexture);
             this._scene.postProcessManager.directRender([this.imageProcessingPostProcess], null, false, 0, 0, false);
-            // this.getEngine().restoreDefaultFramebuffer(); // Restore back buffer if needed
-            // this._scene.postProcessManager._prepareFrame();
         }
     }
 
