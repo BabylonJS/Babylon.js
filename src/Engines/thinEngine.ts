@@ -1345,7 +1345,7 @@ export class ThinEngine {
         if (texture._MSAAFramebuffer) {
             if (texture._textureArray) {
                 // This texture is part of a MRT texture, we need to treat all attachments
-                this.unBindMultiColorAttachmentFramebuffer(texture._textureCount!, texture._textureArray!, disableGenerateMipMaps, onBeforeUnbind);
+                this.unBindMultiColorAttachmentFramebuffer(texture._textureArray!, disableGenerateMipMaps, onBeforeUnbind);
                 return;
             }
             gl.bindFramebuffer(gl.READ_FRAMEBUFFER, texture._MSAAFramebuffer);

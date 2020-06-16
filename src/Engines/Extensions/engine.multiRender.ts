@@ -16,7 +16,7 @@ declare module "../../Engines/thinEngine" {
          * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
          * @param onBeforeUnbind defines a function which will be called before the effective unbind
          */
-        unBindMultiColorAttachmentFramebuffer(count: number, textures: InternalTexture[], disableGenerateMipMaps: boolean, onBeforeUnbind?: () => void): void;
+        unBindMultiColorAttachmentFramebuffer(textures: InternalTexture[], disableGenerateMipMaps: boolean, onBeforeUnbind?: () => void): void;
 
         /**
          * Create a multi render target texture
@@ -35,7 +35,7 @@ declare module "../../Engines/thinEngine" {
          * @param samples defines the sample count to set
          * @returns the effective sample count (could be 0 if multisample render targets are not supported)
          */
-        updateMultipleRenderTargetTextureSampleCount(count: number, textures: Nullable<InternalTexture[]>, samples: number): number;
+        updateMultipleRenderTargetTextureSampleCount(textures: Nullable<InternalTexture[]>, samples: number): number;
 
         /**
          * Clears attachments
@@ -77,7 +77,7 @@ ThinEngine.prototype.clearColorAttachments = function(texture: InternalTexture, 
     gl.drawBuffers(texture._attachments!);
 };
 
-ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(count: number, textures: InternalTexture[], disableGenerateMipMaps: boolean = false, onBeforeUnbind?: () => void): void {
+ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: InternalTexture[], disableGenerateMipMaps: boolean = false, onBeforeUnbind?: () => void): void {
     this._currentRenderTarget = null;
 
     // If MSAA, we need to bitblt back to main texture
@@ -87,11 +87,8 @@ ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(count: num
         gl.bindFramebuffer(gl.READ_FRAMEBUFFER, textures[0]._MSAAFramebuffer);
         gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, textures[0]._framebuffer);
 
-        var attachments = textures[0]._attachments;
-        if (!attachments) {
-            attachments = new Array(count);
-            textures[0]._attachments = attachments;
-        }
+        var attachments = textures[0]._attachments!;
+        var count = attachments.length;
 
         for (var i = 0; i < count; i++) {
             var texture = textures[i];
@@ -114,7 +111,7 @@ ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(count: num
         gl.drawBuffers(attachments);
     }
 
-    for (var i = 0; i < count; i++) {
+    for (var i = 0; i < textures[0]._attachments!.length; i++) {
         var texture = textures[i];
         if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
             this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
@@ -293,13 +290,19 @@ ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: I
     return textures;
 };
 
-ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function(count: number, textures: Nullable<InternalTexture[]>, samples: number): number {
-    if (this.webGLVersion < 2 || !textures || count == 0) {
+ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function(textures: Nullable<InternalTexture[]>, samples: number): number {
+    if (this.webGLVersion < 2 || !textures) {
         return 1;
     }
 
     if (textures[0].samples === samples) {
         return samples;
+    }
+
+    var count = textures[0]._attachments!.length;
+
+    if (count === 0) {
+        return 1;
     }
 
     var gl = this._gl;
