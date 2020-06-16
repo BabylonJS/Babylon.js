@@ -330,27 +330,30 @@ export class PrePassRenderer {
 
     /**
      * @hidden
+     * https://zero-radiance.github.io/post/sampling-diffusion/
+     *
+     * Importance sample the normalized diffuse reflectance profile for the computed value of 's'.
+     * ------------------------------------------------------------------------------------
+     * R[r, phi, s]   = s * (Exp[-r * s] + Exp[-r * s / 3]) / (8 * Pi * r)
+     * PDF[r, phi, s] = r * R[r, phi, s]
+     * CDF[r, s]      = 1 - 1/4 * Exp[-r * s] - 3/4 * Exp[-r * s / 3]
+     * ------------------------------------------------------------------------------------
+     * We importance sample the color channel with the widest scattering distance.
      */
     public getDiffusionProfileParameters(color: Color3)
     {
         const cdf = 0.997;
-        // Importance sample the normalized diffuse reflectance profile for the computed value of 's'.
-        // ------------------------------------------------------------------------------------
-        // R[r, phi, s]   = s * (Exp[-r * s] + Exp[-r * s / 3]) / (8 * Pi * r)
-        // PDF[r, phi, s] = r * R[r, phi, s]
-        // CDF[r, s]      = 1 - 1/4 * Exp[-r * s] - 3/4 * Exp[-r * s / 3]
-        // ------------------------------------------------------------------------------------
-        // We importance sample the color channel with the widest scattering distance.
         const maxScatteringDistance = Math.max(color.r, color.g, color.b);
 
         return this._sampleBurleyDiffusionProfile(cdf, maxScatteringDistance);
     }
 
-    // https://zero-radiance.github.io/post/sampling-diffusion/
-    // Performs sampling of a Normalized Burley diffusion profile in polar coordinates.
-    // 'u' is the random number (the value of the CDF): [0, 1).
-    // rcp(s) = 1 / ShapeParam = ScatteringDistance.
-    // Returns the sampled radial distance, s.t. (u = 0 -> r = 0) and (u = 1 -> r = Inf).
+    /**
+     * Performs sampling of a Normalized Burley diffusion profile in polar coordinates.
+     * 'u' is the random number (the value of the CDF): [0, 1).
+     * rcp(s) = 1 / ShapeParam = ScatteringDistance.
+     * Returns the sampled radial distance, s.t. (u = 0 -> r = 0) and (u = 1 -> r = Inf).
+     */
     private _sampleBurleyDiffusionProfile(u: number, rcpS: number)
     {
         u = 1 - u; // Convert CDF to CCDF
