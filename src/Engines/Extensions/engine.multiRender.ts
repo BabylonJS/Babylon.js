@@ -4,7 +4,6 @@ import { Logger } from '../../Misc/logger';
 import { Nullable } from '../../types';
 import { Constants } from '../constants';
 import { ThinEngine } from '../thinEngine';
-import { IColor4Like } from '../../Maths/math.like';
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -38,14 +37,6 @@ declare module "../../Engines/thinEngine" {
         updateMultipleRenderTargetTextureSampleCount(textures: Nullable<InternalTexture[]>, samples: number): number;
 
         /**
-         * Clears attachments
-         * @param texture texture to clear
-         * @param attachments attachments to clear
-         * @param color Clear color
-         */
-        clearColorAttachments(texture: InternalTexture, attachments: number[], color?: IColor4Like) : void;
-
-        /**
          * Select a subsets of attachments to draw to.
          * @param attachments gl attachments
          */
@@ -57,24 +48,6 @@ ThinEngine.prototype.renderToAttachments = function(attachments: any[]): void {
     const gl = this._gl;
 
     gl.drawBuffers(attachments);
-};
-
-ThinEngine.prototype.clearColorAttachments = function(texture: InternalTexture, attachments: number[], color?: IColor4Like): void {
-    // Default clear everything to transparent black
-    const gl = this._gl;
-
-    // We don't clear the first attachments which is cleared with the user clear color
-    gl.drawBuffers(attachments);
-    if (color) {
-        gl.clearColor(color.r, color.g, color.b, color.a);
-    } else {
-        gl.clearColor(0, 0, 0, 0);
-    }
-
-    gl.clear(gl.COLOR_BUFFER_BIT);
-
-    // Restore default attachments
-    gl.drawBuffers(texture._attachments!);
 };
 
 ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: InternalTexture[], disableGenerateMipMaps: boolean = false, onBeforeUnbind?: () => void): void {

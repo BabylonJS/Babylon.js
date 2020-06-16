@@ -8,7 +8,7 @@ import { SubSurfaceScatteringPostProcess } from "../PostProcesses/subSurfaceScat
 import { Effect } from "../Materials/effect";
 import { Logger } from "../Misc/logger";
 import { _DevTools } from '../Misc/devTools';
-import { Color3 } from "../Maths/math.color";
+import { Color3, Color4 } from "../Maths/math.color";
 
 /**
  * Renders a pre pass of the scene
@@ -44,6 +44,8 @@ export class PrePassRenderer {
     private _multiRenderAttachments: number[];
     private _defaultAttachments: number[];
     private _clearAttachments: number[];
+
+    private readonly _clearColor = new Color4(0, 0, 0, 0);
 
     private _ssDiffusionS: number[] = [];
     private _ssFilterRadii: number[] = [];
@@ -231,11 +233,17 @@ export class PrePassRenderer {
     public clear() {
         if (this._enabled) {
             this._bindFrameBuffer();
+
+            // Regular clear color with the scene clear color of the 1st attachment
             this._engine.clear(this._scene.clearColor,
                 this._scene.autoClear || this._scene.forceWireframe || this._scene.forcePointsCloud,
                 this._scene.autoClearDepthAndStencil,
                 this._scene.autoClearDepthAndStencil);
-            this._engine.clearColorAttachments(this.prePassRT.getInternalTexture()!, this._clearAttachments);
+
+            // Clearing other attachment with 0 on all other attachments
+            this._engine.renderToAttachments(this._clearAttachments);
+            this._engine.clear(this._clearColor, true, false, false);
+            this._engine.renderToAttachments(this._multiRenderAttachments);
         }
     }
 
