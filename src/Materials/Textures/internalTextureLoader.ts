@@ -13,9 +13,10 @@ export interface IInternalTextureLoader {
     /**
      * This returns if the loader support the current file information.
      * @param extension defines the file extension of the file being loaded
+     * @param mimeType defines the optional mime type of the file being loaded
      * @returns true if the loader can load the specified file
      */
-    canLoad(extension: string): boolean;
+    canLoad(extension: string, mimetype?: string): boolean;
 
     /**
      * Uploads the cube texture data to the WebGL texture. It has already been bound.

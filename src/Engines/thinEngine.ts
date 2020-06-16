@@ -2796,7 +2796,7 @@ export class ThinEngine {
         const extension = forcedExtension ? forcedExtension : (lastDot > -1 ? url.substring(lastDot).toLowerCase() : "");
         let loader: Nullable<IInternalTextureLoader> = null;
 
-        for (let availableLoader of ThinEngine._TextureLoaders) {
+        for (const availableLoader of ThinEngine._TextureLoaders) {
             if (availableLoader.canLoad(extension)) {
                 loader = availableLoader;
                 break;
