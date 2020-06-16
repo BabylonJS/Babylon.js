@@ -9431,7 +9431,7 @@ declare module BABYLON {
          * Internal only
          * @hidden
          */
-        static _GetTargetProperty: (target: Scene | Node) => {
+        static _GetTargetProperty: (target: Node | Scene) => {
             name: string;
             targetType: string;
             value: string;
@@ -57698,6 +57698,13 @@ declare module BABYLON {
          * @returns true if it should render otherwise false
          */
         protected _shouldRenderMesh(mesh: Mesh): boolean;
+        /**
+         * Returns true if the mesh can be rendered, otherwise false.
+         * @param mesh The mesh to render
+         * @param material The material used on the mesh
+         * @returns true if it can be rendered otherwise false
+         */
+        protected _canRenderMesh(mesh: AbstractMesh, material: Material): boolean;
         /**
          * Adds specific effects defines.
          * @param defines The defines to add specifics to.
