@@ -59,9 +59,9 @@ Scene.prototype.enablePrePassRenderer = function(): Nullable<PrePassRenderer> {
 
     if (!this._prePassRenderer.isSupported) {
         this._prePassRenderer = null;
-        Logger.Error("Pre-pass needs WebGL 2.");
-        Logger.Error("Maybe you tried to use the following features that need pre-pass :");
-        Logger.Error(" + Subsurface Scattering");
+        Logger.Error("PrePassRenderer needs WebGL 2 support.\n" +
+            "Maybe you tried to use the following features that need the PrePassRenderer :\n" +
+            " + Subsurface Scattering");
     }
 
     return this._prePassRenderer;
