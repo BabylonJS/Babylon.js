@@ -26,11 +26,15 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
     }
 
     componentDidMount() {
-        if (this.props.globalState && this.props.globalState.selectedLineContainerTitles.length === 0) {
+        if (!this.props.globalState) {
             return;
         }
 
-        if (this.props.globalState && this.props.globalState.selectedLineContainerTitles.indexOf(this.props.title) > -1) {
+        if (this.props.globalState.selectedLineContainerTitles.length === 0 && this.props.globalState.selectedLineContainerTitlesNoFocus.length === 0) {
+            return;
+        }
+
+        if (this.props.globalState.selectedLineContainerTitles.indexOf(this.props.title) > -1) {
             setTimeout(() => {
                 this.props.globalState!.selectedLineContainerTitles = [];
             });
@@ -40,6 +44,8 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
             window.setTimeout(() => {
                 this.setState({ isHighlighted: false });
             }, 5000);
+        } else if (this.props.globalState.selectedLineContainerTitlesNoFocus.indexOf(this.props.title) > -1) {
+            this.setState({ isExpanded: true, isHighlighted: false });
         } else {
             this.setState({isExpanded: false});
         }

@@ -4,6 +4,7 @@ import { FooterButton } from './footerButton';
 import { DropUpButton } from './dropUpButton';
 import { EnvironmentTools } from '../tools/environmentTools';
 import { FooterFileButton } from './footerFileButton';
+import { AnimationBar } from './animationBar';
 
 require("../scss/footer.scss");
 var babylonIdentity = require("../img/babylon-identity.svg");
@@ -16,8 +17,7 @@ interface IFooterProps {
 }
 
 export class Footer extends React.Component<IFooterProps> {
-    
-        
+            
     public constructor(props: IFooterProps) {    
         super(props);
         props.globalState.onSceneLoaded.add(info => {
@@ -42,6 +42,8 @@ export class Footer extends React.Component<IFooterProps> {
                 <div className="footerLeft">
                     <img id="logoImg" src={babylonIdentity}/>
                 </div>
+                <AnimationBar globalState={this.props.globalState} 
+                                enabled={!!this.props.globalState.currentScene}/>
                 <div className="footerRight">
                     <FooterFileButton globalState={this.props.globalState} 
                                 enabled={true}

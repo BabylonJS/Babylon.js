@@ -88,9 +88,10 @@ declare module "babylonjs-sandbox/components/dropUpButton" {
     interface IDropUpButtonProps {
         globalState: GlobalState;
         enabled: boolean;
-        icon: any;
+        icon?: any;
         label: string;
         options: string[];
+        selectedOption?: string;
         onOptionPicked: (option: string) => void;
     }
     export class DropUpButton extends React.Component<IDropUpButtonProps, {
@@ -116,6 +117,31 @@ declare module "babylonjs-sandbox/components/footerFileButton" {
     }
     export class FooterFileButton extends React.Component<IFooterFileButtonProps> {
         onFilePicked(evt: React.ChangeEvent<HTMLInputElement>): void;
+        render(): JSX.Element | null;
+    }
+}
+declare module "babylonjs-sandbox/components/animationBar" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-sandbox/globalState";
+    import { Scene } from 'babylonjs/scene';
+    interface IAnimationBarProps {
+        globalState: GlobalState;
+        enabled: boolean;
+    }
+    export class AnimationBar extends React.Component<IAnimationBarProps, {
+        groupIndex: number;
+    }> {
+        private _currentScene;
+        private _sliderSyncObserver;
+        private _currentGroup;
+        private _sliderRef;
+        private _currentPlayingState;
+        constructor(props: IAnimationBarProps);
+        getCurrentPosition(): string;
+        registerBeforeRender(newScene: Scene): void;
+        pause(): void;
+        play(): void;
+        sliderInput(evt: React.FormEvent<HTMLInputElement>): void;
         render(): JSX.Element | null;
     }
 }
@@ -237,9 +263,10 @@ declare module SANDBOX {
     interface IDropUpButtonProps {
         globalState: GlobalState;
         enabled: boolean;
-        icon: any;
+        icon?: any;
         label: string;
         options: string[];
+        selectedOption?: string;
         onOptionPicked: (option: string) => void;
     }
     export class DropUpButton extends React.Component<IDropUpButtonProps, {
@@ -263,6 +290,28 @@ declare module SANDBOX {
     }
     export class FooterFileButton extends React.Component<IFooterFileButtonProps> {
         onFilePicked(evt: React.ChangeEvent<HTMLInputElement>): void;
+        render(): JSX.Element | null;
+    }
+}
+declare module SANDBOX {
+    interface IAnimationBarProps {
+        globalState: GlobalState;
+        enabled: boolean;
+    }
+    export class AnimationBar extends React.Component<IAnimationBarProps, {
+        groupIndex: number;
+    }> {
+        private _currentScene;
+        private _sliderSyncObserver;
+        private _currentGroup;
+        private _sliderRef;
+        private _currentPlayingState;
+        constructor(props: IAnimationBarProps);
+        getCurrentPosition(): string;
+        registerBeforeRender(newScene: BABYLON.Scene): void;
+        pause(): void;
+        play(): void;
+        sliderInput(evt: React.FormEvent<HTMLInputElement>): void;
         render(): JSX.Element | null;
     }
 }
