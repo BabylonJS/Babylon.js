@@ -107,7 +107,7 @@ export class PrePassRenderer {
         if (!this.subSurfaceScatteringPostProcess) {
             this._createEffects();
         }
-        
+
         this.prePassRT.samples = n;
     }
 
