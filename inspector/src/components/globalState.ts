@@ -11,6 +11,7 @@ import { PropertyChangedEvent } from "./propertyChangedEvent";
 import { ReplayRecorder } from './replayRecorder';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { CodeChangedEvent } from './codeChangedEvent';
+import { Inspector } from '../inspector';
 
 export class GlobalState {
     public onSelectionChangedObservable: Observable<any>;
@@ -110,6 +111,7 @@ export class GlobalState {
             this.onValidationResultsUpdatedObservable.notifyObservers(results);
 
             if (results.issues.numErrors || results.issues.numWarnings) {
+                Inspector.MarkLineContainerTitleForHighlighting("GLTF VALIDATION");
                 this.onTabChangedObservable.notifyObservers(3);
             }
         });
