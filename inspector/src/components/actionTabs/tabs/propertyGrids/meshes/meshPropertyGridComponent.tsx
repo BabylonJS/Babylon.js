@@ -395,6 +395,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                         <CheckBoxLineComponent label="Infinite distance" target={mesh} propertyName="infiniteDistance" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
                     <SliderLineComponent label="Rendering group ID" decimalCount={0} target={mesh} propertyName="renderingGroupId" minimum={RenderingManager.MIN_RENDERINGGROUPS} maximum={RenderingManager.MAX_RENDERINGGROUPS - 1} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />                    
+                    <FloatLineComponent isInteger lockObject={this.props.lockObject} label="Layer mask" target={mesh} propertyName="layerMask" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 {
                     mesh.morphTargetManager != null &&
