@@ -16,6 +16,7 @@ import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
 import { EditorControls } from './editorControls';
 import { SelectedCoordinate } from './animationListTree';
+import { LockObject } from "../lockObject";
 
 require("./curveEditor.scss");
 
@@ -24,6 +25,7 @@ interface IAnimationCurveEditorComponentProps {
     playOrPause?: () => void;
     scene: Scene;
     entity: IAnimatable | TargetedAnimation;
+    lockObject: LockObject
 }
 
 interface ICanvasAxis {
@@ -1118,10 +1120,12 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
 
                 <div className="content">
                     <div className="row">
-                        <EditorControls selectAnimation={(animation: Animation, axis?: SelectedCoordinate) => this.selectAnimation(animation, axis)}
+                        <EditorControls
+                            selectAnimation={(animation: Animation, axis?: SelectedCoordinate) => this.selectAnimation(animation, axis)}
                             isTargetedAnimation={this._isTargetedAnimation}
                             entity={this.props.entity}
                             selected={this.state.selected}
+                            lockObject={this.props.lockObject}
                             setNotificationMessage={(message: string) => { this.setState({ notification: message }) }}
                         />
 

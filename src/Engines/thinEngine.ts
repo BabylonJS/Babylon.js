@@ -1241,21 +1241,24 @@ export class ThinEngine {
      * Force a specific size of the canvas
      * @param width defines the new canvas' width
      * @param height defines the new canvas' height
+     * @returns true if the size was changed
      */
-    public setSize(width: number, height: number): void {
+    public setSize(width: number, height: number): boolean {
         if (!this._renderingCanvas) {
-            return;
+            return false;
         }
 
         width = width | 0;
         height = height | 0;
 
         if (this._renderingCanvas.width === width && this._renderingCanvas.height === height) {
-            return;
+            return false;
         }
 
         this._renderingCanvas.width = width;
         this._renderingCanvas.height = height;
+
+        return true;
     }
 
     /**
@@ -2796,8 +2799,8 @@ export class ThinEngine {
         const extension = forcedExtension ? forcedExtension : (lastDot > -1 ? url.substring(lastDot).toLowerCase() : "");
         let loader: Nullable<IInternalTextureLoader> = null;
 
-        for (let availableLoader of ThinEngine._TextureLoaders) {
-            if (availableLoader.canLoad(extension)) {
+        for (const availableLoader of ThinEngine._TextureLoaders) {
+            if (availableLoader.canLoad(extension, mimeType)) {
                 loader = availableLoader;
                 break;
             }
