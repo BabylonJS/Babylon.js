@@ -3,7 +3,7 @@ import { GlobalState } from '../globalState';
 
 import { Engine } from 'babylonjs/Engines/engine';
 import { SceneLoader } from 'babylonjs/Loading/sceneLoader';
-import { GLTFFileLoader } from "babylonjs-loaders/glTF/index";
+import { GLTFFileLoader } from "babylonjs-loaders/glTF/glTFFileLoader";
 import { Scene } from 'babylonjs/scene';
 import { Vector3 } from 'babylonjs/Maths/math.vector';
 import { ArcRotateCamera } from 'babylonjs/Cameras/arcRotateCamera';

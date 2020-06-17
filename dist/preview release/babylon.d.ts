@@ -1063,9 +1063,10 @@ declare module BABYLON {
         /**
          * This returns if the loader support the current file information.
          * @param extension defines the file extension of the file being loaded
+         * @param mimeType defines the optional mime type of the file being loaded
          * @returns true if the loader can load the specified file
          */
-        canLoad(extension: string): boolean;
+        canLoad(extension: string, mimeType?: string): boolean;
         /**
          * Uploads the cube texture data to the WebGL texture. It has already been bound.
          * @param data contains the texture data
@@ -54415,7 +54416,7 @@ declare module BABYLON {
         /**
          * Stores the sheen tint values in a texture.
          * rgb is tint
-         * a is a intensity
+         * a is a intensity or roughness if roughness has been defined
          */
         texture: Nullable<BaseTexture>;
         private _roughness;
@@ -56498,9 +56499,10 @@ declare module BABYLON {
         /**
          * This returns if the loader support the current file information.
          * @param extension defines the file extension of the file being loaded
+         * @param mimeType defines the optional mime type of the file being loaded
          * @returns true if the loader can load the specified file
          */
-        canLoad(extension: string): boolean;
+        canLoad(extension: string, mimeType?: string): boolean;
         /**
          * Uploads the cube texture data to the WebGL texture. It has already been bound.
          * @param data contains the texture data

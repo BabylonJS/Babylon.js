@@ -6,11 +6,17 @@ declare module SANDBOX {
             scene: BABYLON.Scene;
             filename: string;
         }>;
-        onError: BABYLON.Observable<BABYLON.Scene>;
+        onError: BABYLON.Observable<{
+            scene?: BABYLON.Scene | undefined;
+            message?: string | undefined;
+        }>;
         onEnvironmentChanged: BABYLON.Observable<string>;
         onRequestClickInterceptor: BABYLON.Observable<void>;
         onClickInterceptorClicked: BABYLON.Observable<void>;
         filesInput: BABYLON.FilesInput;
+        isDebugLayerEnabled: boolean;
+        showDebugLayer(): void;
+        hideDebugLayer(): void;
     }
 }
 declare module SANDBOX {
@@ -90,7 +96,7 @@ declare module SANDBOX {
         enabled: boolean;
         icon: any;
         label: string;
-        onFilesPicked: (files: FileList | null) => void;
+        onFilesPicked: (evt: Event, files: FileList | null) => void;
     }
     export class FooterFileButton extends React.Component<IFooterFileButtonProps> {
         onFilePicked(evt: React.ChangeEvent<HTMLInputElement>): void;
@@ -104,7 +110,6 @@ declare module SANDBOX {
     export class Footer extends React.Component<IFooterProps> {
         constructor(props: IFooterProps);
         showInspector(): void;
-        onFilesPicked(files: FileList): void;
         render(): JSX.Element;
     }
 }
@@ -113,14 +118,17 @@ declare module SANDBOX {
     }
     export class Sandbox extends React.Component<ISandboxProps, {
         isFooterVisible: boolean;
+        errorMessage: string;
     }> {
         private _globalState;
         private _assetUrl?;
+        private _cameraPosition?;
         private _logoRef;
         private _dropTextRef;
         private _clickInterceptorRef;
         constructor(props: ISandboxProps);
         checkUrl(): void;
+        componentDidUpdate(): void;
         render(): JSX.Element;
         static Show(hostElement: HTMLElement): void;
     }

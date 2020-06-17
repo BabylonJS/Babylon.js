@@ -7,7 +7,7 @@
 		exports["babylonjs-sandbox"] = factory(require("babylonjs-loaders"), require("babylonjs"));
 	else
 		root["SANDBOX"] = factory(root["BABYLON"], root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_glTFFileLoader__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Maths_math_vector__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -108,7 +108,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, ".footer {\n  position: relative;\n  width: 100%;\n  height: var(--footer-height);\n  margin: 0;\n  padding: 0;\n  background-color: var(--footer-background);\n  font-size: 0;\n  display: grid;\n  grid-template-rows: 100%;\n  grid-template-columns: 201px 1fr 210px; }\n  .footer .footerLeft {\n    display: grid;\n    grid-column: 1;\n    grid-row: 1;\n    padding-left: 40px;\n    align-content: center;\n    overflow: hidden; }\n    .footer .footerLeft #logoImg {\n      height: var(--footer-height);\n      width: 161px; }\n  .footer .footerRight {\n    display: flex;\n    flex-direction: row-reverse;\n    grid-column: 3;\n    grid-row: 1; }\n    .footer .footerRight .button {\n      float: left;\n      /* Float links side by side */\n      width: var(--footer-height);\n      height: var(--footer-height);\n      margin: 0px;\n      padding: 0;\n      transition: all 0.3s ease;\n      /* Add transition for hover effects */\n      display: grid;\n      align-content: center;\n      justify-content: center;\n      cursor: pointer; }\n      .footer .footerRight .button img {\n        width: var(--footer-height);\n        height: var(--footer-height); }\n      .footer .footerRight .button:hover {\n        background-color: var(--button-hover-color); }\n      .footer .footerRight .button:active {\n        background-color: var(--button-hover-background); }\n    .footer .footerRight .dropup-content {\n      position: absolute;\n      bottom: var(--footer-height);\n      right: 0px;\n      z-index: 100; }\n    .footer .footerRight .custom-upload {\n      position: relative;\n      background-position: center right;\n      background-repeat: no-repeat;\n      width: var(--footer-height);\n      height: var(--footer-height);\n      cursor: pointer;\n      display: grid; }\n      .footer .footerRight .custom-upload img {\n        grid-row: 1;\n        grid-column: 1;\n        width: var(--footer-height);\n        height: var(--footer-height);\n        pointer-events: none; }\n      .footer .footerRight .custom-upload:hover {\n        background-color: var(--button-hover-color); }\n      .footer .footerRight .custom-upload:active {\n        background-color: var(--button-hover-background); }\n      .footer .footerRight .custom-upload input[type=file] {\n        grid-row: 1;\n        grid-column: 1;\n        outline: none;\n        position: relative;\n        text-align: right;\n        -moz-opacity: 0;\n        opacity: 0;\n        z-index: 2;\n        width: 100%;\n        height: 100%;\n        filter: alpha(opacity=0); }\n", ""]);
+exports.push([module.i, ".footer {\n  position: relative;\n  width: 100%;\n  height: var(--footer-height);\n  margin: 0;\n  padding: 0;\n  background-color: var(--footer-background);\n  font-size: 0;\n  display: grid;\n  grid-template-rows: 100%;\n  grid-template-columns: 201px 1fr 210px; }\n  .footer .footerLeft {\n    display: grid;\n    grid-column: 1;\n    grid-row: 1;\n    padding-left: 40px;\n    align-content: center;\n    overflow: hidden; }\n    .footer .footerLeft #logoImg {\n      height: var(--footer-height);\n      width: 161px; }\n  .footer .footerRight {\n    display: flex;\n    flex-direction: row-reverse;\n    grid-column: 3;\n    grid-row: 1; }\n    .footer .footerRight .button {\n      float: left;\n      /* Float links side by side */\n      width: var(--footer-height);\n      height: var(--footer-height);\n      margin: 0px;\n      padding: 0;\n      transition: all 0.3s ease;\n      /* Add transition for hover effects */\n      display: grid;\n      align-content: center;\n      justify-content: center;\n      cursor: pointer; }\n      .footer .footerRight .button img {\n        width: var(--footer-height);\n        height: var(--footer-height); }\n      .footer .footerRight .button:hover {\n        background-color: var(--button-hover-color); }\n      .footer .footerRight .button:active {\n        background-color: var(--button-hover-background); }\n    .footer .footerRight .dropup-content {\n      position: absolute;\n      bottom: var(--footer-height);\n      right: 0px;\n      z-index: 100; }\n      .footer .footerRight .dropup-content div {\n        background-color: var(--button-hover-color);\n        overflow: hidden;\n        text-overflow: ellipsis;\n        white-space: nowrap;\n        font-size: var(--font-size);\n        width: calc(2 * var(--footer-height));\n        color: white;\n        cursor: pointer;\n        height: 40px;\n        box-sizing: border-box;\n        padding: 0;\n        margin: 0;\n        display: grid;\n        align-content: center;\n        justify-content: center; }\n        .footer .footerRight .dropup-content div:hover {\n          background-color: var(--button-hover-hover);\n          transition: all 0.3s ease; }\n        .footer .footerRight .dropup-content div:active {\n          background-color: var(--button-hover-background);\n          transition: all 0.3s ease; }\n    .footer .footerRight .custom-upload {\n      position: relative;\n      background-position: center right;\n      background-repeat: no-repeat;\n      width: var(--footer-height);\n      height: var(--footer-height);\n      cursor: pointer;\n      display: grid; }\n      .footer .footerRight .custom-upload img {\n        grid-row: 1;\n        grid-column: 1;\n        width: var(--footer-height);\n        height: var(--footer-height);\n        pointer-events: none; }\n      .footer .footerRight .custom-upload:hover {\n        background-color: var(--button-hover-color); }\n      .footer .footerRight .custom-upload:active {\n        background-color: var(--button-hover-background); }\n      .footer .footerRight .custom-upload input[type=file] {\n        grid-row: 1;\n        grid-column: 1;\n        outline: none;\n        position: relative;\n        text-align: right;\n        -moz-opacity: 0;\n        opacity: 0;\n        z-index: 2;\n        width: 100%;\n        height: 100%;\n        filter: alpha(opacity=0); }\n", ""]);
 
 // exports
 
@@ -127,7 +127,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "html {\n  --background: #2A2342;\n  --footer-background: #201936;\n  --footer-height: 70px;\n  --button-hover-color: #BB464B;\n  --button-hover-hover: #e0684b;\n  --button-hover-background:  #162D3A;\n  --font-size: 20px; }\n\nhtml, body, #root {\n  width: 100%;\n  height: 100%;\n  padding: 0;\n  margin: 0;\n  overflow: hidden;\n  font-size: var(--font-size);\n  background: var(--background);\n  font-family: \"acumin-pro-condensed\";\n  font-weight: normal; }\n\n.hidden {\n  display: none !important; }\n\n.clickInterceptor {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  z-index: 99;\n  top: 0;\n  left: 0; }\n\n#droptext {\n  position: absolute;\n  text-align: center;\n  color: #fff;\n  height: 50px;\n  width: 100%;\n  bottom: 50px; }\n\n#logoContainer {\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: calc(100% - 70px);\n  pointer-events: none; }\n\n#logo {\n  position: absolute;\n  width: 20%;\n  height: 20%;\n  top: 40%;\n  left: 40%;\n  pointer-events: none; }\n", ""]);
+exports.push([module.i, "html {\n  --background: #2A2342;\n  --footer-background: #201936;\n  --footer-height: 70px;\n  --button-hover-color: #BB464B;\n  --button-hover-hover: #e0684b;\n  --button-hover-background:  #162D3A;\n  --font-size: 20px; }\n\nhtml, body, #root {\n  width: 100%;\n  height: 100%;\n  padding: 0;\n  margin: 0;\n  overflow: hidden;\n  font-size: var(--font-size);\n  background: var(--background);\n  font-family: \"acumin-pro-condensed\";\n  font-weight: normal; }\n\n.hidden {\n  display: none !important; }\n\n.clickInterceptor {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  z-index: 99;\n  top: 0;\n  left: 0; }\n\n#droptext {\n  position: absolute;\n  text-align: center;\n  color: #fff;\n  height: 50px;\n  width: 100%;\n  bottom: 50px; }\n\n#logoContainer {\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: calc(100% - 70px);\n  pointer-events: none; }\n\n#logo {\n  position: absolute;\n  width: 20%;\n  height: 20%;\n  top: 40%;\n  left: 40%;\n  pointer-events: none; }\n\n#errorZone {\n  position: absolute;\n  width: 50%;\n  left: 25%;\n  bottom: 80px;\n  background-color: #C73228;\n  padding: 20px;\n  border-radius: 5px;\n  color: white;\n  display: grid;\n  grid-template-columns: 1fr 32px; }\n  #errorZone .message {\n    grid-column: 1;\n    grid-row: 1;\n    align-self: center; }\n  #errorZone button {\n    grid-column: 2;\n    grid-row: 1;\n    padding: 0;\n    cursor: pointer;\n    background: transparent;\n    border: 0;\n    -webkit-appearance: none;\n    color: #000;\n    text-shadow: 0 1px 0 #fff;\n    opacity: .4;\n    font-size: 1.8em; }\n    #errorZone button:hover {\n      transform: scale(1.2); }\n", ""]);
 
 // exports
 
@@ -30288,15 +30288,12 @@ var Footer = /** @class */ (function (_super) {
     Footer.prototype.showInspector = function () {
         if (this.props.globalState.currentScene) {
             if (this.props.globalState.currentScene.debugLayer.isVisible()) {
-                this.props.globalState.currentScene.debugLayer.hide();
+                this.props.globalState.hideDebugLayer();
             }
             else {
-                this.props.globalState.currentScene.debugLayer.show();
+                this.props.globalState.showDebugLayer();
             }
-            // TODO: keep the inspector opens
         }
-    };
-    Footer.prototype.onFilesPicked = function (files) {
     };
     Footer.prototype.render = function () {
         var _this = this;
@@ -30304,13 +30301,11 @@ var Footer = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "footerLeft" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logoImg", src: babylonIdentity })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "footerRight" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_footerFileButton__WEBPACK_IMPORTED_MODULE_5__["FooterFileButton"], { globalState: this.props.globalState, enabled: true, icon: iconOpen, onFilesPicked: function (evt, files) {
+                        _this.props.globalState.filesInput.loadFiles(evt);
+                    }, label: "Open your scene from your hard drive (.babylon, .gltf, .glb, .obj)" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_dropUpButton__WEBPACK_IMPORTED_MODULE_3__["DropUpButton"], { globalState: this.props.globalState, icon: iconIBL, label: "Select environment", options: _tools_environmentTools__WEBPACK_IMPORTED_MODULE_4__["EnvironmentTools"].SkyboxesNames, onOptionPicked: function (option) { return _this.props.globalState.onEnvironmentChanged.notifyObservers(option); }, enabled: !!this.props.globalState.currentScene }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_footerButton__WEBPACK_IMPORTED_MODULE_2__["FooterButton"], { globalState: this.props.globalState, icon: iconEdit, label: "Display inspector", onClick: function () { return _this.showInspector(); }, enabled: !!this.props.globalState.currentScene }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_footerFileButton__WEBPACK_IMPORTED_MODULE_5__["FooterFileButton"], { globalState: this.props.globalState, enabled: true, icon: iconOpen, onFilesPicked: function (files) {
-                        if (files) {
-                            _this.onFilesPicked(files);
-                        }
-                    }, label: "Open your scene from your hard drive (.babylon, .gltf, .glb, .obj)" }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_footerButton__WEBPACK_IMPORTED_MODULE_2__["FooterButton"], { globalState: this.props.globalState, icon: iconEdit, label: "Display inspector", onClick: function () { return _this.showInspector(); }, enabled: !!this.props.globalState.currentScene }))));
     };
     return Footer;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -30375,7 +30370,7 @@ var FooterFileButton = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     FooterFileButton.prototype.onFilePicked = function (evt) {
-        this.props.onFilesPicked(evt.target.files);
+        this.props.onFilesPicked(evt.nativeEvent, evt.target.files);
     };
     FooterFileButton.prototype.render = function () {
         var _this = this;
@@ -30406,11 +30401,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Engines/engine */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Engines/engine */ "babylonjs/Maths/math.vector");
 /* harmony import */ var babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var babylonjs_loaders_glTF_index__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-loaders/glTF/index */ "babylonjs-loaders/glTF/index");
-/* harmony import */ var babylonjs_loaders_glTF_index__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_loaders_glTF_index__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var babylonjs_loaders_glTF_glTFFileLoader__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-loaders/glTF/glTFFileLoader */ "babylonjs-loaders/glTF/glTFFileLoader");
+/* harmony import */ var babylonjs_loaders_glTF_glTFFileLoader__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_loaders_glTF_glTFFileLoader__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _tools_environmentTools__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../tools/environmentTools */ "./tools/environmentTools.ts");
+
 
 
 
@@ -30439,7 +30435,15 @@ var RenderingZone = /** @class */ (function (_super) {
         var filesInput = new babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_2__["FilesInput"](this._engine, null, function (sceneFile, scene) {
             _this._scene = scene;
             _this.onSceneLoaded(sceneFile.name);
-        }, null, null, null, function () { return babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_2__["Tools"].ClearLogCache(); }, null, null);
+        }, null, null, null, function () {
+            babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_2__["Tools"].ClearLogCache();
+            if (_this._scene) {
+                _this.props.globalState.isDebugLayerEnabled = _this.props.globalState.currentScene.debugLayer.isVisible();
+                if (_this.props.globalState.isDebugLayerEnabled) {
+                    _this._scene.debugLayer.hide();
+                }
+            }
+        }, null, null);
         filesInput.onProcessFileCallback = function (file, name, extension) {
             if (filesInput.filesToLoad && filesInput.filesToLoad.length === 1 && extension) {
                 if (extension.toLowerCase() === "dds" ||
@@ -30490,15 +30494,14 @@ var RenderingZone = /** @class */ (function (_super) {
         this._scene.activeCamera.attachControl(this._canvas);
     };
     RenderingZone.prototype.handleErrors = function () {
-        var debugLayerEnabled = false;
         // In case of error during loading, meshes will be empty and clearColor is set to red
         if (this._scene.meshes.length === 0 && this._scene.clearColor.r === 1 && this._scene.clearColor.g === 0 && this._scene.clearColor.b === 0) {
             this._canvas.style.opacity = "0";
-            debugLayerEnabled = true;
+            this.props.globalState.onError.notifyObservers({ scene: this._scene, message: "No mesh found in your scene" });
         }
         else {
             if (babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_2__["Tools"].errorsCount > 0) {
-                debugLayerEnabled = true;
+                this.props.globalState.onError.notifyObservers({ scene: this._scene, message: "Scene loaded but several errors were found" });
             }
             //    this._canvas.style.opacity = "1";
             var camera = this._scene.activeCamera;
@@ -30512,16 +30515,15 @@ var RenderingZone = /** @class */ (function (_super) {
                 camera.keysRight.push(68); // D
             }
         }
-        if (debugLayerEnabled) {
-            this.props.globalState.onError.notifyObservers(this._scene);
-        }
     };
     RenderingZone.prototype.prepareLighting = function () {
         if (this._currentPluginName === "gltf") {
             if (!this._scene.environmentTexture) {
                 this._scene.environmentTexture = _tools_environmentTools__WEBPACK_IMPORTED_MODULE_4__["EnvironmentTools"].LoadSkyboxPathTexture(this._scene);
             }
-            this._scene.createDefaultSkybox(this._scene.environmentTexture, true, (this._scene.activeCamera.maxZ - this._scene.activeCamera.minZ) / 2, 0.3, false);
+            if (this._scene.environmentTexture) {
+                this._scene.createDefaultSkybox(this._scene.environmentTexture, true, (this._scene.activeCamera.maxZ - this._scene.activeCamera.minZ) / 2, 0.3, false);
+            }
         }
         else {
             var pbrPresent = false;
@@ -30548,12 +30550,15 @@ var RenderingZone = /** @class */ (function (_super) {
         this.prepareCamera();
         this.prepareLighting();
         this.handleErrors();
+        if (this.props.globalState.isDebugLayerEnabled) {
+            this.props.globalState.showDebugLayer();
+        }
     };
     RenderingZone.prototype.loadAssetFromUrl = function () {
         var _this = this;
         var assetUrl = this.props.assetUrl;
-        var rootUrl = BABYLON.Tools.GetFolderPath(assetUrl);
-        var fileName = BABYLON.Tools.GetFilename(assetUrl);
+        var rootUrl = babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_2__["Tools"].GetFolderPath(assetUrl);
+        var fileName = babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_2__["Tools"].GetFilename(assetUrl);
         babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_2__["SceneLoader"].LoadAsync(rootUrl, fileName, this._engine).then(function (scene) {
             if (_this._scene) {
                 _this._scene.dispose();
@@ -30566,6 +30571,7 @@ var RenderingZone = /** @class */ (function (_super) {
                 });
             });
         }).catch(function (reason) {
+            _this.props.globalState.onError.notifyObservers({ message: reason.message });
             //TODO sceneError({ name: fileName }, null, reason.message || reason);
         });
     };
@@ -30582,15 +30588,15 @@ var RenderingZone = /** @class */ (function (_super) {
         }
         babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_2__["Engine"].ShadersRepository = "/src/Shaders/";
         // This is really important to tell Babylon.js to use decomposeLerp and matrix interpolation
-        BABYLON.Animation.AllowMatricesInterpolation = true;
+        babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_2__["Animation"].AllowMatricesInterpolation = true;
         // Setting up some GLTF values
-        babylonjs_loaders_glTF_index__WEBPACK_IMPORTED_MODULE_3__["GLTFFileLoader"].IncrementalLoading = false;
+        babylonjs_loaders_glTF_glTFFileLoader__WEBPACK_IMPORTED_MODULE_3__["GLTFFileLoader"].IncrementalLoading = false;
         babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_2__["SceneLoader"].OnPluginActivatedObservable.add(function (plugin) {
             _this._currentPluginName = plugin.name;
             if (_this._currentPluginName === "gltf") {
                 plugin.onValidatedObservable.add(function (results) {
                     if (results.issues.numErrors > 0) {
-                        // TODO debugLayerEnabled = true;
+                        _this.props.globalState.showDebugLayer();
                     }
                 });
             }
@@ -30626,7 +30632,7 @@ var RenderingZone = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GlobalState", function() { return GlobalState; });
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Maths/math.vector");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 
 var GlobalState = /** @class */ (function () {
@@ -30636,7 +30642,20 @@ var GlobalState = /** @class */ (function () {
         this.onEnvironmentChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onRequestClickInterceptor = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onClickInterceptorClicked = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.isDebugLayerEnabled = false;
     }
+    GlobalState.prototype.showDebugLayer = function () {
+        this.isDebugLayerEnabled = true;
+        if (this.currentScene) {
+            this.currentScene.debugLayer.show();
+        }
+    };
+    GlobalState.prototype.hideDebugLayer = function () {
+        this.isDebugLayerEnabled = false;
+        if (this.currentScene) {
+            this.currentScene.debugLayer.hide();
+        }
+    };
     return GlobalState;
 }());
 
@@ -30759,6 +30778,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_renderingZone__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./components/renderingZone */ "./components/renderingZone.tsx");
 /* harmony import */ var _components_footer__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./components/footer */ "./components/footer.tsx");
 /* harmony import */ var _tools_environmentTools__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./tools/environmentTools */ "./tools/environmentTools.ts");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_7__);
+
 
 
 
@@ -30776,7 +30798,7 @@ var Sandbox = /** @class */ (function (_super) {
         _this._logoRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         _this._dropTextRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         _this._clickInterceptorRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
-        _this.state = { isFooterVisible: true };
+        _this.state = { isFooterVisible: true, errorMessage: "" };
         _this.checkUrl();
         _tools_environmentTools__WEBPACK_IMPORTED_MODULE_6__["EnvironmentTools"].HookWithEnvironmentChange(_this._globalState);
         // Events
@@ -30791,8 +30813,13 @@ var Sandbox = /** @class */ (function (_super) {
                 _this._dropTextRef.current.className = "hidden";
             }
         });
-        _this._globalState.onError.add(function (scene) {
-            scene.debugLayer.show();
+        _this._globalState.onError.add(function (error) {
+            if (error.scene) {
+                _this._globalState.showDebugLayer();
+            }
+            if (error.message) {
+                _this.setState({ errorMessage: error.message });
+            }
         });
         _this._globalState.onRequestClickInterceptor.add(function () {
             var div = _this._clickInterceptorRef.current;
@@ -30826,28 +30853,36 @@ var Sandbox = /** @class */ (function (_super) {
                         this._assetUrl = value;
                         break;
                     }
-                    // case "cameraPosition": {
-                    //     cameraPosition = BABYLON.Vector3.FromArray(value.split(",").map(function(component) { return +component; }));
-                    //     break;
-                    // }
+                    case "cameraPosition": {
+                        this._cameraPosition = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_7__["Vector3"].FromArray(value.split(",").map(function (component) { return +component; }));
+                        break;
+                    }
                     case "kiosk": {
-                        this.state = { isFooterVisible: value === "true" ? false : true };
+                        this.state = { isFooterVisible: value === "true" ? false : true, errorMessage: "" };
                         break;
                     }
                 }
             }
         }
     };
+    Sandbox.prototype.componentDidUpdate = function () {
+        this._assetUrl = undefined;
+        this._cameraPosition = undefined;
+    };
     Sandbox.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "root" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", { id: "droptext", ref: this._dropTextRef }, "Drag and drop gltf, glb, obj or babylon files to view them"),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_renderingZone__WEBPACK_IMPORTED_MODULE_4__["RenderingZone"], { globalState: this._globalState, assetUrl: this._assetUrl, expanded: !this.state.isFooterVisible }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_renderingZone__WEBPACK_IMPORTED_MODULE_4__["RenderingZone"], { globalState: this._globalState, assetUrl: this._assetUrl, cameraPosition: this._cameraPosition, expanded: !this.state.isFooterVisible }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { ref: this._clickInterceptorRef, onClick: function () { return _this._globalState.onClickInterceptorClicked.notifyObservers(); }, className: "clickInterceptor hidden" }),
             this.state.isFooterVisible &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_footer__WEBPACK_IMPORTED_MODULE_5__["Footer"], { globalState: this._globalState }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "logoContainer" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: fullScreenLogo, ref: this._logoRef }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: fullScreenLogo, ref: this._logoRef })),
+            this.state.errorMessage &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "errorZone" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "message" }, this.state.errorMessage),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { type: "button", className: "close", onClick: function () { return _this.setState({ errorMessage: "" }); }, "data-dismiss": "alert" }, "\u00D7"))));
     };
     Sandbox.Show = function (hostElement) {
         var sandBox = react__WEBPACK_IMPORTED_MODULE_1__["createElement"](Sandbox, {});
@@ -30960,9 +30995,10 @@ if(false) {}
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "EnvironmentTools", function() { return EnvironmentTools; });
-/* harmony import */ var babylonjs_Materials_Textures_hdrCubeTexture__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Textures/hdrCubeTexture */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Textures_hdrCubeTexture__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Textures/hdrCubeTexture */ "babylonjs/Maths/math.vector");
 /* harmony import */ var babylonjs_Materials_Textures_hdrCubeTexture__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Textures_hdrCubeTexture__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _localStorageHelper__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./localStorageHelper */ "./tools/localStorageHelper.ts");
+
 
 
 
@@ -30992,10 +31028,10 @@ var EnvironmentTools = /** @class */ (function () {
                 var material = currentScene.materials[i];
                 if (material.name === "skyBox") {
                     var reflectionTexture = material.reflectionTexture;
-                    if (reflectionTexture && reflectionTexture.coordinatesMode === BABYLON.Texture.SKYBOX_MODE) {
+                    if (reflectionTexture && reflectionTexture.coordinatesMode === babylonjs_Materials_Textures_hdrCubeTexture__WEBPACK_IMPORTED_MODULE_0__["Texture"].SKYBOX_MODE) {
                         material.reflectionTexture = currentScene.environmentTexture.clone();
                         if (material.reflectionTexture) {
-                            material.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+                            material.reflectionTexture.coordinatesMode = babylonjs_Materials_Textures_hdrCubeTexture__WEBPACK_IMPORTED_MODULE_0__["Texture"].SKYBOX_MODE;
                         }
                     }
                 }
@@ -31044,25 +31080,25 @@ var LocalStorageHelper = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "babylonjs-loaders/glTF/index":
+/***/ "babylonjs-loaders/glTF/glTFFileLoader":
 /*!****************************************************************************************************************************!*\
   !*** external {"root":"BABYLON","commonjs":"babylonjs-loaders","commonjs2":"babylonjs-loaders","amd":"babylonjs-loaders"} ***!
   \****************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_glTFFileLoader__;
 
 /***/ }),
 
-/***/ "babylonjs/Misc/observable":
+/***/ "babylonjs/Maths/math.vector":
 /*!****************************************************************************************************!*\
   !*** external {"root":"BABYLON","commonjs":"babylonjs","commonjs2":"babylonjs","amd":"babylonjs"} ***!
   \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Maths_math_vector__;
 
 /***/ })
 
