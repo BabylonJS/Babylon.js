@@ -51,20 +51,6 @@ export class Playhead extends React.Component<IPlayheadProps> {
     return `calc(${this.props.frame * this.props.offset}px - 13px)`;
   }
 
-  moveFrameTo(e: any) {
-    var svg = e.currentTarget as SVGSVGElement;
-    var CTM = svg.getScreenCTM();
-    let position;
-    if (CTM) {
-      position = new Vector2(
-        (e.clientX - CTM.e) / CTM.a,
-        (e.clientY - CTM.f) / CTM.d
-      );
-      let selectedFrame = Math.round(position.x);
-      this.setState({ currentFrame: selectedFrame });
-    }
-  }
-
   render() {
     return (
       <div
