@@ -10,13 +10,15 @@ import { ArcRotateCamera } from 'babylonjs/Cameras/arcRotateCamera';
 import { FramingBehavior } from 'babylonjs/Behaviors/Cameras/framingBehavior';
 import { EnvironmentTools } from '../tools/environmentTools';
 import { Tools } from 'babylonjs/Misc/tools';
+import { FilesInput } from 'babylonjs/Misc/filesInput';
 
-require("./renderingZone.scss");
+require("../scss/renderingZone.scss");
 
 interface IRenderingZoneProps {
     globalState: GlobalState;
     assetUrl?: string;
     cameraPosition?: Vector3;
+    expanded: boolean;
 }
 
 export class RenderingZone extends React.Component<IRenderingZoneProps> {
@@ -41,6 +43,31 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         });
 
         this.loadAsset();
+
+        // File inputs
+        let filesInput = new FilesInput(this._engine, null, 
+            (sceneFile: File, scene: Scene) => {
+                this._scene = scene;
+                this.onSceneLoaded(sceneFile.name);
+            },
+            null, null, null, 
+            () => Tools.ClearLogCache(), null, null);
+
+        filesInput.onProcessFileCallback = (file, name, extension) => {
+            if (filesInput.filesToLoad && filesInput.filesToLoad.length === 1 && extension) {
+                if (extension.toLowerCase() === "dds" ||
+                    extension.toLowerCase() === "env" ||
+                    extension.toLowerCase() === "hdr") {
+                    FilesInput.FilesToLoad[name] = file;
+                    EnvironmentTools.SkyboxPath = "file:" + (file as any).correctName;
+                    return false;
+                }
+            }
+            return true;
+        };
+        filesInput.monitorElementForDragNDrop(this._canvas);
+
+        this.props.globalState.filesInput = filesInput;
     }
 
     prepareCamera() {
@@ -114,7 +141,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         }
 
         if (debugLayerEnabled) {
-            this.props.globalState.onError.notifyObservers(this._scene);
+            this.props.globalState.onError.notifyObservers({scene: this._scene, message: ""});
         }        
     }
 
@@ -214,13 +241,17 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         this.initEngine();
     }
 
-    componentDidUpdate() {
-
+    shouldComponentUpdate(nextProps: IRenderingZoneProps) {
+        if (nextProps.expanded !== this.props.expanded) {
+            setTimeout(() => this._engine.resize());
+            return true;
+        }
+        return false;
     }
 
     public render() {
         return (
-            <div id="canvasZone">
+            <div id="canvasZone" className={this.props.expanded ? "expanded" : ""}>
                 <canvas id="renderCanvas" touch-action="none" 
                     onContextMenu={evt => evt.preventDefault()}></canvas>
             </div>

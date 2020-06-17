@@ -1,13 +1,13 @@
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
-		module.exports = factory();
+		module.exports = factory(require("babylonjs-loaders"), require("babylonjs"));
 	else if(typeof define === 'function' && define.amd)
-		define("babylonjs-sandbox", [], factory);
+		define("babylonjs-sandbox", ["babylonjs-loaders", "babylonjs"], factory);
 	else if(typeof exports === 'object')
-		exports["babylonjs-sandbox"] = factory();
+		exports["babylonjs-sandbox"] = factory(require("babylonjs-loaders"), require("babylonjs"));
 	else
-		root["SANDBOX"] = factory();
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function() {
+		root["SANDBOX"] = factory(root["BABYLON"], root["BABYLON"]);
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -96,19 +96,57 @@ return /******/ (function(modules) { // webpackBootstrap
 /************************************************************************/
 /******/ ({
 
-/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./main.scss":
-/*!************************************************************************************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/css-loader!D:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./main.scss ***!
-  \************************************************************************************************************************/
+/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./scss/footer.scss":
+/*!*******************************************************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/css-loader!D:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./scss/footer.scss ***!
+  \*******************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader/lib/css-base.js */ "../../node_modules/css-loader/lib/css-base.js")(false);
+exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loader/lib/css-base.js */ "../../node_modules/css-loader/lib/css-base.js")(false);
 // imports
 
 
 // module
-exports.push([module.i, "html {\n  --background: #2A2342;\n  --footer-background: #201936;\n  --footer-height: 70px;\n  --button-hover-color: #BB464B;\n  --button-hover-hover: #e0684b;\n  --button-hover-background:  #162D3A;\n  --font-size: 20px; }\n\nhtml, body, #root {\n  width: 100%;\n  height: 100%;\n  padding: 0;\n  margin: 0;\n  overflow: hidden;\n  font-size: var(--font-size);\n  background: var(--background);\n  font-family: \"acumin-pro-condensed\";\n  font-weight: normal; }\n", ""]);
+exports.push([module.i, ".footer {\n  position: relative;\n  width: 100%;\n  height: var(--footer-height);\n  margin: 0;\n  padding: 0;\n  background-color: var(--footer-background);\n  font-size: 0;\n  display: grid;\n  grid-template-rows: 100%;\n  grid-template-columns: 201px 1fr 210px; }\n  .footer .footerLeft {\n    display: grid;\n    grid-column: 1;\n    grid-row: 1;\n    padding-left: 40px;\n    align-content: center;\n    overflow: hidden; }\n    .footer .footerLeft #logoImg {\n      height: var(--footer-height);\n      width: 161px; }\n  .footer .footerRight {\n    display: flex;\n    flex-direction: row-reverse;\n    grid-column: 3;\n    grid-row: 1; }\n    .footer .footerRight .button {\n      float: left;\n      /* Float links side by side */\n      width: var(--footer-height);\n      height: var(--footer-height);\n      margin: 0px;\n      padding: 0;\n      transition: all 0.3s ease;\n      /* Add transition for hover effects */\n      display: grid;\n      align-content: center;\n      justify-content: center;\n      cursor: pointer; }\n      .footer .footerRight .button img {\n        width: var(--footer-height);\n        height: var(--footer-height); }\n      .footer .footerRight .button:hover {\n        background-color: var(--button-hover-color); }\n      .footer .footerRight .button:active {\n        background-color: var(--button-hover-background); }\n    .footer .footerRight .dropup-content {\n      position: absolute;\n      bottom: var(--footer-height);\n      right: 0px;\n      z-index: 100; }\n    .footer .footerRight .custom-upload {\n      position: relative;\n      background-position: center right;\n      background-repeat: no-repeat;\n      width: var(--footer-height);\n      height: var(--footer-height);\n      cursor: pointer;\n      display: grid; }\n      .footer .footerRight .custom-upload img {\n        grid-row: 1;\n        grid-column: 1;\n        width: var(--footer-height);\n        height: var(--footer-height);\n        pointer-events: none; }\n      .footer .footerRight .custom-upload:hover {\n        background-color: var(--button-hover-color); }\n      .footer .footerRight .custom-upload:active {\n        background-color: var(--button-hover-background); }\n      .footer .footerRight .custom-upload input[type=file] {\n        grid-row: 1;\n        grid-column: 1;\n        outline: none;\n        position: relative;\n        text-align: right;\n        -moz-opacity: 0;\n        opacity: 0;\n        z-index: 2;\n        width: 100%;\n        height: 100%;\n        filter: alpha(opacity=0); }\n", ""]);
+
+// exports
+
+
+/***/ }),
+
+/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./scss/main.scss":
+/*!*****************************************************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/css-loader!D:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./scss/main.scss ***!
+  \*****************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loader/lib/css-base.js */ "../../node_modules/css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, "html {\n  --background: #2A2342;\n  --footer-background: #201936;\n  --footer-height: 70px;\n  --button-hover-color: #BB464B;\n  --button-hover-hover: #e0684b;\n  --button-hover-background:  #162D3A;\n  --font-size: 20px; }\n\nhtml, body, #root {\n  width: 100%;\n  height: 100%;\n  padding: 0;\n  margin: 0;\n  overflow: hidden;\n  font-size: var(--font-size);\n  background: var(--background);\n  font-family: \"acumin-pro-condensed\";\n  font-weight: normal; }\n\n.hidden {\n  display: none !important; }\n\n.clickInterceptor {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  z-index: 99;\n  top: 0;\n  left: 0; }\n\n#droptext {\n  position: absolute;\n  text-align: center;\n  color: #fff;\n  height: 50px;\n  width: 100%;\n  bottom: 50px; }\n\n#logoContainer {\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: calc(100% - 70px);\n  pointer-events: none; }\n\n#logo {\n  position: absolute;\n  width: 20%;\n  height: 20%;\n  top: 40%;\n  left: 40%;\n  pointer-events: none; }\n", ""]);
+
+// exports
+
+
+/***/ }),
+
+/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./scss/renderingZone.scss":
+/*!**************************************************************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/css-loader!D:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./scss/renderingZone.scss ***!
+  \**************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loader/lib/css-base.js */ "../../node_modules/css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, "#canvasZone {\n  display: block;\n  padding: 0;\n  margin: 0;\n  overflow: hidden;\n  width: 100%;\n  height: calc(100% - var(--footer-height)); }\n  #canvasZone.expanded {\n    height: 100%; }\n\n#renderCanvas {\n  position: relative;\n  overflow: hidden;\n  width: 100%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  touch-action: none;\n  -ms-touch-action: none;\n  display: block;\n  border: 0;\n  outline: 0; }\n", ""]);
 
 // exports
 
@@ -30154,6 +30192,513 @@ module.exports = g;
 
 /***/ }),
 
+/***/ "./components/dropUpButton.tsx":
+/*!*************************************!*\
+  !*** ./components/dropUpButton.tsx ***!
+  \*************************************/
+/*! exports provided: DropUpButton */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DropUpButton", function() { return DropUpButton; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var DropUpButton = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(DropUpButton, _super);
+    function DropUpButton(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = { isOpen: false };
+        _this._onClickInterceptorClickedObserver = props.globalState.onClickInterceptorClicked.add(function () {
+            _this.switchDropUp();
+        });
+        return _this;
+    }
+    DropUpButton.prototype.componentWillUnmount = function () {
+        this.props.globalState.onClickInterceptorClicked.remove(this._onClickInterceptorClickedObserver);
+    };
+    DropUpButton.prototype.switchDropUp = function () {
+        this.props.globalState.onRequestClickInterceptor.notifyObservers();
+        this.setState({ isOpen: !this.state.isOpen });
+    };
+    DropUpButton.prototype.clickOption = function (option) {
+        this.switchDropUp();
+        this.props.onOptionPicked(option);
+    };
+    DropUpButton.prototype.render = function () {
+        var _this = this;
+        if (!this.props.enabled) {
+            return null;
+        }
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "button", onClick: function () { return _this.switchDropUp(); } },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, alt: this.props.label, title: this.props.label })),
+            this.state.isOpen &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "dropup-content" }, this.props.options.map(function (o) {
+                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: o, onClick: function () { return _this.clickOption(o); } }, o));
+                }))));
+    };
+    return DropUpButton;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/footer.tsx":
+/*!*******************************!*\
+  !*** ./components/footer.tsx ***!
+  \*******************************/
+/*! exports provided: Footer */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Footer", function() { return Footer; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _footerButton__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./footerButton */ "./components/footerButton.tsx");
+/* harmony import */ var _dropUpButton__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./dropUpButton */ "./components/dropUpButton.tsx");
+/* harmony import */ var _tools_environmentTools__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../tools/environmentTools */ "./tools/environmentTools.ts");
+/* harmony import */ var _footerFileButton__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./footerFileButton */ "./components/footerFileButton.tsx");
+
+
+
+
+
+
+__webpack_require__(/*! ../scss/footer.scss */ "./scss/footer.scss");
+var babylonIdentity = __webpack_require__(/*! ../img/babylon-identity.svg */ "./img/babylon-identity.svg");
+var iconEdit = __webpack_require__(/*! ../img/icon-edit.svg */ "./img/icon-edit.svg");
+var iconOpen = __webpack_require__(/*! ../img/icon-open.svg */ "./img/icon-open.svg");
+var iconIBL = __webpack_require__(/*! ../img/icon-ibl.svg */ "./img/icon-ibl.svg");
+var Footer = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Footer, _super);
+    function Footer(props) {
+        var _this = _super.call(this, props) || this;
+        props.globalState.onSceneLoaded.add(function (info) {
+            _this.forceUpdate();
+        });
+        return _this;
+    }
+    Footer.prototype.showInspector = function () {
+        if (this.props.globalState.currentScene) {
+            if (this.props.globalState.currentScene.debugLayer.isVisible()) {
+                this.props.globalState.currentScene.debugLayer.hide();
+            }
+            else {
+                this.props.globalState.currentScene.debugLayer.show();
+            }
+            // TODO: keep the inspector opens
+        }
+    };
+    Footer.prototype.onFilesPicked = function (files) {
+    };
+    Footer.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "footer", className: "footer" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "footerLeft" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logoImg", src: babylonIdentity })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "footerRight" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_dropUpButton__WEBPACK_IMPORTED_MODULE_3__["DropUpButton"], { globalState: this.props.globalState, icon: iconIBL, label: "Select environment", options: _tools_environmentTools__WEBPACK_IMPORTED_MODULE_4__["EnvironmentTools"].SkyboxesNames, onOptionPicked: function (option) { return _this.props.globalState.onEnvironmentChanged.notifyObservers(option); }, enabled: !!this.props.globalState.currentScene }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_footerButton__WEBPACK_IMPORTED_MODULE_2__["FooterButton"], { globalState: this.props.globalState, icon: iconEdit, label: "Display inspector", onClick: function () { return _this.showInspector(); }, enabled: !!this.props.globalState.currentScene }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_footerFileButton__WEBPACK_IMPORTED_MODULE_5__["FooterFileButton"], { globalState: this.props.globalState, enabled: true, icon: iconOpen, onFilesPicked: function (files) {
+                        if (files) {
+                            _this.onFilesPicked(files);
+                        }
+                    }, label: "Open your scene from your hard drive (.babylon, .gltf, .glb, .obj)" }))));
+    };
+    return Footer;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/footerButton.tsx":
+/*!*************************************!*\
+  !*** ./components/footerButton.tsx ***!
+  \*************************************/
+/*! exports provided: FooterButton */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FooterButton", function() { return FooterButton; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var FooterButton = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FooterButton, _super);
+    function FooterButton() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    FooterButton.prototype.render = function () {
+        var _this = this;
+        if (!this.props.enabled) {
+            return null;
+        }
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "button", onClick: function () { return _this.props.onClick(); } },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, alt: this.props.label, title: this.props.label })));
+    };
+    return FooterButton;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/footerFileButton.tsx":
+/*!*****************************************!*\
+  !*** ./components/footerFileButton.tsx ***!
+  \*****************************************/
+/*! exports provided: FooterFileButton */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FooterFileButton", function() { return FooterFileButton; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var FooterFileButton = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FooterFileButton, _super);
+    function FooterFileButton() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    FooterFileButton.prototype.onFilePicked = function (evt) {
+        this.props.onFilesPicked(evt.target.files);
+    };
+    FooterFileButton.prototype.render = function () {
+        var _this = this;
+        if (!this.props.enabled) {
+            return null;
+        }
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "custom-upload", title: this.props.label },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "file", id: "files", multiple: true, onChange: function (evt) { return _this.onFilePicked(evt); } })));
+    };
+    return FooterFileButton;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/renderingZone.tsx":
+/*!**************************************!*\
+  !*** ./components/renderingZone.tsx ***!
+  \**************************************/
+/*! exports provided: RenderingZone */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RenderingZone", function() { return RenderingZone; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Engines/engine */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var babylonjs_loaders_glTF_index__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-loaders/glTF/index */ "babylonjs-loaders/glTF/index");
+/* harmony import */ var babylonjs_loaders_glTF_index__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_loaders_glTF_index__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _tools_environmentTools__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../tools/environmentTools */ "./tools/environmentTools.ts");
+
+
+
+
+
+
+
+
+__webpack_require__(/*! ../scss/renderingZone.scss */ "./scss/renderingZone.scss");
+var RenderingZone = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RenderingZone, _super);
+    function RenderingZone(props) {
+        return _super.call(this, props) || this;
+    }
+    RenderingZone.prototype.initEngine = function () {
+        var _this = this;
+        this._canvas = document.getElementById("renderCanvas");
+        this._engine = new babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_2__["Engine"](this._canvas, true, { premultipliedAlpha: false, preserveDrawingBuffer: true });
+        this._engine.loadingUIBackgroundColor = "#2A2342";
+        // Resize
+        window.addEventListener("resize", function () {
+            _this._engine.resize();
+        });
+        this.loadAsset();
+        // File inputs
+        var filesInput = new babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_2__["FilesInput"](this._engine, null, function (sceneFile, scene) {
+            _this._scene = scene;
+            _this.onSceneLoaded(sceneFile.name);
+        }, null, null, null, function () { return babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_2__["Tools"].ClearLogCache(); }, null, null);
+        filesInput.onProcessFileCallback = function (file, name, extension) {
+            if (filesInput.filesToLoad && filesInput.filesToLoad.length === 1 && extension) {
+                if (extension.toLowerCase() === "dds" ||
+                    extension.toLowerCase() === "env" ||
+                    extension.toLowerCase() === "hdr") {
+                    babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_2__["FilesInput"].FilesToLoad[name] = file;
+                    _tools_environmentTools__WEBPACK_IMPORTED_MODULE_4__["EnvironmentTools"].SkyboxPath = "file:" + file.correctName;
+                    return false;
+                }
+            }
+            return true;
+        };
+        filesInput.monitorElementForDragNDrop(this._canvas);
+        this.props.globalState.filesInput = filesInput;
+    };
+    RenderingZone.prototype.prepareCamera = function () {
+        var camera;
+        // Attach camera to canvas inputs
+        if (!this._scene.activeCamera || this._scene.lights.length === 0) {
+            this._scene.createDefaultCamera(true);
+            camera = this._scene.activeCamera;
+            if (this.props.cameraPosition) {
+                camera.setPosition(this.props.cameraPosition);
+            }
+            else {
+                if (this._currentPluginName === "gltf") {
+                    // glTF assets use a +Z forward convention while the default camera faces +Z. Rotate the camera to look at the front of the asset.
+                    camera.alpha += Math.PI;
+                }
+                // Enable camera's behaviors
+                camera.useFramingBehavior = true;
+                var framingBehavior = camera.getBehaviorByName("Framing");
+                framingBehavior.framingTime = 0;
+                framingBehavior.elevationReturnTime = -1;
+                if (this._scene.meshes.length) {
+                    camera.lowerRadiusLimit = null;
+                    var worldExtends = this._scene.getWorldExtends(function (mesh) {
+                        return mesh.isVisible && mesh.isEnabled();
+                    });
+                    framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
+                }
+            }
+            camera.pinchPrecision = 200 / camera.radius;
+            camera.upperRadiusLimit = 5 * camera.radius;
+            camera.wheelDeltaPercentage = 0.01;
+            camera.pinchDeltaPercentage = 0.01;
+        }
+        this._scene.activeCamera.attachControl(this._canvas);
+    };
+    RenderingZone.prototype.handleErrors = function () {
+        var debugLayerEnabled = false;
+        // In case of error during loading, meshes will be empty and clearColor is set to red
+        if (this._scene.meshes.length === 0 && this._scene.clearColor.r === 1 && this._scene.clearColor.g === 0 && this._scene.clearColor.b === 0) {
+            this._canvas.style.opacity = "0";
+            debugLayerEnabled = true;
+        }
+        else {
+            if (babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_2__["Tools"].errorsCount > 0) {
+                debugLayerEnabled = true;
+            }
+            //    this._canvas.style.opacity = "1";
+            var camera = this._scene.activeCamera;
+            if (camera.keysUp) {
+                camera.keysUp.push(90); // Z
+                camera.keysUp.push(87); // W
+                camera.keysDown.push(83); // S
+                camera.keysLeft.push(65); // A
+                camera.keysLeft.push(81); // Q
+                camera.keysRight.push(69); // E
+                camera.keysRight.push(68); // D
+            }
+        }
+        if (debugLayerEnabled) {
+            this.props.globalState.onError.notifyObservers(this._scene);
+        }
+    };
+    RenderingZone.prototype.prepareLighting = function () {
+        if (this._currentPluginName === "gltf") {
+            if (!this._scene.environmentTexture) {
+                this._scene.environmentTexture = _tools_environmentTools__WEBPACK_IMPORTED_MODULE_4__["EnvironmentTools"].LoadSkyboxPathTexture(this._scene);
+            }
+            this._scene.createDefaultSkybox(this._scene.environmentTexture, true, (this._scene.activeCamera.maxZ - this._scene.activeCamera.minZ) / 2, 0.3, false);
+        }
+        else {
+            var pbrPresent = false;
+            for (var i = 0; i < this._scene.materials.length; i++) {
+                if (this._scene.materials[i].transparencyMode !== undefined) {
+                    pbrPresent = true;
+                    break;
+                }
+            }
+            if (pbrPresent) {
+                if (!this._scene.environmentTexture) {
+                    this._scene.environmentTexture = _tools_environmentTools__WEBPACK_IMPORTED_MODULE_4__["EnvironmentTools"].LoadSkyboxPathTexture(this._scene);
+                }
+            }
+            else {
+                this._scene.createDefaultLight();
+            }
+        }
+    };
+    RenderingZone.prototype.onSceneLoaded = function (filename) {
+        this._engine.clearInternalTexturesCache();
+        this._scene.skipFrustumClipping = true;
+        this.props.globalState.onSceneLoaded.notifyObservers({ scene: this._scene, filename: filename });
+        this.prepareCamera();
+        this.prepareLighting();
+        this.handleErrors();
+    };
+    RenderingZone.prototype.loadAssetFromUrl = function () {
+        var _this = this;
+        var assetUrl = this.props.assetUrl;
+        var rootUrl = BABYLON.Tools.GetFolderPath(assetUrl);
+        var fileName = BABYLON.Tools.GetFilename(assetUrl);
+        babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_2__["SceneLoader"].LoadAsync(rootUrl, fileName, this._engine).then(function (scene) {
+            if (_this._scene) {
+                _this._scene.dispose();
+            }
+            _this._scene = scene;
+            _this.onSceneLoaded(fileName);
+            scene.whenReadyAsync().then(function () {
+                _this._engine.runRenderLoop(function () {
+                    scene.render();
+                });
+            });
+        }).catch(function (reason) {
+            //TODO sceneError({ name: fileName }, null, reason.message || reason);
+        });
+    };
+    RenderingZone.prototype.loadAsset = function () {
+        if (this.props.assetUrl) {
+            this.loadAssetFromUrl();
+            return;
+        }
+    };
+    RenderingZone.prototype.componentDidMount = function () {
+        var _this = this;
+        if (!babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_2__["Engine"].isSupported()) {
+            return;
+        }
+        babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_2__["Engine"].ShadersRepository = "/src/Shaders/";
+        // This is really important to tell Babylon.js to use decomposeLerp and matrix interpolation
+        BABYLON.Animation.AllowMatricesInterpolation = true;
+        // Setting up some GLTF values
+        babylonjs_loaders_glTF_index__WEBPACK_IMPORTED_MODULE_3__["GLTFFileLoader"].IncrementalLoading = false;
+        babylonjs_Engines_engine__WEBPACK_IMPORTED_MODULE_2__["SceneLoader"].OnPluginActivatedObservable.add(function (plugin) {
+            _this._currentPluginName = plugin.name;
+            if (_this._currentPluginName === "gltf") {
+                plugin.onValidatedObservable.add(function (results) {
+                    if (results.issues.numErrors > 0) {
+                        // TODO debugLayerEnabled = true;
+                    }
+                });
+            }
+        });
+        this.initEngine();
+    };
+    RenderingZone.prototype.shouldComponentUpdate = function (nextProps) {
+        var _this = this;
+        if (nextProps.expanded !== this.props.expanded) {
+            setTimeout(function () { return _this._engine.resize(); });
+            return true;
+        }
+        return false;
+    };
+    RenderingZone.prototype.render = function () {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "canvasZone", className: this.props.expanded ? "expanded" : "" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "renderCanvas", "touch-action": "none", onContextMenu: function (evt) { return evt.preventDefault(); } })));
+    };
+    return RenderingZone;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./globalState.ts":
+/*!************************!*\
+  !*** ./globalState.ts ***!
+  \************************/
+/*! exports provided: GlobalState */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GlobalState", function() { return GlobalState; });
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
+
+var GlobalState = /** @class */ (function () {
+    function GlobalState() {
+        this.onSceneLoaded = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onError = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onEnvironmentChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onRequestClickInterceptor = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onClickInterceptorClicked = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+    }
+    return GlobalState;
+}());
+
+
+
+/***/ }),
+
+/***/ "./img/babylon-identity.svg":
+/*!**********************************!*\
+  !*** ./img/babylon-identity.svg ***!
+  \**********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160.63 40.18'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23d5d2ca;%7D.cls-2%7Bfill:%23fff;%7D.cls-3%7Bfill:%23e0684b;%7D.cls-4%7Bfill:%23bb464b;%7D.cls-5%7Bfill:%23e0ded8;%7D%3C/style%3E%3C/defs%3E%3Ctitle%3EBabylonIdentity%3C/title%3E%3Cg id='Layer_2' data-name='Layer 2'%3E%3Cg id='Page_Elements' data-name='Page Elements'%3E%3Cpath class='cls-1' d='M41.27,10h3.41v7.65c.61-1,1.82-2,4.21-2,3.74,0,5.78,3.08,5.78,7.13s-2.12,7.68-6.16,7.68c-2.15,0-3.17-.72-3.85-1.85a11.47,11.47,0,0,1-.14,1.52H41.24c0-1.55,0-3.11,0-4.68Zm6.63,8.42c-2.47,0-3.38,1.65-3.38,4.68,0,2.59.8,4.59,3.33,4.59,2.14,0,3.33-1.92,3.33-4.84C51.18,20.27,50.13,18.43,47.9,18.43Z'/%3E%3Cpath class='cls-1' d='M68.59,26.66a26.61,26.61,0,0,0,.2,3.47H65.51a7.37,7.37,0,0,1-.22-1.55c-.49.86-1.51,1.88-4.1,1.88-3.38,0-4.81-2.23-4.81-4.41,0-3.19,2.56-4.67,6.71-4.67h2.15v-1c0-1.1-.36-2.25-2.48-2.25-1.87,0-2.26.85-2.45,1.89H57c.19-2.31,1.65-4.43,5.86-4.4,3.68,0,5.69,1.49,5.69,4.79Zm-3.33-3.14H63.42c-2.5,0-3.6.74-3.6,2.34A2,2,0,0,0,62.1,28c2.81,0,3.16-1.92,3.16-4Z'/%3E%3Cpath class='cls-1' d='M71.67,10h3.42v7.65c.6-1,1.81-2,4.21-2,3.74,0,5.77,3.08,5.77,7.13S83,30.46,78.91,30.46c-2.15,0-3.16-.72-3.85-1.85a10,10,0,0,1-.14,1.52H71.65c0-1.55,0-3.11,0-4.68Zm6.64,8.42c-2.48,0-3.39,1.65-3.39,4.68,0,2.59.8,4.59,3.33,4.59,2.15,0,3.33-1.92,3.33-4.84C81.58,20.27,80.53,18.43,78.31,18.43Z'/%3E%3Cpath class='cls-1' d='M89.37,16c1.76,5.53,3,9.66,3.3,11h0c.35-1.49,1.23-4.68,3.13-11h3.41L94.37,30.62c-1.37,4.1-2.47,5.26-5.69,5.26A15.34,15.34,0,0,1,87,35.77V33c.3,0,.71,0,1.07,0,1.54,0,2.25-.57,2.89-2.42L85.71,16Z'/%3E%3Cpath class='cls-1' d='M100.76,30.13V10h3.41V30.13Z'/%3E%3Cpath class='cls-1' d='M120.32,23c0,4.21-2.48,7.43-6.91,7.43s-6.79-3.14-6.79-7.38,2.56-7.43,7-7.43C117.68,15.65,120.32,18.6,120.32,23Zm-10.23,0c0,2.87,1.29,4.68,3.41,4.68s3.33-1.79,3.33-4.65c0-3-1.19-4.7-3.39-4.7S110.09,20,110.09,23.05Z'/%3E%3Cpath class='cls-1' d='M122.8,19.53c0-1.21,0-2.47,0-3.55h3.3a15.77,15.77,0,0,1,.14,2,4.32,4.32,0,0,1,4.21-2.31c2.78,0,4.7,1.82,4.7,5.45v9h-3.41V21.49c0-1.77-.63-3-2.5-3s-3,1.29-3,3.91v7.76H122.8Z'/%3E%3Cpath class='cls-1' d='M138.37,30.13V25.56H142v4.57Z'/%3E%3Cpath class='cls-1' d='M147.67,16.28V30.87c0,3.77-.91,5-3.6,5-.11,0-.66,0-.86,0V34.2c.2,0,.42,0,.58,0,1.84,0,2-1,2-3.08V16.28Zm-1.84-3.57V9.87h1.84v2.84Z'/%3E%3Cpath class='cls-1' d='M151.85,26.25a3.45,3.45,0,0,0,3.69,2.66c2.26,0,3.16-1,3.16-2.44s-.63-2.15-3.52-2.84c-3.77-.91-4.62-2.06-4.62-3.91S152,16,155.32,16s4.81,2,5,3.94h-1.81a3,3,0,0,0-3.28-2.39c-2.2,0-2.83,1.07-2.83,2.09s.61,1.73,3.25,2.36c4,1,4.95,2.31,4.95,4.38,0,2.47-2,4.13-5.15,4.13-3.35,0-5.11-1.74-5.47-4.21Z'/%3E%3Cpolygon class='cls-2' points='17.4 0 0 10.04 0 30.13 17.4 40.18 34.8 30.13 34.8 10.04 17.4 0'/%3E%3Cpolygon class='cls-3' points='34.8 10.04 29.35 6.9 24.11 9.93 29.56 13.07 34.8 10.04'/%3E%3Cpolygon class='cls-3' points='5.24 13.07 22.64 3.02 17.4 0 0 10.04 5.24 13.07'/%3E%3Cpolygon class='cls-3' points='11.95 23.23 17.4 26.38 22.84 23.23 17.4 20.09 11.95 23.23'/%3E%3Cpolygon class='cls-4' points='29.56 13.07 29.56 27.11 17.4 34.13 5.24 27.11 5.24 13.07 0 10.04 0 30.13 17.4 40.18 34.8 30.13 34.8 10.04 29.56 13.07'/%3E%3Cpolygon class='cls-4' points='17.4 13.8 11.95 16.95 11.95 23.23 17.4 20.09 22.84 23.23 22.84 16.95 17.4 13.8'/%3E%3Cpolygon class='cls-5' points='29.56 13.07 22.84 16.95 22.84 23.23 17.4 26.38 17.4 34.13 29.56 27.11 29.56 13.07'/%3E%3Cpolygon class='cls-1' points='5.24 13.07 11.95 16.95 11.95 23.23 17.4 26.38 17.4 34.13 5.24 27.11 5.24 13.07'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./img/icon-edit.svg":
+/*!***************************!*\
+  !*** ./img/icon-edit.svg ***!
+  \***************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 70 70'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D.cls-2%7Bfill:none;%7D%3C/style%3E%3C/defs%3E%3Ctitle%3EEditIcon%3C/title%3E%3Cg id='Layer_2' data-name='Layer 2'%3E%3Cg id='Page_Elements' data-name='Page Elements'%3E%3Cpath class='cls-1' d='M44.25,30.78a2.56,2.56,0,0,1,1-.64,3.64,3.64,0,0,1,1.17-.2,3.29,3.29,0,0,1,1.21.23,2.73,2.73,0,0,1,1,.62,3,3,0,0,1,.65,1A2.84,2.84,0,0,1,49.5,33a3.14,3.14,0,0,1-.23,1.18,2.84,2.84,0,0,1-.67,1L37.52,46.25l-5.85,1.46,1.46-5.84Zm3,3a1.06,1.06,0,0,0,.33-.79,1,1,0,0,0-.32-.78,1.16,1.16,0,0,0-.8-.29A1.23,1.23,0,0,0,46,32a.88.88,0,0,0-.36.21L34.93,42.89,34.4,45l2.09-.52Z'/%3E%3Cpath class='cls-1' d='M31.94,41.2l1-1V31.9l5.94-3v5.32l2-2V26.73L32,22.27l-8.92,4.46V38.5l8.5,4.26Zm0-16.7,5.7,2.85L32,30.18l-5.71-2.83ZM25,37.27V28.94l5.94,3v8.34Z'/%3E%3Crect class='cls-2' width='70' height='70'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./img/icon-ibl.svg":
+/*!**************************!*\
+  !*** ./img/icon-ibl.svg ***!
+  \**************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 70 70'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D.cls-2%7Bfill:none;%7D%3C/style%3E%3C/defs%3E%3Ctitle%3EEnvironmentIcon%3C/title%3E%3Cg id='Layer_2' data-name='Layer 2'%3E%3Cg id='Page_Elements' data-name='Page Elements'%3E%3Cpath class='cls-1' d='M34.89,21.24A13.19,13.19,0,1,0,48.07,34.42,13.19,13.19,0,0,0,34.89,21.24ZM34,33.43a.31.31,0,0,0,.44,0l1.13-1.14a.29.29,0,0,0,0-.32h.46a2.38,2.38,0,0,0,2.6.12l.61,0a.36.36,0,0,0,.07.17l1.14,1.14a.31.31,0,0,0,.22.09.3.3,0,0,0,.21-.09A.3.3,0,0,0,41,33l-.78-.79c3.69.41,6.21,1.23,6.21,2.18,0,1.36-5.14,2.46-11.49,2.46S23.4,35.78,23.4,34.42,28.54,32,34.89,32h.17l-1,1A.32.32,0,0,0,34,33.43Zm3.48-1.61A1.84,1.84,0,1,1,39.34,30,1.84,1.84,0,0,1,37.5,31.82Zm-2.61-8.9A11.5,11.5,0,0,1,46.35,33.54c-1.13-1-4.17-1.56-7.14-1.81A2.42,2.42,0,0,0,40,30a2.45,2.45,0,1,0-4.89,0,2.41,2.41,0,0,0,.58,1.57h-.75c-3.53,0-9.76.45-11.46,2A11.5,11.5,0,0,1,34.89,22.92Zm0,23a11.48,11.48,0,0,1-11.4-10.07c2.68,1.81,10.36,1.87,11.4,1.87s8.72-.06,11.4-1.87A11.48,11.48,0,0,1,34.89,45.92Z'/%3E%3Cpath class='cls-1' d='M37.52,27.3h0a.31.31,0,0,0,.31-.3V24.89a.3.3,0,0,0-.3-.31h0a.31.31,0,0,0-.31.31V27A.31.31,0,0,0,37.52,27.3Z'/%3E%3Cpath class='cls-1' d='M35.19,28.07a.31.31,0,0,0,.22.09.27.27,0,0,0,.21-.09.3.3,0,0,0,0-.43L34.49,26.5a.3.3,0,0,0-.43,0,.31.31,0,0,0,0,.43Z'/%3E%3Cpath class='cls-1' d='M39.63,28.19a.31.31,0,0,0,.22-.09L41,27a.3.3,0,1,0-.43-.43l-1.14,1.14a.3.3,0,0,0,0,.43A.31.31,0,0,0,39.63,28.19Z'/%3E%3Cpath class='cls-1' d='M38.6,27.4l.07,0a.19.19,0,0,0,.17-.12l.25-.61a.2.2,0,0,0-.1-.25.2.2,0,0,0-.25.11l-.25.61A.19.19,0,0,0,38.6,27.4Z'/%3E%3Cpath class='cls-1' d='M36.21,27.29a.18.18,0,0,0,.17.11l.07,0a.17.17,0,0,0,.1-.24l-.26-.61a.18.18,0,0,0-.24-.1.19.19,0,0,0-.1.24Z'/%3E%3Cpath class='cls-1' d='M34.82,28.65l-.61-.25a.18.18,0,0,0-.24.1.19.19,0,0,0,.1.24l.61.25h.07a.18.18,0,0,0,.07-.35Z'/%3E%3Cpath class='cls-1' d='M34.67,30.93l-.61.26a.18.18,0,0,0-.1.24.18.18,0,0,0,.17.11h.07l.61-.26a.18.18,0,0,0,.1-.24A.19.19,0,0,0,34.67,30.93Z'/%3E%3Cpath class='cls-1' d='M36,33.51l.07,0a.18.18,0,0,0,.17-.12l.25-.61a.18.18,0,0,0-.1-.24.18.18,0,0,0-.24.1l-.25.61A.18.18,0,0,0,36,33.51Z'/%3E%3Cpath class='cls-1' d='M38.71,33.43a.18.18,0,0,0,.17.11H39a.18.18,0,0,0,.09-.25l-.25-.61a.19.19,0,1,0-.34.15Z'/%3E%3Cpath class='cls-1' d='M40.94,31.22,40.32,31a.19.19,0,0,0-.24.1.18.18,0,0,0,.1.24l.62.25.07,0a.19.19,0,0,0,.17-.12A.19.19,0,0,0,40.94,31.22Z'/%3E%3Cpath class='cls-1' d='M40.27,29h.07l.61-.26a.18.18,0,0,0-.14-.34l-.61.26a.18.18,0,0,0-.1.24A.18.18,0,0,0,40.27,29Z'/%3E%3Cpath class='cls-1' d='M32.41,30.26h2.11a.31.31,0,1,0,0-.61H32.41a.31.31,0,0,0,0,.61Z'/%3E%3Cpath class='cls-1' d='M37.48,35.38h0a.32.32,0,0,0,.31-.31V33a.31.31,0,0,0-.31-.3h0a.3.3,0,0,0-.3.3v2.11A.31.31,0,0,0,37.48,35.38Z'/%3E%3Cpath class='cls-1' d='M40.49,29.69a.31.31,0,1,0,0,.62H42.6a.31.31,0,0,0,.3-.31.3.3,0,0,0-.3-.3Z'/%3E%3Crect class='cls-2' width='70' height='70'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./img/icon-open.svg":
+/*!***************************!*\
+  !*** ./img/icon-open.svg ***!
+  \***************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 70 70'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D.cls-2%7Bfill:none;%7D%3C/style%3E%3C/defs%3E%3Ctitle%3EAsset 11%3C/title%3E%3Cg id='Layer_2' data-name='Layer 2'%3E%3Cg id='Page_Elements' data-name='Page Elements'%3E%3Cpath class='cls-1' d='M26.67,44.77H41.88v1.52H25.15V22H38.4l6.52,6.52v5.64H43.4V29.56H37.31V23.48H26.67ZM38.83,28h3.49l-3.49-3.48Zm8,12.13-1.93-1.92v8H43.4v-8l-1.94,1.92L40.39,39.1l3.77-3.77,3.76,3.77Z'/%3E%3Crect class='cls-2' width='70' height='70'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./img/logo-fullscreen.svg":
+/*!*********************************!*\
+  !*** ./img/logo-fullscreen.svg ***!
+  \*********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180.17 208.04'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D.cls-2%7Bfill:%23e0684b;%7D.cls-3%7Bfill:%23bb464b;%7D.cls-4%7Bfill:%23e0ded8;%7D.cls-5%7Bfill:%23d5d2ca;%7D%3C/style%3E%3C/defs%3E%3Ctitle%3EBabylonLogo%3C/title%3E%3Cg id='Layer_2' data-name='Layer 2'%3E%3Cg id='Page_Elements' data-name='Page Elements'%3E%3Cpath class='cls-1' d='M90.09,0,0,52V156l90.09,52,90.08-52V52Z'/%3E%3Cpolygon class='cls-2' points='180.17 52.01 151.97 35.73 124.85 51.39 153.05 67.67 180.17 52.01'/%3E%3Cpolygon class='cls-2' points='27.12 67.67 117.21 15.66 90.08 0 0 52.01 27.12 67.67'/%3E%3Cpolygon class='cls-2' points='61.89 120.3 90.08 136.58 118.28 120.3 90.08 104.02 61.89 120.3'/%3E%3Cpolygon class='cls-3' points='153.05 67.67 153.05 140.37 90.08 176.72 27.12 140.37 27.12 67.67 0 52.01 0 156.03 90.08 208.04 180.17 156.03 180.17 52.01 153.05 67.67'/%3E%3Cpolygon class='cls-3' points='90.08 71.46 61.89 87.74 61.89 120.3 90.08 104.02 118.28 120.3 118.28 87.74 90.08 71.46'/%3E%3Cpolygon class='cls-4' points='153.05 67.67 118.28 87.74 118.28 120.3 90.08 136.58 90.08 176.72 153.05 140.37 153.05 67.67'/%3E%3Cpolygon class='cls-5' points='27.12 67.67 61.89 87.74 61.89 120.3 90.08 136.58 90.08 176.72 27.12 140.37 27.12 67.67'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "./index.ts":
 /*!******************!*\
   !*** ./index.ts ***!
@@ -30195,36 +30740,6 @@ if (typeof globalObject !== "undefined") {
 
 /***/ }),
 
-/***/ "./main.scss":
-/*!*******************!*\
-  !*** ./main.scss ***!
-  \*******************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-
-var content = __webpack_require__(/*! !../../node_modules/css-loader!../../node_modules/sass-loader/dist/cjs.js!./main.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./main.scss");
-
-if(typeof content === 'string') content = [[module.i, content, '']];
-
-var transform;
-var insertInto;
-
-
-
-var options = {"hmr":true}
-
-options.transform = transform
-options.insertInto = undefined;
-
-var update = __webpack_require__(/*! ../../node_modules/style-loader/lib/addStyles.js */ "../../node_modules/style-loader/lib/addStyles.js")(content, options);
-
-if(content.locals) module.exports = content.locals;
-
-if(false) {}
-
-/***/ }),
-
 /***/ "./sandbox.tsx":
 /*!*********************!*\
   !*** ./sandbox.tsx ***!
@@ -30240,17 +30755,99 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-dom */ "../../node_modules/react-dom/index.js");
 /* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _globalState__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./globalState */ "./globalState.ts");
+/* harmony import */ var _components_renderingZone__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./components/renderingZone */ "./components/renderingZone.tsx");
+/* harmony import */ var _components_footer__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./components/footer */ "./components/footer.tsx");
+/* harmony import */ var _tools_environmentTools__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./tools/environmentTools */ "./tools/environmentTools.ts");
 
 
 
-__webpack_require__(/*! ./main.scss */ "./main.scss");
+
+
+
+
+__webpack_require__(/*! ./scss/main.scss */ "./scss/main.scss");
+var fullScreenLogo = __webpack_require__(/*! ./img/logo-fullscreen.svg */ "./img/logo-fullscreen.svg");
 var Sandbox = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Sandbox, _super);
-    function Sandbox() {
-        return _super !== null && _super.apply(this, arguments) || this;
+    function Sandbox(props) {
+        var _this = _super.call(this, props) || this;
+        _this._globalState = new _globalState__WEBPACK_IMPORTED_MODULE_3__["GlobalState"]();
+        _this._logoRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._dropTextRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._clickInterceptorRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this.state = { isFooterVisible: true };
+        _this.checkUrl();
+        _tools_environmentTools__WEBPACK_IMPORTED_MODULE_6__["EnvironmentTools"].HookWithEnvironmentChange(_this._globalState);
+        // Events
+        _this._globalState.onSceneLoaded.add(function (info) {
+            document.title = "Babylon.js - " + info.filename;
+            _this._globalState.currentScene = info.scene;
+            if (_this._globalState.currentScene.meshes.length === 0 && _this._globalState.currentScene.clearColor.r === 1 && _this._globalState.currentScene.clearColor.g === 0 && _this._globalState.currentScene.clearColor.b === 0) {
+                _this._logoRef.current.className = "";
+            }
+            else {
+                _this._logoRef.current.className = "hidden";
+                _this._dropTextRef.current.className = "hidden";
+            }
+        });
+        _this._globalState.onError.add(function (scene) {
+            scene.debugLayer.show();
+        });
+        _this._globalState.onRequestClickInterceptor.add(function () {
+            var div = _this._clickInterceptorRef.current;
+            if (div.classList.contains("hidden")) {
+                div.classList.remove("hidden");
+            }
+            else {
+                div.classList.add("hidden");
+            }
+        });
+        // Keyboard
+        window.addEventListener("keydown", function (event) {
+            // Press space to toggle footer
+            if (event.keyCode === 32 && event.target && event.target.nodeName !== "INPUT") {
+                _this.setState({ isFooterVisible: !_this.state.isFooterVisible });
+            }
+        });
+        return _this;
     }
+    Sandbox.prototype.checkUrl = function () {
+        // Check URL
+        var indexOf = location.href.indexOf("?");
+        if (indexOf !== -1) {
+            var params = location.href.substr(indexOf + 1).split("&");
+            for (var index = 0; index < params.length; index++) {
+                var param = params[index].split("=");
+                var name = param[0];
+                var value = param[1];
+                switch (name) {
+                    case "assetUrl": {
+                        this._assetUrl = value;
+                        break;
+                    }
+                    // case "cameraPosition": {
+                    //     cameraPosition = BABYLON.Vector3.FromArray(value.split(",").map(function(component) { return +component; }));
+                    //     break;
+                    // }
+                    case "kiosk": {
+                        this.state = { isFooterVisible: value === "true" ? false : true };
+                        break;
+                    }
+                }
+            }
+        }
+    };
     Sandbox.prototype.render = function () {
-        return null;
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "root" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", { id: "droptext", ref: this._dropTextRef }, "Drag and drop gltf, glb, obj or babylon files to view them"),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_renderingZone__WEBPACK_IMPORTED_MODULE_4__["RenderingZone"], { globalState: this._globalState, assetUrl: this._assetUrl, expanded: !this.state.isFooterVisible }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { ref: this._clickInterceptorRef, onClick: function () { return _this._globalState.onClickInterceptorClicked.notifyObservers(); }, className: "clickInterceptor hidden" }),
+            this.state.isFooterVisible &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_footer__WEBPACK_IMPORTED_MODULE_5__["Footer"], { globalState: this._globalState }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "logoContainer" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: fullScreenLogo, ref: this._logoRef }))));
     };
     Sandbox.Show = function (hostElement) {
         var sandBox = react__WEBPACK_IMPORTED_MODULE_1__["createElement"](Sandbox, {});
@@ -30260,6 +30857,212 @@ var Sandbox = /** @class */ (function (_super) {
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
+
+/***/ }),
+
+/***/ "./scss/footer.scss":
+/*!**************************!*\
+  !*** ./scss/footer.scss ***!
+  \**************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+var content = __webpack_require__(/*! !../../../node_modules/css-loader!../../../node_modules/sass-loader/dist/cjs.js!./footer.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./scss/footer.scss");
+
+if(typeof content === 'string') content = [[module.i, content, '']];
+
+var transform;
+var insertInto;
+
+
+
+var options = {"hmr":true}
+
+options.transform = transform
+options.insertInto = undefined;
+
+var update = __webpack_require__(/*! ../../../node_modules/style-loader/lib/addStyles.js */ "../../node_modules/style-loader/lib/addStyles.js")(content, options);
+
+if(content.locals) module.exports = content.locals;
+
+if(false) {}
+
+/***/ }),
+
+/***/ "./scss/main.scss":
+/*!************************!*\
+  !*** ./scss/main.scss ***!
+  \************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+var content = __webpack_require__(/*! !../../../node_modules/css-loader!../../../node_modules/sass-loader/dist/cjs.js!./main.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./scss/main.scss");
+
+if(typeof content === 'string') content = [[module.i, content, '']];
+
+var transform;
+var insertInto;
+
+
+
+var options = {"hmr":true}
+
+options.transform = transform
+options.insertInto = undefined;
+
+var update = __webpack_require__(/*! ../../../node_modules/style-loader/lib/addStyles.js */ "../../node_modules/style-loader/lib/addStyles.js")(content, options);
+
+if(content.locals) module.exports = content.locals;
+
+if(false) {}
+
+/***/ }),
+
+/***/ "./scss/renderingZone.scss":
+/*!*********************************!*\
+  !*** ./scss/renderingZone.scss ***!
+  \*********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+var content = __webpack_require__(/*! !../../../node_modules/css-loader!../../../node_modules/sass-loader/dist/cjs.js!./renderingZone.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./scss/renderingZone.scss");
+
+if(typeof content === 'string') content = [[module.i, content, '']];
+
+var transform;
+var insertInto;
+
+
+
+var options = {"hmr":true}
+
+options.transform = transform
+options.insertInto = undefined;
+
+var update = __webpack_require__(/*! ../../../node_modules/style-loader/lib/addStyles.js */ "../../node_modules/style-loader/lib/addStyles.js")(content, options);
+
+if(content.locals) module.exports = content.locals;
+
+if(false) {}
+
+/***/ }),
+
+/***/ "./tools/environmentTools.ts":
+/*!***********************************!*\
+  !*** ./tools/environmentTools.ts ***!
+  \***********************************/
+/*! exports provided: EnvironmentTools */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "EnvironmentTools", function() { return EnvironmentTools; });
+/* harmony import */ var babylonjs_Materials_Textures_hdrCubeTexture__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Textures/hdrCubeTexture */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Textures_hdrCubeTexture__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Textures_hdrCubeTexture__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _localStorageHelper__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./localStorageHelper */ "./tools/localStorageHelper.ts");
+
+
+
+
+var EnvironmentTools = /** @class */ (function () {
+    function EnvironmentTools() {
+    }
+    EnvironmentTools.LoadSkyboxPathTexture = function (scene) {
+        var defaultSkyboxIndex = _localStorageHelper__WEBPACK_IMPORTED_MODULE_1__["LocalStorageHelper"].ReadLocalStorageValue("defaultSkyboxId", 0);
+        var path = this.SkyboxPath || this.Skyboxes[defaultSkyboxIndex];
+        if (path.indexOf(".hdr") === (path.length - 4)) {
+            return new babylonjs_Materials_Textures_hdrCubeTexture__WEBPACK_IMPORTED_MODULE_0__["HDRCubeTexture"](path, scene, 256, false, true, false, true);
+        }
+        return babylonjs_Materials_Textures_hdrCubeTexture__WEBPACK_IMPORTED_MODULE_0__["CubeTexture"].CreateFromPrefilteredData(path, scene);
+    };
+    EnvironmentTools.HookWithEnvironmentChange = function (globalState) {
+        var _this = this;
+        globalState.onEnvironmentChanged.add(function (option) {
+            _this.SkyboxPath = "";
+            var index = EnvironmentTools.SkyboxesNames.indexOf(option);
+            if (typeof (Storage) !== "undefined") {
+                localStorage.setItem("defaultSkyboxId", index.toString());
+            }
+            var currentScene = babylonjs_Materials_Textures_hdrCubeTexture__WEBPACK_IMPORTED_MODULE_0__["Engine"].LastCreatedScene;
+            currentScene.environmentTexture = _this.LoadSkyboxPathTexture(currentScene);
+            for (var i = 0; i < currentScene.materials.length; i++) {
+                var material = currentScene.materials[i];
+                if (material.name === "skyBox") {
+                    var reflectionTexture = material.reflectionTexture;
+                    if (reflectionTexture && reflectionTexture.coordinatesMode === BABYLON.Texture.SKYBOX_MODE) {
+                        material.reflectionTexture = currentScene.environmentTexture.clone();
+                        if (material.reflectionTexture) {
+                            material.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+                        }
+                    }
+                }
+            }
+        });
+    };
+    EnvironmentTools.SkyboxPath = "";
+    EnvironmentTools.Skyboxes = [
+        "https://assets.babylonjs.com/environments/environmentSpecular.env",
+        "https://assets.babylonjs.com/environments/studio.env",
+    ];
+    EnvironmentTools.SkyboxesNames = [
+        "Default",
+        "Studio",
+    ];
+    return EnvironmentTools;
+}());
+
+
+
+/***/ }),
+
+/***/ "./tools/localStorageHelper.ts":
+/*!*************************************!*\
+  !*** ./tools/localStorageHelper.ts ***!
+  \*************************************/
+/*! exports provided: LocalStorageHelper */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LocalStorageHelper", function() { return LocalStorageHelper; });
+var LocalStorageHelper = /** @class */ (function () {
+    function LocalStorageHelper() {
+    }
+    LocalStorageHelper.ReadLocalStorageValue = function (key, defaultValue) {
+        if (typeof (Storage) !== "undefined" && localStorage.getItem(key) !== null) {
+            return parseInt(localStorage.getItem(key));
+        }
+        return defaultValue;
+    };
+    return LocalStorageHelper;
+}());
+
+
+
+/***/ }),
+
+/***/ "babylonjs-loaders/glTF/index":
+/*!****************************************************************************************************************************!*\
+  !*** external {"root":"BABYLON","commonjs":"babylonjs-loaders","commonjs2":"babylonjs-loaders","amd":"babylonjs-loaders"} ***!
+  \****************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__;
+
+/***/ }),
+
+/***/ "babylonjs/Misc/observable":
+/*!****************************************************************************************************!*\
+  !*** external {"root":"BABYLON","commonjs":"babylonjs","commonjs2":"babylonjs","amd":"babylonjs"} ***!
+  \****************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__;
 
 /***/ })
 
