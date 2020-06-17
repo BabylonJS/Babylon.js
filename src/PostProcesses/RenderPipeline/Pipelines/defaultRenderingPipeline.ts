@@ -571,8 +571,8 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
             this._setAutoClearAndTextureSharing(this.bloom._effects[0], true);
         }
 
-        this.imageProcessing.imageProcessingConfiguration.isEnabled = this._imageProcessingEnabled;
         if (this._imageProcessingEnabled) {
+            this.imageProcessing = new ImageProcessingPostProcess("imageProcessing", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
             if (this._hdr) {
                 this.addEffect(new PostProcessRenderEffect(engine, this.ImageProcessingPostProcessId, () => { return this.imageProcessing; }, true));
                 this._setAutoClearAndTextureSharing(this.imageProcessing);
@@ -629,16 +629,16 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
         for (var i = 0; i < this._cameras.length; i++) {
             var camera = this._cameras[i];
 
+            if (this.imageProcessing) {
+                this.imageProcessing.dispose(camera);
+            }
+
             if (this.fxaa) {
                 this.fxaa.dispose(camera);
             }
 
             // These are created in the constructor and should not be disposed on every pipeline change
             if (disposeNonRecreated) {
-                if (this.imageProcessing) {
-                    this.imageProcessing.dispose(camera);
-                }
-
                 if (this.sharpen) {
                     this.sharpen.dispose(camera);
                 }
@@ -665,10 +665,10 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
             }
         }
 
+        (<any>this.imageProcessing) = null;
         (<any>this.fxaa) = null;
 
         if (disposeNonRecreated) {
-            (<any>this.imageProcessing) = null;
             (<any>this.sharpen) = null;
             (<any>this._sharpenEffect) = null;
             (<any>this.depthOfField) = null;
