@@ -10,7 +10,6 @@ declare module "../../Engines/thinEngine" {
         /**
          * Unbind a list of render target textures from the webGL context
          * This is used only when drawBuffer extension or webGL2 are active
-         * @param count number of color textures
          * @param textures defines the render target textures to unbind
          * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
          * @param onBeforeUnbind defines a function which will be called before the effective unbind
@@ -29,7 +28,6 @@ declare module "../../Engines/thinEngine" {
         /**
          * Update the sample count for a given multiple render target texture
          * @see http://doc.babylonjs.com/features/webgl2#multisample-render-targets
-         * @param count number of color textures
          * @param textures defines the textures to update
          * @param samples defines the sample count to set
          * @returns the effective sample count (could be 0 if multisample render targets are not supported)
