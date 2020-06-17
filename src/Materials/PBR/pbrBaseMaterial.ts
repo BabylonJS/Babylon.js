@@ -806,7 +806,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Defines the SubSurface parameters for the material.
      */
-    public readonly subSurface = new PBRSubSurfaceConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this), this._markScenePrePassDirty.bind(this));
+    public readonly subSurface : PBRSubSurfaceConfiguration;
 
     /**
      * Defines the detail map parameters for the material.
@@ -840,6 +840,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         };
 
         this._environmentBRDFTexture = BRDFTextureTools.GetEnvironmentBRDFTexture(scene);
+        this.subSurface = new PBRSubSurfaceConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this), this._markScenePrePassDirty.bind(this), scene);
     }
 
     /**

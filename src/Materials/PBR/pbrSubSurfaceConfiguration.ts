@@ -72,12 +72,26 @@ export class PBRSubSurfaceConfiguration {
     @expandToProperty("_markScenePrePassDirty")
     public isScatteringEnabled = false;
 
+    @serialize()
+    private _scatteringDiffusionProfileIndex = 0;
+
     /**
      * Diffusion profile for subsurface scattering.
      * Useful for better scattering in the skins or foliages.
      */
-    @serialize()
-    public scatteringDiffusionProfileIndex = 0;
+    public get scatteringDiffusionProfile() {
+        return this._scene.ssDiffusionProfileColors[this._scatteringDiffusionProfileIndex];
+    }
+
+    public set scatteringDiffusionProfile(c: Color3) {
+        if (!this._scene.enablePrePassRenderer()) {
+            // Not supported
+            return;
+        }
+
+        // addDiffusionProfile automatically checks for doubles
+        this._scatteringDiffusionProfileIndex = this._scene.prePassRenderer!.addDiffusionProfile(c);
+    }
 
     /**
      * Defines the refraction intensity of the material.
@@ -229,6 +243,8 @@ export class PBRSubSurfaceConfiguration {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useMaskFromThicknessTexture: boolean = false;
 
+    private _scene: Scene;
+
     /** @hidden */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
     private _internalMarkScenePrePassDirty: () => void;
@@ -247,9 +263,10 @@ export class PBRSubSurfaceConfiguration {
      * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
      * @param markScenePrePassDirty Callback to flag the scene as prepass dirty
      */
-    constructor(markAllSubMeshesAsTexturesDirty: () => void, markScenePrePassDirty: () => void) {
+    constructor(markAllSubMeshesAsTexturesDirty: () => void, markScenePrePassDirty: () => void, scene: Scene) {
         this._internalMarkAllSubMeshesAsTexturesDirty = markAllSubMeshesAsTexturesDirty;
         this._internalMarkScenePrePassDirty = markScenePrePassDirty;
+        this._scene = scene;
     }
 
     /**
@@ -379,7 +396,7 @@ export class PBRSubSurfaceConfiguration {
             }
 
             if (this.isScatteringEnabled) {
-                uniformBuffer.updateFloat("scatteringDiffusionProfile", this.scatteringDiffusionProfileIndex);
+                uniformBuffer.updateFloat("scatteringDiffusionProfile", this._scatteringDiffusionProfileIndex);
             }
             uniformBuffer.updateColor3("vDiffusionDistance", this.diffusionDistance);
 
