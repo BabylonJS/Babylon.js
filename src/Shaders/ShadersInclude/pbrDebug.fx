@@ -160,7 +160,8 @@ if (vClipSpacePosition.x / vClipSpacePosition.w >= vDebugMode.x) {
 
     gl_FragColor.a = 1.0;
     #ifdef PREPASS
-        gl_FragData[0] = gl_FragColor;
+        gl_FragData[0] = toLinearSpace(gl_FragColor); // linear to cancel gamma transform in prepass
+        gl_FragData[1] = vec4(0., 0., 0., 0.); // tag as no SSS
     #endif
     return;
 }
