@@ -32,7 +32,8 @@ export class GlobalState {
     public glTFLoaderDefaults: { [key: string]: any } = { "validate": true };
 
     public blockMutationUpdates = false;
-    public selectedLineContainerTitles:Array<string> = [];
+    public selectedLineContainerTitles:Array<string> = [];    
+    public selectedLineContainerTitlesNoFocus:Array<string> = [];
 
     public recorder = new ReplayRecorder();
 
@@ -111,7 +112,7 @@ export class GlobalState {
             this.onValidationResultsUpdatedObservable.notifyObservers(results);
 
             if (results.issues.numErrors || results.issues.numWarnings) {
-                Inspector.MarkLineContainerTitleForHighlighting("GLTF VALIDATION");
+                this.selectedLineContainerTitlesNoFocus.push("GLTF VALIDATION");
                 this.onTabChangedObservable.notifyObservers(3);
             }
         });
