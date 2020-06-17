@@ -334,9 +334,8 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
         if (this._imageProcessingEnabled === enabled) {
             return;
         }
-        this._imageProcessingEnabled = enabled;
 
-        this._buildPipeline();
+        this._scene.imageProcessingConfiguration.isEnabled = enabled;
     }
 
     @serialize()
@@ -460,6 +459,11 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
 
         this._imageProcessingConfigurationObserver = this._scene.imageProcessingConfiguration.onUpdateParameters.add(() => {
             this.bloom._downscale._exposure = this._scene.imageProcessingConfiguration.exposure;
+
+            if (this.imageProcessingEnabled !== this._scene.imageProcessingConfiguration.isEnabled) {
+                this._imageProcessingEnabled = this._scene.imageProcessingConfiguration.isEnabled;
+                this._buildPipeline();
+            }
         });
 
         this._buildPipeline();
