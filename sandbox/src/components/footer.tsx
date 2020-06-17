@@ -28,18 +28,12 @@ export class Footer extends React.Component<IFooterProps> {
     showInspector() {
         if (this.props.globalState.currentScene) {
             if (this.props.globalState.currentScene.debugLayer.isVisible()) {
-                this.props.globalState.currentScene.debugLayer.hide();
+                this.props.globalState.hideDebugLayer();
             }
             else {
-                this.props.globalState.currentScene.debugLayer.show();
+                this.props.globalState.showDebugLayer();
             }
-
-            // TODO: keep the inspector opens
         }
-    }
-
-    onFilesPicked(files: FileList) {
-        
     }
 
     render() {
@@ -49,6 +43,13 @@ export class Footer extends React.Component<IFooterProps> {
                     <img id="logoImg" src={babylonIdentity}/>
                 </div>
                 <div className="footerRight">
+                    <FooterFileButton globalState={this.props.globalState} 
+                                enabled={true}
+                                icon={iconOpen}
+                                onFilesPicked={(evt, files) => {
+                                    this.props.globalState.filesInput.loadFiles(evt);
+                                }}
+                                label="Open your scene from your hard drive (.babylon, .gltf, .glb, .obj)"/>
                     <DropUpButton globalState={this.props.globalState} 
                                     icon={iconIBL}
                                     label="Select environment"
@@ -60,15 +61,6 @@ export class Footer extends React.Component<IFooterProps> {
                                     label="Display inspector"
                                     onClick={() => this.showInspector()}
                                     enabled={!!this.props.globalState.currentScene}/>
-                    <FooterFileButton globalState={this.props.globalState} 
-                                enabled={true}
-                                icon={iconOpen}
-                                onFilesPicked={files => {
-                                    if (files) {
-                                        this.onFilesPicked(files);
-                                    }
-                                }}
-                                label="Open your scene from your hard drive (.babylon, .gltf, .glb, .obj)"/>
                 </div>
             </div>
         )

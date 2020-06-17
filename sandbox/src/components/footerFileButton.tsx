@@ -6,13 +6,13 @@ interface IFooterFileButtonProps {
     enabled: boolean;
     icon: any;
     label: string;
-    onFilesPicked: (files: FileList | null) => void;
+    onFilesPicked: (evt: Event,files: FileList | null) => void;
 }
 
 export class FooterFileButton extends React.Component<IFooterFileButtonProps> {
 
     onFilePicked(evt: React.ChangeEvent<HTMLInputElement>) {
-        this.props.onFilesPicked(evt.target.files);
+        this.props.onFilesPicked(evt.nativeEvent, evt.target.files);
     }
 
     public render() {

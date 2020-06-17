@@ -11,6 +11,7 @@ import { FramingBehavior } from 'babylonjs/Behaviors/Cameras/framingBehavior';
 import { EnvironmentTools } from '../tools/environmentTools';
 import { Tools } from 'babylonjs/Misc/tools';
 import { FilesInput } from 'babylonjs/Misc/filesInput';
+import {Animation} from 'babylonjs/Animations/animation';
 
 require("../scss/renderingZone.scss");
 
@@ -51,7 +52,16 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 this.onSceneLoaded(sceneFile.name);
             },
             null, null, null, 
-            () => Tools.ClearLogCache(), null, null);
+            () => {
+                Tools.ClearLogCache();
+                if (this._scene) {
+                    this.props.globalState.isDebugLayerEnabled = this.props.globalState.currentScene.debugLayer.isVisible();
+
+                    if (this.props.globalState.isDebugLayerEnabled) {
+                        this._scene.debugLayer.hide();
+                    }
+                }
+            }, null, null);
 
         filesInput.onProcessFileCallback = (file, name, extension) => {
             if (filesInput.filesToLoad && filesInput.filesToLoad.length === 1 && extension) {
@@ -116,16 +126,14 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     }
 
     handleErrors() {
-        let debugLayerEnabled = false;
-
         // In case of error during loading, meshes will be empty and clearColor is set to red
         if (this._scene.meshes.length === 0 && this._scene.clearColor.r === 1 && this._scene.clearColor.g === 0 && this._scene.clearColor.b === 0) {
             this._canvas.style.opacity = "0";
-            debugLayerEnabled = true;
+            this.props.globalState.onError.notifyObservers({scene: this._scene, message: "No mesh found in your scene"});
         }
         else {
             if (Tools.errorsCount > 0) {
-                debugLayerEnabled = true;
+                this.props.globalState.onError.notifyObservers({scene: this._scene, message: "Scene loaded but several errors were found"});
             }
         //    this._canvas.style.opacity = "1";
             let camera = this._scene.activeCamera! as ArcRotateCamera;
@@ -138,11 +146,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 camera.keysRight.push(69); // E
                 camera.keysRight.push(68); // D
             }
-        }
-
-        if (debugLayerEnabled) {
-            this.props.globalState.onError.notifyObservers({scene: this._scene, message: ""});
-        }        
+        }      
     }
 
     prepareLighting() {
@@ -151,7 +155,9 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 this._scene.environmentTexture = EnvironmentTools.LoadSkyboxPathTexture(this._scene);
             }
 
-            this._scene.createDefaultSkybox(this._scene.environmentTexture, true, (this._scene.activeCamera!.maxZ - this._scene.activeCamera!.minZ) / 2, 0.3, false);
+            if (this._scene.environmentTexture) {
+                this._scene.createDefaultSkybox(this._scene.environmentTexture, true, (this._scene.activeCamera!.maxZ - this._scene.activeCamera!.minZ) / 2, 0.3, false);
+            }
         }
         else {
             var pbrPresent = false;
@@ -183,12 +189,16 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         this.prepareCamera();
         this.prepareLighting();
         this.handleErrors();
+
+        if (this.props.globalState.isDebugLayerEnabled) {
+            this.props.globalState.showDebugLayer();
+        }
     }
 
     loadAssetFromUrl() {
         let assetUrl = this.props.assetUrl!;
-        let rootUrl = BABYLON.Tools.GetFolderPath(assetUrl);
-        let fileName = BABYLON.Tools.GetFilename(assetUrl);
+        let rootUrl = Tools.GetFolderPath(assetUrl);
+        let fileName = Tools.GetFilename(assetUrl);
         SceneLoader.LoadAsync(rootUrl, fileName, this._engine).then((scene) => {
             if (this._scene) {
                 this._scene.dispose();
@@ -203,7 +213,8 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                     scene.render();
                 });
             });
-        }).catch(function(reason) {
+        }).catch((reason) => {
+            this.props.globalState.onError.notifyObservers({ message : reason.message});
             //TODO sceneError({ name: fileName }, null, reason.message || reason);
         });
     }
@@ -223,7 +234,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         Engine.ShadersRepository = "/src/Shaders/";
 
         // This is really important to tell Babylon.js to use decomposeLerp and matrix interpolation
-        BABYLON.Animation.AllowMatricesInterpolation = true;
+        Animation.AllowMatricesInterpolation = true;
     
         // Setting up some GLTF values
         GLTFFileLoader.IncrementalLoading = false;
@@ -232,7 +243,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             if (this._currentPluginName === "gltf") {
                 (plugin as GLTFFileLoader).onValidatedObservable.add((results) =>{
                     if (results.issues.numErrors > 0) {
-                        // TODO debugLayerEnabled = true;
+                        this.props.globalState.showDebugLayer();
                     }
                 });
             }

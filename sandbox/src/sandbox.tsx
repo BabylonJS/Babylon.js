@@ -4,6 +4,7 @@ import { GlobalState } from './globalState';
 import { RenderingZone } from './components/renderingZone';
 import { Footer } from './components/footer';
 import { EnvironmentTools } from './tools/environmentTools';
+import { Vector3 } from 'babylonjs/Maths/math.vector';
 
 require("./scss/main.scss");
 var fullScreenLogo = require("./img/logo-fullscreen.svg");
@@ -13,7 +14,8 @@ interface ISandboxProps {
 
 export class Sandbox extends React.Component<ISandboxProps, {isFooterVisible: boolean, errorMessage: string}> {
     private _globalState: GlobalState;
-    private _assetUrl?: string;
+    private _assetUrl?: string;    
+    private _cameraPosition?: Vector3;
     private _logoRef: React.RefObject<HTMLImageElement>;    
     private _dropTextRef: React.RefObject<HTMLDivElement>;
     private _clickInterceptorRef: React.RefObject<HTMLDivElement>;
@@ -47,7 +49,7 @@ export class Sandbox extends React.Component<ISandboxProps, {isFooterVisible: bo
 
         this._globalState.onError.add(error => {
             if (error.scene) {
-                error.scene.debugLayer.show();
+                this._globalState.showDebugLayer();
             }
 
             if (error.message) {
@@ -88,10 +90,10 @@ export class Sandbox extends React.Component<ISandboxProps, {isFooterVisible: bo
                         this._assetUrl = value;
                         break;
                     }
-                    // case "cameraPosition": {
-                    //     cameraPosition = BABYLON.Vector3.FromArray(value.split(",").map(function(component) { return +component; }));
-                    //     break;
-                    // }
+                    case "cameraPosition": {
+                        this._cameraPosition = Vector3.FromArray(value.split(",").map(function(component) { return +component; }));
+                        break;
+                    }
                     case "kiosk": {
                         this.state = {isFooterVisible: value === "true" ? false : true, errorMessage: ""};
                         break;
@@ -101,12 +103,20 @@ export class Sandbox extends React.Component<ISandboxProps, {isFooterVisible: bo
         }
     }
 
+    componentDidUpdate() {
+        this._assetUrl = undefined;
+        this._cameraPosition = undefined;
+    }
+
     public render() {
 
         return (
             <div id="root">
                 <p id="droptext" ref={this._dropTextRef}>Drag and drop gltf, glb, obj or babylon files to view them</p>
-                <RenderingZone globalState={this._globalState} assetUrl={this._assetUrl} expanded={!this.state.isFooterVisible}/>                
+                <RenderingZone globalState={this._globalState} 
+                    assetUrl={this._assetUrl} 
+                    cameraPosition={this._cameraPosition} 
+                    expanded={!this.state.isFooterVisible}/>                
                 <div ref={this._clickInterceptorRef} 
                     onClick={() => this._globalState.onClickInterceptorClicked.notifyObservers()}
                     className="clickInterceptor hidden"></div>

@@ -17,6 +17,7 @@
         padding-left: 40px;
         align-content: center; 
         overflow: hidden;
+
         #logoImg {
             height: var(--footer-height);
             width: 161px;
@@ -60,6 +61,33 @@
             bottom: var(--footer-height);
             right: 0px;     
             z-index: 100;
+
+            div  {
+                background-color: var(--button-hover-color);
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                font-size: var(--font-size);
+                width: calc(2 * var(--footer-height));
+                color: white;
+                cursor: pointer;
+                height: 40px;
+                box-sizing: border-box;
+                padding: 0;
+                margin: 0;
+                display: grid;
+                align-content: center;
+                justify-content: center;
+            
+                &:hover {
+                    background-color: var(--button-hover-hover); 
+                    transition: all 0.3s ease;
+                }
+                &:active {
+                    background-color: var(--button-hover-background);
+                    transition: all 0.3s ease;
+                }
+            }
         }    
         
         .custom-upload {
