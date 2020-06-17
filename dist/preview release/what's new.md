@@ -9,7 +9,7 @@
 - Reflection probes can now be used to give accurate shading with PBR ([CraigFeldpsar](https://github.com/craigfeldspar) and ([Sebavan](https://github.com/sebavan/)))
 - Added SubSurfaceScattering on PBR materials ([CraigFeldpsar](https://github.com/craigfeldspar) and ([Sebavan](https://github.com/sebavan/)))
 - Added editing of PBR materials, Post processes and Particle fragment shaders in the node material editor ([Popov72](https://github.com/Popov72))
-- Added Curve editor to manage entity's animations and edit animation groups in Inspector ([pixelspace](https://github.com/devpixelspace))
+- Added Curve editor to manage selected entity's animations and edit animation groups in Inspector ([pixelspace](https://github.com/devpixelspace))
 - Added support in `ShadowGenerator` for fast fake soft transparent shadows ([Popov72](https://github.com/Popov72))
 - Added support for **thin instances** for faster mesh instances. [Doc](https://doc.babylonjs.com/how_to/how_to_use_thininstances) ([Popov72](https://github.com/Popov72))
 
@@ -28,6 +28,7 @@
 - Added `boundingBoxRenderer.onBeforeBoxRenderingObservable` and `boundingBoxRenderer.onAfterBoxRenderingObservable` ([Deltakosh](https://github.com/deltakosh))
 - Added initial code for user facing DeviceSourceManager ([PolygonalSun](https://github.com/PolygonalSun))
 - Added a Simple and advanced timer, based on observables ([RaananW](https://github.com/RaananW))
+- Don't log a message in `CustomProceduralTexture` if the `texturePath` is not a JSON path ([Popov72](https://github.com/Popov72))
 
 ### Engine
 
@@ -116,6 +117,7 @@
 - Added to `StandardMaterial` RGBD ReflectionTexture, RefractionTexture and LightmapTexture support. ([MackeyK24](https://github.com/MackeyK24))
 - Allow using the single comment syntax `// comment` in a `#if` construct in shader code ([Popov72](https://github.com/Popov72))
 - Added the possibility to update the shader code before being compiled ([Popov72](https://github.com/Popov72))
+- Added the `shadowOnly` property to the `BackgroundMaterial` class ([Popov72](https://github.com/Popov72))
 
 ### WebXR
 
@@ -231,6 +233,8 @@
 - Fixed `Mesh.subdivide` where one face could be lost depending on the number of subdivision ([Popov72](https://github.com/Popov72))
 - Fixed `AssetContainer.instantiateModelsToScene` with cloneMaterials=true and MultiMaterials to properly set the cloned submaterials ([ghempton](https://github.com/ghempton))
 - Fixed MSAA fail on MultiRenderTarget textures ([CraigFeldpsar](https://github.com/craigfeldspar)
+- Fixed wrong display when setting `DefaultRenderingPipeline.imageProcessingEnabled` to `false` ([Popov72](https://github.com/Popov72))
+- Fix crash when loading a .obj file with vertex colors ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
@@ -239,3 +243,4 @@
 - HDRCubeTexture default rotation is now similar to the industry one. You might need to add a rotation on y of 90 degrees if you scene changes ([Sebavan](https://github.com/sebavan/))
 - PBRMaterial index of refraction is now defined as index of refraction and not the inverse of it ([Sebavan](https://github.com/sebavan/))
 - `SceneLoaderProgress` class is now `ISceneLoaderProgress` interface ([bghgary](https://github.com/bghgary))
+- Rendering of transparent meshes: stencil state is now set to the value registered in the engine instead of being set to `false` unconditionally ([Popov72](https://github.com/Popov72))

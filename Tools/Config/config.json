@@ -47,7 +47,8 @@
         "serializers",
         "gui",
         "inspector",
-        "nodeEditor"
+        "nodeEditor",
+        "sandbox"
     ],
     "es6modules": [
         "core",
@@ -59,7 +60,8 @@
         "gui",
         "inspector",
         "viewer",
-        "nodeEditor"
+        "nodeEditor",
+        "sandbox"
     ],
     "lintModules": [
         "core",
@@ -633,6 +635,54 @@
                 ],
                 "typings": "babylon.nodeEditor.module.d.ts",
                 "index": "babylon.nodeEditor.max.js"
+            }
+        }
+    },
+    "sandbox": {
+        "libraries": [
+            {
+                "output": "babylon.sandbox.js",
+                "entry": "./legacy/legacy.ts"
+            }
+        ],
+        "build": {            
+            "ignoreInWorkerMode": true,
+            "ignoreInTestMode": true,
+            "mainFolder": "./sandbox/",
+            "uncheckedLintImports": [
+                "react",
+                "react-dom"
+            ],
+            "umd": {
+                "packageName": "babylonjs-sandbox",
+                "webpackRoot": "SANDBOX",
+                "processDeclaration": {
+                    "filename": "babylon.sandbox.module.d.ts",
+                    "moduleName": "SANDBOX",
+                    "importsToRemove": [],
+                    "classMap": {
+                        "babylonjs": "BABYLON",
+                        "react": "React",
+                        "@babylonjs/core": "BABYLON",
+                        "@fortawesome": false
+                    }
+                }
+            },
+            "es6": {
+                "webpackBuild": true,
+                "buildDependencies": [
+                    "Tools/**/*"
+                ],
+                "packageName": "@babylonjs/sandbox",
+                "readme": "dist/preview release/sandbox/readme-es6.md",
+                "packagesFiles": [
+                    "babylon.sandbox.max.js",
+                    "babylon.sandbox.max.js.map",
+                    "babylon.sandbox.module.d.ts",
+                    "readme.md"
+                ],
+                "typings": "babylon.sandbox.module.d.ts",
+                "index": "babylon.sandbox.max.js"
             }
         }
     },
