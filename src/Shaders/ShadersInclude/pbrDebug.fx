@@ -159,6 +159,9 @@ if (vClipSpacePosition.x / vClipSpacePosition.w >= vDebugMode.x) {
     #endif
 
     gl_FragColor.a = 1.0;
+    #ifdef PREPASS
+        gl_FragData[0] = gl_FragColor;
+    #endif
     return;
 }
 #endif
