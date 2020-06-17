@@ -10,10 +10,9 @@ import { Color3 } from 'babylonjs/Maths/math.color';
 const NAME = "KHR_materials_sheen";
 
 interface IKHR_materials_sheen {
-    intensityFactor: number;
-    colorFactor: number[];
-    colorIntensityTexture: ITextureInfo;
-    roughnessFactor: number;
+    sheenColorFactor: number[];
+    sheenTexture: ITextureInfo;
+    sheenRoughnessFactor: number;
 }
 
 /**
@@ -68,27 +67,24 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
         const promises = new Array<Promise<any>>();
 
         babylonMaterial.sheen.isEnabled = true;
+        babylonMaterial.sheen.intensity = 1;
 
-        if (properties.intensityFactor != undefined) {
-            babylonMaterial.sheen.intensity = properties.intensityFactor;
+        if (properties.sheenColorFactor != undefined) {
+            babylonMaterial.sheen.color = Color3.FromArray(properties.sheenColorFactor);
         }
         else {
-            babylonMaterial.sheen.intensity = 0;
+            babylonMaterial.sheen.color = Color3.Black();
         }
 
-        if (properties.colorFactor != undefined) {
-            babylonMaterial.sheen.color = Color3.FromArray(properties.colorFactor);
-        }
-
-        if (properties.colorIntensityTexture) {
-            promises.push(this._loader.loadTextureInfoAsync(`${context}/sheenTexture`, properties.colorIntensityTexture, (texture) => {
-                texture.name = `${babylonMaterial.name} (Sheen Intensity)`;
+        if (properties.sheenTexture) {
+            promises.push(this._loader.loadTextureInfoAsync(`${context}/sheenTexture`, properties.sheenTexture, (texture) => {
+                texture.name = `${babylonMaterial.name} (Sheen Color)`;
                 babylonMaterial.sheen.texture = texture;
             }));
         }
 
-        if (properties.roughnessFactor !== undefined) {
-            babylonMaterial.sheen.roughness = properties.roughnessFactor;
+        if (properties.sheenRoughnessFactor !== undefined) {
+            babylonMaterial.sheen.roughness = properties.sheenRoughnessFactor;
         } else {
             babylonMaterial.sheen.roughness = 0;
         }

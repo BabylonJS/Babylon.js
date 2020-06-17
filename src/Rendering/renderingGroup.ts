@@ -149,6 +149,7 @@ export class RenderingGroup {
 
         // Transparent
         if (this._transparentSubMeshes.length !== 0) {
+            engine.setStencilBuffer(stencilState);
             this._renderTransparent(this._transparentSubMeshes);
             engine.setAlphaMode(Constants.ALPHA_DISABLE);
         }

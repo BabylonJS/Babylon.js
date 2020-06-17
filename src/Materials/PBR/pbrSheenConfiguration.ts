@@ -61,7 +61,7 @@ export class PBRSheenConfiguration {
     /**
      * Stores the sheen tint values in a texture.
      * rgb is tint
-     * a is a intensity
+     * a is a intensity or roughness if roughness has been defined
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
