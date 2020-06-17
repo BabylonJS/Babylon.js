@@ -297,7 +297,7 @@ export class PrePassRenderer {
         if (this.ssDiffusionD.length >= 5) {
             // We only suppport 5 diffusion profiles
             Logger.Error("You already reached the maximum number of diffusion profiles.");
-            return -1;
+            return 0; // default profile
         }
 
         // Do not add doubles
