@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { Vector2 } from 'babylonjs/Maths/math.vector';
 
 interface IPlayheadProps {
   frame: number;
