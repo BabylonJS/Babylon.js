@@ -227,6 +227,7 @@
 - Fixed `DracoCompression` to not load empty data into attributes ([bghgary](https://github.com/bghgary))
 - Fixed `Mesh.subdivide` where one face could be lost depending on the number of subdivision ([Popov72](https://github.com/Popov72))
 - Fixed `AssetContainer.instantiateModelsToScene` with cloneMaterials=true and MultiMaterials to properly set the cloned submaterials ([ghempton](https://github.com/ghempton))
+- Fix crash when loading a .obj file with vertex colors ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
