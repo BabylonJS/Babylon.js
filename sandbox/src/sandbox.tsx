@@ -118,7 +118,10 @@ export class Sandbox extends React.Component<ISandboxProps, {isFooterVisible: bo
                     cameraPosition={this._cameraPosition} 
                     expanded={!this.state.isFooterVisible}/>                
                 <div ref={this._clickInterceptorRef} 
-                    onClick={() => this._globalState.onClickInterceptorClicked.notifyObservers()}
+                    onClick={() => {
+                        this._globalState.onClickInterceptorClicked.notifyObservers();
+                        this._clickInterceptorRef.current!.classList.add("hidden");
+                    }}
                     className="clickInterceptor hidden"></div>
                 {
                     this.state.isFooterVisible &&
