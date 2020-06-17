@@ -262,6 +262,7 @@ export class PBRSubSurfaceConfiguration {
      * Instantiate a new istance of sub surface configuration.
      * @param markAllSubMeshesAsTexturesDirty Callback to flag the material to dirty
      * @param markScenePrePassDirty Callback to flag the scene as prepass dirty
+     * @param scene The scene
      */
     constructor(markAllSubMeshesAsTexturesDirty: () => void, markScenePrePassDirty: () => void, scene: Scene) {
         this._internalMarkAllSubMeshesAsTexturesDirty = markAllSubMeshesAsTexturesDirty;
