@@ -6153,7 +6153,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../../../../node_mod
 
 
 // module
-exports.push([module.i, "#animation-curve-editor {\n  font-family: acumin-pro-condensed; }\n  #animation-curve-editor .last {\n    margin-left: 3px; }\n  #animation-curve-editor .icon {\n    width: 40px;\n    height: 40px; }\n    #animation-curve-editor .icon.medium {\n      width: 30px;\n      height: 30px; }\n    #animation-curve-editor .icon.small {\n      width: 20px;\n      height: 20px; }\n    #animation-curve-editor .icon.babylon-logo {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/babylonLogo.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/babylonLogo.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain; }\n    #animation-curve-editor .icon.close {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/closeWindowIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/closeWindowIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.auto-tangent {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/autoTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/autoTangentIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.break-tangent {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/breakTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/breakTangentIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.flat-tangent {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/flatTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/flatTangentIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.frame {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/frameIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/frameIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.linear-tangent {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/linearTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/linearTangentIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.unify-tangent {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/unifyTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/unifyTangentIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.add-animation {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/addAnimationIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/addAnimationIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.animation-bullet {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationBulletIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationBulletIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.animation-delete {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationDeleteIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationDeleteIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.animation-edit {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/editIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/editIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.animation-end {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationEndIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationEndIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      width: 20px;\n      cursor: pointer;\n      background-position: center; }\n    #animation-curve-editor .icon.animation-lastkey {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationLastKeyIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationLastKeyIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      width: 20px;\n      cursor: pointer;\n      background-position: center; }\n      #animation-curve-editor .icon.animation-lastkey:hover {\n        background-image: url(" + escape(__webpack_require__(/*! ./assets/animationLastKeyHoverIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationLastKeyHoverIcon.svg")) + "); }\n    #animation-curve-editor .icon.animation-nextkey {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationNextKeyIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationNextKeyIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      width: 20px;\n      cursor: pointer;\n      background-position: center; }\n      #animation-curve-editor .icon.animation-nextkey:hover {\n        background-image: url(" + escape(__webpack_require__(/*! ./assets/animationNextKeyHoverIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationNextKeyHoverIcon.svg")) + "); }\n    #animation-curve-editor .icon.animation-options {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationOptionsIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationOptionsIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer;\n      background-position: center; }\n      #animation-curve-editor .icon.animation-options:hover {\n        background-color: #888888 !important; }\n    #animation-curve-editor .icon.animation-playfwd {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationPlayFwdIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationPlayFwdIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      background-position: center;\n      width: 20px;\n      cursor: pointer;\n      background-position: center; }\n      #animation-curve-editor .icon.animation-playfwd:hover {\n        background-image: url(" + escape(__webpack_require__(/*! ./assets/animationPlayFwdHoverIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationPlayFwdHoverIcon.svg")) + "); }\n    #animation-curve-editor .icon.animation-playrev {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationPlayRevIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationPlayRevIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      background-position: center;\n      width: 20px;\n      cursor: pointer;\n      background-position: center; }\n      #animation-curve-editor .icon.animation-playrev:hover {\n        background-image: url(" + escape(__webpack_require__(/*! ./assets/animationPlayRevHoverIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationPlayRevHoverIcon.svg")) + "); }\n    #animation-curve-editor .icon.animation-start {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationStartIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationStartIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      background-position: center;\n      cursor: pointer;\n      background-position: center;\n      width: 20px; }\n    #animation-curve-editor .icon.animation-stop {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationStopIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationStopIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      background-position: center;\n      cursor: pointer;\n      background-position: center;\n      width: 20px; }\n    #animation-curve-editor .icon.animation-triangle {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationTriangleIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationTriangleIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.key-active {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/keyActiveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/keyActiveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.key-inactive {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/keyInactiveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/keyInactiveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.key-selected {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/keySelectedIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/keySelectedIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.loop-active {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/loopActiveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/loopActiveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.loop-inactive {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/loopInactiveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/loopInactiveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.move {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/moveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/moveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.save {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/saveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/saveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.load {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/loadIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/loadIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.checked {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/checkboxCheckedIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/checkboxCheckedIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.unchecked {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/checkboxDefaultIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/checkboxDefaultIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.new-key {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/newKeyIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/newKeyIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.scale {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/scaleIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/scaleIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.scrollbar-handle {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/scrollbarHandleIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/scrollbarHandleIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n  #animation-curve-editor .hidden {\n    display: none; }\n  #animation-curve-editor .notification-area {\n    position: absolute;\n    width: auto;\n    left: 0.53em;\n    bottom: 60px;\n    background-color: #c73228;\n    padding: 16px;\n    border-radius: 5px;\n    color: white;\n    right: 2em;\n    z-index: 1000; }\n    #animation-curve-editor .notification-area button {\n      position: absolute;\n      top: 3px;\n      right: 10px;\n      padding: 0;\n      cursor: pointer;\n      background: transparent;\n      border: 0;\n      -webkit-appearance: none;\n      color: #000;\n      text-shadow: 0 1px 0 #fff;\n      opacity: 0.4;\n      font-size: 1.8em; }\n  #animation-curve-editor .header {\n    display: flex;\n    padding: 9px;\n    background: #333333;\n    color: white;\n    height: 1.3em;\n    justify-content: space-between;\n    align-items: center;\n    padding-left: 12px;\n    padding-right: 12px; }\n    #animation-curve-editor .header .title {\n      text-transform: uppercase; }\n    #animation-curve-editor .header .close {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      justify-items: center;\n      cursor: pointer; }\n  #animation-curve-editor .actions-wrapper {\n    display: flex;\n    flex-direction: row;\n    justify-content: flex-start;\n    align-items: center;\n    background: #333333;\n    height: 40px; }\n    #animation-curve-editor .actions-wrapper .close {\n      position: absolute;\n      right: 1px; }\n    #animation-curve-editor .actions-wrapper .title-container {\n      display: flex;\n      justify-content: stretch;\n      align-items: center;\n      color: white;\n      width: 220px; }\n      #animation-curve-editor .actions-wrapper .title-container .title {\n        font-size: 15pt; }\n    #animation-curve-editor .actions-wrapper .buttons-container {\n      display: flex; }\n    #animation-curve-editor .actions-wrapper .action-input {\n      display: flex;\n      justify-content: center;\n      flex-direction: row;\n      align-items: center;\n      margin-right: 8px; }\n      #animation-curve-editor .actions-wrapper .action-input input {\n        width: 75px;\n        height: 24px;\n        color: white;\n        font-size: 12px;\n        background: none;\n        border: none;\n        background-color: black;\n        padding: 6px; }\n  #animation-curve-editor .content {\n    display: flex;\n    align-items: flex-start;\n    justify-content: flex-start;\n    flex-direction: column;\n    height: 462px; }\n    #animation-curve-editor .content .row {\n      width: 1024px;\n      height: 427px;\n      display: flex;\n      flex-flow: row;\n      background-color: #333333; }\n    #animation-curve-editor .content .row-bottom {\n      display: flex;\n      align-items: stretch;\n      justify-content: flex-start;\n      flex-direction: row;\n      width: 1024px;\n      height: 45px;\n      background-color: #333333; }\n      #animation-curve-editor .content .row-bottom .timeline {\n        width: 100vw;\n        background: #333333;\n        display: flex;\n        align-items: center;\n        justify-content: stretch;\n        height: 2.5rem; }\n        #animation-curve-editor .content .row-bottom .timeline .display-line {\n          width: 75vw;\n          height: 40px;\n          overflow: hidden;\n          margin-right: 0px;\n          padding-left: 10px;\n          padding-right: 10px; }\n          #animation-curve-editor .content .row-bottom .timeline .display-line::-webkit-scrollbar {\n            height: 0.4em; }\n          #animation-curve-editor .content .row-bottom .timeline .display-line::-webkit-scrollbar-track {\n            box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3); }\n          #animation-curve-editor .content .row-bottom .timeline .display-line::-webkit-scrollbar-thumb {\n            background-color: cornflowerblue;\n            outline: 1px solid slategrey; }\n        #animation-curve-editor .content .row-bottom .timeline .input-frame {\n          width: 60px;\n          margin-left: 10px;\n          margin-right: 10px; }\n          #animation-curve-editor .content .row-bottom .timeline .input-frame input {\n            text-align: center;\n            width: 60px;\n            border: none;\n            background: #222222;\n            color: white;\n            height: 25px;\n            font-size: 15px;\n            font-family: acumin-pro-condensed; }\n            #animation-curve-editor .content .row-bottom .timeline .input-frame input::-webkit-inner-spin-button, #animation-curve-editor .content .row-bottom .timeline .input-frame input::-webkit-outer-spin-button {\n              appearance: none;\n              -webkit-appearance: none;\n              margin: 0; }\n        #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle {\n          display: flex;\n          flex-direction: row;\n          height: 25px;\n          margin: 10px; }\n          #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle .scroll-handle {\n            width: 703px;\n            background-color: #222222;\n            height: 25px;\n            display: flex;\n            align-items: center; }\n            #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle .scroll-handle .handle {\n              display: flex;\n              flex-direction: row;\n              height: 20px;\n              background-color: #666666;\n              justify-content: space-between; }\n              #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle .scroll-handle .handle .left-grabber,\n              #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle .scroll-handle .handle .right-grabber {\n                display: flex;\n                align-items: center;\n                cursor: pointer; }\n              #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle .scroll-handle .handle .left-grabber {\n                padding-left: 3px; }\n              #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle .scroll-handle .handle .right-grabber {\n                padding-right: 3px; }\n              #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle .scroll-handle .handle .grabber {\n                background-color: #333333;\n                width: 2px;\n                height: 16px;\n                margin-right: 2px; }\n              #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle .scroll-handle .handle .text {\n                margin-left: 10px;\n                margin-right: 10px;\n                font-size: 12px;\n                font-family: acumin-pro-condensed;\n                color: #222222; }\n        #animation-curve-editor .content .row-bottom .timeline .timeline-wrapper {\n          margin-top: -40px;\n          margin-left: -2px; }\n        #animation-curve-editor .content .row-bottom .timeline .controls {\n          display: flex;\n          justify-content: center;\n          align-items: center;\n          padding-left: 46px;\n          padding-right: 46px;\n          margin-left: 10px; }\n          #animation-curve-editor .content .row-bottom .timeline .controls .stop-container {\n            width: 40px;\n            display: flex;\n            flex-direction: row;\n            justify-content: space-between;\n            align-items: center; }\n          #animation-curve-editor .content .row-bottom .timeline .controls .input-frame input {\n            width: 3em; }\n    #animation-curve-editor .content .animation-list {\n      margin: 10px;\n      margin-top: 0;\n      margin-bottom: 0;\n      background: #111111;\n      color: white;\n      width: 210px; }\n      #animation-curve-editor .content .animation-list .controls-header {\n        display: flex;\n        background-color: #252525; }\n        #animation-curve-editor .content .animation-list .controls-header .input-fps {\n          display: flex;\n          align-items: center;\n          width: 52px;\n          padding-left: 4px; }\n          #animation-curve-editor .content .animation-list .controls-header .input-fps .numeric input {\n            width: 52px;\n            font-size: 12px;\n            height: 22px;\n            background-color: black;\n            border: none;\n            color: white;\n            text-align: center;\n            font-family: acumin-pro-condensed; }\n            #animation-curve-editor .content .animation-list .controls-header .input-fps .numeric input::-webkit-inner-spin-button, #animation-curve-editor .content .animation-list .controls-header .input-fps .numeric input::-webkit-outer-spin-button {\n              appearance: none;\n              -webkit-appearance: none;\n              margin: 0; }\n          #animation-curve-editor .content .animation-list .controls-header .input-fps p {\n            color: white;\n            font-size: 12px;\n            margin: 0px;\n            position: relative;\n            right: 17px;\n            line-height: 20px;\n            height: 20px;\n            margin-top: -2px; }\n      #animation-curve-editor .content .animation-list .load-container {\n        flex-direction: column;\n        height: 387px;\n        padding-top: 10px; }\n        #animation-curve-editor .content .animation-list .load-container .load-server {\n          font-size: 12px;\n          display: flex;\n          background-color: #222222;\n          padding-left: 10px;\n          height: 20px;\n          margin-top: 287px; }\n          #animation-curve-editor .content .animation-list .load-container .load-server p {\n            margin: 0px; }\n        #animation-curve-editor .content .animation-list .load-container .load-browse {\n          margin-top: 10px;\n          display: flex; }\n          #animation-curve-editor .content .animation-list .load-container .load-browse p {\n            height: 20px;\n            margin: 0px;\n            font-size: 12px;\n            width: 65px;\n            text-align: right;\n            margin-right: 10px; }\n          #animation-curve-editor .content .animation-list .load-container .load-browse .buttonLine {\n            margin-left: 0px;\n            margin-top: 0px; }\n            #animation-curve-editor .content .animation-list .load-container .load-browse .buttonLine button {\n              margin-top: 0px;\n              font-family: acumin-pro-condensed;\n              padding-top: 1px; }\n        #animation-curve-editor .content .animation-list .load-container .buttonLine {\n          width: 60px;\n          padding: 0px;\n          display: block;\n          margin-left: 75px;\n          height: 20px;\n          margin-top: 10px; }\n          #animation-curve-editor .content .animation-list .load-container .buttonLine button {\n            border: none;\n            font-size: 12px;\n            margin: 0px;\n            width: 60px;\n            background-color: #444;\n            height: 20px;\n            font-family: acumin-pro-condensed;\n            padding-top: 1px; }\n        #animation-curve-editor .content .animation-list .load-container .textInputLine {\n          display: flex; }\n          #animation-curve-editor .content .animation-list .load-container .textInputLine .label {\n            font-size: 12px;\n            width: 75px;\n            text-align: center;\n            font-family: acumin-pro-condensed; }\n          #animation-curve-editor .content .animation-list .load-container .textInputLine .value input {\n            width: 127px;\n            background-color: #444444;\n            border: none;\n            height: 20px;\n            font-family: acumin-pro-condensed;\n            padding-bottom: 6px;\n            padding-left: 6px; }\n      #animation-curve-editor .content .animation-list .save-container {\n        flex-direction: column;\n        height: 387px;\n        padding-top: 10px; }\n        #animation-curve-editor .content .animation-list .save-container .item-list {\n          height: 327px; }\n          #animation-curve-editor .content .animation-list .save-container .item-list ul {\n            list-style: none;\n            padding-left: 10px;\n            margin: 0px; }\n            #animation-curve-editor .content .animation-list .save-container .item-list ul label {\n              font-size: 12px;\n              font-family: acumin-pro-condensed;\n              display: flex;\n              align-content: center;\n              align-items: center; }\n              #animation-curve-editor .content .animation-list .save-container .item-list ul label input {\n                margin: 0px;\n                margin-right: 5px; }\n        #animation-curve-editor .content .animation-list .save-container .save-server {\n          font-size: 12px;\n          display: flex;\n          background-color: #222222;\n          padding-left: 10px;\n          height: 20px; }\n          #animation-curve-editor .content .animation-list .save-container .save-server p {\n            margin: 0px; }\n        #animation-curve-editor .content .animation-list .save-container .save-buttons {\n          margin-top: 10px;\n          display: flex;\n          justify-content: space-evenly;\n          margin-bottom: 10px; }\n          #animation-curve-editor .content .animation-list .save-container .save-buttons p {\n            height: 20px;\n            margin: 0px;\n            font-size: 12px;\n            width: 65px;\n            text-align: right;\n            margin-right: 10px; }\n          #animation-curve-editor .content .animation-list .save-container .save-buttons .buttonLine {\n            margin-left: 0px;\n            margin-top: 0px; }\n            #animation-curve-editor .content .animation-list .save-container .save-buttons .buttonLine button {\n              margin-top: 0px;\n              font-family: acumin-pro-condensed;\n              padding-top: 1px; }\n        #animation-curve-editor .content .animation-list .save-container .buttonLine {\n          width: 80px;\n          padding: 0px;\n          display: block;\n          margin-left: 75px;\n          height: 20px;\n          margin-top: 10px; }\n          #animation-curve-editor .content .animation-list .save-container .buttonLine button {\n            border: none;\n            font-size: 12px;\n            margin: 0px;\n            width: 80px;\n            background-color: #444444;\n            height: 20px;\n            font-family: acumin-pro-condensed;\n            padding-top: 1px; }\n        #animation-curve-editor .content .animation-list .save-container .textInputLine {\n          display: flex; }\n          #animation-curve-editor .content .animation-list .save-container .textInputLine .label {\n            font-size: 12px;\n            width: 75px;\n            text-align: center;\n            font-family: acumin-pro-condensed; }\n          #animation-curve-editor .content .animation-list .save-container .textInputLine .value input {\n            width: 127px;\n            background-color: #444444;\n            border: none;\n            height: 20px;\n            font-family: acumin-pro-condensed; }\n      #animation-curve-editor .content .animation-list .new-animation {\n        display: block;\n        position: absolute;\n        background-color: #111111;\n        height: 367px;\n        z-index: 10; }\n        #animation-curve-editor .content .animation-list .new-animation .sub-header {\n          display: flex;\n          align-items: start;\n          width: 250px;\n          justify-content: space-between; }\n          #animation-curve-editor .content .animation-list .new-animation .sub-header .title {\n            margin: 0px;\n            font-size: 15pt; }\n        #animation-curve-editor .content .animation-list .new-animation .sub-content {\n          background-color: #111111;\n          padding: 10px;\n          display: inline-grid;\n          grid-template-columns: 63px 127px;\n          grid-template-rows: repeat(6, 30px);\n          font-size: 12px; }\n          #animation-curve-editor .content .animation-list .new-animation .sub-content .confirm-buttons {\n            grid-column-start: 2; }\n            #animation-curve-editor .content .animation-list .new-animation .sub-content .confirm-buttons .buttonLine button {\n              width: 60px;\n              height: 20px;\n              background-color: #444444;\n              color: white;\n              font-size: 12px;\n              line-height: 11px;\n              margin: 5px;\n              font-size: 10px;\n              font-family: acumin-pro-condensed;\n              border: none; }\n      #animation-curve-editor .content .animation-list .object-tree {\n        background-color: #111111; }\n        #animation-curve-editor .content .animation-list .object-tree ul {\n          list-style: none;\n          padding-left: 0px;\n          padding: 0px;\n          margin: 0px; }\n          #animation-curve-editor .content .animation-list .object-tree ul li.property {\n            height: 20px;\n            display: flex;\n            flex-wrap: wrap;\n            font-size: 12px; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property.sub {\n              height: auto; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property:before {\n              content: \"\";\n              background: none; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property p {\n              display: inline;\n              font-size: 12px;\n              margin: 0px;\n              flex: 8;\n              cursor: pointer; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property .spacer {\n              width: 20px;\n              height: 20px; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property .animation-bullet {\n              background-image: url(" + escape(__webpack_require__(/*! ./assets/animationBulletIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationBulletIcon.svg")) + ");\n              background-repeat: no-repeat;\n              background-color: transparent;\n              background-size: contain;\n              color: #7a4ece;\n              width: 10px;\n              margin-left: 18px;\n              margin-right: 2px;\n              height: 20px;\n              background-position-y: 5px; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property .animation-arrow {\n              width: 30px;\n              background-image: url(" + escape(__webpack_require__(/*! ./assets/animationTriangleIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationTriangleIcon.svg")) + ");\n              background-repeat: no-repeat;\n              background-color: transparent;\n              background-size: 10px;\n              background-position-y: center;\n              background-position-x: 18px;\n              cursor: pointer; }\n              #animation-curve-editor .content .animation-list .object-tree ul li.property .animation-arrow.flip {\n                transform: rotate(180deg);\n                background-position: 2px 50%; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property.active {\n              background-color: #444444; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property .handle-indicator {\n              width: 30px; }\n              #animation-curve-editor .content .animation-list .object-tree ul li.property .handle-indicator.show {\n                display: block;\n                background-image: url(" + escape(__webpack_require__(/*! ./assets/keySelectedIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/keySelectedIcon.svg")) + ");\n                background-repeat: no-repeat;\n                background-color: transparent;\n                background-size: 10px;\n                color: white;\n                background-position-x: 9px;\n                background-position-y: 5px; }\n              #animation-curve-editor .content .animation-list .object-tree ul li.property .handle-indicator.hide {\n                display: none; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property ul.sub-list {\n              flex-grow: 1;\n              flex-shrink: 1;\n              flex-basis: 100%; }\n              #animation-curve-editor .content .animation-list .object-tree ul li.property ul.sub-list .property {\n                cursor: pointer; }\n      #animation-curve-editor .content .animation-list .label-input {\n        display: contents; }\n        #animation-curve-editor .content .animation-list .label-input label {\n          text-align: right; }\n        #animation-curve-editor .content .animation-list .label-input input {\n          margin-left: 5px;\n          height: 20px;\n          background-color: #444444;\n          border: none;\n          color: white;\n          padding-left: 3px;\n          font-size: 10px;\n          font-family: acumin-pro-condensed; }\n          #animation-curve-editor .content .animation-list .label-input input:focus {\n            border-radius: 0px;\n            outline-style: auto;\n            outline-color: lightgrey; }\n        #animation-curve-editor .content .animation-list .label-input select {\n          height: 20px;\n          margin-left: 5px;\n          font-size: 10px;\n          background-color: #444444;\n          border: none;\n          color: white;\n          font-family: acumin-pro-condensed; }\n          #animation-curve-editor .content .animation-list .label-input select:focus {\n            border-radius: 0px;\n            outline-style: auto;\n            outline-color: lightgrey; }\n    #animation-curve-editor .content .sample-chart .linear .draggable {\n      cursor: move; }\n    #animation-curve-editor .content .graph-chart {\n      overflow: hidden;\n      scroll-behavior: smooth;\n      background-color: #111111;\n      height: 364px;\n      width: 782px; }\n      #animation-curve-editor .content .graph-chart .linear {\n        overflow: visible;\n        border: 0px solid white;\n        height: 362px;\n        width: 780px;\n        outline: none; }\n        #animation-curve-editor .content .graph-chart .linear svg {\n          overflow: visible; }\n        #animation-curve-editor .content .graph-chart .linear:focus {\n          outline-color: transparent; }\n        #animation-curve-editor .content .graph-chart .linear line {\n          stroke: #555555;\n          stroke-width: 0.2; }\n        #animation-curve-editor .content .graph-chart .linear text {\n          fill: #555555;\n          font-family: \"acumin-pro-condensed\"; }\n        #animation-curve-editor .content .graph-chart .linear .control-point {\n          display: none; }\n        #animation-curve-editor .content .graph-chart .linear .control-point.active {\n          display: inline;\n          stroke: #e9db1e;\n          stroke-width: 0.2; }\n      #animation-curve-editor .content .graph-chart .playhead-wrapper {\n        position: relative;\n        left: -13px;\n        bottom: 366px; }\n      #animation-curve-editor .content .graph-chart .playhead-handle {\n        position: relative;\n        top: 340px; }\n        #animation-curve-editor .content .graph-chart .playhead-handle .playhead {\n          width: 22px;\n          background-color: transparent;\n          color: #555555;\n          text-align: center;\n          font-size: 12px;\n          position: absolute;\n          top: 1px; }\n        #animation-curve-editor .content .graph-chart .playhead-handle .playhead-circle {\n          background-color: #ffffff;\n          width: 22px;\n          height: 22px;\n          border-radius: 50%;\n          position: absolute;\n          top: 0; }\n      #animation-curve-editor .content .graph-chart .playhead-line {\n        width: 1px;\n        height: 341px;\n        background-color: #ffffff;\n        position: absolute;\n        margin-left: 9.5px; }\n  #animation-curve-editor .buttonLine {\n    height: 30px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch; }\n    #animation-curve-editor .buttonLine input[type=\"file\"] {\n      display: none; }\n    #animation-curve-editor .buttonLine .file-upload {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center; }\n    #animation-curve-editor .buttonLine .file-upload:hover {\n      opacity: 1; }\n    #animation-curve-editor .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #animation-curve-editor .buttonLine button {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      cursor: pointer; }\n    #animation-curve-editor .buttonLine button:hover {\n      opacity: 1; }\n    #animation-curve-editor .buttonLine button:active {\n      background: #282828; }\n    #animation-curve-editor .buttonLine button:focus {\n      border: 1px solid #337ab7;\n      outline: 0px; }\n", ""]);
+exports.push([module.i, "body {\n  background-color: #333333; }\n\n#animation-curve-editor {\n  font-family: acumin-pro-condensed; }\n  #animation-curve-editor .last {\n    margin-left: 3px; }\n  #animation-curve-editor .icon {\n    width: 40px;\n    height: 40px; }\n    #animation-curve-editor .icon.medium {\n      width: 30px;\n      height: 30px; }\n    #animation-curve-editor .icon.small {\n      width: 20px;\n      height: 20px; }\n    #animation-curve-editor .icon.babylon-logo {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/babylonLogo.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/babylonLogo.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain; }\n    #animation-curve-editor .icon.close {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/closeWindowIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/closeWindowIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.auto-tangent {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/autoTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/autoTangentIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n      #animation-curve-editor .icon.auto-tangent:hover {\n        background-color: #888888; }\n      #animation-curve-editor .icon.auto-tangent:active {\n        background-color: #555555; }\n    #animation-curve-editor .icon.break-tangent {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/breakTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/breakTangentIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n      #animation-curve-editor .icon.break-tangent:hover {\n        background-color: #888888; }\n      #animation-curve-editor .icon.break-tangent:active {\n        background-color: #555555; }\n    #animation-curve-editor .icon.flat-tangent {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/flatTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/flatTangentIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n      #animation-curve-editor .icon.flat-tangent:hover {\n        background-color: #888888; }\n      #animation-curve-editor .icon.flat-tangent:active {\n        background-color: #555555; }\n    #animation-curve-editor .icon.frame {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/frameIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/frameIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n      #animation-curve-editor .icon.frame:hover {\n        background-color: #888888; }\n      #animation-curve-editor .icon.frame:active {\n        background-color: #555555; }\n    #animation-curve-editor .icon.linear-tangent {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/linearTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/linearTangentIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n      #animation-curve-editor .icon.linear-tangent:hover {\n        background-color: #888888; }\n      #animation-curve-editor .icon.linear-tangent:active {\n        background-color: #555555; }\n    #animation-curve-editor .icon.unify-tangent {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/unifyTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/unifyTangentIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n      #animation-curve-editor .icon.unify-tangent:hover {\n        background-color: #888888; }\n      #animation-curve-editor .icon.unify-tangent:active {\n        background-color: #555555; }\n    #animation-curve-editor .icon.add-animation {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/addAnimationIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/addAnimationIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.animation-bullet {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationBulletIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationBulletIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.animation-delete {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationDeleteIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationDeleteIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.animation-edit {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/editIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/editIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.animation-end {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationEndIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationEndIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      width: 20px;\n      cursor: pointer;\n      background-position: center; }\n    #animation-curve-editor .icon.animation-lastkey {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationLastKeyIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationLastKeyIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      width: 20px;\n      cursor: pointer;\n      background-position: center; }\n      #animation-curve-editor .icon.animation-lastkey:hover {\n        background-image: url(" + escape(__webpack_require__(/*! ./assets/animationLastKeyHoverIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationLastKeyHoverIcon.svg")) + "); }\n    #animation-curve-editor .icon.animation-nextkey {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationNextKeyIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationNextKeyIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      width: 20px;\n      cursor: pointer;\n      background-position: center; }\n      #animation-curve-editor .icon.animation-nextkey:hover {\n        background-image: url(" + escape(__webpack_require__(/*! ./assets/animationNextKeyHoverIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationNextKeyHoverIcon.svg")) + "); }\n    #animation-curve-editor .icon.animation-options {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationOptionsIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationOptionsIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer;\n      background-position: center; }\n      #animation-curve-editor .icon.animation-options:hover {\n        background-color: #888888 !important; }\n    #animation-curve-editor .icon.animation-playfwd {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationPlayFwdIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationPlayFwdIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      background-position: center;\n      width: 20px;\n      cursor: pointer;\n      background-position: center; }\n      #animation-curve-editor .icon.animation-playfwd:hover {\n        background-image: url(" + escape(__webpack_require__(/*! ./assets/animationPlayFwdHoverIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationPlayFwdHoverIcon.svg")) + "); }\n    #animation-curve-editor .icon.animation-playrev {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationPlayRevIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationPlayRevIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      background-position: center;\n      width: 20px;\n      cursor: pointer;\n      background-position: center; }\n      #animation-curve-editor .icon.animation-playrev:hover {\n        background-image: url(" + escape(__webpack_require__(/*! ./assets/animationPlayRevHoverIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationPlayRevHoverIcon.svg")) + "); }\n    #animation-curve-editor .icon.animation-start {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationStartIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationStartIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      background-position: center;\n      cursor: pointer;\n      background-position: center;\n      width: 20px; }\n    #animation-curve-editor .icon.animation-stop {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationStopIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationStopIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      background-position: center;\n      cursor: pointer;\n      background-position: center;\n      width: 20px;\n      margin-left: 10px; }\n    #animation-curve-editor .icon.animation-triangle {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationTriangleIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationTriangleIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.key-active {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/keyActiveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/keyActiveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.key-inactive {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/keyInactiveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/keyInactiveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.key-selected {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/keySelectedIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/keySelectedIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.loop-active {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/loopActiveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/loopActiveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.loop-inactive {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/loopInactiveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/loopInactiveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.move {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/moveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/moveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.save {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/saveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/saveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.load {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/loadIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/loadIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.checked {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/checkboxCheckedIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/checkboxCheckedIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.unchecked {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/checkboxDefaultIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/checkboxDefaultIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.new-key {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/newKeyIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/newKeyIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n      #animation-curve-editor .icon.new-key:hover {\n        background-color: #888888; }\n      #animation-curve-editor .icon.new-key:active {\n        background-color: #555555; }\n    #animation-curve-editor .icon.scale {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/scaleIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/scaleIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.scrollbar-handle {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/scrollbarHandleIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/scrollbarHandleIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n  #animation-curve-editor .hidden {\n    display: none; }\n  #animation-curve-editor .notification-area {\n    position: absolute;\n    width: auto;\n    left: 0.53em;\n    bottom: 60px;\n    background-color: #c73228;\n    padding: 16px;\n    border-radius: 5px;\n    color: white;\n    right: 2em;\n    z-index: 1000; }\n    #animation-curve-editor .notification-area button {\n      position: absolute;\n      top: 3px;\n      right: 10px;\n      padding: 0;\n      cursor: pointer;\n      background: transparent;\n      border: 0;\n      -webkit-appearance: none;\n      color: #000;\n      text-shadow: 0 1px 0 #fff;\n      opacity: 0.4;\n      font-size: 1.8em; }\n  #animation-curve-editor .header {\n    display: flex;\n    padding: 9px;\n    background: #333333;\n    color: white;\n    height: 1.3em;\n    justify-content: space-between;\n    align-items: center;\n    padding-left: 12px;\n    padding-right: 12px; }\n    #animation-curve-editor .header .title {\n      text-transform: uppercase; }\n    #animation-curve-editor .header .close {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      justify-items: center;\n      cursor: pointer; }\n  #animation-curve-editor .actions-wrapper {\n    display: flex;\n    flex-direction: row;\n    justify-content: flex-start;\n    align-items: center;\n    background: #333333;\n    height: 40px; }\n    #animation-curve-editor .actions-wrapper .close {\n      position: absolute;\n      right: 1px; }\n    #animation-curve-editor .actions-wrapper .title-container {\n      display: flex;\n      justify-content: stretch;\n      align-items: center;\n      color: white;\n      width: 220px; }\n      #animation-curve-editor .actions-wrapper .title-container .title {\n        font-size: 15pt; }\n    #animation-curve-editor .actions-wrapper .buttons-container {\n      display: flex;\n      padding-left: 10px; }\n    #animation-curve-editor .actions-wrapper .action-input {\n      display: flex;\n      justify-content: center;\n      flex-direction: row;\n      align-items: center;\n      margin-right: 8px; }\n      #animation-curve-editor .actions-wrapper .action-input input {\n        width: 75px;\n        height: 24px;\n        color: white;\n        font-size: 12px;\n        background: none;\n        border: none;\n        background-color: black;\n        padding: 6px; }\n        #animation-curve-editor .actions-wrapper .action-input input:focus {\n          outline: solid 1px #ccc; }\n  #animation-curve-editor .content {\n    display: flex;\n    align-items: flex-start;\n    justify-content: flex-start;\n    flex-direction: column;\n    height: 462px; }\n    #animation-curve-editor .content .row {\n      width: 1024px;\n      height: 427px;\n      display: flex;\n      flex-flow: row;\n      background-color: #333333; }\n    #animation-curve-editor .content .row-bottom {\n      display: flex;\n      align-items: stretch;\n      justify-content: flex-start;\n      flex-direction: row;\n      width: 1024px;\n      height: 45px;\n      background-color: #333333; }\n      #animation-curve-editor .content .row-bottom .timeline {\n        width: 100vw;\n        background: #333333;\n        display: flex;\n        align-items: center;\n        justify-content: stretch;\n        height: 2.5rem; }\n        #animation-curve-editor .content .row-bottom .timeline .display-line {\n          width: 75vw;\n          height: 40px;\n          overflow: hidden;\n          margin-right: 0px;\n          padding-left: 10px;\n          padding-right: 10px; }\n          #animation-curve-editor .content .row-bottom .timeline .display-line::-webkit-scrollbar {\n            height: 0.4em; }\n          #animation-curve-editor .content .row-bottom .timeline .display-line::-webkit-scrollbar-track {\n            box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3); }\n          #animation-curve-editor .content .row-bottom .timeline .display-line::-webkit-scrollbar-thumb {\n            background-color: cornflowerblue;\n            outline: 1px solid slategrey; }\n        #animation-curve-editor .content .row-bottom .timeline .input-frame {\n          width: 60px;\n          margin-left: 10px;\n          margin-right: 10px; }\n          #animation-curve-editor .content .row-bottom .timeline .input-frame input {\n            text-align: center;\n            width: 60px;\n            border: none;\n            background: #222222;\n            color: white;\n            height: 25px;\n            font-size: 15px;\n            font-family: acumin-pro-condensed; }\n            #animation-curve-editor .content .row-bottom .timeline .input-frame input::-webkit-inner-spin-button, #animation-curve-editor .content .row-bottom .timeline .input-frame input::-webkit-outer-spin-button {\n              appearance: none;\n              -webkit-appearance: none;\n              margin: 0; }\n        #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle {\n          display: flex;\n          flex-direction: row;\n          height: 25px;\n          margin: 10px; }\n          #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle .scroll-handle {\n            width: 703px;\n            background-color: #222222;\n            height: 25px;\n            display: flex;\n            align-items: center; }\n            #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle .scroll-handle .handle {\n              display: flex;\n              flex-direction: row;\n              height: 20px;\n              background-color: #666666;\n              justify-content: space-between;\n              position: absolute; }\n              #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle .scroll-handle .handle .scrollbar {\n                cursor: pointer;\n                width: 100%; }\n              #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle .scroll-handle .handle .left-grabber,\n              #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle .scroll-handle .handle .right-grabber {\n                display: flex;\n                align-items: center;\n                cursor: pointer; }\n              #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle .scroll-handle .handle .left-grabber {\n                padding-left: 3px; }\n              #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle .scroll-handle .handle .right-grabber {\n                padding-right: 3px; }\n              #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle .scroll-handle .handle .grabber {\n                background-color: #333333;\n                width: 2px;\n                height: 16px;\n                margin-right: 2px; }\n              #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle .scroll-handle .handle .text {\n                margin-left: 10px;\n                margin-right: 10px;\n                font-size: 12px;\n                font-family: acumin-pro-condensed;\n                color: #222222; }\n        #animation-curve-editor .content .row-bottom .timeline .timeline-wrapper {\n          margin-top: -40px;\n          margin-left: -2px; }\n        #animation-curve-editor .content .row-bottom .timeline .controls {\n          display: flex;\n          justify-content: center;\n          align-items: center;\n          padding-left: 46px;\n          padding-right: 46px;\n          margin-left: 10px; }\n          #animation-curve-editor .content .row-bottom .timeline .controls .stop-container {\n            width: 40px;\n            display: flex;\n            flex-direction: row;\n            justify-content: space-between;\n            align-items: center; }\n          #animation-curve-editor .content .row-bottom .timeline .controls .input-frame input {\n            width: 3em; }\n    #animation-curve-editor .content .animation-list {\n      margin: 10px;\n      margin-top: 0;\n      margin-bottom: 0;\n      background: #111111;\n      color: white;\n      width: 210px; }\n      #animation-curve-editor .content .animation-list .controls-header {\n        display: flex;\n        background-color: #252525; }\n        #animation-curve-editor .content .animation-list .controls-header .input-fps {\n          display: flex;\n          align-items: center;\n          width: 52px;\n          padding-left: 4px; }\n          #animation-curve-editor .content .animation-list .controls-header .input-fps .numeric input {\n            width: 52px;\n            font-size: 12px;\n            height: 22px;\n            background-color: black;\n            border: none;\n            color: white;\n            text-align: center;\n            font-family: acumin-pro-condensed; }\n            #animation-curve-editor .content .animation-list .controls-header .input-fps .numeric input::-webkit-inner-spin-button, #animation-curve-editor .content .animation-list .controls-header .input-fps .numeric input::-webkit-outer-spin-button {\n              appearance: none;\n              -webkit-appearance: none;\n              margin: 0; }\n          #animation-curve-editor .content .animation-list .controls-header .input-fps p {\n            color: white;\n            font-size: 12px;\n            margin: 0px;\n            position: relative;\n            right: 17px;\n            line-height: 20px;\n            height: 20px;\n            margin-top: -2px; }\n      #animation-curve-editor .content .animation-list .load-container {\n        flex-direction: column;\n        height: 377px;\n        padding-top: 10px; }\n        #animation-curve-editor .content .animation-list .load-container .load-server {\n          font-size: 12px;\n          display: flex;\n          background-color: #222222;\n          padding-left: 10px;\n          height: 20px;\n          margin-top: 277px; }\n          #animation-curve-editor .content .animation-list .load-container .load-server p {\n            margin: 0px; }\n        #animation-curve-editor .content .animation-list .load-container .load-browse {\n          margin-top: 10px;\n          display: flex; }\n          #animation-curve-editor .content .animation-list .load-container .load-browse p {\n            height: 20px;\n            margin: 0px;\n            font-size: 12px;\n            width: 65px;\n            text-align: right;\n            margin-right: 10px; }\n          #animation-curve-editor .content .animation-list .load-container .load-browse .buttonLine {\n            margin-left: 0px;\n            margin-top: 0px; }\n            #animation-curve-editor .content .animation-list .load-container .load-browse .buttonLine button {\n              margin-top: 0px;\n              font-family: acumin-pro-condensed;\n              padding-top: 1px; }\n        #animation-curve-editor .content .animation-list .load-container .buttonLine {\n          width: 60px;\n          padding: 0px;\n          display: block;\n          margin-left: 75px;\n          height: 20px;\n          margin-top: 10px; }\n          #animation-curve-editor .content .animation-list .load-container .buttonLine button {\n            border: none;\n            font-size: 12px;\n            margin: 0px;\n            width: 60px;\n            background-color: #444;\n            height: 20px;\n            font-family: acumin-pro-condensed;\n            padding-top: 1px; }\n        #animation-curve-editor .content .animation-list .load-container .textInputLine {\n          display: flex; }\n          #animation-curve-editor .content .animation-list .load-container .textInputLine .label {\n            font-size: 12px;\n            width: 75px;\n            text-align: center;\n            font-family: acumin-pro-condensed; }\n          #animation-curve-editor .content .animation-list .load-container .textInputLine .value input {\n            width: 127px;\n            background-color: #444444;\n            border: none;\n            height: 20px;\n            font-family: acumin-pro-condensed;\n            padding-bottom: 6px;\n            padding-left: 6px; }\n      #animation-curve-editor .content .animation-list .save-container {\n        flex-direction: column;\n        height: 377px;\n        padding-top: 10px; }\n        #animation-curve-editor .content .animation-list .save-container .item-list {\n          height: 317px; }\n          #animation-curve-editor .content .animation-list .save-container .item-list ul {\n            list-style: none;\n            padding-left: 10px;\n            margin: 0px; }\n            #animation-curve-editor .content .animation-list .save-container .item-list ul label {\n              font-size: 12px;\n              font-family: acumin-pro-condensed;\n              display: flex;\n              align-content: center;\n              align-items: center; }\n              #animation-curve-editor .content .animation-list .save-container .item-list ul label input {\n                margin: 0px;\n                margin-right: 5px; }\n        #animation-curve-editor .content .animation-list .save-container .save-server {\n          font-size: 12px;\n          display: flex;\n          background-color: #222222;\n          padding-left: 10px;\n          height: 20px; }\n          #animation-curve-editor .content .animation-list .save-container .save-server p {\n            margin: 0px; }\n        #animation-curve-editor .content .animation-list .save-container .save-buttons {\n          margin-top: 10px;\n          display: flex;\n          justify-content: space-evenly;\n          margin-bottom: 10px; }\n          #animation-curve-editor .content .animation-list .save-container .save-buttons p {\n            height: 20px;\n            margin: 0px;\n            font-size: 12px;\n            width: 65px;\n            text-align: right;\n            margin-right: 10px; }\n          #animation-curve-editor .content .animation-list .save-container .save-buttons .buttonLine {\n            margin-left: 0px;\n            margin-top: 0px; }\n            #animation-curve-editor .content .animation-list .save-container .save-buttons .buttonLine button {\n              margin-top: 0px;\n              font-family: acumin-pro-condensed;\n              padding-top: 1px; }\n        #animation-curve-editor .content .animation-list .save-container .buttonLine {\n          width: 80px;\n          padding: 0px;\n          display: block;\n          margin-left: 75px;\n          height: 20px;\n          margin-top: 10px; }\n          #animation-curve-editor .content .animation-list .save-container .buttonLine button {\n            border: none;\n            font-size: 12px;\n            margin: 0px;\n            width: 80px;\n            background-color: #444444;\n            height: 20px;\n            font-family: acumin-pro-condensed;\n            padding-top: 1px; }\n        #animation-curve-editor .content .animation-list .save-container .textInputLine {\n          display: flex; }\n          #animation-curve-editor .content .animation-list .save-container .textInputLine .label {\n            font-size: 12px;\n            width: 75px;\n            text-align: center;\n            font-family: acumin-pro-condensed; }\n          #animation-curve-editor .content .animation-list .save-container .textInputLine .value input {\n            width: 127px;\n            background-color: #444444;\n            border: none;\n            height: 20px;\n            font-family: acumin-pro-condensed; }\n      #animation-curve-editor .content .animation-list .new-animation {\n        display: block;\n        position: absolute;\n        background-color: #111111;\n        height: 377px;\n        z-index: 10; }\n        #animation-curve-editor .content .animation-list .new-animation .sub-header {\n          display: flex;\n          align-items: start;\n          width: 250px;\n          justify-content: space-between; }\n          #animation-curve-editor .content .animation-list .new-animation .sub-header .title {\n            margin: 0px;\n            font-size: 15pt; }\n        #animation-curve-editor .content .animation-list .new-animation .sub-content {\n          background-color: #111111;\n          padding: 10px;\n          display: inline-grid;\n          grid-template-columns: 63px 127px;\n          grid-template-rows: repeat(6, 30px);\n          font-size: 12px; }\n          #animation-curve-editor .content .animation-list .new-animation .sub-content .confirm-buttons {\n            grid-column-start: 2; }\n            #animation-curve-editor .content .animation-list .new-animation .sub-content .confirm-buttons .buttonLine button {\n              width: 60px;\n              height: 20px;\n              background-color: #444444;\n              color: white;\n              font-size: 12px;\n              line-height: 11px;\n              margin: 5px;\n              font-size: 10px;\n              font-family: acumin-pro-condensed;\n              border: none; }\n      #animation-curve-editor .content .animation-list .object-tree {\n        background-color: #111111; }\n        #animation-curve-editor .content .animation-list .object-tree ul {\n          list-style: none;\n          padding-left: 0px;\n          padding: 0px;\n          margin: 0px; }\n          #animation-curve-editor .content .animation-list .object-tree ul li.property {\n            height: 20px;\n            display: flex;\n            flex-wrap: wrap;\n            font-size: 12px; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property.sub {\n              height: auto; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property:before {\n              content: '';\n              background: none; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property p {\n              display: inline;\n              font-size: 12px;\n              margin: 0px;\n              flex: 8;\n              cursor: pointer; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property .spacer {\n              width: 20px;\n              height: 20px; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property .animation-bullet {\n              background-image: url(" + escape(__webpack_require__(/*! ./assets/animationBulletIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationBulletIcon.svg")) + ");\n              background-repeat: no-repeat;\n              background-color: transparent;\n              background-size: contain;\n              color: #7a4ece;\n              width: 10px;\n              margin-left: 18px;\n              margin-right: 2px;\n              height: 20px;\n              background-position-y: 5px; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property .animation-arrow {\n              width: 30px;\n              background-image: url(" + escape(__webpack_require__(/*! ./assets/animationTriangleIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationTriangleIcon.svg")) + ");\n              background-repeat: no-repeat;\n              background-color: transparent;\n              background-size: 10px;\n              background-position-y: center;\n              background-position-x: 18px;\n              cursor: pointer; }\n              #animation-curve-editor .content .animation-list .object-tree ul li.property .animation-arrow.flip {\n                transform: rotate(180deg);\n                background-position: 2px 50%; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property.active {\n              background-color: #444444; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property .handle-indicator {\n              width: 30px; }\n              #animation-curve-editor .content .animation-list .object-tree ul li.property .handle-indicator.show {\n                display: block;\n                background-image: url(" + escape(__webpack_require__(/*! ./assets/keySelectedIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/keySelectedIcon.svg")) + ");\n                background-repeat: no-repeat;\n                background-color: transparent;\n                background-size: 10px;\n                color: white;\n                background-position-x: 9px;\n                background-position-y: 5px; }\n              #animation-curve-editor .content .animation-list .object-tree ul li.property .handle-indicator.hide {\n                display: block; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property ul.sub-list {\n              flex-grow: 1;\n              flex-shrink: 1;\n              flex-basis: 100%; }\n              #animation-curve-editor .content .animation-list .object-tree ul li.property ul.sub-list .property {\n                cursor: pointer; }\n      #animation-curve-editor .content .animation-list .label-input {\n        display: contents; }\n        #animation-curve-editor .content .animation-list .label-input label {\n          text-align: right; }\n        #animation-curve-editor .content .animation-list .label-input input {\n          margin-left: 5px;\n          height: 20px;\n          background-color: #444444;\n          border: none;\n          color: white;\n          padding-left: 3px;\n          font-size: 10px;\n          font-family: acumin-pro-condensed; }\n          #animation-curve-editor .content .animation-list .label-input input:focus {\n            border-radius: 0px;\n            outline: 1px solid #ccc; }\n        #animation-curve-editor .content .animation-list .label-input select {\n          height: 20px;\n          margin-left: 5px;\n          font-size: 10px;\n          background-color: #444444;\n          border: none;\n          color: white;\n          font-family: acumin-pro-condensed; }\n          #animation-curve-editor .content .animation-list .label-input select:focus {\n            border-radius: 0px;\n            outline: 1px solid #ccc; }\n    #animation-curve-editor .content .sample-chart .linear .draggable {\n      cursor: move; }\n    #animation-curve-editor .content .graph-chart {\n      overflow: hidden;\n      scroll-behavior: smooth;\n      background-color: #111111;\n      height: 364px;\n      width: 782px; }\n      #animation-curve-editor .content .graph-chart .linear {\n        overflow: visible;\n        border: 0px solid white;\n        height: 362px;\n        width: 780px;\n        outline: none; }\n        #animation-curve-editor .content .graph-chart .linear svg {\n          overflow: visible; }\n        #animation-curve-editor .content .graph-chart .linear:focus {\n          outline-color: transparent; }\n        #animation-curve-editor .content .graph-chart .linear line {\n          stroke: #555555;\n          stroke-width: 0.2; }\n        #animation-curve-editor .content .graph-chart .linear text {\n          fill: #555555;\n          font-family: 'acumin-pro-condensed'; }\n        #animation-curve-editor .content .graph-chart .linear .control-point {\n          display: none; }\n        #animation-curve-editor .content .graph-chart .linear .control-point.active {\n          display: inline;\n          stroke: #e9db1e;\n          stroke-width: 0.2; }\n      #animation-curve-editor .content .graph-chart .playhead-container {\n        position: relative; }\n      #animation-curve-editor .content .graph-chart .playhead-wrapper {\n        left: -13px;\n        bottom: 366px;\n        position: relative; }\n      #animation-curve-editor .content .graph-chart .playhead-scrollable {\n        width: 100px;\n        height: 33px;\n        position: absolute;\n        top: 335px;\n        left: -39px; }\n      #animation-curve-editor .content .graph-chart .playhead-handle {\n        position: relative;\n        top: 340px;\n        width: 22px;\n        height: 30px; }\n        #animation-curve-editor .content .graph-chart .playhead-handle .playhead {\n          width: 22px;\n          background-color: transparent;\n          color: #555555;\n          text-align: center;\n          font-size: 12px;\n          position: absolute;\n          top: 1px;\n          cursor: pointer; }\n        #animation-curve-editor .content .graph-chart .playhead-handle .playhead-circle {\n          background-color: #ffffff;\n          width: 22px;\n          height: 22px;\n          border-radius: 50%;\n          position: absolute;\n          top: 0; }\n      #animation-curve-editor .content .graph-chart .playhead-line {\n        width: 1px;\n        height: 341px;\n        background-color: #ffffff;\n        position: absolute;\n        margin-left: 9.5px; }\n  #animation-curve-editor .buttonLine {\n    height: 30px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch; }\n    #animation-curve-editor .buttonLine input[type='file'] {\n      display: none; }\n    #animation-curve-editor .buttonLine .file-upload {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center; }\n    #animation-curve-editor .buttonLine .file-upload:hover {\n      opacity: 1; }\n    #animation-curve-editor .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #animation-curve-editor .buttonLine button {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      cursor: pointer; }\n    #animation-curve-editor .buttonLine button:hover {\n      opacity: 1; }\n    #animation-curve-editor .buttonLine button:active {\n      background: #282828; }\n    #animation-curve-editor .buttonLine button:focus {\n      border: 1px solid #337ab7;\n      outline: 0px; }\n", ""]);
 
 // exports
 
@@ -56673,7 +56673,7 @@ var IconButtonLineComponent = /** @class */ (function (_super) {
     }
     IconButtonLineComponent.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: { backgroundColor: this.props.active ? '#111111' : 'transparent' }, title: this.props.tooltip, className: "icon " + this.props.icon, onClick: function () { return _this.props.onClick(); } }));
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: { backgroundColor: this.props.active ? '#111111' : '' }, title: this.props.tooltip, className: "icon " + this.props.icon, onClick: function () { return _this.props.onClick(); } }));
     };
     return IconButtonLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -58602,31 +58602,37 @@ var AddAnimation = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AddAnimation, _super);
     function AddAnimation(props) {
         var _this = _super.call(this, props) || this;
-        _this.state = { animationName: "", animationTargetPath: "", animationType: "Float", loopMode: babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONLOOPMODE_CYCLE, animationTargetProperty: "" };
+        _this.state = {
+            animationName: '',
+            animationTargetPath: '',
+            animationType: 'Float',
+            loopMode: babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONLOOPMODE_CYCLE,
+            animationTargetProperty: '',
+        };
         return _this;
     }
     AddAnimation.prototype.getAnimationTypeofChange = function (selected) {
         var dataType = 0;
         switch (selected) {
-            case "Float":
+            case 'Float':
                 dataType = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_FLOAT;
                 break;
-            case "Quaternion":
+            case 'Quaternion':
                 dataType = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_QUATERNION;
                 break;
-            case "Vector3":
+            case 'Vector3':
                 dataType = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_VECTOR3;
                 break;
-            case "Vector2":
+            case 'Vector2':
                 dataType = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_VECTOR2;
                 break;
-            case "Size":
+            case 'Size':
                 dataType = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_SIZE;
                 break;
-            case "Color3":
+            case 'Color3':
                 dataType = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_COLOR3;
                 break;
-            case "Color4":
+            case 'Color4':
                 dataType = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_COLOR4;
                 break;
         }
@@ -58635,7 +58641,8 @@ var AddAnimation = /** @class */ (function (_super) {
     AddAnimation.prototype.addAnimation = function () {
         var _this = this;
         var _a, _b;
-        if (this.state.animationName != "" && this.state.animationTargetProperty != "") {
+        if (this.state.animationName != '' &&
+            this.state.animationTargetProperty != '') {
             var matchTypeTargetProperty = this.state.animationTargetProperty.split('.');
             var animationDataType = this.getAnimationTypeofChange(this.state.animationType);
             var matched = false;
@@ -58643,26 +58650,38 @@ var AddAnimation = /** @class */ (function (_super) {
                 var match = this.props.entity[matchTypeTargetProperty[0]];
                 if (match) {
                     switch (match.constructor.name) {
-                        case "Vector2":
-                            animationDataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_VECTOR2 ? matched = true : matched = false;
+                        case 'Vector2':
+                            animationDataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_VECTOR2
+                                ? (matched = true)
+                                : (matched = false);
                             break;
-                        case "Vector3":
-                            animationDataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_VECTOR3 ? matched = true : matched = false;
+                        case 'Vector3':
+                            animationDataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_VECTOR3
+                                ? (matched = true)
+                                : (matched = false);
                             break;
-                        case "Quaternion":
-                            animationDataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_QUATERNION ? matched = true : matched = false;
+                        case 'Quaternion':
+                            animationDataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_QUATERNION
+                                ? (matched = true)
+                                : (matched = false);
                             break;
-                        case "Color3":
-                            animationDataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_COLOR3 ? matched = true : matched = false;
+                        case 'Color3':
+                            animationDataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_COLOR3
+                                ? (matched = true)
+                                : (matched = false);
                             break;
-                        case "Color4":
-                            animationDataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_COLOR4 ? matched = true : matched = false;
+                        case 'Color4':
+                            animationDataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_COLOR4
+                                ? (matched = true)
+                                : (matched = false);
                             break;
-                        case "Size":
-                            animationDataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_SIZE ? matched = true : matched = false;
+                        case 'Size':
+                            animationDataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_SIZE
+                                ? (matched = true)
+                                : (matched = false);
                             break;
                         default:
-                            console.log("not recognized");
+                            console.log('not recognized');
                             break;
                     }
                 }
@@ -58671,9 +58690,14 @@ var AddAnimation = /** @class */ (function (_super) {
                 }
             }
             else if (matchTypeTargetProperty.length > 1) {
-                var match = this.props.entity[matchTypeTargetProperty[0]][matchTypeTargetProperty[1]];
-                if (typeof match === "number") {
-                    animationDataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_FLOAT ? matched = true : matched = false;
+                var matchProp = this.props.entity[matchTypeTargetProperty[0]];
+                if (matchProp) {
+                    var match = matchProp[matchTypeTargetProperty[1]];
+                    if (typeof match === 'number') {
+                        animationDataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_FLOAT
+                            ? (matched = true)
+                            : (matched = false);
+                    }
                 }
             }
             if (matched) {
@@ -58726,15 +58750,13 @@ var AddAnimation = /** @class */ (function (_super) {
                         inTangent = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Size"].Zero();
                         break;
                     default:
-                        console.log("not recognized");
+                        console.log('not recognized');
                         break;
                 }
-                var alreadyAnimatedProperty = (_a = this.props.entity.animations) === null || _a === void 0 ? void 0 : _a.find(function (anim) {
-                    return anim.targetProperty === _this.state.animationTargetProperty;
-                }, this);
-                var alreadyAnimationName = (_b = this.props.entity.animations) === null || _b === void 0 ? void 0 : _b.find(function (anim) {
-                    return anim.name === _this.state.animationName;
-                }, this);
+                var alreadyAnimatedProperty = (_a = this.props
+                    .entity.animations) === null || _a === void 0 ? void 0 : _a.find(function (anim) { return anim.targetProperty === _this.state.animationTargetProperty; }, this);
+                var alreadyAnimationName = (_b = this.props
+                    .entity.animations) === null || _b === void 0 ? void 0 : _b.find(function (anim) { return anim.name === _this.state.animationName; }, this);
                 if (alreadyAnimatedProperty) {
                     this.props.setNotificationMessage("The property \"" + this.state.animationTargetProperty + "\" already has an animation");
                 }
@@ -58748,23 +58770,31 @@ var AddAnimation = /** @class */ (function (_super) {
                     keys.push({
                         frame: 0,
                         value: startValue,
-                        outTangent: outTangent
+                        outTangent: outTangent,
                     });
                     keys.push({
                         inTangent: inTangent,
                         frame: 100,
-                        value: endValue
+                        value: endValue,
                     });
                     animation.setKeys(keys);
                     if (this.props.entity.animations) {
                         var store = this.props.entity.animations;
-                        var updatedCollection = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArrays"])(this.props.entity.animations, [animation]);
+                        var updatedCollection = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArrays"])(this.props.entity.animations, [
+                            animation,
+                        ]);
                         this.raiseOnPropertyChanged(updatedCollection, store);
                         this.props.entity.animations = updatedCollection;
                         this.props.changed();
                         this.props.close();
                         //Cleaning form fields
-                        this.setState({ animationName: "", animationTargetPath: "", animationType: "Float", loopMode: babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONLOOPMODE_CYCLE, animationTargetProperty: "" });
+                        this.setState({
+                            animationName: '',
+                            animationTargetPath: '',
+                            animationType: 'Float',
+                            loopMode: babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONLOOPMODE_CYCLE,
+                            animationTargetProperty: '',
+                        });
                     }
                 }
             }
@@ -58784,7 +58814,7 @@ var AddAnimation = /** @class */ (function (_super) {
             object: this.props.entity,
             property: 'animations',
             value: newValue,
-            initialValue: previousValue
+            initialValue: previousValue,
         });
     };
     AddAnimation.prototype.handleNameChange = function (event) {
@@ -58809,35 +58839,35 @@ var AddAnimation = /** @class */ (function (_super) {
     };
     AddAnimation.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "new-animation", style: { display: this.props.isOpen ? "block" : "none" } },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "sub-content" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label-input" },
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'new-animation', style: { display: this.props.isOpen ? 'block' : 'none' } },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'sub-content' },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'label-input' },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", null, "Target Path"),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", value: this.state.animationTargetPath, onChange: function (e) { return _this.handlePathChange(e); } })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label-input" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: 'text', value: this.state.animationTargetPath, onChange: function (e) { return _this.handlePathChange(e); }, disabled: true })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'label-input' },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", null, "Display Name"),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", value: this.state.animationName, onChange: function (e) { return _this.handleNameChange(e); } })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label-input" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: 'text', value: this.state.animationName, onChange: function (e) { return _this.handleNameChange(e); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'label-input' },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", null, "Property"),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", value: this.state.animationTargetProperty, onChange: function (e) { return _this.handlePropertyChange(e); } })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label-input" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: 'text', value: this.state.animationTargetProperty, onChange: function (e) { return _this.handlePropertyChange(e); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'label-input' },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", null, "Type"),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (e) { return _this.handleTypeChange(e); }, value: this.state.animationType },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { value: "Float" }, "Float"),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { value: "Vector3" }, "Vector3"),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { value: "Vector2" }, "Vector2"),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { value: "Quaternion" }, "Quaternion"),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { value: "Color3" }, "Color3"),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { value: "Color4" }, "Color4"),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { value: "Size" }, "Size"))),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label-input" },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { value: 'Float' }, "Float"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { value: 'Vector3' }, "Vector3"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { value: 'Vector2' }, "Vector2"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { value: 'Quaternion' }, "Quaternion"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { value: 'Color3' }, "Color3"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { value: 'Color4' }, "Color4"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { value: 'Size' }, "Size"))),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'label-input' },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", null, "Loop Mode"),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (e) { return _this.handleLoopModeChange(e); }, value: this.state.loopMode },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { value: babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONLOOPMODE_CYCLE }, "Cycle"),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { value: babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONLOOPMODE_RELATIVE }, "Relative"),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { value: babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONLOOPMODE_CONSTANT }, "Constant"))),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "confirm-buttons" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Create", onClick: function () { return _this.addAnimation(); } })))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'confirm-buttons' },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: 'Create', onClick: function () { return _this.addAnimation(); } })))));
     };
     return AddAnimation;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -58930,7 +58960,7 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         _this._entityName = _this.props.entity.id;
         // Review is we really need this refs
         _this._graphCanvas = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
-        _this._selectedCurve = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        //this._selectedCurve = React.createRef();
         _this._svgCanvas = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         console.log(_this.props.entity instanceof babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["TargetedAnimation"]);
         var initialSelection;
@@ -58939,16 +58969,32 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         if (_this.props.entity instanceof babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["TargetedAnimation"]) {
             _this._isTargetedAnimation = true;
             initialSelection = _this.props.entity.animation;
-            initialLerpMode = initialSelection !== undefined ? _this.analizeAnimationForLerp(initialSelection) : false;
-            initialPathData = initialSelection !== undefined ? _this.getPathData(initialSelection) : "";
+            initialLerpMode =
+                initialSelection !== undefined
+                    ? _this.analizeAnimationForLerp(initialSelection)
+                    : false;
+            initialPathData =
+                initialSelection !== undefined
+                    ? _this.getPathData(initialSelection)
+                    : undefined;
         }
         else {
             _this._isTargetedAnimation = false;
-            var hasAnimations = _this.props.entity.animations !== undefined || _this.props.entity.animations !== null ? _this.props.entity.animations : false;
-            initialSelection = hasAnimations !== false ? hasAnimations && hasAnimations[0] : null;
-            initialLerpMode = initialSelection !== undefined ? _this.analizeAnimationForLerp(_this.props.entity.animations && initialSelection) : false;
+            var hasAnimations = _this.props.entity.animations !== undefined ||
+                _this.props.entity.animations !== null
+                ? _this.props.entity.animations
+                : false;
+            initialSelection =
+                hasAnimations !== false ? hasAnimations && hasAnimations[0] : null;
+            initialLerpMode =
+                initialSelection !== undefined
+                    ? _this.analizeAnimationForLerp(_this.props.entity.animations && initialSelection)
+                    : false;
             initialPathData = initialSelection && _this.getPathData(initialSelection);
-            initialPathData = initialPathData === null || initialPathData === undefined ? "" : initialPathData;
+            initialPathData =
+                initialPathData === null || initialPathData === undefined
+                    ? undefined
+                    : initialPathData;
         }
         // will update this until we have a top scroll/zoom feature
         var valueInd = [2, 1.8, 1.6, 1.4, 1.2, 1, 0.8, 0.6, 0.4, 0.2, 0];
@@ -58962,15 +59008,23 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
             isTangentMode: false,
             isBrokenMode: false,
             lerpMode: initialLerpMode,
-            playheadOffset: _this._graphCanvas.current ? (_this._graphCanvas.current.children[1].clientWidth) / (_this._canvasLength * 10) : 0,
-            frameAxisLength: (new Array(_this._canvasLength)).fill(0).map(function (s, i) { return { value: i * 10, label: i * 10 }; }),
-            valueAxisLength: (new Array(10)).fill(0).map(function (s, i) { return { value: i * 10, label: valueInd[i] }; }),
-            notification: "",
+            playheadOffset: _this._graphCanvas.current
+                ? _this._graphCanvas.current.children[0].clientWidth /
+                    (_this._canvasLength * 10)
+                : 0,
+            frameAxisLength: new Array(_this._canvasLength).fill(0).map(function (s, i) {
+                return { value: i * 10, label: i * 10 };
+            }),
+            valueAxisLength: new Array(10).fill(0).map(function (s, i) {
+                return { value: i * 10, label: valueInd[i] };
+            }),
+            notification: '',
             currentPoint: undefined,
             scale: 1,
             playheadPos: 0,
             isPlaying: _this.isAnimationPlaying(),
-            selectedPathData: []
+            selectedPathData: initialPathData,
+            selectedCoordinate: 0,
         };
         return _this;
     }
@@ -58979,26 +59033,26 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         setTimeout(function () { return _this.resetPlayheadOffset(); }, 500);
     };
     /**
-    * Notifications
-    * To add notification we set the state and clear to make the notification bar hide.
-    */
+     * Notifications
+     * To add notification we set the state and clear to make the notification bar hide.
+     */
     AnimationCurveEditorComponent.prototype.clearNotification = function () {
-        this.setState({ notification: "" });
+        this.setState({ notification: '' });
     };
     /**
-    * Zoom and Scroll
-    * This section handles zoom and scroll
-    * of the graph area.
-    */
+     * Zoom and Scroll
+     * This section handles zoom and scroll
+     * of the graph area.
+     */
     AnimationCurveEditorComponent.prototype.zoom = function (e) {
         e.nativeEvent.stopImmediatePropagation();
         //console.log(e.deltaY);
         var scaleX = 1;
         if (Math.sign(e.deltaY) === -1) {
-            scaleX = (this.state.scale - 0.01);
+            scaleX = this.state.scale - 0.01;
         }
         else {
-            scaleX = (this.state.scale + 0.01);
+            scaleX = this.state.scale + 0.01;
         }
         this.setState({ scale: scaleX }, this.setAxesLength);
     };
@@ -59014,13 +59068,20 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
             highestFrame = this.state.selected.getHighestFrame();
         }
         if (length < (highestFrame * 2) / 10) {
-            length = (highestFrame * 2) / 10;
+            length = Math.round((highestFrame * 2) / 10);
         }
         var valueLines = Math.round((this.state.scale * this._heightScale) / 10);
         console.log(highestFrame);
-        var newFrameLength = (new Array(length)).fill(0).map(function (s, i) { return { value: i * 10, label: i * 10 }; });
-        var newValueLength = (new Array(valueLines)).fill(0).map(function (s, i) { return { value: i * 10, label: _this.getValueLabel(i * 10) }; });
-        this.setState({ frameAxisLength: newFrameLength, valueAxisLength: newValueLength });
+        var newFrameLength = new Array(length).fill(0).map(function (s, i) {
+            return { value: i * 10, label: i * 10 };
+        });
+        var newValueLength = new Array(valueLines).fill(0).map(function (s, i) {
+            return { value: i * 10, label: _this.getValueLabel(i * 10) };
+        });
+        this.setState({
+            frameAxisLength: newFrameLength,
+            valueAxisLength: newValueLength,
+        });
         this.resetPlayheadOffset();
     };
     AnimationCurveEditorComponent.prototype.getValueLabel = function (i) {
@@ -59033,19 +59094,22 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
             label = 1;
         }
         else {
-            label = ((100 - (i * 2)) * 0.01) + 1;
+            label = (100 - i * 2) * 0.01 + 1;
         }
         return label;
     };
     AnimationCurveEditorComponent.prototype.resetPlayheadOffset = function () {
         if (this._graphCanvas && this._graphCanvas.current) {
-            this.setState({ playheadOffset: (this._graphCanvas.current.children[1].clientWidth) / (this._canvasLength * 10 * this.state.scale) });
+            this.setState({
+                playheadOffset: this._graphCanvas.current.children[0].clientWidth /
+                    (this._canvasLength * 10 * this.state.scale),
+            });
         }
     };
     /**
-    * Keyframe Manipulation
-    * This section handles events from SvgDraggableArea.
-    */
+     * Keyframe Manipulation
+     * This section handles events from SvgDraggableArea.
+     */
     AnimationCurveEditorComponent.prototype.selectKeyframe = function (id) {
         var _a;
         var updatedKeyframes = (_a = this.state.svgKeyframes) === null || _a === void 0 ? void 0 : _a.map(function (kf) {
@@ -59062,11 +59126,11 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         var updatedKeyframes = (_a = this.state.svgKeyframes) === null || _a === void 0 ? void 0 : _a.map(function (kf) {
             if (kf.id === id) {
                 _this.setState({ isFlatTangentMode: false });
-                if (type === "left") {
+                if (type === 'left') {
                     kf.isLeftActive = !kf.isLeftActive;
                     kf.isRightActive = false;
                 }
-                if (type === "right") {
+                if (type === 'right') {
                     kf.isRightActive = !kf.isRightActive;
                     kf.isLeftActive = false;
                 }
@@ -59167,7 +59231,8 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         var keys = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArrays"])(animation.getKeys());
         var newFrame = 0;
         if (updatedSvgKeyFrame.keyframePoint.x !== 0) {
-            if (updatedSvgKeyFrame.keyframePoint.x > 0 && updatedSvgKeyFrame.keyframePoint.x < 1) {
+            if (updatedSvgKeyFrame.keyframePoint.x > 0 &&
+                updatedSvgKeyFrame.keyframePoint.x < 1) {
                 newFrame = 1;
             }
             else {
@@ -59176,13 +59241,19 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         }
         keys[index].frame = newFrame; // This value comes as percentage/frame/time
         // Calculate value for Vector3...
-        var updatedValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2; // this value comes inverted svg from 0 = 100 to 100 = 0
+        var updatedValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) /
+            this._heightScale) *
+            2; // this value comes inverted svg from 0 = 100 to 100 = 0
         keys[index].value = this.updateValuePerCoordinate(animation.dataType, keys[index].value, updatedValue, coordinate);
         if (updatedSvgKeyFrame.isLeftActive) {
             if (updatedSvgKeyFrame.leftControlPoint !== null) {
-                // Rotate 
-                var newValue = ((this._heightScale - updatedSvgKeyFrame.leftControlPoint.y) / this._heightScale) * 2;
-                var keyframeValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2;
+                // Rotate
+                var newValue = ((this._heightScale - updatedSvgKeyFrame.leftControlPoint.y) /
+                    this._heightScale) *
+                    2;
+                var keyframeValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) /
+                    this._heightScale) *
+                    2;
                 var updatedValue_1 = keyframeValue - newValue;
                 keys[index].inTangent = this.updateValuePerCoordinate(animation.dataType, keys[index].inTangent, updatedValue_1, coordinate);
                 if (!this.state.isBrokenMode) {
@@ -59196,13 +59267,18 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         }
         if (updatedSvgKeyFrame.isRightActive) {
             if (updatedSvgKeyFrame.rightControlPoint !== null) {
-                // Rotate 
-                var newValue = ((this._heightScale - updatedSvgKeyFrame.rightControlPoint.y) / this._heightScale) * 2;
-                var keyframeValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2;
+                // Rotate
+                var newValue = ((this._heightScale - updatedSvgKeyFrame.rightControlPoint.y) /
+                    this._heightScale) *
+                    2;
+                var keyframeValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) /
+                    this._heightScale) *
+                    2;
                 var updatedValue_2 = keyframeValue - newValue;
                 keys[index].outTangent = this.updateValuePerCoordinate(animation.dataType, keys[index].outTangent, updatedValue_2, coordinate);
                 if (!this.state.isBrokenMode) {
-                    if (updatedSvgKeyFrame.leftControlPoint !== null) { // Sets opposite value
+                    if (updatedSvgKeyFrame.leftControlPoint !== null) {
+                        // Sets opposite value
                         keys[index].inTangent = keys[index].outTangent * -1;
                     }
                 }
@@ -59212,9 +59288,9 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         this.selectAnimation(animation, coordinate);
     };
     /**
-    * Actions
-    * This section handles events from GraphActionsBar.
-    */
+     * Actions
+     * This section handles events from GraphActionsBar.
+     */
     AnimationCurveEditorComponent.prototype.handleFrameChange = function (event) {
         event.preventDefault();
         this.changeCurrentFrame(parseInt(event.target.value));
@@ -59244,7 +59320,9 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         var _this = this;
         if (this.state.selected !== null) {
             var animation_1 = this.state.selected;
-            this.setState({ isFlatTangentMode: !this.state.isFlatTangentMode }, function () { return _this.selectAnimation(animation_1); });
+            this.setState({ isFlatTangentMode: !this.state.isFlatTangentMode }, function () {
+                return _this.selectAnimation(animation_1);
+            });
         }
     };
     // Use this for Bezier curve mode
@@ -59252,21 +59330,27 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         var _this = this;
         if (this.state.selected !== null) {
             var animation_2 = this.state.selected;
-            this.setState({ isTangentMode: !this.state.isTangentMode }, function () { return _this.selectAnimation(animation_2); });
+            this.setState({ isTangentMode: !this.state.isTangentMode }, function () {
+                return _this.selectAnimation(animation_2);
+            });
         }
     };
     AnimationCurveEditorComponent.prototype.setBrokenMode = function () {
         var _this = this;
         if (this.state.selected !== null) {
             var animation_3 = this.state.selected;
-            this.setState({ isBrokenMode: !this.state.isBrokenMode }, function () { return _this.selectAnimation(animation_3); });
+            this.setState({ isBrokenMode: !this.state.isBrokenMode }, function () {
+                return _this.selectAnimation(animation_3);
+            });
         }
     };
     AnimationCurveEditorComponent.prototype.setLerpMode = function () {
         var _this = this;
         if (this.state.selected !== null) {
             var animation_4 = this.state.selected;
-            this.setState({ lerpMode: !this.state.lerpMode }, function () { return _this.selectAnimation(animation_4); });
+            this.setState({ lerpMode: !this.state.lerpMode }, function () {
+                return _this.selectAnimation(animation_4);
+            });
         }
     };
     AnimationCurveEditorComponent.prototype.addKeyframeClick = function () {
@@ -59308,13 +59392,13 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
             var currentAnimation = this.state.selected;
             var keys = currentAnimation.getKeys();
             var height = 100;
-            var middle = (height / 2);
+            var middle = height / 2;
             var keyValue;
             if (cursorpt.y < middle) {
-                keyValue = 1 + ((100 / cursorpt.y) * .1);
+                keyValue = 1 + (100 / cursorpt.y) * 0.1;
             }
             if (cursorpt.y > middle) {
-                keyValue = 1 - ((100 / cursorpt.y) * .1);
+                keyValue = 1 - (100 / cursorpt.y) * 0.1;
             }
             keys.push({ frame: cursorpt.x, value: keyValue });
             currentAnimation.setKeys(keys);
@@ -59322,16 +59406,16 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         }
     };
     /**
-    * Curve Rendering Functions
-    * This section handles how to render curves.
-    */
+     * Curve Rendering Functions
+     * This section handles how to render curves.
+     */
     AnimationCurveEditorComponent.prototype.linearInterpolation = function (keyframes, data, middle) {
         var _this = this;
         keyframes.forEach(function (key, i) {
             // identify type of value and split...
             var point = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](0, 0);
             point.x = key.frame;
-            point.y = _this._heightScale - (key.value * middle);
+            point.y = _this._heightScale - key.value * middle;
             _this.setKeyframePointLinear(point, i);
             if (i !== 0) {
                 data += " L" + point.x + " " + point.y;
@@ -59341,7 +59425,15 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
     };
     AnimationCurveEditorComponent.prototype.setKeyframePointLinear = function (point, index) {
         // here set the ID to a unique id
-        var svgKeyframe = { keyframePoint: point, rightControlPoint: null, leftControlPoint: null, id: index.toString(), selected: false, isLeftActive: false, isRightActive: false };
+        var svgKeyframe = {
+            keyframePoint: point,
+            rightControlPoint: null,
+            leftControlPoint: null,
+            id: index.toString(),
+            selected: false,
+            isLeftActive: false,
+            isRightActive: false,
+        };
         this._svgKeyframes.push(svgKeyframe);
     };
     AnimationCurveEditorComponent.prototype.flatTangents = function (keyframes, dataType) {
@@ -59426,7 +59518,7 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
                 var id = name_1 + "_" + targetProperty + "_" + d;
                 var curveColor = valueType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT ? colors[4] : colors[d];
                 // START OF LINE/CURVE
-                var data = "M" + startKey.frame + ", " + (this._heightScale - (startValue[d] * middle)); // 
+                var data = "M" + startKey.frame + ", " + (this._heightScale - startValue[d] * middle); //
                 if (this.state && this.state.lerpMode) {
                     data = this.linearInterpolation(keyframes, data, middle);
                 }
@@ -59462,7 +59554,13 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
                         }
                     }
                 }
-                collection.push({ pathData: data, pathLength: highestFrame, domCurve: react__WEBPACK_IMPORTED_MODULE_1__["createRef"](), color: curveColor, id: id });
+                collection.push({
+                    pathData: data,
+                    pathLength: highestFrame,
+                    domCurve: react__WEBPACK_IMPORTED_MODULE_1__["createRef"](),
+                    color: curveColor,
+                    id: id,
+                });
             }
             return collection;
         }
@@ -59477,7 +59575,13 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         var framesPerSecond = animation.framePerSecond;
         var highestFrame = animation.getHighestFrame();
         //let serialized = animation.serialize();
-        var usesTangents = animation.getKeys().find(function (kf) { return kf.hasOwnProperty('inTangent') || kf.hasOwnProperty('outTangent'); }) !== undefined ? true : false;
+        var usesTangents = animation
+            .getKeys()
+            .find(function (kf) {
+            return kf.hasOwnProperty('inTangent') || kf.hasOwnProperty('outTangent');
+        }) !== undefined
+            ? true
+            : false;
         var valueType = animation.dataType;
         // easing properties
         var easingType, easingMode;
@@ -59490,55 +59594,87 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
             easingType = easingFunction.constructor.name;
             easingMode = easingFunction.getEasingMode();
         }
-        return { loopMode: loopMode, name: name, blendingSpeed: blendingSpeed, targetPropertyPath: targetPropertyPath, targetProperty: targetProperty, framesPerSecond: framesPerSecond, highestFrame: highestFrame, usesTangents: usesTangents, easingType: easingType, easingMode: easingMode, valueType: valueType };
+        return {
+            loopMode: loopMode,
+            name: name,
+            blendingSpeed: blendingSpeed,
+            targetPropertyPath: targetPropertyPath,
+            targetProperty: targetProperty,
+            framesPerSecond: framesPerSecond,
+            highestFrame: highestFrame,
+            usesTangents: usesTangents,
+            easingType: easingType,
+            easingMode: easingMode,
+            valueType: valueType,
+        };
     };
     AnimationCurveEditorComponent.prototype.curvePathWithTangents = function (keyframes, data, middle, type, coordinate, animationName) {
         var _this = this;
         keyframes.forEach(function (key, i) {
             var _a;
             // Create a unique id for curve
-            var curveId = animationName + "_" + i;
+            var curveId = animationName + '_' + i;
             // identify type of value and split...
             var keyframe_valueAsArray = _this.getValueAsArray(type, key.value)[coordinate];
             var svgKeyframe;
             var outTangent;
             var inTangent;
             var defaultWeight = 5;
-            var inT = key.inTangent === undefined ? null : _this.getValueAsArray(type, key.inTangent)[coordinate];
-            var outT = key.outTangent === undefined ? null : _this.getValueAsArray(type, key.outTangent)[coordinate];
-            var y = _this._heightScale - (keyframe_valueAsArray * middle);
+            var inT = key.inTangent === undefined
+                ? null
+                : _this.getValueAsArray(type, key.inTangent)[coordinate];
+            var outT = key.outTangent === undefined
+                ? null
+                : _this.getValueAsArray(type, key.outTangent)[coordinate];
+            var y = _this._heightScale - keyframe_valueAsArray * middle;
             var nextKeyframe = keyframes[i + 1];
             var prevKeyframe = keyframes[i - 1];
             if (nextKeyframe !== undefined) {
                 var distance = keyframes[i + 1].frame - key.frame;
-                defaultWeight = distance * .33;
+                defaultWeight = distance * 0.33;
             }
             if (prevKeyframe !== undefined) {
                 var distance = key.frame - keyframes[i - 1].frame;
-                defaultWeight = distance * .33;
+                defaultWeight = distance * 0.33;
             }
             if (inT !== null) {
-                var valueIn = (y * inT) + y;
+                var valueIn = y * inT + y;
                 inTangent = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame - defaultWeight, valueIn);
             }
             else {
                 inTangent = null;
             }
             if (outT !== null) {
-                var valueOut = (y * outT) + y;
+                var valueOut = y * outT + y;
                 outTangent = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame + defaultWeight, valueOut);
             }
             else {
                 outTangent = null;
             }
             if (i === 0) {
-                svgKeyframe = { keyframePoint: new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, _this._heightScale - (keyframe_valueAsArray * middle)), rightControlPoint: outTangent, leftControlPoint: null, id: curveId, selected: false, isLeftActive: false, isRightActive: false };
+                svgKeyframe = {
+                    keyframePoint: new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, _this._heightScale - keyframe_valueAsArray * middle),
+                    rightControlPoint: outTangent,
+                    leftControlPoint: null,
+                    id: curveId,
+                    selected: false,
+                    isLeftActive: false,
+                    isRightActive: false,
+                };
                 if (outTangent !== null) {
                     data += " C" + outTangent.x + " " + outTangent.y + " ";
                 }
             }
             else {
-                svgKeyframe = { keyframePoint: new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, _this._heightScale - (keyframe_valueAsArray * middle)), rightControlPoint: outTangent, leftControlPoint: inTangent, id: curveId, selected: false, isLeftActive: false, isRightActive: false };
+                svgKeyframe = {
+                    keyframePoint: new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, _this._heightScale - keyframe_valueAsArray * middle),
+                    rightControlPoint: outTangent,
+                    leftControlPoint: inTangent,
+                    id: curveId,
+                    selected: false,
+                    isLeftActive: false,
+                    isRightActive: false,
+                };
                 if (outTangent !== null && inTangent !== null) {
                     data += " " + inTangent.x + " " + inTangent.y + " " + svgKeyframe.keyframePoint.x + " " + svgKeyframe.keyframePoint.y + " C" + outTangent.x + " " + outTangent.y + " ";
                 }
@@ -59561,47 +59697,49 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
     AnimationCurveEditorComponent.prototype.curvePath = function (keyframes, data, middle, easingFunction) {
         var _this = this;
         // This will get 1/4 and 3/4 of points in eased curve
-        var u = .25;
-        var v = .75;
+        var u = 0.25;
+        var v = 0.75;
         keyframes.forEach(function (key, i) {
             // identify type of value and split...
             // Gets previous initial point of curve segment
             var pointA = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](0, 0);
             if (i === 0) {
                 pointA.x = key.frame;
-                pointA.y = _this._heightScale - (key.value * middle);
+                pointA.y = _this._heightScale - key.value * middle;
                 _this.setKeyframePoint([pointA], i, keyframes.length);
             }
             else {
                 pointA.x = keyframes[i - 1].frame;
-                pointA.y = _this._heightScale - (keyframes[i - 1].value * middle);
+                pointA.y = _this._heightScale - keyframes[i - 1].value * middle;
                 // Gets the end point of this curve segment
-                var pointB = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, _this._heightScale - (key.value * middle));
+                var pointB = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, _this._heightScale - key.value * middle);
                 // Get easing value of percentage to get the bezier control points below
                 var du = easingFunction.easeInCore(u); // What to do here, when user edits the curve? Option 1: Modify the curve with the new control points as BezierEaseCurve(x,y,z,w)
                 var dv = easingFunction.easeInCore(v); // Option 2: Create a easeInCore function and adapt it with the new control points values... needs more revision.
                 // Direction of curve up/down
                 var yInt25 = 0;
-                if (pointB.y > pointA.y) { // if pointB.y > pointA.y = goes down 
-                    yInt25 = ((pointB.y - pointA.y) * du) + pointA.y;
+                if (pointB.y > pointA.y) {
+                    // if pointB.y > pointA.y = goes down
+                    yInt25 = (pointB.y - pointA.y) * du + pointA.y;
                 }
-                else if (pointB.y < pointA.y) { // if pointB.y < pointA.y = goes up
-                    yInt25 = pointA.y - ((pointA.y - pointB.y) * du);
+                else if (pointB.y < pointA.y) {
+                    // if pointB.y < pointA.y = goes up
+                    yInt25 = pointA.y - (pointA.y - pointB.y) * du;
                 }
                 var yInt75 = 0;
                 if (pointB.y > pointA.y) {
-                    yInt75 = ((pointB.y - pointA.y) * dv) + pointA.y;
+                    yInt75 = (pointB.y - pointA.y) * dv + pointA.y;
                 }
                 else if (pointB.y < pointA.y) {
-                    yInt75 = pointA.y - ((pointA.y - pointB.y) * dv);
+                    yInt75 = pointA.y - (pointA.y - pointB.y) * dv;
                 }
                 // Intermediate points in curve
-                var intermediatePoint25 = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](((pointB.x - pointA.x) * u) + pointA.x, yInt25);
-                var intermediatePoint75 = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](((pointB.x - pointA.x) * v) + pointA.x, yInt75);
+                var intermediatePoint25 = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"]((pointB.x - pointA.x) * u + pointA.x, yInt25);
+                var intermediatePoint75 = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"]((pointB.x - pointA.x) * v + pointA.x, yInt75);
                 // Gets the four control points of bezier curve
                 var controlPoints = _this.interpolateControlPoints(pointA, intermediatePoint25, u, intermediatePoint75, v, pointB);
                 if (controlPoints === undefined) {
-                    console.log("error getting bezier control points");
+                    console.log('error getting bezier control points');
                 }
                 else {
                     _this.setKeyframePoint(controlPoints, i, keyframes.length);
@@ -59614,11 +59752,27 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
     AnimationCurveEditorComponent.prototype.setKeyframePoint = function (controlPoints, index, keyframesCount) {
         var svgKeyframe;
         if (index === 0) {
-            svgKeyframe = { keyframePoint: controlPoints[0], rightControlPoint: null, leftControlPoint: null, id: index.toString(), selected: false, isLeftActive: false, isRightActive: false };
+            svgKeyframe = {
+                keyframePoint: controlPoints[0],
+                rightControlPoint: null,
+                leftControlPoint: null,
+                id: index.toString(),
+                selected: false,
+                isLeftActive: false,
+                isRightActive: false,
+            };
         }
         else {
             this._svgKeyframes[index - 1].rightControlPoint = controlPoints[1];
-            svgKeyframe = { keyframePoint: controlPoints[3], rightControlPoint: null, leftControlPoint: controlPoints[2], id: index.toString(), selected: false, isLeftActive: false, isRightActive: false };
+            svgKeyframe = {
+                keyframePoint: controlPoints[3],
+                rightControlPoint: null,
+                leftControlPoint: controlPoints[2],
+                id: index.toString(),
+                selected: false,
+                isLeftActive: false,
+                isRightActive: false,
+            };
         }
         this._svgKeyframes.push(svgKeyframe);
     };
@@ -59634,7 +59788,7 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         var controlB = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"]();
         var controlC = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"]();
         var controlD = p3;
-        if ((u <= 0.0) || (u >= 1.0) || (v <= 0.0) || (v >= 1.0) || (u >= v)) {
+        if (u <= 0.0 || u >= 1.0 || v <= 0.0 || v >= 1.0 || u >= v) {
             return undefined;
         }
         a = 3 * (1 - u) * (1 - u) * u;
@@ -59650,30 +59804,31 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         q2.y = p2.y - ((1 - v) * (1 - v) * (1 - v) * p0.y + v * v * v * p3.y);
         controlB.x = (d * q1.x - b * q2.x) / det;
         controlB.y = (d * q1.y - b * q2.y) / det;
-        controlC.x = ((-c) * q1.x + a * q2.x) / det;
-        controlC.y = ((-c) * q1.y + a * q2.y) / det;
+        controlC.x = (-c * q1.x + a * q2.x) / det;
+        controlC.y = (-c * q1.y + a * q2.y) / det;
         return [controlA, controlB, controlC, controlD];
     };
     /**
-    * Core functions
-    * This section handles main Curve Editor Functions.
-    */
+     * Core functions
+     * This section handles main Curve Editor Functions.
+     */
     AnimationCurveEditorComponent.prototype.selectAnimation = function (animation, coordinate) {
         var _a;
         this._svgKeyframes = [];
         var updatedPath;
         var filteredSvgKeys;
+        var selectedCurve = 0;
         if (coordinate === undefined) {
             this.playStopAnimation();
             updatedPath = this.getPathData(animation);
             if (updatedPath === undefined) {
-                console.log("no keyframes in this animation");
+                console.log('no keyframes in this animation');
             }
         }
         else {
             var curves = this.getPathData(animation);
             if (curves === undefined) {
-                console.log("no keyframes in this animation");
+                console.log('no keyframes in this animation');
             }
             updatedPath = [];
             filteredSvgKeys = (_a = this._svgKeyframes) === null || _a === void 0 ? void 0 : _a.filter(function (curve) {
@@ -59691,9 +59846,15 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
                     updatedPath.push(curve);
                 }
             });
+            selectedCurve = coordinate;
         }
         // check for empty svgKeyframes, lastframe, selected
-        this.setState({ selected: animation, svgKeyframes: coordinate !== undefined ? filteredSvgKeys : this._svgKeyframes, selectedPathData: updatedPath });
+        this.setState({
+            selected: animation,
+            svgKeyframes: coordinate !== undefined ? filteredSvgKeys : this._svgKeyframes,
+            selectedPathData: updatedPath,
+            selectedCoordinate: selectedCurve,
+        });
     };
     AnimationCurveEditorComponent.prototype.isAnimationPlaying = function () {
         var target = this.props.entity;
@@ -59707,7 +59868,8 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         if (this.props.entity instanceof babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["TargetedAnimation"]) {
             target = this.props.entity.target;
         }
-        this._isPlaying = this.props.scene.getAllAnimatablesByTarget(target).length > 0;
+        this._isPlaying =
+            this.props.scene.getAllAnimatablesByTarget(target).length > 0;
         if (this._isPlaying) {
             this.props.playOrPause && this.props.playOrPause();
             return true;
@@ -59720,7 +59882,9 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
     AnimationCurveEditorComponent.prototype.analizeAnimationForLerp = function (animation) {
         if (animation !== null) {
             var _a = this.getAnimationData(animation), easingMode = _a.easingMode, easingType = _a.easingType, usesTangents = _a.usesTangents;
-            if (easingType === undefined && easingMode === undefined && !usesTangents) {
+            if (easingType === undefined &&
+                easingMode === undefined &&
+                !usesTangents) {
                 return true;
             }
             else {
@@ -59732,21 +59896,29 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         }
     };
     /**
-    * Timeline
-    * This section controls the timeline.
-    */
+     * Timeline
+     * This section controls the timeline.
+     */
     AnimationCurveEditorComponent.prototype.changeCurrentFrame = function (frame) {
         var currentValue;
-        var selectedCurve = this._selectedCurve.current;
-        if (selectedCurve) {
-            var curveLength = selectedCurve.getTotalLength();
-            var frameValue = (frame * curveLength) / 100;
-            var currentP = selectedCurve.getPointAtLength(frameValue);
-            var middle = this._heightScale / 2;
-            var offset = ((((currentP === null || currentP === void 0 ? void 0 : currentP.y) * this._heightScale) - (Math.pow(this._heightScale, 2)) / 2) / middle) / this._heightScale;
-            var unit = Math.sign(offset);
-            currentValue = unit === -1 ? Math.abs(offset + unit) : unit - offset;
-            this.setState({ currentFrame: frame, currentValue: currentValue, currentPoint: currentP });
+        if (this.state.selectedPathData) {
+            var selectedCurve = this.state.selectedPathData[this.state.selectedCoordinate].domCurve.current;
+            if (selectedCurve) {
+                var curveLength = selectedCurve.getTotalLength();
+                var frameValue = (frame * curveLength) / 100;
+                var currentP = selectedCurve.getPointAtLength(frameValue);
+                var middle = this._heightScale / 2;
+                var offset = ((currentP === null || currentP === void 0 ? void 0 : currentP.y) * this._heightScale - Math.pow(this._heightScale, 2) / 2) /
+                    middle /
+                    this._heightScale;
+                var unit = Math.sign(offset);
+                currentValue = unit === -1 ? Math.abs(offset + unit) : unit - offset;
+                this.setState({
+                    currentFrame: frame,
+                    currentValue: currentValue,
+                    currentPoint: currentP,
+                });
+            }
         }
     };
     AnimationCurveEditorComponent.prototype.updateFrameInKeyFrame = function (frame, index) {
@@ -59759,6 +59931,7 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
         }
     };
     AnimationCurveEditorComponent.prototype.playPause = function (direction) {
+        this.registerObs();
         if (this.state.selected) {
             var target = this.props.entity;
             if (this.props.entity instanceof babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["TargetedAnimation"]) {
@@ -59775,10 +59948,10 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
                 var firstFrame = keys[0].frame;
                 var LastFrame = keys[keys.length - 1].frame;
                 if (direction === 1) {
-                    this.props.scene.beginAnimation(target, firstFrame, LastFrame, true);
+                    this._mainAnimatable = this.props.scene.beginAnimation(target, firstFrame, LastFrame, true);
                 }
                 if (direction === -1) {
-                    this.props.scene.beginAnimation(target, LastFrame, firstFrame, true);
+                    this._mainAnimatable = this.props.scene.beginAnimation(target, LastFrame, firstFrame, true);
                 }
                 this._isPlaying = true;
                 this.setState({ isPlaying: true });
@@ -59786,37 +59959,77 @@ var AnimationCurveEditorComponent = /** @class */ (function (_super) {
             }
         }
     };
+    AnimationCurveEditorComponent.prototype.moveFrameTo = function (e) {
+        var svg = e.currentTarget;
+        var CTM = svg.getScreenCTM();
+        var position;
+        if (CTM) {
+            position = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"]((e.clientX - CTM.e) / CTM.a, (e.clientY - CTM.f) / CTM.d);
+            var selectedFrame = Math.round(position.x);
+            this.setState({ currentFrame: selectedFrame });
+        }
+    };
+    AnimationCurveEditorComponent.prototype.registerObs = function () {
+        var _this = this;
+        this._onBeforeRenderObserver = this.props.scene.onBeforeRenderObservable.add(function () {
+            if (!_this._isPlaying || !_this._mainAnimatable) {
+                return;
+            }
+            _this.setState({
+                currentFrame: Math.round(_this._mainAnimatable.masterFrame),
+            });
+        });
+    };
+    AnimationCurveEditorComponent.prototype.componentWillUnmount = function () {
+        if (this._onBeforeRenderObserver) {
+            this.props.scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
+            this._onBeforeRenderObserver = null;
+        }
+    };
     AnimationCurveEditorComponent.prototype.render = function () {
         var _this = this;
         var _a;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "animation-curve-editor" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_notification__WEBPACK_IMPORTED_MODULE_6__["Notification"], { message: this.state.notification, open: this.state.notification !== "" ? true : false, close: function () { return _this.clearNotification(); } }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_graphActionsBar__WEBPACK_IMPORTED_MODULE_7__["GraphActionsBar"], { enabled: this.state.selected === null || this.state.selected === undefined ? false : true, title: this._entityName, close: this.props.close, currentValue: this.state.currentValue, currentFrame: this.state.currentFrame, handleFrameChange: function (e) { return _this.handleFrameChange(e); }, handleValueChange: function (e) { return _this.handleValueChange(e); }, addKeyframe: function () { return _this.addKeyframeClick(); }, removeKeyframe: function () { return _this.removeKeyframeClick(); }, brokenMode: this.state.isBrokenMode, brokeTangents: function () { return _this.setBrokenMode(); }, lerpMode: this.state.lerpMode, setLerpMode: function () { return _this.setLerpMode(); }, flatTangent: function () { return _this.setFlatTangent(); } }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "content" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "row" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_editorControls__WEBPACK_IMPORTED_MODULE_8__["EditorControls"], { selectAnimation: function (animation, axis) { return _this.selectAnimation(animation, axis); }, isTargetedAnimation: this._isTargetedAnimation, entity: this.props.entity, selected: this.state.selected, lockObject: this.props.lockObject, setNotificationMessage: function (message) { _this.setState({ notification: message }); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { ref: this._graphCanvas, className: "graph-chart", onWheel: function (e) { return _this.zoom(e); } },
-                        this.state.svgKeyframes && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_svgDraggableArea__WEBPACK_IMPORTED_MODULE_3__["SvgDraggableArea"], { ref: this._svgCanvas, selectKeyframe: function (id) { return _this.selectKeyframe(id); }, viewBoxScale: this.state.frameAxisLength.length, scale: this.state.scale, keyframeSvgPoints: this.state.svgKeyframes, selectedControlPoint: function (type, id) { return _this.selectedControlPoint(type, id); }, updatePosition: function (updatedSvgKeyFrame, id) { return _this.renderPoints(updatedSvgKeyFrame, id); } }, (_a = this.state.selectedPathData) === null || _a === void 0 ? void 0 :
-                            _a.map(function (curve, i) {
-                                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("path", { key: i, ref: curve.domCurve, pathLength: curve.pathLength, id: "curve", d: curve.pathData, style: { stroke: curve.color, fill: 'none', strokeWidth: '0.5' } });
-                            }),
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: 'animation-curve-editor' },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_notification__WEBPACK_IMPORTED_MODULE_6__["Notification"], { message: this.state.notification, open: this.state.notification !== '' ? true : false, close: function () { return _this.clearNotification(); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_graphActionsBar__WEBPACK_IMPORTED_MODULE_7__["GraphActionsBar"], { enabled: this.state.selected === null || this.state.selected === undefined
+                    ? false
+                    : true, title: this._entityName, close: this.props.close, currentValue: this.state.currentValue, currentFrame: this.state.currentFrame, handleFrameChange: function (e) { return _this.handleFrameChange(e); }, handleValueChange: function (e) { return _this.handleValueChange(e); }, addKeyframe: function () { return _this.addKeyframeClick(); }, removeKeyframe: function () { return _this.removeKeyframeClick(); }, brokenMode: this.state.isBrokenMode, brokeTangents: function () { return _this.setBrokenMode(); }, lerpMode: this.state.lerpMode, setLerpMode: function () { return _this.setLerpMode(); }, flatTangent: function () { return _this.setFlatTangent(); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'content' },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'row' },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_editorControls__WEBPACK_IMPORTED_MODULE_8__["EditorControls"], { selectAnimation: function (animation, axis) { return _this.selectAnimation(animation, axis); }, isTargetedAnimation: this._isTargetedAnimation, entity: this.props.entity, selected: this.state.selected, lockObject: this.props.lockObject, setNotificationMessage: function (message) {
+                            _this.setState({ notification: message });
+                        } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { ref: this._graphCanvas, className: 'graph-chart', onWheel: function (e) { return _this.zoom(e); } },
+                        this.state.svgKeyframes && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_svgDraggableArea__WEBPACK_IMPORTED_MODULE_3__["SvgDraggableArea"], { ref: this._svgCanvas, selectKeyframe: function (id) { return _this.selectKeyframe(id); }, viewBoxScale: this.state.frameAxisLength.length, scale: this.state.scale, keyframeSvgPoints: this.state.svgKeyframes, selectedControlPoint: function (type, id) {
+                                return _this.selectedControlPoint(type, id);
+                            }, updatePosition: function (updatedSvgKeyFrame, id) { return _this.renderPoints(updatedSvgKeyFrame, id); } }, (_a = this.state.selectedPathData) === null || _a === void 0 ? void 0 :
+                            _a.map(function (curve, i) { return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("path", { key: i, ref: curve.domCurve, pathLength: curve.pathLength, id: 'curve', d: curve.pathData, style: {
+                                    stroke: curve.color,
+                                    fill: 'none',
+                                    strokeWidth: '0.5',
+                                } })); }),
                             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", null,
-                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("rect", { x: "-4%", y: "0%", width: "5%", height: "101%", fill: "#222" })),
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("rect", { x: '-4%', y: '0%', width: '5%', height: '101%', fill: '#222' })),
                             this.state.valueAxisLength.map(function (f, i) {
-                                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { key: i },
-                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { x: "-4", y: f.value, dx: "0", dy: "1", style: { fontSize: 0.2 * _this.state.scale + "em" } }, f.label.toFixed(1)),
-                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: "0", y1: f.value, x2: "105%", y2: f.value }));
+                                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { key: i },
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { x: '-4', y: f.value, dx: '0', dy: '1', style: { fontSize: 0.2 * _this.state.scale + "em" } }, f.label.toFixed(1)),
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: '0', y1: f.value, x2: '105%', y2: f.value })));
                             }),
                             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", null,
-                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("rect", { x: "0%", y: "91%", width: "105%", height: "10%", fill: "#222" })),
-                            this.state.frameAxisLength.map(function (f, i) {
-                                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { key: i, x: "0", y: "96%" },
-                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { x: f.value, y: "0", dx: "2px", style: { fontSize: 0.2 * _this.state.scale + "em" } }, f.value),
-                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: f.value, y1: "0", x2: f.value, y2: "5%" }));
-                            })),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_playhead__WEBPACK_IMPORTED_MODULE_5__["Playhead"], { frame: this.state.currentFrame, offset: this.state.playheadOffset }))),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "row-bottom" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_timeline__WEBPACK_IMPORTED_MODULE_4__["Timeline"], { currentFrame: this.state.currentFrame, playPause: function (direction) { return _this.playPause(direction); }, isPlaying: this.state.isPlaying, dragKeyframe: function (frame, index) { return _this.updateFrameInKeyFrame(frame, index); }, onCurrentFrameChange: function (frame) { return _this.changeCurrentFrame(frame); }, keyframes: this.state.selected && this.state.selected.getKeys(), selected: this.state.selected && this.state.selected.getKeys()[0] })))));
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("rect", { onClick: function (e) { return _this.moveFrameTo(e); }, x: '0%', y: '91%', width: '105%', height: '10%', fill: '#222', style: { cursor: 'pointer' } })),
+                            this.state.frameAxisLength.map(function (f, i) { return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { key: i, x: '0', y: '96%' },
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { x: f.value, y: '0', dx: '2px', style: { fontSize: 0.2 * _this.state.scale + "em" } }, f.value),
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: f.value, y1: '0', x2: f.value, y2: '5%' }))); }))),
+                        this.state.selected === null ||
+                            this.state.selected === undefined ? null : (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_playhead__WEBPACK_IMPORTED_MODULE_5__["Playhead"], { frame: this.state.currentFrame, offset: this.state.playheadOffset, onCurrentFrameChange: function (frame) {
+                                return _this.changeCurrentFrame(frame);
+                            } })))),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'row-bottom' },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_timeline__WEBPACK_IMPORTED_MODULE_4__["Timeline"], { currentFrame: this.state.currentFrame, playPause: function (direction) { return _this.playPause(direction); }, isPlaying: this.state.isPlaying, dragKeyframe: function (frame, index) {
+                            return _this.updateFrameInKeyFrame(frame, index);
+                        }, onCurrentFrameChange: function (frame) {
+                            return _this.changeCurrentFrame(frame);
+                        }, keyframes: this.state.selected && this.state.selected.getKeys(), selected: this.state.selected && this.state.selected.getKeys()[0] })))));
     };
     return AnimationCurveEditorComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -60208,11 +60421,13 @@ var AnimationGridComponent = /** @class */ (function (_super) {
         _this._animationControl = {
             from: 0,
             to: 0,
-            loop: false
+            loop: false,
         };
         _this.state = { currentFrame: 0 };
         var animatableAsAny = _this.props.animatable;
-        _this._ranges = animatableAsAny.getAnimationRanges ? animatableAsAny.getAnimationRanges() : [];
+        _this._ranges = animatableAsAny.getAnimationRanges
+            ? animatableAsAny.getAnimationRanges()
+            : [];
         if (animatableAsAny.getAnimatables) {
             var animatables = animatableAsAny.getAnimatables();
             _this._animations = new Array();
@@ -60246,7 +60461,8 @@ var AnimationGridComponent = /** @class */ (function (_super) {
     }
     AnimationGridComponent.prototype.playOrPause = function () {
         var animatable = this.props.animatable;
-        this._isPlaying = this.props.scene.getAllAnimatablesByTarget(animatable).length > 0;
+        this._isPlaying =
+            this.props.scene.getAllAnimatablesByTarget(animatable).length > 0;
         if (this._isPlaying) {
             this.props.scene.stopAnimation(this.props.animatable);
             this._mainAnimatable = null;
@@ -60290,7 +60506,7 @@ var AnimationGridComponent = /** @class */ (function (_super) {
     AnimationGridComponent.prototype.onCloseAnimationCurveEditor = function (window) {
         this._isCurveEditorOpen = false;
         if (window === null) {
-            console.log("Window already closed");
+            console.log('Window already closed');
         }
         else {
             window.close();
@@ -60312,47 +60528,50 @@ var AnimationGridComponent = /** @class */ (function (_super) {
         }
         var animations = animatable.animations;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
-            this._ranges.length > 0 &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ANIMATION RANGES" }, this._ranges.map(function (range, i) {
-                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { key: range.name + i, label: range.name, onClick: function () {
-                            _this._mainAnimatable = null;
-                            _this.props.scene.beginAnimation(animatable, range.from, range.to, true);
-                        } }));
-                })),
-            animations &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ANIMATIONS" },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { label: "Count", value: animations.length.toString() }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Edit", onClick: function () { return _this.onOpenAnimationCurveEditor(); } }),
-                        animations.map(function (anim, i) {
-                            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { key: anim.targetProperty + i, label: "#" + i + " >", value: anim.targetProperty }));
-                        }),
-                        this._isCurveEditorOpen && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_popupComponent__WEBPACK_IMPORTED_MODULE_10__["PopupComponent"], { id: "curve-editor", title: "Curve Animation Editor", size: { width: 1024, height: 490 }, onOpen: function (window) { }, onClose: function (window) { return _this.onCloseAnimationCurveEditor(window); } },
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_animationCurveEditorComponent__WEBPACK_IMPORTED_MODULE_9__["AnimationCurveEditorComponent"], { scene: this.props.scene, entity: animatableAsAny, close: function (event) { return _this.onCloseAnimationCurveEditor(event.view); }, lockObject: this.props.lockObject, playOrPause: function () { return _this.playOrPause(); } }))),
-                    animations.length > 0 &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ANIMATION GENERAL CONTROL" },
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { lockObject: this.props.lockObject, isInteger: true, label: "From", target: this._animationControl, propertyName: "from", onChange: function () { return _this.onChangeFromOrTo(); } }),
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { lockObject: this.props.lockObject, isInteger: true, label: "To", target: this._animationControl, propertyName: "to", onChange: function () { return _this.onChangeFromOrTo(); } }),
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Loop", onSelect: function (value) { return _this._animationControl.loop = value; }, isSelected: function () { return _this._animationControl.loop; } }),
-                            this._isPlaying &&
-                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { ref: this.timelineRef, label: "Current frame", minimum: this._animationControl.from, maximum: this._animationControl.to, step: (this._animationControl.to - this._animationControl.from) / 1000.0, directValue: this.state.currentFrame, onInput: function (value) { return _this.onCurrentFrameChange(value); } }),
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: this._isPlaying ? "Stop" : "Play", onClick: function () { return _this.playOrPause(); } }),
-                            (this._ranges.length > 0 || this._animations && this._animations.length > 0) &&
-                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Enable override", onSelect: function (value) {
-                                            if (value) {
-                                                animatableAsAny.animationPropertiesOverride = new babylonjs_Animations_animationPropertiesOverride__WEBPACK_IMPORTED_MODULE_5__["AnimationPropertiesOverride"]();
-                                                animatableAsAny.animationPropertiesOverride.blendingSpeed = 0.05;
-                                            }
-                                            else {
-                                                animatableAsAny.animationPropertiesOverride = null;
-                                            }
-                                            _this.forceUpdate();
-                                        }, isSelected: function () { return animatableAsAny.animationPropertiesOverride != null; }, onValueChanged: function () { return _this.forceUpdate(); } }),
-                                    animatableAsAny.animationPropertiesOverride != null &&
-                                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
-                                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Enable blending", target: animatableAsAny.animationPropertiesOverride, propertyName: "enableBlending", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Blending speed", target: animatableAsAny.animationPropertiesOverride, propertyName: "blendingSpeed", minimum: 0, maximum: 0.1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })))))));
+            this._ranges.length > 0 && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: 'ANIMATION RANGES' }, this._ranges.map(function (range, i) {
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { key: range.name + i, label: range.name, onClick: function () {
+                        _this._mainAnimatable = null;
+                        _this.props.scene.beginAnimation(animatable, range.from, range.to, true);
+                    } }));
+            }))),
+            animations && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: 'ANIMATIONS' },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { label: 'Count', value: animations.length.toString() }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: 'Edit', onClick: function () { return _this.onOpenAnimationCurveEditor(); } }),
+                    animations.map(function (anim, i) {
+                        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { key: anim.targetProperty + i, label: '#' + i + ' >', value: anim.targetProperty }));
+                    }),
+                    this._isCurveEditorOpen && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_popupComponent__WEBPACK_IMPORTED_MODULE_10__["PopupComponent"], { id: 'curve-editor', title: 'Curve Animation Editor', size: { width: 1024, height: 490 }, onOpen: function (window) { }, onClose: function (window) {
+                            return _this.onCloseAnimationCurveEditor(window);
+                        } },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_animationCurveEditorComponent__WEBPACK_IMPORTED_MODULE_9__["AnimationCurveEditorComponent"], { scene: this.props.scene, entity: animatableAsAny, close: function (event) {
+                                return _this.onCloseAnimationCurveEditor(event.view);
+                            }, lockObject: this.props.lockObject, playOrPause: function () { return _this.playOrPause(); } })))),
+                animations.length > 0 && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: 'ANIMATION GENERAL CONTROL' },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { lockObject: this.props.lockObject, isInteger: true, label: 'From', target: this._animationControl, propertyName: 'from', onChange: function () { return _this.onChangeFromOrTo(); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { lockObject: this.props.lockObject, isInteger: true, label: 'To', target: this._animationControl, propertyName: 'to', onChange: function () { return _this.onChangeFromOrTo(); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: 'Loop', onSelect: function (value) { return (_this._animationControl.loop = value); }, isSelected: function () { return _this._animationControl.loop; } }),
+                    this._isPlaying && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { ref: this.timelineRef, label: 'Current frame', minimum: this._animationControl.from, maximum: this._animationControl.to, step: (this._animationControl.to -
+                            this._animationControl.from) /
+                            1000.0, directValue: this.state.currentFrame, onInput: function (value) { return _this.onCurrentFrameChange(value); } })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: this._isPlaying ? 'Stop' : 'Play', onClick: function () { return _this.playOrPause(); } }),
+                    (this._ranges.length > 0 ||
+                        (this._animations && this._animations.length > 0)) && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: 'Enable override', onSelect: function (value) {
+                                if (value) {
+                                    animatableAsAny.animationPropertiesOverride = new babylonjs_Animations_animationPropertiesOverride__WEBPACK_IMPORTED_MODULE_5__["AnimationPropertiesOverride"]();
+                                    animatableAsAny.animationPropertiesOverride.blendingSpeed = 0.05;
+                                }
+                                else {
+                                    animatableAsAny.animationPropertiesOverride = null;
+                                }
+                                _this.forceUpdate();
+                            }, isSelected: function () {
+                                return animatableAsAny.animationPropertiesOverride != null;
+                            }, onValueChanged: function () { return _this.forceUpdate(); } }),
+                        animatableAsAny.animationPropertiesOverride != null && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: 'Enable blending', target: animatableAsAny.animationPropertiesOverride, propertyName: 'enableBlending', onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: 'Blending speed', target: animatableAsAny.animationPropertiesOverride, propertyName: 'blendingSpeed', minimum: 0, maximum: 0.1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })))))))))));
     };
     return AnimationGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -60948,6 +61167,7 @@ var EditorControls = /** @class */ (function (_super) {
         return _this;
     }
     EditorControls.prototype.animationAdded = function () {
+        // select recently created animation/first coordinate...
         this.setState({
             animationsCount: this.recountAnimations(),
             isEditTabOpen: true,
@@ -61013,20 +61233,20 @@ var EditorControls = /** @class */ (function (_super) {
     };
     EditorControls.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "animation-list" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "controls-header" },
-                this.props.isTargetedAnimation ? null : (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { active: this.state.isAnimationTabOpen, tooltip: "Add Animation", icon: "medium add-animation", onClick: function () { return _this.handleTabs(0); } })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { active: this.state.isLoadTabOpen, tooltip: "Load Animation", icon: "medium load", onClick: function () { return _this.handleTabs(1); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { active: this.state.isSaveTabOpen, tooltip: "Save Animation", icon: "medium save", onClick: function () { return _this.handleTabs(2); } }),
-                this.state.animationsCount === 0 ? null : (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { active: this.state.isEditTabOpen, tooltip: "Edit Animations", icon: "medium animation-edit", onClick: function () { return _this.handleTabs(3); } })),
-                this.state.isEditTabOpen ? (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "input-fps" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { label: "", precision: 0, value: this.state.framesPerSecond, onChange: function (framesPerSecond) {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'animation-list' },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'controls-header' },
+                this.props.isTargetedAnimation ? null : (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { active: this.state.isAnimationTabOpen, tooltip: 'Add Animation', icon: 'medium add-animation', onClick: function () { return _this.handleTabs(0); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { active: this.state.isLoadTabOpen, tooltip: 'Load Animation', icon: 'medium load', onClick: function () { return _this.handleTabs(1); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { active: this.state.isSaveTabOpen, tooltip: 'Save Animation', icon: 'medium save', onClick: function () { return _this.handleTabs(2); } }),
+                this.state.animationsCount === 0 ? null : (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { active: this.state.isEditTabOpen, tooltip: 'Edit Animations', icon: 'medium animation-edit', onClick: function () { return _this.handleTabs(3); } })),
+                this.state.isEditTabOpen ? (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'input-fps' },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { label: '', precision: 0, value: this.state.framesPerSecond, onChange: function (framesPerSecond) {
                             return _this.handleChangeFps(framesPerSecond);
                         } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null, "fps"))) : null,
-                this.state.isEditTabOpen ? (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { tooltip: "Loop/Unloop", icon: "medium " + (this.state.isLoopActive
-                        ? "loop-active last"
-                        : "loop-inactive last"), onClick: function () {
+                this.state.isEditTabOpen ? (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { tooltip: 'Loop/Unloop', icon: "medium " + (this.state.isLoopActive
+                        ? 'loop-active last'
+                        : 'loop-inactive last'), onClick: function () {
                         _this.setState({ isLoopActive: !_this.state.isLoopActive });
                     } })) : null),
             this.props.isTargetedAnimation ? null : (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_addAnimation__WEBPACK_IMPORTED_MODULE_4__["AddAnimation"], { isOpen: this.state.isAnimationTabOpen, close: function () {
@@ -61069,21 +61289,23 @@ var GraphActionsBar = /** @class */ (function (_super) {
     }
     GraphActionsBar.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "actions-wrapper" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "title-container" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "icon babylon-logo" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "title" }, this.props.title)),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "buttons-container", style: { display: this.props.enabled ? 'flex' : 'none' } },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "action-input" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", value: this.props.currentFrame, onChange: this.props.handleFrameChange, step: "1" })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "action-input" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", value: this.props.currentValue.toFixed(3), onChange: this.props.handleValueChange, step: "0.001" })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { tooltip: "Add Keyframe", icon: "new-key", onClick: this.props.addKeyframe }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { tooltip: "Remove Keyframe", icon: "frame", onClick: this.props.removeKeyframe }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { tooltip: "Flat Tangents", icon: "flat-tangent", onClick: this.props.flatTangent }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { tooltip: this.props.brokenMode ? "Broken Mode On" : "Broken Mode Off", icon: this.props.brokenMode ? "break-tangent" : "unify-tangent", onClick: this.props.brokeTangents }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { tooltip: this.props.lerpMode ? "Lerp On" : "lerp Off", icon: "linear-tangent", onClick: this.props.setLerpMode })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "icon close", onClick: function (event) { return _this.props.close(event); } })));
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'actions-wrapper' },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'title-container' },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'icon babylon-logo' }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'title' }, this.props.title)),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'buttons-container', style: { display: this.props.enabled ? 'flex' : 'none' } },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'action-input' },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: 'number', value: this.props.currentFrame, onChange: this.props.handleFrameChange, step: '1' })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'action-input' },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: 'number', value: this.props.currentValue.toFixed(3), onChange: this.props.handleValueChange, step: '0.001' })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { tooltip: 'Add Keyframe', icon: 'new-key', onClick: this.props.addKeyframe }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { tooltip: 'Remove Keyframe', icon: 'frame', onClick: this.props.removeKeyframe }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { tooltip: 'Flat Tangents', icon: 'flat-tangent', onClick: this.props.flatTangent }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { tooltip: this.props.brokenMode ? 'Broken Mode On' : 'Broken Mode Off', icon: this.props.brokenMode ? 'break-tangent' : 'unify-tangent', onClick: this.props.brokeTangents }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { tooltip: this.props.lerpMode ? 'Lerp On' : 'lerp Off', icon: 'linear-tangent', onClick: this.props.setLerpMode })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'icon close', onClick: function (event) {
+                    return _this.props.close(event);
+                } })));
     };
     return GraphActionsBar;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -61237,12 +61459,42 @@ var Playhead = /** @class */ (function (_super) {
     function Playhead(props) {
         return _super.call(this, props) || this;
     }
+    Playhead.prototype.dragStart = function (e) {
+        e.preventDefault();
+        this._direction = e.clientX;
+        this._active = true;
+    };
+    Playhead.prototype.drag = function (e) {
+        e.preventDefault();
+        if (this._active) {
+            var moved = e.pageX - this._direction;
+            var framesToMove = Math.round(Math.abs(moved) / 2);
+            console.log(framesToMove);
+            if (Math.sign(moved) === -1) {
+                this.props.onCurrentFrameChange(this.props.frame - 1);
+            }
+            else {
+                this.props.onCurrentFrameChange(this.props.frame + 1);
+            }
+        }
+    };
+    Playhead.prototype.dragEnd = function (e) {
+        e.preventDefault();
+        this._direction = 0;
+        this._active = false;
+    };
+    Playhead.prototype.calculateMove = function () {
+        return "calc(" + this.props.frame * this.props.offset + "px - 13px)";
+    };
     Playhead.prototype.render = function () {
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "playhead-wrapper", id: "playhead", style: { left: "calc(" + this.props.frame * (this.props.offset) + "px - 13px)" } },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "playhead-line" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "playhead-handle" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "playhead-circle" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "playhead" }, this.props.frame))));
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'playhead-wrapper', id: 'playhead', style: {
+                left: this.calculateMove(),
+            } },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'playhead-line' }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'playhead-handle', onMouseMove: function (e) { return _this.drag(e); }, onTouchMove: function (e) { return _this.drag(e); }, onTouchStart: function (e) { return _this.dragStart(e); }, onTouchEnd: function (e) { return _this.dragEnd(e); }, onMouseDown: function (e) { return _this.dragStart(e); }, onMouseUp: function (e) { return _this.dragEnd(e); }, onMouseLeave: function (e) { return _this.dragEnd(e); }, onDragStart: function () { return false; } },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'playhead-circle' }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'playhead' }, this.props.frame))));
     };
     return Playhead;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -61701,7 +61953,10 @@ var Timeline = /** @class */ (function (_super) {
             _this.state = { selected: _this.props.selected, activeKeyframe: null };
         }
         _this._scrollable = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._scrollbarHandle = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         _this._direction = 0;
+        _this._scrolling = false;
+        _this._shiftX = 0;
         return _this;
     }
     Timeline.prototype.playBackwards = function (event) {
@@ -61722,7 +61977,8 @@ var Timeline = /** @class */ (function (_super) {
     Timeline.prototype.nextFrame = function (event) {
         event.preventDefault();
         this.props.onCurrentFrameChange(this.props.currentFrame + 1);
-        this._scrollable.current.scrollLeft = this.props.currentFrame * 5;
+        this._scrollable.current.scrollLeft =
+            this.props.currentFrame * 5;
     };
     Timeline.prototype.previousFrame = function (event) {
         event.preventDefault();
@@ -61739,7 +61995,8 @@ var Timeline = /** @class */ (function (_super) {
             if (first) {
                 this.props.onCurrentFrameChange(first.frame);
                 this.setState({ selected: first });
-                this._scrollable.current.scrollLeft = first.frame * 5;
+                this._scrollable.current.scrollLeft =
+                    first.frame * 5;
             }
         }
     };
@@ -61748,7 +62005,9 @@ var Timeline = /** @class */ (function (_super) {
         event.preventDefault();
         if (this.props.keyframes !== null) {
             var keyframes = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArrays"])(this.props.keyframes);
-            var first = keyframes.reverse().find(function (kf) { return kf.frame < _this.props.currentFrame; });
+            var first = keyframes
+                .reverse()
+                .find(function (kf) { return kf.frame < _this.props.currentFrame; });
             if (first) {
                 this.props.onCurrentFrameChange(first.frame);
                 this.setState({ selected: first });
@@ -61800,40 +62059,65 @@ var Timeline = /** @class */ (function (_super) {
         this._direction = 0;
         this.setState({ activeKeyframe: null });
     };
+    Timeline.prototype.scrollDragStart = function (e) {
+        e.preventDefault();
+        if ((e.target.class = 'scrollbar') && this._scrollbarHandle.current) {
+            this._scrolling = true;
+            this._shiftX =
+                e.clientX - this._scrollbarHandle.current.getBoundingClientRect().left;
+            this._scrollbarHandle.current.style.left = e.pageX - this._shiftX + 'px';
+        }
+    };
+    Timeline.prototype.scrollDrag = function (e) {
+        e.preventDefault();
+        if (this._scrolling && this._scrollbarHandle.current) {
+            var moved = e.pageX - this._shiftX;
+            if (moved > 233 && moved < 630) {
+                this._scrollbarHandle.current.style.left = moved + 'px';
+                this._scrollable.current.scrollLeft = moved + 10;
+            }
+        }
+    };
+    Timeline.prototype.scrollDragEnd = function (e) {
+        e.preventDefault();
+        this._scrolling = false;
+        this._shiftX = 0;
+    };
     Timeline.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "timeline" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'timeline' },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls__WEBPACK_IMPORTED_MODULE_2__["Controls"], { keyframes: this.props.keyframes, selected: this.props.selected, currentFrame: this.props.currentFrame, onCurrentFrameChange: this.props.onCurrentFrameChange, playPause: this.props.playPause, isPlaying: this.props.isPlaying, scrollable: this._scrollable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "timeline-wrapper" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { ref: this._scrollable, className: "display-line" },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { viewBox: "0 0 2010 40", style: { width: 2000, height: 40, backgroundColor: '#222222' }, onMouseMove: function (e) { return _this.drag(e); }, onTouchMove: function (e) { return _this.drag(e); }, onTouchStart: function (e) { return _this.dragStart(e); }, onTouchEnd: function (e) { return _this.dragEnd(e); }, onMouseDown: function (e) { return _this.dragStart(e); }, onMouseUp: function (e) { return _this.dragEnd(e); }, onMouseLeave: function (e) { return _this.dragEnd(e); } },
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: this.props.currentFrame * 10, y1: "0", x2: this.props.currentFrame * 10, y2: "40", style: { stroke: '#12506b', strokeWidth: 6 } }),
-                            this.props.keyframes && this.props.keyframes.map(function (kf, i) {
-                                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { key: "kf_" + i, style: { cursor: 'pointer' }, tabIndex: i + 40 },
-                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { id: "kf_" + i.toString(), x1: kf.frame * 10, y1: "0", x2: kf.frame * 10, y2: "40", style: { stroke: 'red', strokeWidth: 6 } }));
-                            }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'timeline-wrapper' },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { ref: this._scrollable, className: 'display-line' },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { viewBox: '0 0 2010 40', style: { width: 2000, height: 40, backgroundColor: '#222222' }, onMouseMove: function (e) { return _this.drag(e); }, onTouchMove: function (e) { return _this.drag(e); }, onTouchStart: function (e) { return _this.dragStart(e); }, onTouchEnd: function (e) { return _this.dragEnd(e); }, onMouseDown: function (e) { return _this.dragStart(e); }, onMouseUp: function (e) { return _this.dragEnd(e); }, onMouseLeave: function (e) { return _this.dragEnd(e); }, onDragStart: function () { return false; } },
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: this.props.currentFrame * 10, y1: '0', x2: this.props.currentFrame * 10, y2: '40', style: { stroke: '#12506b', strokeWidth: 6 } }),
+                            this.props.keyframes &&
+                                this.props.keyframes.map(function (kf, i) {
+                                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { key: "kf_" + i, style: { cursor: 'pointer' }, tabIndex: i + 40 },
+                                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { id: "kf_" + i.toString(), x1: kf.frame * 10, y1: '0', x2: kf.frame * 10, y2: '40', style: { stroke: 'red', strokeWidth: 6 } })));
+                                }),
                             this._frames.map(function (frame, i) {
-                                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { key: "tl_" + i }, i % 5 === 0 ?
-                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { x: (i * 5) - 3, y: "18", style: { fontSize: 10, fill: '#555555' } }, i),
-                                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: i * 5, y1: "22", x2: i * 5, y2: "40", style: { stroke: '#555555', strokeWidth: 0.5 } })) : null);
+                                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { key: "tl_" + i }, i % 5 === 0 ? (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { x: i * 5 - 3, y: '18', style: { fontSize: 10, fill: '#555555' } }, i),
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: i * 5, y1: '22', x2: i * 5, y2: '40', style: { stroke: '#555555', strokeWidth: 0.5 } }))) : null));
                             }))),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "timeline-scroll-handle" },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "scroll-handle" },
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "handle", style: { width: 300, marginLeft: 20 } },
-                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "left-grabber" },
-                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "grabber" }),
-                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "grabber" }),
-                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "grabber" }),
-                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "text" }, "20")),
-                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "right-grabber" },
-                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "text" }, "100"),
-                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "grabber" }),
-                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "grabber" }),
-                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "grabber" })))),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "input-frame" },
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", value: this.props.currentFrame, onChange: function (e) { return _this.handleInputChange(e); } })))))));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'timeline-scroll-handle' },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'scroll-handle' },
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'handle', ref: this._scrollbarHandle, style: { width: 300 } },
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'left-grabber' },
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'grabber' }),
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'grabber' }),
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'grabber' }),
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'text' }, "20")),
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'scrollbar', onMouseMove: function (e) { return _this.scrollDrag(e); }, onTouchMove: function (e) { return _this.scrollDrag(e); }, onTouchStart: function (e) { return _this.scrollDragStart(e); }, onTouchEnd: function (e) { return _this.scrollDragEnd(e); }, onMouseDown: function (e) { return _this.scrollDragStart(e); }, onMouseUp: function (e) { return _this.scrollDragEnd(e); }, onMouseLeave: function (e) { return _this.scrollDragEnd(e); }, onDragStart: function () { return false; } }),
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'right-grabber' },
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'text' }, "100"),
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'grabber' }),
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'grabber' }),
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'grabber' })))),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'input-frame' },
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: 'number', value: this.props.currentFrame, onChange: function (e) { return _this.handleInputChange(e); } })))))));
     };
     return Timeline;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
