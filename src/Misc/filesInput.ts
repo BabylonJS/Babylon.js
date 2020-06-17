@@ -301,6 +301,7 @@ export class FilesInput {
                     });
                 });
             }).catch((error) => {
+                this._engine.hideLoadingUI();
                 if (this._errorCallback) {
                     this._errorCallback(this._sceneFileToLoad, this._currentScene, error.message);
                 }

@@ -356,7 +356,7 @@ export class GLTFLoader implements IGLTFLoader {
             });
 
             return resultPromise;
-        }, (error) => {
+        }).catch((error) => {
             if (!this._disposed) {
                 this._parent.onErrorObservable.notifyObservers(error);
                 this._parent.onErrorObservable.clear();
