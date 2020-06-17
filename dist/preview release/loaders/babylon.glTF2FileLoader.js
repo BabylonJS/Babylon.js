@@ -931,23 +931,21 @@ var KHR_materials_sheen = /** @class */ (function () {
         }
         var promises = new Array();
         babylonMaterial.sheen.isEnabled = true;
-        if (properties.intensityFactor != undefined) {
-            babylonMaterial.sheen.intensity = properties.intensityFactor;
+        babylonMaterial.sheen.intensity = 1;
+        if (properties.sheenColorFactor != undefined) {
+            babylonMaterial.sheen.color = babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(properties.sheenColorFactor);
         }
         else {
-            babylonMaterial.sheen.intensity = 0;
+            babylonMaterial.sheen.color = babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_0__["Color3"].Black();
         }
-        if (properties.colorFactor != undefined) {
-            babylonMaterial.sheen.color = babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(properties.colorFactor);
-        }
-        if (properties.colorIntensityTexture) {
-            promises.push(this._loader.loadTextureInfoAsync(context + "/sheenTexture", properties.colorIntensityTexture, function (texture) {
-                texture.name = babylonMaterial.name + " (Sheen Intensity)";
+        if (properties.sheenTexture) {
+            promises.push(this._loader.loadTextureInfoAsync(context + "/sheenTexture", properties.sheenTexture, function (texture) {
+                texture.name = babylonMaterial.name + " (Sheen Color)";
                 babylonMaterial.sheen.texture = texture;
             }));
         }
-        if (properties.roughnessFactor !== undefined) {
-            babylonMaterial.sheen.roughness = properties.roughnessFactor;
+        if (properties.sheenRoughnessFactor !== undefined) {
+            babylonMaterial.sheen.roughness = properties.sheenRoughnessFactor;
         }
         else {
             babylonMaterial.sheen.roughness = 0;
@@ -2667,7 +2665,7 @@ var GLTFLoader = /** @class */ (function () {
                 });
             });
             return resultPromise;
-        }, function (error) {
+        }).catch(function (error) {
             if (!_this._disposed) {
                 _this._parent.onErrorObservable.notifyObservers(error);
                 _this._parent.onErrorObservable.clear();

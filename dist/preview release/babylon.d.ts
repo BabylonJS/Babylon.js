@@ -1063,9 +1063,10 @@ declare module BABYLON {
         /**
          * This returns if the loader support the current file information.
          * @param extension defines the file extension of the file being loaded
+         * @param mimeType defines the optional mime type of the file being loaded
          * @returns true if the loader can load the specified file
          */
-        canLoad(extension: string): boolean;
+        canLoad(extension: string, mimeType?: string): boolean;
         /**
          * Uploads the cube texture data to the WebGL texture. It has already been bound.
          * @param data contains the texture data
@@ -54415,7 +54416,7 @@ declare module BABYLON {
         /**
          * Stores the sheen tint values in a texture.
          * rgb is tint
-         * a is a intensity
+         * a is a intensity or roughness if roughness has been defined
          */
         texture: Nullable<BaseTexture>;
         private _roughness;
@@ -56498,9 +56499,10 @@ declare module BABYLON {
         /**
          * This returns if the loader support the current file information.
          * @param extension defines the file extension of the file being loaded
+         * @param mimeType defines the optional mime type of the file being loaded
          * @returns true if the loader can load the specified file
          */
-        canLoad(extension: string): boolean;
+        canLoad(extension: string, mimeType?: string): boolean;
         /**
          * Uploads the cube texture data to the WebGL texture. It has already been bound.
          * @param data contains the texture data
@@ -71937,7 +71939,7 @@ declare module BABYLON {
         /**
          * Callback called when a file is processed
          */
-        onProcessFileCallback: (file: File, name: string, extension: string) => true;
+        onProcessFileCallback: (file: File, name: string, extension: string) => boolean;
         private _engine;
         private _currentScene;
         private _sceneLoadedCallback;
@@ -71962,7 +71964,7 @@ declare module BABYLON {
          * @param onReloadCallback callback called when a reload is requested
          * @param errorCallback callback call if an error occurs
          */
-        constructor(engine: Engine, scene: Scene, sceneLoadedCallback: (sceneFile: File, scene: Scene) => void, progressCallback: (progress: ISceneLoaderProgressEvent) => void, additionalRenderLoopLogicCallback: () => void, textureLoadingCallback: (remaining: number) => void, startingProcessingFilesCallback: (files?: File[]) => void, onReloadCallback: (sceneFile: File) => void, errorCallback: (sceneFile: File, scene: Scene, message: string) => void);
+        constructor(engine: Engine, scene: Nullable<Scene>, sceneLoadedCallback: Nullable<(sceneFile: File, scene: Scene) => void>, progressCallback: Nullable<(progress: ISceneLoaderProgressEvent) => void>, additionalRenderLoopLogicCallback: Nullable<() => void>, textureLoadingCallback: Nullable<(remaining: number) => void>, startingProcessingFilesCallback: Nullable<(files?: File[]) => void>, onReloadCallback: Nullable<(sceneFile: File) => void>, errorCallback: Nullable<(sceneFile: File, scene: Nullable<Scene>, message: string) => void>);
         private _dragEnterHandler;
         private _dragOverHandler;
         private _dropHandler;
@@ -71971,6 +71973,8 @@ declare module BABYLON {
          * @param elementToMonitor defines the DOM element to track
          */
         monitorElementForDragNDrop(elementToMonitor: HTMLElement): void;
+        /** Gets the current list of files to load */
+        get filesToLoad(): File[];
         /**
          * Release all associated resources
          */
