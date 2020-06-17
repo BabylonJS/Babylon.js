@@ -501,7 +501,7 @@ var CustomMaterial = /** @class */ (function (_super) {
             this._newUniformInstances = {};
         }
         if (param) {
-            if (kind.indexOf("sampler") == -1) {
+            if (kind.indexOf("sampler") != -1) {
                 this._newSamplerInstances[kind + "-" + name] = param;
             }
             else {
@@ -758,7 +758,7 @@ var PBRCustomMaterial = /** @class */ (function (_super) {
             this._newUniformInstances = {};
         }
         if (param) {
-            if (kind.indexOf("sampler") == -1) {
+            if (kind.indexOf("sampler") != -1) {
                 this._newSamplerInstances[kind + "-" + name] = param;
             }
             else {
