@@ -1063,9 +1063,10 @@ declare module BABYLON {
         /**
          * This returns if the loader support the current file information.
          * @param extension defines the file extension of the file being loaded
+         * @param mimeType defines the optional mime type of the file being loaded
          * @returns true if the loader can load the specified file
          */
-        canLoad(extension: string): boolean;
+        canLoad(extension: string, mimeType?: string): boolean;
         /**
          * Uploads the cube texture data to the WebGL texture. It has already been bound.
          * @param data contains the texture data
@@ -9431,7 +9432,7 @@ declare module BABYLON {
          * Internal only
          * @hidden
          */
-        static _GetTargetProperty: (target: Scene | Node) => {
+        static _GetTargetProperty: (target: Node | Scene) => {
             name: string;
             targetType: string;
             value: string;
@@ -34607,8 +34608,9 @@ declare module BABYLON {
          * Force a specific size of the canvas
          * @param width defines the new canvas' width
          * @param height defines the new canvas' height
+         * @returns true if the size was changed
          */
-        setSize(width: number, height: number): void;
+        setSize(width: number, height: number): boolean;
         /**
          * Binds the frame buffer to the specified texture.
          * @param texture The texture to render to or null for the default canvas
@@ -36999,8 +37001,9 @@ declare module BABYLON {
          * Force a specific size of the canvas
          * @param width defines the new canvas' width
          * @param height defines the new canvas' height
+         * @returns true if the size was changed
          */
-        setSize(width: number, height: number): void;
+        setSize(width: number, height: number): boolean;
         /**
          * Updates a dynamic vertex buffer.
          * @param vertexBuffer the vertex buffer to update
@@ -44008,6 +44011,47 @@ declare module BABYLON {
         Z = 2
     }
     /**
+     * Represents the different customization options available
+     * for VirtualJoystick
+     */
+    interface VirtualJoystickCustomizations {
+        /**
+         * Size of the joystick's puck
+         */
+        puckSize: number;
+        /**
+         * Size of the joystick's container
+         */
+        containerSize: number;
+        /**
+         * Color of the joystick && puck
+         */
+        color: string;
+        /**
+         * Image URL for the joystick's puck
+         */
+        puckImage?: string;
+        /**
+         * Image URL for the joystick's container
+         */
+        containerImage?: string;
+        /**
+         * Defines the unmoving position of the joystick container
+         */
+        position?: {
+            x: number;
+            y: number;
+        };
+        /**
+         * Defines whether or not the joystick container is always visible
+         */
+        alwaysVisible: boolean;
+        /**
+         * Defines whether or not to limit the movement of the puck to the joystick's container
+         */
+        limitToContainer: boolean;
+    }
+    /**
      * Class used to define virtual joystick (used in touch mode)
      */
     export class VirtualJoystick {
@@ -44031,11 +44075,17 @@ declare module BABYLON {
          * Canvas the virtual joystick will render onto, default z-index of this is 5
          */
         static Canvas: Nullable<HTMLCanvasElement>;
+        /**
+         * boolean indicating whether or not the joystick's puck's movement should be limited to the joystick's container area
+         */
+        limitToContainer: boolean;
         private static _globalJoystickIndex;
+        private static _alwaysVisibleSticks;
         private static vjCanvasContext;
         private static vjCanvasWidth;
         private static vjCanvasHeight;
         private static halfWidth;
+        private static _GetDefaultOptions;
         private _action;
         private _axisTargetedByLeftAndRight;
         private _axisTargetedByUpAndDown;
@@ -44049,6 +44099,16 @@ declare module BABYLON {
         private _deltaJoystickVector;
         private _leftJoystick;
         private _touches;
+        private _joystickPosition;
+        private _alwaysVisible;
+        private _puckImage;
+        private _containerImage;
+        private _joystickPuckSize;
+        private _joystickContainerSize;
+        private _clearPuckSize;
+        private _clearContainerSize;
+        private _clearPuckSizeOffset;
+        private _clearContainerSizeOffset;
         private _onPointerDownHandlerRef;
         private _onPointerMoveHandlerRef;
         private _onPointerUpHandlerRef;
@@ -44056,8 +44116,9 @@ declare module BABYLON {
         /**
          * Creates a new virtual joystick
          * @param leftJoystick defines that the joystick is for left hand (false by default)
+         * @param customizations Defines the options we want to customize the VirtualJoystick
          */
-        constructor(leftJoystick?: boolean);
+        constructor(leftJoystick?: boolean, customizations?: Partial<VirtualJoystickCustomizations>);
         /**
          * Defines joystick sensibility (ie. the ratio beteen a physical move and virtual joystick position change)
          * @param newJoystickSensibility defines the new sensibility
@@ -44067,10 +44128,35 @@ declare module BABYLON {
         private _onPointerMove;
         private _onPointerUp;
         /**
-        * Change the color of the virtual joystick
-        * @param newColor a string that must be a CSS color value (like "red") or the hexa value (like "#FF0000")
-        */
+         * Change the color of the virtual joystick
+         * @param newColor a string that must be a CSS color value (like "red") or the hexa value (like "#FF0000")
+         */
         setJoystickColor(newColor: string): void;
+        /**
+         * Size of the joystick's container
+         */
+        set containerSize(newSize: number);
+        get containerSize(): number;
+        /**
+         * Size of the joystick's puck
+         */
+        set puckSize(newSize: number);
+        get puckSize(): number;
+        /**
+         * Clears the set position of the joystick
+         */
+        clearPosition(): void;
+        /**
+         * Defines whether or not the joystick container is always visible
+         */
+        set alwaysVisible(value: boolean);
+        get alwaysVisible(): boolean;
+        /**
+        * Sets the constant position of the Joystick container
+        * @param x X axis coordinate
+        * @param y Y axis coordinate
+        */
+        setPosition(x: number, y: number): void;
         /**
          * Defines a callback to call when the joystick is touched
          * @param action defines the callback
@@ -44086,6 +44172,28 @@ declare module BABYLON {
          * @param axis defines the axis to use
          */
         setAxisForUpDown(axis: JoystickAxis): void;
+        /**
+         * Clears the canvas from the previous puck / container draw
+         */
+        private _clearPreviousDraw;
+        /**
+         * Loads `urlPath` to be used for the container's image
+         * @param urlPath defines the urlPath of an image to use
+         */
+        setContainerImage(urlPath: string): void;
+        /**
+         * Loads `urlPath` to be used for the puck's image
+         * @param urlPath defines the urlPath of an image to use
+         */
+        setPuckImage(urlPath: string): void;
+        /**
+         * Draws the Virtual Joystick's container
+         */
+        private _drawContainer;
+        /**
+         * Draws the Virtual Joystick's puck
+         */
+        private _drawPuck;
         private _drawVirtualJoystick;
         /**
          * Release internal HTML canvas
@@ -53223,6 +53331,11 @@ declare module BABYLON {
          * Number of Simultaneous lights allowed on the material.
          */
         maxSimultaneousLights: int;
+        private _shadowOnly;
+        /**
+         * Make the material only render shadows
+         */
+        shadowOnly: boolean;
         /**
          * Default configuration related to image processing available in the Background Material.
          */
@@ -54303,7 +54416,7 @@ declare module BABYLON {
         /**
          * Stores the sheen tint values in a texture.
          * rgb is tint
-         * a is a intensity
+         * a is a intensity or roughness if roughness has been defined
          */
         texture: Nullable<BaseTexture>;
         private _roughness;
@@ -56386,9 +56499,10 @@ declare module BABYLON {
         /**
          * This returns if the loader support the current file information.
          * @param extension defines the file extension of the file being loaded
+         * @param mimeType defines the optional mime type of the file being loaded
          * @returns true if the loader can load the specified file
          */
-        canLoad(extension: string): boolean;
+        canLoad(extension: string, mimeType?: string): boolean;
         /**
          * Uploads the cube texture data to the WebGL texture. It has already been bound.
          * @param data contains the texture data
@@ -57586,6 +57700,13 @@ declare module BABYLON {
          * @returns true if it should render otherwise false
          */
         protected _shouldRenderMesh(mesh: Mesh): boolean;
+        /**
+         * Returns true if the mesh can be rendered, otherwise false.
+         * @param mesh The mesh to render
+         * @param material The material used on the mesh
+         * @returns true if it can be rendered otherwise false
+         */
+        protected _canRenderMesh(mesh: AbstractMesh, material: Material): boolean;
         /**
          * Adds specific effects defines.
          * @param defines The defines to add specifics to.
@@ -61665,6 +61786,10 @@ declare module BABYLON {
          */
         get rgb(): NodeMaterialConnectionPoint;
         /**
+         * Gets the rgba output component
+         */
+        get rgba(): NodeMaterialConnectionPoint;
+        /**
          * Gets the r output component
          */
         get r(): NodeMaterialConnectionPoint;
@@ -61676,6 +61801,10 @@ declare module BABYLON {
          * Gets the b output component
          */
         get b(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the a output component
+         */
+        get a(): NodeMaterialConnectionPoint;
         autoConfigure(material: NodeMaterial): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
@@ -71810,7 +71939,7 @@ declare module BABYLON {
         /**
          * Callback called when a file is processed
          */
-        onProcessFileCallback: (file: File, name: string, extension: string) => true;
+        onProcessFileCallback: (file: File, name: string, extension: string) => boolean;
         private _engine;
         private _currentScene;
         private _sceneLoadedCallback;
@@ -71835,7 +71964,7 @@ declare module BABYLON {
          * @param onReloadCallback callback called when a reload is requested
          * @param errorCallback callback call if an error occurs
          */
-        constructor(engine: Engine, scene: Scene, sceneLoadedCallback: (sceneFile: File, scene: Scene) => void, progressCallback: (progress: ISceneLoaderProgressEvent) => void, additionalRenderLoopLogicCallback: () => void, textureLoadingCallback: (remaining: number) => void, startingProcessingFilesCallback: (files?: File[]) => void, onReloadCallback: (sceneFile: File) => void, errorCallback: (sceneFile: File, scene: Scene, message: string) => void);
+        constructor(engine: Engine, scene: Nullable<Scene>, sceneLoadedCallback: Nullable<(sceneFile: File, scene: Scene) => void>, progressCallback: Nullable<(progress: ISceneLoaderProgressEvent) => void>, additionalRenderLoopLogicCallback: Nullable<() => void>, textureLoadingCallback: Nullable<(remaining: number) => void>, startingProcessingFilesCallback: Nullable<(files?: File[]) => void>, onReloadCallback: Nullable<(sceneFile: File) => void>, errorCallback: Nullable<(sceneFile: File, scene: Nullable<Scene>, message: string) => void>);
         private _dragEnterHandler;
         private _dragOverHandler;
         private _dropHandler;
@@ -71844,6 +71973,8 @@ declare module BABYLON {
          * @param elementToMonitor defines the DOM element to track
          */
         monitorElementForDragNDrop(elementToMonitor: HTMLElement): void;
+        /** Gets the current list of files to load */
+        get filesToLoad(): File[];
         /**
          * Release all associated resources
          */

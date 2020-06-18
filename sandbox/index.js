@@ -340,8 +340,8 @@ if (BABYLON.Engine.isSupported()) {
         // Press space to toggle footer
         if (event.keyCode === 32 && event.target.nodeName !== "INPUT") {
             if (footer.style.display === "none") {
-                footer.style.display = "block";
-                canvasZone.style.height = "calc(100% - 56px)";
+                footer.style.display = "grid";
+                canvasZone.style.height = "calc(100% - var(--footer-height))";
                 if (debugLayerEnabled) {
                     currentScene.debugLayer.show();
                 }

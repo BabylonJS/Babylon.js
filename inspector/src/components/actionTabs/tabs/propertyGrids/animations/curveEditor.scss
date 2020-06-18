@@ -1,975 +1,1231 @@
+body {
+  background-color: rgb(51, 51, 51);
+}
 
 #animation-curve-editor {
+  font-family: acumin-pro-condensed;
 
-    font-family: acumin-pro-condensed;
+  .last {
+    margin-left: 3px;
+  }
 
-    .last {
-        margin-left: 3px;
+  .icon {
+    width: 40px;
+    height: 40px;
+    &.medium {
+      width: 30px;
+      height: 30px;
+    }
+    &.small {
+      width: 20px;
+      height: 20px;
+    }
+    &.babylon-logo {
+      background-image: url('./assets/babylonLogo.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
     }
 
-    .icon {
-        width: 40px;
-        height: 40px;
-        &.medium {
-            width: 30px;
-            height: 30px;
-        }
-        &.small {
-            width: 20px;
-            height: 20px;
-        }
-        &.babylon-logo {
-            background-image: url('./assets/babylonLogo.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-        }
-
-        &.close {
-            background-image: url('./assets/closeWindowIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-            cursor: pointer;
-        }
-
-        &.auto-tangent {
-            background-image: url('./assets/autoTangentIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-            cursor: pointer;
-        }
-
-        &.break-tangent {
-            background-image: url('./assets/breakTangentIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-            cursor: pointer;
-        }
-
-        &.flat-tangent {
-            background-image: url('./assets/flatTangentIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-            cursor: pointer;
-        }
-
-        &.frame {
-            background-image: url('./assets/frameIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-            cursor: pointer;
-        }
-
-        &.linear-tangent {
-            background-image: url('./assets/linearTangentIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-            cursor: pointer;
-        }
-
-        &.unify-tangent {
-            background-image: url('./assets/unifyTangentIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-            cursor: pointer;
-        }
-
-        &.add-animation {
-            background-image: url('./assets/addAnimationIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-            cursor: pointer;
-        }
-
-        &.animation-bullet {
-            background-image: url('./assets/animationBulletIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-        }
-
-        &.animation-delete {
-            background-image: url('./assets/animationDeleteIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-            cursor: pointer;
-        }
-
-        &.animation-edit {
-            background-image: url('./assets/editIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-        }
-
-        &.animation-end {
-            background-image: url('./assets/animationEndIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-            width: 20px;
-            cursor: pointer;
-            background-position: center;
-        }
-
-        &.animation-lastkey {
-            background-image: url('./assets/animationLastKeyIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            width: 20px;
-            cursor: pointer;
-            background-position: center;
-            &:hover{
-                background-image: url('./assets/animationLastKeyHoverIcon.svg');
-            }
-        }
-
-        &.animation-nextkey {
-            background-image: url('./assets/animationNextKeyIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            width: 20px;
-            cursor: pointer;
-            background-position: center;
-            &:hover{
-                background-image: url('./assets/animationNextKeyHoverIcon.svg');
-            }
-        }
-
-        &.animation-options {
-            background-image: url('./assets/animationOptionsIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-            cursor: pointer;
-            background-position: center;
-            &:hover{
-                background-color: #888888 !important;
-            }
-        }
-
-        &.animation-playfwd {
-            background-image: url('./assets/animationPlayFwdIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-            background-position: center;
-            width: 20px;
-            cursor: pointer;
-            background-position: center;
-            &:hover {
-                background-image: url('./assets/animationPlayFwdHoverIcon.svg');
-            }
-        }
-
-        &.animation-playrev {
-            background-image: url('./assets/animationPlayRevIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-            background-position: center;
-            width: 20px;
-            cursor: pointer;
-            background-position: center;
-            &:hover {
-                background-image: url('./assets/animationPlayRevHoverIcon.svg');
-            }
-        }
-
-        &.animation-start {
-            background-image: url('./assets/animationStartIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-            background-position: center;
-            cursor: pointer;
-            background-position: center;
-            width: 20px;
-        }
-
-        &.animation-stop {
-            background-image: url('./assets/animationStopIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-            background-position: center;
-            cursor: pointer;
-            background-position: center;
-            width: 20px;
-        }
-
-        &.animation-triangle {
-            background-image: url('./assets/animationTriangleIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-        }
-
-        &.key-active {
-            background-image: url('./assets/keyActiveIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-        }
-
-        &.key-inactive {
-            background-image: url('./assets/keyInactiveIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-        }
-
-        &.key-selected {
-            background-image: url('./assets/keySelectedIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-        }
-
-        &.loop-active {
-            background-image: url('./assets/loopActiveIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-            cursor: pointer;
-        }
-
-        &.loop-inactive {
-            background-image: url('./assets/loopInactiveIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-            cursor: pointer;
-        }
-
-        &.move {
-            background-image: url('./assets/moveIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-        }
-
-        &.save {
-            background-image: url('./assets/saveIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-            cursor: pointer;
-        }
-
-        &.load {
-            background-image: url('./assets/loadIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-            cursor: pointer;
-        }
-
-        &.checked {
-            background-image: url('./assets/checkboxCheckedIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-        }
-
-        &.unchecked {
-            background-image: url('./assets/checkboxDefaultIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-        }
-
-
-        &.new-key {
-            background-image: url('./assets/newKeyIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-        }
-
-        &.scale {
-            background-image: url('./assets/scaleIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-        }
-
-        &.scrollbar-handle {
-            background-image: url('./assets/scrollbarHandleIcon.svg');
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: contain;
-            color: white;
-        }
-
+    &.close {
+      background-image: url('./assets/closeWindowIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+      cursor: pointer;
     }
 
-    .hidden {
-        display: none;
+    &.auto-tangent {
+      background-image: url('./assets/autoTangentIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+      cursor: pointer;
+      &:hover {
+        background-color: #888888;
+      }
+
+      &:active {
+        background-color: #555555;
+      }
     }
 
-    .notification-area{
-        position: absolute;
-        width: auto;
-        left: 0.53em;
-        bottom: 60px;
-        background-color: rgb(199, 50, 40);
-        padding: 16px;
-        border-radius: 5px;
+    &.break-tangent {
+      background-image: url('./assets/breakTangentIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+      cursor: pointer;
+      &:hover {
+        background-color: #888888;
+      }
+
+      &:active {
+        background-color: #555555;
+      }
+    }
+
+    &.flat-tangent {
+      background-image: url('./assets/flatTangentIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+      cursor: pointer;
+      &:hover {
+        background-color: #888888;
+      }
+
+      &:active {
+        background-color: #555555;
+      }
+    }
+
+    &.frame {
+      background-image: url('./assets/frameIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+      cursor: pointer;
+      &:hover {
+        background-color: #888888;
+      }
+
+      &:active {
+        background-color: #555555;
+      }
+    }
+
+    &.linear-tangent {
+      background-image: url('./assets/linearTangentIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+      cursor: pointer;
+      &:hover {
+        background-color: #888888;
+      }
+
+      &:active {
+        background-color: #555555;
+      }
+    }
+
+    &.unify-tangent {
+      background-image: url('./assets/unifyTangentIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+      cursor: pointer;
+      &:hover {
+        background-color: #888888;
+      }
+
+      &:active {
+        background-color: #555555;
+      }
+    }
+
+    &.add-animation {
+      background-image: url('./assets/addAnimationIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+      cursor: pointer;
+    }
+
+    &.animation-bullet {
+      background-image: url('./assets/animationBulletIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+    }
+
+    &.animation-delete {
+      background-image: url('./assets/animationDeleteIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+      cursor: pointer;
+    }
+
+    &.animation-edit {
+      background-image: url('./assets/editIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+    }
+
+    &.animation-end {
+      background-image: url('./assets/animationEndIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+      width: 20px;
+      cursor: pointer;
+      background-position: center;
+    }
+
+    &.animation-lastkey {
+      background-image: url('./assets/animationLastKeyIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      width: 20px;
+      cursor: pointer;
+      background-position: center;
+      &:hover {
+        background-image: url('./assets/animationLastKeyHoverIcon.svg');
+      }
+    }
+
+    &.animation-nextkey {
+      background-image: url('./assets/animationNextKeyIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      width: 20px;
+      cursor: pointer;
+      background-position: center;
+      &:hover {
+        background-image: url('./assets/animationNextKeyHoverIcon.svg');
+      }
+    }
+
+    &.animation-options {
+      background-image: url('./assets/animationOptionsIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+      cursor: pointer;
+      background-position: center;
+      &:hover {
+        background-color: #888888 !important;
+      }
+    }
+
+    &.animation-playfwd {
+      background-image: url('./assets/animationPlayFwdIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+      background-position: center;
+      width: 20px;
+      cursor: pointer;
+      background-position: center;
+      &:hover {
+        background-image: url('./assets/animationPlayFwdHoverIcon.svg');
+      }
+    }
+
+    &.animation-playrev {
+      background-image: url('./assets/animationPlayRevIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+      background-position: center;
+      width: 20px;
+      cursor: pointer;
+      background-position: center;
+      &:hover {
+        background-image: url('./assets/animationPlayRevHoverIcon.svg');
+      }
+    }
+
+    &.animation-start {
+      background-image: url('./assets/animationStartIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+      background-position: center;
+      cursor: pointer;
+      background-position: center;
+      width: 20px;
+    }
+
+    &.animation-stop {
+      background-image: url('./assets/animationStopIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+      background-position: center;
+      cursor: pointer;
+      background-position: center;
+      width: 20px;
+      margin-left: 10px;
+    }
+
+    &.animation-triangle {
+      background-image: url('./assets/animationTriangleIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+    }
+
+    &.key-active {
+      background-image: url('./assets/keyActiveIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+    }
+
+    &.key-inactive {
+      background-image: url('./assets/keyInactiveIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+    }
+
+    &.key-selected {
+      background-image: url('./assets/keySelectedIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+    }
+
+    &.loop-active {
+      background-image: url('./assets/loopActiveIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+      cursor: pointer;
+    }
+
+    &.loop-inactive {
+      background-image: url('./assets/loopInactiveIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+      cursor: pointer;
+    }
+
+    &.move {
+      background-image: url('./assets/moveIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+    }
+
+    &.save {
+      background-image: url('./assets/saveIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+      cursor: pointer;
+    }
+
+    &.load {
+      background-image: url('./assets/loadIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+      cursor: pointer;
+    }
+
+    &.checked {
+      background-image: url('./assets/checkboxCheckedIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+    }
+
+    &.unchecked {
+      background-image: url('./assets/checkboxDefaultIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+    }
+
+    &.new-key {
+      background-image: url('./assets/newKeyIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+      &:hover {
+        background-color: #888888;
+      }
+
+      &:active {
+        background-color: #555555;
+      }
+    }
+
+    &.scale {
+      background-image: url('./assets/scaleIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+    }
+
+    &.scrollbar-handle {
+      background-image: url('./assets/scrollbarHandleIcon.svg');
+      background-repeat: no-repeat;
+      background-color: transparent;
+      background-size: contain;
+      color: white;
+    }
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  .notification-area {
+    position: absolute;
+    width: auto;
+    left: 0.53em;
+    bottom: 60px;
+    background-color: rgb(199, 50, 40);
+    padding: 16px;
+    border-radius: 5px;
+    color: white;
+    right: 2em;
+    z-index: 1000;
+
+    button {
+      position: absolute;
+      top: 3px;
+      right: 10px;
+      padding: 0;
+      cursor: pointer;
+      background: transparent;
+      border: 0;
+      -webkit-appearance: none;
+      color: #000;
+      text-shadow: 0 1px 0 #fff;
+      opacity: 0.4;
+      font-size: 1.8em;
+    }
+  }
+
+  .header {
+    display: flex;
+    padding: 9px;
+    background: #333333;
+    color: white;
+    height: 1.3em;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 12px;
+    padding-right: 12px;
+    .title {
+      text-transform: uppercase;
+    }
+
+    .close {
+      grid-column: 2;
+      display: grid;
+      align-items: center;
+      justify-items: center;
+      cursor: pointer;
+    }
+  }
+
+  .actions-wrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    background: #333333;
+    height: 40px;
+
+    .close {
+      position: absolute;
+      right: 1px;
+    }
+
+    .title-container {
+      display: flex;
+      justify-content: stretch;
+      align-items: center;
+      color: white;
+      width: 220px;
+
+      .title {
+        font-size: 15pt;
+      }
+    }
+
+    .buttons-container {
+      display: flex;
+      padding-left: 10px;
+    }
+
+    .action-input {
+      display: flex;
+      justify-content: center;
+      flex-direction: row;
+      align-items: center;
+      margin-right: 8px;
+      input {
+        width: 75px;
+        height: 24px;
         color: white;
-        right: 2em;
-        z-index: 1000;
-
-        button{
-            position: absolute;
-            top: 3px;
-            right: 10px;
-            padding: 0;
-            cursor: pointer;
-            background: transparent;
-            border: 0;
-            -webkit-appearance: none;
-            color: #000;
-            text-shadow: 0 1px 0 #fff;
-            opacity: .4;
-            font-size: 1.8em;
+        font-size: 12px;
+        background: none;
+        border: none;
+        background-color: black;
+        padding: 6px;
+        &:focus {
+          outline: solid 1px #ccc;
         }
+      }
+    }
+  }
+
+  .content {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    flex-direction: column;
+    height: 462px;
+
+    .row {
+      width: 1024px;
+      height: 427px;
+      display: flex;
+      flex-flow: row;
+      background-color: #333333;
     }
 
-    .header{
-        display: flex;
-        padding: 9px;
+    .row-bottom {
+      display: flex;
+      align-items: stretch;
+      justify-content: flex-start;
+      flex-direction: row;
+      width: 1024px;
+      height: 45px;
+      background-color: #333333;
+
+      .timeline {
+        width: 100vw;
         background: #333333;
-        color: white;
-        height: 1.3em;
-        justify-content: space-between;
-        align-items: center;
-        padding-left: 12px;
-        padding-right: 12px;
-        .title{  text-transform: uppercase; }
-
-        .close {
-            grid-column: 2;
-            display: grid;
-            align-items: center;   
-            justify-items: center;
-            cursor: pointer;     
-        }   
-    }
-
-    .actions-wrapper {
         display: flex;
-        flex-direction: row;
-        justify-content: flex-start;
         align-items: center;
-        background: #333333;
-        height: 40px;
+        justify-content: stretch;
+        height: 2.5rem;
 
-        .close {
-            position: absolute;
-            right: 1px;
+        .display-line {
+          width: 75vw;
+          height: 40px;
+          overflow: hidden;
+          margin-right: 0px;
+          padding-left: 10px;
+          padding-right: 10px;
+
+          &::-webkit-scrollbar {
+            height: 0.4em;
+          }
+
+          &::-webkit-scrollbar-track {
+            box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+          }
+
+          &::-webkit-scrollbar-thumb {
+            background-color: cornflowerblue;
+            outline: 1px solid slategrey;
+          }
         }
 
-        .title-container {
+        .input-frame {
+          width: 60px;
+          margin-left: 10px;
+          margin-right: 10px;
+
+          input {
+            text-align: center;
+            width: 60px;
+            border: none;
+            background: #222222;
+            color: white;
+            height: 25px;
+            font-size: 15px;
+            font-family: acumin-pro-condensed;
+            &::-webkit-inner-spin-button,
+            &::-webkit-outer-spin-button {
+              appearance: none;
+              -webkit-appearance: none;
+              margin: 0;
+            }
+          }
+        }
+
+        .timeline-scroll-handle {
+          display: flex;
+          flex-direction: row;
+          height: 25px;
+          margin: 10px;
+
+          .scroll-handle {
+            width: 703px;
+            background-color: #222222;
+            height: 25px;
             display: flex;
-            justify-content: stretch;
             align-items: center;
-            color: white;
-            width: 220px;
+            .handle {
+              display: flex;
+              flex-direction: row;
+              height: 20px;
+              background-color: #666666;
+              justify-content: space-between;
+              position: absolute;
 
-            .title {
-                font-size: 15pt;
+              .scrollbar {
+                cursor: pointer;
+                width: 100%;
+              }
+
+              .left-grabber,
+              .right-grabber {
+                display: flex;
+                align-items: center;
+                cursor: pointer;
+              }
+
+              .left-grabber {
+                padding-left: 3px;
+              }
+              .right-grabber {
+                padding-right: 3px;
+              }
+              .grabber {
+                background-color: #333333;
+                width: 2px;
+                height: 16px;
+                margin-right: 2px;
+              }
+
+              .text {
+                margin-left: 10px;
+                margin-right: 10px;
+                font-size: 12px;
+                font-family: acumin-pro-condensed;
+                color: #222222;
+              }
             }
+          }
         }
 
-        .buttons-container{
-            display: flex;
+        .timeline-wrapper {
+          margin-top: -40px;
+          margin-left: -2px;
         }
 
-        .action-input{
+        .controls {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding-left: 46px;
+          padding-right: 46px;
+          margin-left: 10px;
+
+          .stop-container {
+            width: 40px;
             display: flex;
-            justify-content: center;
             flex-direction: row;
+            justify-content: space-between;
             align-items: center;
-            margin-right: 8px;
+          }
+
+          .input-frame input {
+            width: 3em;
+          }
+        }
+      }
+    }
+
+    .animation-list {
+      margin: 10px;
+      margin-top: 0;
+      margin-bottom: 0;
+      background: #111111;
+      color: white;
+      width: 210px;
+
+      .controls-header {
+        display: flex;
+        background-color: #252525;
+
+        .input-fps {
+          display: flex;
+          align-items: center;
+          width: 52px;
+          padding-left: 4px;
+          .numeric {
             input {
-                width: 75px;
-                height: 24px;
+              width: 52px;
+              font-size: 12px;
+              height: 22px;
+              background-color: black;
+              border: none;
+              color: white;
+              text-align: center;
+              &::-webkit-inner-spin-button,
+              &::-webkit-outer-spin-button {
+                appearance: none;
+                -webkit-appearance: none;
+                margin: 0;
+              }
+              font-family: acumin-pro-condensed;
+            }
+          }
+          p {
+            color: white;
+            font-size: 12px;
+            margin: 0px;
+            position: relative;
+            right: 17px;
+            line-height: 20px;
+            height: 20px;
+            margin-top: -2px;
+          }
+        }
+      }
+
+      .load-container {
+        flex-direction: column;
+        height: 377px;
+        padding-top: 10px;
+
+        .load-server {
+          font-size: 12px;
+          display: flex;
+          background-color: #222222;
+          padding-left: 10px;
+          height: 20px;
+          margin-top: 277px;
+          p {
+            margin: 0px;
+          }
+        }
+
+        .load-browse {
+          margin-top: 10px;
+          display: flex;
+          p {
+            height: 20px;
+            margin: 0px;
+            font-size: 12px;
+            width: 65px;
+            text-align: right;
+            margin-right: 10px;
+          }
+          .buttonLine {
+            margin-left: 0px;
+            margin-top: 0px;
+            button {
+              margin-top: 0px;
+              font-family: acumin-pro-condensed;
+              padding-top: 1px;
+            }
+          }
+        }
+
+        .buttonLine {
+          width: 60px;
+          padding: 0px;
+          display: block;
+          margin-left: 75px;
+          height: 20px;
+          margin-top: 10px;
+          button {
+            border: none;
+            font-size: 12px;
+            margin: 0px;
+            width: 60px;
+            background-color: #444;
+            height: 20px;
+            font-family: acumin-pro-condensed;
+            padding-top: 1px;
+          }
+        }
+
+        .textInputLine {
+          display: flex;
+          .label {
+            font-size: 12px;
+            width: 75px;
+            text-align: center;
+            font-family: acumin-pro-condensed;
+          }
+          .value {
+            input {
+              width: 127px;
+              background-color: #444444;
+              border: none;
+              height: 20px;
+              font-family: acumin-pro-condensed;
+              padding-bottom: 6px;
+              padding-left: 6px;
+            }
+          }
+        }
+      }
+
+      .save-container {
+        flex-direction: column;
+        height: 377px;
+        padding-top: 10px;
+
+        .item-list {
+          height: 317px;
+          ul {
+            list-style: none;
+            padding-left: 10px;
+            margin: 0px;
+            label {
+              font-size: 12px;
+              font-family: acumin-pro-condensed;
+              display: flex;
+              align-content: center;
+              align-items: center;
+              input {
+                margin: 0px;
+                margin-right: 5px;
+              }
+            }
+          }
+        }
+
+        .save-server {
+          font-size: 12px;
+          display: flex;
+          background-color: #222222;
+          padding-left: 10px;
+          height: 20px;
+          p {
+            margin: 0px;
+          }
+        }
+
+        .save-buttons {
+          margin-top: 10px;
+          display: flex;
+          justify-content: space-evenly;
+          margin-bottom: 10px;
+          p {
+            height: 20px;
+            margin: 0px;
+            font-size: 12px;
+            width: 65px;
+            text-align: right;
+            margin-right: 10px;
+          }
+          .buttonLine {
+            margin-left: 0px;
+            margin-top: 0px;
+            button {
+              margin-top: 0px;
+              font-family: acumin-pro-condensed;
+              padding-top: 1px;
+            }
+          }
+        }
+
+        .buttonLine {
+          width: 80px;
+          padding: 0px;
+          display: block;
+          margin-left: 75px;
+          height: 20px;
+          margin-top: 10px;
+          button {
+            border: none;
+            font-size: 12px;
+            margin: 0px;
+            width: 80px;
+            background-color: #444444;
+            height: 20px;
+            font-family: acumin-pro-condensed;
+            padding-top: 1px;
+          }
+        }
+
+        .textInputLine {
+          display: flex;
+          .label {
+            font-size: 12px;
+            width: 75px;
+            text-align: center;
+            font-family: acumin-pro-condensed;
+          }
+          .value {
+            input {
+              width: 127px;
+              background-color: #444444;
+              border: none;
+              height: 20px;
+              font-family: acumin-pro-condensed;
+            }
+          }
+        }
+      }
+
+      .new-animation {
+        display: block;
+        position: absolute;
+        background-color: #111111;
+        height: 377px;
+        z-index: 10;
+
+        .sub-header {
+          display: flex;
+          align-items: start;
+          width: 250px;
+          justify-content: space-between;
+          .title {
+            margin: 0px;
+            font-size: 15pt;
+          }
+        }
+
+        .sub-content {
+          background-color: #111111;
+          padding: 10px;
+          display: inline-grid;
+          grid-template-columns: 63px 127px;
+          grid-template-rows: repeat(6, 30px);
+          font-size: 12px;
+
+          .confirm-buttons {
+            grid-column-start: 2;
+
+            .buttonLine {
+              button {
+                width: 60px;
+                height: 20px;
+                background-color: rgb(68, 68, 68);
                 color: white;
                 font-size: 12px;
-                background: none;
+                line-height: 11px;
+                margin: 5px;
+                font-size: 10px;
+                font-family: acumin-pro-condensed;
                 border: none;
-                background-color: black;
-                padding: 6px;
+              }
             }
+          }
         }
-    }
+      }
 
-    .content{
-        display: flex;
-        align-items: flex-start;
-        justify-content: flex-start;
-        flex-direction: column;
-        height: 462px;
-
-        .row {
-            width: 1024px;
-            height: 427px;
+      .object-tree {
+        background-color: #111111;
+        ul {
+          list-style: none;
+          padding-left: 0px;
+          padding: 0px;
+          margin: 0px;
+          li.property {
+            &.sub {
+              height: auto;
+            }
+            &:before {
+              content: '';
+              background: none;
+            }
+            height: 20px;
             display: flex;
-            flex-flow: row;
-            background-color: #333333;
-        }
-
-        .row-bottom {
-            display: flex;
-            align-items: stretch;
-            justify-content: flex-start;
-            flex-direction: row;
-            width: 1024px;
-            height: 45px;
-            background-color: #333333;
-
-            .timeline{
-                width: 100vw;
-                background: #333333;
-                display: flex;
-                align-items: center;
-                justify-content: stretch;
-                height: 2.5rem;
-
-                .display-line {
-                    width: 75vw;
-                    height: 40px;
-                    overflow: hidden;
-                    margin-right: 0px;
-                    padding-left: 10px;
-                    padding-right: 10px;
-
-                    &::-webkit-scrollbar{
-                        height: 0.4em;
-                    }
-
-                    &::-webkit-scrollbar-track {
-                        box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-                      }
-                       
-                    &::-webkit-scrollbar-thumb {
-                        background-color: cornflowerblue;
-                        outline: 1px solid slategrey;
-                      }
-                }
-
-                .input-frame{
-                    width: 60px;
-                    margin-left: 10px;
-                    margin-right: 10px;
-
-                    input {
-                        text-align: center;
-                        width: 60px;
-                        border: none;
-                        background: #222222;
-                        color: white;
-                        height: 25px;
-                        font-size: 15px;
-                        font-family: acumin-pro-condensed;
-                        &::-webkit-inner-spin-button, &::-webkit-outer-spin-button {
-                            appearance: none;
-                            -webkit-appearance: none; 
-                            margin: 0;
-                        }
-                    }
-                }
-
-                .timeline-scroll-handle{
-                    display: flex;
-                    flex-direction: row;
-                    height: 25px;
-                    margin: 10px;
-                    
-                    .scroll-handle {
-                        width: 703px;
-                        background-color: #222222;
-                        height: 25px;
-                        display: flex;
-                        align-items: center;
-                        .handle {
-                            display: flex;
-                            flex-direction: row;
-                            height: 20px;
-                            background-color: #666666;
-                            justify-content: space-between;
-
-                            .left-grabber, .right-grabber {
-                                display: flex;
-                                align-items: center;
-                                cursor: pointer;
-                            }
-
-                            .left-grabber {
-                                padding-left: 3px;
-                            }
-                            .right-grabber {
-                                padding-right: 3px;
-                            }
-                            .grabber{
-                                background-color: #333333;
-                                width:2px;
-                                height: 16px;
-                                margin-right:2px
-                            }
-
-                            .text{
-                                margin-left:10px;
-                                margin-right: 10px;
-                                font-size: 12px;
-                                font-family: acumin-pro-condensed;
-                                color: #222222;
-                            }
-                        }
-                    }
-                }
-
-                .timeline-wrapper {
-                    margin-top: -40px;
-                    margin-left: -2px;
-                }
-
-                .controls {
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    padding-left: 46px;
-                    padding-right: 46px;
-                    margin-left: 10px;
-
-                    .stop-container{
-                        width: 40px;
-                        display: flex;
-                        flex-direction: row;
-                        justify-content: space-between;
-                        align-items: center;
-                    }
-
-                    .input-frame input {
-                        width: 3em;
-                    }
-                }
-            }
-        }
-
-        .animation-list{
-            margin: 10px;
-            margin-top: 0;
-            margin-bottom: 0;
-            background: #111111;
-            color: white;
-            width: 210px;
-
-            .controls-header {
-                display: flex;
-                background-color: #252525;
-
-               .input-fps{
-                display: flex;
-                align-items: center;
-                width: 52px;
-                padding-left: 4px;
-                    .numeric{
-                        input{
-                            width: 52px;
-                            font-size: 12px;
-                            height: 22px;
-                            background-color: black;
-                            border: none;
-                            color: white;
-                            text-align: center;
-                            &::-webkit-inner-spin-button, &::-webkit-outer-spin-button {
-                                appearance: none;
-                                -webkit-appearance: none; 
-                                margin: 0;
-                            }
-                            font-family: acumin-pro-condensed;
-                        }
-                    }
-                    p {
-                        color: white;
-                        font-size: 12px;
-                        margin: 0px;
-                        position: relative;
-                        right: 17px;
-                        line-height: 20px;
-                        height: 20px;
-                        margin-top: -2px;
-                    }
-               } 
+            flex-wrap: wrap;
+            font-size: 12px;
+            p {
+              display: inline;
+              font-size: 12px;
+              margin: 0px;
+              flex: 8;
+              cursor: pointer;
             }
 
-            .new-animation{
+            .spacer {
+              width: 20px;
+              height: 20px;
+            }
+
+            .animation-bullet {
+              background-image: url('./assets/animationBulletIcon.svg');
+              background-repeat: no-repeat;
+              background-color: transparent;
+              background-size: contain;
+              color: #7a4ece;
+              width: 10px;
+              margin-left: 18px;
+              margin-right: 2px;
+              height: 20px;
+              background-position-y: 5px;
+            }
+
+            .animation-arrow {
+              width: 30px;
+              background-image: url('./assets/animationTriangleIcon.svg');
+              background-repeat: no-repeat;
+              background-color: transparent;
+              background-size: 10px;
+              background-position-y: center;
+              background-position-x: 18px;
+              cursor: pointer;
+              &.flip {
+                transform: rotate(180deg);
+                background-position: 2px 50%;
+              }
+            }
+
+            &.active {
+              background-color: #444444;
+            }
+
+            .handle-indicator {
+              width: 30px;
+
+              &.show {
                 display: block;
-                position: absolute;
-                background-color: #111111;
-                height: 367px;
-                z-index: 10;
+                background-image: url('./assets/keySelectedIcon.svg');
+                background-repeat: no-repeat;
+                background-color: transparent;
+                background-size: 10px;
+                color: white;
+                background-position-x: 9px;
+                background-position-y: 5px;
+              }
 
-                .sub-header {
-                    display: flex;
-                    align-items: start;
-                    width: 250px;
-                    justify-content: space-between;
-                    .title {
-                    margin: 0px;
-                    font-size: 15pt;
-                    }
-                }
-
-                .sub-content{
-                    background-color: #111111;
-                    padding: 10px;
-                    display: inline-grid;
-                    grid-template-columns: 63px 127px;
-                    grid-template-rows: repeat(6, 30px);
-                    font-size: 12px;
-
-                    .confirm-buttons {
-                        grid-column-start: 2;
-
-                        .buttonLine {
-                            button {
-                                width: 60px;
-                                height: 20px;
-                                background-color: rgb(68, 68, 68);
-                                color: white;
-                                font-size: 12px;
-                                line-height: 11px;
-                                margin: 5px;
-                                font-size: 10px;
-                                font-family: acumin-pro-condensed;
-                                border: none;
-                            }
-                        }
-                    }
-                }
+              &.hide {
+                display: block;
+              }
             }
 
-            .object-tree{
-                background-color:#111111;
-                ul {
-                    list-style:none;
-                    padding-left: 0px;
-                    padding: 0px;
-                    margin: 0px;
-                    li.property {
-                        &.sub {
-                            height: auto;
-                        }
-                        &:before {
-                            content: '';
-                            background: none;
-                        }
-                        height: 20px;
-                        display: flex;
-                        flex-wrap: wrap;
-                        font-size: 12px;
-                        p {
-                            display: inline;
-                            font-size: 12px;
-                            margin: 0px;
-                            flex: 8;
-                            cursor: pointer;
-                        }
+            ul.sub-list {
+              flex-grow: 1;
+              flex-shrink: 1;
+              flex-basis: 100%;
 
-                        .spacer{
-                            width: 20px;
-                            height: 20px;
-                        }
-
-                        .animation-bullet {
-                            background-image: url('./assets/animationBulletIcon.svg');
-                            background-repeat: no-repeat;
-                            background-color: transparent;
-                            background-size: contain;
-                            color: #7a4ece;
-                            width: 10px;
-                            margin-left: 18px;
-                            margin-right: 2px;
-                            height: 20px;
-                            background-position-y: 5px;
-                        }
-
-                        .animation-arrow {
-                            width: 30px;
-                            background-image: url('./assets/animationTriangleIcon.svg');
-                            background-repeat: no-repeat;
-                            background-color: transparent;
-                            background-size: 10px;
-                            background-position-y: center;
-                            background-position-x: 18px;
-                            cursor: pointer;
-                            &.flip {
-                                transform: rotate(180deg);
-                                background-position: 2px 50%;
-                            }
-                        }
-
-                        &.active {
-                            background-color: #444444;
-                        }
-
-                        .handle-indicator{
-                            width: 30px;
-
-                            &.show {
-                                display: block;
-                                background-image: url('./assets/keySelectedIcon.svg');
-                                background-repeat: no-repeat;
-                                background-color: transparent;
-                                background-size: 10px;
-                                color: white;
-                                background-position-x: 9px;
-                                background-position-y: 5px;
-                            }
-
-                            &.hide {
-                                display: none;
-                            }
-                        }
-
-                        ul.sub-list {
-                            flex-grow: 1;
-                            flex-shrink: 1;
-                            flex-basis: 100%;
-
-                            .property{
-                                cursor: pointer;
-                            }
-                        }
-                    }
-                }
+              .property {
+                cursor: pointer;
+              }
             }
+          }
+        }
+      }
 
-            .label-input{
-                display: contents;
+      .label-input {
+        display: contents;
 
-                label {
-                    text-align: right;
-                }
-
-                input {
-                    margin-left: 5px;
-                    height: 20px;
-                    background-color: #444444;
-                    border: none;
-                    color: white;
-                    padding-left: 3px;
-                    font-size: 10px;
-                    &:focus{
-                        border-radius: 0px;
-                        outline-style: auto;
-                        outline-color: lightgrey;
-                    }
-                    font-family: acumin-pro-condensed;
-                }
-
-                select {
-                    height: 20px;
-                    margin-left: 5px;
-                    font-size: 10px;
-                    background-color: #444444;
-                    border: none;
-                    color: white;
-                    &:focus{
-                        border-radius: 0px;
-                        outline-style: auto;
-                        outline-color: lightgrey;
-                    }
-                    font-family: acumin-pro-condensed;
-                }
-            }
+        label {
+          text-align: right;
         }
 
-        .sample-chart{
-            .linear {
-                .draggable {
-                    cursor: move;
-                }
-            }
+        input {
+          margin-left: 5px;
+          height: 20px;
+          background-color: #444444;
+          border: none;
+          color: white;
+          padding-left: 3px;
+          font-size: 10px;
+          &:focus {
+            border-radius: 0px;
+            outline: 1px solid #ccc;
+          }
+          font-family: acumin-pro-condensed;
         }
 
-        .graph-chart{
-            overflow: hidden;
-            scroll-behavior: smooth;
-            background-color: rgb(17, 17, 17);
-            height: 364px;
-            width: 782px;
-
-            .linear{
-                overflow: visible;
-                border: 0px solid white;
-                height: 362px;
-                width: 780px;
-                outline: none;
-
-                svg {
-                    overflow: visible;
-                }
-
-                &:focus {
-                    outline-color: transparent;
-                }
-
-                line {
-                    stroke: #555555;
-                    stroke-width: 0.2;
-                }
-                text {
-                    fill: #555555;
-                    font-family: 'acumin-pro-condensed';
-                }
-
-                .control-point {
-                    display: none;
-                }
-
-                .control-point.active {
-                    display: inline;
-                    stroke: #e9db1e;
-                    stroke-width: 0.2;
-                }
-            }
-
-            .playhead-wrapper {
-                position: relative;
-                left: -13px;
-                bottom: 366px;
-            }
-
-            .playhead-handle {
-                position: relative;
-                top: 340px;
-                .playhead {
-                    width: 22px;
-                    background-color: transparent;
-                    color: #555555;
-                    text-align: center;
-                    font-size: 12px;
-                    position: absolute;
-                    top: 1px;
-                }
-    
-                .playhead-circle {
-                    background-color: #ffffff;
-                    width: 22px;
-                    height: 22px;
-                    border-radius: 50%;
-                    position: absolute;
-                    top: 0;
-                }
-            }
-
-            .playhead-line {
-                width: 1px;
-                height: 341px;
-                background-color: #ffffff;
-                position: absolute;
-                margin-left: 9.5px;
-            }
+        select {
+          height: 20px;
+          margin-left: 5px;
+          font-size: 10px;
+          background-color: #444444;
+          border: none;
+          color: white;
+          &:focus {
+            border-radius: 0px;
+            outline: 1px solid #ccc;
+          }
+          font-family: acumin-pro-condensed;
         }
+      }
     }
 
-    .buttonLine {
+    .sample-chart {
+      .linear {
+        .draggable {
+          cursor: move;
+        }
+      }
+    }
+
+    .graph-chart {
+      overflow: hidden;
+      scroll-behavior: smooth;
+      background-color: rgb(17, 17, 17);
+      height: 364px;
+      width: 782px;
+
+      .linear {
+        overflow: visible;
+        border: 0px solid white;
+        height: 362px;
+        width: 780px;
+        outline: none;
+
+        svg {
+          overflow: visible;
+        }
+
+        &:focus {
+          outline-color: transparent;
+        }
+
+        line {
+          stroke: #555555;
+          stroke-width: 0.2;
+        }
+        text {
+          fill: #555555;
+          font-family: 'acumin-pro-condensed';
+        }
+
+        .control-point {
+          display: none;
+        }
+
+        .control-point.active {
+          display: inline;
+          stroke: #e9db1e;
+          stroke-width: 0.2;
+        }
+      }
+
+      .playhead-container {
+        position: relative;
+      }
+
+      .playhead-wrapper {
+        left: -13px;
+        bottom: 366px;
+        position: relative;
+      }
+
+      .playhead-scrollable {
+        width: 100px;
+        height: 33px;
+        position: absolute;
+        top: 335px;
+        left: -39px;
+      }
+
+      .playhead-handle {
+        position: relative;
+        top: 340px;
+        width: 22px;
         height: 30px;
-        display: grid;
-        align-items: center;
-        justify-items: stretch;
-
-        input[type="file"] {
-            display: none;
+        .playhead {
+          width: 22px;
+          background-color: transparent;
+          color: #555555;
+          text-align: center;
+          font-size: 12px;
+          position: absolute;
+          top: 1px;
+          cursor: pointer;
         }
 
-        .file-upload {
-            background: #222222;
-            border: 1px solid rgb(51, 122, 183);
-            margin: 5px 10px 5px 10px;
-            color:white;
-            padding: 4px 5px;
-            opacity: 0.9;
-            cursor: pointer;
-            text-align: center;
+        .playhead-circle {
+          background-color: #ffffff;
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          position: absolute;
+          top: 0;
         }
+      }
 
-        .file-upload:hover {
-            opacity: 1.0;
-        }
+      .playhead-line {
+        width: 1px;
+        height: 341px;
+        background-color: #ffffff;
+        position: absolute;
+        margin-left: 9.5px;
+      }
+    }
+  }
 
-        .file-upload:active {
-            transform: scale(0.98);
-            transform-origin: 0.5 0.5;
-        }
+  .buttonLine {
+    height: 30px;
+    display: grid;
+    align-items: center;
+    justify-items: stretch;
 
-        button {
-            background: #222222;
-            border: 1px solid rgb(51, 122, 183);
-            margin: 5px 10px 5px 10px;
-            color:white;
-            padding: 4px 5px;
-            opacity: 0.9;
-            cursor: pointer;
-        }
-
-        button:hover {
-            opacity: 1.0;
-        }
-
-        button:active {
-            background: #282828;
-        }   
-        
-        button:focus {
-            border: 1px solid rgb(51, 122, 183);
-            outline: 0px;
-        }  
+    input[type='file'] {
+      display: none;
     }
 
+    .file-upload {
+      background: #222222;
+      border: 1px solid rgb(51, 122, 183);
+      margin: 5px 10px 5px 10px;
+      color: white;
+      padding: 4px 5px;
+      opacity: 0.9;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .file-upload:hover {
+      opacity: 1;
+    }
+
+    .file-upload:active {
+      transform: scale(0.98);
+      transform-origin: 0.5 0.5;
+    }
+
+    button {
+      background: #222222;
+      border: 1px solid rgb(51, 122, 183);
+      margin: 5px 10px 5px 10px;
+      color: white;
+      padding: 4px 5px;
+      opacity: 0.9;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 1;
+    }
+
+    button:active {
+      background: #282828;
+    }
+
+    button:focus {
+      border: 1px solid rgb(51, 122, 183);
+      outline: 0px;
+    }
+  }
 }
