@@ -39,7 +39,6 @@ export class CustomProceduralTexture extends ProceduralTexture {
 
     private _loadJson(jsonUrl: string): void {
         let noConfigFile = () => {
-            Logger.Log("No config file found in " + jsonUrl + " trying to use ShadersStore or DOM element");
             try {
                 this.setFragment(this._texturePath);
             }

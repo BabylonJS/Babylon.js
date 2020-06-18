@@ -1330,6 +1330,11 @@ export class ShadowGenerator implements IShadowGenerator {
             if (material && material.needAlphaTesting()) {
                 var alphaTexture = material.getAlphaTestTexture();
                 if (alphaTexture) {
+
+                    if (!alphaTexture.isReady()) {
+                        return false;
+                    }
+
                     defines.push("#define ALPHATEST");
                     if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                         attribs.push(VertexBuffer.UVKind);
