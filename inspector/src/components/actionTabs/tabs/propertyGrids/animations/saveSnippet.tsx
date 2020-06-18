@@ -166,14 +166,11 @@ export class SaveSnippet extends React.Component<
         <div className='save-buttons'>
           {this.props.snippetId !== '' ? (
             <ButtonLineComponent
-              label='Save Snippet'
+              label='Save to snippet server'
               onClick={() => this.saveToSnippet()}
             />
           ) : null}
-          <ButtonLineComponent
-            label='Save File'
-            onClick={() => this.saveToFile()}
-          />
+          <ButtonLineComponent label='Save' onClick={() => this.saveToFile()} />
         </div>
         <div className='save-server'>
           <p>Snippet Server: </p>&nbsp;

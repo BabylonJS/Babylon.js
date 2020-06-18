@@ -8,7 +8,7 @@ import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
 import { LockObject } from '../lockObject';
 import { Tools } from 'babylonjs/Misc/tools';
 import { GlobalState } from '../../../../globalState';
-import { ReadFileError } from 'babylonjs';
+import { ReadFileError } from 'babylonjs/Misc/fileTools';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 import { TargetedAnimation } from 'babylonjs/Animations/animationGroup';
 
@@ -105,13 +105,13 @@ export class LoadSnippet extends React.Component<
           onChange={(value: string) => this.change(value)}
         />
         <ButtonLineComponent
-          label='Load'
+          label='Load from snippet server'
           onClick={() => this.loadFromSnippet()}
         />
         <div className='load-browse'>
           <p>Local File</p>
           <FileButtonLineComponent
-            label='Browse'
+            label='Load'
             onClick={(file) => this.loadFromFile(file)}
             accept='.json'
           />

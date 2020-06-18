@@ -762,11 +762,11 @@ body {
             border: none;
             font-size: 12px;
             margin: 0px;
-            width: 60px;
+            width: 127px;
             background-color: #444;
             height: 20px;
             font-family: acumin-pro-condensed;
-            padding-top: 1px;
+            padding-top: 0px;
           }
         }
 
@@ -854,7 +854,7 @@ body {
         }
 
         .buttonLine {
-          width: 80px;
+          width: 105px;
           padding: 0px;
           display: block;
           margin-left: 75px;
@@ -864,11 +864,21 @@ body {
             border: none;
             font-size: 12px;
             margin: 0px;
-            width: 80px;
             background-color: #444444;
             height: 20px;
+            width: 105px;
             font-family: acumin-pro-condensed;
             padding-top: 1px;
+          }
+
+          &:first-child {
+            width: 105px;
+          }
+          &:nth-child(2) {
+            width: 60px;
+            button {
+              width: 60px;
+            }
           }
         }
 
