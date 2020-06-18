@@ -165,3 +165,22 @@
         }
     }
 }
+
+@media (max-width: 768px) {
+    .footer {       
+        grid-template-columns: 0px 1fr 150px;
+
+        .dropup {
+            .dropup-content {    
+                width: 100px;
+            }
+        }
+
+        .button {    
+            &.long {
+                width: 100px;                
+                grid-template-columns: var(--footer-height) calc(100px - var(--footer-height));
+            }
+        }
+    }
+}
