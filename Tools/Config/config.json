@@ -60,8 +60,7 @@
         "gui",
         "inspector",
         "viewer",
-        "nodeEditor",
-        "sandbox"
+        "nodeEditor"
     ],
     "lintModules": [
         "core",
