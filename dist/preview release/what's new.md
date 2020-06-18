@@ -233,6 +233,7 @@
 - Fixed `AssetContainer.instantiateModelsToScene` with cloneMaterials=true and MultiMaterials to properly set the cloned submaterials ([ghempton](https://github.com/ghempton))
 - Fixed wrong display when setting `DefaultRenderingPipeline.imageProcessingEnabled` to `false` ([Popov72](https://github.com/Popov72))
 - Fix crash when loading a .obj file with vertex colors ([Popov72](https://github.com/Popov72))
+- Fix skeleton viewer still visible when `isEnabled = false` ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
