@@ -1,49 +1,118 @@
-import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../../../../components/propertyChangedEvent";
-import { Animation } from "babylonjs/Animations/animation";
-import { ButtonLineComponent } from "../../../lines/buttonLineComponent";
-import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
-import { LockObject } from "../lockObject";
+import * as React from 'react';
+import { Observable } from 'babylonjs/Misc/observable';
+import { PropertyChangedEvent } from '../../../../../components/propertyChangedEvent';
+import { Animation } from 'babylonjs/Animations/animation';
+import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
+import { FileButtonLineComponent } from '../../../lines/fileButtonLineComponent';
+import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
+import { LockObject } from '../lockObject';
+import { Tools } from 'babylonjs/Misc/tools';
+import { GlobalState } from '../../../../globalState';
+import { ReadFileError } from 'babylonjs';
 
 interface ILoadSnippetProps {
   animations: Animation[];
   onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
   lockObject: LockObject;
+  globalState: GlobalState;
+  snippetServer: string;
+  setSnippetId: (id: string) => void;
 }
 
 export class LoadSnippet extends React.Component<
   ILoadSnippetProps,
-  { server: string }
+  { snippetId: string }
 > {
   private _serverAddress: string;
   constructor(props: ILoadSnippetProps) {
     super(props);
-    this._serverAddress = "-";
-    this.state = { server: "" };
+    this._serverAddress = this.props.snippetServer;
+    this.state = { snippetId: '' };
   }
 
   change(value: string) {
-    this.setState({ server: value });
+    this.setState({ snippetId: value });
+    this.props.setSnippetId(value);
+  }
+
+  loadFromFile(file: File) {
+    Tools.ReadFile(
+      file,
+      (data) => {
+        let decoder = new TextDecoder('utf-8');
+        let jsonObject = JSON.parse(decoder.decode(data));
+        var result = [];
+
+        for (var i in jsonObject) {
+          result.push(jsonObject[i]);
+        }
+
+        //Check if animation is already there, and destroy it
+        // this notifies if there are other observers for this animation...
+        // this.props.globalState.onSelectionChangedObservable.notifyObservers(
+        //   null
+        // );
+
+        result.forEach((anim) => {
+          let newAnimation = Animation.Parse(anim);
+          this.props.animations.push(newAnimation);
+          // this.props.globalState.onSelectionChangedObservable.notifyObservers(
+          //   newAnimation
+          // );
+        });
+      },
+      undefined,
+      true,
+      (error: ReadFileError) => {
+        console.log(error.message);
+      }
+    );
+  }
+
+  loadFromSnippet() {
+    if (this.state.snippetId !== '') {
+      //system.dispose();
+      //this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+
+      Animation.CreateFromSnippetAsync(this.state.snippetId)
+        .then((newAnimations) => {
+          this.props.globalState.onSelectionChangedObservable.notifyObservers(
+            newAnimations
+          );
+        })
+        .catch((err) => {
+          alert('Unable to load your animations: ' + err);
+          // send message
+        });
+    } else {
+      //send error message
+    }
   }
 
   render() {
     return (
-      <div className="load-container">
+      <div className='load-container'>
         <TextInputLineComponent
-          label="Snippet Server"
+          label='Snippet Id'
           lockObject={this.props.lockObject}
-          value={this.state.server}
+          value={this.state.snippetId}
           onChange={(value: string) => this.change(value)}
         />
-        <ButtonLineComponent label="Load" onClick={() => {}} />
-        <div className="load-browse">
+        <ButtonLineComponent
+          label='Load'
+          onClick={() => this.loadFromSnippet()}
+        />
+        <div className='load-browse'>
           <p>Local File</p>
-          <ButtonLineComponent label="Browse" onClick={() => {}} />
+          <FileButtonLineComponent
+            label='Browse'
+            onClick={(file) => this.loadFromFile(file)}
+            accept='.json'
+          />
         </div>
-        <div className="load-server">
-          <p>Snippet Server : </p>
-          <p>{this._serverAddress}</p>
+        <div className='load-server'>
+          <p>Snippet Server: </p>
+          <p> {this._serverAddress ?? '-'}</p>
         </div>
       </div>
     );

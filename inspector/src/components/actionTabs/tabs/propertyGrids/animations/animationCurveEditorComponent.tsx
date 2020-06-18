@@ -18,6 +18,7 @@ import { TargetedAnimation } from 'babylonjs/Animations/animationGroup';
 import { EditorControls } from './editorControls';
 import { SelectedCoordinate } from './animationListTree';
 import { LockObject } from '../lockObject';
+import { GlobalState } from '../../../../globalState';
 import { Nullable } from 'babylonjs/types';
 import { Observer } from 'babylonjs/Misc/observable';
 
@@ -29,6 +30,7 @@ interface IAnimationCurveEditorComponentProps {
   scene: Scene;
   entity: IAnimatable | TargetedAnimation;
   lockObject: LockObject;
+  globalState: GlobalState;
 }
 
 interface ICanvasAxis {
@@ -68,6 +70,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     selectedCoordinate: number;
   }
 > {
+  private _snippetUrl = 'https://snippet.babylonjs.com';
   // Height scale *Review this functionaliy
   private _heightScale: number = 100;
   // Canvas Length *Review this functionality
@@ -1410,6 +1413,8 @@ export class AnimationCurveEditorComponent extends React.Component<
               setNotificationMessage={(message: string) => {
                 this.setState({ notification: message });
               }}
+              globalState={this.props.globalState}
+              snippetServer={this._snippetUrl}
             />
 
             <div

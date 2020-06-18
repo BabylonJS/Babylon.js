@@ -12,6 +12,7 @@ import { TargetedAnimation } from 'babylonjs/Animations/animationGroup';
 import { LoadSnippet } from './loadsnippet';
 import { SaveSnippet } from './saveSnippet';
 import { LockObject } from '../lockObject';
+import { GlobalState } from '../../../../globalState';
 
 interface IEditorControlsProps {
   isTargetedAnimation: boolean;
@@ -21,6 +22,8 @@ interface IEditorControlsProps {
   onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
   setNotificationMessage: (message: string) => void;
   selectAnimation: (selected: Animation, axis?: SelectedCoordinate) => void;
+  globalState: GlobalState;
+  snippetServer: string;
 }
 
 export class EditorControls extends React.Component<
@@ -33,6 +36,7 @@ export class EditorControls extends React.Component<
     isLoopActive: boolean;
     animationsCount: number;
     framesPerSecond: number;
+    snippetId: string;
   }
 > {
   constructor(props: IEditorControlsProps) {
@@ -48,6 +52,7 @@ export class EditorControls extends React.Component<
       isLoopActive: false,
       animationsCount: count,
       framesPerSecond: 60,
+      snippetId: '',
     };
   }
 
@@ -197,11 +202,23 @@ export class EditorControls extends React.Component<
         )}
 
         {this.state.isLoadTabOpen ? (
-          <LoadSnippet lockObject={this.props.lockObject} animations={[]} />
+          <LoadSnippet
+            lockObject={this.props.lockObject}
+            animations={[]}
+            snippetServer={this.props.snippetServer}
+            globalState={this.props.globalState}
+            setSnippetId={(id: string) => this.setState({ snippetId: id })}
+          />
         ) : null}
 
         {this.state.isSaveTabOpen ? (
-          <SaveSnippet lockObject={this.props.lockObject} animations={[]} />
+          <SaveSnippet
+            lockObject={this.props.lockObject}
+            animations={(this.props.entity as IAnimatable).animations}
+            snippetServer={this.props.snippetServer}
+            globalState={this.props.globalState}
+            snippetId={this.state.snippetId}
+          />
         ) : null}
 
         {this.state.isEditTabOpen ? (
