@@ -208,6 +208,8 @@ export class EditorControls extends React.Component<
             snippetServer={this.props.snippetServer}
             globalState={this.props.globalState}
             setSnippetId={(id: string) => this.setState({ snippetId: id })}
+            entity={this.props.entity}
+            setNotificationMessage={this.props.setNotificationMessage}
           />
         ) : null}
 

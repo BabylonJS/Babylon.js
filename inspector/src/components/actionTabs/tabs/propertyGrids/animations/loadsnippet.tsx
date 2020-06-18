@@ -9,6 +9,8 @@ import { LockObject } from '../lockObject';
 import { Tools } from 'babylonjs/Misc/tools';
 import { GlobalState } from '../../../../globalState';
 import { ReadFileError } from 'babylonjs';
+import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
+import { TargetedAnimation } from 'babylonjs/Animations/animationGroup';
 
 interface ILoadSnippetProps {
   animations: Animation[];
@@ -17,6 +19,8 @@ interface ILoadSnippetProps {
   globalState: GlobalState;
   snippetServer: string;
   setSnippetId: (id: string) => void;
+  entity: IAnimatable | TargetedAnimation;
+  setNotificationMessage: (message: string) => void;
 }
 
 export class LoadSnippet extends React.Component<
@@ -47,19 +51,16 @@ export class LoadSnippet extends React.Component<
           result.push(jsonObject[i]);
         }
 
-        //Check if animation is already there, and destroy it
-        // this notifies if there are other observers for this animation...
-        // this.props.globalState.onSelectionChangedObservable.notifyObservers(
-        //   null
-        // );
+        if (this.props.entity) {
+          (this.props.entity as IAnimatable).animations = [];
+          // Review how observable affects this
 
-        result.forEach((anim) => {
-          let newAnimation = Animation.Parse(anim);
-          this.props.animations.push(newAnimation);
-          // this.props.globalState.onSelectionChangedObservable.notifyObservers(
-          //   newAnimation
-          // );
-        });
+          result.forEach((anim) => {
+            let newAnimation = Animation.Parse(anim);
+            (this.props.entity as IAnimatable).animations?.push(newAnimation);
+            // Review how observable affects this as well
+          });
+        }
       },
       undefined,
       true,
@@ -71,21 +72,26 @@ export class LoadSnippet extends React.Component<
 
   loadFromSnippet() {
     if (this.state.snippetId !== '') {
-      //system.dispose();
-      //this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-
+      //How to dispose() previous animations;
+      //How to notify observers
       Animation.CreateFromSnippetAsync(this.state.snippetId)
         .then((newAnimations) => {
-          this.props.globalState.onSelectionChangedObservable.notifyObservers(
-            newAnimations
-          );
+          // Explore how observers are notified from snippet
+          if (newAnimations instanceof Array) {
+            (this.props.entity as IAnimatable).animations = newAnimations;
+          }
+
+          if (newAnimations instanceof Animation) {
+            (this.props.entity as IAnimatable).animations?.push(newAnimations);
+          }
         })
         .catch((err) => {
-          alert('Unable to load your animations: ' + err);
-          // send message
+          this.props.setNotificationMessage(
+            `Unable to load your animations: ${err}`
+          );
         });
     } else {
-      //send error message
+      this.props.setNotificationMessage(`You need to add an snippet id`);
     }
   }
 
@@ -111,7 +117,7 @@ export class LoadSnippet extends React.Component<
           />
         </div>
         <div className='load-server'>
-          <p>Snippet Server: </p>
+          <p>Snippet Server: </p>&nbsp;
           <p> {this._serverAddress ?? '-'}</p>
         </div>
       </div>

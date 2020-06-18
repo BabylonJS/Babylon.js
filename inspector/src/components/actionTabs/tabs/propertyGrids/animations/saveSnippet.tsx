@@ -117,7 +117,7 @@ export class SaveSnippet extends React.Component<
                 ' (please note that the id was also saved to your clipboard)'
             );
           } else {
-            alert('Unable to save your sprite manager');
+            alert('Unable to save your animations');
           }
         }
       };
@@ -127,7 +127,7 @@ export class SaveSnippet extends React.Component<
 
       var dataToSend = {
         payload: JSON.stringify({
-          animation: content,
+          animations: content,
         }),
         name: '',
         description: '',
@@ -176,7 +176,7 @@ export class SaveSnippet extends React.Component<
           />
         </div>
         <div className='save-server'>
-          <p>Snippet Server: </p>
+          <p>Snippet Server: </p>&nbsp;
           <p> {this.props.snippetServer ?? '-'}</p>
         </div>
       </div>
