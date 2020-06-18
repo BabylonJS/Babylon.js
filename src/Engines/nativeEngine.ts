@@ -17,13 +17,13 @@ import { IColor4Like } from '../Maths/math.like';
 import { Scene } from "../scene";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
 import { IPipelineContext } from './IPipelineContext';
-import { NativeShaderProcessor } from './Native/nativeShaderProcessor';
 import { Logger } from "../Misc/logger";
 import { Constants } from './constants';
 import { ThinEngine, ISceneLike } from './thinEngine';
 import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 import { EngineStore } from './engineStore';
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
+import { WebGL2ShaderProcessor } from '../Engines/WebGL/webGL2ShaderProcessors';
 
 interface INativeEngine {
     dispose(): void;
@@ -270,7 +270,7 @@ export class NativeEngine extends Engine {
         }
 
         // Shader processor
-        this._shaderProcessor = new NativeShaderProcessor();
+        this._shaderProcessor = new WebGL2ShaderProcessor();
     }
 
     public dispose(): void {
