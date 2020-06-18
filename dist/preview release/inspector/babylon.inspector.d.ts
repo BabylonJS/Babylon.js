@@ -52,6 +52,7 @@ declare module INSPECTOR {
         };
         blockMutationUpdates: boolean;
         selectedLineContainerTitles: Array<string>;
+        selectedLineContainerTitlesNoFocus: Array<string>;
         recorder: ReplayRecorder;
         private _onlyUseEulers;
         get onlyUseEulers(): boolean;
