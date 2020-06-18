@@ -212,6 +212,8 @@ a:visited {
     background-color: var(--footer-background);    
     grid-column: 2;
     grid-row: 1;
+    padding: 0px;
+    margin: 0px;
 }
 
 .row {

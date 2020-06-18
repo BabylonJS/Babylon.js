@@ -24,43 +24,70 @@
         }
     }
 
-    .footerRight {
-        display: flex;
-        flex-direction: row-reverse;
-        grid-column: 3;
-        grid-row: 1;
+    .button {
+        float: left; /* Float links side by side */
+        width: var(--footer-height);
+        height: var(--footer-height);
+        margin: 0px;
+        padding: 0;
+        transition: all 0.3s ease; /* Add transition for hover effects */
+        display: grid;
+        align-content: center;
+        justify-content: center;
+        cursor: pointer;
 
-        .button {
-            float: left; /* Float links side by side */
+        &.long {
+            width: 200px;
+            grid-template-columns: var(--footer-height) calc(200px - var(--footer-height));
+
+            .button-icon {
+                grid-row: 1;
+                grid-column: 1;
+            }
+
+            .button-text {
+                grid-row: 1;
+                grid-column: 2;
+                align-self: center;
+                justify-self: left;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                font-size: var(--font-size)
+            }
+        }
+
+        &.active {
+            background-color: var(--button-hover-color);
+        }
+
+        img {
             width: var(--footer-height);
             height: var(--footer-height);
-            margin: 0px;
-            padding: 0;
-            transition: all 0.3s ease; /* Add transition for hover effects */
-            display: grid;
-            align-content: center;
-            justify-content: center;
-            cursor: pointer;
-
-            img {
-                width: var(--footer-height);
-                height: var(--footer-height);
-            }
-            
-            &:hover {
-                background-color: var(--button-hover-color);
-            }
-            
-            &:active {
-                background-color: var(--button-hover-background);
-            }
-        }         
+        }
         
+        &:hover {
+            background-color: var(--button-hover-color);
+        }
+        
+        &:active {
+            background-color: var(--button-hover-background);
+        }
+    }   
+
+    .dropup {
+        position: relative;        
+
         .dropup-content {
             position: absolute;
             bottom: var(--footer-height);
-            right: 0px;     
-            z-index: 100;
+            left: 0px;     
+            z-index: 100;            
+            width: calc(2 * var(--footer-height));
+
+            &.long-mode {
+                width: 200px;
+            }
 
             div  {
                 background-color: var(--button-hover-color);
@@ -68,7 +95,7 @@
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 font-size: var(--font-size);
-                width: calc(2 * var(--footer-height));
+                width: 100%;
                 color: white;
                 cursor: pointer;
                 height: 40px;
@@ -88,8 +115,15 @@
                     transition: all 0.3s ease;
                 }
             }
-        }    
-        
+        }     
+    }
+
+    .footerRight {
+        display: flex;
+        flex-direction: row-reverse;
+        grid-column: 3;
+        grid-row: 1;
+                     
         .custom-upload {
             position: relative;
             background-position: center right;
