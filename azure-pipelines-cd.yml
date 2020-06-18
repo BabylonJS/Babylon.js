@@ -33,7 +33,7 @@ jobs:
     env:
       AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
       NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
-  - script: 'npx netlify deploy --prod --dir=sandbox/'
+  - script: 'npx netlify deploy --prod --dir=sandbox/public/'
     displayName: 'netlify deploy babylonjs-sandbox'
     env:
       AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
