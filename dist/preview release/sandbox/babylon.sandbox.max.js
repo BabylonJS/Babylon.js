@@ -96,6 +96,25 @@ return /******/ (function(modules) { // webpackBootstrap
 /************************************************************************/
 /******/ ({
 
+/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./scss/animationBar.scss":
+/*!*************************************************************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/css-loader!D:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./scss/animationBar.scss ***!
+  \*************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loader/lib/css-base.js */ "../../node_modules/css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, ".animationBar {\n  align-items: center;\n  color: white;\n  min-height: 30px;\n  height: var(--footer-height);\n  background-color: var(--footer-background);\n  grid-column: 2;\n  grid-row: 1;\n  margin-left: 10px;\n  display: flex;\n  /*Chrome -webkit */\n  /** FireFox -moz */\n  /** IE -ms */ }\n  .animationBar * {\n    padding: 0px;\n    margin: 0px; }\n  .animationBar .row {\n    display: flex;\n    flex-direction: row;\n    justify-content: center;\n    flex-grow: 10;\n    align-items: center; }\n  .animationBar #playBtn {\n    display: flex;\n    align-items: center;\n    height: var(--footer-height);\n    width: var(--footer-height);\n    border: none;\n    background-color: inherit;\n    cursor: pointer; }\n    .animationBar #playBtn img {\n      width: var(--footer-height);\n      height: var(--footer-height); }\n    .animationBar #playBtn:hover {\n      background-color: var(--button-hover-color); }\n    .animationBar #playBtn:active {\n      background-color: var(--button-hover-background); }\n    .animationBar #playBtn:focus {\n      outline: none !important;\n      border: none; }\n  .animationBar .slider {\n    -webkit-appearance: none;\n    cursor: pointer;\n    width: 100%;\n    max-width: 820px;\n    height: var(--footer-height);\n    outline: none;\n    margin-left: 20px;\n    margin-right: 10px;\n    background-color: transparent; }\n  .animationBar .slider::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    width: 20px;\n    height: 20px;\n    border: 2px solid white;\n    border-radius: 50%;\n    background: var(--footer-background);\n    margin-top: -10px; }\n  .animationBar .slider::-webkit-slider-runnable-track {\n    height: 2px;\n    -webkit-appearance: none;\n    background-color: white; }\n  .animationBar .slider::-moz-range-progress {\n    background-color: white;\n    height: 2px; }\n  .animationBar .slider::-moz-range-thumb {\n    width: 20px;\n    height: 20px;\n    border: 2px solid white;\n    border-radius: 50%;\n    background: var(--footer-background); }\n  .animationBar .slider::-moz-range-track {\n    background: white;\n    height: 2px; }\n  .animationBar .slider::-ms-track {\n    height: 2px;\n    /*remove bg colour from the track, we'll use ms-fill-lower and ms-fill-upper instead */\n    background: transparent;\n    /*leave room for the larger thumb to overflow with a transparent border */\n    border-color: transparent;\n    border-width: 10px 0;\n    /*remove default tick marks*/\n    color: transparent; }\n  .animationBar .slider::-ms-fill-lower {\n    background: white;\n    border-radius: 5px; }\n  .animationBar .slider::-ms-fill-upper {\n    background: white;\n    border-radius: 5px; }\n  .animationBar .slider::-ms-thumb {\n    width: 16px;\n    height: 16px;\n    border: 2px solid white;\n    border-radius: 50%;\n    background: var(--footer-background);\n    margin-top: 0px; }\n", ""]);
+
+// exports
+
+
+/***/ }),
+
 /***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./scss/footer.scss":
 /*!*******************************************************************************************************************************!*\
   !*** D:/Repos/Babylon.js/node_modules/css-loader!D:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./scss/footer.scss ***!
@@ -108,7 +127,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, ".footer {\n  position: relative;\n  width: 100%;\n  height: var(--footer-height);\n  margin: 0;\n  padding: 0;\n  background-color: var(--footer-background);\n  font-size: 0;\n  display: grid;\n  grid-template-rows: 100%;\n  grid-template-columns: 201px 1fr 210px; }\n  .footer .footerLeft {\n    display: grid;\n    grid-column: 1;\n    grid-row: 1;\n    padding-left: 40px;\n    align-content: center;\n    overflow: hidden; }\n    .footer .footerLeft #logoImg {\n      height: var(--footer-height);\n      width: 161px; }\n  .footer .footerRight {\n    display: flex;\n    flex-direction: row-reverse;\n    grid-column: 3;\n    grid-row: 1; }\n    .footer .footerRight .button {\n      float: left;\n      /* Float links side by side */\n      width: var(--footer-height);\n      height: var(--footer-height);\n      margin: 0px;\n      padding: 0;\n      transition: all 0.3s ease;\n      /* Add transition for hover effects */\n      display: grid;\n      align-content: center;\n      justify-content: center;\n      cursor: pointer; }\n      .footer .footerRight .button img {\n        width: var(--footer-height);\n        height: var(--footer-height); }\n      .footer .footerRight .button:hover {\n        background-color: var(--button-hover-color); }\n      .footer .footerRight .button:active {\n        background-color: var(--button-hover-background); }\n    .footer .footerRight .dropup-content {\n      position: absolute;\n      bottom: var(--footer-height);\n      right: 0px;\n      z-index: 100; }\n      .footer .footerRight .dropup-content div {\n        background-color: var(--button-hover-color);\n        overflow: hidden;\n        text-overflow: ellipsis;\n        white-space: nowrap;\n        font-size: var(--font-size);\n        width: calc(2 * var(--footer-height));\n        color: white;\n        cursor: pointer;\n        height: 40px;\n        box-sizing: border-box;\n        padding: 0;\n        margin: 0;\n        display: grid;\n        align-content: center;\n        justify-content: center; }\n        .footer .footerRight .dropup-content div:hover {\n          background-color: var(--button-hover-hover);\n          transition: all 0.3s ease; }\n        .footer .footerRight .dropup-content div:active {\n          background-color: var(--button-hover-background);\n          transition: all 0.3s ease; }\n    .footer .footerRight .custom-upload {\n      position: relative;\n      background-position: center right;\n      background-repeat: no-repeat;\n      width: var(--footer-height);\n      height: var(--footer-height);\n      cursor: pointer;\n      display: grid; }\n      .footer .footerRight .custom-upload img {\n        grid-row: 1;\n        grid-column: 1;\n        width: var(--footer-height);\n        height: var(--footer-height);\n        pointer-events: none; }\n      .footer .footerRight .custom-upload:hover {\n        background-color: var(--button-hover-color); }\n      .footer .footerRight .custom-upload:active {\n        background-color: var(--button-hover-background); }\n      .footer .footerRight .custom-upload input[type=file] {\n        grid-row: 1;\n        grid-column: 1;\n        outline: none;\n        position: relative;\n        text-align: right;\n        -moz-opacity: 0;\n        opacity: 0;\n        z-index: 2;\n        width: 100%;\n        height: 100%;\n        filter: alpha(opacity=0); }\n", ""]);
+exports.push([module.i, ".footer {\n  position: relative;\n  width: 100%;\n  height: var(--footer-height);\n  margin: 0;\n  padding: 0;\n  background-color: var(--footer-background);\n  font-size: 0;\n  display: grid;\n  grid-template-rows: 100%;\n  grid-template-columns: 201px 1fr 210px; }\n  .footer .footerLeft {\n    display: grid;\n    grid-column: 1;\n    grid-row: 1;\n    padding-left: 40px;\n    align-content: center;\n    overflow: hidden; }\n    .footer .footerLeft #logoImg {\n      height: var(--footer-height);\n      width: 161px; }\n  .footer .button {\n    float: left;\n    /* Float links side by side */\n    width: var(--footer-height);\n    height: var(--footer-height);\n    margin: 0px;\n    padding: 0;\n    transition: all 0.3s ease;\n    /* Add transition for hover effects */\n    display: grid;\n    align-content: center;\n    justify-content: center;\n    cursor: pointer; }\n    .footer .button.long {\n      width: 200px;\n      grid-template-columns: var(--footer-height) calc(200px - var(--footer-height)); }\n      .footer .button.long .button-icon {\n        grid-row: 1;\n        grid-column: 1; }\n      .footer .button.long .button-text {\n        grid-row: 1;\n        grid-column: 2;\n        align-self: center;\n        justify-self: left;\n        overflow: hidden;\n        text-overflow: ellipsis;\n        white-space: nowrap;\n        font-size: var(--font-size); }\n    .footer .button.active {\n      background-color: var(--button-hover-color); }\n    .footer .button img {\n      width: var(--footer-height);\n      height: var(--footer-height); }\n    .footer .button:hover {\n      background-color: var(--button-hover-color); }\n    .footer .button:active {\n      background-color: var(--button-hover-background); }\n  .footer .dropup {\n    position: relative; }\n    .footer .dropup .dropup-content {\n      position: absolute;\n      bottom: var(--footer-height);\n      left: 0px;\n      z-index: 100;\n      width: calc(2 * var(--footer-height)); }\n      .footer .dropup .dropup-content.long-mode {\n        width: 200px; }\n      .footer .dropup .dropup-content div {\n        background-color: var(--button-hover-color);\n        overflow: hidden;\n        text-overflow: ellipsis;\n        white-space: nowrap;\n        font-size: var(--font-size);\n        width: 100%;\n        color: white;\n        cursor: pointer;\n        height: 40px;\n        box-sizing: border-box;\n        padding: 0;\n        margin: 0;\n        display: grid;\n        align-content: center;\n        justify-content: center; }\n        .footer .dropup .dropup-content div:hover {\n          background-color: var(--button-hover-hover);\n          transition: all 0.3s ease; }\n        .footer .dropup .dropup-content div:active {\n          background-color: var(--button-hover-background);\n          transition: all 0.3s ease; }\n  .footer .footerRight {\n    display: flex;\n    flex-direction: row-reverse;\n    grid-column: 3;\n    grid-row: 1; }\n    .footer .footerRight .custom-upload {\n      position: relative;\n      background-position: center right;\n      background-repeat: no-repeat;\n      width: var(--footer-height);\n      height: var(--footer-height);\n      cursor: pointer;\n      display: grid; }\n      .footer .footerRight .custom-upload img {\n        grid-row: 1;\n        grid-column: 1;\n        width: var(--footer-height);\n        height: var(--footer-height);\n        pointer-events: none; }\n      .footer .footerRight .custom-upload:hover {\n        background-color: var(--button-hover-color); }\n      .footer .footerRight .custom-upload:active {\n        background-color: var(--button-hover-background); }\n      .footer .footerRight .custom-upload input[type=file] {\n        grid-row: 1;\n        grid-column: 1;\n        outline: none;\n        position: relative;\n        text-align: right;\n        -moz-opacity: 0;\n        opacity: 0;\n        z-index: 2;\n        width: 100%;\n        height: 100%;\n        filter: alpha(opacity=0); }\n", ""]);
 
 // exports
 
@@ -30192,6 +30211,132 @@ module.exports = g;
 
 /***/ }),
 
+/***/ "./components/animationBar.tsx":
+/*!*************************************!*\
+  !*** ./components/animationBar.tsx ***!
+  \*************************************/
+/*! exports provided: AnimationBar */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AnimationBar", function() { return AnimationBar; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _dropUpButton__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./dropUpButton */ "./components/dropUpButton.tsx");
+
+
+
+var iconPlay = __webpack_require__(/*! ../img/icon-play.svg */ "./img/icon-play.svg");
+var iconPause = __webpack_require__(/*! ../img/icon-pause.svg */ "./img/icon-pause.svg");
+__webpack_require__(/*! ../scss/animationBar.scss */ "./scss/animationBar.scss");
+var AnimationBar = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AnimationBar, _super);
+    function AnimationBar(props) {
+        var _this = _super.call(this, props) || this;
+        _this._sliderRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this.state = { groupIndex: 0 };
+        props.globalState.onSceneLoaded.add(function (info) {
+            _this.registerBeforeRender(info.scene);
+        });
+        if (_this.props.globalState.currentScene) {
+            _this.registerBeforeRender(_this.props.globalState.currentScene);
+        }
+        return _this;
+    }
+    AnimationBar.prototype.getCurrentPosition = function () {
+        if (!this._currentGroup) {
+            return "0";
+        }
+        var targetedAnimations = this._currentGroup.targetedAnimations;
+        if (targetedAnimations.length > 0) {
+            var runtimeAnimations = this._currentGroup.targetedAnimations[0].animation.runtimeAnimations;
+            if (runtimeAnimations.length > 0) {
+                return runtimeAnimations[0].currentFrame.toString();
+            }
+        }
+        return "0";
+    };
+    AnimationBar.prototype.registerBeforeRender = function (newScene) {
+        var _this = this;
+        if (this._currentScene) {
+            this._currentScene.onBeforeRenderObservable.remove(this._sliderSyncObserver);
+        }
+        this._currentScene = newScene;
+        this._sliderSyncObserver = this._currentScene.onBeforeRenderObservable.add(function () {
+            if (_this._currentGroup && _this._sliderRef.current) {
+                _this._sliderRef.current.value = _this.getCurrentPosition();
+                if (_this._currentPlayingState !== _this._currentGroup.isPlaying) {
+                    _this.forceUpdate();
+                }
+            }
+        });
+    };
+    AnimationBar.prototype.pause = function () {
+        if (!this._currentGroup) {
+            return;
+        }
+        this._currentGroup.pause();
+        this.forceUpdate();
+    };
+    AnimationBar.prototype.play = function () {
+        if (!this._currentGroup) {
+            return;
+        }
+        this._currentGroup.play();
+        this.forceUpdate();
+    };
+    AnimationBar.prototype.sliderInput = function (evt) {
+        if (!this._currentGroup) {
+            return;
+        }
+        var value = parseFloat(evt.target.value);
+        if (!this._currentGroup.isPlaying) {
+            this._currentGroup.play(true);
+            this._currentGroup.goToFrame(value);
+            this._currentGroup.pause();
+        }
+        else {
+            this._currentGroup.goToFrame(value);
+        }
+    };
+    AnimationBar.prototype.render = function () {
+        var _this = this;
+        if (!this.props.enabled) {
+            this._currentGroup = null;
+            return null;
+        }
+        var scene = this.props.globalState.currentScene;
+        if (scene.animationGroups.length === 0) {
+            this._currentGroup = null;
+            return null;
+        }
+        var groupNames = scene.animationGroups.map(function (g) { return g.name; });
+        this._currentGroup = scene.animationGroups[this.state.groupIndex];
+        this._currentPlayingState = this._currentGroup.isPlaying;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "animationBar" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "row" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { id: "playBtn" },
+                    this._currentGroup.isPlaying &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "pauseImg", src: iconPause, onClick: function () { return _this.pause(); } }),
+                    !this._currentGroup.isPlaying &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "playImg", src: iconPlay, onClick: function () { return _this.play(); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this._sliderRef, className: "slider", type: "range", onInput: function (evt) { return _this.sliderInput(evt); }, min: this._currentGroup.from, max: this._currentGroup.to, onChange: function () { }, value: this.getCurrentPosition(), step: "any" })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_dropUpButton__WEBPACK_IMPORTED_MODULE_2__["DropUpButton"], { globalState: this.props.globalState, label: "Active animation group", options: groupNames, selectedOption: this._currentGroup.name, onOptionPicked: function (option) {
+                    _this._currentGroup.stop();
+                    var newIndex = groupNames.indexOf(option);
+                    _this.setState({ groupIndex: newIndex });
+                    scene.animationGroups[newIndex].play(true);
+                }, enabled: true })));
+    };
+    return AnimationBar;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./components/dropUpButton.tsx":
 /*!*************************************!*\
   !*** ./components/dropUpButton.tsx ***!
@@ -30207,13 +30352,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 
 
+var iconUp = __webpack_require__(/*! ../img/icon-up.svg */ "./img/icon-up.svg");
+var iconDown = __webpack_require__(/*! ../img/icon-down.svg */ "./img/icon-down.svg");
 var DropUpButton = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(DropUpButton, _super);
     function DropUpButton(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { isOpen: false };
         _this._onClickInterceptorClickedObserver = props.globalState.onClickInterceptorClicked.add(function () {
-            _this.switchDropUp();
+            _this.setState({ isOpen: false });
         });
         return _this;
     }
@@ -30233,11 +30380,19 @@ var DropUpButton = /** @class */ (function (_super) {
         if (!this.props.enabled) {
             return null;
         }
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "button", onClick: function () { return _this.switchDropUp(); } },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, alt: this.props.label, title: this.props.label })),
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "dropup" },
+            this.props.icon &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "button" + (this.state.isOpen ? " active" : ""), onClick: function () { return _this.switchDropUp(); } },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, alt: this.props.label, title: this.props.label })),
+            this.props.selectedOption &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "button long" + (this.state.isOpen ? " active" : ""), onClick: function () { return _this.switchDropUp(); } },
+                    this.state.isOpen &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { className: "button-icon", src: iconDown, alt: "Close the list", title: "Close the list" }),
+                    !this.state.isOpen &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { className: "button-icon", src: iconUp, alt: "Open the list", title: "Open the list" }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "button-text", title: this.props.selectedOption }, this.props.selectedOption)),
             this.state.isOpen &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "dropup-content" }, this.props.options.map(function (o) {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "dropup-content" + (this.props.selectedOption ? " long-mode" : "") }, this.props.options.map(function (o) {
                     return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: o, onClick: function () { return _this.clickOption(o); } }, o));
                 }))));
     };
@@ -30265,6 +30420,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _dropUpButton__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./dropUpButton */ "./components/dropUpButton.tsx");
 /* harmony import */ var _tools_environmentTools__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../tools/environmentTools */ "./tools/environmentTools.ts");
 /* harmony import */ var _footerFileButton__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./footerFileButton */ "./components/footerFileButton.tsx");
+/* harmony import */ var _animationBar__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./animationBar */ "./components/animationBar.tsx");
+
 
 
 
@@ -30300,6 +30457,7 @@ var Footer = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "footer", className: "footer" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "footerLeft" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logoImg", src: babylonIdentity })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animationBar__WEBPACK_IMPORTED_MODULE_6__["AnimationBar"], { globalState: this.props.globalState, enabled: !!this.props.globalState.currentScene }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "footerRight" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_footerFileButton__WEBPACK_IMPORTED_MODULE_5__["FooterFileButton"], { globalState: this.props.globalState, enabled: true, icon: iconOpen, onFilesPicked: function (evt, files) {
                         _this.props.globalState.filesInput.loadFiles(evt);
@@ -30674,6 +30832,17 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 
 /***/ }),
 
+/***/ "./img/icon-down.svg":
+/*!***************************!*\
+  !*** ./img/icon-down.svg ***!
+  \***************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 70 70'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D.cls-2%7Bfill:none;%7D%3C/style%3E%3C/defs%3E%3Ctitle%3EDownArrowIcon%3C/title%3E%3Cg id='Layer_2' data-name='Layer 2'%3E%3Cg id='Redlines'%3E%3Cpath class='cls-1' d='M23.14,30.07l1.42-1.42L34.85,38.94,45.14,28.65l1.41,1.42L34.85,41.78Z'/%3E%3Crect class='cls-2' width='70' height='70'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
 /***/ "./img/icon-edit.svg":
 /*!***************************!*\
   !*** ./img/icon-edit.svg ***!
@@ -30704,6 +30873,39 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 /***/ (function(module, exports) {
 
 module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 70 70'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D.cls-2%7Bfill:none;%7D%3C/style%3E%3C/defs%3E%3Ctitle%3EAsset 11%3C/title%3E%3Cg id='Layer_2' data-name='Layer 2'%3E%3Cg id='Page_Elements' data-name='Page Elements'%3E%3Cpath class='cls-1' d='M26.67,44.77H41.88v1.52H25.15V22H38.4l6.52,6.52v5.64H43.4V29.56H37.31V23.48H26.67ZM38.83,28h3.49l-3.49-3.48Zm8,12.13-1.93-1.92v8H43.4v-8l-1.94,1.92L40.39,39.1l3.77-3.77,3.76,3.77Z'/%3E%3Crect class='cls-2' width='70' height='70'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./img/icon-pause.svg":
+/*!****************************!*\
+  !*** ./img/icon-pause.svg ***!
+  \****************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 70 70'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Ctitle%3EPauseIcon%3C/title%3E%3Cg id='Layer_2' data-name='Layer 2'%3E%3Cg id='Redlines'%3E%3Crect class='cls-1' width='70' height='70'/%3E%3Cpath class='cls-2' d='M28.83,44.37v-20h2v20Zm10-20h2v20h-2Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./img/icon-play.svg":
+/*!***************************!*\
+  !*** ./img/icon-play.svg ***!
+  \***************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 70 70'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Ctitle%3EPlayIcon%3C/title%3E%3Cg id='Layer_2' data-name='Layer 2'%3E%3Cg id='Redlines'%3E%3Crect class='cls-1' width='70' height='70'/%3E%3Cpath class='cls-2' d='M28.83,25.13l16,10-16,10Zm2,3.61V41.52l10.22-6.39Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./img/icon-up.svg":
+/*!*************************!*\
+  !*** ./img/icon-up.svg ***!
+  \*************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 70 70'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D.cls-2%7Bfill:none;%7D%3C/style%3E%3C/defs%3E%3Ctitle%3EUpArrowIcon%3C/title%3E%3Cg id='Layer_2' data-name='Layer 2'%3E%3Cg id='Redlines'%3E%3Cpath class='cls-1' d='M34.85,29.78,24.56,40.06l-1.42-1.41L34.85,26.94l11.7,11.71-1.42,1.41Z'/%3E%3Crect class='cls-2' width='70' height='70'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -30874,7 +31076,10 @@ var Sandbox = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "root" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", { id: "droptext", ref: this._dropTextRef }, "Drag and drop gltf, glb, obj or babylon files to view them"),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_renderingZone__WEBPACK_IMPORTED_MODULE_4__["RenderingZone"], { globalState: this._globalState, assetUrl: this._assetUrl, cameraPosition: this._cameraPosition, expanded: !this.state.isFooterVisible }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { ref: this._clickInterceptorRef, onClick: function () { return _this._globalState.onClickInterceptorClicked.notifyObservers(); }, className: "clickInterceptor hidden" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { ref: this._clickInterceptorRef, onClick: function () {
+                    _this._globalState.onClickInterceptorClicked.notifyObservers();
+                    _this._clickInterceptorRef.current.classList.add("hidden");
+                }, className: "clickInterceptor hidden" }),
             this.state.isFooterVisible &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_footer__WEBPACK_IMPORTED_MODULE_5__["Footer"], { globalState: this._globalState }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "logoContainer" },
@@ -30892,6 +31097,36 @@ var Sandbox = /** @class */ (function (_super) {
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
+
+/***/ }),
+
+/***/ "./scss/animationBar.scss":
+/*!********************************!*\
+  !*** ./scss/animationBar.scss ***!
+  \********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+var content = __webpack_require__(/*! !../../../node_modules/css-loader!../../../node_modules/sass-loader/dist/cjs.js!./animationBar.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./scss/animationBar.scss");
+
+if(typeof content === 'string') content = [[module.i, content, '']];
+
+var transform;
+var insertInto;
+
+
+
+var options = {"hmr":true}
+
+options.transform = transform
+options.insertInto = undefined;
+
+var update = __webpack_require__(/*! ../../../node_modules/style-loader/lib/addStyles.js */ "../../node_modules/style-loader/lib/addStyles.js")(content, options);
+
+if(content.locals) module.exports = content.locals;
+
+if(false) {}
 
 /***/ }),
 
@@ -31007,7 +31242,7 @@ var EnvironmentTools = /** @class */ (function () {
     function EnvironmentTools() {
     }
     EnvironmentTools.LoadSkyboxPathTexture = function (scene) {
-        var defaultSkyboxIndex = _localStorageHelper__WEBPACK_IMPORTED_MODULE_1__["LocalStorageHelper"].ReadLocalStorageValue("defaultSkyboxId", 0);
+        var defaultSkyboxIndex = Math.max(0, _localStorageHelper__WEBPACK_IMPORTED_MODULE_1__["LocalStorageHelper"].ReadLocalStorageValue("defaultSkyboxId", 0));
         var path = this.SkyboxPath || this.Skyboxes[defaultSkyboxIndex];
         if (path.indexOf(".hdr") === (path.length - 4)) {
             return new babylonjs_Materials_Textures_hdrCubeTexture__WEBPACK_IMPORTED_MODULE_0__["HDRCubeTexture"](path, scene, 256, false, true, false, true);

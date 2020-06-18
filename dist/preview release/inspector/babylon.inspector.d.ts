@@ -52,6 +52,7 @@ declare module INSPECTOR {
         };
         blockMutationUpdates: boolean;
         selectedLineContainerTitles: Array<string>;
+        selectedLineContainerTitlesNoFocus: Array<string>;
         recorder: ReplayRecorder;
         private _onlyUseEulers;
         get onlyUseEulers(): boolean;
@@ -647,7 +648,10 @@ declare module INSPECTOR {
     }> {
         readonly _frames: object[];
         private _scrollable;
+        private _scrollbarHandle;
         private _direction;
+        private _scrolling;
+        private _shiftX;
         constructor(props: ITimelineProps);
         playBackwards(event: React.MouseEvent<HTMLDivElement>): void;
         play(event: React.MouseEvent<HTMLDivElement>): void;
@@ -664,6 +668,12 @@ declare module INSPECTOR {
         isFrameBeingUsed(frame: number, direction: number): number | false;
         dragEnd(e: React.TouchEvent<SVGSVGElement>): void;
         dragEnd(e: React.MouseEvent<SVGSVGElement, MouseEvent>): void;
+        scrollDragStart(e: React.TouchEvent<HTMLDivElement>): void;
+        scrollDragStart(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void;
+        scrollDrag(e: React.TouchEvent<HTMLDivElement>): void;
+        scrollDrag(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void;
+        scrollDragEnd(e: React.TouchEvent<HTMLDivElement>): void;
+        scrollDragEnd(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void;
         render(): JSX.Element;
     }
 }
@@ -671,9 +681,19 @@ declare module INSPECTOR {
     interface IPlayheadProps {
         frame: number;
         offset: number;
+        onCurrentFrameChange: (frame: number) => void;
     }
     export class Playhead extends React.Component<IPlayheadProps> {
+        private _direction;
+        private _active;
         constructor(props: IPlayheadProps);
+        dragStart(e: React.TouchEvent<HTMLDivElement>): void;
+        dragStart(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void;
+        drag(e: React.TouchEvent<HTMLDivElement>): void;
+        drag(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void;
+        dragEnd(e: React.TouchEvent<HTMLDivElement>): void;
+        dragEnd(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void;
+        calculateMove(): string;
         render(): JSX.Element;
     }
 }
@@ -883,6 +903,7 @@ declare module INSPECTOR {
         playheadPos: number;
         isPlaying: boolean;
         selectedPathData: ICurveData[] | undefined;
+        selectedCoordinate: number;
     }> {
         private _heightScale;
         readonly _entityName: string;
@@ -890,37 +911,38 @@ declare module INSPECTOR {
         private _svgKeyframes;
         private _isPlaying;
         private _graphCanvas;
-        private _selectedCurve;
         private _svgCanvas;
         private _isTargetedAnimation;
+        private _onBeforeRenderObserver;
+        private _mainAnimatable;
         constructor(props: IAnimationCurveEditorComponentProps);
         componentDidMount(): void;
         /**
-        * Notifications
-        * To add notification we set the state and clear to make the notification bar hide.
-        */
+         * Notifications
+         * To add notification we set the state and clear to make the notification bar hide.
+         */
         clearNotification(): void;
         /**
-        * Zoom and Scroll
-        * This section handles zoom and scroll
-        * of the graph area.
-        */
+         * Zoom and Scroll
+         * This section handles zoom and scroll
+         * of the graph area.
+         */
         zoom(e: React.WheelEvent<HTMLDivElement>): void;
         setAxesLength(): void;
         getValueLabel(i: number): number;
         resetPlayheadOffset(): void;
         /**
-        * Keyframe Manipulation
-        * This section handles events from SvgDraggableArea.
-        */
+         * Keyframe Manipulation
+         * This section handles events from SvgDraggableArea.
+         */
         selectKeyframe(id: string): void;
         selectedControlPoint(type: string, id: string): void;
         updateValuePerCoordinate(dataType: number, value: number | BABYLON.Vector2 | BABYLON.Vector3 | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Size | BABYLON.Quaternion, newValue: number, coordinate?: number): number | BABYLON.Vector3 | BABYLON.Quaternion | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Vector2 | BABYLON.Size;
         renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, id: string): void;
         /**
-        * Actions
-        * This section handles events from GraphActionsBar.
-        */
+         * Actions
+         * This section handles events from GraphActionsBar.
+         */
         handleFrameChange(event: React.ChangeEvent<HTMLInputElement>): void;
         handleValueChange(event: React.ChangeEvent<HTMLInputElement>): void;
         setFlatTangent(): void;
@@ -931,9 +953,9 @@ declare module INSPECTOR {
         removeKeyframeClick(): void;
         addKeyFrame(event: React.MouseEvent<SVGSVGElement>): void;
         /**
-        * Curve Rendering Functions
-        * This section handles how to render curves.
-        */
+         * Curve Rendering Functions
+         * This section handles how to render curves.
+         */
         linearInterpolation(keyframes: BABYLON.IAnimationKey[], data: string, middle: number): string;
         setKeyframePointLinear(point: BABYLON.Vector2, index: number): void;
         flatTangents(keyframes: BABYLON.IAnimationKey[], dataType: number): BABYLON.IAnimationKey[];
@@ -958,20 +980,23 @@ declare module INSPECTOR {
         setKeyframePoint(controlPoints: BABYLON.Vector2[], index: number, keyframesCount: number): void;
         interpolateControlPoints(p0: BABYLON.Vector2, p1: BABYLON.Vector2, u: number, p2: BABYLON.Vector2, v: number, p3: BABYLON.Vector2): BABYLON.Vector2[] | undefined;
         /**
-        * Core functions
-        * This section handles main Curve Editor Functions.
-        */
+         * Core functions
+         * This section handles main Curve Editor Functions.
+         */
         selectAnimation(animation: BABYLON.Animation, coordinate?: SelectedCoordinate): void;
         isAnimationPlaying(): boolean;
         playStopAnimation(): boolean;
         analizeAnimationForLerp(animation: BABYLON.Animation | null): boolean;
         /**
-        * Timeline
-        * This section controls the timeline.
-        */
+         * Timeline
+         * This section controls the timeline.
+         */
         changeCurrentFrame(frame: number): void;
         updateFrameInKeyFrame(frame: number, index: number): void;
         playPause(direction: number): void;
+        moveFrameTo(e: React.MouseEvent<SVGRectElement, MouseEvent>): void;
+        registerObs(): void;
+        componentWillUnmount(): void;
         render(): JSX.Element;
     }
 }
