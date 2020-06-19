@@ -866,7 +866,7 @@ export class GLTFLoader implements IGLTFLoader {
             const accessor = ArrayItem.Get(`${context}/attributes/${attribute}`, this._gltf.accessors, attributes[attribute]);
             promises.push(this._loadVertexAccessorAsync(`/accessors/${accessor.index}`, accessor, kind).then((babylonVertexBuffer) => {
                 babylonGeometry.setVerticesBuffer(babylonVertexBuffer, accessor.count);
-                if (babylonVertexBuffer.getKind() === "position") {
+                if (babylonVertexBuffer.getKind() === VertexBuffer.PositionKind) {
                     postProcesses.push(() => {
                         const min = TmpVectors.Vector3[0], max = TmpVectors.Vector3[1];
                         let recomputeBoundingInfo = true;
