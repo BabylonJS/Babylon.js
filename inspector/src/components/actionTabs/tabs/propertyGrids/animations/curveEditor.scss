@@ -1101,8 +1101,8 @@ body {
       .linear {
         overflow: visible;
         border: 0px solid white;
-        height: 362px;
-        width: 780px;
+        height: 100%;
+        width: 100%;
         outline: none;
 
         svg {
@@ -1138,7 +1138,7 @@ body {
       }
 
       .playhead-wrapper {
-        left: -13px;
+        left: 20px;
         bottom: 366px;
         position: relative;
       }

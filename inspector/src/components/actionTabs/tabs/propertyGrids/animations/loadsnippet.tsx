@@ -21,6 +21,7 @@ interface ILoadSnippetProps {
   setSnippetId: (id: string) => void;
   entity: IAnimatable | TargetedAnimation;
   setNotificationMessage: (message: string) => void;
+  animationsLoaded: (numberOfAnimations: number) => void;
 }
 
 export class LoadSnippet extends React.Component<
@@ -45,21 +46,20 @@ export class LoadSnippet extends React.Component<
       (data) => {
         let decoder = new TextDecoder('utf-8');
         let jsonObject = JSON.parse(decoder.decode(data));
-        var result = [];
+        var result: Animation[] = [];
 
         for (var i in jsonObject) {
-          result.push(jsonObject[i]);
+          result.push(Animation.Parse(jsonObject[i]));
         }
 
         if (this.props.entity) {
-          (this.props.entity as IAnimatable).animations = [];
-          // Review how observable affects this
-
-          result.forEach((anim) => {
-            let newAnimation = Animation.Parse(anim);
-            (this.props.entity as IAnimatable).animations?.push(newAnimation);
-            // Review how observable affects this as well
-          });
+          (this.props.entity as IAnimatable).animations = result;
+          var e = new PropertyChangedEvent();
+          e.object = this.props.entity;
+          e.property = 'animations';
+          e.value = (this.props.entity as IAnimatable).animations;
+          this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
+          this.props.animationsLoaded(result.length);
         }
       },
       undefined,

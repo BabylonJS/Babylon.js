@@ -695,6 +695,18 @@ export class AnimationCurveEditorComponent extends React.Component<
       case Animation.ANIMATIONTYPE_VECTOR2:
         type = Vector2.Zero();
         break;
+      case Animation.ANIMATIONTYPE_QUATERNION:
+        type = Quaternion.Zero();
+        break;
+      case Animation.ANIMATIONTYPE_COLOR3:
+        type = new Color3(0, 0, 0);
+        break;
+      case Animation.ANIMATIONTYPE_COLOR4:
+        type = new Color4(0, 0, 0, 0);
+        break;
+      case Animation.ANIMATIONTYPE_SIZE:
+        type = new Size(0, 0);
+        break;
     }
     return type;
   }
@@ -792,12 +804,12 @@ export class AnimationCurveEditorComponent extends React.Component<
               if (this.state !== undefined) {
                 let emptyTangents = keyframes.map((kf, i) => {
                   if (i === 0) {
-                    kf.outTangent = 0;
+                    kf.outTangent = this.returnZero(valueType);
                   } else if (i === keyframes.length - 1) {
-                    kf.inTangent = 0;
+                    kf.inTangent = this.returnZero(valueType);
                   } else {
-                    kf.inTangent = 0;
-                    kf.outTangent = 0;
+                    kf.inTangent = this.returnZero(valueType);
+                    kf.outTangent = this.returnZero(valueType);
                   }
                   return kf;
                 });
@@ -1480,17 +1492,15 @@ export class AnimationCurveEditorComponent extends React.Component<
                     );
                   })}
 
-                  <svg>
-                    <rect
-                      onClick={(e) => this.moveFrameTo(e)}
-                      x='0%'
-                      y='91%'
-                      width='105%'
-                      height='10%'
-                      fill='#222'
-                      style={{ cursor: 'pointer' }}
-                    ></rect>
-                  </svg>
+                  <rect
+                    onClick={(e) => this.moveFrameTo(e)}
+                    x='0%'
+                    y='91%'
+                    width='105%'
+                    height='10%'
+                    fill='#222'
+                    style={{ cursor: 'pointer' }}
+                  ></rect>
 
                   {this.state.frameAxisLength.map((f, i) => (
                     <svg key={i} x='0' y='96%'>

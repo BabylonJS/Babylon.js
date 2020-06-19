@@ -127,6 +127,16 @@ export class EditorControls extends React.Component<
     });
   }
 
+  animationsLoaded(numberOfAnimations: number) {
+    this.setState({
+      animationsCount: numberOfAnimations,
+      isEditTabOpen: true,
+      isAnimationTabOpen: false,
+      isLoadTabOpen: false,
+      isSaveTabOpen: false,
+    });
+  }
+
   render() {
     return (
       <div className='animation-list'>
@@ -203,6 +213,9 @@ export class EditorControls extends React.Component<
 
         {this.state.isLoadTabOpen ? (
           <LoadSnippet
+            animationsLoaded={(numberOfAnimations: number) =>
+              this.animationsLoaded(numberOfAnimations)
+            }
             lockObject={this.props.lockObject}
             animations={[]}
             snippetServer={this.props.snippetServer}
