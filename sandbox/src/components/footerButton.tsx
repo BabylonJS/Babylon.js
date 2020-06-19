@@ -15,6 +15,7 @@ export class FooterButton extends React.Component<IFooterButtonProps> {
         if (!this.props.enabled) {
             return null;
         }
+        
 
         return (
             <div className="button" onClick={() => this.props.onClick()}>

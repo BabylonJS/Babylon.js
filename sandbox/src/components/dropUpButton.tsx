@@ -3,13 +3,16 @@ import { GlobalState } from '../globalState';
 import { Nullable } from 'babylonjs/types';
 import { Observer } from 'babylonjs/Misc/observable';
 
+var iconUp = require("../img/icon-up.svg");
+var iconDown = require("../img/icon-down.svg");
 
 interface IDropUpButtonProps {
     globalState: GlobalState;
     enabled: boolean;
-    icon: any;
+    icon?: any;
     label: string;
     options: string[];
+    selectedOption?: string;
     onOptionPicked: (option: string) => void;
 }
 
@@ -22,7 +25,7 @@ export class DropUpButton extends React.Component<IDropUpButtonProps, {isOpen: b
         this.state = {isOpen: false};
 
         this._onClickInterceptorClickedObserver = props.globalState.onClickInterceptorClicked.add(() => {
-            this.switchDropUp();
+            this.setState({isOpen: false});
         });
     }
 
@@ -46,13 +49,32 @@ export class DropUpButton extends React.Component<IDropUpButtonProps, {isOpen: b
         }
 
         return (
-            <>
-                <div className="button" onClick={() => this.switchDropUp()}>
-                    <img src={this.props.icon} alt={this.props.label} title={this.props.label}  />
-                </div>
+            <div className="dropup">
+                {
+                    this.props.icon &&
+                    <div className={"button" + (this.state.isOpen ? " active" : "")} onClick={() => this.switchDropUp()}>
+                        <img src={this.props.icon} alt={this.props.label} title={this.props.label}  />
+                    </div>
+                }
+                {
+                    this.props.selectedOption &&
+                    <div className={"button long" + (this.state.isOpen ? " active" : "")} onClick={() => this.switchDropUp()}> 
+                        {
+                            this.state.isOpen &&
+                            <img className="button-icon" src={iconDown} alt="Close the list" title="Close the list"  />
+                        }            
+                        {
+                            !this.state.isOpen &&
+                            <img className="button-icon" src={iconUp} alt="Open the list" title="Open the list"  />
+                        }           
+                        <div className="button-text" title={this.props.selectedOption}>
+                            {this.props.selectedOption}
+                        </div>                           
+                    </div>
+                }
                 {
                     this.state.isOpen &&
-                    <div className="dropup-content">
+                    <div className={"dropup-content" + (this.props.selectedOption ? " long-mode" : "")}>
                     {
                         this.props.options.map(o => {
                             return(
@@ -64,7 +86,7 @@ export class DropUpButton extends React.Component<IDropUpButtonProps, {isOpen: b
                     }
                     </div>
                 }
-            </>
+            </div>
         )
     }
 }

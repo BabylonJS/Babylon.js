@@ -1,0 +1,161 @@
+{
+    "systems":
+    [
+        {
+            "name": "default system",
+            "id": "default system",
+            "capacity": 500,
+            "emitter":
+            [
+                0,
+                0,
+                0
+            ],
+            "particleEmitterType":
+            {
+                "type": "ConeParticleEmitter",
+                "radius": 0.1,
+                "angle": 0.6,
+                "directionRandomizer": 0
+            },
+            "textureName": "smoke/Smoke_SpriteSheet_8x8.png",
+            "animations": [],
+            "startDelay": 0,
+            "renderingGroupId": 0,
+            "isBillboardBased": true,
+            "minAngularSpeed": 0,
+            "maxAngularSpeed": 0,
+            "minSize": 3,
+            "maxSize": 5,
+            "minScaleX": 1,
+            "maxScaleX": 1,
+            "minScaleY": 1,
+            "maxScaleY": 1,
+            "minEmitPower": 1.2,
+            "maxEmitPower": 1.4,
+            "minLifeTime": 10,
+            "maxLifeTime": 11,
+            "emitRate": 30,
+            "gravity":
+            [
+                0.1,
+                0,
+                0.05
+            ],
+            "noiseStrength":
+            [
+                0.2,
+                0,
+                0.15
+            ],
+            "color1":
+            [
+                1,
+                1,
+                1,
+                1
+            ],
+            "color2":
+            [
+                1,
+                1,
+                1,
+                1
+            ],
+            "colorDead":
+            [
+                1,
+                1,
+                1,
+                0
+            ],
+            "updateSpeed": 0.016666666666666666,
+            "targetStopDuration": 0,
+            "blendMode": 1,
+            "preWarmCycles": 0,
+            "preWarmStepOffset": 1,
+            "minInitialRotation": -0.7,
+            "maxInitialRotation": 0.7,
+            "startSpriteCellID": 0,
+            "endSpriteCellID": 63,
+            "spriteCellChangeSpeed": 2.5,
+            "spriteCellWidth": 128,
+            "spriteCellHeight": 128,
+            "spriteRandomStartCell": true,
+            "colorGradients":
+            [
+                {
+                    "gradient": 0,
+                    "color1":
+                    [
+                        0.5,
+                        0.5,
+                        0.5,
+                        0
+                    ]
+                },
+                {
+                    "gradient": 0.3,
+                    "color1":
+                    [
+                        0.3,
+                        0.3,
+                        0.3,
+                        0.5
+                    ]
+                },
+                {
+                    "gradient": 0.7,
+                    "color1":
+                    [
+                        0.2,
+                        0.2,
+                        0.2,
+                        0.3
+                    ]
+                },
+                {
+                    "gradient": 1,
+                    "color1":
+                    [
+                        0.1,
+                        0.1,
+                        0.1,
+                        0
+                    ]
+                }
+            ],
+            "sizeGradients":
+            [
+                {
+                    "gradient": 0,
+                    "factor1": 1
+                },
+                {
+                    "gradient": 1,
+                    "factor1": 6
+                }
+            ],
+            "noiseTexture":
+            {
+                "customType": "BABYLON.NoiseProceduralTexture",
+                "brightness": 0.5,
+                "octaves": 4,
+                "persistence": 0.2,
+                "animationSpeedFactor": 5,
+                "size": 256,
+                "generateMipMaps": true
+            },
+            "textureMask":
+            [
+                1,
+                1,
+                1,
+                1
+            ],
+            "customShader": null,
+            "preventAutoStart": true,
+            "isAnimationSheetEnabled": true
+        }
+    ]
+}

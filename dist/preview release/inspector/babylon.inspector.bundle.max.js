@@ -55818,10 +55818,13 @@ var LineContainerComponent = /** @class */ (function (_super) {
     };
     LineContainerComponent.prototype.componentDidMount = function () {
         var _this = this;
-        if (this.props.globalState && this.props.globalState.selectedLineContainerTitles.length === 0) {
+        if (!this.props.globalState) {
             return;
         }
-        if (this.props.globalState && this.props.globalState.selectedLineContainerTitles.indexOf(this.props.title) > -1) {
+        if (this.props.globalState.selectedLineContainerTitles.length === 0 && this.props.globalState.selectedLineContainerTitlesNoFocus.length === 0) {
+            return;
+        }
+        if (this.props.globalState.selectedLineContainerTitles.indexOf(this.props.title) > -1) {
             setTimeout(function () {
                 _this.props.globalState.selectedLineContainerTitles = [];
             });
@@ -55829,6 +55832,9 @@ var LineContainerComponent = /** @class */ (function (_super) {
             window.setTimeout(function () {
                 _this.setState({ isHighlighted: false });
             }, 5000);
+        }
+        else if (this.props.globalState.selectedLineContainerTitlesNoFocus.indexOf(this.props.title) > -1) {
+            this.setState({ isExpanded: true, isHighlighted: false });
         }
         else {
             this.setState({ isExpanded: false });
@@ -68863,8 +68869,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _replayRecorder__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./replayRecorder */ "./components/replayRecorder.ts");
-/* harmony import */ var _inspector__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../inspector */ "./inspector.ts");
-
 
 
 
@@ -68883,6 +68887,7 @@ var GlobalState = /** @class */ (function () {
         this.glTFLoaderDefaults = { "validate": true };
         this.blockMutationUpdates = false;
         this.selectedLineContainerTitles = [];
+        this.selectedLineContainerTitlesNoFocus = [];
         this.recorder = new _replayRecorder__WEBPACK_IMPORTED_MODULE_1__["ReplayRecorder"]();
         this._onlyUseEulers = null;
         this._ignoreBackfacesForPicking = null;
@@ -68954,7 +68959,7 @@ var GlobalState = /** @class */ (function () {
             _this.validationResults = results;
             _this.onValidationResultsUpdatedObservable.notifyObservers(results);
             if (results.issues.numErrors || results.issues.numWarnings) {
-                _inspector__WEBPACK_IMPORTED_MODULE_2__["Inspector"].MarkLineContainerTitleForHighlighting("GLTF VALIDATION");
+                _this.selectedLineContainerTitlesNoFocus.push("GLTF VALIDATION");
                 _this.onTabChangedObservable.notifyObservers(3);
             }
         });

@@ -21,7 +21,7 @@ export class EnvironmentTools {
     ];    
 
     public static LoadSkyboxPathTexture(scene: Scene) {                
-        var defaultSkyboxIndex = LocalStorageHelper.ReadLocalStorageValue("defaultSkyboxId", 0);
+        var defaultSkyboxIndex = Math.max(0, LocalStorageHelper.ReadLocalStorageValue("defaultSkyboxId", 0));
         let path = this.SkyboxPath || this.Skyboxes[defaultSkyboxIndex];
         if (path.indexOf(".hdr") === (path.length - 4)) {
             return new HDRCubeTexture(path, scene, 256, false, true, false, true);
