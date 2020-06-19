@@ -7,7 +7,7 @@ import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 /**
  * Manage the touch inputs to control the movement of a free camera.
- * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
     /**

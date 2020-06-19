@@ -322,7 +322,7 @@ export class OnAfterEnteringVRObservableEvent {
 
 /**
  * Helps to quickly add VR support to an existing scene.
- * See http://doc.babylonjs.com/how_to/webvr_helper
+ * See https://doc.babylonjs.com/how_to/webvr_helper
  */
 export class VRExperienceHelper {
     private _scene: Scene;
@@ -516,7 +516,7 @@ export class VRExperienceHelper {
     /**
      * The mesh used to display where the user is selecting, this mesh will be cloned and set as the gazeTracker for the left and right controller
      * when set bakeCurrentTransformIntoVertices will be called on the mesh.
-     * See http://doc.babylonjs.com/resources/baking_transformations
+     * See https://doc.babylonjs.com/resources/baking_transformations
      */
     public get gazeTrackerMesh(): Mesh {
         return this._cameraGazer._gazeTracker;
