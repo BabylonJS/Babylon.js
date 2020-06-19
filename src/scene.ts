@@ -889,7 +889,6 @@ export class Scene extends AbstractScene implements IAnimatable {
     */
     public prePass: boolean = false;
 
-
     // Lights
     private _shadowsEnabled = true;
     /**
