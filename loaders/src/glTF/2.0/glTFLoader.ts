@@ -690,7 +690,7 @@ export class GLTFLoader implements IGLTFLoader {
             const min = TmpVectors.Vector3[0], max = TmpVectors.Vector3[1];
             this._forEachPrimitive(node, (babylonMesh) => {
                 let recomputeBoundingInfo = true;
-                if (!this.parent.alwaysComputeBoundingBox) {
+                if (!this.parent.alwaysComputeBoundingBox && !babylonMesh.skeleton) {
                     const tmp = GLTFLoader.GetTmpMetadata(babylonMesh);
                     const mmin: [number, number, number] = tmp.positionMin, mmax: [number, number, number] = tmp.positionMax;
                     if (mmin !== undefined && mmax !== undefined) {
