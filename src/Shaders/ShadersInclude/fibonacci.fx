@@ -2,6 +2,8 @@
 #define GOLDEN_RATIO 1.618033988749895
 #define TWO_PI 6.2831855
 
+// Used in screen space subsurface scattering
+// http://advances.realtimerendering.com/s2018/Efficient%20screen%20space%20subsurface%20scattering%20Siggraph%202018.pdf
 vec2 Golden2dSeq(int i, float n)
 {
     // GoldenAngle = 2 * Pi * (1 - 1 / GoldenRatio).
