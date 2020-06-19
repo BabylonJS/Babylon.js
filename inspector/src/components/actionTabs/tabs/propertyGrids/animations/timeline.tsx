@@ -226,25 +226,7 @@ export class Timeline extends React.Component<
                   y2='40'
                   style={{ stroke: '#12506b', strokeWidth: 6 }}
                 />
-                {this.props.keyframes &&
-                  this.props.keyframes.map((kf, i) => {
-                    return (
-                      <svg
-                        key={`kf_${i}`}
-                        style={{ cursor: 'pointer' }}
-                        tabIndex={i + 40}
-                      >
-                        <line
-                          id={`kf_${i.toString()}`}
-                          x1={kf.frame * 10}
-                          y1='0'
-                          x2={kf.frame * 10}
-                          y2='40'
-                          style={{ stroke: 'red', strokeWidth: 6 }}
-                        />
-                      </svg>
-                    );
-                  })}
+
                 {this._frames.map((frame, i) => {
                   return (
                     <svg key={`tl_${i}`}>
@@ -269,6 +251,26 @@ export class Timeline extends React.Component<
                     </svg>
                   );
                 })}
+
+                {this.props.keyframes &&
+                  this.props.keyframes.map((kf, i) => {
+                    return (
+                      <svg
+                        key={`kf_${i}`}
+                        style={{ cursor: 'pointer' }}
+                        tabIndex={i + 40}
+                      >
+                        <line
+                          id={`kf_${i.toString()}`}
+                          x1={kf.frame * 10}
+                          y1='0'
+                          x2={kf.frame * 10}
+                          y2='40'
+                          style={{ stroke: '#ffc017', strokeWidth: 1 }}
+                        />
+                      </svg>
+                    );
+                  })}
               </svg>
             </div>
 
