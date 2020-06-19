@@ -34,6 +34,10 @@ export class SubSurfaceConfiguration {
         return this._ssFilterRadii;
     }
 
+    /**
+     * Builds a subsurface configuration object
+     * @param scene The scene
+     */
     constructor(scene: Scene) {
         // Adding default diffusion profile
         this._scene = scene;
