@@ -646,7 +646,7 @@ export class NativeEngine extends Engine {
      * Sets the current alpha mode
      * @param mode defines the mode to use (one of the BABYLON.Constants.ALPHA_XXX)
      * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
-     * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+     * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
      */
     public setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {
         if (this._alphaMode === mode) {
@@ -664,7 +664,7 @@ export class NativeEngine extends Engine {
 
     /**
      * Gets the current alpha mode
-     * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+     * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
      * @returns the current alpha mode
      */
     public getAlphaMode(): number {
