@@ -887,7 +887,8 @@ export class Scene extends AbstractScene implements IAnimatable {
     /**
     * Flag indicating that the frame buffer binding is handled by another component
     */
-    public prePass : boolean = false;
+    public prePass: boolean = false;
+
 
     // Lights
     private _shadowsEnabled = true;
