@@ -99,6 +99,7 @@
 - Added support for KHR_materials_variants for glTF loader. ([MiiBond](https://github.com/MiiBond/))
 - Added support for KHR_materials_transmission for glTF loader. ([MiiBond](https://github.com/MiiBond/))
 - Improved progress handling in glTF loader. ([bghgary](https://github.com/bghgary))
+- Use min/max values from position accessors (when available) to set the bounding box of meshes ([Popov72](https://github.com/Popov72))
 
 ### Navigation
 
