@@ -33,6 +33,7 @@ import { IDataBuffer } from 'babylonjs/Misc/dataReader';
 import { LoadFileError } from 'babylonjs/Misc/fileTools';
 import { Logger } from 'babylonjs/Misc/logger';
 import { Light } from 'babylonjs/Lights/light';
+import { TmpVectors } from 'babylonjs/Maths/math.vector';
 
 interface TypedArrayLike extends ArrayBufferView {
     readonly length: number;
@@ -686,8 +687,24 @@ export class GLTFLoader implements IGLTFLoader {
         this.logClose();
 
         return Promise.all(promises).then(() => {
+            const min = TmpVectors.Vector3[0], max = TmpVectors.Vector3[1];
             this._forEachPrimitive(node, (babylonMesh) => {
-                babylonMesh.refreshBoundingInfo(true);
+                const tmp = GLTFLoader.GetTmpMetadata(babylonMesh);
+                const mmin: [number, number, number] = tmp.positionMin, mmax: [number, number, number] = tmp.positionMax;
+                if (mmin !== undefined && mmax !== undefined) {
+                    min.copyFromFloats(...mmin);
+                    max.copyFromFloats(...mmax);
+                    babylonMesh.getBoundingInfo().reConstruct(min, max);
+                    if (babylonMesh.subMeshes) {
+                        for (let index = 0; index < babylonMesh.subMeshes.length; index++) {
+                            babylonMesh.subMeshes[index].getBoundingInfo().reConstruct(min, max);
+                        }
+                    }
+                    babylonMesh._updateBoundingInfo();
+                } else {
+                    babylonMesh.refreshBoundingInfo(true);
+                }
+                GLTFLoader.RemoveTmpMetadata(babylonMesh);
             });
 
             return node._babylonTransformNode!;
@@ -865,6 +882,12 @@ export class GLTFLoader implements IGLTFLoader {
             promises.push(this._loadVertexAccessorAsync(`/accessors/${accessor.index}`, accessor, kind).then((babylonVertexBuffer) => {
                 babylonGeometry.setVerticesBuffer(babylonVertexBuffer, accessor.count);
             }));
+
+            if (attribute === "POSITION" && accessor.min !== undefined && accessor.max !== undefined) {
+                const tmp = GLTFLoader.GetTmpMetadata(babylonMesh);
+                tmp.positionMin = accessor.min;
+                tmp.positionMax = accessor.max;
+            }
 
             if (kind == VertexBuffer.MatricesIndicesExtraKind) {
                 babylonMesh.numBoneInfluencers = 8;
@@ -2046,6 +2069,19 @@ export class GLTFLoader implements IGLTFLoader {
         const gltf = (metadata.gltf = metadata.gltf || {});
         const pointers = (gltf.pointers = gltf.pointers || []);
         pointers.push(pointer);
+    }
+
+    private static GetTmpMetadata(babylonObject: { metadata: any }): any {
+        const metadata = (babylonObject.metadata = babylonObject.metadata || {});
+        const gltf = (metadata.gltf = metadata.gltf || {});
+        const tmp = (gltf.tmp = gltf.tmp || {});
+        return tmp;
+    }
+
+    private static RemoveTmpMetadata(babylonObject: { metadata: any }): void {
+        const metadata = (babylonObject.metadata = babylonObject.metadata || {});
+        const gltf = (metadata.gltf = metadata.gltf || {});
+        delete gltf.tmp;
     }
 
     private static _GetTextureWrapMode(context: string, mode: TextureWrapMode | undefined): number {
