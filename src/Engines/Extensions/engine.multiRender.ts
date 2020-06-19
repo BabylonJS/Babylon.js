@@ -38,11 +38,11 @@ declare module "../../Engines/thinEngine" {
          * Select a subsets of attachments to draw to.
          * @param attachments gl attachments
          */
-        bindAttachments(attachments: any[]) : void;
+        bindAttachments(attachments: number[]) : void;
     }
 }
 
-ThinEngine.prototype.bindAttachments = function(attachments: any[]): void {
+ThinEngine.prototype.bindAttachments = function(attachments: number[]): void {
     const gl = this._gl;
 
     gl.drawBuffers(attachments);
