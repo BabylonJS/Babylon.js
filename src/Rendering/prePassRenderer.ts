@@ -60,7 +60,7 @@ export class PrePassRenderer {
 
     /**
      * Post process for subsurface scattering
-     */    
+     */
     public subSurfaceScatteringPostProcess: SubSurfaceScatteringPostProcess;
 
     /**
