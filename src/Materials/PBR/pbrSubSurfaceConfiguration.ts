@@ -90,7 +90,7 @@ export class PBRSubSurfaceConfiguration {
         }
 
         // addDiffusionProfile automatically checks for doubles
-        this._scatteringDiffusionProfileIndex = this._scene.prePassRenderer!.addDiffusionProfile(c);
+        this._scatteringDiffusionProfileIndex = this._scene.prePassRenderer!.subSurfaceConfiguration.addDiffusionProfile(c);
     }
 
     /**
