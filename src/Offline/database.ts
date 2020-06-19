@@ -11,7 +11,7 @@ Engine.OfflineProviderFactory = (urlToScene: string, callbackManifestChecked: (c
 
 /**
  * Class used to enable access to IndexedDB
- * @see http://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
+ * @see https://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
  */
 export class Database implements IOfflineProvider {
     private _callbackManifestChecked: (check: boolean) => any;
