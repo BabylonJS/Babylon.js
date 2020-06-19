@@ -247,6 +247,7 @@ export class AnimationGridComponent extends React.Component<
                     }
                     lockObject={this.props.lockObject}
                     playOrPause={() => this.playOrPause()}
+                    globalState={this.props.globalState}
                   />
                 </PopupComponent>
               )}
