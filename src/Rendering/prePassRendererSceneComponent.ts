@@ -154,7 +154,7 @@ export class PrePassRendererSceneComponent implements ISceneSerializableComponen
 
         if (this.scene.prePassRenderer) {
             container.ssDiffusionProfileColors.forEach((color) => {
-                this.scene.prePassRenderer!.addDiffusionProfile(color);
+                this.scene.prePassRenderer!.subSurfaceConfiguration.addDiffusionProfile(color);
             });
         }
     }
@@ -170,7 +170,7 @@ export class PrePassRendererSceneComponent implements ISceneSerializableComponen
         }
 
         if (this.scene.prePassRenderer) {
-            this.scene.prePassRenderer.clearAllDiffusionProfiles();
+            this.scene.prePassRenderer.subSurfaceConfiguration.clearAllDiffusionProfiles();
         }
     }
 

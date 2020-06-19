@@ -41,9 +41,9 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
             effect.setFloat2("viewportSize",
                 Math.tan(scene.activeCamera!.fov / 2) * scene.getEngine().getAspectRatio(scene.activeCamera!, true),
                 Math.tan(scene.activeCamera!.fov / 2));
-            effect.setArray3("diffusionS", scene.prePassRenderer.ssDiffusionS);
-            effect.setArray("diffusionD", scene.prePassRenderer.ssDiffusionD);
-            effect.setArray("filterRadii", scene.prePassRenderer.ssFilterRadii);
+            effect.setArray3("diffusionS", scene.prePassRenderer.subSurfaceConfiguration.ssDiffusionS);
+            effect.setArray("diffusionD", scene.prePassRenderer.subSurfaceConfiguration.ssDiffusionD);
+            effect.setArray("filterRadii", scene.prePassRenderer.subSurfaceConfiguration.ssFilterRadii);
         });
 
     }
