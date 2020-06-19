@@ -54,17 +54,17 @@ ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: 
     // If MSAA, we need to bitblt back to main texture
     var gl = this._gl;
 
+    var attachments = textures[0]._attachments!;
+    var count = attachments.length;
+
     if (textures[0]._MSAAFramebuffer) {
         gl.bindFramebuffer(gl.READ_FRAMEBUFFER, textures[0]._MSAAFramebuffer);
         gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, textures[0]._framebuffer);
 
-        var attachments = textures[0]._attachments!;
-        var count = attachments.length;
-
         for (var i = 0; i < count; i++) {
             var texture = textures[i];
 
-            for (var j = 0; j < attachments.length; j++) {
+            for (var j = 0; j < count; j++) {
                 attachments[j] = gl.NONE;
             }
 
@@ -76,9 +76,11 @@ ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: 
                 gl.COLOR_BUFFER_BIT, gl.NEAREST);
 
         }
-        for (var i = 0; i < attachments.length; i++) {
+
+        for (var i = 0; i < count; i++) {
             attachments[i] = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
         }
+
         gl.drawBuffers(attachments);
     }
 

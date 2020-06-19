@@ -25,8 +25,7 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
         super(name, "subSurfaceScattering", ["texelSize", "viewportSize", "metersPerUnit"], ["diffusionS", "diffusionD", "filterRadii", "irradianceSampler", "depthSampler", "albedoSampler"], options, camera, samplingMode || Texture.BILINEAR_SAMPLINGMODE, engine, reusable, null, textureType, "postprocess", undefined, true);
         this._scene = scene;
 
-        const defines = this._getDefines();
-        this.updateEffect(defines);
+        this.updateEffect();
 
         this.onApplyObservable.add((effect: Effect) => {
             if (!scene.prePassRenderer) {
@@ -47,16 +46,5 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
             effect.setArray("filterRadii", scene.prePassRenderer.ssFilterRadii);
         });
 
-    }
-
-    private _getDefines(): Nullable<string> {
-        const engine = this.getEngine();
-        if (!engine) {
-            return null;
-        }
-
-        let defines = "";
-
-        return defines;
     }
 }
