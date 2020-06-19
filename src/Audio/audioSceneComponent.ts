@@ -63,7 +63,7 @@ declare module "../scene" {
         mainSoundTrack: SoundTrack;
         /**
          * The list of sound tracks added to the scene
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+         * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
          */
         soundTracks: Nullable<Array<SoundTrack>>;
 
@@ -76,19 +76,19 @@ declare module "../scene" {
 
         /**
          * Gets or sets if audio support is enabled
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+         * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
          */
         audioEnabled: boolean;
 
         /**
          * Gets or sets if audio will be output to headphones
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+         * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
          */
         headphone: boolean;
 
         /**
          * Gets or sets custom audio listener position provider
-         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+         * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
          */
         audioListenerPositionProvider: Nullable<() => Vector3>;
 

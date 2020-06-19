@@ -11,7 +11,7 @@ declare module "../abstractScene" {
     export interface AbstractScene {
         /**
          * The list of reflection probes added to the scene
-         * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
+         * @see https://doc.babylonjs.com/how_to/how_to_use_reflection_probes
          */
         reflectionProbes: Array<ReflectionProbe>;
 
@@ -53,7 +53,7 @@ AbstractScene.prototype.addReflectionProbe = function(newReflectionProbe: Reflec
 
 /**
  * Class used to generate realtime reflection / refraction cube textures
- * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
+ * @see https://doc.babylonjs.com/how_to/how_to_use_reflection_probes
  */
 export class ReflectionProbe {
     private _scene: Scene;

@@ -39,17 +39,17 @@ export interface ISoundOptions {
     useCustomAttenuation?: boolean;
     /**
     * Define the roll off factor of spatial sounds.
-    * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+    * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
     */
     rolloffFactor?: number;
     /**
      * Define the reference distance the sound should be heard perfectly.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
      */
     refDistance?: number;
     /**
      * Define the distance attenuation model the sound will follow.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
      */
     distanceModel?: string;
     /**
@@ -77,7 +77,7 @@ export interface ISoundOptions {
 /**
  * Defines a sound that can be played in the application.
  * The sound can either be an ambient track or a simple sound played in reaction to a user action.
- * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+ * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
  */
 export class Sound {
     /**
@@ -95,7 +95,7 @@ export class Sound {
     /**
      * Does the sound use a custom attenuation curve to simulate the falloff
      * happening when the source gets further away from the camera.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-your-own-custom-attenuation-function
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-your-own-custom-attenuation-function
      */
     public useCustomAttenuation: boolean = false;
     /**
@@ -112,27 +112,27 @@ export class Sound {
     public isPaused: boolean = false;
     /**
      * Does this sound enables spatial sound.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
      */
     public spatialSound: boolean = false;
     /**
      * Define the reference distance the sound should be heard perfectly.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
      */
     public refDistance: number = 1;
     /**
      * Define the roll off factor of spatial sounds.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
      */
     public rolloffFactor: number = 1;
     /**
      * Define the max distance the sound should be heard (intensity just became 0 at this point).
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
      */
     public maxDistance: number = 100;
     /**
      * Define the distance attenuation model the sound will follow.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
      */
     public distanceModel: string = "linear";
     /**
@@ -514,7 +514,7 @@ export class Sound {
     /**
      * Switch the panning model to HRTF:
      * Renders a stereo output of higher quality than equalpower — it uses a convolution with measured impulse responses from human subjects.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
      */
     public switchPanningModelToHRTF() {
         this._panningModel = "HRTF";
@@ -524,7 +524,7 @@ export class Sound {
     /**
      * Switch the panning model to Equal Power:
      * Represents the equal-power panning algorithm, generally regarded as simple and efficient. equalpower is the default value.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
      */
     public switchPanningModelToEqualPower() {
         this._panningModel = "equalpower";
@@ -667,7 +667,7 @@ export class Sound {
     /**
      * Sets a new custom attenuation function for the sound.
      * @param callback Defines the function used for the attenuation
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-your-own-custom-attenuation-function
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-your-own-custom-attenuation-function
      */
     public setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void {
         this._customAttenuationFunction = callback;
@@ -907,7 +907,7 @@ export class Sound {
     /**
      * Attach the sound to a dedicated mesh
      * @param transformNode The transform node to connect the sound with
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#attaching-a-sound-to-a-mesh
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#attaching-a-sound-to-a-mesh
      */
     public attachToMesh(transformNode: TransformNode): void {
         if (this._connectedTransformNode && this._registerFunc) {
@@ -930,7 +930,7 @@ export class Sound {
 
     /**
      * Detach the sound from the previously attached mesh
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#attaching-a-sound-to-a-mesh
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#attaching-a-sound-to-a-mesh
      */
     public detachFromMesh() {
         if (this._connectedTransformNode && this._registerFunc) {

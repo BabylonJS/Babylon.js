@@ -657,7 +657,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     /**
      * Not supported by GPUParticleSystem
      * Gets or sets a boolean indicating that ramp gradients must be used
-     * @see http://doc.babylonjs.com/babylon101/particles#ramp-gradients
+     * @see https://doc.babylonjs.com/babylon101/particles#ramp-gradients
      */
     public get useRampGradients(): boolean {
         //Not supported by GPUParticleSystem
