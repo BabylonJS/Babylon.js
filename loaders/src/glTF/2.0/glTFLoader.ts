@@ -689,22 +689,28 @@ export class GLTFLoader implements IGLTFLoader {
         return Promise.all(promises).then(() => {
             const min = TmpVectors.Vector3[0], max = TmpVectors.Vector3[1];
             this._forEachPrimitive(node, (babylonMesh) => {
-                const tmp = GLTFLoader.GetTmpMetadata(babylonMesh);
-                const mmin: [number, number, number] = tmp.positionMin, mmax: [number, number, number] = tmp.positionMax;
-                if (mmin !== undefined && mmax !== undefined) {
-                    min.copyFromFloats(...mmin);
-                    max.copyFromFloats(...mmax);
-                    babylonMesh.getBoundingInfo().reConstruct(min, max);
-                    if (babylonMesh.subMeshes) {
-                        for (let index = 0; index < babylonMesh.subMeshes.length; index++) {
-                            babylonMesh.subMeshes[index].getBoundingInfo().reConstruct(min, max);
+                let recomputeBoundingInfo = true;
+                if (!this.parent.alwaysComputeBoundingBox) {
+                    const tmp = GLTFLoader.GetTmpMetadata(babylonMesh);
+                    const mmin: [number, number, number] = tmp.positionMin, mmax: [number, number, number] = tmp.positionMax;
+                    if (mmin !== undefined && mmax !== undefined) {
+                        recomputeBoundingInfo = false;
+                        min.copyFromFloats(...mmin);
+                        max.copyFromFloats(...mmax);
+                        babylonMesh.getBoundingInfo().reConstruct(min, max);
+                        if (babylonMesh.subMeshes) {
+                            for (let index = 0; index < babylonMesh.subMeshes.length; index++) {
+                                babylonMesh.subMeshes[index].getBoundingInfo().reConstruct(min, max);
+                            }
                         }
+                        babylonMesh._updateBoundingInfo();
                     }
-                    babylonMesh._updateBoundingInfo();
-                } else {
-                    babylonMesh.refreshBoundingInfo(true);
                 }
-                GLTFLoader.RemoveTmpMetadata(babylonMesh);
+                if (recomputeBoundingInfo) {
+                    babylonMesh.refreshBoundingInfo(true);
+                } else {
+                    GLTFLoader.RemoveTmpMetadata(babylonMesh);
+                }
             });
 
             return node._babylonTransformNode!;
@@ -883,7 +889,7 @@ export class GLTFLoader implements IGLTFLoader {
                 babylonGeometry.setVerticesBuffer(babylonVertexBuffer, accessor.count);
             }));
 
-            if (attribute === "POSITION" && accessor.min !== undefined && accessor.max !== undefined) {
+            if (attribute === "POSITION" && !this.parent.alwaysComputeBoundingBox && accessor.min !== undefined && accessor.max !== undefined) {
                 const tmp = GLTFLoader.GetTmpMetadata(babylonMesh);
                 tmp.positionMin = accessor.min;
                 tmp.positionMax = accessor.max;
