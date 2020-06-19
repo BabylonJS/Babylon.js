@@ -687,32 +687,6 @@ export class GLTFLoader implements IGLTFLoader {
         this.logClose();
 
         return Promise.all(promises).then(() => {
-            const min = TmpVectors.Vector3[0], max = TmpVectors.Vector3[1];
-            this._forEachPrimitive(node, (babylonMesh) => {
-                let recomputeBoundingInfo = true;
-                if (!this.parent.alwaysComputeBoundingBox && !babylonMesh.skeleton) {
-                    const tmp = GLTFLoader.GetTmpMetadata(babylonMesh);
-                    const mmin: [number, number, number] = tmp.positionMin, mmax: [number, number, number] = tmp.positionMax;
-                    if (mmin !== undefined && mmax !== undefined) {
-                        recomputeBoundingInfo = false;
-                        min.copyFromFloats(...mmin);
-                        max.copyFromFloats(...mmax);
-                        babylonMesh.getBoundingInfo().reConstruct(min, max);
-                        if (babylonMesh.subMeshes) {
-                            for (let index = 0; index < babylonMesh.subMeshes.length; index++) {
-                                babylonMesh.subMeshes[index].getBoundingInfo().reConstruct(min, max);
-                            }
-                        }
-                        babylonMesh._updateBoundingInfo();
-                    }
-                }
-                if (recomputeBoundingInfo) {
-                    babylonMesh.refreshBoundingInfo(true);
-                } else {
-                    GLTFLoader.RemoveTmpMetadata(babylonMesh);
-                }
-            });
-
             return node._babylonTransformNode!;
         });
     }
@@ -803,9 +777,12 @@ export class GLTFLoader implements IGLTFLoader {
             babylonMesh.overrideMaterialSideOrientation = this._babylonScene.useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
 
             this._createMorphTargets(context, node, mesh, primitive, babylonMesh);
-            promises.push(this._loadVertexDataAsync(context, primitive, babylonMesh).then((babylonGeometry) => {
+            promises.push(this._loadVertexDataAsync(context, primitive, babylonMesh).then(([babylonGeometry, postProcesses]) => {
                 return this._loadMorphTargetsAsync(context, primitive, babylonMesh, babylonGeometry).then(() => {
                     babylonGeometry.applyToMesh(babylonMesh);
+                    if (postProcesses) {
+                        postProcesses.forEach((f) => f());
+                    }
                 });
             }));
 
@@ -849,7 +826,7 @@ export class GLTFLoader implements IGLTFLoader {
         });
     }
 
-    private _loadVertexDataAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Promise<Geometry> {
+    private _loadVertexDataAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Promise<[Geometry, Nullable<Array<() => void>>]> {
         const extensionPromise = this._extensionsLoadVertexDataAsync(context, primitive, babylonMesh);
         if (extensionPromise) {
             return extensionPromise;
@@ -874,6 +851,8 @@ export class GLTFLoader implements IGLTFLoader {
             }));
         }
 
+        const postProcesses = new Array<() => void>();
+
         const loadAttribute = (attribute: string, kind: string, callback?: (accessor: IAccessor) => void) => {
             if (attributes[attribute] == undefined) {
                 return;
@@ -887,13 +866,31 @@ export class GLTFLoader implements IGLTFLoader {
             const accessor = ArrayItem.Get(`${context}/attributes/${attribute}`, this._gltf.accessors, attributes[attribute]);
             promises.push(this._loadVertexAccessorAsync(`/accessors/${accessor.index}`, accessor, kind).then((babylonVertexBuffer) => {
                 babylonGeometry.setVerticesBuffer(babylonVertexBuffer, accessor.count);
+                if (babylonVertexBuffer.getKind() === "position") {
+                    postProcesses.push(() => {
+                        const min = TmpVectors.Vector3[0], max = TmpVectors.Vector3[1];
+                        let recomputeBoundingInfo = true;
+                        if (!this.parent.alwaysComputeBoundingBox && !babylonMesh.skeleton) {
+                            const mmin = accessor.min as [number, number, number], mmax = accessor.max as [number, number, number];
+                            if (mmin !== undefined && mmax !== undefined) {
+                                recomputeBoundingInfo = false;
+                                min.copyFromFloats(...mmin);
+                                max.copyFromFloats(...mmax);
+                                babylonMesh.getBoundingInfo().reConstruct(min, max);
+                                if (babylonMesh.subMeshes) {
+                                    for (let index = 0; index < babylonMesh.subMeshes.length; index++) {
+                                        babylonMesh.subMeshes[index].getBoundingInfo().reConstruct(min, max);
+                                    }
+                                }
+                                babylonMesh._updateBoundingInfo();
+                            }
+                        }
+                        if (recomputeBoundingInfo) {
+                            babylonMesh.refreshBoundingInfo(true);
+                        }
+                    });
+                }
             }));
-
-            if (attribute === "POSITION" && !this.parent.alwaysComputeBoundingBox && accessor.min !== undefined && accessor.max !== undefined) {
-                const tmp = GLTFLoader.GetTmpMetadata(babylonMesh);
-                tmp.positionMin = accessor.min;
-                tmp.positionMax = accessor.max;
-            }
 
             if (kind == VertexBuffer.MatricesIndicesExtraKind) {
                 babylonMesh.numBoneInfluencers = 8;
@@ -920,7 +917,7 @@ export class GLTFLoader implements IGLTFLoader {
         });
 
         return Promise.all(promises).then(() => {
-            return babylonGeometry;
+            return [babylonGeometry, postProcesses];
         });
     }
 
@@ -2077,19 +2074,6 @@ export class GLTFLoader implements IGLTFLoader {
         pointers.push(pointer);
     }
 
-    private static GetTmpMetadata(babylonObject: { metadata: any }): any {
-        const metadata = (babylonObject.metadata = babylonObject.metadata || {});
-        const gltf = (metadata.gltf = metadata.gltf || {});
-        const tmp = (gltf.tmp = gltf.tmp || {});
-        return tmp;
-    }
-
-    private static RemoveTmpMetadata(babylonObject: { metadata: any }): void {
-        const metadata = (babylonObject.metadata = babylonObject.metadata || {});
-        const gltf = (metadata.gltf = metadata.gltf || {});
-        delete gltf.tmp;
-    }
-
     private static _GetTextureWrapMode(context: string, mode: TextureWrapMode | undefined): number {
         // Set defaults if undefined
         mode = mode == undefined ? TextureWrapMode.REPEAT : mode;
@@ -2308,7 +2292,7 @@ export class GLTFLoader implements IGLTFLoader {
         return this._applyExtensions(camera, "loadCamera", (extension) => extension.loadCameraAsync && extension.loadCameraAsync(context, camera, assign));
     }
 
-    private _extensionsLoadVertexDataAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>> {
+    private _extensionsLoadVertexDataAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<[Geometry, Nullable<Array<() => void>>]>> {
         return this._applyExtensions(primitive, "loadVertexData", (extension) => extension._loadVertexDataAsync && extension._loadVertexDataAsync(context, primitive, babylonMesh));
     }
 
