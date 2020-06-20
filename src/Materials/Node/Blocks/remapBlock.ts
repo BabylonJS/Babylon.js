@@ -6,6 +6,7 @@ import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../Misc/typeStore';
 import { Vector2 } from '../../../Maths/math.vector';
 import { Scene } from '../../../scene';
+import { editableInPropertyPage, PropertyTypeForEdition } from "../nodeMaterialDecorator";
 /**
  * Block used to remap a float from a range to a new one
  */
@@ -13,11 +14,13 @@ export class RemapBlock extends NodeMaterialBlock {
     /**
      * Gets or sets the source range
      */
+    @editableInPropertyPage("From", PropertyTypeForEdition.Vector2)
     public sourceRange = new Vector2(-1, 1);
 
     /**
      * Gets or sets the target range
      */
+    @editableInPropertyPage("To", PropertyTypeForEdition.Vector2)
     public targetRange = new Vector2(0, 1);
 
     /**

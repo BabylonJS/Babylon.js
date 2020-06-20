@@ -215,7 +215,7 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
         }
         else {
             const bufferView = ArrayItem.Get(`${context}/bufferView`, this._loader.gltf.bufferViews, clip.bufferView);
-            promise = this._loader.loadBufferViewAsync(`#/bufferViews/${bufferView.index}`, bufferView);
+            promise = this._loader.loadBufferViewAsync(`/bufferViews/${bufferView.index}`, bufferView);
         }
 
         clip._objectURL = promise.then((data) => {
@@ -237,7 +237,7 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
             };
 
             for (let i = 0; i < emitter.clips.length; i++) {
-                const clipContext = `#/extensions/${this.name}/clips`;
+                const clipContext = `/extensions/${this.name}/clips`;
                 const clip = ArrayItem.Get(clipContext, this._clips, emitter.clips[i].clip);
                 clipPromises.push(this._loadClipAsync(`${clipContext}/${emitter.clips[i].clip}`, clip).then((objectURL: string) => {
                     const sound = emitter._babylonSounds[i] = new Sound(name, objectURL, this._loader.babylonScene, null, options);
@@ -296,7 +296,7 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
         }
         const babylonAnimation = babylonAnimationGroup.targetedAnimations[0];
         const emitterIndex = event.emitter;
-        const emitter = ArrayItem.Get(`#/extensions/${this.name}/emitters`, this._emitters, emitterIndex);
+        const emitter = ArrayItem.Get(`/extensions/${this.name}/emitters`, this._emitters, emitterIndex);
         return this._loadEmitterAsync(context, emitter).then(() => {
             const sound = emitter._babylonData!.sound;
             if (sound) {

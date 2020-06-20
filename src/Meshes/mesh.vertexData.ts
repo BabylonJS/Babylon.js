@@ -3,6 +3,7 @@ import { Matrix, Vector3, Vector2, Vector4 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Meshes/buffer";
 import { _DevTools } from '../Misc/devTools';
 import { Color4, Color3 } from '../Maths/math.color';
+import { Logger } from '../Misc/logger';
 
 declare type Geometry = import("../Meshes/geometry").Geometry;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -171,6 +172,10 @@ export class VertexData {
      * @param kind the type of data that is being set, eg positions, colors etc
      */
     public set(data: FloatArray, kind: string) {
+        if (!data.length) {
+            Logger.Warn(`Setting vertex data kind '${kind}' with an empty array`);
+        }
+
         switch (kind) {
             case VertexBuffer.PositionKind:
                 this.positions = data;
@@ -986,9 +991,10 @@ export class VertexData {
      * @param fColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
      * @param frontUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
      * @param backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+     * @param wrap a boolean, default false, when true and fUVs used texture is wrapped around all sides, when false texture is applied side
      * @returns the VertexData of the Polygon
      */
-    public static CreatePolygon(polygon: Mesh, sideOrientation: number, fUV?: Vector4[], fColors?: Color4[], frontUVs?: Vector4, backUVs?: Vector4): VertexData {
+    public static CreatePolygon(polygon: Mesh, sideOrientation: number, fUV?: Vector4[], fColors?: Color4[], frontUVs?: Vector4, backUVs?: Vector4, wrap?: boolean): VertexData {
         throw _DevTools.WarnImport("polygonBuilder");
     }
 

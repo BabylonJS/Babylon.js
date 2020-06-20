@@ -42,7 +42,13 @@ export class Inspector {
     private static _GlobalState = new GlobalState();
 
     public static MarkLineContainerTitleForHighlighting(title: string) {
-        this._GlobalState.selectedLineContainerTitle = title;
+        this._GlobalState.selectedLineContainerTitles = [];
+        this._GlobalState.selectedLineContainerTitles.push(title);
+    }
+
+    public static MarkMultipleLineContainerTitlesForHighlighting(titles: string[]) {
+        this._GlobalState.selectedLineContainerTitles = [];
+        this._GlobalState.selectedLineContainerTitles.push(...titles);
     }
 
     private static _CopyStyles(sourceDoc: HTMLDocument, targetDoc: HTMLDocument) {
@@ -415,6 +421,11 @@ export class Inspector {
                 this._CreateActionTabs(scene, options, parentControl);
             }
         }
+    }
+
+    public static _SetNewScene(scene: Scene) {
+        this._Scene = scene;
+        this._GlobalState.onNewSceneObservable.notifyObservers(scene);
     }
 
     public static _CreateCanvasContainer(parentControl: HTMLElement) {

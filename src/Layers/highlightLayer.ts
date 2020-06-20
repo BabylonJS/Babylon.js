@@ -404,6 +404,7 @@ export class HighlightLayer extends EffectLayer {
                     this._postProcesses,
                     internalTexture,
                     true);
+                this._engine.unBindFramebuffer(internalTexture, true);
             }
 
             this.onAfterBlurObservable.notifyObservers(this);
@@ -508,6 +509,17 @@ export class HighlightLayer extends EffectLayer {
             return false;
         }
 
+        return true;
+    }
+
+    /**
+     * Returns true if the mesh can be rendered, otherwise false.
+     * @param mesh The mesh to render
+     * @param material The material used on the mesh
+     * @returns true if it can be rendered otherwise false
+     */
+    protected _canRenderMesh(mesh: AbstractMesh, material: Material): boolean {
+        // all meshes can be rendered in the highlight layer, even transparent ones
         return true;
     }
 

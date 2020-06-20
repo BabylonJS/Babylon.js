@@ -29,31 +29,29 @@ struct clearcoatOutParams
 };
 
 #ifdef CLEARCOAT
+    #define pbr_inline
+    #define inline
     void clearcoatBlock(
         const in vec3 vPositionW,
         const in vec3 geometricNormalW,
         const in vec3 viewDirectionW,
         const in vec2 vClearCoatParams,
-        const in vec2 uvOffset,
         const in vec3 specularEnvironmentR0,
     #ifdef CLEARCOAT_TEXTURE
-        const in vec2 vClearCoatUV,
-        const in vec2 vClearCoatInfos,
-        const in sampler2D clearCoatSampler,
+        const in vec2 clearCoatMapData,
     #endif
     #ifdef CLEARCOAT_TINT
         const in vec4 vClearCoatTintParams,
         const in float clearCoatColorAtDistance,
         const in vec4 vClearCoatRefractionParams,
         #ifdef CLEARCOAT_TINT_TEXTURE
-            const in vec2 vClearCoatTintUV_,
-            const in sampler2D clearCoatTintSampler,
+            const in vec4 clearCoatTintMapData,
         #endif
     #endif
     #ifdef CLEARCOAT_BUMP
         const in vec2 vClearCoatBumpInfos,
-        const in vec2 vClearCoatBumpUV_,
-        const in sampler2D clearCoatBumpSampler,
+        const in vec4 clearCoatBumpMapData,
+        const in vec2 vClearCoatBumpUV,
         #if defined(TANGENT) && defined(NORMAL)
             const in mat3 vTBN,
         #else
@@ -68,6 +66,8 @@ struct clearcoatOutParams
     #endif
     #ifdef REFLECTION
         const in vec3 vReflectionMicrosurfaceInfos,
+        const in vec2 vReflectionInfos,
+        const in vec3 vReflectionColor,
         const in vec4 vLightingIntensity,
         #ifdef REFLECTIONMAP_3D
             const in samplerCube reflectionSampler,
@@ -75,8 +75,13 @@ struct clearcoatOutParams
             const in sampler2D reflectionSampler,
         #endif
         #ifndef LODBASEDMICROSFURACE
-            const in sampler2D reflectionSamplerLow,
-            const in sampler2D reflectionSamplerHigh,
+            #ifdef REFLECTIONMAP_3D
+                const in samplerCube reflectionSamplerLow,
+                const in samplerCube reflectionSamplerHigh,
+            #else
+                const in sampler2D reflectionSamplerLow,
+                const in sampler2D reflectionSamplerHigh,
+            #endif
         #endif
     #endif
     #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
@@ -92,7 +97,6 @@ struct clearcoatOutParams
         float clearCoatRoughness = vClearCoatParams.y;
 
         #ifdef CLEARCOAT_TEXTURE
-            vec2 clearCoatMapData = texture2D(clearCoatSampler, vClearCoatUV + uvOffset).rg * vClearCoatInfos.y;
             clearCoatIntensity *= clearCoatMapData.x;
             clearCoatRoughness *= clearCoatMapData.y;
             #if DEBUGMODE > 0
@@ -108,8 +112,7 @@ struct clearcoatOutParams
             float clearCoatThickness = vClearCoatTintParams.a;
 
             #ifdef CLEARCOAT_TINT_TEXTURE
-                vec4 clearCoatTintMapData = texture2D(clearCoatTintSampler, vClearCoatTintUV_ + uvOffset);
-                clearCoatColor *= toLinearSpace(clearCoatTintMapData.rgb);
+                clearCoatColor *= clearCoatTintMapData.rgb;
                 clearCoatThickness *= clearCoatTintMapData.a;
                 #if DEBUGMODE > 0
                     outParams.clearCoatTintMapData = clearCoatTintMapData;
@@ -149,10 +152,10 @@ struct clearcoatOutParams
             #endif
 
             #ifdef OBJECTSPACE_NORMALMAP
-                clearCoatNormalW = normalize(texture2D(clearCoatBumpSampler, vClearCoatBumpUV + uvOffset).xyz  * 2.0 - 1.0);
+                clearCoatNormalW = normalize(clearCoatBumpMapData.xyz  * 2.0 - 1.0);
                 clearCoatNormalW = normalize(mat3(normalMatrix) * clearCoatNormalW);
             #else
-                clearCoatNormalW = perturbNormal(TBNClearCoat, texture2D(clearCoatBumpSampler, vClearCoatBumpUV + uvOffset).xyz, vClearCoatBumpInfos.y);
+                clearCoatNormalW = perturbNormal(TBNClearCoat, clearCoatBumpMapData.xyz, vClearCoatBumpInfos.y);
             #endif
         #endif
 
@@ -217,51 +220,25 @@ struct clearcoatOutParams
                 clearCoatReflectionCoords.y = 1.0 - clearCoatReflectionCoords.y;
             #endif
 
+            sampleReflectionTexture(
+                clearCoatAlphaG,
+                vReflectionMicrosurfaceInfos,
+                vReflectionInfos,
+                vReflectionColor,
             #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-                float clearCoatReflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, clearCoatAlphaG, clearCoatNdotVUnclamped);
-            #elif defined(LINEARSPECULARREFLECTION)
-                float clearCoatReflectionLOD = getLinearLodFromRoughness(vReflectionMicrosurfaceInfos.x, clearCoatRoughness);
-            #else
-                float clearCoatReflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, clearCoatAlphaG);
+                clearCoatNdotVUnclamped,
             #endif
-
-            #ifdef LODBASEDMICROSFURACE
-                // Apply environment convolution scale/offset filter tuning parameters to the mipmap LOD selection
-                clearCoatReflectionLOD = clearCoatReflectionLOD * vReflectionMicrosurfaceInfos.y + vReflectionMicrosurfaceInfos.z;
-                float requestedClearCoatReflectionLOD = clearCoatReflectionLOD;
-
-                environmentClearCoatRadiance = sampleReflectionLod(reflectionSampler, clearCoatReflectionCoords, requestedClearCoatReflectionLOD);
-            #else
-                float lodClearCoatReflectionNormalized = saturate(clearCoatReflectionLOD / log2(vReflectionMicrosurfaceInfos.x));
-                float lodClearCoatReflectionNormalizedDoubled = lodClearCoatReflectionNormalized * 2.0;
-
-                vec4 environmentClearCoatMid = sampleReflection(reflectionSampler, clearCoatReflectionCoords);
-                if (lodClearCoatReflectionNormalizedDoubled < 1.0) {
-                    environmentClearCoatRadiance = mix(
-                        sampleReflection(reflectionSamplerHigh, clearCoatReflectionCoords),
-                        environmentClearCoatMid,
-                        lodClearCoatReflectionNormalizedDoubled
-                    );
-                } else {
-                    environmentClearCoatRadiance = mix(
-                        environmentClearCoatMid,
-                        sampleReflection(reflectionSamplerLow, clearCoatReflectionCoords),
-                        lodClearCoatReflectionNormalizedDoubled - 1.0
-                    );
-                }
+            #ifdef LINEARSPECULARREFLECTION
+                clearCoatRoughness,
             #endif
-
-            #ifdef RGBDREFLECTION
-                environmentClearCoatRadiance.rgb = fromRGBD(environmentClearCoatRadiance);
+                reflectionSampler,
+                clearCoatReflectionCoords,
+            #ifndef LODBASEDMICROSFURACE
+                reflectionSamplerLow,
+                reflectionSamplerHigh,
             #endif
-
-            #ifdef GAMMAREFLECTION
-                environmentClearCoatRadiance.rgb = toLinearSpace(environmentClearCoatRadiance.rgb);
-            #endif
-
-            // _____________________________ Levels _____________________________________
-            environmentClearCoatRadiance.rgb *= vReflectionInfos.x;
-            environmentClearCoatRadiance.rgb *= vReflectionColor.rgb;
+                environmentClearCoatRadiance
+            );
 
             #if DEBUGMODE > 0
                 outParams.environmentClearCoatRadiance = environmentClearCoatRadiance;

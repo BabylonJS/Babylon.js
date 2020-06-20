@@ -123,7 +123,9 @@ export class ShaderProcessor {
     private static _BuildExpression(line: string, start: number): ShaderCodeTestNode {
         let node = new ShaderCodeTestNode();
         let command = line.substring(0, start);
-        let expression = line.substring(start).trim();
+        let expression = line.substring(start);
+
+        expression = expression.substring(0, ((expression.indexOf("//") + 1) || (expression.length + 1)) - 1).trim();
 
         if (command === "#ifdef") {
             node.testExpression = new ShaderDefineIsDefinedOperator(expression);
@@ -288,6 +290,7 @@ export class ShaderProcessor {
         var match = regex.exec(sourceCode);
 
         var returnValue = new String(sourceCode);
+        var keepProcessing = false;
 
         while (match != null) {
             var includeFile = match[1];
@@ -352,6 +355,8 @@ export class ShaderProcessor {
 
                 // Replace
                 returnValue = returnValue.replace(match[0], includeContent);
+
+                keepProcessing = keepProcessing || includeContent.indexOf("#include<") >= 0;
             } else {
                 var includeShaderUrl = options.shadersRepository + "ShadersInclude/" + includeFile + ".fx";
 
@@ -365,7 +370,11 @@ export class ShaderProcessor {
             match = regex.exec(sourceCode);
         }
 
-        callback(returnValue);
+        if (keepProcessing) {
+            this._ProcessIncludes(returnValue.toString(), options, callback);
+        } else {
+            callback(returnValue);
+        }
     }
 
     /**

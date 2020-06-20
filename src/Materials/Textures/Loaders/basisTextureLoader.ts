@@ -13,7 +13,7 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
     /**
      * Defines whether the loader supports cascade loading the different faces.
      */
-    public readonly supportCascades = true;
+    public readonly supportCascades = false;
 
     /**
      * This returns if the loader support the current file information.

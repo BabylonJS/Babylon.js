@@ -39,17 +39,17 @@ export interface ISoundOptions {
     useCustomAttenuation?: boolean;
     /**
     * Define the roll off factor of spatial sounds.
-    * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+    * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
     */
     rolloffFactor?: number;
     /**
      * Define the reference distance the sound should be heard perfectly.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
      */
     refDistance?: number;
     /**
      * Define the distance attenuation model the sound will follow.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
      */
     distanceModel?: string;
     /**
@@ -77,7 +77,7 @@ export interface ISoundOptions {
 /**
  * Defines a sound that can be played in the application.
  * The sound can either be an ambient track or a simple sound played in reaction to a user action.
- * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+ * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
  */
 export class Sound {
     /**
@@ -95,7 +95,7 @@ export class Sound {
     /**
      * Does the sound use a custom attenuation curve to simulate the falloff
      * happening when the source gets further away from the camera.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-your-own-custom-attenuation-function
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-your-own-custom-attenuation-function
      */
     public useCustomAttenuation: boolean = false;
     /**
@@ -112,27 +112,27 @@ export class Sound {
     public isPaused: boolean = false;
     /**
      * Does this sound enables spatial sound.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
      */
     public spatialSound: boolean = false;
     /**
      * Define the reference distance the sound should be heard perfectly.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
      */
     public refDistance: number = 1;
     /**
      * Define the roll off factor of spatial sounds.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
      */
     public rolloffFactor: number = 1;
     /**
      * Define the max distance the sound should be heard (intensity just became 0 at this point).
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
      */
     public maxDistance: number = 100;
     /**
      * Define the distance attenuation model the sound will follow.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
      */
     public distanceModel: string = "linear";
     /**
@@ -140,6 +140,10 @@ export class Sound {
      * Back Compat
      **/
     public onended: () => any;
+    /**
+     * Gets or sets an object used to store user defined information for the sound.
+     */
+    public metadata: any = null;
 
     /**
      * Observable event when the current playing sound finishes.
@@ -216,14 +220,14 @@ export class Sound {
             if (options.volume !== undefined) {
                 this._volume = options.volume;
             }
-            this.spatialSound = options.spatialSound || false;
-            this.maxDistance = options.maxDistance || 100;
-            this.useCustomAttenuation = options.useCustomAttenuation || false;
+            this.spatialSound = options.spatialSound ?? false;
+            this.maxDistance = options.maxDistance ?? 100;
+            this.useCustomAttenuation = options.useCustomAttenuation ?? false;
             this.rolloffFactor = options.rolloffFactor || 1;
             this.refDistance = options.refDistance || 1;
             this.distanceModel = options.distanceModel || "linear";
             this._playbackRate = options.playbackRate || 1;
-            this._streaming = options.streaming || false;
+            this._streaming = options.streaming ?? false;
             this._length = options.length;
             this._offset = options.offset;
         }
@@ -452,15 +456,15 @@ export class Sound {
      */
     public updateOptions(options: ISoundOptions): void {
         if (options) {
-            this.loop = options.loop || this.loop;
-            this.maxDistance = options.maxDistance || this.maxDistance;
-            this.useCustomAttenuation = options.useCustomAttenuation || this.useCustomAttenuation;
-            this.rolloffFactor = options.rolloffFactor || this.rolloffFactor;
-            this.refDistance = options.refDistance || this.refDistance;
-            this.distanceModel = options.distanceModel || this.distanceModel;
-            this._playbackRate = options.playbackRate || this._playbackRate;
-            this._length = options.length ? options.length / 1000 : undefined;
-            this._offset = options.offset ? options.offset / 1000 : undefined;
+            this.loop = options.loop ?? this.loop;
+            this.maxDistance = options.maxDistance ?? this.maxDistance;
+            this.useCustomAttenuation = options.useCustomAttenuation ?? this.useCustomAttenuation;
+            this.rolloffFactor = options.rolloffFactor ?? this.rolloffFactor;
+            this.refDistance = options.refDistance ?? this.refDistance;
+            this.distanceModel = options.distanceModel ?? this.distanceModel;
+            this._playbackRate = options.playbackRate ?? this._playbackRate;
+            this._length = options.length ?? undefined;
+            this._offset = options.offset ?? undefined;
             this._updateSpatialParameters();
             if (this.isPlaying) {
                 if (this._streaming && this._htmlAudioElement) {
@@ -510,7 +514,7 @@ export class Sound {
     /**
      * Switch the panning model to HRTF:
      * Renders a stereo output of higher quality than equalpower — it uses a convolution with measured impulse responses from human subjects.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
      */
     public switchPanningModelToHRTF() {
         this._panningModel = "HRTF";
@@ -520,7 +524,7 @@ export class Sound {
     /**
      * Switch the panning model to Equal Power:
      * Represents the equal-power panning algorithm, generally regarded as simple and efficient. equalpower is the default value.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
      */
     public switchPanningModelToEqualPower() {
         this._panningModel = "equalpower";
@@ -663,7 +667,7 @@ export class Sound {
     /**
      * Sets a new custom attenuation function for the sound.
      * @param callback Defines the function used for the attenuation
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-your-own-custom-attenuation-function
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-your-own-custom-attenuation-function
      */
     public setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void {
         this._customAttenuationFunction = callback;
@@ -903,7 +907,7 @@ export class Sound {
     /**
      * Attach the sound to a dedicated mesh
      * @param transformNode The transform node to connect the sound with
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#attaching-a-sound-to-a-mesh
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#attaching-a-sound-to-a-mesh
      */
     public attachToMesh(transformNode: TransformNode): void {
         if (this._connectedTransformNode && this._registerFunc) {
@@ -926,7 +930,7 @@ export class Sound {
 
     /**
      * Detach the sound from the previously attached mesh
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#attaching-a-sound-to-a-mesh
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#attaching-a-sound-to-a-mesh
      */
     public detachFromMesh() {
         if (this._connectedTransformNode && this._registerFunc) {
@@ -937,17 +941,18 @@ export class Sound {
     }
 
     private _onRegisterAfterWorldMatrixUpdate(node: TransformNode): void {
-        if (!(<any>node).getBoundingInfo) {
-            return;
-        }
-        let mesh = node as AbstractMesh;
         if (this._positionInEmitterSpace) {
-            mesh.worldMatrixFromCache.invertToRef(TmpVectors.Matrix[0]);
+            node.worldMatrixFromCache.invertToRef(TmpVectors.Matrix[0]);
             this.setPosition(TmpVectors.Matrix[0].getTranslation());
         }
         else {
-            let boundingInfo = mesh.getBoundingInfo();
-            this.setPosition(boundingInfo.boundingSphere.centerWorld);
+            if (!(<any>node).getBoundingInfo) {
+                this.setPosition(node.absolutePosition);
+            } else {
+                let mesh = node as AbstractMesh;
+                let boundingInfo = mesh.getBoundingInfo();
+                this.setPosition(boundingInfo.boundingSphere.centerWorld);
+            }
         }
         if (Engine.audioEngine.canUseWebAudio && this._isDirectional && this.isPlaying) {
             this._updateDirection();
@@ -1036,7 +1041,8 @@ export class Sound {
             distanceModel: this.distanceModel,
             playbackRate: this._playbackRate,
             panningModel: this._panningModel,
-            soundTrackId: this.soundTrackId
+            soundTrackId: this.soundTrackId,
+            metadata: this.metadata
         };
 
         if (this.spatialSound) {
@@ -1124,6 +1130,10 @@ export class Sound {
             if (connectedMesh) {
                 newSound.attachToMesh(connectedMesh);
             }
+        }
+
+        if (parsedSound.metadata) {
+            newSound.metadata = parsedSound.metadata;
         }
 
         return newSound;

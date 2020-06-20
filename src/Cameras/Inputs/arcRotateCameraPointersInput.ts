@@ -7,7 +7,7 @@ import { PointerTouch } from "../../Events/pointerEvents";
 
 /**
  * Manage the pointers inputs to control an arc rotate camera.
- * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
     /**

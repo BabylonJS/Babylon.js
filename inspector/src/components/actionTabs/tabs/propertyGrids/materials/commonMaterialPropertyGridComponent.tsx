@@ -17,6 +17,7 @@ import { GlobalState } from '../../../../globalState';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
+import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
 
 interface ICommonMaterialPropertyGridComponentProps {
     globalState: GlobalState;
@@ -83,6 +84,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                     <CheckBoxLineComponent label="Backface culling" target={material} propertyName="backFaceCulling" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <OptionsLineComponent label="Orientation" options={orientationOptions} target={material} propertyName="sideOrientation" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => this.setState({ mode: value })} />
                     <CheckBoxLineComponent label="Disable lighting" target={material} propertyName="disableLighting" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <CheckBoxLineComponent label="Disable color write" target={material} propertyName="disableColorWrite" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Disable depth write" target={material} propertyName="disableDepthWrite" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <OptionsLineComponent label="Depth function" options={depthfunctionOptions} target={material} propertyName="depthFunction" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => this.setState({ depthFunction: value })} />
                     <CheckBoxLineComponent label="Need depth pre-pass" target={material} propertyName="needDepthPrePass" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -120,6 +122,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                     }
                     <CheckBoxLineComponent label="Separate culling pass" target={material} propertyName="separateCullingPass" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
+                <AnimationGridComponent globalState={this.props.globalState} animatable={material} scene={material.getScene()} lockObject={this.props.lockObject} />
             </div>
         );
     }

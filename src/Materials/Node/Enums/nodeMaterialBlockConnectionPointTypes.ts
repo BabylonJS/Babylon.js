@@ -18,6 +18,8 @@ export enum NodeMaterialBlockConnectionPointTypes {
     Color4 = 64,
     /** Matrix */
     Matrix = 128,
+    /** Custom object */
+    Object = 256,
     /** Detect type based on connection */
     AutoDetect = 1024,
     /** Output type that will be defined by input type */

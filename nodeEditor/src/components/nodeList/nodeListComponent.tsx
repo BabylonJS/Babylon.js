@@ -3,6 +3,9 @@ import * as React from "react";
 import { GlobalState } from '../../globalState';
 import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
 import { DraggableLineComponent } from '../../sharedComponents/draggableLineComponent';
+import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
+import { Observer } from 'babylonjs/Misc/observable';
+import { Nullable } from 'babylonjs/types';
 
 require("./nodeList.scss");
 
@@ -12,7 +15,9 @@ interface INodeListComponentProps {
 
 export class NodeListComponent extends React.Component<INodeListComponentProps, {filter: string}> {
 
-    private static _Tooltips:{[key: string]: string} = {
+    private _onResetRequiredObserver: Nullable<Observer<void>>;
+
+    private static _Tooltips: {[key: string]: string} = {
         "BonesBlock": "Provides a world matrix for each vertex, based on skeletal (bone/joint) animation",
         "MorphTargetsBlock": "Provides the final positions, normals, tangents, and uvs based on morph targets in a mesh",
         "AddBlock": "Adds the left and right inputs of the same type together",
@@ -76,10 +81,11 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "CeilingBlock": "Outputs fractional values as the next higher whole number",
         "FloorBlock": "Outputs fractional values as the next lower whole number",
         "RoundBlock": "Outputs fractional values rounded to the nearest whole number",
+        "ModBlock": "Outputs the value of one parameter modulo another",
         "CameraPositionBlock": "Outputs a Vector3 position of the active scene camera",
         "FogBlock": "Applies fog to the scene with an increasing opacity based on distance from the camera",
         "FogColorBlock": "The system value for fog color pulled from the scene",
-        "ImageProcessingBlock": "Provides access to all of the Babylon image processing properties",        
+        "ImageProcessingBlock": "Provides access to all of the Babylon image processing properties",
         "LightBlock": "Outputs diffuse and specular contributions from one or more scene lights",
         "LightInformationBlock": "Provides the direction, color and intensity of a selected light based on its world position",
         "ReflectionTextureBlock": "Creates a reflection from the input texture",
@@ -115,14 +121,42 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "SimplexPerlin3DBlock": "Creates a type of gradient noise with few directional artifacts.",
         "WorleyNoise3DBlock": "Creates a random pattern resembling cells.",
         "ReflectBlock": "Outputs the direction of the input vector reflected across the surface normal.",
-        "RefractBlock": "Outputs a direction simulating a deflection of the input vector.", 
-        "Rotate2dBlock": "Rotates UV coordinates around the W axis."
-    }
+        "RefractBlock": "Outputs a direction simulating a deflection of the input vector.",
+        "Rotate2dBlock": "Rotates UV coordinates around the W axis.",
+        "PBRMetallicRoughnessBlock": "PBR metallic/roughness material",
+        "SheenBlock": "PBR Sheen block",
+        "AmbientOcclusionBlock": "PBR Ambient occlusion block",
+        "ReflectivityBlock": "PBR Reflectivity block",
+        "AnisotropyBlock": "PBR Anisotropy block",
+        "ReflectionBlock": "PBR Reflection block",
+        "ClearCoatBlock": "PBR ClearCoat block",
+        "RefractionBlock": "PBR Refraction block",
+        "SubSurfaceBlock": "PBR SubSurface block",
+        "Position2DBlock": "A Vector2 representing the position of each vertex of the screen quad",
+        "CurrentScreenBlock": "The screen buffer used as input for the post process",
+        "ParticleUVBlock": "The particle uv texture coordinate",
+        "ParticleTextureBlock": "The particle texture",
+        "ParticleColorBlock": "The particle color",
+        "ParticleTextureMaskBlock": "The particle texture mask",
+        "ParticleRampGradientBlock": "The particle ramp gradient block",
+        "ParticleBlendMultiplyBlock": "The particle blend multiply block",
+        "ParticlePositionWorldBlock": "The world position of the particle",
+        "FragCoordBlock": "The gl_FragCoord predefined variable that contains the window relative coordinate (x, y, z, 1/w)",
+        "ScreenSizeBlock": "The size (in pixels) of the screen window",
+    };
 
     constructor(props: INodeListComponentProps) {
         super(props);
 
         this.state = { filter: "" };
+
+        this._onResetRequiredObserver = this.props.globalState.onResetRequiredObservable.add(() => {
+            this.forceUpdate();
+        });
+    }
+
+    componentWillUnmount() {
+        this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
     }
 
     filterContent(filter: string) {
@@ -132,33 +166,54 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
     render() {
         // Block types used to create the menu from
         const allBlocks = {
-            
+
             Animation: ["BonesBlock", "MorphTargetsBlock"],
             Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
-            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "ReflectionTextureBlock", "TimeBlock", "DeltaTimeBlock"],
+            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "ReflectionTextureBlock", "TimeBlock", "DeltaTimeBlock", "FragCoordBlock", "ScreenSizeBlock"],
             Interpolation: ["LerpBlock", "StepBlock", "SmoothStepBlock", "NLerpBlock"],
-            Math__Standard: ["AddBlock", "DivideBlock", "MaxBlock", "MinBlock", "MultiplyBlock", "NegateBlock", "OneMinusBlock", "ReciprocalBlock", "ScaleBlock", "SignBlock", "SqrtBlock", "SubtractBlock"], 
+            Math__Standard: ["AddBlock", "DivideBlock", "MaxBlock", "MinBlock", "ModBlock", "MultiplyBlock", "NegateBlock", "OneMinusBlock", "ReciprocalBlock", "ScaleBlock", "SignBlock", "SqrtBlock", "SubtractBlock"],
             Math__Scientific: ["AbsBlock", "ArcCosBlock", "ArcSinBlock", "ArcTanBlock", "ArcTan2Block", "CosBlock", "DegreesToRadiansBlock", "ExpBlock", "Exp2Block", "FractBlock", "LogBlock", "PowBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "SinBlock", "SquareWaveBlock", "TanBlock", "TriangleWaveBlock"],
             Math__Vector: ["CrossBlock", "DerivativeBlock", "DistanceBlock", "DotBlock", "FresnelBlock", "LengthBlock", "ReflectBlock", "RefractBlock", "Rotate2dBlock", "TransformBlock", ],
             Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock"],
-            Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock" , "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"], 
+            Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock" , "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"],
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
+            Particle: ["ParticleBlendMultiplyBlock", "ParticleColorBlock", "ParticlePositionWorldBlock", "ParticleRampGradientBlock", "ParticleTextureBlock", "ParticleTextureMaskBlock", "ParticleUVBlock"],
+            PBR: ["PBRMetallicRoughnessBlock", "AmbientOcclusionBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "ReflectivityBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
+            PostProcess: ["Position2DBlock", "CurrentScreenBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
             Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock"],
+        };
+
+        switch (this.props.globalState.mode) {
+            case NodeMaterialModes.Material:
+                delete allBlocks["PostProcess"];
+                delete allBlocks["Particle"];
+                break;
+            case NodeMaterialModes.PostProcess:
+                delete allBlocks["Animation"];
+                delete allBlocks["Mesh"];
+                delete allBlocks["Particle"];
+                break;
+            case NodeMaterialModes.Particle:
+                delete allBlocks["Animation"];
+                delete allBlocks["Mesh"];
+                delete allBlocks["PostProcess"];
+                allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("VertexOutputBlock"), 1);
+                break;
         }
 
         // Create node menu
-        var blockMenu = []
+        var blockMenu = [];
         for (var key in allBlocks) {
             var blockList = (allBlocks as any)[key].filter((b: string) => !this.state.filter || b.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)
             .sort((a: string, b: string) => a.localeCompare(b))
             .map((block: any, i: number) => {
                 let tooltip = NodeListComponent._Tooltips[block] || "";
 
-                return <DraggableLineComponent key={block} data={block} tooltip={tooltip}/>
+                return <DraggableLineComponent key={block} data={block} tooltip={tooltip}/>;
             });
 
             if (blockList.length) {
@@ -175,9 +230,9 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 <div className="panes">
                     <div className="pane">
                         <div className="filter">
-                            <input type="text" placeholder="Filter" 
+                            <input type="text" placeholder="Filter"
                                 onFocus={() => this.props.globalState.blockKeyboardEvents = true}
-                                onBlur={evt => {
+                                onBlur={(evt) => {
                                     this.props.globalState.blockKeyboardEvents = false;
                                 }}
                                 onChange={(evt) => this.filterContent(evt.target.value)} />

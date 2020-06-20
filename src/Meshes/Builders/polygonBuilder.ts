@@ -10,10 +10,11 @@ import { EngineStore } from '../../Engines/engineStore';
 
 declare var earcut: any;
 
-VertexData.CreatePolygon = function(polygon: Mesh, sideOrientation: number, fUV?: Vector4[], fColors?: Color4[], frontUVs?: Vector4, backUVs?: Vector4) {
+VertexData.CreatePolygon = function(polygon: Mesh, sideOrientation: number, fUV?: Vector4[], fColors?: Color4[], frontUVs?: Vector4, backUVs?: Vector4, wrp?: boolean) {
     var faceUV: Vector4[] = fUV || new Array<Vector4>(3);
     var faceColors = fColors;
     var colors = [];
+    var wrap: boolean = wrp || false;
 
     // default face colors and UV if undefined
     for (var f = 0; f < 3; f++) {
@@ -29,7 +30,22 @@ VertexData.CreatePolygon = function(polygon: Mesh, sideOrientation: number, fUV?
     var normals = <FloatArray>polygon.getVerticesData(VertexBuffer.NormalKind);
     var uvs = <FloatArray>polygon.getVerticesData(VertexBuffer.UVKind);
     var indices = <IndicesArray>polygon.getIndices();
-
+    var startIndex = positions.length / 9;
+    var disp = 0;
+    var distX = 0;
+    var distZ = 0;
+    var dist = 0;
+    var totalLen = 0;
+    var cumulate = [0];
+    if (wrap) {
+        for (var idx = startIndex; idx < positions.length / 3; idx += 4) {
+            distX = positions[3 * (idx + 2)] - positions[3 * idx];
+            distZ = positions[3 * (idx + 2) + 2] - positions[3 * idx + 2];
+            dist = Math.sqrt(distX * distX + distZ * distZ);
+            totalLen += dist;
+            cumulate.push(totalLen);
+        }
+    }
     // set face colours and textures
     var idx: number = 0;
     var face: number = 0;
@@ -47,8 +63,35 @@ VertexData.CreatePolygon = function(polygon: Mesh, sideOrientation: number, fUV?
             face = 2;
         }
         idx = index / 3;
-        uvs[2 * idx] = (1 - uvs[2 * idx]) * faceUV[face].x + uvs[2 * idx] * faceUV[face].z;
-        uvs[2 * idx + 1] = (1 - uvs[2 * idx + 1]) * faceUV[face].y + uvs[2 * idx + 1] * faceUV[face].w;
+        if (face === 1) {
+            disp = idx - startIndex;
+            if (disp % 4 < 1.5) {
+                if (wrap) {
+                    uvs[2 * idx] = faceUV[face].x + (faceUV[face].z - faceUV[face].x) * cumulate[Math.floor(disp / 4)] / totalLen;
+                }
+                else {
+                    uvs[2 * idx] = faceUV[face].x;
+                }
+            }
+            else {
+                if (wrap) {
+                    uvs[2 * idx] = faceUV[face].x + (faceUV[face].z - faceUV[face].x) * cumulate[Math.floor(disp / 4) + 1] / totalLen;
+                }
+                else {
+                    uvs[2 * idx] = faceUV[face].z;
+                }
+            }
+            if (disp % 2 === 0) {
+                uvs[2 * idx + 1] = faceUV[face].w;
+            }
+            else {
+                uvs[2 * idx + 1] = faceUV[face].y;
+            }
+        }
+        else {
+            uvs[2 * idx] = (1 - uvs[2 * idx]) * faceUV[face].x + uvs[2 * idx] * faceUV[face].z;
+            uvs[2 * idx + 1] = (1 - uvs[2 * idx + 1]) * faceUV[face].y + uvs[2 * idx + 1] * faceUV[face].w;
+        }
         if (faceColors) {
             colors.push(faceColors[face].r, faceColors[face].g, faceColors[face].b, faceColors[face].a);
         }
@@ -111,7 +154,7 @@ export class PolygonBuilder {
      * @param earcutInjection can be used to inject your own earcut reference
      * @returns the polygon mesh
      */
-    public static CreatePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, }, scene: Nullable<Scene> = null, earcutInjection = earcut): Mesh {
+    public static CreatePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, wrap?: boolean}, scene: Nullable<Scene> = null, earcutInjection = earcut): Mesh {
         options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
         var shape = options.shape;
         var holes = options.holes || [];
@@ -137,7 +180,7 @@ export class PolygonBuilder {
         }
         var polygon = polygonTriangulation.build(options.updatable, depth);
         polygon._originalBuilderSideOrientation = options.sideOrientation;
-        var vertexData = VertexData.CreatePolygon(polygon, options.sideOrientation, options.faceUV, options.faceColors, options.frontUVs, options.backUVs);
+        var vertexData = VertexData.CreatePolygon(polygon, options.sideOrientation, options.faceUV, options.faceColors, options.frontUVs, options.backUVs, options.wrap);
         vertexData.applyToMesh(polygon, options.updatable);
 
         return polygon;
@@ -153,7 +196,7 @@ export class PolygonBuilder {
      * @param earcutInjection can be used to inject your own earcut reference
      * @returns the polygon mesh
      */
-    public static ExtrudePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null, earcutInjection = earcut): Mesh {
+    public static ExtrudePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, wrap?: boolean }, scene: Nullable<Scene> = null, earcutInjection = earcut): Mesh {
         return PolygonBuilder.CreatePolygon(name, options, scene, earcutInjection);
     }
 }

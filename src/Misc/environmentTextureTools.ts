@@ -5,13 +5,13 @@ import { Scalar } from "../Maths/math.scalar";
 import { SphericalPolynomial } from "../Maths/sphericalPolynomial";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
-import { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { Constants } from "../Engines/constants";
 import { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { Logger } from "../Misc/logger";
 
 import "../Engines/Extensions/engine.renderTargetCube";
+import "../Engines/Extensions/engine.readTexture";
 import "../Materials/Textures/baseTexture.polynomial";
 
 import "../Shaders/rgbdEncode.fragment";
@@ -145,14 +145,10 @@ export class EnvironmentTextureTools {
      * @param texture defines the cube texture to convert in env file
      * @return a promise containing the environment data if succesfull.
      */
-    public static CreateEnvTextureAsync(texture: CubeTexture): Promise<ArrayBuffer> {
+    public static CreateEnvTextureAsync(texture: BaseTexture): Promise<ArrayBuffer> {
         let internalTexture = texture.getInternalTexture();
         if (!internalTexture) {
             return Promise.reject("The cube texture is invalid.");
-        }
-
-        if (!texture._prefiltered) {
-            return Promise.reject("The cube texture is invalid (not prefiltered).");
         }
 
         let engine = internalTexture.getEngine() as Engine;
@@ -303,7 +299,7 @@ export class EnvironmentTextureTools {
      * @param texture defines the texture containing the polynomials
      * @return the JSON representation of the spherical info
      */
-    private static _CreateEnvTextureIrradiance(texture: CubeTexture): Nullable<EnvironmentTextureIrradianceInfoV1> {
+    private static _CreateEnvTextureIrradiance(texture: BaseTexture): Nullable<EnvironmentTextureIrradianceInfoV1> {
         let polynmials = texture.sphericalPolynomial;
         if (polynmials == null) {
             return null;

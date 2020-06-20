@@ -33,10 +33,10 @@ export class LightGizmo extends Gizmo {
     constructor(gizmoLayer?: UtilityLayerRenderer) {
         super(gizmoLayer);
         this.attachedMesh = new AbstractMesh("", this.gizmoLayer.utilityLayerScene);
-        this._attachedMeshParent = new TransformNode("parent", this.gizmoLayer.originalScene);
+        this._attachedMeshParent = new TransformNode("parent", this.gizmoLayer.utilityLayerScene);
 
         this.attachedMesh.parent = this._attachedMeshParent;
-        this._material = new StandardMaterial("light", this.gizmoLayer.originalScene);
+        this._material = new StandardMaterial("light", this.gizmoLayer.utilityLayerScene);
         this._material.diffuseColor = new Color3(0.5, 0.5, 0.5);
         this._material.specularColor = new Color3(0.1, 0.1, 0.1);
     }

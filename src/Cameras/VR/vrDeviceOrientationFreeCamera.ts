@@ -14,7 +14,7 @@ Node.AddNodeConstructor("VRDeviceOrientationFreeCamera", (name, scene) => {
 
 /**
  * Camera used to simulate VR rendering (based on FreeCamera)
- * @see http://doc.babylonjs.com/babylon101/cameras#vr-device-orientation-cameras
+ * @see https://doc.babylonjs.com/babylon101/cameras#vr-device-orientation-cameras
  */
 export class VRDeviceOrientationFreeCamera extends DeviceOrientationCamera {
 

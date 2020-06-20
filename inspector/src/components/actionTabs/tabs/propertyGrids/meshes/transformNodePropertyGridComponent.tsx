@@ -14,6 +14,10 @@ import { GlobalState } from '../../../../globalState';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
+import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
+import { CommonPropertyGridComponent } from '../commonPropertyGridComponent';
+import { VariantsPropertyGridComponent } from '../variantsPropertyGridComponent';
+import { Mesh } from 'babylonjs/Meshes/mesh';
 
 interface ITransformNodePropertyGridComponentProps {
     globalState: GlobalState;
@@ -49,7 +53,9 @@ export class TransformNodePropertyGridComponent extends React.Component<ITransfo
                         transformNode.dispose();
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     }} />              
-                </LineContainerComponent>
+                </LineContainerComponent>                
+                <CommonPropertyGridComponent host={transformNode} lockObject={this.props.lockObject} globalState={this.props.globalState} />                
+                <VariantsPropertyGridComponent host={transformNode as Mesh} lockObject={this.props.lockObject} globalState={this.props.globalState} />
                 <LineContainerComponent globalState={this.props.globalState} title="TRANSFORMATIONS">
                     <Vector3LineComponent label="Position" target={transformNode} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
@@ -62,6 +68,7 @@ export class TransformNodePropertyGridComponent extends React.Component<ITransfo
                     }
                     <Vector3LineComponent label="Scaling" target={transformNode} propertyName="scaling" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
+                <AnimationGridComponent globalState={this.props.globalState} animatable={transformNode} scene={transformNode.getScene()} lockObject={this.props.lockObject} />
             </div>
         );
     }

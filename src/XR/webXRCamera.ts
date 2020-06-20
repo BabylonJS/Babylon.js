@@ -111,6 +111,13 @@ export class WebXRCamera extends FreeCamera {
         return "WebXRCamera";
     }
 
+    /**
+     * Overriding the _getViewMatrix function, as it is computed by WebXR
+     */
+    public _getViewMatrix(): Matrix {
+        return this._computedViewMatrix;
+    }
+
     private _updateFromXRSession() {
         const pose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(this._xrSessionManager.referenceSpace);
 
@@ -119,8 +126,11 @@ export class WebXRCamera extends FreeCamera {
         }
 
         if (pose.transform) {
-            this._referencedPosition.copyFrom(<any>(pose.transform.position));
-            this._referenceQuaternion.copyFrom(<any>(pose.transform.orientation));
+            const pos = pose.transform.position;
+            this._referencedPosition.set(pos.x, pos.y, pos.z);
+            const orientation = pose.transform.orientation;
+
+            this._referenceQuaternion.set(orientation.x, orientation.y, orientation.z, orientation.w);
             if (!this._scene.useRightHandedSystem) {
                 this._referencedPosition.z *= -1;
                 this._referenceQuaternion.z *= -1;
@@ -136,11 +146,20 @@ export class WebXRCamera extends FreeCamera {
                 this.position.y += this._referencedPosition.y;
                 // avoid using the head rotation on the first frame.
                 this._referenceQuaternion.copyFromFloats(0, 0, 0, 1);
-                // update the reference space so that the position will be correct
             }
             else {
+                // update position and rotation as reference
                 this.rotationQuaternion.copyFrom(this._referenceQuaternion);
                 this.position.copyFrom(this._referencedPosition);
+                if (pose.transform.inverse) {
+                    Matrix.FromFloat32ArrayToRefScaled(pose.transform.inverse.matrix, 0, 1, this._computedViewMatrix);
+                } else {
+                    Matrix.FromFloat32ArrayToRefScaled(pose.transform.matrix, 0, 1, this._computedViewMatrix);
+                    this._computedViewMatrix.invert();
+                }
+                if (!this._scene.useRightHandedSystem) {
+                    this._computedViewMatrix.toggleModelMatrixHandInPlace();
+                }
             }
         }
 
@@ -160,19 +179,21 @@ export class WebXRCamera extends FreeCamera {
                 }
             }
             // Update view/projection matrix
-            if (view.transform.position) {
-                currentRig.position.copyFrom(view.transform.position);
-                currentRig.rotationQuaternion.copyFrom(view.transform.orientation);
-                if (!this._scene.useRightHandedSystem) {
-                    currentRig.position.z *= -1;
-                    currentRig.rotationQuaternion.z *= -1;
-                    currentRig.rotationQuaternion.w *= -1;
-                }
+            currentRig.position.copyFrom(view.transform.position);
+            currentRig.rotationQuaternion.copyFrom(view.transform.orientation);
+            if (!this._scene.useRightHandedSystem) {
+                currentRig.position.z *= -1;
+                currentRig.rotationQuaternion.z *= -1;
+                currentRig.rotationQuaternion.w *= -1;
+            }
+            if (view.transform.inverse) {
+                Matrix.FromFloat32ArrayToRefScaled(view.transform.inverse.matrix, 0, 1, currentRig._computedViewMatrix);
             } else {
                 Matrix.FromFloat32ArrayToRefScaled(view.transform.matrix, 0, 1, currentRig._computedViewMatrix);
-                if (!this._scene.useRightHandedSystem) {
-                    currentRig._computedViewMatrix.toggleModelMatrixHandInPlace();
-                }
+                currentRig._computedViewMatrix.invert();
+            }
+            if (!this._scene.useRightHandedSystem) {
+                currentRig._computedViewMatrix.toggleModelMatrixHandInPlace();
             }
             Matrix.FromFloat32ArrayToRefScaled(view.projectionMatrix, 0, 1, currentRig._projectionMatrix);
 
@@ -204,6 +225,12 @@ export class WebXRCamera extends FreeCamera {
             newCamera.updateUpVectorFromRotation = true;
             newCamera.isRigCamera = true;
             newCamera.rigParent = this;
+            // do not compute projection matrix, provided by XR
+            newCamera.freezeProjectionMatrix();
+            // use the view matrix provided by XR
+            newCamera._getViewMatrix = function(): Matrix {
+                return this._computedViewMatrix;
+            };
             this.rigCameras.push(newCamera);
         }
         while (this.rigCameras.length > viewCount) {
@@ -251,8 +278,8 @@ export class WebXRCamera extends FreeCamera {
             this._xrInvPositionCache.y = 0;
         }
         const transform = new XRRigidTransform(
-            { ...this._xrInvPositionCache },
-            { ...this._xrInvQuaternionCache });
+            { x: this._xrInvPositionCache.x, y: this._xrInvPositionCache.y, z: this._xrInvPositionCache.z },
+            { x: this._xrInvQuaternionCache.x, y: this._xrInvQuaternionCache.y, z: this._xrInvQuaternionCache.z, w: this._xrInvQuaternionCache.w });
         // Update offset reference to use a new originOffset with the teleported
         // player position and orientation.
         // This new offset needs to be applied to the base ref space.
@@ -261,8 +288,7 @@ export class WebXRCamera extends FreeCamera {
         const pose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(referenceSpace);
 
         if (pose) {
-            const pos = new Vector3();
-            pos.copyFrom(<any>(pose.transform.position));
+            const pos = new Vector3(pose.transform.position.x, pose.transform.position.y, pose.transform.position.z);
             if (!this._scene.useRightHandedSystem) {
                 pos.z *= -1;
             }
@@ -273,7 +299,7 @@ export class WebXRCamera extends FreeCamera {
             pos.negateInPlace();
 
             const transform2 = new XRRigidTransform(
-                { ...pos });
+                {  x: pos.x, y: pos.y, z: pos.z  });
             // Update offset reference to use a new originOffset with the teleported
             // player position and orientation.
             // This new offset needs to be applied to the base ref space.

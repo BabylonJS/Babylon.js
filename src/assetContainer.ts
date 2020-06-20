@@ -156,6 +156,8 @@ export class AssetContainer extends AbstractScene {
                                             convertionMap[material.uniqueId] = swap.uniqueId;
                                             storeMap[swap.uniqueId] = swap;
                                         }
+
+                                        multi.subMaterials = multi.subMaterials.map((m) => m && storeMap[convertionMap[m.uniqueId]]);
                                     }
                                 }
 
@@ -474,18 +476,46 @@ export class AssetContainer extends AbstractScene {
     }
 
     /**
-     * Merge animations from this asset container into a scene
+     * Merge animations (direct and animation groups) from this asset container into a scene
      * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
      * @param animatables set of animatables to retarget to a node from the scene
      * @param targetConverter defines a function used to convert animation targets from the asset container to the scene (default: search node by name)
+     * @returns an array of the new AnimationGroup added to the scene (empty array if none)
      */
-    public mergeAnimationsTo(scene: Nullable<Scene> = EngineStore.LastCreatedScene, animatables: Animatable[], targetConverter: Nullable<(target: any) => Nullable<Node>> = null): void {
+    public mergeAnimationsTo(scene: Nullable<Scene> = EngineStore.LastCreatedScene, animatables: Animatable[], targetConverter: Nullable<(target: any) => Nullable<Node>> = null): AnimationGroup[] {
         if (!scene) {
             Logger.Error("No scene available to merge animations to");
-            return;
+            return [];
         }
 
-        let _targetConverter = targetConverter ? targetConverter : (target: any) => { return scene.getBoneByName(target.name) || scene.getNodeByName(target.name); };
+        let _targetConverter = targetConverter ? targetConverter : (target: any) => {
+            let node = null;
+
+            const targetProperty = target.animations.length ? target.animations[0].targetProperty : "";
+            /*
+                BabylonJS adds special naming to targets that are children of nodes.
+                This name attempts to remove that special naming to get the parent nodes name in case the target
+                can't be found in the node tree
+
+                Ex: Torso_primitive0 likely points to a Mesh primitive. We take away primitive0 and are left with "Torso" which is the name
+                of the primitive's parent.
+            */
+            const name = target.name.split(".").join("").split("_primitive")[0];
+
+            switch (targetProperty) {
+                case "position":
+                case "rotationQuaternion":
+                    node = scene.getTransformNodeByName(target.name) || scene.getTransformNodeByName(name);
+                    break;
+                case "influence":
+                    node = scene.getMorphTargetByName(target.name) || scene.getMorphTargetByName(name);
+                    break;
+                default:
+                    node = scene.getNodeByName(target.name) || scene.getNodeByName(name);
+            }
+
+            return node;
+        };
 
         // Copy new node animations
         let nodesInAC = this.getNodes();
@@ -511,10 +541,12 @@ export class AssetContainer extends AbstractScene {
             }
         });
 
+        let newAnimationGroups = new Array<AnimationGroup>();
+
         // Copy new animation groups
         this.animationGroups.slice().forEach((animationGroupInAC) => {
             // Clone the animation group and all its animatables
-            animationGroupInAC.clone(animationGroupInAC.name, _targetConverter);
+            newAnimationGroups.push(animationGroupInAC.clone(animationGroupInAC.name, _targetConverter));
 
             // Remove animatables related to the asset container
             animationGroupInAC.animatables.forEach((animatable) => {
@@ -534,5 +566,7 @@ export class AssetContainer extends AbstractScene {
                 scene.stopAnimation(animatable.target);
             }
         });
+
+        return newAnimationGroups;
     }
 }

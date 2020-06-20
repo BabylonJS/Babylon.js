@@ -4,6 +4,7 @@
 	* sampler3dSetting.x = textureOffset (0.5 / textureSize).
 	* sampler3dSetting.y = textureSize.
 	*/
+    #define inline
 	vec3 sampleTexture3D(sampler2D colorTransform, vec3 color, vec2 sampler3dSetting)
 	{
 		float sliceSize = 2.0 * sampler3dSetting.x; // Size of 1 slice relative to the texture, for example 1/8

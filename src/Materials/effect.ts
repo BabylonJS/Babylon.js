@@ -65,6 +65,10 @@ export interface IEffectCreationOptions {
      * See https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/transformFeedbackVaryings
      */
     transformFeedbackVaryings?: Nullable<string[]>;
+    /**
+     * If provided, will be called two times with the vertex and fragment code so that this code can be updated before it is compiled by the GPU
+     */
+    processFinalCode?: Nullable<(shaderType: string, code: string) => string>;
 }
 
 /**
@@ -139,6 +143,7 @@ export class Effect implements IDisposable {
     private static _uniqueIdSeed = 0;
     private _engine: Engine;
     private _uniformBuffersNames: { [key: string]: number } = {};
+    private _uniformBuffersNamesList: string[];
     private _uniformsNames: string[];
     private _samplerList: string[];
     private _samplers: { [key: string]: number } = {};
@@ -188,6 +193,8 @@ export class Effect implements IDisposable {
         fallbacks: Nullable<IEffectFallbacks> = null, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, indexParameters?: any) {
         this.name = baseName;
 
+        let processFinalCode: Nullable<(shaderType: string, code: string) => string> = null;
+
         if ((<IEffectCreationOptions>attributesNamesOrOptions).attributes) {
             var options = <IEffectCreationOptions>attributesNamesOrOptions;
             this._engine = <Engine>uniformsNamesOrEngine;
@@ -203,16 +210,20 @@ export class Effect implements IDisposable {
             this._transformFeedbackVaryings = options.transformFeedbackVaryings || null;
 
             if (options.uniformBuffersNames) {
+                this._uniformBuffersNamesList = options.uniformBuffersNames.slice();
                 for (var i = 0; i < options.uniformBuffersNames.length; i++) {
                     this._uniformBuffersNames[options.uniformBuffersNames[i]] = i;
                 }
             }
+
+            processFinalCode = options.processFinalCode ?? null;
         } else {
             this._engine = <Engine>engine;
             this.defines = (defines == null ? "" : defines);
             this._uniformsNames = (<string[]>uniformsNamesOrEngine).concat(<string[]>samplers);
             this._samplerList = samplers ? <string[]>samplers.slice() : [];
             this._attributesNames = (<string[]>attributesNamesOrOptions);
+            this._uniformBuffersNamesList = [];
 
             this.onError = onError;
             this.onCompiled = onCompiled;
@@ -270,8 +281,14 @@ export class Effect implements IDisposable {
         this._loadShader(vertexSource, "Vertex", "", (vertexCode) => {
             this._loadShader(fragmentSource, "Fragment", "Pixel", (fragmentCode) => {
                 ShaderProcessor.Process(vertexCode, processorOptions, (migratedVertexCode) => {
+                    if (processFinalCode) {
+                        migratedVertexCode = processFinalCode("vertex", migratedVertexCode);
+                    }
                     processorOptions.isFragment = true;
                     ShaderProcessor.Process(fragmentCode, processorOptions, (migratedFragmentCode) => {
+                        if (processFinalCode) {
+                            migratedFragmentCode = processFinalCode("fragment", migratedFragmentCode);
+                        }
                         this._useFinalCode(migratedVertexCode, migratedFragmentCode, baseName);
                     });
                 });
@@ -393,10 +410,34 @@ export class Effect implements IDisposable {
 
     /**
      * Returns an array of sampler variable names
-     * @returns The array of sampler variable neames.
+     * @returns The array of sampler variable names.
      */
     public getSamplers(): string[] {
         return this._samplerList;
+    }
+
+    /**
+     * Returns an array of uniform variable names
+     * @returns The array of uniform variable names.
+     */
+    public getUniformNames(): string[] {
+        return this._uniformsNames;
+    }
+
+    /**
+     * Returns an array of uniform buffer variable names
+     * @returns The array of uniform buffer variable names.
+     */
+    public getUniformBuffersNames(): string[] {
+        return this._uniformBuffersNamesList;
+    }
+
+    /**
+     * Returns the index parameters used to create the effect
+     * @returns The index parameters object
+     */
+    public getIndexParameters(): any {
+        return this._indexParameters;
     }
 
     /**
@@ -495,6 +536,20 @@ export class Effect implements IDisposable {
 
         // Vertex shader
         this._engine._loadFile(shaderUrl + "." + key.toLowerCase() + ".fx", callback);
+    }
+
+    /**
+     * Gets the vertex shader source code of this effect
+     */
+    public get vertexSourceCode(): string {
+        return this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride ? this._vertexSourceCodeOverride : this._vertexSourceCode;
+    }
+
+    /**
+     * Gets the fragment shader source code of this effect
+     */
+    public get fragmentSourceCode(): string {
+        return this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride ? this._fragmentSourceCodeOverride : this._fragmentSourceCode;
     }
 
     /**

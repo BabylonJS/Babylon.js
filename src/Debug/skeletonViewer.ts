@@ -70,6 +70,10 @@ export class SkeletonViewer {
 
         this._isEnabled = value;
 
+        if (this._debugMesh) {
+            this._debugMesh.setEnabled(value);
+        }
+
         if (value) {
             this._scene.registerBeforeRender(this._renderFunction);
         } else {

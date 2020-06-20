@@ -25,6 +25,7 @@ import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture"
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
+import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
 
 interface ITexturePropertyGridComponentProps {
     texture: BaseTexture,
@@ -191,6 +192,10 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                         <OptionsLineComponent label="Sampling" options={samplingMode} target={texture} noDirectUpdate={true} propertyName="samplingMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => texture.updateSamplingMode(value)} />
                     }
                 </LineContainerComponent>
+                {
+                    texture.getScene() &&
+                    <AnimationGridComponent globalState={this.props.globalState} animatable={texture} scene={texture.getScene()!} lockObject={this.props.lockObject} />
+                }
                 {
                     (texture as any).rootContainer &&
                     <LineContainerComponent globalState={this.props.globalState} title="ADVANCED TEXTURE PROPERTIES">

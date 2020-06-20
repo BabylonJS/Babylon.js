@@ -157,7 +157,7 @@ export class OutlineRenderer implements ISceneComponent {
         var scene = this.scene;
         var engine = scene.getEngine();
 
-        var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
+        var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null && batch.visibleInstances[subMesh._id] !== undefined || subMesh.getRenderingMesh().hasThinInstances);
 
         if (!this.isReady(subMesh, hardwareInstancedRendering)) {
             return;
@@ -274,6 +274,9 @@ export class OutlineRenderer implements ISceneComponent {
         if (useInstances) {
             defines.push("#define INSTANCES");
             MaterialHelper.PushAttributesForInstances(attribs);
+            if (subMesh.getRenderingMesh().hasInstances) {
+                defines.push("#define THIN_INSTANCES");
+            }
         }
 
         // Get correct effect
@@ -296,7 +299,7 @@ export class OutlineRenderer implements ISceneComponent {
         this._savedDepthWrite = this._engine.getDepthWrite();
         if (mesh.renderOutline) {
             var material = subMesh.getMaterial();
-            if (material && material.needAlphaBlending()) {
+            if (material && material.needAlphaBlendingForMesh(mesh)) {
                 this._engine.cacheStencilState();
                 // Draw only to stencil buffer for the original mesh
                 // The resulting stencil buffer will be used so the outline is not visible inside the mesh when the mesh is transparent
@@ -318,7 +321,7 @@ export class OutlineRenderer implements ISceneComponent {
             this.render(subMesh, batch);
             this._engine.setDepthWrite(this._savedDepthWrite);
 
-            if (material && material.needAlphaBlending()) {
+            if (material && material.needAlphaBlendingForMesh(mesh)) {
                 this._engine.restoreStencilState();
             }
         }

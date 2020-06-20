@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <title>BabylonJS - Sandbox</title>
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1">
+    <link rel="stylesheet" href="https://use.typekit.net/cta4xsb.css">
+    <link href="index.css" rel="stylesheet" />
+    <link href="index-media.css" rel="stylesheet" />
+    <script src="../dist/preview%20release/ammo.js"></script>
+    <script src="../dist/preview%20release/cannon.js"></script>
+    <script src="../dist/preview%20release/Oimo.js"></script>
+    <script src="../dist/preview%20release/libktx.js"></script>
+    <script src="../Tools/DevLoader/BabylonLoader.js"></script>
+</head>
+
+<body>
+    <div id="root">
+        <p id="droptext">Drag and drop gltf, glb, obj or babylon files to view them</p>
+        <div id="canvasZone">
+            <canvas id="renderCanvas" touch-action="none"></canvas>
+        </div>
+        <div id="click-interceptor" class="hidden">
+        </div>
+        <div id="footer" class="footer">
+            <div class="footerLeft">
+                <img id="logoImg" src="Assets/BabylonIdentity.svg">
+            </div>
+            <div id="animationBar">
+                <div class="row">
+                    <button id="playBtn" class="pause">
+                        <img id="playImg" src="Assets/Icon_Play.svg">
+                        <img id="pauseImg" src="Assets/Icon_Pause.svg">
+                    </button>
+                    <input id="slider" type="range" min="0" max="100" value="0" step="any">
+                </div>
+                <div class="dropdown">
+                    <div id="dropdownBtn" class="dropdownBtn">
+                        <img src="Assets/Icon_Up.svg" id="chevronUp" class="chevronUp">
+                        <img src="Assets/Icon_Down.svg" id="chevronDown" class="chevronDown">
+                        <div id="dropdownLabel" class="dropdownLabel"></div>
+                    </div>
+                    <div id="dropdownContent" class="dropdownContent">
+                    </div>
+                </div>
+            </div>
+            <div class="footerRight">
+                <a href="javascript:void(null);">
+                    <div class="custom-upload"
+                        title="Open your scene from your hard drive (.babylon, .gltf, .glb, .obj)">
+                        <input type="file" id="files" multiple />
+                    </div>
+                </a>
+                <a href="javascript:void(null);" id="btnEnvironment" class="hidden"><img src="./Assets/IBLicon.svg"
+                        alt="Select environment" title="Select environment" />
+                </a>
+                <a href="javascript:void(null);" id="btnInspector" class="hidden"><img src="./Assets/Icon_EditModel.svg"
+                        alt="Display inspector" title="Display inspector" /></a>
+                <div id="dropdownContent-env" class="hidden">
+                </div>
+            </div>
+        </div>
+        <div id="logoContainer">
+            <img id="logo" src='./Assets/Logo_Fullscreen.svg' />
+        </div>
+        <div id="errorZone"></div>
+    </div>
+    <script>
+        // prevent drag and drop of file until local scripts are loaded
+        document.ondragover = function(e) {
+            e.dataTransfer.dropEffect = "none";
+            e.dataTransfer.effectAllowed = "none";
+            e.preventDefault();
+        };
+
+        BABYLONDEVTOOLS.Loader
+            .require('environment.js')
+            .require('animation.js')
+            .require('index.js')
+            .load(function() {
+                BABYLON.DracoCompression.Configuration.decoder = {
+                    wasmUrl: "../dist/preview%20release/draco_wasm_wrapper_gltf.js",
+                    wasmBinaryUrl: "../dist/preview%20release/draco_decoder_gltf.wasm",
+                    fallbackUrl: "../dist/preview%20release/draco_decoder_gltf.js"
+                };
+                BABYLON.GLTFValidation.Configuration = {
+                    url: "../dist/preview%20release/gltf_validator.js"
+                };
+            });
+    </script>
+</body>
+
+</html>

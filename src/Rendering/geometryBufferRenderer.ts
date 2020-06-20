@@ -216,13 +216,14 @@ export class GeometryBufferRenderer {
         // Alpha test
         if (material) {
             let needUv = false;
-            if (material.needAlphaBlending()) {
+            if (material.needAlphaTesting()) {
                 defines.push("#define ALPHATEST");
                 needUv = true;
             }
 
             if (material.bumpTexture && StandardMaterial.BumpTextureEnabled) {
                 defines.push("#define BUMP");
+                defines.push("#define BUMPDIRECTUV 0");
                 needUv = true;
             }
 
@@ -300,6 +301,9 @@ export class GeometryBufferRenderer {
         if (useInstances) {
             defines.push("#define INSTANCES");
             MaterialHelper.PushAttributesForInstances(attribs);
+            if (subMesh.getRenderingMesh().hasInstances) {
+                defines.push("#define THIN_INSTANCES");
+            }
         }
 
         // Setup textures count
@@ -390,10 +394,8 @@ export class GeometryBufferRenderer {
 
         // Custom render function
         var renderSubMesh = (subMesh: SubMesh): void => {
-            var ownerMesh = subMesh.getMesh();
-            var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh : null;
             var renderingMesh = subMesh.getRenderingMesh();
-            var effectiveMesh = replacementMesh ? replacementMesh : renderingMesh;
+            var effectiveMesh = subMesh.getEffectiveMesh();
             var scene = this._scene;
             var engine = scene.getEngine();
             let material = <any> subMesh.getMaterial();
@@ -421,13 +423,13 @@ export class GeometryBufferRenderer {
             engine.setState(material.backFaceCulling, 0, false, scene.useRightHandedSystem);
 
             // Managing instances
-            var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!replacementMesh);
+            var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
 
             if (batch.mustReturn) {
                 return;
             }
 
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
+            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null || renderingMesh.hasThinInstances);
             var world = effectiveMesh.getWorldMatrix();
 
             if (this.isReady(subMesh, hardwareInstancedRendering)) {

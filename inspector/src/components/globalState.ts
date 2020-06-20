@@ -20,7 +20,7 @@ export class GlobalState {
     public onTabChangedObservable = new Observable<number>();
     public onSelectionRenamedObservable = new Observable<void>();
     public onPluginActivatedObserver: Nullable<Observer<ISceneLoaderPlugin | ISceneLoaderPluginAsync>>;
-
+    public onNewSceneObservable = new Observable<Scene>();
     public sceneImportDefaults: { [key: string]: any } = {};
 
     public validationResults: Nullable<IGLTFValidationResults> = null;
@@ -31,7 +31,8 @@ export class GlobalState {
     public glTFLoaderDefaults: { [key: string]: any } = { "validate": true };
 
     public blockMutationUpdates = false;
-    public selectedLineContainerTitle = "";
+    public selectedLineContainerTitles:Array<string> = [];    
+    public selectedLineContainerTitlesNoFocus:Array<string> = [];
 
     public recorder = new ReplayRecorder();
 
@@ -110,6 +111,7 @@ export class GlobalState {
             this.onValidationResultsUpdatedObservable.notifyObservers(results);
 
             if (results.issues.numErrors || results.issues.numWarnings) {
+                this.selectedLineContainerTitlesNoFocus.push("GLTF VALIDATION");
                 this.onTabChangedObservable.notifyObservers(3);
             }
         });

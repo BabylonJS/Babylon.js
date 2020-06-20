@@ -19,7 +19,7 @@ import { IAnimatable } from '../Animations/animatable.interface';
 
 /**
  * Class used to handle skinning animations
- * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
+ * @see https://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
  */
 export class Skeleton implements IAnimatable {
     /**
@@ -285,7 +285,7 @@ export class Skeleton implements IAnimatable {
      * @returns the requested animation range or null if not found
      */
     public getAnimationRange(name: string): Nullable<AnimationRange> {
-        return this._ranges[name];
+        return this._ranges[name] || null;
     }
 
     /**
@@ -645,7 +645,7 @@ export class Skeleton implements IAnimatable {
     /**
      * Enable animation blending for this skeleton
      * @param blendingSpeed defines the blending speed to apply
-     * @see http://doc.babylonjs.com/babylon101/animations#animation-blending
+     * @see https://doc.babylonjs.com/babylon101/animations#animation-blending
      */
     public enableBlending(blendingSpeed = 0.01) {
         this.bones.forEach((bone) => {

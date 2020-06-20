@@ -152,6 +152,12 @@ $line-padding-left: 2px;
                 -ms-user-select: none;    
                 user-select: none;     
 
+                .animation-info {                    
+                    border-left: greenyellow 3px solid;
+                    margin-left: 5px;
+                    padding-left: 5px !important;
+                }
+
                 .underline {
                     border-bottom: 0.5px solid rgba(255, 255, 255, 0.5);
                 }
@@ -293,6 +299,31 @@ $line-padding-left: 2px;
                     display: grid;
                     grid-template-columns: 1fr auto;
 
+                    &.indented {
+                        grid-template-columns: 100%;
+
+                        .link-value {
+                            grid-column: 1;                            
+                            text-align: start;
+                            margin-left: 20px;
+                            opacity: 0.6;
+                            max-width: unset;
+                        }
+
+                        .value {
+                            grid-column: 1;                            
+                            text-align: start;
+                            margin-left: 20px;
+                            opacity: 0.6;
+                            max-width: unset;
+                        }
+                    }         
+                    
+                    &.reduced-opacity {
+                        opacity: 0.6;
+                        padding-left: 25px;
+                    }
+
                     .label {
                         grid-column: 1;
                         display: flex;
@@ -307,7 +338,7 @@ $line-padding-left: 2px;
                         text-align: end;
                         opacity: 0.8;
                         margin:5px;
-                        margin-top: 6px;
+                        margin-top: 7px;
                         max-width: 140px;
                         text-decoration: underline;
                         cursor: pointer;
@@ -321,7 +352,7 @@ $line-padding-left: 2px;
                         text-align: end;
                         opacity: 0.8;
                         margin:5px;
-                        margin-top: 6px;
+                        margin-top: 7px;
                         max-width: 200px;
                         -webkit-user-select: text; 
                         -moz-user-select: text;   
@@ -1003,6 +1034,8 @@ $line-padding-left: 2px;
                         grid-column: 1;
                         opacity: 1;
                         border: 3px solid red;
+                        margin-bottom: -5px;
+                        z-index: 100;
                         transition: opacity 250ms;
                         pointer-events: none;
                         

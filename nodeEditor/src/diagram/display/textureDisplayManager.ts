@@ -1,8 +1,11 @@
 import { IDisplayManager } from './displayManager';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/textureBlock';
+import { RefractionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/refractionBlock';
 import { ReflectionTextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/reflectionTextureBlock';
 import { TextureLineComponent } from '../../sharedComponents/textureLineComponent';
+import { CurrentScreenBlock } from 'babylonjs/Materials/Node/Blocks/Dual/currentScreenBlock';
+import { ParticleTextureBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleTextureBlock';
 
 export class TextureDisplayManager implements IDisplayManager {
     private _previewCanvas: HTMLCanvasElement;
@@ -24,12 +27,12 @@ export class TextureDisplayManager implements IDisplayManager {
         return "#323232";
     }
 
-    public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {       
-        const textureBlock = block as TextureBlock | ReflectionTextureBlock;
+    public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {
+        const textureBlock = block as TextureBlock | ReflectionTextureBlock | RefractionBlock | CurrentScreenBlock;
 
         if (!this._previewCanvas) {
             contentArea.classList.add("texture-block");
-            if (block instanceof TextureBlock) {
+            if (block instanceof TextureBlock || block instanceof CurrentScreenBlock || block instanceof ParticleTextureBlock) {
                 contentArea.classList.add("regular-texture-block");
             }
 

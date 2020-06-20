@@ -1,4 +1,4 @@
-import { GraphCanvasComponent } from './graphCanvas';
+import { GraphCanvasComponent, FramePortData } from './graphCanvas';
 import { GraphNode } from './graphNode';
 import { NodePort } from './nodePort';
 import { Nullable } from 'babylonjs/types';
@@ -14,7 +14,7 @@ export class NodeLink {
     private _nodeB?: GraphNode;
     private _path: SVGPathElement;
     private _selectionPath: SVGPathElement;
-    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | GraphFrame | NodePort>>>;
+    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;  
     private _isVisible = true;
 
     public onDisposedObservable = new Observable<NodeLink>();
@@ -148,5 +148,7 @@ export class NodeLink {
         }
 
         this.onDisposedObservable.notifyObservers(this);
+
+        this.onDisposedObservable.clear();
     }
 }

@@ -9,7 +9,7 @@ import { TextLineComponent } from "../../../lines/textLineComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
 import { Skeleton } from 'babylonjs/Bones/skeleton';
-import { AnimationGridComponent } from '../animationPropertyGridComponent';
+import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
 import { SkeletonViewer } from 'babylonjs/Debug/skeletonViewer';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 

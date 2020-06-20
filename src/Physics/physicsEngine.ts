@@ -8,7 +8,7 @@ import { _DevTools } from '../Misc/devTools';
 
 /**
  * Class used to control physics engine
- * @see http://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
  */
 export class PhysicsEngine implements IPhysicsEngine {
     /**

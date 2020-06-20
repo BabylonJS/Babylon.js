@@ -44,7 +44,9 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
                 <TextureLinkLineComponent label="Opacity" texture={material.opacityTexture} propertyName="opacityTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent label="Ambient" texture={material.ambientTexture} propertyName="ambientTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent label="Lightmap" texture={material.lightmapTexture} propertyName="lightmapTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
-                <CheckBoxLineComponent label="Use lightmap as shadowmap" target={material} propertyName="useLightmapAsShadowmap " onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <TextureLinkLineComponent label="Detailmap" texture={material.detailMap.texture} material={material} onTextureCreated={(texture) => material.detailMap.texture = texture} onTextureRemoved={() => material.detailMap.texture = null} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
+                <CheckBoxLineComponent label="Use lightmap as shadowmap" target={material} propertyName="useLightmapAsShadowmap" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CheckBoxLineComponent label="Use detailmap" target={material.detailMap} propertyName="isEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </LineContainerComponent>
         );
     }
@@ -101,6 +103,11 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
                         material.lightmapTexture &&
                         <SliderLineComponent label="Lightmap level" target={material.lightmapTexture} propertyName="level" minimum={0} maximum={2} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
+                    {
+                        material.detailMap.isEnabled && <>
+                        <SliderLineComponent label="Detailmap diffuse" target={material.detailMap} propertyName="diffuseBlendLevel" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <SliderLineComponent label="Detailmap bump" target={material.detailMap} propertyName="bumpLevel" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    </> }
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="NORMAL MAP" closed={true}>
                     <CheckBoxLineComponent label="Invert X axis" target={material} propertyName="invertNormalMapX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
